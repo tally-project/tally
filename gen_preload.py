@@ -99,7 +99,10 @@ def gen_func_preload(func_sig):
 
     # Extract return type and function name
     before_args_parts = split_and_strip(before_args, max_count=1, rsplit=True)
-    ret_type, func_name = before_args_parts
+    if len(before_args_parts) == 2:
+        ret_type, func_name = before_args_parts
+    else:
+        return None, None
 
     # Extract argument types and names
     args_str, _ = args.rsplit(")", 1)
@@ -123,7 +126,7 @@ def gen_func_preload(func_sig):
     preload_func_name = f"l{func_name}"
     handle = "RTLD_NEXT"
     if ret_type == "cudnnStatus_t":
-        handle = "cudnn_handle";
+        handle = "tracer.cudnn_handle";
 
     # Generate function preload
     func_preload_builder = ""
@@ -136,11 +139,16 @@ def gen_func_preload(func_sig):
     func_preload_builder += f"\tstatic {ret_type} (*{preload_func_name}) ({arg_types_str});\n"
     func_preload_builder += f"\tif (!{preload_func_name}) {{\n"
     func_preload_builder += f"\t\t{preload_func_name} = ({ret_type} (*) ({arg_types_str})) dlsym({handle}, \"{func_name}\");\n"
+    if ret_type == "cudnnStatus_t":
+        func_preload_builder += f"\t\ttracer._kernel_map[(void *) {func_name}] = std::string(\"{func_name}\");\n"
     func_preload_builder += f"\t}}\n"
     func_preload_builder += f"\tassert({preload_func_name});\n"
 
     # print
     # func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
+
+    # if ret_type == "cudnnStatus_t":
+    #     func_preload_builder += f"\ttracer._kernel_seq.push_back((void *){func_name});\n"
 
     # call original
     func_preload_builder += f"\treturn {preload_func_name}({arg_names_str});\n"
@@ -231,12 +239,13 @@ def main():
         generated_preload.update(gen_preload_from_file("gcc_output.txt"))
 
     # Some special preload functions
-    generated_preload.update(special_preload_funcs)
+    generated_preload.update(special_preload_funcs(profile_kernel))
 
     # Write to preload.cpp
     with open("preload.cpp", "w") as f:
 
         f.write(preload_template)
+        f.write(trace_initialize_code)
 
         f.write("extern \"C\" { \n\n")
 
