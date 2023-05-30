@@ -1,5 +1,5 @@
 # Set these variables
-profile_kernel = True
+profile_kernel = False
 print_trace = True
 
 func_sig_must_contain = ["cu", "(", ")"]
@@ -12,6 +12,7 @@ ignore_keywords = [
 
 # These most likely won't trigger work on GPU
 exclude_trace_functions = [
+    # from CUDA Runtime
     "cuInit",
     "cudaGetDevice",
     "cudaGetDeviceCount",
@@ -24,6 +25,10 @@ exclude_trace_functions = [
     "cudaEventRecord",
     "cudaEventSynchronize",
     "cudaEventElapsedTime",
+    "cudaStreamSynchronize",
+
+    # from cuDNN
+    "cudnnCreate",
     "cudnnBackendGetAttribute",
     "cudnnBackendSetAttribute",
     "cudnnBackendFinalize",
@@ -33,7 +38,16 @@ exclude_trace_functions = [
     "cudnnCreateTensorDescriptor",
     "cudnnSetTensorNdDescriptor",
     "cudnnDestroyTensorDescriptor",
-    "cudnnGetBatchNormalizationBackwardExWorkspaceSize"
+    "cudnnGetBatchNormalizationBackwardExWorkspaceSize",
+    "cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize",
+    "cudnnGetBatchNormalizationTrainingExReserveSpaceSize"    
+
+    # from cuBlas
+    "cublasCreate_v2",
+    "cublasSetStream_v2",
+    "cublasSetWorkspace_v2",
+    "cublasSetMathMode",
+    "cublasGetMathMode"
 ]
 
 profile_kernel_start = """
@@ -97,13 +111,15 @@ class PreloadTracer {
 public:
     bool print_trace;
     void *cudnn_handle;
+    time_point_t null_time_point;
     std::vector<const void *> _kernel_seq;
     std::vector<float> _kernel_time;
     std::vector<std::pair<time_point_t, time_point_t>> _cpu_timestamps;
     std::map<const void *, std::string> _kernel_map;
 
     PreloadTracer(bool print_trace=true) :
-        print_trace(print_trace)
+        print_trace(print_trace),
+        null_time_point(std::chrono::system_clock::now())
     {
         cudnn_handle = dlopen("/usr/local/cuda/lib64/libcudnn.so", RTLD_LAZY);
         assert(cudnn_handle);
@@ -182,7 +198,8 @@ cudaError_t cudaDeviceSynchronize()
 	assert(lcudaDeviceSynchronize);
 
     // Only matters when collecting CPU trace
-    {"tracer._cpu_timestamps.push_back({ 0, 0 });" if not profile_kernel else ""}
+    {"tracer._cpu_timestamps.push_back({ tracer.null_time_point, tracer.null_time_point });" if not profile_kernel else ""}
+    {"tracer._kernel_seq.push_back((void *) lcudaDeviceSynchronize);" if not profile_kernel else ""}
     
     return lcudaDeviceSynchronize();
 }}
