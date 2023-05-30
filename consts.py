@@ -86,6 +86,7 @@ preload_template = """
 #include <cuda_runtime_api.h>
 #include <cuda.h>
 #include <cudnn.h>
+#include <cublas_v2.h>
 
 // g++ -I/usr/local/cuda/include -fPIC -shared -o preload.so preload.cpp
 

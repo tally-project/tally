@@ -154,7 +154,9 @@ def gen_func_preload(func_sig):
             func_preload_builder += profile_cpu_start
 
     # call original
-    func_preload_builder += f"\t{ret_type} res = {preload_func_name}({arg_names_str});\n"
+    if ret_type != "void":
+        func_preload_builder += f"\t{ret_type} res = \n"
+    func_preload_builder += f"\t{preload_func_name}({arg_names_str});\n"
     
     if func_name not in exclude_trace_functions:
         if profile_kernel:
@@ -164,7 +166,8 @@ def gen_func_preload(func_sig):
         
         func_preload_builder += f"\ttracer._kernel_seq.push_back((void *){preload_func_name});\n"
 
-    func_preload_builder += f"\treturn res;\n"
+    if ret_type != "void":
+        func_preload_builder += f"\treturn res;\n"
 
     # close bracket
     func_preload_builder += "}"
@@ -231,7 +234,8 @@ def main():
     cuda_api_headers = [
         "/usr/local/cuda/include/cuda.h",
         "/usr/local/cuda/include/cuda_runtime.h",
-        "/usr/local/cuda/include/cudnn.h"
+        "/usr/local/cuda/include/cudnn.h",
+        "/usr/local/cuda/include/cublas_v2.h",
     ]
     
     generated_preload = {}
