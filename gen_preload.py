@@ -139,19 +139,32 @@ def gen_func_preload(func_sig):
     func_preload_builder += f"\tstatic {ret_type} (*{preload_func_name}) ({arg_types_str});\n"
     func_preload_builder += f"\tif (!{preload_func_name}) {{\n"
     func_preload_builder += f"\t\t{preload_func_name} = ({ret_type} (*) ({arg_types_str})) dlsym({handle}, \"{func_name}\");\n"
-    if ret_type == "cudnnStatus_t":
-        func_preload_builder += f"\t\ttracer._kernel_map[(void *) {func_name}] = std::string(\"{func_name}\");\n"
+    func_preload_builder += f"\t\ttracer._kernel_map[(void *) {preload_func_name}] = std::string(\"{func_name}\");\n"
     func_preload_builder += f"\t}}\n"
     func_preload_builder += f"\tassert({preload_func_name});\n"
 
     # print
     # func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
 
-    # if ret_type == "cudnnStatus_t":
-    #     func_preload_builder += f"\ttracer._kernel_seq.push_back((void *){func_name});\n"
+    # Trace the function
+    if func_name not in exclude_trace_functions:
+        if profile_kernel:
+            func_preload_builder += profile_kernel_start
+        else:
+            func_preload_builder += profile_cpu_start
 
     # call original
-    func_preload_builder += f"\treturn {preload_func_name}({arg_names_str});\n"
+    func_preload_builder += f"\t{ret_type} res = {preload_func_name}({arg_names_str});\n"
+    
+    if func_name not in exclude_trace_functions:
+        if profile_kernel:
+            func_preload_builder += profile_kernel_end
+        else:
+            func_preload_builder += profile_cpu_end
+        
+        func_preload_builder += f"\ttracer._kernel_seq.push_back((void *){preload_func_name});\n"
+
+    func_preload_builder += f"\treturn res;\n"
 
     # close bracket
     func_preload_builder += "}"
@@ -216,7 +229,6 @@ def gen_preload_from_file(file):
 def main():
 
     cuda_api_headers = [
-        "/usr/local/cuda/include/cuda_runtime_api.h",
         "/usr/local/cuda/include/cuda.h",
         "/usr/local/cuda/include/cuda_runtime.h",
         "/usr/local/cuda/include/cudnn.h"

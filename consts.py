@@ -1,5 +1,5 @@
 # Set these variables
-profile_kernel = False
+profile_kernel = True
 print_trace = True
 
 func_sig_must_contain = ["cu", "(", ")"]
@@ -10,33 +10,59 @@ ignore_keywords = [
     "__attribute__((deprecated))"
 ]
 
-profile_kernel_start = """
-    float time_ms = 0.0f;
+# These most likely won't trigger work on GPU
+exclude_trace_functions = [
+    "cuInit",
+    "cudaGetDevice",
+    "cudaGetDeviceCount",
+    "cudaStreamIsCapturing",
+    "cudaGetDeviceProperties",
+    "cudaGetLastError",
+    "cudnnSetStream",
+    "cudaEventCreate",
+    "cudaDeviceSynchronize",
+    "cudaEventRecord",
+    "cudaEventSynchronize",
+    "cudaEventElapsedTime",
+    "cudnnBackendGetAttribute",
+    "cudnnBackendSetAttribute",
+    "cudnnBackendFinalize",
+    "cudnnBackendInitialize",
+    "cudnnBackendDestroyDescriptor",
+    "cudnnBackendCreateDescriptor",
+    "cudnnCreateTensorDescriptor",
+    "cudnnSetTensorNdDescriptor",
+    "cudnnDestroyTensorDescriptor",
+    "cudnnGetBatchNormalizationBackwardExWorkspaceSize"
+]
 
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
+profile_kernel_start = """
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    cudaEventCreate(&_start);
+    cudaEventCreate(&_stop);
     cudaDeviceSynchronize();
 
-    cudaEventRecord(start);
+    cudaEventRecord(_start);
 """
 
 profile_kernel_end = """
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
-    cudaEventElapsedTime(&time_ms, start, stop);
+    cudaEventRecord(_stop);
+    cudaEventSynchronize(_stop);
+    cudaEventElapsedTime(&_time_ms, _start, _stop);
 
-    tracer._kernel_time.push_back(time_ms);
+    tracer._kernel_time.push_back(_time_ms);
 """
 
 profile_cpu_start = """
-    auto start = std::chrono::high_resolution_clock::now();
+    auto _start = std::chrono::high_resolution_clock::now();
 """
 
 profile_cpu_end = """
-    auto end = std::chrono::high_resolution_clock::now();
+    auto _end = std::chrono::high_resolution_clock::now();
 
-    tracer._cpu_timestamps.push_back({ start, end });
+    tracer._cpu_timestamps.push_back({ _start, _end });
 """
 
 
@@ -84,6 +110,12 @@ public:
 
     ~PreloadTracer() {
         std::cout << "preload_post_process" << std::endl;
+        if (_kernel_time.size() > 0) {
+            assert(_kernel_time.size() == _kernel_seq.size());
+        }
+        if (_cpu_timestamps.size() > 0) {
+            assert(_cpu_timestamps.size() == _kernel_seq.size());
+        }
         for (size_t i = 0; i < _kernel_seq.size(); i++) {
             auto _kernel = _kernel_seq[i];
             if (_kernel_map.find(_kernel) != _kernel_map.end()) {
@@ -129,7 +161,6 @@ std::string demangleFunc(std::string mangledName)
     }
 }
 
-
 """
 
 trace_initialize_code = f"""
@@ -139,6 +170,22 @@ PreloadTracer tracer({"true" if print_trace else "false"});
 def special_preload_funcs(profile_kernel=False):
 
     _special_preload_funcs = {
+        "cudaDeviceSynchronize": f"""
+cudaError_t cudaDeviceSynchronize()
+{{
+	static cudaError_t (*lcudaDeviceSynchronize) ();
+	if (!lcudaDeviceSynchronize) {{
+		lcudaDeviceSynchronize = (cudaError_t (*) ()) dlsym(RTLD_NEXT, "cudaDeviceSynchronize");
+		tracer._kernel_map[(void *) lcudaDeviceSynchronize] = std::string("cudaDeviceSynchronize");
+	}}
+	assert(lcudaDeviceSynchronize);
+
+    // Only matters when collecting CPU trace
+    {"tracer._cpu_timestamps.push_back({ 0, 0 });" if not profile_kernel else ""}
+    
+    return lcudaDeviceSynchronize();
+}}
+        """,
         "__cudaRegisterFunction": """
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
@@ -164,33 +211,13 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     }}
     assert(lcudaLaunchKernel);
 
-    tracer._kernel_seq.push_back(func);
-
-    // std::cout << tracer._kernel_map[func] << std::endl;
-
     {profile_kernel_start if profile_kernel else profile_cpu_start}
     cudaError_t err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
     {profile_kernel_end if profile_kernel else profile_cpu_end}
 
+    tracer._kernel_seq.push_back(func);
+
     return err;
-}}
-        """,
-        "cudnnBackendExecute": f"""
-cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_t  executionPlan, cudnnBackendDescriptor_t  variantPack)
-{{
-    static cudnnStatus_t (*lcudnnBackendExecute) (cudnnHandle_t , cudnnBackendDescriptor_t , cudnnBackendDescriptor_t );
-    if (!lcudnnBackendExecute) {{
-        lcudnnBackendExecute = (cudnnStatus_t (*) (cudnnHandle_t , cudnnBackendDescriptor_t , cudnnBackendDescriptor_t )) dlsym(tracer.cudnn_handle, "cudnnBackendExecute");
-        tracer._kernel_map[(void *) cudnnBackendExecute] = std::string("cudnnBackendExecute");
-    }}
-    assert(lcudnnBackendExecute);
-    tracer._kernel_seq.push_back((void *)cudnnBackendExecute);
-
-    {profile_kernel_start if profile_kernel else profile_cpu_start}
-    cudnnStatus_t status = lcudnnBackendExecute(handle, executionPlan, variantPack);
-    {profile_kernel_end if profile_kernel else profile_cpu_end}
-
-    return status;
 }}
         """
 }
