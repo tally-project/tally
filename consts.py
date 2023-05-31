@@ -1,5 +1,5 @@
 # Set these variables
-profile_kernel = False
+profile_kernel = True
 print_trace = True
 
 func_sig_must_contain = ["cu", "(", ")"]
@@ -48,35 +48,46 @@ exclude_trace_functions = [
     "cublasSetWorkspace_v2",
     "cublasSetMathMode",
     "cublasGetMathMode"
+
+    # from profiler
+    "cudaProfilerInitialize",
 ]
 
 profile_kernel_start = """
     float _time_ms = 0.0f;
 
     cudaEvent_t _start, _stop;
-    cudaEventCreate(&_start);
-    cudaEventCreate(&_stop);
-    cudaDeviceSynchronize();
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
 
-    cudaEventRecord(_start);
+        cudaEventRecord(_start);
+    }
 """
 
 profile_kernel_end = """
-    cudaEventRecord(_stop);
-    cudaEventSynchronize(_stop);
-    cudaEventElapsedTime(&_time_ms, _start, _stop);
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
 
-    tracer._kernel_time.push_back(_time_ms);
+        tracer._kernel_time.push_back(_time_ms);
+    }
 """
 
 profile_cpu_start = """
-    auto _start = std::chrono::high_resolution_clock::now();
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
 """
 
 profile_cpu_end = """
-    auto _end = std::chrono::high_resolution_clock::now();
-
-    tracer._cpu_timestamps.push_back({ _start, _end });
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
 """
 
 
@@ -104,11 +115,12 @@ preload_template = """
 
 // g++ -I/usr/local/cuda/include -fPIC -shared -o preload.so preload.cpp
 
+typedef std::chrono::time_point<std::chrono::system_clock> time_point_t;
+
 class PreloadTracer {
 
-    using time_point_t = std::chrono::time_point<std::chrono::system_clock>;
-
 public:
+    bool profile_start = false;
     bool print_trace;
     void *cudnn_handle;
     time_point_t null_time_point;
@@ -198,12 +210,15 @@ cudaError_t cudaDeviceSynchronize()
 	assert(lcudaDeviceSynchronize);
 
     // Only matters when collecting CPU trace
-    {"tracer._cpu_timestamps.push_back({ tracer.null_time_point, tracer.null_time_point });" if not profile_kernel else ""}
-    {"tracer._kernel_seq.push_back((void *) lcudaDeviceSynchronize);" if not profile_kernel else ""}
-    
+    if (tracer.profile_start) {{
+        {"tracer._cpu_timestamps.push_back({ tracer.null_time_point, tracer.null_time_point });" if not profile_kernel else ""}
+        {"tracer._kernel_seq.push_back((void *) lcudaDeviceSynchronize);" if not profile_kernel else ""}
+    }}
+
     return lcudaDeviceSynchronize();
 }}
         """,
+
         "__cudaRegisterFunction": """
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
@@ -220,6 +235,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
 }
         """,
+
         "cudaLaunchKernel": f"""
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {{
@@ -233,10 +249,40 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     cudaError_t err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
     {profile_kernel_end if profile_kernel else profile_cpu_end}
 
-    tracer._kernel_seq.push_back(func);
+    if (tracer.profile_start) {{
+        tracer._kernel_seq.push_back(func);
+    }}
 
     return err;
 }}
+        """,
+
+        "cudaProfilerStart": """
+cudaError_t cudaProfilerStart()
+{
+	static cudaError_t (*lcudaProfilerStart) ();
+	if (!lcudaProfilerStart) {
+		lcudaProfilerStart = (cudaError_t (*) ()) dlsym(RTLD_NEXT, "cudaProfilerStart");
+	}
+	assert(lcudaProfilerStart);
+
+    tracer.profile_start = true;
+    return lcudaProfilerStart();
+}
+        """,
+
+        "cudaProfilerStop": """
+cudaError_t cudaProfilerStop()
+{
+	static cudaError_t (*lcudaProfilerStop) ();
+	if (!lcudaProfilerStop) {
+		lcudaProfilerStop = (cudaError_t (*) ()) dlsym(RTLD_NEXT, "cudaProfilerStop");
+	}
+	assert(lcudaProfilerStop);
+
+    tracer.profile_start = false;
+    return lcudaProfilerStop();
+}
         """
 }
     return _special_preload_funcs

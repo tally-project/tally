@@ -12,13 +12,24 @@ class Simulator:
     # minimum time for a synchronization call to return
     min_sync_call_t = 4000
     
-    def __init__(self, monitor_throughput=False):
+    def __init__(self, monitor_throughput=True):
         self.monitor_throughput = monitor_throughput
         if monitor_throughput:
             self.trace_throughput_monitor = {}
             self.sample_frequency = 5 * 10 ** 9
             self.last_ckpt_time = 0
             print(f"logging frequency is every {self.sample_frequency / (10 ** 9)} seconds")
+
+    def compute_gr_actice(self, _kernels):
+        gr_active_time = 0
+
+        for _idx, kernel in enumerate(_kernels):
+            gr_active_time += (kernel.end_t - kernel.start_t)
+            
+        last_kernel_end_t = _kernels[-1]
+
+        gr_active_rate = gr_active_time / last_kernel_end_t.end_t
+        return gr_active_rate
 
     def dequeue_finished_kernels(self, kernel_queue, curr_t):
 
@@ -119,10 +130,18 @@ class SingleJobSimulator(Simulator):
         
         max_end_t = trace.run_check()
 
+        trace_kernels = []
+        for call in trace:
+            if "Synchronize" not in call.kernel.name:
+                trace_kernels.append(call.kernel)
+
+        gr_active = self.compute_gr_actice(trace_kernels)
+        print(f"GR Activce: {gr_active}")
+
         if kernel_queue:
             assert(max_end_t == kernel_queue[-1].end_t)
             return kernel_queue[-1].end_t
-        
+
         assert(max_end_t == curr_t)
         return curr_t
     
@@ -209,13 +228,30 @@ class TwoJobTimeSharingSimulator(Simulator):
             
             trace_indices[chosen] += 1
             if trace_indices[chosen] == len([t1, t2][chosen]):
-                print(f"{[t1, t2][chosen].model_name} has finished.")
+                if self.monitor_throughput:
+                    print(f"{[t1, t2][chosen].model_name} has finished.")
             trace_calls[chosen].end_t = trace_last_call_end_t[chosen]
     
         t1_max_end_t = t1.run_check()
         t2_max_end_t = t2.run_check()
 
         check_time_share(t1, t2)
+
+        t1_kernels = []
+        for call in t1:
+            if "Synchronize" not in call.kernel.name:
+                t1_kernels.append(call.kernel)
+        
+        t2_kernels = []
+        for call in t2:
+            if "Synchronize" not in call.kernel.name:
+                t2_kernels.append(call.kernel)
+        
+        all_kernels = t1_kernels + t2_kernels
+        all_kernels.sort(key=lambda kernel: kernel.start_t)
+
+        gr_active = self.compute_gr_actice(all_kernels)
+        print(f"GR Activce: {gr_active}")
 
         if kernel_queue:
             assert((kernel_queue[-1].end_t) == max(t1_max_end_t, t2_max_end_t))

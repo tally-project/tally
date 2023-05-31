@@ -127,6 +127,32 @@ class Trace:
     def load_trace(self):
         raise NotImplementedError
     
+    def get_iterations(self):
+
+        id = 1
+        kernel_name_to_id = {}
+        kernel_seq = []
+
+        for call in self.trace_events:
+            kernel_name = call.kernel.name
+            if kernel_name not in kernel_name_to_id:
+                kernel_name_to_id[kernel_name] = id
+                id += 1
+            kernel_seq.append(kernel_name_to_id[kernel_name])
+        
+        # Use the first 10 as a sequence matcher
+        guess_seq = kernel_seq[:10]
+
+        count_iter = 0
+
+        for i in range(len(kernel_seq) - len(guess_seq) + 1):
+            if kernel_seq[i:i+len(guess_seq)] == guess_seq:
+                count_iter += 1
+
+                self.trace_events[i].kernel.iter_head = True
+
+        return count_iter
+
 
 class PreloadTrace(Trace):
     def __init__(self, name, cpu_trace=None, gpu_trace=None):
@@ -134,6 +160,9 @@ class PreloadTrace(Trace):
 
         if cpu_trace and gpu_trace:
             self.load_trace(cpu_trace, gpu_trace)
+        
+        # Set Iteration heads
+        print(self.get_iterations())
 
     def find_most_common_func(self, cpu_calls, gpu_kernels):
         cpu_func_count = {}
@@ -285,32 +314,6 @@ class NsysTrace(Trace):
 
         if file_path and start_id and end_id:
             self.load_trace(file_path, start_id, end_id)
-    
-    def get_iterations(self):
-
-        id = 1
-        kernel_name_to_id = {}
-        kernel_seq = []
-
-        for call in self.trace_events:
-            kernel_name = call.kernel.name
-            if kernel_name not in kernel_name_to_id:
-                kernel_name_to_id[kernel_name] = id
-                id += 1
-            kernel_seq.append(kernel_name_to_id[kernel_name])
-        
-        # Use the first 10 as a sequence matcher
-        guess_seq = kernel_seq[:10]
-
-        count_iter = 0
-
-        for i in range(len(kernel_seq) - len(guess_seq) + 1):
-            if kernel_seq[i:i+len(guess_seq)] == guess_seq:
-                count_iter += 1
-
-                self.trace_events[i].kernel.iter_head = True
-
-        return count_iter
 
     def load_trace(self, file_name, start_id, end_id):
 
@@ -416,12 +419,12 @@ def check_time_share(t1: Trace, t2: Trace):
     
     t1_kernels = []
     for call in t1:
-        if call.kernel.name != "cudaStreamSynchronize":
+        if "Synchronize" not in call.kernel.name:
             t1_kernels.append(call.kernel)
     
     t2_kernels = []
     for call in t2:
-        if call.kernel.name != "cudaStreamSynchronize":
+        if "Synchronize" not in call.kernel.name:
             t2_kernels.append(call.kernel)
     
     all_kernels = t1_kernels + t2_kernels
