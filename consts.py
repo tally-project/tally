@@ -1,6 +1,8 @@
+import os
+
 # Set these variables
-profile_kernel = True
-print_trace = True
+PROFILE_KERNEL = os.getenv('PROFILE_KERNEL', 'False') == 'True'
+PRINT_TRACE = os.getenv('PRINT_TRACE', 'True') == 'True'
 
 func_sig_must_contain = ["cu", "(", ")"]
 func_sig_must_not_contain = ["noexcept", "{", "}", "return", "for", "throw"]
@@ -193,7 +195,7 @@ std::string demangleFunc(std::string mangledName)
 """
 
 trace_initialize_code = f"""
-PreloadTracer tracer({"true" if print_trace else "false"});
+PreloadTracer tracer({"true" if PRINT_TRACE else "false"});
 """
 
 def special_preload_funcs(profile_kernel=False):

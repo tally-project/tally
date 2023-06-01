@@ -148,7 +148,7 @@ def gen_func_preload(func_sig):
 
     # Trace the function
     if func_name not in exclude_trace_functions:
-        if profile_kernel:
+        if PROFILE_KERNEL:
             func_preload_builder += profile_kernel_start
         else:
             func_preload_builder += profile_cpu_start
@@ -159,7 +159,7 @@ def gen_func_preload(func_sig):
     func_preload_builder += f"\t\t{preload_func_name}({arg_names_str});\n"
     
     if func_name not in exclude_trace_functions:
-        if profile_kernel:
+        if PROFILE_KERNEL:
             func_preload_builder += profile_kernel_end
         else:
             func_preload_builder += profile_cpu_end
@@ -258,7 +258,7 @@ def main():
         generated_preload.update(gen_preload_from_file("gcc_output.txt"))
 
     # Some special preload functions
-    generated_preload.update(special_preload_funcs(profile_kernel))
+    generated_preload.update(special_preload_funcs(PROFILE_KERNEL))
 
     # Write to preload.cpp
     with open("preload.cpp", "w") as f:
