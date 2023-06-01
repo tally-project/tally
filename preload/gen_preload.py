@@ -1,7 +1,7 @@
 import re
 import subprocess
 
-from consts import *
+from preload.consts import *
 
 def split_and_strip(_str, splitter=" ", max_count=-1, rsplit=False):
     if not rsplit:

@@ -1,3 +1,5 @@
+import itertools
+
 def split_and_strip(_str, splitter=" ", max_count=-1, rsplit=False):
     if not rsplit:
         parts = _str.split(splitter, max_count)
@@ -10,8 +12,6 @@ def split_and_strip(_str, splitter=" ", max_count=-1, rsplit=False):
             new_parts.append(new_part)
     
     return new_parts
-
-import itertools
 
 def lcs_lens(xs, ys):
     curr = list(itertools.repeat(0, 1 + len(ys)))

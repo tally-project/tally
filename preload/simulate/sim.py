@@ -1,4 +1,4 @@
-from .trace_util import Trace, check_time_share
+from preload.simulate.trace_util import Trace, check_time_share
 
 class Simulator:
 

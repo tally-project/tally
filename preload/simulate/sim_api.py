@@ -1,8 +1,8 @@
 import pickle
 import os
 
-from .trace_util import NsysTrace, PreloadTrace
-from .sim import SingleJobSimulator, TwoJobTimeSharingSimulator
+from preload.simulate.trace_util import NsysTrace, PreloadTrace
+from preload.simulate.sim import SingleJobSimulator, TwoJobTimeSharingSimulator
 
 def get_nsys_trace(trace_name, trace_file_path, start_id, end_id):
     cache_file_name = f"{trace_name}.pickle"
@@ -37,21 +37,3 @@ def run_two_job_timesharing_simulation(trace1, trace2):
     t1_time, t1_iters, t2_time, t2_iters, gr_active = simulator.simulate(trace1, trace2)
     print(f"Time sharing simulation: model1 {trace1.model_name} time: {t1_time / (10 ** 9)}s iters: {t1_iters} model2 {trace2.model_name} time: {t2_time / (10 ** 9)}s iters: {t2_iters}")
     return t1_time, t1_iters, t2_time, t2_iters, gr_active
-
-if __name__ == "__main__":
-
-    mobilenet_nsys_trace = get_nsys_trace("mobilenet_nsys", "trace/mobilenet-64-2000.json", 104156, 24203333)
-    run_single_job_simulation(mobilenet_nsys_trace, sim_time=10)
-
-    vgg_nsys_trace = get_nsys_trace("vgg_nsys", "trace/vgg-32-8000.json", 3970, 21399607)
-    run_single_job_simulation(vgg_nsys_trace, sim_time=10)
-
-    run_two_job_timesharing_simulation(mobilenet_nsys_trace, vgg_nsys_trace)
-    
-    mobilenet_preload_trace = get_preload_trace("mobilenet_preload", "preload-trace/mobilenet-trace-cpu.txt", "preload-trace/mobilenet-trace-gpu.txt")
-    run_single_job_simulation(mobilenet_preload_trace, sim_time=10)
-
-    vgg_preload_trace = get_preload_trace("vgg_preload", "preload-trace/vgg-trace-cpu.txt", "preload-trace/vgg-trace-gpu.txt")
-    run_single_job_simulation(vgg_preload_trace, sim_time=10)
-
-    run_two_job_timesharing_simulation(mobilenet_preload_trace, vgg_preload_trace, sim_time=10)
