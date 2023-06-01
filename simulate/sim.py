@@ -1,4 +1,4 @@
-from trace_util import Trace, check_time_share
+from .trace_util import Trace, check_time_share
 
 class Simulator:
 
@@ -160,7 +160,7 @@ class SingleJobSimulator(Simulator):
                 finish_time = curr_t
             iters_finished = trace.get_iterations()
 
-        return finish_time, iters_finished
+        return finish_time, iters_finished, gr_active
     
 
 class TwoJobTimeSharingSimulator(Simulator):
@@ -295,4 +295,4 @@ class TwoJobTimeSharingSimulator(Simulator):
             finish_time[0] = t1_max_end_t
             finish_time[1] = t2_max_end_t
         
-        return finish_time[0], iters_finished[1], finish_time[0], iters_finished[1]
+        return finish_time[0], iters_finished[1], finish_time[0], iters_finished[1], gr_active

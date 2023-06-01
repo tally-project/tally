@@ -1,6 +1,6 @@
 import json
 
-from util import split_and_strip, longest_common_sequence
+from .sim_util import split_and_strip, longest_common_sequence
 
 class Event:
 
@@ -240,9 +240,9 @@ class PreloadTrace(Trace):
         with open(gpu_trace) as f:
             for line in f:
 
-                if "Time:" in line:
+                if "Kernel Time:" in line:
                     line = line.strip()
-                    func_name, time_str = split_and_strip(line, "Time:")
+                    func_name, time_str = split_and_strip(line, "Kernel Time:")
                     duration = float(time_str) * 1000000
 
                     kernel_event = KernelEvent(func_name, duration, trace=self)

@@ -25,6 +25,7 @@ exclude_trace_functions = [
     "cudaEventCreate",
     "cudaDeviceSynchronize",
     "cudaEventRecord",
+    "cudaEventDestroy",
     "cudaEventSynchronize",
     "cudaEventElapsedTime",
     "cudaStreamSynchronize",
@@ -156,7 +157,7 @@ public:
                 stream << _kernel_map[_kernel];
 
                 if (_kernel_time.size() > 0) {
-                    stream << " Time: " << _kernel_time[i];
+                    stream << " Kernel Time: " << _kernel_time[i];
                 }
 
                 if (_cpu_timestamps.size() > 0) {
