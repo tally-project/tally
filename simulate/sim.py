@@ -12,12 +12,13 @@ class Simulator:
     # minimum time for a synchronization call to return
     min_sync_call_t = 4000
     
-    def __init__(self, monitor_throughput=True):
-        self.monitor_throughput = monitor_throughput
-        if monitor_throughput:
-            self.trace_throughput_monitor = {}
-            self.sample_frequency = 5 * 10 ** 9
-            self.last_ckpt_time = 0
+    def __init__(self, logging=False):
+        self.logging = logging
+        self.trace_throughput_monitor = {}
+        self.sample_frequency = 5 * 10 ** 9
+        self.last_ckpt_time = 0
+
+        if logging:
             print(f"logging frequency is every {self.sample_frequency / (10 ** 9)} seconds")
 
     def compute_gr_actice(self, _kernels):
@@ -42,28 +43,30 @@ class Simulator:
                 kernel_queue.pop(0)
 
                 assert(first_kernel.trace)
-                if self.monitor_throughput:
-                    if first_kernel.trace not in self.trace_throughput_monitor:
-                        self.trace_throughput_monitor[first_kernel.trace] = {}
-                    
-                    if not self.trace_throughput_monitor[first_kernel.trace]:
-                        self.trace_throughput_monitor[first_kernel.trace]["num_iters"] = 0
-                    
-                    if first_kernel.iter_head:
-                        self.trace_throughput_monitor[first_kernel.trace]["num_iters"] += 1
+
+                if first_kernel.trace not in self.trace_throughput_monitor:
+                    self.trace_throughput_monitor[first_kernel.trace] = {}
+                
+                if not self.trace_throughput_monitor[first_kernel.trace]:
+                    self.trace_throughput_monitor[first_kernel.trace]["total_iters"] = 0
+                    self.trace_throughput_monitor[first_kernel.trace]["interval_iters"] = 0
+                
+                if first_kernel.iter_head:
+                    self.trace_throughput_monitor[first_kernel.trace]["total_iters"] += 1
+                    self.trace_throughput_monitor[first_kernel.trace]["interval_iters"] += 1
             
             else:
                 break
 
-        if self.monitor_throughput:
+        if self.logging:
             if (curr_t // self.sample_frequency) > (self.last_ckpt_time // self.sample_frequency):
                 
                 time_since_ckpt = (curr_t - self.last_ckpt_time) / (10 ** 9)
 
                 for trace in self.trace_throughput_monitor:
-                    num_iters = self.trace_throughput_monitor[trace]["num_iters"]
-                    print(f"{trace.model_name}: {num_iters / time_since_ckpt} iters/s")
-                    self.trace_throughput_monitor[trace]["num_iters"] = 0
+                    interval_iters = self.trace_throughput_monitor[trace]["interval_iters"]
+                    print(f"{trace.model_name}: {interval_iters / time_since_ckpt} iters/s")
+                    self.trace_throughput_monitor[trace]["interval_iters"] = 0
                 
                 self.last_ckpt_time = curr_t
 
@@ -77,10 +80,17 @@ class SingleJobSimulator(Simulator):
     def __init__(self):
         super().__init__()
 
-    def simulate(self, trace: Trace):
+    def simulate(self, trace: Trace, sim_time=None):
         
         curr_t = 0
         kernel_queue = []
+        finish_time = -1
+        iters_finished = 0
+        finished = False
+
+        if sim_time:
+            # convert to nanoseconds
+            sim_time_ns = sim_time * (10 ** 9)
 
         for call in trace:
 
@@ -127,6 +137,11 @@ class SingleJobSimulator(Simulator):
                 curr_t += call.dur
             
             call.end_t = curr_t
+
+            if sim_time is not None and not finished and curr_t > sim_time_ns:
+                iters_finished = self.trace_throughput_monitor[trace]["total_iters"]
+                finished = True
+                finish_time = curr_t
         
         max_end_t = trace.run_check()
 
@@ -138,12 +153,14 @@ class SingleJobSimulator(Simulator):
         gr_active = self.compute_gr_actice(trace_kernels)
         print(f"GR Activce: {gr_active}")
 
-        if kernel_queue:
-            assert(max_end_t == kernel_queue[-1].end_t)
-            return kernel_queue[-1].end_t
+        if sim_time is None:
+            if kernel_queue:
+                finish_time = kernel_queue[-1].end_t
+            else:
+                finish_time = curr_t
+            iters_finished = trace.get_iterations()
 
-        assert(max_end_t == curr_t)
-        return curr_t
+        return finish_time, iters_finished
     
 
 class TwoJobTimeSharingSimulator(Simulator):
@@ -159,7 +176,15 @@ class TwoJobTimeSharingSimulator(Simulator):
         
         return None
 
-    def simulate(self, t1: Trace, t2: Trace):
+    def simulate(self, t1: Trace, t2: Trace, sim_time=None):
+
+        traces = [t1, t2]
+        finish_time = [-1, -1]
+        iters_finished = [0, 0]
+        finished = [False, False]
+        if sim_time:
+            # convert to nanoseconds
+            sim_time_ns = sim_time * (10 ** 9)
         
         # Shared kernel queue by both traces
         kernel_queue = []
@@ -228,9 +253,15 @@ class TwoJobTimeSharingSimulator(Simulator):
             
             trace_indices[chosen] += 1
             if trace_indices[chosen] == len([t1, t2][chosen]):
-                if self.monitor_throughput:
+                if self.logging:
                     print(f"{[t1, t2][chosen].model_name} has finished.")
             trace_calls[chosen].end_t = trace_last_call_end_t[chosen]
+
+            if sim_time is not None:
+                if not finished[chosen] and trace_calls[chosen].end_t > sim_time_ns:
+                    iters_finished[chosen] = self.trace_throughput_monitor[traces[chosen]]["total_iters"]
+                    finished[chosen] = True
+                    finish_time[chosen] = trace_calls[chosen].end_t
     
         t1_max_end_t = t1.run_check()
         t2_max_end_t = t2.run_check()
@@ -257,5 +288,11 @@ class TwoJobTimeSharingSimulator(Simulator):
             assert((kernel_queue[-1].end_t) == max(t1_max_end_t, t2_max_end_t))
         else:
             assert(max(trace_last_call_end_t) == max(t1_max_end_t, t2_max_end_t))
+
+        if sim_time is None:
+            iters_finished[0] = t1.get_iterations()
+            iters_finished[1] = t2.get_iterations()
+            finish_time[0] = t1_max_end_t
+            finish_time[1] = t2_max_end_t
         
-        return t1_max_end_t, t2_max_end_t
+        return finish_time[0], iters_finished[1], finish_time[0], iters_finished[1]

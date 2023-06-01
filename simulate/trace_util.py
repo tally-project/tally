@@ -162,7 +162,7 @@ class PreloadTrace(Trace):
             self.load_trace(cpu_trace, gpu_trace)
         
         # Set Iteration heads
-        print(self.get_iterations())
+        self.get_iterations()
 
     def find_most_common_func(self, cpu_calls, gpu_kernels):
         cpu_func_count = {}
