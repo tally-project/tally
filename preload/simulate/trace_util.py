@@ -96,7 +96,11 @@ class Trace:
         max_end_t = -1
 
         for _idx, call in enumerate(self.trace_events):
-            
+
+            if call.start_t < 0:
+                print(_idx)
+                print(call)
+
             # Assert that timestamps are set
             assert(call.start_t >= 0)
             assert(call.end_t >= 0)
@@ -263,6 +267,7 @@ class PreloadTrace(Trace):
                     dur_from_last = 0
                     if last_end_ns > 0:
                         dur_from_last = start_t - last_end_ns
+                        assert(dur_from_last > 0)
 
                     last_end_ns = end_t
 

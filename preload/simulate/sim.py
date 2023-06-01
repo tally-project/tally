@@ -94,8 +94,10 @@ class SingleJobSimulator(Simulator):
 
         for call in trace:
 
-            if isinstance(call, str):
+            if call.dur_from_last < 0:
                 print(call)
+
+            assert(call.dur_from_last >= 0)
 
             # Advance from last call
             curr_t += call.dur_from_last

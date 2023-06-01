@@ -5,7 +5,8 @@ from preload.simulate.trace_util import NsysTrace, PreloadTrace
 from preload.simulate.sim import SingleJobSimulator, TwoJobTimeSharingSimulator
 
 def get_nsys_trace(trace_name, trace_file_path, start_id, end_id):
-    cache_file_name = f"{trace_name}.pickle"
+    os.makedirs("trace-cache", exist_ok=True)
+    cache_file_name = f"trace-cache/{trace_name}.pickle"
     if os.path.exists(cache_file_name):
         with open(cache_file_name, 'rb') as handle:
             trace = pickle.load(handle)
@@ -16,7 +17,8 @@ def get_nsys_trace(trace_name, trace_file_path, start_id, end_id):
     return trace
 
 def get_preload_trace(trace_name, cpu_trace_file_path, gpu_trace_file_path):
-    cache_file_name = f"{trace_name}.pickle"
+    os.makedirs("trace-cache", exist_ok=True)
+    cache_file_name = f"trace-cache/{trace_name}.pickle"
     if os.path.exists(cache_file_name):
         with open(cache_file_name, 'rb') as handle:
             trace = pickle.load(handle)

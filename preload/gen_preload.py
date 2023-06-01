@@ -1,7 +1,20 @@
 import re
 import subprocess
 
-from preload.consts import *
+from preload.consts import (
+    CUDA_API_HEADER_FILES,
+    FUNC_SIG_MUST_CONTAIN,
+    FUNC_SIG_MUST_NOT_CONTAIN,
+    IGNORE_KEYWORDS,
+    EXCLUDE_TRACE_FUNCTIONS,
+    PROFILE_KERNEL_START,
+    PROFILE_KERNEL_END,
+    PROFILE_CPU_START,
+    PROFILE_CPU_END,
+    PRELOAD_TEMPLATE,
+    get_trace_initialize_code,
+    special_preload_funcs
+)
 
 def split_and_strip(_str, splitter=" ", max_count=-1, rsplit=False):
     if not rsplit:
@@ -19,7 +32,7 @@ def split_and_strip(_str, splitter=" ", max_count=-1, rsplit=False):
 
 def remove_keywords(_str):
 
-    for keyword in ignore_keywords:
+    for keyword in IGNORE_KEYWORDS:
         if keyword in _str:
 
             idx = _str.index(keyword)
@@ -90,7 +103,7 @@ def gen_func_sig_args_str(arg_types, arg_names):
     return sig_args_str
 
 
-def gen_func_preload(func_sig):
+def gen_func_preload(func_sig, profile_kernel):
 
     func_sig = remove_keywords(func_sig)
     before_args, args = func_sig.split("(", 1)
@@ -147,22 +160,22 @@ def gen_func_preload(func_sig):
     # func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
 
     # Trace the function
-    if func_name not in exclude_trace_functions:
-        if PROFILE_KERNEL:
-            func_preload_builder += profile_kernel_start
+    if func_name not in EXCLUDE_TRACE_FUNCTIONS:
+        if profile_kernel:
+            func_preload_builder += PROFILE_KERNEL_START
         else:
-            func_preload_builder += profile_cpu_start
+            func_preload_builder += PROFILE_CPU_START
 
     # call original
     if ret_type != "void":
         func_preload_builder += f"\t{ret_type} res = \n"
     func_preload_builder += f"\t\t{preload_func_name}({arg_names_str});\n"
     
-    if func_name not in exclude_trace_functions:
-        if PROFILE_KERNEL:
-            func_preload_builder += profile_kernel_end
+    if func_name not in EXCLUDE_TRACE_FUNCTIONS:
+        if profile_kernel:
+            func_preload_builder += PROFILE_KERNEL_END
         else:
-            func_preload_builder += profile_cpu_end
+            func_preload_builder += PROFILE_CPU_END
         
         func_preload_builder += "\tif (tracer.profile_start) {\n"
         func_preload_builder += f"\t\ttracer._kernel_seq.push_back((void *){preload_func_name});\n"
@@ -177,7 +190,7 @@ def gen_func_preload(func_sig):
     return func_name, func_preload_builder
 
 
-def gen_preload_from_file(file):
+def gen_preload_from_file(file, profile_kernel=False):
     generated_preload = {}
 
     start_acc = False
@@ -217,11 +230,11 @@ def gen_preload_from_file(file):
                 else:
                     continue
             
-            if (all([word in func_sig for word in func_sig_must_contain]) and
-                not any([word in func_sig for word in func_sig_must_not_contain])
+            if (all([word in func_sig for word in FUNC_SIG_MUST_CONTAIN]) and
+                not any([word in func_sig for word in FUNC_SIG_MUST_NOT_CONTAIN])
             ):
                 try:
-                    func_name, func_preload = gen_func_preload(func_sig)
+                    func_name, func_preload = gen_func_preload(func_sig, profile_kernel)
                     if func_name and func_preload:
                         generated_preload[func_name] = func_preload
                 except Exception as e:
@@ -230,22 +243,13 @@ def gen_preload_from_file(file):
 
     return generated_preload
 
-
-def main():
-
-    cuda_api_headers = [
-        "/usr/local/cuda/include/cuda.h",
-        "/usr/local/cuda/include/cuda_runtime.h",
-        "/usr/local/cuda/include/cudnn.h",
-        "/usr/local/cuda/include/cublas_v2.h",
-        "/usr/local/cuda/include/cuda_profiler_api.h"
-    ]
+def generate_preload(header_files=CUDA_API_HEADER_FILES, profile_kernel=False, output_file="preload.cpp", print_trace=True):
     
     generated_preload = {}
 
-    for header_file in cuda_api_headers:
+    for header_file in header_files:
 
-        command = f"g++ -I/usr/local/cuda/include -E {header_file} > gcc_output.txt"
+        command = f"g++ -I/usr/local/cuda/include -E {header_file} > /tmp/gcc_output.txt"
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
         # Check the output
@@ -255,16 +259,16 @@ def main():
             print(f"Command {command} failed.")
             exit(result.returncode)
 
-        generated_preload.update(gen_preload_from_file("gcc_output.txt"))
+        generated_preload.update(gen_preload_from_file("/tmp/gcc_output.txt", profile_kernel))
 
     # Some special preload functions
-    generated_preload.update(special_preload_funcs(PROFILE_KERNEL))
+    generated_preload.update(special_preload_funcs(profile_kernel))
 
     # Write to preload.cpp
-    with open("preload.cpp", "w") as f:
+    with open(output_file, "w") as f:
 
-        f.write(preload_template)
-        f.write(trace_initialize_code)
+        f.write(PRELOAD_TEMPLATE)
+        f.write(get_trace_initialize_code(print_trace))
 
         f.write("extern \"C\" { \n\n")
 
@@ -274,6 +278,12 @@ def main():
         
         f.write("}")
 
-        
-if __name__ == "__main__":
-    main()
+def compile_preload(preload_cpp_file="preload.cpp", output_file=None):
+    file_prefix = preload_cpp_file.rsplit(".", maxsplit=1)[0]
+    if output_file is None:
+        output_file = f"{file_prefix}.so"
+    
+    compile_cmd = f"g++ -I/usr/local/cuda/include -fPIC -shared -o {output_file} {preload_cpp_file}"
+    process = subprocess.Popen(compile_cmd, shell=True, universal_newlines=True)
+    process.wait()
+    
