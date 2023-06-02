@@ -13,6 +13,11 @@
 #include <vector>
 #include <chrono>
 #include <string>
+#include <sys/mman.h>
+#include <sys/stat.h>        /* For mode constants */
+#include <fcntl.h>           /* For O_* constants */
+#include <unistd.h>
+#include <thread>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -27,20 +32,39 @@ class Preload {
 
 public:
 
-    ipc::channel *ipc;
     std::map<const void *, std::string> _kernel_map;
+    int shm_fd;
+    void *shm;
+    ipc::channel *ipc;
 
     Preload()
     {
-        printf("Preload\n");
+        printf("Initialize\n");
+        shm_fd = shm_open("shared_mem", O_RDWR | O_CREAT, 0666);
+
+        // Allocate 100MB shared memory
+        int size = 100 * 1024 * 1024;
+        ftruncate(shm_fd, size);
+
+        // Map address space to shared memory
+        shm = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+
         ipc = new ipc::channel("channel", ipc::sender);
 
         std::string test_str("string");
-        ipc->send(test_str);
+        while (true) {
+            
+            bool suc = ipc->send(test_str, 1000 /* time out = 1000 ms*/);
+            if (suc) {
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        }
     }
 
-    ~Preload() {
-       
+    ~Preload()
+    {
+       printf("Post processing\n");
     }
 };
 
@@ -62,6 +86,41 @@ Preload tracer;
 
 extern "C" { 
 
+
+cudaError_t cudaMalloc(void ** devPtr, size_t  size)
+{
+	static cudaError_t (*lcudaMalloc) (void **, size_t );
+	if (!lcudaMalloc) {
+		lcudaMalloc = (cudaError_t (*) (void **, size_t )) dlsym(RTLD_NEXT, "cudaMalloc");
+		tracer._kernel_map[(void *) lcudaMalloc] = std::string("cudaMalloc");
+	}
+	assert(lcudaMalloc);
+
+	cudaError_t res = lcudaMalloc(devPtr, size);
+
+    std::string _kernel_name = tracer._kernel_map[(void *) lcudaMalloc];
+    std::cout << _kernel_name << std::endl;
+
+	return res;
+}
+
+cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind)
+{
+	static cudaError_t (*lcudaMemcpy) (void *, const void *, size_t , enum cudaMemcpyKind );
+	if (!lcudaMemcpy) {
+		lcudaMemcpy = (cudaError_t (*) (void *, const void *, size_t , enum cudaMemcpyKind )) dlsym(RTLD_NEXT, "cudaMemcpy");
+		tracer._kernel_map[(void *) lcudaMemcpy] = std::string("cudaMemcpy");
+	}
+	assert(lcudaMemcpy);
+
+	cudaError_t res = lcudaMemcpy(dst, src, count, kind);
+
+    std::string _kernel_name = tracer._kernel_map[(void *) lcudaMemcpy];
+    std::cout << _kernel_name << std::endl;
+
+	return res;
+}
+
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
     static cudaError_t (*lcudaLaunchKernel) (const void *, dim3 , dim3 , void **, size_t , cudaStream_t );
@@ -71,7 +130,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     assert(lcudaLaunchKernel);
 
     std::string _kernel_name = tracer._kernel_map[func];
-    tracer.ipc->send(_kernel_name);
+    std::cout << _kernel_name << std::endl;
 
     cudaError_t err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
 
