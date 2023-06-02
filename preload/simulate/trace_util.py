@@ -253,7 +253,7 @@ class PreloadTrace(Trace):
                     kernels.append(kernel_event)
             
         with open(cpu_trace) as f:
-            for line in f:
+            for idx, line in enumerate(f):
                 
                 if "Start:" in line and "End:" in line:
                     line = line.strip()
@@ -267,6 +267,11 @@ class PreloadTrace(Trace):
                     dur_from_last = 0
                     if last_end_ns > 0:
                         dur_from_last = start_t - last_end_ns
+
+                        if dur_from_last <= 0:
+                            print(idx)
+                            print(line)
+
                         assert(dur_from_last > 0)
 
                     last_end_ns = end_t

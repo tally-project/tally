@@ -45,14 +45,28 @@ EXCLUDE_TRACE_FUNCTIONS = [
     "cudnnDestroyTensorDescriptor",
     "cudnnGetBatchNormalizationBackwardExWorkspaceSize",
     "cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize",
-    "cudnnGetBatchNormalizationTrainingExReserveSpaceSize"    
+    "cudnnGetBatchNormalizationTrainingExReserveSpaceSize",
+    "cudnnGetRNNWorkspaceSize",
+    "cudnnCreateRNNDescriptor",
+    "cudnnSetRNNDescriptor_v6",
+    "cudnnSetRNNMatrixMathType",
+    "cudnnCreateFilterDescriptor",
+    "cudnnDestroyFilterDescriptor",
+    "cudnnDestroyDropoutDescriptor",
+    "cudnnDestroyRNNDescriptor",
+    "cudnnCreateDropoutDescriptor",
+    "cudnnRestoreDropoutDescriptor",
+    "cudnnRNNGetClip",
+    "cudnnGetRNNTrainingReserveSize",
+    "cudnnGetRNNLinLayerMatrixParams",
+    "cudnnGetRNNLinLayerBiasParams",
 
     # from cuBlas
     "cublasCreate_v2",
     "cublasSetStream_v2",
     "cublasSetWorkspace_v2",
     "cublasSetMathMode",
-    "cublasGetMathMode"
+    "cublasGetMathMode",
 
     # from profiler
     "cudaProfilerInitialize",
@@ -196,7 +210,7 @@ std::string demangleFunc(std::string mangledName)
 
 def get_trace_initialize_code(print_trace=True):
     return f"""
-PreloadTracer tracer({"true" if print_trace else "false"});
+PreloadTracer tracer({"true" if print_trace else "false"});\n
     """
 
 def special_preload_funcs(profile_kernel=False):
