@@ -138,7 +138,7 @@ def gen_func_preload(func_sig, profile_kernel):
 
     preload_func_name = f"l{func_name}"
     handle = "RTLD_NEXT"
-    if ret_type == "cudnnStatus_t":
+    if "cudnn" in func_name.lower() or "cudnn" in ret_type.lower():
         handle = "tracer.cudnn_handle";
 
     # Generate function preload
