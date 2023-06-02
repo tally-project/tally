@@ -279,7 +279,7 @@ class PreloadTrace(Trace):
                     cuda_api_call = CudaEvent(func_name, duration, dur_from_last, trace=self)
 
                     cpu_calls.append(cuda_api_call)
-
+                    
         most_common_func_name = self.find_most_common_func(cpu_calls, kernels)
         
         cpu_calls_partitions = self.partition_calls_by_func(cpu_calls, most_common_func_name)

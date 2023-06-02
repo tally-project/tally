@@ -1,7 +1,7 @@
 
 import sys
 
-sys.path.append("preload")
+sys.path.append("../python")
 
 from preload.simulate.sim_api import get_nsys_trace, get_preload_trace, run_single_job_simulation, run_two_job_timesharing_simulation
 
