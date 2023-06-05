@@ -18,15 +18,16 @@
 #include <fcntl.h>           /* For O_* constants */
 #include <unistd.h>
 #include <thread>
+#include <cstring>
+#include <fstream>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
+#include <fatbinary_section.h>
 
 #include "libipc/ipc.h"
 
 // g++ -I/usr/local/cuda/include -fPIC -shared -o preload.so preload.cpp
-
-typedef std::chrono::time_point<std::chrono::system_clock> time_point_t;
 
 class Preload {
 
@@ -39,7 +40,6 @@ public:
 
     Preload()
     {
-        printf("Initialize\n");
         shm_fd = shm_open("shared_mem", O_RDWR | O_CREAT, 0666);
 
         // Allocate 100MB shared memory
@@ -49,23 +49,10 @@ public:
         // Map address space to shared memory
         shm = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
-        ipc = new ipc::channel("channel", ipc::sender);
-
-        std::string test_str("string");
-        while (true) {
-            
-            bool suc = ipc->send(test_str, 1000 /* time out = 1000 ms*/);
-            if (suc) {
-                break;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        }
+        ipc = new ipc::channel("channel-1", ipc::sender | ipc::receiver);
     }
 
-    ~Preload()
-    {
-       printf("Post processing\n");
-    }
+    ~Preload(){}
 };
 
 std::string demangleFunc(std::string mangledName)
@@ -86,39 +73,141 @@ Preload tracer;
 
 extern "C" { 
 
+struct cudaMallocArg {
+    void ** devPtr;
+    size_t  size;
+};
+
+struct __align__(8) fatBinaryHeader
+{
+    unsigned int           magic;
+    unsigned short         version;
+    unsigned short         headerSize;
+    unsigned long long int fatSize;
+};
+
+struct cudaMallocResponse {
+    void *ptr;
+    cudaError_t err;
+};
+
+struct cudaMemcpyArg {
+    void *dst;
+    void *src;
+    size_t count;
+    enum cudaMemcpyKind kind;
+    char data[];
+};
+
+struct cudaMemcpyResponse {
+    cudaError_t err;
+    char data[];
+};
+
+struct __cudaRegisterFatBinaryArg {
+    int magic;
+    int version;
+    char data[];
+};
+
+struct registerKernelArg {
+    void *host_func;
+    uint32_t kernel_func_len; 
+    char data[]; // kernel_func_name
+};
 
 cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 {
-	static cudaError_t (*lcudaMalloc) (void **, size_t );
-	if (!lcudaMalloc) {
-		lcudaMalloc = (cudaError_t (*) (void **, size_t )) dlsym(RTLD_NEXT, "cudaMalloc");
-		tracer._kernel_map[(void *) lcudaMalloc] = std::string("cudaMalloc");
-	}
-	assert(lcudaMalloc);
+    static const char *func_name = "cudaMalloc";
+    static const size_t func_name_len = 10;
+    size_t msg_len = sizeof(size_t) + func_name_len + sizeof(void **) + sizeof(size_t);
 
-	cudaError_t res = lcudaMalloc(devPtr, size);
+    void *msg = malloc(msg_len);
+    *((int *) msg) = func_name_len;
+    memcpy(msg + 4, func_name, func_name_len);
+    
+    struct cudaMallocArg *arg_ptr = (struct cudaMallocArg *)(msg + 4 + func_name_len);
+    arg_ptr->devPtr = devPtr;
+    arg_ptr->size = size;
 
-    std::string _kernel_name = tracer._kernel_map[(void *) lcudaMalloc];
-    std::cout << _kernel_name << std::endl;
+    while (true) {
+        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
+        if (success) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
 
-	return res;
+    ipc::buff_t buf;
+    while (buf.empty()) {
+        buf = tracer.ipc->recv(1000);
+    }
+
+    const char *dat = buf.get<const char *>();
+    struct cudaMallocResponse *res = (struct cudaMallocResponse *) dat;
+
+    *devPtr = res->ptr;
+	return res->err;
 }
 
 cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind)
 {
-	static cudaError_t (*lcudaMemcpy) (void *, const void *, size_t , enum cudaMemcpyKind );
-	if (!lcudaMemcpy) {
-		lcudaMemcpy = (cudaError_t (*) (void *, const void *, size_t , enum cudaMemcpyKind )) dlsym(RTLD_NEXT, "cudaMemcpy");
-		tracer._kernel_map[(void *) lcudaMemcpy] = std::string("cudaMemcpy");
-	}
-	assert(lcudaMemcpy);
+    static const char *func_name = "cudaMemcpy";
+    static const size_t func_name_len = 10;
+    size_t msg_len;
+    void *msg;
+    
+    if (kind == cudaMemcpyHostToDevice) {
+        msg_len = sizeof(size_t) + func_name_len + sizeof(void *) + sizeof(const void *) + sizeof(size_t) + sizeof(enum cudaMemcpyKind) + count;
+    } else if (kind == cudaMemcpyDeviceToHost){
+        msg_len = sizeof(size_t) + func_name_len + sizeof(void *) + sizeof(const void *) + sizeof(size_t) + sizeof(enum cudaMemcpyKind);
+    } else {
+        throw std::runtime_error("Unknown memcpy kind!");
+    }
 
-	cudaError_t res = lcudaMemcpy(dst, src, count, kind);
+    msg = malloc(msg_len);
+    *((int *) msg) = func_name_len;
+    memcpy(msg + 4, func_name, func_name_len);
+    
+    struct cudaMemcpyArg *arg_ptr = (struct cudaMemcpyArg *)(msg + 4 + func_name_len);
+    arg_ptr->dst = dst;
+    arg_ptr->src = (void *)src;
+    arg_ptr->count = count;
+    arg_ptr->kind = kind;
 
-    std::string _kernel_name = tracer._kernel_map[(void *) lcudaMemcpy];
-    std::cout << _kernel_name << std::endl;
+    // Copy data to the message
+    if (kind == cudaMemcpyHostToDevice) {
+        memcpy(arg_ptr->data, src, count);
+    }
 
-	return res;
+    while (true) {
+        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
+        if (success) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+    ipc::buff_t buf;
+    while (buf.empty()) {
+        buf = tracer.ipc->recv(1000);
+    }
+
+    const char *dat = buf.get<const char *>();
+
+    struct cudaMemcpyResponse {
+        cudaError_t err;
+        char data[];
+    };
+
+    struct cudaMemcpyResponse *res = (struct cudaMemcpyResponse *) dat;
+
+    // Copy data to the host ptr
+    if (kind == cudaMemcpyDeviceToHost) {
+        memcpy(dst, res->data, count);
+    }
+
+	return res->err;
 }
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
@@ -129,9 +218,6 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     }
     assert(lcudaLaunchKernel);
 
-    std::string _kernel_name = tracer._kernel_map[func];
-    std::cout << _kernel_name << std::endl;
-
     cudaError_t err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
 
     return err;
@@ -139,17 +225,112 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
+    static const char *func_name = "__cudaRegisterFunction";
+    static const size_t func_name_len = 22;
+
+    struct registerKernelArg {
+        void *host_func;
+        uint32_t kernel_func_len; 
+        char data[]; // kernel_func_name
+    };
+
+    std::string deviceFunName (deviceFun);
+    uint32_t kernel_func_len = deviceFunName.size();
+
+    size_t msg_len = sizeof(size_t) + func_name_len + sizeof(void *) + sizeof(uint32_t) + kernel_func_len * sizeof(char);
+
+    void *msg = malloc(msg_len);
+    *((int *) msg) = func_name_len;
+    memcpy(msg + 4, func_name, func_name_len);
+
+    struct registerKernelArg *arg_ptr = (struct registerKernelArg *)(msg + 4 + func_name_len);
+    arg_ptr->host_func = (void*) hostFun;
+    arg_ptr->kernel_func_len = kernel_func_len;
+    memcpy(arg_ptr->data, deviceFun, kernel_func_len * sizeof(char));
+
+    while (true) {
+        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
+        if (success) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
     static void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);
     if (!l__cudaRegisterFunction) {
         l__cudaRegisterFunction = (void (*) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *)) dlsym(RTLD_NEXT, "__cudaRegisterFunction");
     }
     assert(l__cudaRegisterFunction);
 
-    // store kernal names
-    std::string deviceFun_str(deviceFun);
-    tracer._kernel_map[(const void *)hostFun] = demangleFunc(deviceFun_str);
-
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
+}
+
+void** __cudaRegisterFatBinary( void *fatCubin ) {
+
+    static const char *func_name = "__cudaRegisterFatBinary";
+    static const size_t func_name_len = 23;
+
+    __fatBinC_Wrapper_t *wp = (__fatBinC_Wrapper_t *) fatCubin;
+
+    int magic = wp->magic;
+    int version = wp->version;
+
+    struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) wp->data;
+    size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
+    size_t msg_len = sizeof(size_t) + func_name_len + sizeof(int) + sizeof(int) + fatCubin_data_size_bytes;
+
+    void *msg = malloc(msg_len);
+    *((int *) msg) = func_name_len;
+    memcpy(msg + 4, func_name, func_name_len);
+
+    struct __cudaRegisterFatBinaryArg *arg_ptr = (struct __cudaRegisterFatBinaryArg *)(msg + 4 + func_name_len);
+    arg_ptr->magic = magic;
+    arg_ptr->version = version;
+    memcpy(arg_ptr->data, wp->data, fatCubin_data_size_bytes);
+
+    while (true) {
+        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
+        if (success) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+    static void** (*l__cudaRegisterFatBinary) (void *);
+    if (!l__cudaRegisterFatBinary) {
+        l__cudaRegisterFatBinary = (void** (*) (void *)) dlsym(RTLD_NEXT, "__cudaRegisterFatBinary");
+    }
+    assert(l__cudaRegisterFatBinary);
+
+    return l__cudaRegisterFatBinary(fatCubin);
+}
+
+void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
+{
+	static void (*l__cudaRegisterFatBinaryEnd) (void **);
+	if (!l__cudaRegisterFatBinaryEnd) {
+		l__cudaRegisterFatBinaryEnd = (void (*) (void **)) dlsym(RTLD_NEXT, "__cudaRegisterFatBinaryEnd");
+	}
+	assert(l__cudaRegisterFatBinaryEnd);
+
+    static const char *func_name = "__cudaRegisterFatBinaryEnd";
+    static const size_t func_name_len = 26;
+
+    size_t msg_len = sizeof(size_t) + func_name_len;
+
+    void *msg = malloc(msg_len);
+    *((int *) msg) = func_name_len;
+    memcpy(msg + 4, func_name, func_name_len);
+
+    while (true) {
+        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
+        if (success) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+	l__cudaRegisterFatBinaryEnd(fatCubinHandle);
 }
         
 

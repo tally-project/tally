@@ -1,49 +1,44 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 #include <sys/time.h>
 
-// nvcc client.cu -o client -cudart shared
+// nvcc -O0 -Xcicc -O0 -Xptxas -O0 client.cu -o client -cudart shared
 
-__global__ void addArrays(int* a, int* b, int* result, int size) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (idx < size) {
-        result[idx] = a[idx] + b[idx];
+__global__ void addOneKernel(int* array, int size) {
+    int tid = threadIdx.x + blockIdx.x * blockDim.x;
+  
+    if (tid < size) {
+        array[tid] += 1;
     }
 }
 
-int main() {
-    int size = 100;
-    int a[size], b[size], result[size];
-    int *devA, *devB, *devResult;
+int main()
+{
+    const int arraySize = 10;
+    int array[arraySize] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    int ret_array[arraySize] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    // Initialize input arrays
-    for (int i = 0; i < size; i++) {
-        a[i] = i;
-        b[i] = i + 1;
+    int *devArray;
+    cudaMalloc((void**)&devArray, arraySize * sizeof(int));
+    cudaMemcpy(devArray, array, arraySize * sizeof(int), cudaMemcpyHostToDevice);
+
+    // // Define execution configuration
+    // dim3 blockDim(256);
+    // dim3 gridDim((arraySize + blockDim.x - 1) / blockDim.x);
+
+    // // Launch the kernel
+    // addOneKernel<<<gridDim, blockDim>>>(devArray, arraySize);
+
+    cudaMemcpy(ret_array, devArray, arraySize * sizeof(int), cudaMemcpyDeviceToHost);
+
+    // Print the modified array
+    for (int i = 0; i < arraySize; ++i) {
+        std::cout << ret_array[i] << " ";
     }
+    std::cout << std::endl;
 
-    // Allocate memory on the device
-    cudaMalloc((void**)&devA, size * sizeof(int));
-    cudaMalloc((void**)&devB, size * sizeof(int));
-    cudaMalloc((void**)&devResult, size * sizeof(int));
-
-    // Copy input arrays from host to device
-    cudaMemcpy(devA, a, size * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(devB, b, size * sizeof(int), cudaMemcpyHostToDevice);
-
-    // Launch kernel
-    int blockSize = 256;
-    int numBlocks = (size + blockSize - 1) / blockSize;
-    addArrays<<<numBlocks, blockSize>>>(devA, devB, devResult, size);
-
-    // Copy result from device to host
-    cudaMemcpy(result, devResult, size * sizeof(int), cudaMemcpyDeviceToHost);
-
-    // Free device memory
-    cudaFree(devA);
-    cudaFree(devB);
-    cudaFree(devResult);
+    cudaFree(devArray);
 
     return 0;
 }

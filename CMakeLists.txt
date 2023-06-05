@@ -41,12 +41,14 @@ add_executable(client ${PROJECT_SOURCE_DIR}/client.cu)
 
 set_target_properties(client PROPERTIES
     CUDA_ARCHITECTURES "86"
+    CUDA_RUNTIME_LIBRARY Shared
 )
 
 add_executable(server ${PROJECT_SOURCE_DIR}/server.cu)
 
 set_target_properties(server PROPERTIES
     CUDA_ARCHITECTURES "86"
+    CUDA_RUNTIME_LIBRARY Shared
 )
 
 target_include_directories(server
