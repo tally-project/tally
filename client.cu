@@ -20,15 +20,16 @@ int main()
     int ret_array[arraySize] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     int *devArray;
+
     cudaMalloc((void**)&devArray, arraySize * sizeof(int));
     cudaMemcpy(devArray, array, arraySize * sizeof(int), cudaMemcpyHostToDevice);
 
-    // // Define execution configuration
-    // dim3 blockDim(256);
-    // dim3 gridDim((arraySize + blockDim.x - 1) / blockDim.x);
+    // Define execution configuration
+    dim3 blockDim(256);
+    dim3 gridDim((arraySize + blockDim.x - 1) / blockDim.x);
 
-    // // Launch the kernel
-    // addOneKernel<<<gridDim, blockDim>>>(devArray, arraySize);
+    // Launch the kernel
+    addOneKernel<<<gridDim, blockDim>>>(devArray, arraySize);
 
     cudaMemcpy(ret_array, devArray, arraySize * sizeof(int), cudaMemcpyDeviceToHost);
 

@@ -20,6 +20,8 @@
 #include <thread>
 #include <cstring>
 #include <fstream>
+#include <algorithm>
+#include <numeric>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -33,6 +35,8 @@ class Preload {
 
 public:
 
+    std::map<std::string, std::vector<uint32_t>> _kernel_name_to_args;
+    std::map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
     std::map<const void *, std::string> _kernel_map;
     int shm_fd;
     void *shm;
@@ -49,7 +53,7 @@ public:
         // Map address space to shared memory
         shm = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
-        ipc = new ipc::channel("channel-1", ipc::sender | ipc::receiver);
+        ipc = new ipc::channel("chan", ipc::sender | ipc::receiver);
     }
 
     ~Preload(){}
@@ -67,6 +71,40 @@ std::string demangleFunc(std::string mangledName)
     } else {
         return mangledName;
     }
+}
+
+bool startsWith(const std::string& str, const std::string& prefix) {
+    return str.compare(0, prefix.length(), prefix) == 0;
+}
+
+bool containsSubstring(const std::string& str, const std::string& substring) {
+    return str.find(substring) != std::string::npos;
+}
+
+std::pair<std::string, std::string> splitOnce(const std::string& str, const std::string& delimiter) {
+    std::size_t pos = str.find(delimiter);
+    if (pos != std::string::npos) {
+        std::string first = str.substr(0, pos);
+        std::string second = str.substr(pos + delimiter.length());
+        return {first, second};
+    }
+    return {str, ""};
+}
+
+std::string strip(const std::string& str) {
+    std::string result = str;
+    
+    // Remove leading whitespace
+    result.erase(result.begin(), std::find_if(result.begin(), result.end(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }));
+    
+    // Remove trailing whitespace
+    result.erase(std::find_if(result.rbegin(), result.rend(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }).base(), result.end());
+
+    return result;
 }
 
 Preload tracer;
@@ -97,6 +135,14 @@ struct cudaMemcpyArg {
     size_t count;
     enum cudaMemcpyKind kind;
     char data[];
+};
+
+struct cudaLaunchKernelArg {
+    const void *host_func;
+    dim3 gridDim;
+    dim3 blockDim;
+    size_t sharedMem;
+    char params[];
 };
 
 struct cudaMemcpyResponse {
@@ -195,11 +241,6 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
 
     const char *dat = buf.get<const char *>();
 
-    struct cudaMemcpyResponse {
-        cudaError_t err;
-        char data[];
-    };
-
     struct cudaMemcpyResponse *res = (struct cudaMemcpyResponse *) dat;
 
     // Copy data to the host ptr
@@ -212,27 +253,57 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
-    static cudaError_t (*lcudaLaunchKernel) (const void *, dim3 , dim3 , void **, size_t , cudaStream_t );
-    if (!lcudaLaunchKernel) {
-        lcudaLaunchKernel = (cudaError_t (*) (const void *, dim3 , dim3 , void **, size_t , cudaStream_t )) dlsym(RTLD_NEXT, "cudaLaunchKernel");
+    auto &params_info = tracer._kernel_addr_to_args[func];
+    uint32_t params_size =  std::accumulate(params_info.begin(), params_info.end(), 0);
+
+    size_t offset = 0;
+    char params_data[params_size];
+
+    for (size_t i = 0; i < params_info.size(); i++) {
+        memcpy(params_data + offset, args[i], params_info[i]);
+        offset += params_info[i];
     }
-    assert(lcudaLaunchKernel);
 
-    cudaError_t err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
+    static const char *func_name = "cudaLaunchKernel";
+    static const size_t func_name_len = 16;
+    size_t msg_len = sizeof(size_t) + func_name_len + sizeof(void *) + sizeof(dim3) + sizeof(dim3) + sizeof(size_t) + params_size;
+    void *msg;
 
-    return err;
+    msg = malloc(msg_len);
+    *((int *) msg) = func_name_len;
+    memcpy(msg + 4, func_name, func_name_len);
+
+    struct cudaLaunchKernelArg *arg_ptr = (struct cudaLaunchKernelArg *)(msg + 4 + func_name_len);
+
+    arg_ptr->host_func = func;
+    arg_ptr->gridDim = gridDim;
+    arg_ptr->blockDim = blockDim;
+    arg_ptr->sharedMem = sharedMem;
+    memcpy(arg_ptr->params, params_data, params_size);
+
+    while (true) {
+        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
+        if (success) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+    ipc::buff_t buf;
+    while (buf.empty()) {
+        buf = tracer.ipc->recv(1000);
+    }
+
+    const char *dat = buf.get<const char *>();
+    cudaError_t *err = (cudaError_t *) dat;
+
+    return *err;
 }
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
     static const char *func_name = "__cudaRegisterFunction";
     static const size_t func_name_len = 22;
-
-    struct registerKernelArg {
-        void *host_func;
-        uint32_t kernel_func_len; 
-        char data[]; // kernel_func_name
-    };
 
     std::string deviceFunName (deviceFun);
     uint32_t kernel_func_len = deviceFunName.size();
@@ -255,6 +326,8 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
+
+    tracer._kernel_addr_to_args[hostFun] = tracer._kernel_name_to_args[deviceFunName];
 
     static void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);
     if (!l__cudaRegisterFunction) {
@@ -295,6 +368,65 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
+
+    std::ofstream cubin_file("/tmp/tmp.cubin", std::ios::binary); // Open the file in binary mode
+    cubin_file.write(reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
+    cubin_file.close();
+
+    const char* command = "cuobjdump /tmp/tmp.cubin -elf > /tmp/tmp_cubin.elf";
+    system(command);
+
+    std::string filename = "/tmp/tmp_cubin.elf";
+    std::ifstream elf_file(filename);
+
+    // key: func_name, val: [ <ordinal, size> ]
+
+    using ordinal_size_pair = std::pair<uint32_t, uint32_t>;
+
+    std::string line;
+    while (std::getline(elf_file, line)) {
+        if (startsWith(line, ".nv.info.")) {
+            std::string kernel_name = line.substr(9);
+            std::vector<ordinal_size_pair> params_info;
+
+            while (std::getline(elf_file, line)) {
+                if (containsSubstring(line, "EIATTR_KPARAM_INFO")) {
+                    
+                } else if (containsSubstring(line, "Ordinal :")) {
+                    auto split_by_ordinal = splitOnce(line, "Ordinal :");
+                    auto split_by_offset = splitOnce(split_by_ordinal.second, "Offset  :");
+                    auto split_by_size = splitOnce(split_by_offset.second, "Size    :");
+
+                    auto ordinal_str = strip(split_by_offset.first);
+                    auto size_str = strip(split_by_size.second);
+
+                    uint32_t arg_ordinal = std::stoi(ordinal_str, nullptr, 16);
+                    uint32_t arg_size = std::stoi(size_str, nullptr, 16);
+
+                    params_info.push_back(std::make_pair(arg_ordinal, arg_size));
+
+                } else if (line.empty()) {
+                    break;
+                }
+            }
+
+            // Sort by ordinal
+            std::sort(
+                params_info.begin(),
+                params_info.end(),
+                [](ordinal_size_pair a, ordinal_size_pair b) {
+                    return a.first < b.first;
+                }
+            );
+
+            // Store the size
+            for (auto &pair : params_info) {
+                tracer._kernel_name_to_args[kernel_name].push_back(pair.second);
+            }
+        }
+    }    
+
+    elf_file.close();
 
     static void** (*l__cudaRegisterFatBinary) (void *);
     if (!l__cudaRegisterFatBinary) {
