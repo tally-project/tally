@@ -259,9 +259,6 @@ class TwoJobTimeSharingSimulator(Simulator):
                     print(f"{[t1, t2][chosen].model_name} has finished.")
 
             trace_calls[chosen].end_t = trace_last_call_end_t[chosen]
-            
-            if chosen == 0:
-                print(trace_calls[chosen].end_t)
 
             if sim_time is not None:
                 if not finished[chosen] and traces[chosen] in self.trace_throughput_monitor:
