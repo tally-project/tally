@@ -257,10 +257,16 @@ class TwoJobTimeSharingSimulator(Simulator):
             if trace_indices[chosen] == len([t1, t2][chosen]):
                 if self.logging:
                     print(f"{[t1, t2][chosen].model_name} has finished.")
+
+            if trace_last_call_end_t[chosen] < trace_calls[chosen].end_t:
+                print(f"trace_last_call_end_t[chosen]: {trace_last_call_end_t[chosen]}")
+                print(f"trace_calls[chosen].end_t: {trace_calls[chosen].end_t}")
+
+            assert(trace_last_call_end_t[chosen] > trace_calls[chosen].end_t)
             trace_calls[chosen].end_t = trace_last_call_end_t[chosen]
 
             if sim_time is not None:
-                if not finished[chosen] and trace_calls[chosen].end_t > sim_time_ns:
+                if not finished[chosen] and traces[chosen] in self.trace_throughput_monitor:
                     iters_finished[chosen] = self.trace_throughput_monitor[traces[chosen]]["total_iters"]
                     finished[chosen] = True
                     finish_time[chosen] = trace_calls[chosen].end_t
@@ -297,4 +303,4 @@ class TwoJobTimeSharingSimulator(Simulator):
             finish_time[0] = t1_max_end_t
             finish_time[1] = t2_max_end_t
         
-        return finish_time[0], iters_finished[1], finish_time[0], iters_finished[1], gr_active
+        return finish_time[0], iters_finished[0], finish_time[1], iters_finished[1], gr_active
