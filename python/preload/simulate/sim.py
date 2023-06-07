@@ -34,6 +34,8 @@ class Simulator:
 
     def dequeue_finished_kernels(self, kernel_queue, curr_t):
 
+        dequeued_list = []
+
         # Dequeue kernels that have finished
         while True:
             if not kernel_queue:
@@ -41,6 +43,7 @@ class Simulator:
             first_kernel = kernel_queue[0]
             if first_kernel.end_t <= curr_t:
                 kernel_queue.pop(0)
+                dequeued_list.append(first_kernel)
 
                 assert(first_kernel.trace)
 
@@ -57,6 +60,8 @@ class Simulator:
             
             else:
                 break
+        
+        return dequeued_list
 
         if self.logging:
             if (curr_t // self.sample_frequency) > (self.last_ckpt_time // self.sample_frequency):
@@ -87,6 +92,7 @@ class SingleJobSimulator(Simulator):
         finish_time = -1
         iters_finished = 0
         finished = False
+        finished_kernels = []
 
         if sim_time:
             # convert to nanoseconds
@@ -104,7 +110,7 @@ class SingleJobSimulator(Simulator):
             call.start_t = curr_t
 
             # Check finished kernels
-            self.dequeue_finished_kernels(kernel_queue, curr_t)
+            dequeued_kernels = self.dequeue_finished_kernels(kernel_queue, curr_t)
 
             curr_kernel = call.kernel
 
@@ -144,15 +150,16 @@ class SingleJobSimulator(Simulator):
                 iters_finished = self.trace_throughput_monitor[trace]["total_iters"]
                 finished = True
                 finish_time = curr_t
+                finished_kernels.extend(dequeued_kernels)
         
         max_end_t = trace.run_check()
 
-        trace_kernels = []
-        for call in trace:
-            if "Synchronize" not in call.kernel.name:
-                trace_kernels.append(call.kernel)
+        if sim_time is None:
+            for call in trace:
+                if "Synchronize" not in call.kernel.name:
+                    finished_kernels.append(call.kernel)
 
-        gr_active = self.compute_gr_actice(trace_kernels)
+        gr_active = self.compute_gr_actice(finished_kernels)
         print(f"GR Activce: {gr_active}")
 
         if sim_time is None:
@@ -184,6 +191,7 @@ class TwoJobTimeSharingSimulator(Simulator):
         finish_time = [-1, -1]
         iters_finished = [0, 0]
         finished = [False, False]
+        finished_kernels = []
         if sim_time:
             # convert to nanoseconds
             sim_time_ns = sim_time * (10 ** 9)
@@ -218,7 +226,7 @@ class TwoJobTimeSharingSimulator(Simulator):
             trace_calls[chosen].start_t = trace_last_call_end_t[chosen]
 
             # Check finished kernels
-            self.dequeue_finished_kernels(kernel_queue, trace_call_start_t[chosen])
+            dequeued_kernels = self.dequeue_finished_kernels(kernel_queue, trace_call_start_t[chosen])
 
             curr_kernel = trace_calls[chosen].kernel
             trace = [t1, t2][chosen]
@@ -261,32 +269,30 @@ class TwoJobTimeSharingSimulator(Simulator):
             trace_calls[chosen].end_t = trace_last_call_end_t[chosen]
 
             if sim_time is not None:
-                if not finished[chosen] and traces[chosen] in self.trace_throughput_monitor:
-                    iters_finished[chosen] = self.trace_throughput_monitor[traces[chosen]]["total_iters"]
-                    finish_time[chosen] = trace_calls[chosen].end_t
+                if not finished[chosen]:
 
-                if not finished[chosen] and finish_time[chosen] > sim_time_ns:
-                    finished[chosen] = True
+                    finished_kernels.extend(dequeued_kernels)
+
+                    if traces[chosen] in self.trace_throughput_monitor:
+                        iters_finished[chosen] = self.trace_throughput_monitor[traces[chosen]]["total_iters"]
+                        finish_time[chosen] = trace_calls[chosen].end_t
+
+                    if finish_time[chosen] > sim_time_ns:
+                        finished[chosen] = True
                 
         t1_max_end_t = t1.run_check()
         t2_max_end_t = t2.run_check()
 
         check_time_share(t1, t2)
 
-        t1_kernels = []
-        for call in t1:
-            if "Synchronize" not in call.kernel.name:
-                t1_kernels.append(call.kernel)
-        
-        t2_kernels = []
-        for call in t2:
-            if "Synchronize" not in call.kernel.name:
-                t2_kernels.append(call.kernel)
-        
-        all_kernels = t1_kernels + t2_kernels
-        all_kernels.sort(key=lambda kernel: kernel.start_t)
+        if sim_time is None:
+            for call in t1 + t2:
+                if "Synchronize" not in call.kernel.name:
+                    finished_kernels.append(call.kernel)
+            
+            finished_kernels.sort(key=lambda kernel: kernel.start_t)        
 
-        gr_active = self.compute_gr_actice(all_kernels)
+        gr_active = self.compute_gr_actice(finished_kernels)
         print(f"GR Activce: {gr_active}")
 
         if kernel_queue:
