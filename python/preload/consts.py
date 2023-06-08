@@ -216,6 +216,26 @@ PreloadTracer tracer({"true" if print_trace else "false"});\n
 def special_preload_funcs(profile_kernel=False):
 
     _special_preload_funcs = {
+    "cudaStreamSynchronize": f"""
+cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
+{{
+	static cudaError_t (*lcudaStreamSynchronize) (cudaStream_t );
+	if (!lcudaStreamSynchronize) {{
+		lcudaStreamSynchronize = (cudaError_t (*) (cudaStream_t )) dlsym(RTLD_NEXT, "cudaStreamSynchronize");
+		tracer._kernel_map[(void *) lcudaStreamSynchronize] = std::string("cudaStreamSynchronize");
+	}}
+	assert(lcudaStreamSynchronize);
+
+    // Only matters when collecting CPU trace
+    {PROFILE_CPU_START if not profile_kernel else ""}
+	cudaError_t res = lcudaStreamSynchronize(stream);
+    {PROFILE_CPU_END if not profile_kernel else ""}
+
+    {"if (tracer.profile_start) { tracer._kernel_seq.push_back((void *) lcudaStreamSynchronize); }" if not profile_kernel else ""}
+
+	return res;
+}}
+""",
         "cudaDeviceSynchronize": f"""
 cudaError_t cudaDeviceSynchronize()
 {{
