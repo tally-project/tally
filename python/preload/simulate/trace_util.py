@@ -121,7 +121,11 @@ class Trace:
                     print(f"{kernel.name} kernel.end_t: {kernel.end_t}, kernel.start_t: {kernel.start_t}")
                 assert(kernel.end_t > kernel.start_t)
  
-                assert(kernel.start_t > last_kernel_end_time)
+                if kernel.start_t < last_kernel_end_time:
+                    print(kernel.start_t)
+                    print(last_kernel_end_time)
+
+                assert(kernel.start_t >= last_kernel_end_time)
                 last_kernel_end_time = kernel.end_t
             
             max_end_t = max(max_end_t, call.end_t, kernel.end_t)

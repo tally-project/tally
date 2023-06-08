@@ -2,7 +2,7 @@ import pickle
 import os
 
 from preload.simulate.trace_util import NsysTrace, PreloadTrace
-from preload.simulate.sim import SingleJobSimulator, TwoJobTimeSharingSimulator
+from preload.simulate.sim import SingleJobSimulator, TwoJobTimeSharingSimulator, TwoJobTimeSharingFairSimulator
 
 def get_nsys_trace(trace_name, trace_file_path, start_id, end_id):
     os.makedirs("trace-cache", exist_ok=True)
@@ -36,6 +36,12 @@ def run_single_job_simulation(trace, sim_time=None):
 
 def run_two_job_timesharing_simulation(trace1, trace2, sim_time=None):
     simulator = TwoJobTimeSharingSimulator()
+    t1_time, t1_iters, t2_time, t2_iters, gr_active = simulator.simulate(trace1, trace2, sim_time)
+    print(f"Time sharing simulation: model1 {trace1.model_name} time: {t1_time / (10 ** 9)}s iters: {t1_iters} model2 {trace2.model_name} time: {t2_time / (10 ** 9)}s iters: {t2_iters}")
+    return t1_time, t1_iters, t2_time, t2_iters, gr_active
+
+def run_two_job_timesharing_fair_simulation(trace1, trace2, sim_time=None):
+    simulator = TwoJobTimeSharingFairSimulator()
     t1_time, t1_iters, t2_time, t2_iters, gr_active = simulator.simulate(trace1, trace2, sim_time)
     print(f"Time sharing simulation: model1 {trace1.model_name} time: {t1_time / (10 ** 9)}s iters: {t1_iters} model2 {trace2.model_name} time: {t2_time / (10 ** 9)}s iters: {t2_iters}")
     return t1_time, t1_iters, t2_time, t2_iters, gr_active
