@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sys/time.h>
 
-// nvcc -O0 -Xcicc -O0 -Xptxas -O0 client.cu -o client -cudart shared
+// nvcc client.cu -o client -cudart shared
 
 __global__ void addOneKernel(int* array, int size) {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
