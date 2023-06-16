@@ -30,8 +30,7 @@
 #include "libipc/ipc.h"
 
 #include "util.h"
-
-// g++ -I/usr/local/cuda/include -fPIC -shared -o preload.so preload.cpp
+#include "def.h"
 
 class Preload {
 
@@ -68,14 +67,6 @@ extern "C" {
 struct cudaMallocArg {
     void ** devPtr;
     size_t  size;
-};
-
-struct __align__(8) fatBinaryHeader
-{
-    unsigned int           magic;
-    unsigned short         version;
-    unsigned short         headerSize;
-    unsigned long long int fatSize;
 };
 
 struct cudaMallocResponse {

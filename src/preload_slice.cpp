@@ -28,6 +28,7 @@
 #include <fatbinary_section.h>
 
 #include <util.h>
+#include <def.h>
 
 class Preload {
 
@@ -91,15 +92,6 @@ public:
 Preload tracer;
 
 extern "C" { 
-
-struct __align__(8) fatBinaryHeader
-{
-    unsigned int           magic;
-    unsigned short         version;
-    unsigned short         headerSize;
-    unsigned long long int fatSize;
-};
-
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {

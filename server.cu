@@ -24,6 +24,7 @@
 #include "libipc/ipc.h"
 
 #include "util.h"
+#include "def.h"
 
 __global__ void vectorAddKernel(const float* A, const float* B, float* C, int size) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -46,14 +47,6 @@ typedef struct {
     void *filename_or_fatbins;  /* version 1: offline filename,
                                 * version 2: array of prelinked fatbins */
 } my__fatBinC_Wrapper_t;
-
-struct __align__(8) fatBinaryHeader
-{
-    unsigned int           magic;
-    unsigned short         version;
-    unsigned short         headerSize;
-    unsigned long long int fatSize;
-};
 
 int magic;
 int version;
