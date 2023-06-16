@@ -2,11 +2,10 @@ import sys
 
 sys.path.append("../python")
 
-from preload.gen_preload import *
+from preload.preload.gen_preload import *
 
 generate_preload(
-    header_files=["def.h"],
-    profile_kernel=False,
-    output_file="preload.cpp",
-    print_trace=False
+    profile_kernel=True,
+    output_file="preload_gpu.cpp",
+    print_trace=True
 )

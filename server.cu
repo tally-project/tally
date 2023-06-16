@@ -23,60 +23,14 @@
 
 #include "libipc/ipc.h"
 
+#include "util.h"
+
 __global__ void vectorAddKernel(const float* A, const float* B, float* C, int size) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     
     if (i < size) {
         C[i] = A[i] + B[i];
     }
-}
-
-std::string demangleFunc(std::string mangledName)
-{
-    int status;
-    char *demangled_name = abi::__cxa_demangle(mangledName.c_str(), nullptr, nullptr, &status);
-    
-    if (status == 0) {
-        std::string demangled_name_str(demangled_name);
-        free(demangled_name);
-        return demangled_name_str;
-    } else {
-        return mangledName;
-    }
-}
-
-bool startsWith(const std::string& str, const std::string& prefix) {
-    return str.compare(0, prefix.length(), prefix) == 0;
-}
-
-bool containsSubstring(const std::string& str, const std::string& substring) {
-    return str.find(substring) != std::string::npos;
-}
-
-std::pair<std::string, std::string> splitOnce(const std::string& str, const std::string& delimiter) {
-    std::size_t pos = str.find(delimiter);
-    if (pos != std::string::npos) {
-        std::string first = str.substr(0, pos);
-        std::string second = str.substr(pos + delimiter.length());
-        return {first, second};
-    }
-    return {str, ""};
-}
-
-std::string strip(const std::string& str) {
-    std::string result = str;
-    
-    // Remove leading whitespace
-    result.erase(result.begin(), std::find_if(result.begin(), result.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }));
-    
-    // Remove trailing whitespace
-    result.erase(std::find_if(result.rbegin(), result.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }).base(), result.end());
-
-    return result;
 }
 
 typedef struct {
