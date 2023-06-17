@@ -64,30 +64,31 @@ void runmatrixMultiplyCpu(float *h_A, float *h_B, float *h_C, int width)
 
 int main()
 {
-    int width = 64;
-    float h_A[64][64];
-    float h_B[64][64];
-    float h_C_cpu[64][64];
-    float h_C_gpu[64][64];
+    int width = 1024;
+    float* arr_a = new float[width * width];
+    float* arr_b = new float[width * width];
+    float* res_gpu = new float[width * width];
+    float* res_cpu = new float[width * width];
 
     std::srand(std::time(nullptr));
     
     // Initialize input arrays
-    for (int i = 0; i < width; ++i) {
-        for (int j = 0; j < width; ++j) {
-            h_A[i][j] = static_cast<float>(std::rand()) / RAND_MAX;
-            h_B[i][j] = static_cast<float>(std::rand()) / RAND_MAX;
-        }
+    for (int i = 0; i < width * width; ++i) {
+        arr_a[i] = static_cast<float>(std::rand()) / RAND_MAX;
+        arr_b[i] = static_cast<float>(std::rand()) / RAND_MAX;
     }
 
-    runmatrixMultiply((float *)h_A, (float *)h_B, (float *)h_C_gpu, width);
-    runmatrixMultiplyCpu((float *)h_A, (float *)h_B, (float *)h_C_cpu, width);
+    runmatrixMultiply(arr_a, arr_b, res_gpu, width);
+    runmatrixMultiplyCpu(arr_a, arr_b, res_cpu, width);
 
-    for (int i = 0; i < width; ++i) {
-        for (int j = 0; j < width; ++j) {
-            assert((h_C_gpu[i][j] - h_C_cpu[i][j]) < 0.0001);
-        }
+    for (int i = 0; i < width * width; ++i) {
+        assert((res_gpu[i] - res_cpu[i]) < 0.0001);
     }
+
+    delete[] arr_a;
+    delete[] arr_b;
+    delete[] res_cpu;
+    delete[] res_gpu;
 
     return 0;
 }

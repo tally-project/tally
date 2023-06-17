@@ -6,8 +6,8 @@
 #include <tally/cuda_api.h>
 #include <tally/const.h>
 
-void *cuda_handle = dlopen(libcuda_path, RTLD_LAZY);
-void *cudart_handle = dlopen(libcudart_path, RTLD_LAZY);
+void *cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
+void *cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
 
 CUresult (*lcuModuleLoadDataEx) (CUmodule *, const void *, unsigned int, CUjit_option *, void **) =
     (CUresult (*) (CUmodule *, const void *, unsigned int, CUjit_option *, void **)) dlsym(cuda_handle, "cuModuleLoadDataEx");

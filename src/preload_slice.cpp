@@ -59,11 +59,7 @@ public:
         registered = true;
     }
 
-    Preload(){
-        cuda_handle = dlopen(libcuda_path, RTLD_LAZY);
-        assert(cuda_handle);
-    }
-
+    Preload(){}
     ~Preload(){}
 };
 
@@ -84,41 +80,63 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     auto num_args = tracer.kernel_map[func].second;
     assert(cu_func);
 
-    dim3 new_grid_dim(4, 1, 1);
-    dim3 blockOffset(0, 0, 0);
+    uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
+    uint32_t num_threads = gridDim.x * gridDim.y * gridDim.z * threads_per_block;
+    if (num_threads > THREADS_PER_SLICE) {
 
-    CUresult res;
+        dim3 new_grid_dim;
 
-    while (blockOffset.x < gridDim.x && blockOffset.y < gridDim.y && blockOffset.z < gridDim.z) {
-
-        void *KernelParams[num_args];
-        for (size_t i = 0; i < num_args - 1; i++) {
-            KernelParams[i] = args[i];
-        }
-        KernelParams[num_args - 1] = &blockOffset;
-
-        res = lcuLaunchKernel(cu_func, new_grid_dim.x, new_grid_dim.y, new_grid_dim.z,
-                        blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
-
-        if (res != CUDA_SUCCESS) {
-            return cudaErrorInvalidValue;
-        }
-
-        blockOffset.x += new_grid_dim.x;
-
-        if (blockOffset.x >= gridDim.x) {
-            blockOffset.x = 0;
-            blockOffset.y += new_grid_dim.y;
-
-            if (blockOffset.y >= gridDim.y) {
-                blockOffset.y = 0;
-                blockOffset.z += new_grid_dim.z;
+        uint32_t num_blocks = (THREADS_PER_SLICE + threads_per_block - 1) / threads_per_block;
+        if (num_blocks <= gridDim.x) {
+            new_grid_dim = dim3(num_blocks, 1, 1);
+        } else {
+            uint32_t num_blocks_y = (num_blocks + gridDim.x - 1) / gridDim.x;
+            if (num_blocks_y <= gridDim.y) {
+                new_grid_dim = dim3(gridDim.x, num_blocks_y, 1);
+            } else {
+                uint32_t num_blocks_z = (num_blocks_y + gridDim.y - 1) / gridDim.y;
+                new_grid_dim = dim3(gridDim.x, gridDim.y, std::min(num_blocks_z, gridDim.z));
             }
         }
-    }
 
-    return cudaSuccess;
-    // return lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
+        // std::cout << "gridDim: (" << gridDim.x << ", " << gridDim.y << ", " << gridDim.z << ")" << std::endl;
+        // std::cout << "new_grid_dim: (" << new_grid_dim.x << ", " << new_grid_dim.y << ", " << new_grid_dim.z << ")" << std::endl;
+
+        dim3 blockOffset(0, 0, 0);
+        CUresult res;
+
+        while (blockOffset.x < gridDim.x && blockOffset.y < gridDim.y && blockOffset.z < gridDim.z) {
+
+            void *KernelParams[num_args];
+            for (size_t i = 0; i < num_args - 1; i++) {
+                KernelParams[i] = args[i];
+            }
+            KernelParams[num_args - 1] = &blockOffset;
+
+            res = lcuLaunchKernel(cu_func, new_grid_dim.x, new_grid_dim.y, new_grid_dim.z,
+                                  blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
+
+            if (res != CUDA_SUCCESS) {
+                return cudaErrorInvalidValue;
+            }
+
+            blockOffset.x += new_grid_dim.x;
+
+            if (blockOffset.x >= gridDim.x) {
+                blockOffset.x = 0;
+                blockOffset.y += new_grid_dim.y;
+
+                if (blockOffset.y >= gridDim.y) {
+                    blockOffset.y = 0;
+                    blockOffset.z += new_grid_dim.z;
+                }
+            }
+        }
+
+        return cudaSuccess;
+    } else {
+        return lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
+    }
 }
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
@@ -130,6 +148,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 }
 
 void** __cudaRegisterFatBinary( void *fatCubin ) {
+    
     auto *wp = (__fatBinC_Wrapper_t *) fatCubin;
     struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) wp->data;
     size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
