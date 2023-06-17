@@ -1,6 +1,6 @@
 import json
 
-from preload.simulate.util import split_and_strip, longest_common_sequence
+from tally.simulate.util import split_and_strip, longest_common_sequence
 
 class Event:
 

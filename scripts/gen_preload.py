@@ -2,7 +2,7 @@ import sys
 
 sys.path.append("../python")
 
-from preload.preload.gen_preload import *
+from tally.preload.gen_preload import *
 
 generate_preload(
     profile_kernel=True,

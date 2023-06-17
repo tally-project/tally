@@ -1,7 +1,7 @@
 import re
 import subprocess
 
-from preload.preload.consts import (
+from tally.preload.consts import (
     CUDA_API_HEADER_FILES,
     FUNC_SIG_MUST_CONTAIN,
     FUNC_SIG_MUST_NOT_CONTAIN,

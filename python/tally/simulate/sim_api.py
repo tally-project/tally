@@ -1,8 +1,8 @@
 import pickle
 import os
 
-from preload.simulate.trace_util import NsysTrace, PreloadTrace
-from preload.simulate.sim import SingleJobSimulator, TwoJobTimeSharingSimulator, TwoJobTimeSharingFairSimulator
+from tally.simulate.trace_util import NsysTrace, PreloadTrace
+from tally.simulate.sim import SingleJobSimulator, TwoJobTimeSharingSimulator, TwoJobTimeSharingFairSimulator
 
 def get_nsys_trace(trace_name, trace_file_path, start_id, end_id):
     os.makedirs("trace-cache", exist_ok=True)

@@ -1,4 +1,4 @@
-from preload.simulate.trace_util import Trace, check_time_share
+from tally.simulate.trace_util import Trace, check_time_share
 from copy import copy
 
 class Simulator:

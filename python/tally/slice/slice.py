@@ -1,11 +1,9 @@
 import re
 
-
 kernel_name_pattern = r'\.visible \.entry (\w+)'
 kernel_param_pattern = None
 b32_reg_decl_pattern = r'\.reg \.b32 %r<(\d+)>;'
 block_idx_pattern = r'mov\.u32 %r(\d+), %ctaid\.([xyz])'
-
 
 def slice_kernel(ptx_code_path, output_code_path):
 
@@ -71,7 +69,6 @@ def slice_kernel(ptx_code_path, output_code_path):
             new_block_idx_y_reg = num_b32_regs + 3
             new_block_idx_z_reg = num_b32_regs + 5
 
-            block_idx_mapping = {}
             reg_replacement_rules = {}
 
             for line in kernel_lines:
@@ -103,7 +100,6 @@ def slice_kernel(ptx_code_path, output_code_path):
                 if block_idx_match:
                     block_idx_match_dim = block_idx_match.group(2)
                     block_idx_match_reg = int(block_idx_match.group(1))
-                    block_idx_mapping[block_idx_match_dim] = block_idx_match_reg
 
                     sliced_ptx_code += f"{line}\n"
                     if block_idx_match_dim == "x":

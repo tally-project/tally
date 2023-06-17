@@ -1,5 +1,29 @@
-#ifndef UTIL_H
-#define UTIL_H
+#include <dlfcn.h>
+#include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
+#include <iostream>
+#include <sstream>
+#include <cxxabi.h>
+#include <iostream>
+#include <cstdlib>
+#include <cassert>
+#include <map>
+#include <vector>
+#include <chrono>
+#include <string>
+#include <sys/mman.h>
+#include <sys/stat.h>        /* For mode constants */
+#include <fcntl.h>           /* For O_* constants */
+#include <unistd.h>
+#include <thread>
+#include <cstring>
+#include <fstream>
+#include <algorithm>
+#include <numeric>
+
+#ifndef TALLY_UTIL_H
+#define TALLY_UTIL_H
 
 inline std::string demangleFunc(std::string mangledName)
 {
@@ -63,4 +87,4 @@ inline bool containsSubstring(const std::string& str, const std::string& substri
 }
 
 
-#endif // UTIL_H
+#endif // TALLY_UTIL_H

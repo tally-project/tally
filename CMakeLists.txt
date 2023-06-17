@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 set (LIBIPC_PROJECT_DIR ${PROJECT_SOURCE_DIR}/third_party/cpp-ipc)
 
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/tally TALLY_SRC_FILES)
 aux_source_directory(${LIBIPC_PROJECT_DIR}/src/libipc LIBIPC_SRC_FILES)
 aux_source_directory(${LIBIPC_PROJECT_DIR}/src/libipc/sync LIBIPC_SRC_FILES)
 aux_source_directory(${LIBIPC_PROJECT_DIR}/src/libipc/platform LIBIPC_SRC_FILES)
@@ -24,7 +25,7 @@ target_link_libraries(preload_sched PUBLIC
     $<$<NOT:$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>:pthread>
     $<$<NOT:$<OR:$<STREQUAL:${CMAKE_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>>:rt>)
 
-add_library(preload_slice SHARED ${PROJECT_SOURCE_DIR}/src/preload_slice.cpp)
+add_library(preload_slice SHARED ${PROJECT_SOURCE_DIR}/src/preload_slice.cpp ${TALLY_SRC_FILES})
 
 target_include_directories(preload_slice
     PUBLIC ${PROJECT_SOURCE_DIR}/include
@@ -58,13 +59,6 @@ target_link_libraries(ipc PUBLIC
     $<$<NOT:$<OR:$<STREQUAL:${CMAKE_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>>:rt>
 )
 
-add_executable(client ${PROJECT_SOURCE_DIR}/client.cu)
-
-set_target_properties(client PROPERTIES
-    CUDA_ARCHITECTURES "86"
-    CUDA_RUNTIME_LIBRARY Shared
-)
-
 add_executable(server ${PROJECT_SOURCE_DIR}/server.cu)
 
 set_target_properties(server PROPERTIES
@@ -82,4 +76,4 @@ target_link_libraries(server PUBLIC
     dl
 )
 
-add_subdirectory(slice)
+add_subdirectory(tests)

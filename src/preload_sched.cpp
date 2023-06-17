@@ -29,8 +29,8 @@
 
 #include "libipc/ipc.h"
 
-#include "util.h"
-#include "def.h"
+#include "tally/util.h"
+#include "tally/def.h"
 
 class Preload {
 
@@ -63,49 +63,6 @@ public:
 Preload tracer;
 
 extern "C" { 
-
-struct cudaMallocArg {
-    void ** devPtr;
-    size_t  size;
-};
-
-struct cudaMallocResponse {
-    void *ptr;
-    cudaError_t err;
-};
-
-struct cudaMemcpyArg {
-    void *dst;
-    void *src;
-    size_t count;
-    enum cudaMemcpyKind kind;
-    char data[];
-};
-
-struct cudaLaunchKernelArg {
-    const void *host_func;
-    dim3 gridDim;
-    dim3 blockDim;
-    size_t sharedMem;
-    char params[];
-};
-
-struct cudaMemcpyResponse {
-    cudaError_t err;
-    char data[];
-};
-
-struct __cudaRegisterFatBinaryArg {
-    int magic;
-    int version;
-    char data[];
-};
-
-struct registerKernelArg {
-    void *host_func;
-    uint32_t kernel_func_len; 
-    char data[]; // kernel_func_name
-};
 
 cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 {

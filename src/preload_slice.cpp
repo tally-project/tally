@@ -27,62 +27,40 @@
 #include <cuda.h>
 #include <fatbinary_section.h>
 
-#include <util.h>
-#include <def.h>
+#include <tally/util.h>
+#include <tally/def.h>
+#include <tally/const.h>
+#include <tally/kernel_slice.h>
+#include <tally/cuda_api.h>
 
 class Preload {
 
 public:
 
     std::map<std::string, const void *> kernel_name_map;
-    std::map<const void *, CUfunction> kernel_map;
+    std::map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
     std::vector<std::string> sliced_ptx_files;
-    void *cuda_handle;
     bool registered = false;
 
     void register_sliced_kernels()
     {
-        static CUresult (*lcuModuleLoadDataEx) (CUmodule *, const void *, unsigned int, CUjit_option *, void **);
-        if (!lcuModuleLoadDataEx) {
-            lcuModuleLoadDataEx = (CUresult (*) (CUmodule *, const void *, unsigned int, CUjit_option *, void **)) dlsym(cuda_handle, "cuModuleLoadDataEx");
-        }
         assert(lcuModuleLoadDataEx);
-
-        static CUresult (*lcuModuleGetFunction) (CUfunction*, CUmodule, const char*);
-        if (!lcuModuleGetFunction) {
-            lcuModuleGetFunction = (CUresult (*) (CUfunction*, CUmodule, const char*)) dlsym(cuda_handle, "cuModuleGetFunction");
-        }
         assert(lcuModuleGetFunction);
 
         for (auto &sliced_ptx_file : sliced_ptx_files) {
+            auto ptx_kernel_map = register_ptx(sliced_ptx_file);
 
-            std::ifstream t(sliced_ptx_file);
-            std::string sliced_ptx_file_str((std::istreambuf_iterator<char>(t)),
-                                std::istreambuf_iterator<char>());
-
-            CUmodule cudaModule;
-            lcuModuleLoadDataEx(&cudaModule, sliced_ptx_file_str.c_str(), 0, 0, 0);
-
-            std::string kernel_names_str = exec("python3 ../scripts/run_slice.py --input-file " + sliced_ptx_file + " --get-names");
-            
-            std::stringstream ss(kernel_names_str);
-            std::string kernel_name;
-
-            while (std::getline(ss, kernel_name, '\n')) {
-                if (kernel_name != "") {
-                    CUfunction function;
-                    lcuModuleGetFunction(&function, cudaModule, kernel_name.c_str());
-
-                    const void *hostFunc = kernel_name_map[kernel_name];
-                    kernel_map[hostFunc] = function;
-                }
+            for (auto &pair : ptx_kernel_map) {
+                auto host_func = kernel_name_map[pair.first];
+                kernel_map[host_func] = pair.second;
             }
         }
+
         registered = true;
     }
 
     Preload(){
-        cuda_handle = dlopen("/usr/lib/x86_64-linux-gnu/libcuda.so.1", RTLD_LAZY);
+        cuda_handle = dlopen(libcuda_path, RTLD_LAZY);
         assert(cuda_handle);
     }
 
@@ -95,33 +73,29 @@ extern "C" {
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
-    static cudaError_t (*lcudaLaunchKernel) (const void *, dim3 , dim3 , void **, size_t , cudaStream_t );
-    if (!lcudaLaunchKernel) {
-        lcudaLaunchKernel = (cudaError_t (*) (const void *, dim3 , dim3 , void **, size_t , cudaStream_t )) dlsym(RTLD_NEXT, "cudaLaunchKernel");
-    }
     assert(lcudaLaunchKernel);
-
-    static CUresult (*lcuLaunchKernel) (CUfunction, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, CUstream, void**, void**);
-    if (!lcuLaunchKernel) {
-        lcuLaunchKernel = (CUresult (*) (CUfunction, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, CUstream, void**, void**)) dlsym(tracer.cuda_handle, "cuLaunchKernel");
-    }
     assert(lcuLaunchKernel);
 
     if (!tracer.registered) {
         tracer.register_sliced_kernels();
     }
 
-    auto cu_func = tracer.kernel_map[func];
+    auto cu_func = tracer.kernel_map[func].first;
+    auto num_args = tracer.kernel_map[func].second;
     assert(cu_func);
 
-    dim3 new_grid_dim(8, 1, 1);
+    dim3 new_grid_dim(4, 1, 1);
     dim3 blockOffset(0, 0, 0);
 
     CUresult res;
 
     while (blockOffset.x < gridDim.x && blockOffset.y < gridDim.y && blockOffset.z < gridDim.z) {
 
-        void *KernelParams[] = { args[0], args[1], args[2], args[3], &blockOffset };
+        void *KernelParams[num_args];
+        for (size_t i = 0; i < num_args - 1; i++) {
+            KernelParams[i] = args[i];
+        }
+        KernelParams[num_args - 1] = &blockOffset;
 
         res = lcuLaunchKernel(cu_func, new_grid_dim.x, new_grid_dim.y, new_grid_dim.z,
                         blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
@@ -144,98 +118,39 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     }
 
     return cudaSuccess;
-    // lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
+    // return lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
 }
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
-    static void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);
-    if (!l__cudaRegisterFunction) {
-        l__cudaRegisterFunction = (void (*) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *)) dlsym(RTLD_NEXT, "__cudaRegisterFunction");
-    }
-    assert(l__cudaRegisterFunction);
-
     tracer.kernel_name_map[std::string(deviceFun)] = hostFun;
 
+    assert(l__cudaRegisterFunction);
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
 }
 
 void** __cudaRegisterFatBinary( void *fatCubin ) {
-
-    static CUresult (*lcuModuleLoadDataEx) (CUmodule *, const void *, unsigned int, CUjit_option *, void **);
-    if (!lcuModuleLoadDataEx) {
-        lcuModuleLoadDataEx = (CUresult (*) (CUmodule *, const void *, unsigned int, CUjit_option *, void **)) dlsym(tracer.cuda_handle, "cuModuleLoadDataEx");
-    }
-    assert(lcuModuleLoadDataEx);
-
-    static CUresult (*lcuModuleGetFunction) (CUfunction*, CUmodule, const char*);
-    if (!lcuModuleGetFunction) {
-        lcuModuleGetFunction = (CUresult (*) (CUfunction*, CUmodule, const char*)) dlsym(tracer.cuda_handle, "cuModuleGetFunction");
-    }
-    assert(lcuModuleGetFunction);
-
-    __fatBinC_Wrapper_t *wp = (__fatBinC_Wrapper_t *) fatCubin;
-
-    int magic = wp->magic;
-    int version = wp->version;
-
+    auto *wp = (__fatBinC_Wrapper_t *) fatCubin;
     struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) wp->data;
     size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
 
-    int i = 0;
-    while (true) {
-        std::string file_name = "output" + std::to_string(i) + ".cubin";
-        std::ifstream infile(file_name);
-        if (infile.good()) {
-            i++;
-            continue;
-        }
-        infile.close();
+    auto file_name = write_cubin_to_file(reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
+    auto ptx_file_names = gen_ptx_from_cubin(file_name);
+    
+    for (const auto& ptx_file_name : ptx_file_names) {
 
-        std::ofstream file(file_name, std::ios::binary); // Open the file in binary mode
-        file.write(reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
-        file.close();
-
-        exec("cuobjdump -xptx all " + file_name);
-        auto output = exec("cuobjdump " + file_name + " -lptx");
-        std::stringstream ss(output);
-        std::vector<std::string> lines;
-        std::string line;
-
-        while (std::getline(ss, line, '\n')) {
-            lines.push_back(line);
-        }
-
-        // Print the split lines
-        for (const auto& line : lines) {
-            auto split_str = splitOnce(line, ":");
-            auto ptx_file_name = strip(split_str.second);
-            auto sliced_ptx_file_name = "sliced_" + ptx_file_name;
-
-            exec("python3 ../scripts/run_slice.py --input-file " + ptx_file_name + " --output-file " + sliced_ptx_file_name);
-            tracer.sliced_ptx_files.push_back(sliced_ptx_file_name);
-        }
-
-        break;
+        auto sliced_ptx_file_name = "sliced_" + ptx_file_name;
+        gen_sliced_ptx(ptx_file_name, sliced_ptx_file_name);
+        tracer.sliced_ptx_files.push_back(sliced_ptx_file_name);
     }
 
-    static void** (*l__cudaRegisterFatBinary) (void *);
-    if (!l__cudaRegisterFatBinary) {
-        l__cudaRegisterFatBinary = (void** (*) (void *)) dlsym(RTLD_NEXT, "__cudaRegisterFatBinary");
-    }
     assert(l__cudaRegisterFatBinary);
-
     return l__cudaRegisterFatBinary(fatCubin);
 }
 
 void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 {
-	static void (*l__cudaRegisterFatBinaryEnd) (void **);
-	if (!l__cudaRegisterFatBinaryEnd) {
-		l__cudaRegisterFatBinaryEnd = (void (*) (void **)) dlsym(RTLD_NEXT, "__cudaRegisterFatBinaryEnd");
-	}
 	assert(l__cudaRegisterFatBinaryEnd);
-
 	l__cudaRegisterFatBinaryEnd(fatCubinHandle);
 }
 
