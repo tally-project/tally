@@ -13,10 +13,17 @@
 
 CubinCache cubin_cache = CubinCache();
 
-void write_cubin_to_file(std::string path, const char* data, uint32_t size)
+void write_binary_to_file(std::string path, const char* data, uint32_t size)
 {
     std::ofstream file(path, std::ios::binary); // Open the file in binary mode
     file.write(data, size);
+    file.close();
+}
+
+void write_str_to_file(std::string path, std::string str)
+{
+    std::ofstream file(path);
+    file << str;
     file.close();
 }
 
@@ -196,10 +203,42 @@ std::string gen_sliced_ptx(std::string ptx_path)
     return sliced_ptx_code;
 }
 
-
-std::map<std::string, std::pair<CUfunction, uint32_t>> register_ptx(std::string &ptx_str)
+std::map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_ptx_fatbin(
+    std::vector<std::pair<std::string, std::string>> &sliced_ptx_fatbin_strs,
+    std::map<std::string, const void *> &kernel_name_map
+)
 {
-    std::map<std::string, std::pair<CUfunction, uint32_t>> name_to_func_map;
+    std::map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
+
+    for (auto &ptx_fatbin_pair : sliced_ptx_fatbin_strs) {
+        
+        auto &ptx_str = ptx_fatbin_pair.first;
+        auto &fatbin_str = ptx_fatbin_pair.second;
+
+        CUmodule cudaModule;
+        lcuModuleLoadDataEx(&cudaModule, fatbin_str.c_str(), 0, 0, 0);
+
+        auto kernel_names_and_nparams = get_kernel_names_and_nparams_from_ptx(ptx_str);
+        
+        for (auto &name_and_nparams : kernel_names_and_nparams) {
+            auto &kernel_name = name_and_nparams.first;
+            auto num_params = name_and_nparams.second;
+
+            auto host_func = kernel_name_map[kernel_name];
+            
+            CUfunction function;
+            lcuModuleGetFunction(&function, cudaModule, kernel_name.c_str());
+
+            kernel_map[host_func] = std::make_pair(function, num_params);
+        }
+    }
+
+    return kernel_map;
+}
+
+std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str)
+{
+    std::vector<std::pair<std::string, uint32_t>> kernel_names_and_nparams;
 
     std::stringstream ss(ptx_str);
     std::string line;
@@ -223,41 +262,9 @@ std::map<std::string, std::pair<CUfunction, uint32_t>> register_ptx(std::string 
         }
 
         if (line == "}") {
-            name_to_func_map[kernel_name] = std::make_pair(nullptr, num_params);
+            kernel_names_and_nparams.push_back(std::make_pair(kernel_name, num_params));
         }
     }
 
-    CUmodule cudaModule;
-    lcuModuleLoadDataEx(&cudaModule, ptx_str.c_str(), 0, 0, 0);
-
-    for (auto &pair : name_to_func_map) {
-        auto kernel_name = pair.first;
-
-        CUfunction function;
-        lcuModuleGetFunction(&function, cudaModule, kernel_name.c_str());
-        name_to_func_map[kernel_name].first = function;
-    }
- 
-    return name_to_func_map;
-}
-
-std::vector<std::string> get_kernel_names_from_ptx(std::string &ptx_str)
-{
-    std::vector<std::string> kernel_names;
-
-    std::stringstream ss(ptx_str);
-    std::string line;
-
-    std::regex kernel_name_pattern("\\.visible \\.entry (\\w+)");
-    std::string kernel_name;
-
-    while (std::getline(ss, line, '\n')) {
-        std::smatch matches;
-        if (std::regex_search(line, matches, kernel_name_pattern)) {
-            kernel_name = matches[1];
-            kernel_names.push_back(kernel_name);
-        }
-    }
-
-    return kernel_names;
+    return kernel_names_and_nparams;
 }

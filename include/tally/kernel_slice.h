@@ -12,17 +12,18 @@
 
 #include <cuda.h>
 
-void write_cubin_to_file(std::string path, const char* data, uint32_t size);
+void write_binary_to_file(std::string path, const char* data, uint32_t size);
+void write_str_to_file(std::string path, std::string str);
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path);
 std::string gen_sliced_ptx(std::string ptx_path);
-std::map<std::string, std::pair<CUfunction, uint32_t>> register_ptx(std::string &ptx_str);
-std::vector<std::string> get_kernel_names_from_ptx(std::string &ptx_str);
+std::map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_ptx_fatbin(std::vector<std::pair<std::string, std::string>> &sliced_ptx_fatbin_strs, std::map<std::string, const void *> &kernel_name_map);
+std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str);
 
 class CubinCache
 {
 public:
-    // Cubin size : vec<(cubin data, vec<sliced_ptx>)>
-    std::map<size_t, std::vector<std::pair<std::string, std::vector<std::string>>>> sliced_ptx_cache;
+    // Cubin size : vec<(cubin data, vec<(sliced_ptx, sliced_fatbin)>)>
+    std::map<size_t, std::vector<std::pair<std::string, std::vector<std::pair<std::string, std::string>>>>> sliced_ptx_cache;
     std::string cache_file;
 
     CubinCache() :
@@ -50,9 +51,9 @@ public:
         archive << sliced_ptx_cache;
     }
 
-    std::vector<std::string> get_sliced_ptx_strs(const char* cubin_data, size_t cubin_size)
+    std::vector<std::pair<std::string, std::string>> get_sliced_ptx_fatbin_strs(const char* cubin_data, size_t cubin_size)
     {
-        std::vector<std::string> strs;
+        std::vector<std::pair<std::string, std::string>> strs;
 
         if (sliced_ptx_cache.find(cubin_size) != sliced_ptx_cache.end()) {
             for (auto &_pair : sliced_ptx_cache[cubin_size]) {
@@ -63,7 +64,7 @@ public:
             }
         } else {
             std::string cubin_tmp_path("/tmp/output.cubin");
-            write_cubin_to_file(cubin_tmp_path, cubin_data, cubin_size);
+            write_binary_to_file(cubin_tmp_path, cubin_data, cubin_size);
             auto ptx_file_names = gen_ptx_from_cubin(cubin_tmp_path);
             std::remove(cubin_tmp_path.c_str());
 
@@ -71,8 +72,14 @@ public:
 
             for (const auto& ptx_file_name : ptx_file_names) {
                 auto sliced_ptx_str = gen_sliced_ptx(ptx_file_name);
-                strs.push_back(sliced_ptx_str);
-                std::remove(ptx_file_name.c_str());
+                write_str_to_file("/tmp/output.ptx", sliced_ptx_str);
+                exec("nvcc /tmp/output.ptx --fatbin -arch sm_86 -o /tmp/output.fatbin");
+
+                std::ifstream ifs("/tmp/output.fatbin", std::ios::binary);
+                auto sliced_fatbin_str = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+
+                strs.push_back(std::make_pair(sliced_ptx_str, sliced_fatbin_str));
+                // std::remove(ptx_file_name.c_str());
             }
 
             sliced_ptx_cache[cubin_size].push_back(std::make_pair(cubin_str, strs));

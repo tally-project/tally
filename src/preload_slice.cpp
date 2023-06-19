@@ -22,6 +22,7 @@
 #include <fstream>
 #include <algorithm>
 #include <numeric>
+#include <regex>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -39,32 +40,13 @@ public:
 
     std::map<std::string, const void *> kernel_name_map;
     std::map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
-    std::map<const void *, std::string*> ptx_map;
-    std::vector<std::string> sliced_ptx_strs;
-    bool ptx_registered = false;
+    std::vector<std::pair<std::string, std::string>> sliced_ptx_fatbin_strs;
+    bool kernels_registered = false;
 
-    void register_ptx_str()
+    void register_kernels()
     {
-        for (auto &sliced_ptx_str : sliced_ptx_strs) {
-            auto kernel_names = get_kernel_names_from_ptx(sliced_ptx_str);
-            for (auto &kernel_name : kernel_names) {
-                auto host_func = kernel_name_map[kernel_name];
-                ptx_map[host_func] = &sliced_ptx_str;
-            }
-        }
-
-        ptx_registered = true;
-    }
-
-    void register_kernel(const void *kernel_func)
-    {
-        std::string &ptx_str = *ptx_map[kernel_func];
-        auto ptx_kernel_map = register_ptx(ptx_str);
-
-        for (auto &pair : ptx_kernel_map) {
-            auto host_func = kernel_name_map[pair.first];
-            kernel_map[host_func] = pair.second;
-        }
+        kernel_map = register_kernels_from_ptx_fatbin(sliced_ptx_fatbin_strs, kernel_name_map);
+        kernels_registered = true;
     }
 
     Preload(){}
@@ -80,16 +62,13 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     assert(lcudaLaunchKernel);
     assert(lcuLaunchKernel);
 
-    if (!tracer.ptx_registered) {
-        tracer.register_ptx_str();
-    }
-
-    if (tracer.kernel_map.find(func) == tracer.kernel_map.end()) {
-        tracer.register_kernel(func);
+    if (!tracer.kernels_registered) {
+        tracer.register_kernels();
     }
 
     auto cu_func = tracer.kernel_map[func].first;
     auto num_args = tracer.kernel_map[func].second;
+    
     assert(cu_func);
 
     uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
@@ -166,12 +145,12 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
 
     std::cout << "Processing cubin with size: " << fatCubin_data_size_bytes << std::endl;
-    auto sliced_ptx_strs = cubin_cache.get_sliced_ptx_strs((const char *)wp->data, fatCubin_data_size_bytes);
+    auto sliced_ptx_fatbin_strs = cubin_cache.get_sliced_ptx_fatbin_strs((const char *)wp->data, fatCubin_data_size_bytes);
 
-    tracer.sliced_ptx_strs.insert(
-        tracer.sliced_ptx_strs.end(),
-        std::make_move_iterator(sliced_ptx_strs.begin()),
-        std::make_move_iterator(sliced_ptx_strs.end())
+    tracer.sliced_ptx_fatbin_strs.insert(
+        tracer.sliced_ptx_fatbin_strs.end(),
+        std::make_move_iterator(sliced_ptx_fatbin_strs.begin()),
+        std::make_move_iterator(sliced_ptx_fatbin_strs.end())
     );
 
     assert(l__cudaRegisterFatBinary);
