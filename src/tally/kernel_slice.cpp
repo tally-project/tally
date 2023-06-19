@@ -10,6 +10,7 @@
 #include <tally/cuda_api.h>
 
 #include <boost/timer/progress_display.hpp>
+#include <boost/regex.hpp>
 
 CubinCache cubin_cache = CubinCache();
 
@@ -34,7 +35,7 @@ std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path)
     exec("cuobjdump -xptx all " + cubin_path);
     auto output = exec("cuobjdump " + cubin_path + " -lptx");
 
-    std::stringstream ss(output);
+    std::stringstream ss(output.first);
     std::vector<std::string> names;
     std::string line;
 
@@ -63,10 +64,10 @@ std::string gen_sliced_ptx(std::string ptx_path)
     
     std::string sliced_ptx_code = "";
 
-    std::regex kernel_name_pattern("\\.visible \\.entry (\\w+)");
-    std::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
-    std::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
-    std::regex kernel_param_pattern("^placeholder$");
+    boost::regex kernel_name_pattern("(\\.visible\\s+)?\\.entry (\\w+)");
+    boost::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
+    boost::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
+    boost::regex kernel_param_pattern("^placeholder$");
 
     uint32_t num_params = 0;
     uint32_t num_b32_regs = 0;
@@ -80,11 +81,11 @@ std::string gen_sliced_ptx(std::string ptx_path)
     while (std::getline(ss, line, '\n')) {
         progress += line.size() + 1;
 
-        std::smatch matches;
-        if (std::regex_search(line, matches, kernel_name_pattern)) {
+        boost::smatch matches;
+        if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
-            kernel_name = matches[1];
-            kernel_param_pattern = std::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
+            kernel_name = matches[2];
+            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b32_regs = 0;
             kernel_lines.clear();
@@ -102,17 +103,17 @@ std::string gen_sliced_ptx(std::string ptx_path)
             sliced_ptx_code += line + "\n";
         }
 
-        if (std::regex_search(line, matches, kernel_param_pattern)) {
+        if (boost::regex_search(line, matches, kernel_param_pattern)) {
             num_params += 1;
             continue;
         }
 
-        if (std::regex_search(line, matches, b32_reg_decl_pattern)) {
+        if (boost::regex_search(line, matches, b32_reg_decl_pattern)) {
             num_b32_regs = std::stoi(matches[1]);
             continue;
         }
 
-        if (std::regex_search(line, matches, block_idx_pattern)) {
+        if (boost::regex_search(line, matches, block_idx_pattern)) {
             std::string block_idx_match_dim = matches[2];
             if (block_idx_match_dim == "x") {
                 use_block_idx_xyz[0] = true;
@@ -124,49 +125,55 @@ std::string gen_sliced_ptx(std::string ptx_path)
             continue;
         }
 
-        if (line == "}") {
+        if (record_kernel && line == "ret;") {
             record_kernel = false;
 
-            std::regex last_param_pattern("\\.param \\.(\\w+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
-            std::regex last_ld_param_pattern("ld\\.param(.+)\\[" + kernel_name + "_param_" + std::to_string(num_params - 1) + "\\];");
+            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
+            boost::regex last_ld_param_pattern("ld\\.param(.+)\\[" + kernel_name + "_param_" + std::to_string(num_params - 1) + "\\];");
             uint32_t num_additional_b32 = 0;
+    
+            uint32_t block_offset_xyz_reg[3];
+            uint32_t new_block_idx_xyz_reg[3];
+
+            uint32_t curr_reg = num_b32_regs;
+
             for (size_t i = 0; i < 3; i++) {
                 if (use_block_idx_xyz[i]) {
                     num_additional_b32 += 2;
+                    block_offset_xyz_reg[i] = curr_reg;
+                    new_block_idx_xyz_reg[i] = curr_reg + 1;
+                    curr_reg += 2;
                 }
             }
-
-            uint32_t block_offset_xyz_reg[3] { num_b32_regs, num_b32_regs + 2, num_b32_regs + 4 };
-            uint32_t new_block_idx_xyz_reg[3] { num_b32_regs + 1,  num_b32_regs + 3, num_b32_regs + 5 };
 
             std::map<std::string, std::string> reg_replacement_rules;
     
             for (auto &kernel_line : kernel_lines) {
                 
-                if (std::regex_search(kernel_line, matches, last_param_pattern)) {
+                if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
                     sliced_ptx_code += kernel_line + ",\n";
                     sliced_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12]\n";
                     continue;
                 }
 
-                if (std::regex_search(kernel_line, matches, b32_reg_decl_pattern)) {
+                if (boost::regex_search(kernel_line, matches, b32_reg_decl_pattern)) {
                     sliced_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
                     continue;
                 }
 
-                if (std::regex_search(kernel_line, matches, last_ld_param_pattern)) {
+                if (boost::regex_search(kernel_line, matches, last_ld_param_pattern)) {
                     sliced_ptx_code += kernel_line + "\n";
                     
                     for (size_t i = 0; i < 3; i++) {
                         if (use_block_idx_xyz[i]) {
-                            sliced_ptx_code += "ld.param.u32 %r" + std::to_string(block_offset_xyz_reg[i]) + ", [" + kernel_name + "_param_4+" + std::to_string(i * 4) + "];\n";
+                            sliced_ptx_code += "ld.param.u32 %r" + std::to_string(block_offset_xyz_reg[i]) + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+" + std::to_string(i * 4) + "];\n";
                         }
                     }
 
                     continue;
                 }
 
-                if (std::regex_search(kernel_line, matches, block_idx_pattern)) {
+                if (boost::regex_search(kernel_line, matches, block_idx_pattern)) {
                     std::string block_idx_match_dim = matches[2];
                     uint32_t block_idx_match_reg = std::stoi(matches[1]);
 
@@ -182,14 +189,14 @@ std::string gen_sliced_ptx(std::string ptx_path)
                     }
 
                     sliced_ptx_code += "add.u32 %r" + std::to_string(new_block_idx_xyz_reg[idx]) + ", %r" + std::to_string(block_idx_match_reg) + ", %r" + std::to_string(block_offset_xyz_reg[idx]) + ";\n";
-                    reg_replacement_rules["%r" + std::to_string(block_idx_match_reg)] = "%r" + std::to_string(new_block_idx_xyz_reg[idx]);
+                    reg_replacement_rules["%r" + std::to_string(block_idx_match_reg) + "(?!\\d)"] = "%r" + std::to_string(new_block_idx_xyz_reg[idx]);
 
                     continue;
                 }
 
                 for (const auto& pair : reg_replacement_rules) {
-                    std::regex pattern(pair.first);
-                    kernel_line = std::regex_replace(kernel_line, pattern, pair.second);
+                    boost::regex pattern(pair.first);
+                    kernel_line = boost::regex_replace(kernel_line, pattern, pair.second);
                 }
 
                 sliced_ptx_code += kernel_line + "\n";
@@ -225,7 +232,7 @@ std::map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_pt
             auto num_params = name_and_nparams.second;
 
             auto host_func = kernel_name_map[kernel_name];
-            
+
             CUfunction function;
             lcuModuleGetFunction(&function, cudaModule, kernel_name.c_str());
 
@@ -243,25 +250,25 @@ std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_
     std::stringstream ss(ptx_str);
     std::string line;
 
-    std::regex kernel_name_pattern("\\.visible \\.entry (\\w+)");
-    std::regex kernel_param_pattern("^placeholder$");
+    boost::regex kernel_name_pattern("(\\.visible\\s+)?\\.entry (\\w+)");
+    boost::regex kernel_param_pattern("^placeholder$");
     uint32_t num_params = 0;
     std::string kernel_name;
 
     while (std::getline(ss, line, '\n')) {
 
-        std::smatch matches;
-        if (std::regex_search(line, matches, kernel_name_pattern)) {
-            kernel_name = matches[1];
-            kernel_param_pattern = std::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
+        boost::smatch matches;
+        if (boost::regex_search(line, matches, kernel_name_pattern)) {
+            kernel_name = matches[2];
+            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
         }
 
-        if (std::regex_search(line, matches, kernel_param_pattern)) {
+        if (boost::regex_search(line, matches, kernel_param_pattern)) {
             num_params += 1;
         }
 
-        if (line == "}") {
+        if (line == "ret;") {
             kernel_names_and_nparams.push_back(std::make_pair(kernel_name, num_params));
         }
     }

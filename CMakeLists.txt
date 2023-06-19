@@ -5,7 +5,7 @@ enable_language(CUDA)
 set(CMAKE_CUDA_COMPILER nvcc)
 set(CMAKE_CXX_STANDARD 17)
 
-FIND_PACKAGE(Boost COMPONENTS serialization REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
 
 set (LIBIPC_PROJECT_DIR ${PROJECT_SOURCE_DIR}/third_party/cpp-ipc)
 
@@ -37,6 +37,7 @@ target_include_directories(preload_slice
 
 target_link_libraries(preload_slice
     PUBLIC Boost::serialization
+    PUBLIC Boost::regex
 )
 
 add_library(preload_profile_cpu SHARED ${PROJECT_SOURCE_DIR}/src/preload_profile_cpu.cpp)

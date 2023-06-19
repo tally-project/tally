@@ -1,6 +1,6 @@
 import re
 
-kernel_name_pattern = r'\.visible \.entry (\w+)'
+kernel_name_pattern = r'(\.visible\s+)?\.entry (\w+)'
 kernel_param_pattern = None
 b32_reg_decl_pattern = r'\.reg \.b32 %r<(\d+)>;'
 block_idx_pattern = r'mov\.u32 %r(\d+), %ctaid\.([xyz])'
@@ -21,14 +21,16 @@ def slice_kernel(ptx_code_path, output_code_path):
 
         kernel_name_match = re.search(kernel_name_pattern, line)
         if kernel_name_match:
+
             record_kernel = True
-            kernel_name = kernel_name_match.group(1)
+            kernel_name = kernel_name_match.group(2)
             kernel_param_pattern = f"\.param (.+) {kernel_name}_param_(\d+)"
             num_params = 0
             num_b32_regs = 0
             use_block_idx_x = False
             use_block_idx_y = False
             use_block_idx_z = False
+            kernel_lines.clear()
         
         if record_kernel:
             kernel_lines.append(line)
@@ -54,20 +56,28 @@ def slice_kernel(ptx_code_path, output_code_path):
             if block_idx_match_dim == "z":
                 use_block_idx_z = True
         
-        if line == "}":
+        if record_kernel and line == "ret;":
             record_kernel = False
 
-            last_param_pattern = f"\.param \.(\w+) {kernel_name}_param_{num_params - 1}"
+            last_param_pattern = f"\.param (.+) {kernel_name}_param_{num_params - 1}"
             last_ld_param_pattern = f"ld\.param(.+)\[{kernel_name}_param_{num_params - 1}\];"
             num_additional_b32 = [use_block_idx_x, use_block_idx_y, use_block_idx_z].count(True) * 2
 
-            block_offset_x_reg = num_b32_regs
-            block_offset_y_reg = num_b32_regs + 2
-            block_offset_z_reg = num_b32_regs + 4
+            curr_reg = num_b32_regs
 
-            new_block_idx_x_reg = num_b32_regs + 1
-            new_block_idx_y_reg = num_b32_regs + 3
-            new_block_idx_z_reg = num_b32_regs + 5
+            if use_block_idx_x:
+                block_offset_x_reg = curr_reg
+                new_block_idx_x_reg = curr_reg + 1
+                curr_reg += 2
+            
+            if use_block_idx_y:
+                block_offset_y_reg = curr_reg
+                new_block_idx_y_reg = curr_reg + 1
+                curr_reg += 2
+
+            if use_block_idx_z:
+                block_offset_z_reg = curr_reg
+                new_block_idx_z_reg = curr_reg + 1
 
             reg_replacement_rules = {}
 
@@ -85,14 +95,15 @@ def slice_kernel(ptx_code_path, output_code_path):
 
                 last_ld_param_match = re.search(last_ld_param_pattern, line)
                 if last_ld_param_match:
+
                     sliced_ptx_code += f"{line}\n"
                     
                     if use_block_idx_x:
-                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_x_reg}, [{kernel_name}_param_4];\n"
+                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_x_reg}, [{kernel_name}_param_{num_params}];\n"
                     if use_block_idx_y:
-                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_y_reg}, [{kernel_name}_param_4+4];\n"
+                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_y_reg}, [{kernel_name}_param_{num_params}+4];\n"
                     if use_block_idx_z:
-                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_z_reg}, [{kernel_name}_param_4+8];\n"
+                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_z_reg}, [{kernel_name}_param_{num_params}+8];\n"
 
                     continue
 
@@ -104,13 +115,13 @@ def slice_kernel(ptx_code_path, output_code_path):
                     sliced_ptx_code += f"{line}\n"
                     if block_idx_match_dim == "x":
                         sliced_ptx_code += f"add.u32 %r{new_block_idx_x_reg}, %r{block_idx_match_reg}, %r{block_offset_x_reg};\n"
-                        reg_replacement_rules[f"%r{block_idx_match_reg}"] = f"%r{new_block_idx_x_reg}"
+                        reg_replacement_rules[f"%r{block_idx_match_reg}(?!\d)"] = f"%r{new_block_idx_x_reg}"
                     if block_idx_match_dim == "y":
                         sliced_ptx_code += f"add.u32 %r{new_block_idx_y_reg}, %r{block_idx_match_reg}, %r{block_offset_y_reg};\n"
-                        reg_replacement_rules[f"%r{block_idx_match_reg}"] = f"%r{new_block_idx_y_reg}"
+                        reg_replacement_rules[f"%r{block_idx_match_reg}(?!\d)"] = f"%r{new_block_idx_y_reg}"
                     if block_idx_match_dim == "z":
                         sliced_ptx_code += f"add.u32 %r{new_block_idx_z_reg}, %r{block_idx_match_reg}, %r{block_offset_z_reg};\n"
-                        reg_replacement_rules[f"%r{block_idx_match_reg}"] = f"%r{new_block_idx_z_reg}"
+                        reg_replacement_rules[f"%r{block_idx_match_reg}(?!\d)"] = f"%r{new_block_idx_z_reg}"
                     continue
 
                 for pattern, replacement in reg_replacement_rules.items():

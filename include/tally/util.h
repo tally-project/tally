@@ -39,18 +39,26 @@ inline std::string demangleFunc(std::string mangledName)
     }
 }
 
-inline std::string exec(std::string cmd) {
+inline std::pair<std::string, int> exec(std::string cmd) {
     std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+
+    FILE* pipe = popen(cmd.c_str(), "r");
     if (!pipe) {
-        throw std::runtime_error("popen() failed!");
+        std::cerr << "Error executing command: " << cmd << std::endl;
+        return std::make_pair("", -1);
     }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+
+    std::string result;
+    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
         result += buffer.data();
     }
 
-    return result;
+    int status = pclose(pipe);
+    if (status == -1) {
+        return std::make_pair("", -1);
+    }
+
+    return std::make_pair(result, WEXITSTATUS(status));
 }
 
 inline std::pair<std::string, std::string> splitOnce(const std::string& str, const std::string& delimiter) {

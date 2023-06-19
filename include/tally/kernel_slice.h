@@ -39,7 +39,8 @@ public:
         }
     }
 
-    ~CubinCache() {
+    ~CubinCache()
+    {
         save_cache();
     }
 
@@ -73,7 +74,11 @@ public:
             for (const auto& ptx_file_name : ptx_file_names) {
                 auto sliced_ptx_str = gen_sliced_ptx(ptx_file_name);
                 write_str_to_file("/tmp/output.ptx", sliced_ptx_str);
-                exec("nvcc /tmp/output.ptx --fatbin -arch sm_86 -o /tmp/output.fatbin");
+                auto res = exec("nvcc /tmp/output.ptx --fatbin -arch sm_86 -o /tmp/output.fatbin");
+
+                if (res.second != 0) {
+                    throw std::runtime_error("Fail to compile PTX.");
+                }
 
                 std::ifstream ifs("/tmp/output.fatbin", std::ios::binary);
                 auto sliced_fatbin_str = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
@@ -83,7 +88,11 @@ public:
             }
 
             sliced_ptx_cache[cubin_size].push_back(std::make_pair(cubin_str, strs));
-            save_cache();
+
+            // Avoid too much I/O overhead on very small update.
+            if (cubin_size > 4194304) {
+                save_cache();
+            }
         }
 
         return strs;
