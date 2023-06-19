@@ -39,24 +39,32 @@ public:
 
     std::map<std::string, const void *> kernel_name_map;
     std::map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
-    std::vector<std::string> sliced_ptx_files;
-    bool registered = false;
+    std::map<const void *, std::string*> ptx_map;
+    std::vector<std::string> sliced_ptx_strs;
+    bool ptx_registered = false;
 
-    void register_sliced_kernels()
+    void register_ptx_str()
     {
-        assert(lcuModuleLoadDataEx);
-        assert(lcuModuleGetFunction);
-
-        for (auto &sliced_ptx_file : sliced_ptx_files) {
-            auto ptx_kernel_map = register_ptx(sliced_ptx_file);
-
-            for (auto &pair : ptx_kernel_map) {
-                auto host_func = kernel_name_map[pair.first];
-                kernel_map[host_func] = pair.second;
+        for (auto &sliced_ptx_str : sliced_ptx_strs) {
+            auto kernel_names = get_kernel_names_from_ptx(sliced_ptx_str);
+            for (auto &kernel_name : kernel_names) {
+                auto host_func = kernel_name_map[kernel_name];
+                ptx_map[host_func] = &sliced_ptx_str;
             }
         }
 
-        registered = true;
+        ptx_registered = true;
+    }
+
+    void register_kernel(const void *kernel_func)
+    {
+        std::string &ptx_str = *ptx_map[kernel_func];
+        auto ptx_kernel_map = register_ptx(ptx_str);
+
+        for (auto &pair : ptx_kernel_map) {
+            auto host_func = kernel_name_map[pair.first];
+            kernel_map[host_func] = pair.second;
+        }
     }
 
     Preload(){}
@@ -72,8 +80,12 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     assert(lcudaLaunchKernel);
     assert(lcuLaunchKernel);
 
-    if (!tracer.registered) {
-        tracer.register_sliced_kernels();
+    if (!tracer.ptx_registered) {
+        tracer.register_ptx_str();
+    }
+
+    if (tracer.kernel_map.find(func) == tracer.kernel_map.end()) {
+        tracer.register_kernel(func);
     }
 
     auto cu_func = tracer.kernel_map[func].first;
@@ -99,8 +111,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
             }
         }
 
-        // std::cout << "gridDim: (" << gridDim.x << ", " << gridDim.y << ", " << gridDim.z << ")" << std::endl;
-        // std::cout << "new_grid_dim: (" << new_grid_dim.x << ", " << new_grid_dim.y << ", " << new_grid_dim.z << ")" << std::endl;
+        std::cout << "gridDim: (" << gridDim.x << ", " << gridDim.y << ", " << gridDim.z << ")" << std::endl;
+        std::cout << "new_grid_dim: (" << new_grid_dim.x << ", " << new_grid_dim.y << ", " << new_grid_dim.z << ")" << std::endl;
 
         dim3 blockOffset(0, 0, 0);
         CUresult res;
@@ -153,15 +165,14 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) wp->data;
     size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
 
-    auto file_name = write_cubin_to_file(reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
-    auto ptx_file_names = gen_ptx_from_cubin(file_name);
-    
-    for (const auto& ptx_file_name : ptx_file_names) {
+    std::cout << "Processing cubin with size: " << fatCubin_data_size_bytes << std::endl;
+    auto sliced_ptx_strs = cubin_cache.get_sliced_ptx_strs((const char *)wp->data, fatCubin_data_size_bytes);
 
-        auto sliced_ptx_file_name = "sliced_" + ptx_file_name;
-        gen_sliced_ptx(ptx_file_name, sliced_ptx_file_name);
-        tracer.sliced_ptx_files.push_back(sliced_ptx_file_name);
-    }
+    tracer.sliced_ptx_strs.insert(
+        tracer.sliced_ptx_strs.end(),
+        std::make_move_iterator(sliced_ptx_strs.begin()),
+        std::make_move_iterator(sliced_ptx_strs.end())
+    );
 
     assert(l__cudaRegisterFatBinary);
     return l__cudaRegisterFatBinary(fatCubin);

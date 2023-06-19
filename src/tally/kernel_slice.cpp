@@ -9,27 +9,15 @@
 #include <tally/kernel_slice.h>
 #include <tally/cuda_api.h>
 
-std::string write_cubin_to_file(const char* data, uint32_t size)
+#include <boost/timer/progress_display.hpp>
+
+CubinCache cubin_cache = CubinCache();
+
+void write_cubin_to_file(std::string path, const char* data, uint32_t size)
 {
-    std::string file_name;
-    int i = 0;
-    while (true) {
-        file_name = "output" + std::to_string(i) + ".cubin";
-        std::ifstream infile(file_name);
-        if (infile.good()) {
-            i++;
-            continue;
-        }
-        infile.close();
-
-        std::ofstream file(file_name, std::ios::binary); // Open the file in binary mode
-        file.write(reinterpret_cast<const char*>(data), size);
-        file.close();
-
-        break;
-    }
-
-    return file_name;
+    std::ofstream file(path, std::ios::binary); // Open the file in binary mode
+    file.write(data, size);
+    file.close();
 }
 
 /* Extract all ptx code from cubin file, 
@@ -37,37 +25,36 @@ std::string write_cubin_to_file(const char* data, uint32_t size)
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path)
 {
     exec("cuobjdump -xptx all " + cubin_path);
-
     auto output = exec("cuobjdump " + cubin_path + " -lptx");
+
     std::stringstream ss(output);
     std::vector<std::string> names;
     std::string line;
 
     while (std::getline(ss, line, '\n')) {
-        auto split_str = splitOnce(line, ":");
-        auto ptx_file_name = strip(split_str.second);
-        names.push_back(ptx_file_name);
+        if (containsSubstring(line, ".ptx")) {
+            auto split_str = splitOnce(line, ":");
+            auto ptx_file_name = strip(split_str.second);
+            names.push_back(ptx_file_name);
+        }
     }
 
     return names;
 }
 
-void gen_sliced_ptx(std::string ptx_path, std::string output_path)
+std::string gen_sliced_ptx(std::string ptx_path)
 {
+    std::cout << "Processing " << ptx_path << std::endl;
     std::ifstream t(ptx_path);
     if (!t.is_open()) {
         std::cerr << ptx_path << " not found." << std::endl;
-        return;
+        return "";
     }
     std::string ptx_code_str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
     std::stringstream ss(ptx_code_str);
     std::string line;
     
     std::string sliced_ptx_code = "";
-
-    bool record_kernel = false;
-    std::vector<std::string> kernel_lines;
-    std::string kernel_name;
 
     std::regex kernel_name_pattern("\\.visible \\.entry (\\w+)");
     std::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
@@ -77,8 +64,15 @@ void gen_sliced_ptx(std::string ptx_path, std::string output_path)
     uint32_t num_params = 0;
     uint32_t num_b32_regs = 0;
     bool use_block_idx_xyz[3] = { false, false, false };
+    bool record_kernel = false;
+    std::vector<std::string> kernel_lines;
+    std::string kernel_name;
+
+    boost::timer::progress_display progress(ptx_code_str.size());
 
     while (std::getline(ss, line, '\n')) {
+        progress += line.size() + 1;
+
         std::smatch matches;
         if (std::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
@@ -86,9 +80,13 @@ void gen_sliced_ptx(std::string ptx_path, std::string output_path)
             kernel_param_pattern = std::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b32_regs = 0;
+            kernel_lines.clear();
             
             // reset to false 
             memset(use_block_idx_xyz, 0, 3);
+
+            kernel_lines.push_back(line);
+            continue;
         }
 
         if (record_kernel) {
@@ -99,10 +97,12 @@ void gen_sliced_ptx(std::string ptx_path, std::string output_path)
 
         if (std::regex_search(line, matches, kernel_param_pattern)) {
             num_params += 1;
+            continue;
         }
 
         if (std::regex_search(line, matches, b32_reg_decl_pattern)) {
             num_b32_regs = std::stoi(matches[1]);
+            continue;
         }
 
         if (std::regex_search(line, matches, block_idx_pattern)) {
@@ -114,6 +114,7 @@ void gen_sliced_ptx(std::string ptx_path, std::string output_path)
             } else if (block_idx_match_dim == "z") {
                 use_block_idx_xyz[2] = true;
             }
+            continue;
         }
 
         if (line == "}") {
@@ -186,31 +187,21 @@ void gen_sliced_ptx(std::string ptx_path, std::string output_path)
 
                 sliced_ptx_code += kernel_line + "\n";
             }
+            continue;
         }
     }
 
-    std::ofstream outputFile(output_path);  // Open the file for writing
+    std::cout << "Processing done" << std::endl;
 
-    if (outputFile.is_open()) {
-        outputFile << sliced_ptx_code;  // Write the content to the file
-        outputFile.close();  // Close the file
-    } else {
-        std::cerr << "Unable to open " << output_path << std::endl;
-    }
+    return sliced_ptx_code;
 }
 
 
-std::map<std::string, std::pair<CUfunction, uint32_t>> register_ptx(std::string ptx_path)
+std::map<std::string, std::pair<CUfunction, uint32_t>> register_ptx(std::string &ptx_str)
 {
     std::map<std::string, std::pair<CUfunction, uint32_t>> name_to_func_map;
 
-    std::ifstream t(ptx_path);
-    if (!t.is_open()) {
-        std::cerr << ptx_path << " not found." << std::endl;
-        return name_to_func_map;
-    }
-    std::string ptx_code_str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-    std::stringstream ss(ptx_code_str);
+    std::stringstream ss(ptx_str);
     std::string line;
 
     std::regex kernel_name_pattern("\\.visible \\.entry (\\w+)");
@@ -237,7 +228,7 @@ std::map<std::string, std::pair<CUfunction, uint32_t>> register_ptx(std::string 
     }
 
     CUmodule cudaModule;
-    lcuModuleLoadDataEx(&cudaModule, ptx_code_str.c_str(), 0, 0, 0);
+    lcuModuleLoadDataEx(&cudaModule, ptx_str.c_str(), 0, 0, 0);
 
     for (auto &pair : name_to_func_map) {
         auto kernel_name = pair.first;
@@ -248,4 +239,25 @@ std::map<std::string, std::pair<CUfunction, uint32_t>> register_ptx(std::string 
     }
  
     return name_to_func_map;
+}
+
+std::vector<std::string> get_kernel_names_from_ptx(std::string &ptx_str)
+{
+    std::vector<std::string> kernel_names;
+
+    std::stringstream ss(ptx_str);
+    std::string line;
+
+    std::regex kernel_name_pattern("\\.visible \\.entry (\\w+)");
+    std::string kernel_name;
+
+    while (std::getline(ss, line, '\n')) {
+        std::smatch matches;
+        if (std::regex_search(line, matches, kernel_name_pattern)) {
+            kernel_name = matches[1];
+            kernel_names.push_back(kernel_name);
+        }
+    }
+
+    return kernel_names;
 }

@@ -29,4 +29,4 @@ void** (*l__cudaRegisterFatBinary) (void *) =
     (void** (*) (void *)) dlsym(cudart_handle, "__cudaRegisterFatBinary");
 
 void (*l__cudaRegisterFatBinaryEnd) (void **) =
-	(void (*) (void **)) dlsym(RTLD_NEXT, "__cudaRegisterFatBinaryEnd");
+	(void (*) (void **)) dlsym(cudart_handle, "__cudaRegisterFatBinaryEnd");

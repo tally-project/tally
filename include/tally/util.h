@@ -49,6 +49,7 @@ inline std::string exec(std::string cmd) {
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
         result += buffer.data();
     }
+
     return result;
 }
 

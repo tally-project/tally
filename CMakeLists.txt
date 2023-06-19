@@ -5,6 +5,8 @@ enable_language(CUDA)
 set(CMAKE_CUDA_COMPILER nvcc)
 set(CMAKE_CXX_STANDARD 17)
 
+FIND_PACKAGE(Boost COMPONENTS serialization REQUIRED)
+
 set (LIBIPC_PROJECT_DIR ${PROJECT_SOURCE_DIR}/third_party/cpp-ipc)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/tally TALLY_SRC_FILES)
@@ -30,6 +32,11 @@ add_library(preload_slice SHARED ${PROJECT_SOURCE_DIR}/src/preload_slice.cpp ${T
 target_include_directories(preload_slice
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC  /usr/local/cuda/include
+    PUBLIC ${Boost_INCLUDE_DIR}
+)
+
+target_link_libraries(preload_slice
+    PUBLIC Boost::serialization
 )
 
 add_library(preload_profile_cpu SHARED ${PROJECT_SOURCE_DIR}/src/preload_profile_cpu.cpp)
