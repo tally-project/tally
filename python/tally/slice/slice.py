@@ -60,7 +60,6 @@ def slice_kernel(ptx_code_path, output_code_path):
             record_kernel = False
 
             last_param_pattern = f"\.param (.+) {kernel_name}_param_{num_params - 1}"
-            last_ld_param_pattern = f"ld\.param(.+)\[{kernel_name}_param_{num_params - 1}\];"
             num_additional_b32 = [use_block_idx_x, use_block_idx_y, use_block_idx_z].count(True) * 2
 
             curr_reg = num_b32_regs
@@ -93,33 +92,23 @@ def slice_kernel(ptx_code_path, output_code_path):
                     sliced_ptx_code += f".reg .b32 %r<{num_b32_regs + num_additional_b32}>;\n"
                     continue
 
-                last_ld_param_match = re.search(last_ld_param_pattern, line)
-                if last_ld_param_match:
-
-                    sliced_ptx_code += f"{line}\n"
-                    
-                    if use_block_idx_x:
-                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_x_reg}, [{kernel_name}_param_{num_params}];\n"
-                    if use_block_idx_y:
-                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_y_reg}, [{kernel_name}_param_{num_params}+4];\n"
-                    if use_block_idx_z:
-                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_z_reg}, [{kernel_name}_param_{num_params}+8];\n"
-
-                    continue
-
                 block_idx_match = re.search(block_idx_pattern, line)
                 if block_idx_match:
                     block_idx_match_dim = block_idx_match.group(2)
                     block_idx_match_reg = int(block_idx_match.group(1))
 
                     sliced_ptx_code += f"{line}\n"
+                    
                     if block_idx_match_dim == "x":
+                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_x_reg}, [{kernel_name}_param_{num_params}];\n"
                         sliced_ptx_code += f"add.u32 %r{new_block_idx_x_reg}, %r{block_idx_match_reg}, %r{block_offset_x_reg};\n"
                         reg_replacement_rules[f"%r{block_idx_match_reg}(?!\d)"] = f"%r{new_block_idx_x_reg}"
                     if block_idx_match_dim == "y":
+                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_y_reg}, [{kernel_name}_param_{num_params}+4];\n"
                         sliced_ptx_code += f"add.u32 %r{new_block_idx_y_reg}, %r{block_idx_match_reg}, %r{block_offset_y_reg};\n"
                         reg_replacement_rules[f"%r{block_idx_match_reg}(?!\d)"] = f"%r{new_block_idx_y_reg}"
                     if block_idx_match_dim == "z":
+                        sliced_ptx_code += f"ld.param.u32 %r{block_offset_z_reg}, [{kernel_name}_param_{num_params}+8];\n"
                         sliced_ptx_code += f"add.u32 %r{new_block_idx_z_reg}, %r{block_idx_match_reg}, %r{block_offset_z_reg};\n"
                         reg_replacement_rules[f"%r{block_idx_match_reg}(?!\d)"] = f"%r{new_block_idx_z_reg}"
                     continue

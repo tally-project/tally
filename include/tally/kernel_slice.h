@@ -59,7 +59,6 @@ public:
         if (sliced_ptx_cache.find(cubin_size) != sliced_ptx_cache.end()) {
             for (auto &_pair : sliced_ptx_cache[cubin_size]) {
                 if (memcmp(_pair.first.c_str(), cubin_data, cubin_size) == 0) {
-                    std::cout << "Cache hit" << std::endl;
                     return _pair.second;
                 }
             }

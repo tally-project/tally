@@ -38,14 +38,15 @@ class Preload {
 
 public:
 
-    std::map<std::string, const void *> kernel_name_map;
+    std::map<std::string, const void *> kernel_name_to_host_func_map;
+    std::map<const void *, std::string> host_func_to_kernel_name_map;
     std::map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
     std::vector<std::pair<std::string, std::string>> sliced_ptx_fatbin_strs;
     bool kernels_registered = false;
 
     void register_kernels()
     {
-        kernel_map = register_kernels_from_ptx_fatbin(sliced_ptx_fatbin_strs, kernel_name_map);
+        kernel_map = register_kernels_from_ptx_fatbin(sliced_ptx_fatbin_strs, kernel_name_to_host_func_map);
         kernels_registered = true;
     }
 
@@ -62,6 +63,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     assert(lcudaLaunchKernel);
     assert(lcuLaunchKernel);
 
+    std::cout << tracer.host_func_to_kernel_name_map[func] << std::endl;
+
     if (!tracer.kernels_registered) {
         tracer.register_kernels();
     }
@@ -73,6 +76,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
     uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
     uint32_t num_threads = gridDim.x * gridDim.y * gridDim.z * threads_per_block;
+
     if (num_threads > THREADS_PER_SLICE) {
 
         dim3 new_grid_dim;
@@ -132,7 +136,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
-    tracer.kernel_name_map[std::string(deviceFun)] = hostFun;
+    tracer.kernel_name_to_host_func_map[std::string(deviceFun)] = hostFun;
+    tracer.host_func_to_kernel_name_map[hostFun] = demangleFunc(std::string(deviceFun));
 
     assert(l__cudaRegisterFunction);
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);

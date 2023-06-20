@@ -129,7 +129,6 @@ std::string gen_sliced_ptx(std::string ptx_path)
             record_kernel = false;
 
             boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
-            boost::regex last_ld_param_pattern("ld\\.param(.+)\\[" + kernel_name + "_param_" + std::to_string(num_params - 1) + "\\];");
             uint32_t num_additional_b32 = 0;
     
             uint32_t block_offset_xyz_reg[3];
@@ -161,23 +160,9 @@ std::string gen_sliced_ptx(std::string ptx_path)
                     continue;
                 }
 
-                if (boost::regex_search(kernel_line, matches, last_ld_param_pattern)) {
-                    sliced_ptx_code += kernel_line + "\n";
-                    
-                    for (size_t i = 0; i < 3; i++) {
-                        if (use_block_idx_xyz[i]) {
-                            sliced_ptx_code += "ld.param.u32 %r" + std::to_string(block_offset_xyz_reg[i]) + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+" + std::to_string(i * 4) + "];\n";
-                        }
-                    }
-
-                    continue;
-                }
-
                 if (boost::regex_search(kernel_line, matches, block_idx_pattern)) {
                     std::string block_idx_match_dim = matches[2];
                     uint32_t block_idx_match_reg = std::stoi(matches[1]);
-
-                    sliced_ptx_code += kernel_line + "\n";
 
                     int32_t idx = -1;
                     if (block_idx_match_dim == "x") {
@@ -188,6 +173,8 @@ std::string gen_sliced_ptx(std::string ptx_path)
                         idx = 2;
                     }
 
+                    sliced_ptx_code += kernel_line + "\n";
+                    sliced_ptx_code += "ld.param.u32 %r" + std::to_string(block_offset_xyz_reg[idx]) + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+" + std::to_string(idx * 4) + "];\n";
                     sliced_ptx_code += "add.u32 %r" + std::to_string(new_block_idx_xyz_reg[idx]) + ", %r" + std::to_string(block_idx_match_reg) + ", %r" + std::to_string(block_offset_xyz_reg[idx]) + ";\n";
                     reg_replacement_rules["%r" + std::to_string(block_idx_match_reg) + "(?!\\d)"] = "%r" + std::to_string(new_block_idx_xyz_reg[idx]);
 
