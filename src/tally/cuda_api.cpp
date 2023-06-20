@@ -18,6 +18,10 @@ CUresult (*lcuModuleGetFunction) (CUfunction*, CUmodule, const char*) =
 CUresult (*lcuLaunchKernel) (CUfunction, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, CUstream, void**, void**) =
     (CUresult (*) (CUfunction, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, CUstream, void**, void**)) dlsym(cuda_handle, "cuLaunchKernel");
 
+
+cudaError_t (*lcudaStreamCreate) ( cudaStream_t* ) = 
+    (cudaError_t (*) ( cudaStream_t* )) dlsym(cudart_handle, "cudaStreamCreate");
+
 cudaError_t (*lcudaLaunchKernel) (const void *, dim3 , dim3 , void **, size_t , cudaStream_t ) = 
     (cudaError_t (*) (const void *, dim3 , dim3 , void **, size_t , cudaStream_t )) dlsym(cudart_handle, "cudaLaunchKernel");
 

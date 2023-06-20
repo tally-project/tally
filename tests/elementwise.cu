@@ -30,11 +30,13 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
     cudaMemcpy(deviceB, arr_b, size * sizeof(float), cudaMemcpyHostToDevice);
 
     // Define execution configuration
-    dim3 block_dim(256);
+    dim3 block_dim(512);
     dim3 grid_dim((size + block_dim.x - 1) / block_dim.x);
 
     // Launch the kernel
-    elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
+    for (size_t i = 0; i < 100; i++) { 
+        elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
+    }
 
     cudaMemcpy(arr_c, deviceC, size * sizeof(float), cudaMemcpyDeviceToHost);
 
@@ -52,7 +54,7 @@ void runElementwiseAdditionCpu(float* arr_a, float* arr_b, float* arr_c, int siz
 
 int main()
 {
-    int size = 8060928;
+    int size = 144384;
     
     // Allocate memory on the host (CPU)
     float* arr_a = new float[size];

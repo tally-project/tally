@@ -34,18 +34,63 @@
 #include <tally/kernel_slice.h>
 #include <tally/cuda_api.h>
 
+class CudaGraphCall {
+
+public:
+    const void *_host_func;
+    std::vector<void *> _args;
+    dim3 _gridDim;
+    dim3 _blockDim;
+    cudaGraph_t graph;
+    cudaGraphExec_t instance;
+
+    CudaGraphCall(const void * host_func, void **args, size_t nargs, dim3 gridDim, dim3 blockDim)
+    {
+        _host_func = host_func;
+        for (size_t i = 0; i < nargs; i++) {
+            _args.push_back(args[i]);
+        }
+        _gridDim = gridDim;
+        _blockDim = blockDim;
+    }
+
+    bool equals(const void * host_func, void **args, size_t nargs, dim3 gridDim, dim3 blockDim) {
+        if (host_func != _host_func || _args.size() != nargs ||
+            gridDim.x != _gridDim.x || gridDim.y != _gridDim.y ||  gridDim.z != _gridDim.z || 
+            blockDim.x != _blockDim.x || blockDim.y != _blockDim.y || blockDim.z != _blockDim.z)
+        {
+            return false;
+        }
+
+        for (size_t i = 0; i < nargs; i++) {
+            if (args[i] != _args[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+};
+
+
 class Preload {
 
 public:
 
     std::map<std::string, const void *> kernel_name_to_host_func_map;
     std::map<const void *, std::string> host_func_to_kernel_name_map;
-    std::map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
+    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
+    std::vector<CudaGraphCall*> cuda_graph_vec;
+    bool use_cuda_graph = false;
+    cudaStream_t stream;
+
     std::vector<std::pair<std::string, std::string>> sliced_ptx_fatbin_strs;
     bool kernels_registered = false;
 
     void register_kernels()
     {
+        lcudaStreamCreate(&stream);
+
         kernel_map = register_kernels_from_ptx_fatbin(sliced_ptx_fatbin_strs, kernel_name_to_host_func_map);
         kernels_registered = true;
     }
@@ -63,72 +108,155 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     assert(lcudaLaunchKernel);
     assert(lcuLaunchKernel);
 
-    // std::cout << tracer.host_func_to_kernel_name_map[func] << std::endl;
-
     if (!tracer.kernels_registered) {
         tracer.register_kernels();
     }
-
-    auto cu_func = tracer.kernel_map[func].first;
-    auto num_args = tracer.kernel_map[func].second;
-    
-    assert(cu_func);
 
     uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
     uint32_t num_threads = gridDim.x * gridDim.y * gridDim.z * threads_per_block;
 
     if (num_threads > THREADS_PER_SLICE) {
 
-        dim3 new_grid_dim;
+        auto cu_func = tracer.kernel_map[func].first;
+        auto num_args = tracer.kernel_map[func].second;
 
-        uint32_t num_blocks = (THREADS_PER_SLICE + threads_per_block - 1) / threads_per_block;
-        if (num_blocks <= gridDim.x) {
-            new_grid_dim = dim3(num_blocks, 1, 1);
-        } else {
-            uint32_t num_blocks_y = (num_blocks + gridDim.x - 1) / gridDim.x;
-            if (num_blocks_y <= gridDim.y) {
-                new_grid_dim = dim3(gridDim.x, num_blocks_y, 1);
-            } else {
-                uint32_t num_blocks_z = (num_blocks_y + gridDim.y - 1) / gridDim.y;
-                new_grid_dim = dim3(gridDim.x, gridDim.y, std::min(num_blocks_z, gridDim.z));
-            }
-        }
+        assert(cu_func);
 
-        // std::cout << "gridDim: (" << gridDim.x << ", " << gridDim.y << ", " << gridDim.z << ")" << std::endl;
-        // std::cout << "new_grid_dim: (" << new_grid_dim.x << ", " << new_grid_dim.y << ", " << new_grid_dim.z << ")" << std::endl;
+        if (tracer.use_cuda_graph) {
 
-        dim3 blockOffset(0, 0, 0);
-        CUresult res;
+            CudaGraphCall *cuda_graph_call = nullptr;
 
-        while (blockOffset.x < gridDim.x && blockOffset.y < gridDim.y && blockOffset.z < gridDim.z) {
-
-            void *KernelParams[num_args];
-            for (size_t i = 0; i < num_args - 1; i++) {
-                KernelParams[i] = args[i];
-            }
-            KernelParams[num_args - 1] = &blockOffset;
-
-            res = lcuLaunchKernel(cu_func, new_grid_dim.x, new_grid_dim.y, new_grid_dim.z,
-                                  blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
-
-            if (res != CUDA_SUCCESS) {
-                return cudaErrorInvalidValue;
-            }
-
-            blockOffset.x += new_grid_dim.x;
-
-            if (blockOffset.x >= gridDim.x) {
-                blockOffset.x = 0;
-                blockOffset.y += new_grid_dim.y;
-
-                if (blockOffset.y >= gridDim.y) {
-                    blockOffset.y = 0;
-                    blockOffset.z += new_grid_dim.z;
+            // Try to use cuda graph first 
+            for (auto *call : tracer.cuda_graph_vec) {
+                if (call->equals(func, args, num_args - 1, gridDim, blockDim)) {
+                    cuda_graph_call = call;
+                    break;
                 }
             }
-        }
 
-        return cudaSuccess;
+            if (!cuda_graph_call) {
+
+                // Otherwise, construct one
+                cuda_graph_call = new CudaGraphCall(func, args, num_args - 1, gridDim, blockDim);
+
+                dim3 new_grid_dim;
+                dim3 blockOffset(0, 0, 0);
+
+                uint32_t num_blocks = (THREADS_PER_SLICE + threads_per_block - 1) / threads_per_block;
+                if (num_blocks <= gridDim.x) {
+                    new_grid_dim = dim3(num_blocks, 1, 1);
+                } else {
+                    uint32_t num_blocks_y = (num_blocks + gridDim.x - 1) / gridDim.x;
+                    if (num_blocks_y <= gridDim.y) {
+                        new_grid_dim = dim3(gridDim.x, num_blocks_y, 1);
+                    } else {
+                        uint32_t num_blocks_z = (num_blocks_y + gridDim.y - 1) / gridDim.y;
+                        new_grid_dim = dim3(gridDim.x, gridDim.y, std::min(num_blocks_z, gridDim.z));
+                    }
+                }
+
+                cudaStreamBeginCapture(tracer.stream, cudaStreamCaptureModeGlobal);
+
+                CUresult res;
+                while (blockOffset.x < gridDim.x && blockOffset.y < gridDim.y && blockOffset.z < gridDim.z) {
+
+                    void *KernelParams[num_args];
+                    for (size_t i = 0; i < num_args - 1; i++) {
+                        KernelParams[i] = args[i];
+                    }
+                    KernelParams[num_args - 1] = &blockOffset;
+
+                    // This ensure that you won't go over the original grid size
+                    dim3 curr_grid_dim (
+                        std::min(gridDim.x - blockOffset.x, new_grid_dim.x),
+                        std::min(gridDim.y - blockOffset.y, new_grid_dim.y),
+                        std::min(gridDim.z - blockOffset.z, new_grid_dim.z)
+                    );
+
+                    res = lcuLaunchKernel(cu_func, curr_grid_dim.x, curr_grid_dim.y, curr_grid_dim.z,
+                                        blockDim.x, blockDim.y, blockDim.z, sharedMem, tracer.stream, KernelParams, NULL);
+
+                    if (res != CUDA_SUCCESS) {
+                        std::cerr << "Encountering res != CUDA_SUCCESS" << std::endl;
+                        return cudaErrorInvalidValue;
+                    }
+
+                    blockOffset.x += new_grid_dim.x;
+
+                    if (blockOffset.x >= gridDim.x) {
+                        blockOffset.x = 0;
+                        blockOffset.y += new_grid_dim.y;
+
+                        if (blockOffset.y >= gridDim.y) {
+                            blockOffset.y = 0;
+                            blockOffset.z += new_grid_dim.z;
+                        }
+                    }
+                }
+
+                cudaStreamEndCapture(tracer.stream, &(cuda_graph_call->graph));
+                cudaGraphInstantiate(&(cuda_graph_call->instance), cuda_graph_call->graph, NULL, NULL, 0);
+
+                tracer.cuda_graph_vec.push_back(cuda_graph_call);
+            }
+
+            return cudaGraphLaunch(cuda_graph_call->instance, stream);
+        } else {
+            dim3 new_grid_dim;
+            dim3 blockOffset(0, 0, 0);
+
+            uint32_t num_blocks = (THREADS_PER_SLICE + threads_per_block - 1) / threads_per_block;
+            if (num_blocks <= gridDim.x) {
+                new_grid_dim = dim3(num_blocks, 1, 1);
+            } else {
+                uint32_t num_blocks_y = (num_blocks + gridDim.x - 1) / gridDim.x;
+                if (num_blocks_y <= gridDim.y) {
+                    new_grid_dim = dim3(gridDim.x, num_blocks_y, 1);
+                } else {
+                    uint32_t num_blocks_z = (num_blocks_y + gridDim.y - 1) / gridDim.y;
+                    new_grid_dim = dim3(gridDim.x, gridDim.y, std::min(num_blocks_z, gridDim.z));
+                }
+            }
+
+            CUresult res;
+            while (blockOffset.x < gridDim.x && blockOffset.y < gridDim.y && blockOffset.z < gridDim.z) {
+
+                void *KernelParams[num_args];
+                for (size_t i = 0; i < num_args - 1; i++) {
+                    KernelParams[i] = args[i];
+                }
+                KernelParams[num_args - 1] = &blockOffset;
+
+                // This ensure that you won't go over the original grid size
+                dim3 curr_grid_dim (
+                    std::min(gridDim.x - blockOffset.x, new_grid_dim.x),
+                    std::min(gridDim.y - blockOffset.y, new_grid_dim.y),
+                    std::min(gridDim.z - blockOffset.z, new_grid_dim.z)
+                );
+
+                res = lcuLaunchKernel(cu_func, curr_grid_dim.x, curr_grid_dim.y, curr_grid_dim.z,
+                                    blockDim.x, blockDim.y, blockDim.z, sharedMem, tracer.stream, KernelParams, NULL);
+
+                if (res != CUDA_SUCCESS) {
+                    std::cerr << "Encountering res != CUDA_SUCCESS" << std::endl;
+                    return cudaErrorInvalidValue;
+                }
+
+                blockOffset.x += new_grid_dim.x;
+
+                if (blockOffset.x >= gridDim.x) {
+                    blockOffset.x = 0;
+                    blockOffset.y += new_grid_dim.y;
+
+                    if (blockOffset.y >= gridDim.y) {
+                        blockOffset.y = 0;
+                        blockOffset.z += new_grid_dim.z;
+                    }
+                }
+            }
+
+            return cudaSuccess;
+        }
     } else {
         return lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
     }

@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include <regex>
+#include <unordered_map>
 
 #include <cuda.h>
 
@@ -76,15 +77,16 @@ std::string gen_sliced_ptx(std::string ptx_path)
     std::vector<std::string> kernel_lines;
     std::string kernel_name;
 
-    boost::timer::progress_display progress(ptx_code_str.size());
+    // boost::timer::progress_display progress(ptx_code_str.size());
 
     while (std::getline(ss, line, '\n')) {
-        progress += line.size() + 1;
+        // progress += line.size() + 1;
 
         boost::smatch matches;
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
+
             kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b32_regs = 0;
@@ -197,12 +199,12 @@ std::string gen_sliced_ptx(std::string ptx_path)
     return sliced_ptx_code;
 }
 
-std::map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_ptx_fatbin(
+std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_ptx_fatbin(
     std::vector<std::pair<std::string, std::string>> &sliced_ptx_fatbin_strs,
     std::map<std::string, const void *> &kernel_name_map
 )
 {
-    std::map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
+    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
 
     for (auto &ptx_fatbin_pair : sliced_ptx_fatbin_strs) {
         
@@ -215,9 +217,9 @@ std::map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_pt
         auto kernel_names_and_nparams = get_kernel_names_and_nparams_from_ptx(ptx_str);
         
         for (auto &name_and_nparams : kernel_names_and_nparams) {
+
             auto &kernel_name = name_and_nparams.first;
             auto num_params = name_and_nparams.second;
-
             auto host_func = kernel_name_map[kernel_name];
 
             CUfunction function;

@@ -16,7 +16,7 @@ void write_binary_to_file(std::string path, const char* data, uint32_t size);
 void write_str_to_file(std::string path, std::string str);
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path);
 std::string gen_sliced_ptx(std::string ptx_path);
-std::map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_ptx_fatbin(std::vector<std::pair<std::string, std::string>> &sliced_ptx_fatbin_strs, std::map<std::string, const void *> &kernel_name_map);
+std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_ptx_fatbin(std::vector<std::pair<std::string, std::string>> &sliced_ptx_fatbin_strs, std::map<std::string, const void *> &kernel_name_map);
 std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str);
 
 class CubinCache
