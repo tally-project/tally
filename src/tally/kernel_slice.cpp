@@ -52,7 +52,7 @@ std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path)
 
 std::string gen_sliced_ptx(std::string ptx_path)
 {
-    std::cout << "Processing " << ptx_path << std::endl;
+    // std::cout << "Processing " << ptx_path << std::endl;
     std::ifstream t(ptx_path);
     if (!t.is_open()) {
         std::cerr << ptx_path << " not found." << std::endl;
@@ -192,7 +192,7 @@ std::string gen_sliced_ptx(std::string ptx_path)
         }
     }
 
-    std::cout << "Processing done" << std::endl;
+    // std::cout << "Processing done" << std::endl;
 
     return sliced_ptx_code;
 }

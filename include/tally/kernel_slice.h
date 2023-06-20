@@ -46,7 +46,7 @@ public:
 
     void save_cache()
     {
-        std::cout << "saving cache" << std::endl;
+        // std::cout << "saving cache" << std::endl;
         std::ofstream file(cache_file);
         boost::archive::text_oarchive archive(file);
         archive << sliced_ptx_cache;
@@ -83,7 +83,9 @@ public:
                 auto sliced_fatbin_str = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 
                 strs.push_back(std::make_pair(sliced_ptx_str, sliced_fatbin_str));
-                // std::remove(ptx_file_name.c_str());
+                std::remove(ptx_file_name.c_str());
+                std::remove("/tmp/output.ptx");
+                std::remove("/tmp/output.fatbin");
             }
 
             sliced_ptx_cache[cubin_size].push_back(std::make_pair(cubin_str, strs));

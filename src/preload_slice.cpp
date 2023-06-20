@@ -63,7 +63,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     assert(lcudaLaunchKernel);
     assert(lcuLaunchKernel);
 
-    std::cout << tracer.host_func_to_kernel_name_map[func] << std::endl;
+    // std::cout << tracer.host_func_to_kernel_name_map[func] << std::endl;
 
     if (!tracer.kernels_registered) {
         tracer.register_kernels();
@@ -94,8 +94,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
             }
         }
 
-        std::cout << "gridDim: (" << gridDim.x << ", " << gridDim.y << ", " << gridDim.z << ")" << std::endl;
-        std::cout << "new_grid_dim: (" << new_grid_dim.x << ", " << new_grid_dim.y << ", " << new_grid_dim.z << ")" << std::endl;
+        // std::cout << "gridDim: (" << gridDim.x << ", " << gridDim.y << ", " << gridDim.z << ")" << std::endl;
+        // std::cout << "new_grid_dim: (" << new_grid_dim.x << ", " << new_grid_dim.y << ", " << new_grid_dim.z << ")" << std::endl;
 
         dim3 blockOffset(0, 0, 0);
         CUresult res;
@@ -149,7 +149,7 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) wp->data;
     size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
 
-    std::cout << "Processing cubin with size: " << fatCubin_data_size_bytes << std::endl;
+    // std::cout << "Processing cubin with size: " << fatCubin_data_size_bytes << std::endl;
     auto sliced_ptx_fatbin_strs = cubin_cache.get_sliced_ptx_fatbin_strs((const char *)wp->data, fatCubin_data_size_bytes);
 
     tracer.sliced_ptx_fatbin_strs.insert(
