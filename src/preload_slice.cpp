@@ -81,8 +81,8 @@ public:
     std::map<std::string, const void *> kernel_name_to_host_func_map;
     std::map<const void *, std::string> host_func_to_kernel_name_map;
     std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
+    std::unordered_map<const void *, bool> kernel_slice_map;
     std::vector<CudaGraphCall*> cuda_graph_vec;
-    bool use_cuda_graph = std::string(std::getenv("USE_CUDA_GRAPH")) == "TRUE";
     cudaStream_t stream;
 
     std::vector<std::pair<std::string, std::string>> sliced_ptx_fatbin_strs;
@@ -109,6 +109,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     assert(lcudaLaunchKernel);
     assert(lcuLaunchKernel);
 
+    cudaError_t err;
+
     if (!tracer.kernels_registered) {
         tracer.register_kernels();
     }
@@ -116,7 +118,18 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
     uint32_t num_threads = gridDim.x * gridDim.y * gridDim.z * threads_per_block;
 
-    if (num_threads > THREADS_PER_SLICE) {
+    bool run_profile = false;
+    float prev_time_ms = 0.0f;
+    float sliced_time_ms = 0.0f;
+    cudaEvent_t _start, _stop;
+
+    if (tracer.kernel_slice_map.find(func) == tracer.kernel_slice_map.end()) {
+        run_profile = true;
+    }
+
+    // Only slice if num_threads > THREADS_PER_SLICE
+    // And either profiling or have decided to use sliced version
+    if (num_threads > THREADS_PER_SLICE && (run_profile || tracer.kernel_slice_map[func])) {
 
         auto cu_func = tracer.kernel_map[func].first;
         auto num_args = tracer.kernel_map[func].second;
@@ -125,7 +138,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
         CudaGraphCall *cuda_graph_call = nullptr;
 
-        if (tracer.use_cuda_graph) {
+        if (USE_CUDA_GRAPH) {
 
             // Try to use cuda graph first 
             for (auto *call : tracer.cuda_graph_vec) {
@@ -158,9 +171,16 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
             }
         }
 
-        if (tracer.use_cuda_graph) {
-            // std::cout << "cudaStreamBeginCapture" << std::endl;
+        if (USE_CUDA_GRAPH) {
             cudaStreamBeginCapture(tracer.stream, cudaStreamCaptureModeGlobal);
+        } else {
+            if (run_profile) {
+                cudaEventCreate(&_start);
+                cudaEventCreate(&_stop);
+                cudaDeviceSynchronize();
+
+                cudaEventRecord(_start);
+            }
         }
 
         CUresult res;
@@ -200,7 +220,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
             }
         }
 
-        if (tracer.use_cuda_graph) {
+        if (USE_CUDA_GRAPH) {
             cudaStreamEndCapture(tracer.stream, &(cuda_graph_call->graph));
 
             if (!cuda_graph_call->instantiated) {
@@ -219,13 +239,52 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
                 }
             }
 
-            return cudaGraphLaunch(cuda_graph_call->instance, stream);
+            if (run_profile) {
+                cudaEventCreate(&_start);
+                cudaEventCreate(&_stop);
+                cudaDeviceSynchronize();
+
+                cudaEventRecord(_start);
+            }
+
+            err = cudaGraphLaunch(cuda_graph_call->instance, stream);
         } else {
-            return cudaSuccess;
+            err = cudaSuccess;
         }
+
+        if (run_profile) {
+            cudaEventRecord(_stop);
+            cudaEventSynchronize(_stop);
+            cudaEventElapsedTime(&sliced_time_ms, _start, _stop);
+        }
+
+        if (run_profile) {
+            cudaEventCreate(&_start);
+            cudaEventCreate(&_stop);
+            cudaDeviceSynchronize();
+
+            cudaEventRecord(_start);
+        
+            err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
+
+            cudaEventRecord(_stop);
+            cudaEventSynchronize(_stop);
+            cudaEventElapsedTime(&prev_time_ms, _start, _stop);
+
+            // Does not invoke the sliced version if overhead is too large.
+            // std::cout << "prev_time_ms: " << prev_time_ms << " sliced_time_ms: " << sliced_time_ms;
+            if (sliced_time_ms > KERNEL_SLICE_THRESHOLD * prev_time_ms) {
+                tracer.kernel_slice_map[func] = false;
+            } else {
+                tracer.kernel_slice_map[func] = true;
+            }}
+
+
     } else {
-        return lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
+        err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
     }
+
+    return err;
 }
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
