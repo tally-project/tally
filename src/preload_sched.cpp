@@ -39,25 +39,20 @@ public:
     std::map<std::string, std::vector<uint32_t>> _kernel_name_to_args;
     std::map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
     std::map<const void *, std::string> _kernel_map;
-    int shm_fd;
-    void *shm;
-    ipc::channel *ipc;
+    ipc::channel *send_ipc;
+    ipc::channel *recv_ipc;
 
     Preload()
     {
-        shm_fd = shm_open("shared_mem", O_RDWR | O_CREAT, 0666);
-
-        // Allocate 100MB shared memory
-        int size = 100 * 1024 * 1024;
-        ftruncate(shm_fd, size);
-
-        // Map address space to shared memory
-        shm = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-
-        ipc = new ipc::channel("chan", ipc::sender | ipc::receiver);
+        send_ipc = new ipc::channel("client-to-server", ipc::sender);
+        recv_ipc = new ipc::channel("server-to-client", ipc::receiver);
     }
 
-    ~Preload(){}
+    ~Preload()
+    {
+        if (send_ipc != nullptr) send_ipc->disconnect();
+        if (recv_ipc != nullptr) recv_ipc->disconnect();
+    }
 };
 
 Preload tracer;
@@ -78,17 +73,14 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
     arg_ptr->devPtr = devPtr;
     arg_ptr->size = size;
 
-    while (true) {
-        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
-        if (success) {
-            break;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    while (!tracer.send_ipc->send(msg, msg_len)) {
+        
+        tracer.send_ipc->wait_for_recv(1);
     }
 
     ipc::buff_t buf;
     while (buf.empty()) {
-        buf = tracer.ipc->recv(1000);
+        buf = tracer.recv_ipc->recv(1000);
     }
 
     const char *dat = buf.get<const char *>();
@@ -128,17 +120,14 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
         memcpy(arg_ptr->data, src, count);
     }
 
-    while (true) {
-        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
-        if (success) {
-            break;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    while (!tracer.send_ipc->send(msg, msg_len)) {
+        
+        tracer.send_ipc->wait_for_recv(1);
     }
 
     ipc::buff_t buf;
     while (buf.empty()) {
-        buf = tracer.ipc->recv(1000);
+        buf = tracer.recv_ipc->recv(1000);
     }
 
     const char *dat = buf.get<const char *>();
@@ -183,17 +172,14 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     arg_ptr->sharedMem = sharedMem;
     memcpy(arg_ptr->params, params_data, params_size);
 
-    while (true) {
-        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
-        if (success) {
-            break;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    while (!tracer.send_ipc->send(msg, msg_len)) {
+        
+        tracer.send_ipc->wait_for_recv(1);
     }
 
     ipc::buff_t buf;
     while (buf.empty()) {
-        buf = tracer.ipc->recv(1000);
+        buf = tracer.recv_ipc->recv(1000);
     }
 
     const char *dat = buf.get<const char *>();
@@ -221,12 +207,10 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
     arg_ptr->kernel_func_len = kernel_func_len;
     memcpy(arg_ptr->data, deviceFun, kernel_func_len * sizeof(char));
 
-    while (true) {
-        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
-        if (success) {
-            break;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // std::cout << "send" << std::endl;
+    while (!tracer.send_ipc->send(msg, msg_len)) {
+        
+        tracer.send_ipc->wait_for_recv(1);
     }
 
     tracer._kernel_addr_to_args[hostFun] = tracer._kernel_name_to_args[deviceFunName];
@@ -263,12 +247,10 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     arg_ptr->version = version;
     memcpy(arg_ptr->data, wp->data, fatCubin_data_size_bytes);
 
-    while (true) {
-        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
-        if (success) {
-            break;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // std::cout << "send" << std::endl;
+    while (!tracer.send_ipc->send(msg, msg_len)) {
+        
+        tracer.send_ipc->wait_for_recv(1);
     }
 
     std::ofstream cubin_file("/tmp/tmp.cubin", std::ios::binary); // Open the file in binary mode
@@ -356,12 +338,10 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
     *((int *) msg) = func_name_len;
     memcpy(msg + 4, func_name, func_name_len);
 
-    while (true) {
-        bool success = tracer.ipc->send(msg, msg_len, 1000 /* time out = 1000 ms*/);
-        if (success) {
-            break;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // std::cout << "send" << std::endl;
+    while (!tracer.send_ipc->send(msg, msg_len)) {
+        
+        tracer.send_ipc->wait_for_recv(1);
     }
 
 	l__cudaRegisterFatBinaryEnd(fatCubinHandle);

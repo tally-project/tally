@@ -40,7 +40,8 @@ unsigned long long* fatbin_data;
 uint32_t fatBinSize;
 
 std::atomic<bool> is_quit__ {false};
-ipc::channel *ipc__ = nullptr;
+ipc::channel *send_ipc = nullptr;
+ipc::channel *recv_ipc = nullptr;
 std::map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
 std::map<std::string, void *> _kernel_name_to_addr;
 std::map<void *, void *> _kernel_client_addr_mapping;
@@ -58,7 +59,9 @@ void handle_cudaMalloc(struct cudaMallocArg *arg)
     cudaError_t err = cudaMalloc(&devPtr, arg->size);
 
     struct cudaMallocResponse res { devPtr, err };
-    ipc__->send((void *) &res, sizeof(struct cudaMallocResponse), 1000 /* time out = 1000 ms*/);
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void handle_cudaMemcpy(struct cudaMemcpyArg *arg)
@@ -86,7 +89,9 @@ void handle_cudaMemcpy(struct cudaMemcpyArg *arg)
         throw std::runtime_error("Unknown memcpy kind!");
     }
 
-    ipc__->send((void *) res, res_size, 1000 /* time out = 1000 ms*/);
+    while(!send_ipc->send((void *) res, res_size)) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void handle_cudaLaunchKernel(cudaLaunchKernelArg *arg)
@@ -113,7 +118,9 @@ void handle_cudaLaunchKernel(cudaLaunchKernelArg *arg)
 
     auto err = lcudaLaunchKernel((const void *) kernel_server_addr, arg->gridDim, arg->blockDim, &__args_arr[0], arg->sharedMem, cudaStreamDefault);
 
-    ipc__->send((void *) &err, sizeof(cudaError_t), 1000 /* time out = 1000 ms*/);
+    while (!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void handle_fatCubin(fatBinArg *arg)
@@ -238,23 +245,13 @@ void handle_fatCubin_end()
 }
 
 void do_recv(int interval) {
-
-    int shm_fd = shm_open("shared_mem", O_RDWR | O_CREAT, 0666);
-
-    // Allocate 100MB shared memory
-    int size = 100 * 1024 * 1024;
-    ftruncate(shm_fd, size);
-
-    // Map address space to shared memory
-    void *shm = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-
-    ipc::channel ipc {"chan", ipc::receiver | ipc::sender};
-    ipc__ = &ipc;
+    send_ipc = new ipc::channel("server-to-client", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server", ipc::receiver);
 
     while (!is_quit__.load(std::memory_order_acquire)) {
         ipc::buff_t buf;
         while (buf.empty()) {
-            buf = ipc.recv(interval);
+            buf = recv_ipc->recv(interval);
             if (is_quit__.load(std::memory_order_acquire)) return;
         }
 
@@ -286,7 +283,8 @@ int main(int argc, char ** argv) {
 
     auto _exit = [](int) {
         is_quit__.store(true, std::memory_order_release);
-        if (ipc__ != nullptr) ipc__->disconnect();
+        if (send_ipc != nullptr) send_ipc->disconnect();
+        if (recv_ipc != nullptr) recv_ipc->disconnect();
         exit(0);
     };
 

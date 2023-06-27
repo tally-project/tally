@@ -67,6 +67,12 @@ target_link_libraries(ipc PUBLIC
     $<$<NOT:$<OR:$<STREQUAL:${CMAKE_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>>:rt>
 )
 
+if (LIBIPC_BUILD_DEMOS)
+    add_subdirectory(${LIBIPC_PROJECT_DIR}/demo/chat)
+    add_subdirectory(${LIBIPC_PROJECT_DIR}/demo/msg_que)
+    add_subdirectory(${LIBIPC_PROJECT_DIR}/demo/send_recv)
+endif()
+
 add_executable(server ${PROJECT_SOURCE_DIR}/server.cu)
 
 set_target_properties(server PROPERTIES
