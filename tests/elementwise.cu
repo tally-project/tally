@@ -17,6 +17,29 @@ __global__ void elementwiseAddition(float* a, float* b, float* c, int size) {
     }
 }
 
+__global__ void elementwiseAdditionPTB(float* a, float* b, float* c, int size, dim3 original_gridSize) {
+
+    uint32_t part_size = original_gridSize.x / gridDim.x;
+    uint32_t start_idx = blockIdx.x * part_size;
+    uint32_t end_idx = start_idx + part_size;
+    if (blockIdx.x == gridDim.x - 1) {
+        end_idx = original_gridSize.x;
+    }
+
+    for (int curr_block_idx = start_idx; curr_block_idx < end_idx; curr_block_idx++) {
+
+        if (curr_block_idx < original_gridSize.x) {
+
+            int tid = threadIdx.x + curr_block_idx * blockDim.x;
+
+            if (tid < size) {
+                c[tid] = a[tid] + b[tid];
+            }
+
+        }
+    }
+}
+
 __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, int size)
 {
     // Allocate memory on the device (GPU)
@@ -30,13 +53,35 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
     cudaMemcpy(deviceB, arr_b, size * sizeof(float), cudaMemcpyHostToDevice);
 
     // Define execution configuration
-    dim3 block_dim(512);
+    dim3 block_dim(256);
     dim3 grid_dim((size + block_dim.x - 1) / block_dim.x);
 
+    // same as before
+    dim3 PTB_block_dim(256);
+
+    // Depend on number of PTBs/SM
+    dim3 PTB_grid_dim(82 * 4);
+
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start, 0);
+
     // Launch the kernel
-    for (size_t i = 0; i < 100; i++) { 
-        elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
-    }
+    elementwiseAdditionPTB<<<PTB_grid_dim, PTB_block_dim>>>(deviceA, deviceB, deviceC, size, grid_dim);
+    // elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+
+    printf("Kernel execution time: %.2f ms\n", milliseconds);
+
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
 
     cudaMemcpy(arr_c, deviceC, size * sizeof(float), cudaMemcpyDeviceToHost);
 
@@ -54,7 +99,7 @@ void runElementwiseAdditionCpu(float* arr_a, float* arr_b, float* arr_c, int siz
 
 int main()
 {
-    int size = 144384;
+    int size = 36962304;
     
     // Allocate memory on the host (CPU)
     float* arr_a = new float[size];
@@ -74,6 +119,7 @@ int main()
     runElementwiseAdditionCpu(arr_a, arr_b, res_cpu, size);
 
     for (int i = 0; i < size; i++) {
+        // std::cout << "idx: " << i << " res_gpu[i]: " << res_gpu[i] << " res_cpu[i]: " << res_cpu[i] << std::endl;
         assert(res_gpu[i] == res_cpu[i]);
     }
     
