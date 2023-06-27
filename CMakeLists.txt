@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(preload_sched LANGUAGES C CXX CUDA)
+project(tally LANGUAGES C CXX CUDA)
 enable_language(CUDA)
 
 set(CMAKE_CUDA_COMPILER nvcc)
@@ -14,42 +14,44 @@ aux_source_directory(${LIBIPC_PROJECT_DIR}/src/libipc LIBIPC_SRC_FILES)
 aux_source_directory(${LIBIPC_PROJECT_DIR}/src/libipc/sync LIBIPC_SRC_FILES)
 aux_source_directory(${LIBIPC_PROJECT_DIR}/src/libipc/platform LIBIPC_SRC_FILES)
 
-add_library(preload_sched SHARED ${PROJECT_SOURCE_DIR}/src/preload_sched.cpp ${LIBIPC_SRC_FILES})
+add_library(tally_client SHARED ${PROJECT_SOURCE_DIR}/src/tally_client.cpp ${LIBIPC_SRC_FILES} ${TALLY_SRC_FILES})
 
-target_include_directories(preload_sched
+target_include_directories(tally_client
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC  ${LIBIPC_PROJECT_DIR}/include
     PUBLIC  /usr/local/cuda/include
     PRIVATE ${LIBIPC_PROJECT_DIR}/src
         $<$<BOOL:UNIX>:${LIBIPC_PROJECT_DIR}/src/libipc/platform/linux>)
 
-target_link_libraries(preload_sched PUBLIC
+target_link_libraries(tally_client PUBLIC
+    PUBLIC Boost::serialization 
+    PUBLIC Boost::regex
     $<$<NOT:$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>:pthread>
     $<$<NOT:$<OR:$<STREQUAL:${CMAKE_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>>:rt>)
 
-add_library(preload_slice SHARED ${PROJECT_SOURCE_DIR}/src/preload_slice.cpp ${TALLY_SRC_FILES})
+add_library(tally_slice SHARED ${PROJECT_SOURCE_DIR}/src/tally_slice.cpp ${TALLY_SRC_FILES})
 
-target_include_directories(preload_slice
+target_include_directories(tally_slice
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC  /usr/local/cuda/include
     PUBLIC ${Boost_INCLUDE_DIR}
 )
 
-target_link_libraries(preload_slice
+target_link_libraries(tally_slice
     PUBLIC Boost::serialization
     PUBLIC Boost::regex
 )
 
-add_library(preload_profile_cpu SHARED ${PROJECT_SOURCE_DIR}/src/preload_profile_cpu.cpp)
+add_library(tally_profile_cpu SHARED ${PROJECT_SOURCE_DIR}/src/tally_profile_cpu.cpp)
 
-target_include_directories(preload_profile_cpu
+target_include_directories(tally_profile_cpu
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC  /usr/local/cuda/include
 )
 
-add_library(preload_profile_gpu SHARED ${PROJECT_SOURCE_DIR}/src/preload_profile_gpu.cpp)
+add_library(tally_profile_gpu SHARED ${PROJECT_SOURCE_DIR}/src/tally_profile_gpu.cpp)
 
-target_include_directories(preload_profile_gpu
+target_include_directories(tally_profile_gpu
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC  /usr/local/cuda/include
 )

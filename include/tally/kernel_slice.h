@@ -46,7 +46,6 @@ public:
 
     void save_cache()
     {
-        // std::cout << "saving cache" << std::endl;
         std::ofstream file(cache_file);
         boost::archive::text_oarchive archive(file);
         archive << sliced_ptx_cache;

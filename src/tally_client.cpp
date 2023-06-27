@@ -31,6 +31,8 @@
 
 #include "tally/util.h"
 #include "tally/def.h"
+#include "tally/cuda_api.h"
+#include "tally/kernel_slice.h"
 
 class Preload {
 
@@ -207,20 +209,13 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
     arg_ptr->kernel_func_len = kernel_func_len;
     memcpy(arg_ptr->data, deviceFun, kernel_func_len * sizeof(char));
 
-    // std::cout << "send" << std::endl;
     while (!tracer.send_ipc->send(msg, msg_len)) {
-        
         tracer.send_ipc->wait_for_recv(1);
     }
 
     tracer._kernel_addr_to_args[hostFun] = tracer._kernel_name_to_args[deviceFunName];
 
-    static void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);
-    if (!l__cudaRegisterFunction) {
-        l__cudaRegisterFunction = (void (*) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *)) dlsym(RTLD_NEXT, "__cudaRegisterFunction");
-    }
     assert(l__cudaRegisterFunction);
-
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
 }
 
@@ -247,19 +242,13 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     arg_ptr->version = version;
     memcpy(arg_ptr->data, wp->data, fatCubin_data_size_bytes);
 
-    // std::cout << "send" << std::endl;
     while (!tracer.send_ipc->send(msg, msg_len)) {
-        
         tracer.send_ipc->wait_for_recv(1);
     }
 
-    std::ofstream cubin_file("/tmp/tmp.cubin", std::ios::binary); // Open the file in binary mode
-    cubin_file.write(reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
-    cubin_file.close();
-
-    const char* command = "cuobjdump /tmp/tmp.cubin -elf > /tmp/tmp_cubin.elf";
-    system(command);
-
+    write_binary_to_file("/tmp/tmp.cubin", reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
+    exec("cuobjdump /tmp/tmp.cubin -elf > /tmp/tmp_cubin.elf");
+    
     std::string filename = "/tmp/tmp_cubin.elf";
     std::ifstream elf_file(filename);
 
@@ -312,23 +301,12 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
 
     elf_file.close();
 
-    static void** (*l__cudaRegisterFatBinary) (void *);
-    if (!l__cudaRegisterFatBinary) {
-        l__cudaRegisterFatBinary = (void** (*) (void *)) dlsym(RTLD_NEXT, "__cudaRegisterFatBinary");
-    }
     assert(l__cudaRegisterFatBinary);
-
     return l__cudaRegisterFatBinary(fatCubin);
 }
 
 void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 {
-	static void (*l__cudaRegisterFatBinaryEnd) (void **);
-	if (!l__cudaRegisterFatBinaryEnd) {
-		l__cudaRegisterFatBinaryEnd = (void (*) (void **)) dlsym(RTLD_NEXT, "__cudaRegisterFatBinaryEnd");
-	}
-	assert(l__cudaRegisterFatBinaryEnd);
-
     static const char *func_name = "__cudaRegisterFatBinaryEnd";
     static const size_t func_name_len = 26;
 
@@ -338,14 +316,12 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
     *((int *) msg) = func_name_len;
     memcpy(msg + 4, func_name, func_name_len);
 
-    // std::cout << "send" << std::endl;
     while (!tracer.send_ipc->send(msg, msg_len)) {
-        
         tracer.send_ipc->wait_for_recv(1);
     }
 
+    assert(l__cudaRegisterFatBinaryEnd);
 	l__cudaRegisterFatBinaryEnd(fatCubinHandle);
 }
-        
 
 }
