@@ -40,7 +40,7 @@ __global__ void elementwiseAdditionPTB(float* a, float* b, float* c, int size, d
     }
 }
 
-__host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, int size)
+__host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, int size, bool ptb)
 {
     // Allocate memory on the device (GPU)
     float* deviceA, * deviceB, * deviceC;
@@ -69,8 +69,11 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
     cudaEventRecord(start, 0);
 
     // Launch the kernel
-    elementwiseAdditionPTB<<<PTB_grid_dim, PTB_block_dim>>>(deviceA, deviceB, deviceC, size, grid_dim);
-    // elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
+    if (ptb) {
+        elementwiseAdditionPTB<<<PTB_grid_dim, PTB_block_dim>>>(deviceA, deviceB, deviceC, size, grid_dim);
+    } else {
+        elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
+    }
 
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
@@ -99,7 +102,8 @@ void runElementwiseAdditionCpu(float* arr_a, float* arr_b, float* arr_c, int siz
 
 int main()
 {
-    int size = 36962304;
+    int size = 262144;
+    bool ptb = false;
     
     // Allocate memory on the host (CPU)
     float* arr_a = new float[size];
@@ -115,11 +119,10 @@ int main()
         arr_b[i] = static_cast<float>(std::rand()) / RAND_MAX;
     }
     
-    runElementwiseAddition(arr_a, arr_b, res_gpu, size);
+    runElementwiseAddition(arr_a, arr_b, res_gpu, size, ptb);
     runElementwiseAdditionCpu(arr_a, arr_b, res_cpu, size);
 
     for (int i = 0; i < size; i++) {
-        // std::cout << "idx: " << i << " res_gpu[i]: " << res_gpu[i] << " res_cpu[i]: " << res_cpu[i] << std::endl;
         assert(res_gpu[i] == res_cpu[i]);
     }
     

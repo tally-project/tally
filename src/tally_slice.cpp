@@ -101,7 +101,6 @@ public:
 };
 
 Preload tracer;
-// CubinCache cubin_cache;
 
 extern "C" { 
 

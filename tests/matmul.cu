@@ -47,7 +47,7 @@ __global__ void matrixMultiplyPTB(float *A, float *B, float *C, int width, dim3 
     }
 }
 
-__host__ void runmatrixMultiply(float *h_A, float *h_B, float *h_C, int width)
+__host__ void runmatrixMultiply(float *h_A, float *h_B, float *h_C, int width, bool ptb)
 {
     int size = width * width * sizeof(float);
     float *d_A, *d_B, *d_C;
@@ -70,19 +70,19 @@ __host__ void runmatrixMultiply(float *h_A, float *h_B, float *h_C, int width)
 
     // Depend on number of PTBs/SM
     dim3 PTB_grid_dim(82 * 4);
-    std::cout << "gridSize: " << gridSize.x << " " << gridSize.y << " " << gridSize.z << std::endl;
-
+ 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
     cudaEventRecord(start, 0);
 
-    // // Launch the kernel
-    matrixMultiplyPTB<<<PTB_grid_dim, PTB_block_dim>>>(d_A, d_B, d_C, width, gridSize);
-    
-    // Launch kernel
-    // matrixMultiply<<<gridSize, blockSize>>>(d_A, d_B, d_C, width);
+    // Launch the kernel
+    if (ptb) {
+        matrixMultiplyPTB<<<PTB_grid_dim, PTB_block_dim>>>(d_A, d_B, d_C, width, gridSize);
+    } else {
+        matrixMultiply<<<gridSize, blockSize>>>(d_A, d_B, d_C, width);
+    }
 
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
@@ -119,17 +119,7 @@ void runmatrixMultiplyCpu(float *h_A, float *h_B, float *h_C, int width)
 
 int main()
 {
-    int deviceCount;
-    cudaGetDeviceCount(&deviceCount);
-
-    for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex) {
-        cudaDeviceProp deviceProperties;
-        cudaGetDeviceProperties(&deviceProperties, deviceIndex);
-
-        printf("Device %d: %s\n", deviceIndex, deviceProperties.name);
-        printf("Number of SMs: %d\n", deviceProperties.multiProcessorCount);
-    }
-
+    bool ptb = false;
     int width = 1024;
     float* arr_a = new float[width * width];
     float* arr_b = new float[width * width];
@@ -144,7 +134,7 @@ int main()
         arr_b[i] = static_cast<float>(std::rand()) / RAND_MAX;
     }
 
-    runmatrixMultiply(arr_a, arr_b, res_gpu, width);
+    runmatrixMultiply(arr_a, arr_b, res_gpu, width, ptb);
     runmatrixMultiplyCpu(arr_a, arr_b, res_cpu, width);
 
     for (int i = 0; i < width * width; ++i) {

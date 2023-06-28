@@ -98,7 +98,9 @@ std::string demangleFunc(std::string mangledName)
 
 PreloadTracer tracer(true);
 
-    extern "C" { 
+    
+
+extern "C" { 
 
 CUresult cuGetErrorString(CUresult  error, const char ** pStr)
 {
@@ -38645,4 +38647,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 }
         
 
+
+
 }
+
