@@ -130,7 +130,7 @@ int main()
         printf("Number of SMs: %d\n", deviceProperties.multiProcessorCount);
     }
 
-    int width = 4096;
+    int width = 1024;
     float* arr_a = new float[width * width];
     float* arr_b = new float[width * width];
     float* res_gpu = new float[width * width];

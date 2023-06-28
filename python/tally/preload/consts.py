@@ -109,6 +109,55 @@ PROFILE_CPU_END = """
     }
 """
 
+API_DECL_TEMPLATE_TOP = """
+
+#ifndef TALLY_CUDA_API_H
+#define TALLY_CUDA_API_H
+
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cudnn.h>
+#include <cublas_v2.h>
+#include <cuda_profiler_api.h>
+
+"""
+
+API_DECL_TEMPLATE_BUTTOM = """
+
+extern void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);
+extern void** (*l__cudaRegisterFatBinary) (void *);
+extern void (*l__cudaRegisterFatBinaryEnd) (void **);
+
+#endif // TALLY_CUDA_API_H
+
+"""
+
+API_DEF_TEMPLATE_TOP = """
+
+#include <dlfcn.h>
+
+#include <tally/cuda_api.h>
+#include <tally/const.h>
+
+void *cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
+void *cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
+void *cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
+
+"""
+
+API_DEF_TEMPLATE_BUTTOM = """
+
+void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *)
+    = (void (*) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *)) dlsym(cudart_handle, "__cudaRegisterFunction");
+
+void** (*l__cudaRegisterFatBinary) (void *) = 
+    (void** (*) (void *)) dlsym(cudart_handle, "__cudaRegisterFatBinary");
+
+void (*l__cudaRegisterFatBinaryEnd) (void **) =
+	(void (*) (void **)) dlsym(cudart_handle, "__cudaRegisterFatBinaryEnd");
+
+"""
+
 PRELOAD_TEMPLATE = """
 #include <dlfcn.h>
 #include <stdio.h>

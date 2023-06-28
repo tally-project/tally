@@ -1,4 +1,3 @@
-import re
 import subprocess
 
 from tally.preload.consts import (
@@ -12,6 +11,10 @@ from tally.preload.consts import (
     PROFILE_CPU_START,
     PROFILE_CPU_END,
     PRELOAD_TEMPLATE,
+    API_DECL_TEMPLATE_TOP,
+    API_DECL_TEMPLATE_BUTTOM,
+    API_DEF_TEMPLATE_TOP,
+    API_DEF_TEMPLATE_BUTTOM,
     get_trace_initialize_code,
     special_preload_funcs
 )
@@ -103,7 +106,7 @@ def gen_func_sig_args_str(arg_types, arg_names):
     return sig_args_str
 
 
-def gen_func_preload(func_sig, profile_kernel):
+def gen_func_preload(func_sig, profile_kernel, disable_profile):
 
     func_sig = remove_keywords(func_sig)
     before_args, args = func_sig.split("(", 1)
@@ -161,10 +164,11 @@ def gen_func_preload(func_sig, profile_kernel):
 
     # Trace the function
     if func_name not in EXCLUDE_TRACE_FUNCTIONS:
-        if profile_kernel:
-            func_preload_builder += PROFILE_KERNEL_START
-        else:
-            func_preload_builder += PROFILE_CPU_START
+        if not disable_profile:
+            if profile_kernel:
+                func_preload_builder += PROFILE_KERNEL_START
+            else:
+                func_preload_builder += PROFILE_CPU_START
 
     # call original
     if ret_type != "void":
@@ -172,14 +176,15 @@ def gen_func_preload(func_sig, profile_kernel):
     func_preload_builder += f"\t\t{preload_func_name}({arg_names_str});\n"
     
     if func_name not in EXCLUDE_TRACE_FUNCTIONS:
-        if profile_kernel:
-            func_preload_builder += PROFILE_KERNEL_END
-        else:
-            func_preload_builder += PROFILE_CPU_END
-        
-        func_preload_builder += "\tif (tracer.profile_start) {\n"
-        func_preload_builder += f"\t\ttracer._kernel_seq.push_back((void *){preload_func_name});\n"
-        func_preload_builder += "\t}\n"
+        if not disable_profile:
+            if profile_kernel:
+                func_preload_builder += PROFILE_KERNEL_END
+            else:
+                func_preload_builder += PROFILE_CPU_END
+            
+            func_preload_builder += "\tif (tracer.profile_start) {\n"
+            func_preload_builder += f"\t\ttracer._kernel_seq.push_back((void *){preload_func_name});\n"
+            func_preload_builder += "\t}\n"
 
     if ret_type != "void":
         func_preload_builder += f"\treturn res;\n"
@@ -190,7 +195,58 @@ def gen_func_preload(func_sig, profile_kernel):
     return func_name, func_preload_builder
 
 
-def gen_preload_from_file(file, profile_kernel=False):
+def gen_func_api(func_sig):
+
+    func_sig = remove_keywords(func_sig)
+    before_args, args = func_sig.split("(", 1)
+    if "=" in before_args:
+        return None, None, None
+
+    # Extract return type and function name
+    before_args_parts = split_and_strip(before_args, max_count=1, rsplit=True)
+    if len(before_args_parts) == 2:
+        ret_type, func_name = before_args_parts
+    else:
+        return None, None, None
+
+    # Extract argument types and names
+    args_str, _ = args.rsplit(")", 1)
+    arg_list = split_and_strip(args_str, ", ")
+
+    arg_types = []
+    arg_names = []
+    arg_vals = []
+
+    for arg in arg_list:
+        arg_type, arg_name, arg_val = parse_arg(arg)
+        if arg_type and arg_name:
+            arg_types.append(arg_type)
+            arg_names.append(arg_name)
+            arg_vals.append(arg_val)
+
+    arg_types_str = ", ".join(arg_types)
+    arg_names_str = ", ".join(arg_names)
+    args_str_no_val = gen_func_sig_args_str(arg_types, arg_names)
+
+    preload_func_name = f"l{func_name}"
+    handle = "RTLD_NEXT"
+    if "cudnn" in func_name.lower() or "cudnn" in ret_type.lower():
+        handle = "cudnn_handle";
+    elif "CUresult" in ret_type:
+        handle = "cuda_handle"
+    elif "cudaError_t" in ret_type:
+        handle = "cudart_handle"
+
+    func_declaration = f"extern {ret_type} (*l{func_name}) ({args_str_no_val});\n"
+
+    func_definition = ""
+    func_definition += f"{ret_type} (*l{func_name}) ({args_str_no_val}) =\n"
+    func_definition += f"\t({ret_type} (*) ({args_str_no_val})) dlsym({handle}, \"{func_name}\");\n\n"
+
+    return func_name, func_declaration, func_definition
+
+
+def gen_preload_from_file(file, profile_kernel=False, disable_profile=False, gen_api=False):
     generated_preload = {}
 
     start_acc = False
@@ -234,9 +290,14 @@ def gen_preload_from_file(file, profile_kernel=False):
                 not any([word in func_sig for word in FUNC_SIG_MUST_NOT_CONTAIN])
             ):
                 try:
-                    func_name, func_preload = gen_func_preload(func_sig, profile_kernel)
-                    if func_name and func_preload:
-                        generated_preload[func_name] = func_preload
+                    if gen_api:
+                        func_name, func_declaration, func_definition = gen_func_api(func_sig)
+                        if func_name and func_declaration and func_definition:
+                            generated_preload[func_name] = (func_declaration, func_definition)
+                    else:
+                        func_name, func_preload = gen_func_preload(func_sig, profile_kernel, disable_profile)
+                        if func_name and func_preload:
+                            generated_preload[func_name] = func_preload
                 except Exception as e:
                     print(f"func_sig: {func_sig}")
                     raise e
@@ -287,3 +348,50 @@ def compile_preload(preload_cpp_file="preload.cpp", output_file=None):
     process = subprocess.Popen(compile_cmd, shell=True, universal_newlines=True)
     process.wait()
     
+def generate_api(header_files=CUDA_API_HEADER_FILES, decl_output_file="cuda_api.h", def_output_file="cuda_api.cpp"):
+
+    declarations = {}
+    definitions = {}
+
+    for header_file in header_files:
+
+        command = f"g++ -I/usr/local/cuda/include -E {header_file} > /tmp/gcc_output.txt"
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+        # Check the output
+        if result.returncode == 0:
+            gcc_output = result.stdout
+        else:
+            print(f"Command {command} failed.")
+            exit(result.returncode)
+
+        generated_preload = gen_preload_from_file("/tmp/gcc_output.txt", disable_profile=True, gen_api=True)
+        for func_name in generated_preload:
+            func_declaration, func_definition = generated_preload[func_name]
+
+            if func_name not in declarations:
+                declarations[func_name] = func_declaration
+                definitions[func_name] = func_definition
+    
+    with open(decl_output_file, "w") as f:
+
+        f.write(API_DECL_TEMPLATE_TOP)
+        # f.write("extern \"C\" { \n\n")
+
+        for func_name in declarations:
+            f.write(declarations[func_name])
+        
+        # f.write("}")
+        f.write(API_DECL_TEMPLATE_BUTTOM)
+    
+    with open(def_output_file, "w") as f:
+
+        f.write(API_DEF_TEMPLATE_TOP)
+        # f.write("extern \"C\" { \n\n")
+
+        for func_name in definitions:
+            f.write(definitions[func_name])
+        
+        f.write(API_DEF_TEMPLATE_BUTTOM)
+        
+        # f.write("}")
