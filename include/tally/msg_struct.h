@@ -1,6 +1,8 @@
 #ifndef TALLY_DEF_H
 #define TALLY_DEF_H
 
+#include <tally/cuda_api_enum.h>
+
 struct __align__(8) fatBinaryHeader
 {
     unsigned int           magic;
@@ -9,9 +11,17 @@ struct __align__(8) fatBinaryHeader
     unsigned long long int fatSize;
 };
 
+typedef struct MessageHeader {
+    CUDA_API_ENUM api_id;
+} MessageHeader_t;
+
 struct cudaMallocArg {
     void ** devPtr;
     size_t  size;
+};
+
+struct cudaFreeArg {
+    void * devPtr;
 };
 
 struct cudaMallocResponse {

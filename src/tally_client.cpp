@@ -30,9 +30,10 @@
 #include "libipc/ipc.h"
 
 #include "tally/util.h"
-#include "tally/def.h"
+#include "tally/msg_struct.h"
 #include "tally/cuda_api.h"
 #include "tally/kernel_slice.h"
+#include "tally/cuda_api_enum.h"
 
 class Preload {
 
@@ -3492,16 +3493,14 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
         offset += params_info[i];
     }
 
-    static const char *func_name = "cudaLaunchKernel";
-    static const size_t func_name_len = 16;
-    size_t msg_len = sizeof(size_t) + func_name_len + sizeof(void *) + sizeof(dim3) + sizeof(dim3) + sizeof(size_t) + params_size;
-    void *msg;
+    uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct cudaLaunchKernelArg) + params_size;
+    uint8_t *msg;
 
-    msg = malloc(msg_len);
-    *((int *) msg) = func_name_len;
-    memcpy(msg + 4, func_name, func_name_len);
+    msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDALAUNCHKERNEL;
 
-    struct cudaLaunchKernelArg *arg_ptr = (struct cudaLaunchKernelArg *)(msg + 4 + func_name_len);
+    struct cudaLaunchKernelArg *arg_ptr = (struct cudaLaunchKernelArg *)(msg + sizeof(CUDA_API_ENUM));
 
     arg_ptr->host_func = func;
     arg_ptr->gridDim = gridDim;
@@ -3510,9 +3509,9 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     memcpy(arg_ptr->params, params_data, params_size);
 
     while (!tracer.send_ipc->send(msg, msg_len)) {
-        
         tracer.send_ipc->wait_for_recv(1);
     }
+    std::free(msg);
 
     ipc::buff_t buf;
     while (buf.empty()) {
@@ -3633,22 +3632,20 @@ cudaError_t cudaMallocManaged(void ** devPtr, size_t  size, unsigned int  flags)
 
 cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 {
-    static const char *func_name = "cudaMalloc";
-    static const size_t func_name_len = 10;
-    size_t msg_len = sizeof(size_t) + func_name_len + sizeof(void **) + sizeof(size_t);
+    static const uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMallocArg);
 
-    void *msg = malloc(msg_len);
-    *((int *) msg) = func_name_len;
-    memcpy(msg + 4, func_name, func_name_len);
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAMALLOC;
     
-    struct cudaMallocArg *arg_ptr = (struct cudaMallocArg *)(msg + 4 + func_name_len);
+    struct cudaMallocArg *arg_ptr = (struct cudaMallocArg *)(msg + sizeof(CUDA_API_ENUM));
     arg_ptr->devPtr = devPtr;
     arg_ptr->size = size;
 
     while (!tracer.send_ipc->send(msg, msg_len)) {
-        
         tracer.send_ipc->wait_for_recv(1);
     }
+    std::free(msg);
 
     ipc::buff_t buf;
     while (buf.empty()) {
@@ -3687,13 +3684,33 @@ cudaError_t cudaMallocArray(cudaArray_t * array, const struct cudaChannelFormatD
 	return res;
 }
 
+
 cudaError_t cudaFree(void * devPtr)
 {
-	printf("cudaFree hooked\n");
-	cudaError_t res = 
-		lcudaFree(devPtr);
-	return res;
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaFreeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAFREE;
+    
+    struct cudaFreeArg *arg_ptr = (struct cudaFreeArg *)(msg + sizeof(CUDA_API_ENUM));
+    arg_ptr->devPtr = devPtr;
+
+    while (!tracer.send_ipc->send(msg, msg_len)) {
+        tracer.send_ipc->wait_for_recv(1);
+    }
+    std::free(msg);
+
+    ipc::buff_t buf;
+    while (buf.empty()) {
+        buf = tracer.recv_ipc->recv(1000);
+    }
+
+    const char *dat = buf.get<const char *>();
+    cudaError_t *res = (cudaError_t *) dat;
+	return *res;
 }
+
 
 cudaError_t cudaFreeHost(void * ptr)
 {
@@ -3866,24 +3883,22 @@ cudaError_t cudaMipmappedArrayGetSparseProperties(struct cudaArraySparseProperti
 
 cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind)
 {
-    static const char *func_name = "cudaMemcpy";
-    static const size_t func_name_len = 10;
-    size_t msg_len;
-    void *msg;
+    uint32_t msg_len;
+    uint8_t *msg;
     
     if (kind == cudaMemcpyHostToDevice) {
-        msg_len = sizeof(size_t) + func_name_len + sizeof(void *) + sizeof(const void *) + sizeof(size_t) + sizeof(enum cudaMemcpyKind) + count;
+        msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMemcpyArg) + count;
     } else if (kind == cudaMemcpyDeviceToHost){
-        msg_len = sizeof(size_t) + func_name_len + sizeof(void *) + sizeof(const void *) + sizeof(size_t) + sizeof(enum cudaMemcpyKind);
+        msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMemcpyArg);
     } else {
         throw std::runtime_error("Unknown memcpy kind!");
     }
 
-    msg = malloc(msg_len);
-    *((int *) msg) = func_name_len;
-    memcpy(msg + 4, func_name, func_name_len);
+    msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAMEMCPY;
     
-    struct cudaMemcpyArg *arg_ptr = (struct cudaMemcpyArg *)(msg + 4 + func_name_len);
+    struct cudaMemcpyArg *arg_ptr = (struct cudaMemcpyArg *)(msg + sizeof(CUDA_API_ENUM));
     arg_ptr->dst = dst;
     arg_ptr->src = (void *)src;
     arg_ptr->count = count;
@@ -3895,9 +3910,9 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
     }
 
     while (!tracer.send_ipc->send(msg, msg_len)) {
-        
         tracer.send_ipc->wait_for_recv(1);
     }
+    std::free(msg);
 
     ipc::buff_t buf;
     while (buf.empty()) {
@@ -9222,19 +9237,16 @@ cudaError_t cudaProfilerStop()
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
-    static const char *func_name = "__cudaRegisterFunction";
-    static const size_t func_name_len = 22;
-
     std::string deviceFunName (deviceFun);
     uint32_t kernel_func_len = deviceFunName.size();
 
-    size_t msg_len = sizeof(size_t) + func_name_len + sizeof(void *) + sizeof(uint32_t) + kernel_func_len * sizeof(char);
+    uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct registerKernelArg) + kernel_func_len * sizeof(char);
 
-    void *msg = malloc(msg_len);
-    *((int *) msg) = func_name_len;
-    memcpy(msg + 4, func_name, func_name_len);
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFUNCTION;
 
-    struct registerKernelArg *arg_ptr = (struct registerKernelArg *)(msg + 4 + func_name_len);
+    struct registerKernelArg *arg_ptr = (struct registerKernelArg *)(msg + sizeof(CUDA_API_ENUM));
     arg_ptr->host_func = (void*) hostFun;
     arg_ptr->kernel_func_len = kernel_func_len;
     memcpy(arg_ptr->data, deviceFun, kernel_func_len * sizeof(char));
@@ -9242,20 +9254,14 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
     while (!tracer.send_ipc->send(msg, msg_len)) {
         tracer.send_ipc->wait_for_recv(1);
     }
+    std::free(msg);
 
     tracer._kernel_addr_to_args[hostFun] = tracer._kernel_name_to_args[deviceFunName];
-
-    assert(l__cudaRegisterFunction);
-    return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
 }
 
 
 
 void** __cudaRegisterFatBinary( void *fatCubin ) {
-
-    static const char *func_name = "__cudaRegisterFatBinary";
-    static const size_t func_name_len = 23;
-
     __fatBinC_Wrapper_t *wp = (__fatBinC_Wrapper_t *) fatCubin;
 
     int magic = wp->magic;
@@ -9263,13 +9269,13 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
 
     struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) wp->data;
     size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
-    size_t msg_len = sizeof(size_t) + func_name_len + sizeof(int) + sizeof(int) + fatCubin_data_size_bytes;
+    uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct __cudaRegisterFatBinaryArg) + fatCubin_data_size_bytes;
 
-    void *msg = malloc(msg_len);
-    *((int *) msg) = func_name_len;
-    memcpy(msg + 4, func_name, func_name_len);
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARY;
 
-    struct __cudaRegisterFatBinaryArg *arg_ptr = (struct __cudaRegisterFatBinaryArg *)(msg + 4 + func_name_len);
+    struct __cudaRegisterFatBinaryArg *arg_ptr = (struct __cudaRegisterFatBinaryArg *)(msg + sizeof(CUDA_API_ENUM));
     arg_ptr->magic = magic;
     arg_ptr->version = version;
     memcpy(arg_ptr->data, wp->data, fatCubin_data_size_bytes);
@@ -9277,85 +9283,37 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     while (!tracer.send_ipc->send(msg, msg_len)) {
         tracer.send_ipc->wait_for_recv(1);
     }
+    std::free(msg);
 
     write_binary_to_file("/tmp/tmp.cubin", reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
     exec("cuobjdump /tmp/tmp.cubin -elf > /tmp/tmp_cubin.elf");
     
-    std::string filename = "/tmp/tmp_cubin.elf";
-    std::ifstream elf_file(filename);
+    std::string elf_filename = "/tmp/tmp_cubin.elf";
+    auto kernel_names_and_param_sizes = get_kernel_names_and_param_sizes_from_elf(elf_filename);
 
-    // key: func_name, val: [ <ordinal, size> ]
+    for (auto &pair : kernel_names_and_param_sizes) {
+        auto &kernel_name = pair.first;
+        auto &param_sizes = pair.second;
+        tracer._kernel_name_to_args[kernel_name] = param_sizes;
+    }
 
-    using ordinal_size_pair = std::pair<uint32_t, uint32_t>;
-
-    std::string line;
-    while (std::getline(elf_file, line)) {
-        if (startsWith(line, ".nv.info.")) {
-            std::string kernel_name = line.substr(9);
-            std::vector<ordinal_size_pair> params_info;
-
-            while (std::getline(elf_file, line)) {
-                if (containsSubstring(line, "EIATTR_KPARAM_INFO")) {
-                    
-                } else if (containsSubstring(line, "Ordinal :")) {
-                    auto split_by_ordinal = splitOnce(line, "Ordinal :");
-                    auto split_by_offset = splitOnce(split_by_ordinal.second, "Offset  :");
-                    auto split_by_size = splitOnce(split_by_offset.second, "Size    :");
-
-                    auto ordinal_str = strip(split_by_offset.first);
-                    auto size_str = strip(split_by_size.second);
-
-                    uint32_t arg_ordinal = std::stoi(ordinal_str, nullptr, 16);
-                    uint32_t arg_size = std::stoi(size_str, nullptr, 16);
-
-                    params_info.push_back(std::make_pair(arg_ordinal, arg_size));
-
-                } else if (line.empty()) {
-                    break;
-                }
-            }
-
-            // Sort by ordinal
-            std::sort(
-                params_info.begin(),
-                params_info.end(),
-                [](ordinal_size_pair a, ordinal_size_pair b) {
-                    return a.first < b.first;
-                }
-            );
-
-            // Store the size
-            for (auto &pair : params_info) {
-                tracer._kernel_name_to_args[kernel_name].push_back(pair.second);
-            }
-        }
-    }    
-
-    elf_file.close();
-
-    assert(l__cudaRegisterFatBinary);
-    return l__cudaRegisterFatBinary(fatCubin);
+    return nullptr;
 }
 
 
 
 void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 {
-    static const char *func_name = "__cudaRegisterFatBinaryEnd";
-    static const size_t func_name_len = 26;
+    uint32_t msg_len = sizeof(CUDA_API_ENUM);
 
-    size_t msg_len = sizeof(size_t) + func_name_len;
-
-    void *msg = malloc(msg_len);
-    *((int *) msg) = func_name_len;
-    memcpy(msg + 4, func_name, func_name_len);
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND;
 
     while (!tracer.send_ipc->send(msg, msg_len)) {
         tracer.send_ipc->wait_for_recv(1);
     }
-
-    assert(l__cudaRegisterFatBinaryEnd);
-	l__cudaRegisterFatBinaryEnd(fatCubinHandle);
+    std::free(msg);
 }
 
 

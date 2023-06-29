@@ -1,5 +1,8 @@
 from tally.preload.consts import CUDA_API_HEADER_FILES, EXTERN_C_BEGIN, EXTERN_C_END
 from tally.preload.client_consts import (
+    API_ENUM_TEMPLATE_TOP,
+    API_ENUM_TEMPLATE_BUTTOM,
+    API_SPECIAL_ENUM,
     API_DECL_TEMPLATE_TOP,
     API_DECL_TEMPLATE_BUTTOM,
     API_DEF_TEMPLATE_TOP,
@@ -111,7 +114,8 @@ def gen_client_preload_from_file(file):
     return generated_preload
 
 
-def gen_client_api(header_files=CUDA_API_HEADER_FILES, decl_output_file="cuda_api.h", def_output_file="cuda_api.cpp"):
+def gen_client_api(header_files=CUDA_API_HEADER_FILES, decl_output_file="cuda_api.h",
+                   def_output_file="cuda_api.cpp", enum_output_file="cuda_api_enum.h"):
 
     declarations = {}
     definitions = {}
@@ -141,6 +145,23 @@ def gen_client_api(header_files=CUDA_API_HEADER_FILES, decl_output_file="cuda_ap
         for func_name in definitions:
             f.write(definitions[func_name])
         f.write(API_DEF_TEMPLATE_BUTTOM)
+
+    with open(enum_output_file, 'w') as f:
+        f.write(API_ENUM_TEMPLATE_TOP)
+        f.write("\n\nenum CUDA_API_ENUM {\n")
+
+        for func_name in definitions:
+            f.write(f"\t{func_name.upper()},\n")
+        
+        for idx, func_name in enumerate(API_SPECIAL_ENUM):
+            if idx != len(API_SPECIAL_ENUM) - 1:
+                f.write(f"\t{func_name.upper()},\n")
+            else:
+                f.write(f"\t{func_name.upper()}\n")
+
+        f.write("};\n")
+
+        f.write(API_ENUM_TEMPLATE_BUTTOM)
 
 
 def gen_client_preload(header_files=CUDA_API_HEADER_FILES, output_file="tally_client.cpp"):

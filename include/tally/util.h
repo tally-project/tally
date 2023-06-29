@@ -1,3 +1,6 @@
+#ifndef TALLY_UTIL_H
+#define TALLY_UTIL_H
+
 #include <dlfcn.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -21,9 +24,6 @@
 #include <fstream>
 #include <algorithm>
 #include <numeric>
-
-#ifndef TALLY_UTIL_H
-#define TALLY_UTIL_H
 
 inline std::string demangleFunc(std::string mangledName)
 {

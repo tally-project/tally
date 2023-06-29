@@ -264,3 +264,63 @@ std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_
 
     return kernel_names_and_nparams;
 }
+
+std::vector<std::pair<std::string, std::vector<uint32_t>>> get_kernel_names_and_param_sizes_from_elf(std::string elf_file_name)
+{
+    // key: func_name, val: [ <ordinal, size> ]
+    using ordinal_size_pair = std::pair<uint32_t, uint32_t>;
+    std::vector<std::pair<std::string, std::vector<uint32_t>>> kernel_names_and_param_sizes;
+
+    std::ifstream elf_file(elf_file_name);
+
+    std::string line;
+    while (std::getline(elf_file, line)) {
+        if (startsWith(line, ".nv.info.")) {
+            std::string kernel_name = line.substr(9);
+            std::vector<ordinal_size_pair> params_info;
+
+            while (std::getline(elf_file, line)) {
+                if (containsSubstring(line, "EIATTR_KPARAM_INFO")) {
+                    
+                } else if (containsSubstring(line, "Ordinal :")) {
+                    auto split_by_ordinal = splitOnce(line, "Ordinal :");
+                    auto split_by_offset = splitOnce(split_by_ordinal.second, "Offset  :");
+                    auto split_by_size = splitOnce(split_by_offset.second, "Size    :");
+
+                    auto ordinal_str = strip(split_by_offset.first);
+                    auto size_str = strip(split_by_size.second);
+
+                    uint32_t arg_ordinal = std::stoi(ordinal_str, nullptr, 16);
+                    uint32_t arg_size = std::stoi(size_str, nullptr, 16);
+
+                    params_info.push_back(std::make_pair(arg_ordinal, arg_size));
+
+                } else if (line.empty()) {
+                    break;
+                }
+            }
+
+            // Sort by ordinal
+            std::sort(
+                params_info.begin(),
+                params_info.end(),
+                [](ordinal_size_pair a, ordinal_size_pair b) {
+                    return a.first < b.first;
+                }
+            );
+
+            // Store the size
+            std::vector<uint32_t> param_sizes;
+
+            for (auto &pair : params_info) {
+                param_sizes.push_back(pair.second);
+            }
+
+            kernel_names_and_param_sizes.push_back(std::make_pair(kernel_name, param_sizes));
+        }
+    }    
+
+    elf_file.close();
+
+    return kernel_names_and_param_sizes;
+}

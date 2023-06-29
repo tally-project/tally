@@ -29,7 +29,7 @@
 #include <fatbinary_section.h>
 
 #include <tally/util.h>
-#include <tally/def.h>
+#include <tally/msg_struct.h>
 #include <tally/const.h>
 #include <tally/kernel_slice.h>
 #include <tally/cuda_api.h>

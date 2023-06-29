@@ -9,10 +9,28 @@ FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
 
 set (LIBIPC_PROJECT_DIR ${PROJECT_SOURCE_DIR}/third_party/cpp-ipc)
 
-aux_source_directory(${PROJECT_SOURCE_DIR}/src/tally TALLY_SRC_FILES)
+set(TALLY_SRC_FILES
+    ${PROJECT_SOURCE_DIR}/src/tally/const.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/cuda_api.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/kernel_slice.cpp
+)
+
+set(TALLY_SERVER_SRC_FILES
+    ${PROJECT_SOURCE_DIR}/src/tally/server.cpp
+)
+
 aux_source_directory(${LIBIPC_PROJECT_DIR}/src/libipc LIBIPC_SRC_FILES)
 aux_source_directory(${LIBIPC_PROJECT_DIR}/src/libipc/sync LIBIPC_SRC_FILES)
 aux_source_directory(${LIBIPC_PROJECT_DIR}/src/libipc/platform LIBIPC_SRC_FILES)
+
+add_library(tally STATIC ${TALLY_SRC_FILES})
+target_include_directories(tally
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+    PUBLIC  /usr/local/cuda/include
+    PUBLIC  ${LIBIPC_PROJECT_DIR}/include
+    PRIVATE ${LIBIPC_PROJECT_DIR}/src
+        $<$<BOOL:UNIX>:${LIBIPC_PROJECT_DIR}/src/libipc/platform/linux>
+)
 
 add_library(tally_client SHARED ${PROJECT_SOURCE_DIR}/src/tally_client.cpp ${LIBIPC_SRC_FILES} ${TALLY_SRC_FILES})
 
@@ -75,7 +93,7 @@ if (LIBIPC_BUILD_DEMOS)
     add_subdirectory(${LIBIPC_PROJECT_DIR}/demo/send_recv)
 endif()
 
-add_executable(server ${PROJECT_SOURCE_DIR}/server.cu)
+add_executable(server ${PROJECT_SOURCE_DIR}/server.cu ${TALLY_SERVER_SRC_FILES})
 
 set_target_properties(server PROPERTIES
     CUDA_ARCHITECTURES "86"
@@ -90,6 +108,9 @@ target_include_directories(server
 target_link_libraries(server PUBLIC
     ipc
     dl
+    tally
+    PUBLIC Boost::serialization
+    PUBLIC Boost::regex
 )
 
 add_subdirectory(tests)
