@@ -1,8 +1,6 @@
 
 #include <dlfcn.h>
 #include <stdio.h>
-#include <sys/time.h>
-#include <time.h>
 #include <iostream>
 #include <sstream>
 #include <cxxabi.h>
@@ -11,18 +9,7 @@
 #include <cassert>
 #include <map>
 #include <vector>
-#include <chrono>
 #include <string>
-#include <sys/mman.h>
-#include <sys/stat.h>        /* For mode constants */
-#include <fcntl.h>           /* For O_* constants */
-#include <unistd.h>
-#include <thread>
-#include <cstring>
-#include <fstream>
-#include <algorithm>
-#include <numeric>
-#include <regex>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -31,76 +18,10 @@
 #include <tally/util.h>
 #include <tally/msg_struct.h>
 #include <tally/const.h>
-#include <tally/kernel_slice.h>
+#include <tally/transform.h>
 #include <tally/generated/cuda_api.h>
 
-class CudaGraphCall {
-
-public:
-    const void *_host_func;
-    std::vector<void *> _args;
-    dim3 _gridDim;
-    dim3 _blockDim;
-    cudaGraph_t graph;
-    cudaGraphExec_t instance;
-    bool instantiated = false;
-
-    CudaGraphCall(const void * host_func, void **args, size_t nargs, dim3 gridDim, dim3 blockDim)
-    {
-        _host_func = host_func;
-        for (size_t i = 0; i < nargs; i++) {
-            _args.push_back(args[i]);
-        }
-        _gridDim = gridDim;
-        _blockDim = blockDim;
-    }
-
-    bool equals(const void * host_func, void **args, size_t nargs, dim3 gridDim, dim3 blockDim) {
-        if (host_func != _host_func || _args.size() != nargs ||
-            gridDim.x != _gridDim.x || gridDim.y != _gridDim.y ||  gridDim.z != _gridDim.z || 
-            blockDim.x != _blockDim.x || blockDim.y != _blockDim.y || blockDim.z != _blockDim.z)
-        {
-            return false;
-        }
-
-        for (size_t i = 0; i < nargs; i++) {
-            if (args[i] != _args[i]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-};
-
-
-class Preload {
-
-public:
-
-    std::map<std::string, const void *> kernel_name_to_host_func_map;
-    std::map<const void *, std::string> host_func_to_kernel_name_map;
-    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
-    std::unordered_map<const void *, bool> kernel_slice_map;
-    std::vector<CudaGraphCall*> cuda_graph_vec;
-    cudaStream_t stream;
-
-    std::vector<std::pair<std::string, std::string>> sliced_ptx_fatbin_strs;
-    bool kernels_registered = false;
-
-    void register_kernels()
-    {
-        lcudaStreamCreate(&stream);
-
-        kernel_map = register_kernels_from_ptx_fatbin(sliced_ptx_fatbin_strs, kernel_name_to_host_func_map);
-        kernels_registered = true;
-    }
-
-    Preload(){}
-    ~Preload(){}
-};
-
-Preload tracer;
+Transform tracer;
 
 extern "C" { 
 

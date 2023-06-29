@@ -1,5 +1,5 @@
-#ifndef TALLY_KERNEL_SLICE_H
-#define TALLY_KERNEL_SLICE_H
+#ifndef TALLY_TRANSFORM_H
+#define TALLY_TRANSFORM_H
 
 #include <string>
 #include <cstdio>
@@ -11,13 +11,17 @@
 #include <boost/serialization/string.hpp>
 
 #include <cuda.h>
+#include <cuda_runtime.h>
+#include <fatbinary_section.h>
 
 #include <tally/util.h>
+#include <tally/generated/cuda_api.h>
 
 void write_binary_to_file(std::string path, const char* data, uint32_t size);
 void write_str_to_file(std::string path, std::string str);
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path);
 std::string gen_sliced_ptx(std::string ptx_path);
+std::string gen_ptb_ptx(std::string ptx_path);
 std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_ptx_fatbin(std::vector<std::pair<std::string, std::string>> &sliced_ptx_fatbin_strs, std::map<std::string, const void *> &kernel_name_map);
 std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str);
 std::vector<std::pair<std::string, std::vector<uint32_t>>> get_kernel_names_and_param_sizes_from_elf(std::string elf_file_name);
@@ -26,7 +30,7 @@ class CubinCache
 {
 public:
 
-    static CubinCache *cache;
+    static std::unique_ptr<CubinCache> cache;
 
     // Cubin size : vec<(cubin data, vec<(sliced_ptx, sliced_fatbin)>)>
     std::map<size_t, std::vector<std::pair<std::string, std::vector<std::pair<std::string, std::string>>>>> sliced_ptx_cache;
@@ -105,4 +109,70 @@ public:
     }
 };
 
-#endif // TALLY_KERNEL_SLICE_H
+class CudaGraphCall {
+
+public:
+    const void *_host_func;
+    std::vector<void *> _args;
+    dim3 _gridDim;
+    dim3 _blockDim;
+    cudaGraph_t graph;
+    cudaGraphExec_t instance;
+    bool instantiated = false;
+
+    CudaGraphCall(const void * host_func, void **args, size_t nargs, dim3 gridDim, dim3 blockDim)
+    {
+        _host_func = host_func;
+        for (size_t i = 0; i < nargs; i++) {
+            _args.push_back(args[i]);
+        }
+        _gridDim = gridDim;
+        _blockDim = blockDim;
+    }
+
+    bool equals(const void * host_func, void **args, size_t nargs, dim3 gridDim, dim3 blockDim) {
+        if (host_func != _host_func || _args.size() != nargs ||
+            gridDim.x != _gridDim.x || gridDim.y != _gridDim.y ||  gridDim.z != _gridDim.z || 
+            blockDim.x != _blockDim.x || blockDim.y != _blockDim.y || blockDim.z != _blockDim.z)
+        {
+            return false;
+        }
+
+        for (size_t i = 0; i < nargs; i++) {
+            if (args[i] != _args[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+};
+
+
+class Transform {
+
+public:
+
+    std::map<std::string, const void *> kernel_name_to_host_func_map;
+    std::map<const void *, std::string> host_func_to_kernel_name_map;
+    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
+    std::unordered_map<const void *, bool> kernel_slice_map;
+    std::vector<CudaGraphCall*> cuda_graph_vec;
+    cudaStream_t stream;
+
+    std::vector<std::pair<std::string, std::string>> sliced_ptx_fatbin_strs;
+    bool kernels_registered = false;
+
+    void register_kernels()
+    {
+        lcudaStreamCreate(&stream);
+
+        kernel_map = register_kernels_from_ptx_fatbin(sliced_ptx_fatbin_strs, kernel_name_to_host_func_map);
+        kernels_registered = true;
+    }
+
+    Transform(){}
+    ~Transform(){}
+};
+
+#endif // TALLY_TRANSFORM_H

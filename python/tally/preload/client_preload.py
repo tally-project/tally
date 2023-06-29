@@ -7,11 +7,21 @@ from tally.preload.client_consts import (
     API_DECL_TEMPLATE_BUTTOM,
     API_DEF_TEMPLATE_TOP,
     API_DEF_TEMPLATE_BUTTOM,
+    MSG_STRUCT_TEMPLATE_TOP,
+    MSG_STRUCT_TEMPLATE_BUTTOM,
+    TALLY_SERVER_HEADER_TEMPLATE_TOP,
+    TALLY_SERVER_HEADER_TEMPLATE_BUTTOM,
     SPECIAL_CLIENT_PRELOAD_FUNCS,
     CLIENT_PRELOAD_TEMPLATE,
     FORWARD_API_CALLS
 )
-from tally.preload.preload_util import gen_func_sig_args_str, parse_func_sig, preprocess_header_file, generate_func_sig_from_file
+from tally.preload.preload_util import (
+    gen_func_sig_args_str,
+    parse_func_sig,
+    preprocess_header_file,
+    generate_func_sig_from_file,
+    get_func_name_from_sig
+)
 
 def gen_client_func_decl_def(func_sig):
 
@@ -38,24 +48,71 @@ def gen_client_func_decl_def(func_sig):
     func_definition += f"{ret_type} (*{preload_func_name}) ({args_str_no_val}) =\n"
     func_definition += f"\t({ret_type} (*) ({args_str_no_val})) dlsym({handle}, \"{func_name}\");\n\n"
 
-    return func_name, func_declaration, func_definition
+    return func_declaration, func_definition
 
 
-def gen_client_api_from_file(file):
-    func_sig_list = generate_func_sig_from_file(file)
-    client_api = {}
+def gen_client_msg_struct(func_sig):
+    parse_res = parse_func_sig(func_sig)
+    if parse_res:
+        ret_type, func_name, arg_types, arg_names, arg_vals = parse_res
+    else:
+        return None
 
-    for func_sig in func_sig_list:
-        try:
-            res = gen_client_func_decl_def(func_sig)
-            if res:
-                func_name, func_declaration, func_definition = res
-                client_api[func_name] = (func_declaration, func_definition)
-        except Exception as e:
-            print(f"func_sig: {func_sig}")
-            raise e
+    # Currently only generate functions that are forward calls
+    if func_name not in FORWARD_API_CALLS:
+        return None
 
-    return client_api
+    msg_struct = ""
+    msg_struct += f"struct {func_name}Arg {{\n"
+
+    for i in range(len(arg_types)):
+        msg_struct += f"\t{arg_types[i]} {arg_names[i]};\n"
+    
+    msg_struct += "};\n"
+
+    return msg_struct
+
+
+def gen_server_handler(func_sig):
+    parse_res = parse_func_sig(func_sig)
+    if parse_res:
+        ret_type, func_name, arg_types, arg_names, arg_vals = parse_res
+    else:
+        return None
+
+    if func_name in SPECIAL_CLIENT_PRELOAD_FUNCS:
+        return None
+
+    handler = ""
+    handler += f"""
+void TallyServer::handle_{func_name}(void *__args)
+{{
+"""
+    if func_name not in FORWARD_API_CALLS:
+        handler += "\tthrow std::runtime_error(\"Unimplemented.\");\n"
+    else:
+        handler += f"""
+    auto args = (struct {func_name}Arg *) __args;
+    cudaError_t err = {func_name}(
+"""
+
+        for idx, arg_name in enumerate(arg_names):
+            handler += f"\t\targs->{arg_name}"
+            if idx != len(arg_names) - 1:
+                handler += ","
+            handler += "\n"
+
+        handler += f"""
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {{
+        send_ipc->wait_for_recv(1);
+    }}
+"""
+
+    handler += "}\n"
+
+    return handler
 
 
 def gen_func_client_preload(func_sig):
@@ -128,64 +185,78 @@ def gen_func_client_preload(func_sig):
     # close bracket
     func_preload_builder += "}"
 
-    return func_name, func_preload_builder
+    return func_preload_builder
 
 
-def gen_client_preload_from_file(file):
+def gen_client_code_from_file(file):
     func_sig_list = generate_func_sig_from_file(file)
-    generated_preload = {}
+    client_code_dict = {}
 
     for func_sig in func_sig_list:
         try:
-            res = gen_func_client_preload(func_sig)
-            if res:
-                func_name, func_preload = res
-                if func_name and func_preload:
-                    generated_preload[func_name] = func_preload
+            func_name = get_func_name_from_sig(func_sig)
+            if func_name:
+                func_preload = gen_func_client_preload(func_sig)
+                func_declaration, func_definition = gen_client_func_decl_def(func_sig)
+                msg_struct = gen_client_msg_struct(func_sig)
+                server_handler = gen_server_handler(func_sig)
+
+                client_code_dict[func_name] = {
+                    "decl": func_declaration,
+                    "def": func_definition,
+                    "preload": func_preload,
+                    "struct": msg_struct,
+                    "handler": server_handler
+                }
+
         except Exception as e:
             print(f"func_sig: {func_sig}")
             raise e
         
-    return generated_preload
+    return client_code_dict
 
-
-def gen_client_api(header_files=CUDA_API_HEADER_FILES, decl_output_file="cuda_api.h",
-                   def_output_file="cuda_api.cpp", enum_output_file="cuda_api_enum.h"):
-
-    declarations = {}
-    definitions = {}
+def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_file="tally_client.cpp",
+                    decl_output_file="cuda_api.h", def_output_file="cuda_api.cpp",
+                    enum_output_file="cuda_api_enum.h", msg_struct_output_file="msg_struct.h",
+                    server_header_output_file="server.h", server_cpp_output_file="server.cpp"):
+    client_code_dict = {}
 
     for header_file in header_files:
 
         preprocess_header_file(header_file, output_file="/tmp/gcc_output.txt")
+        client_code_dict.update(gen_client_code_from_file("/tmp/gcc_output.txt"))
 
-        client_api = gen_client_api_from_file("/tmp/gcc_output.txt")
-        for func_name in client_api:
-            func_declaration, func_definition = client_api[func_name]
+    with open(client_preload_output_file, "w") as f:
 
-            if func_name not in declarations:
-                declarations[func_name] = func_declaration
-                definitions[func_name] = func_definition
+        f.write(CLIENT_PRELOAD_TEMPLATE)
+        f.write(EXTERN_C_BEGIN)
+        for func_name in client_code_dict:
+            if func_name not in SPECIAL_CLIENT_PRELOAD_FUNCS and client_code_dict[func_name]["preload"]:
+                f.write(client_code_dict[func_name]["preload"])
+                f.write("\n\n")
+        f.write(EXTERN_C_END)
     
     with open(decl_output_file, "w") as f:
 
         f.write(API_DECL_TEMPLATE_TOP)
-        for func_name in declarations:
-            f.write(declarations[func_name])
+        for func_name in client_code_dict:
+            if client_code_dict[func_name]["decl"]:
+                f.write(client_code_dict[func_name]["decl"])
         f.write(API_DECL_TEMPLATE_BUTTOM)
     
     with open(def_output_file, "w") as f:
 
         f.write(API_DEF_TEMPLATE_TOP)
-        for func_name in definitions:
-            f.write(definitions[func_name])
+        for func_name in client_code_dict:
+            if client_code_dict[func_name]["def"]:
+                f.write(client_code_dict[func_name]["def"])
         f.write(API_DEF_TEMPLATE_BUTTOM)
 
     with open(enum_output_file, 'w') as f:
         f.write(API_ENUM_TEMPLATE_TOP)
         f.write("\n\nenum CUDA_API_ENUM {\n")
 
-        for func_name in definitions:
+        for func_name in client_code_dict:
             f.write(f"\t{func_name.upper()},\n")
         
         for idx, func_name in enumerate(API_SPECIAL_ENUM):
@@ -195,32 +266,46 @@ def gen_client_api(header_files=CUDA_API_HEADER_FILES, decl_output_file="cuda_ap
                 f.write(f"\t{func_name.upper()}\n")
 
         f.write("};\n")
-
         f.write(API_ENUM_TEMPLATE_BUTTOM)
+    
+    with open(msg_struct_output_file, 'w') as f:
+        f.write(MSG_STRUCT_TEMPLATE_TOP)
+    
+        for func_name in client_code_dict:
+            if func_name in FORWARD_API_CALLS:
+                f.write(f"{client_code_dict[func_name]['struct']}\n")
 
+        f.write(MSG_STRUCT_TEMPLATE_BUTTOM)
+    
+    with open(server_header_output_file, 'w') as f:
+        f.write(TALLY_SERVER_HEADER_TEMPLATE_TOP)
 
-def gen_client_preload(header_files=CUDA_API_HEADER_FILES, output_file="tally_client.cpp"):
-    func_preload = {}
+        for func_name in client_code_dict:
+            f.write(f"\tvoid handle_{func_name}(void *args);\n")
 
-    for header_file in header_files:
+        f.write(TALLY_SERVER_HEADER_TEMPLATE_BUTTOM)
 
-        preprocess_header_file(header_file, output_file="/tmp/gcc_output.txt")
-        func_preload.update(gen_client_preload_from_file("/tmp/gcc_output.txt"))
+    with open(server_cpp_output_file, 'w') as f:
+        f.write("""
+#include <cstring>
 
-    # Write to preload.cpp
-    with open(output_file, "w") as f:
-
-        f.write(CLIENT_PRELOAD_TEMPLATE)
-
-        f.write(EXTERN_C_BEGIN)
-
-        for func_name in func_preload:
-            if func_name not in SPECIAL_CLIENT_PRELOAD_FUNCS:
-                f.write(func_preload[func_name])
-                f.write("\n\n")
+#include <tally/transform.h>
+#include <tally/util.h>
+#include <tally/msg_struct.h>
+#include <tally/generated/cuda_api.h>
+#include <tally/generated/msg_struct.h>
+#include <tally/generated/server.h>
         
-        f.write(EXTERN_C_END)
+""")
 
+        f.write("void TallyServer::register_api_handler() {\n")
 
-# def gen_msg_struct(header_files=CUDA_API_HEADER_FILES, output_file="msg_struct.h"):
-#     pass
+        for func_name in list(client_code_dict.keys()) + SPECIAL_CLIENT_PRELOAD_FUNCS:
+            f.write(f"\tcuda_api_handler_map[CUDA_API_ENUM::{func_name.upper()}] = std::bind(&TallyServer::handle_{func_name}, this, std::placeholders::_1);\n")
+        
+
+        f.write("}\n")
+
+        for func_name in client_code_dict:
+            if func_name not in SPECIAL_CLIENT_PRELOAD_FUNCS:
+                f.write(client_code_dict[func_name]["handler"])

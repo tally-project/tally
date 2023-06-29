@@ -22,7 +22,7 @@
 
 #include "tally/util.h"
 #include "tally/msg_struct.h"
-#include "tally/kernel_slice.h"
+#include "tally/transform.h"
 #include "tally/client.h"
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"

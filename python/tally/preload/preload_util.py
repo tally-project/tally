@@ -3,6 +3,15 @@ import subprocess
 from tally.preload.consts import IGNORE_KEYWORDS, FUNC_SIG_MUST_CONTAIN, FUNC_SIG_MUST_NOT_CONTAIN
 from tally.util.util import split_and_strip, remove_keywords
 
+def get_func_name_from_sig(func_sig):
+    parse_res = parse_func_sig(func_sig)
+    if parse_res:
+        ret_type, func_name, arg_types, arg_names, arg_vals = parse_res
+    else:
+        return None
+    
+    return func_name
+
 def parse_arg(arg):
 
     if arg == "void":

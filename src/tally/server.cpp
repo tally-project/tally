@@ -1,11 +1,51 @@
 #include <cstring>
 
-#include <tally/server.h>
-#include <tally/kernel_slice.h>
+#include <tally/transform.h>
 #include <tally/util.h>
+#include <tally/msg_struct.h>
 #include <tally/generated/cuda_api.h>
+#include <tally/generated/msg_struct.h>
+#include <tally/generated/server.h>
 
 TallyServer *TallyServer::server = new TallyServer;
+
+TallyServer::TallyServer()
+{
+    register_api_handler();
+
+    __exit = [&](int) {
+        is_quit__.store(true, std::memory_order_release);
+        if (send_ipc != nullptr) send_ipc->disconnect();
+        if (recv_ipc != nullptr) recv_ipc->disconnect();
+        exit(0);
+    };
+
+    signal(SIGINT  , __exit_wrapper);
+    signal(SIGABRT , __exit_wrapper);
+    signal(SIGSEGV , __exit_wrapper);
+    signal(SIGTERM , __exit_wrapper);
+    signal(SIGHUP  , __exit_wrapper);
+}
+
+void TallyServer::start(uint32_t interval) {
+    send_ipc = new ipc::channel("server-to-client", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server", ipc::receiver);
+
+    while (!is_quit__.load(std::memory_order_acquire)) {
+        ipc::buff_t buf;
+        while (buf.empty()) {
+            buf = recv_ipc->recv(interval);
+            if (is_quit__.load(std::memory_order_acquire)) return;
+        }
+
+        char const *dat = buf.get<char const *>();
+        MessageHeader_t *msg_header = (MessageHeader_t *) dat;
+        void *args = (void *) (dat + sizeof(CUDA_API_ENUM));
+
+        auto handler = cuda_api_handler_map[msg_header->api_id];
+        handler(args);
+    }
+}
 
 void TallyServer::handle_cudaMalloc(void *__args)
 {
@@ -18,16 +58,6 @@ void TallyServer::handle_cudaMalloc(void *__args)
 
     struct cudaMallocResponse res { devPtr, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
-        send_ipc->wait_for_recv(1);
-    }
-}
-
-void TallyServer::handle_cudaFree(void *__args)
-{
-    auto args = (struct cudaFreeArg *) __args;
-    cudaError_t err = cudaFree(args->devPtr);
-
-    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
         send_ipc->wait_for_recv(1);
     }
 }

@@ -29,12 +29,17 @@ __global__ void matrixMultiplyPTB(float *A, float *B, float *C, int width, dim3 
         end_idx = num_thread_blocks;
     }
 
-    for (int tb_idx = start_idx; tb_idx < end_idx; tb_idx++) {
-        int currBlockIdx_x = tb_idx / original_gridSize.x;
-        int currBlockIdx_y = (tb_idx - currBlockIdx_x * original_gridSize.x) / original_gridSize.y;
+    dim3 newBlockIdx;
+    uint32_t xy_tbs = original_gridSize.x * original_gridSize.y;
 
-        int row = currBlockIdx_y * blockDim.y + threadIdx.y;
-        int col = currBlockIdx_x * blockDim.x + threadIdx.x;
+    for (int tb_idx = start_idx; tb_idx < end_idx; tb_idx++) {
+
+        newBlockIdx.z = tb_idx / xy_tbs;
+        newBlockIdx.y = (tb_idx - newBlockIdx.z * xy_tbs) / original_gridSize.x;
+        newBlockIdx.x = (tb_idx - newBlockIdx.z * xy_tbs) - newBlockIdx.y * original_gridSize.x;
+
+        int row = newBlockIdx.y * blockDim.y + threadIdx.y;
+        int col = newBlockIdx.x * blockDim.x + threadIdx.x;
 
         if (row < width && col < width) {
             float sum = 0.0f;
@@ -43,7 +48,6 @@ __global__ void matrixMultiplyPTB(float *A, float *B, float *C, int width, dim3 
             }
             C[row * width + col] = sum;
         }
-
     }
 }
 

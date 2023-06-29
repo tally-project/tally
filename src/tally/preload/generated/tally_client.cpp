@@ -18,6 +18,7 @@
 #include "tally/client.h"
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
+#include "tally/generated/msg_struct.h"
 
 
 

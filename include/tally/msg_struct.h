@@ -23,10 +23,6 @@ struct cudaMallocArg {
     size_t  size;
 };
 
-struct cudaFreeArg {
-    void * devPtr;
-};
-
 struct cudaMallocResponse {
     void *ptr;
     cudaError_t err;

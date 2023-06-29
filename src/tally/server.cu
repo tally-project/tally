@@ -9,15 +9,10 @@
 
 #include "libipc/ipc.h"
 
-#include "tally/server.h"
+#include "tally/generated/server.h"
 
-__global__ void vectorAddKernel(const float* A, const float* B, float* C, int size) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    
-    if (i < size) {
-        C[i] = A[i] + B[i];
-    }
-}
+// To trigger CUDA register functions
+__global__ void PlaceholderKernel(){}
 
 int main(int argc, char ** argv) {
 

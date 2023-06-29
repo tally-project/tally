@@ -11,12 +11,13 @@ set (LIBIPC_PROJECT_DIR ${PROJECT_SOURCE_DIR}/third_party/cpp-ipc)
 
 set(TALLY_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/tally/const.cpp
-    ${PROJECT_SOURCE_DIR}/src/tally/kernel_slice.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/transform.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/generated/cuda_api.cpp
 )
 
 set(TALLY_SERVER_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/tally/server.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/generated/server.cpp
 )
 
 set(TALLY_CLIENT_SRC_FILES
@@ -57,15 +58,15 @@ target_link_libraries(tally_client PUBLIC
     $<$<NOT:$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>:pthread>
     $<$<NOT:$<OR:$<STREQUAL:${CMAKE_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>>:rt>)
 
-add_library(tally_slice SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_slice.cpp ${TALLY_SRC_FILES})
+add_library(tally_transform SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_transform.cpp ${TALLY_SRC_FILES})
 
-target_include_directories(tally_slice
+target_include_directories(tally_transform
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC  /usr/local/cuda/include
     PUBLIC ${Boost_INCLUDE_DIR}
 )
 
-target_link_libraries(tally_slice
+target_link_libraries(tally_transform
     PUBLIC Boost::serialization
     PUBLIC Boost::regex
 )

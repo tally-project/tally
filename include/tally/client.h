@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "libipc/ipc.h"
 
@@ -11,7 +12,7 @@ class TallyClient {
 
 public:
 
-    static TallyClient *client;
+    static std::unique_ptr<TallyClient> client;
 
     std::map<std::string, std::vector<uint32_t>> _kernel_name_to_args;
     std::map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
