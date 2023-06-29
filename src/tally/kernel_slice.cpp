@@ -8,12 +8,12 @@
 
 #include <tally/util.h>
 #include <tally/kernel_slice.h>
-#include <tally/cuda_api.h>
+#include <tally/generated/cuda_api.h>
 
 #include <boost/timer/progress_display.hpp>
 #include <boost/regex.hpp>
 
-CubinCache cubin_cache = CubinCache();
+CubinCache *CubinCache::cache = new CubinCache;
 
 void write_binary_to_file(std::string path, const char* data, uint32_t size)
 {

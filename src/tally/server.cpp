@@ -1,11 +1,11 @@
 #include <cstring>
 
 #include <tally/server.h>
-#include <tally/cuda_api.h>
 #include <tally/kernel_slice.h>
 #include <tally/util.h>
+#include <tally/generated/cuda_api.h>
 
-TallyServer tally_server;
+TallyServer *TallyServer::server = new TallyServer;
 
 void TallyServer::handle_cudaMalloc(void *__args)
 {
@@ -25,7 +25,6 @@ void TallyServer::handle_cudaMalloc(void *__args)
 void TallyServer::handle_cudaFree(void *__args)
 {
     auto args = (struct cudaFreeArg *) __args;
-
     cudaError_t err = cudaFree(args->devPtr);
 
     while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
@@ -94,7 +93,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args)
     }
 }
 
-void TallyServer::handle_fatCubin(void *__args)
+void TallyServer::handle___cudaRegisterFatBinary(void *__args)
 {
     auto args = (fatBinArg *) __args;
     magic = args->magic;
@@ -107,14 +106,14 @@ void TallyServer::handle_fatCubin(void *__args)
     memcpy(fatbin_data, args->data, fatBinSize);
 }
 
-void TallyServer::handle_register_kernel(void *__args)
+void TallyServer::handle___cudaRegisterFunction(void *__args)
 {
     auto args = (struct registerKernelArg *) __args;
     std::string kernel_name {args->data, args->kernel_func_len};
     register_queue.push_back( std::make_pair(args->host_func, kernel_name));
 }
 
-void TallyServer::handle_fatCubin_end()
+void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
 {
 	assert(l__cudaRegisterFatBinaryEnd);
     assert(l__cudaRegisterFatBinary);

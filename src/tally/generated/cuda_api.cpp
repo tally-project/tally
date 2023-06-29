@@ -2,7 +2,7 @@
 
 #include <dlfcn.h>
 
-#include <tally/cuda_api.h>
+#include <tally/generated/cuda_api.h>
 #include <tally/const.h>
 
 void *cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);

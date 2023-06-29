@@ -25,6 +25,9 @@ std::vector<std::pair<std::string, std::vector<uint32_t>>> get_kernel_names_and_
 class CubinCache
 {
 public:
+
+    static CubinCache *cache;
+
     // Cubin size : vec<(cubin data, vec<(sliced_ptx, sliced_fatbin)>)>
     std::map<size_t, std::vector<std::pair<std::string, std::vector<std::pair<std::string, std::string>>>>> sliced_ptx_cache;
     std::string cache_file;
@@ -101,7 +104,5 @@ public:
         return strs;
     }
 };
-
-extern CubinCache cubin_cache;
 
 #endif // TALLY_KERNEL_SLICE_H

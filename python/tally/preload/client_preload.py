@@ -8,7 +8,8 @@ from tally.preload.client_consts import (
     API_DEF_TEMPLATE_TOP,
     API_DEF_TEMPLATE_BUTTOM,
     SPECIAL_CLIENT_PRELOAD_FUNCS,
-    CLIENT_PRELOAD_TEMPLATE
+    CLIENT_PRELOAD_TEMPLATE,
+    FORWARD_API_CALLS
 )
 from tally.preload.preload_util import gen_func_sig_args_str, parse_func_sig, preprocess_header_file, generate_func_sig_from_file
 
@@ -78,17 +79,51 @@ def gen_func_client_preload(func_sig):
     func_preload_builder += f"{ret_type} {func_name}({args_str_no_val})\n"
     func_preload_builder += "{\n"
 
-    # print
-    func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
+    if func_name not in FORWARD_API_CALLS:
 
-    # call original
-    if ret_type != "void":
-        func_preload_builder += f"\t{ret_type} res = \n"
+        # print
+        func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
+
+        # call original
+        if ret_type != "void":
+            func_preload_builder += f"\t{ret_type} res = \n"
+            
+        func_preload_builder += f"\t\t{preload_func_name}({arg_names_str});\n"
+
+        if ret_type != "void":
+            func_preload_builder += f"\treturn res;\n"
+    
+    else:
+        arg_struct = f"{func_name}Arg"
+
+        func_preload_builder +=  f"""
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct {arg_struct});
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::{func_name.upper()};
+    
+    struct {arg_struct} *arg_ptr = (struct {arg_struct} *)(msg + sizeof(CUDA_API_ENUM));
+    """
         
-    func_preload_builder += f"\t\t{preload_func_name}({arg_names_str});\n"
+        for arg_name in arg_names:
+            func_preload_builder += f"arg_ptr->{arg_name} = {arg_name};\n"
 
-    if ret_type != "void":
-        func_preload_builder += f"\treturn res;\n"
+        func_preload_builder += f"""
+        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {{
+            TallyClient::client->send_ipc->wait_for_recv(1);
+        }}
+        std::free(msg);
+
+        ipc::buff_t buf;
+        while (buf.empty()) {{
+            buf = TallyClient::client->recv_ipc->recv(1000);
+        }}
+
+        const char *dat = buf.get<const char *>();
+        {ret_type} *res = ({ret_type} *) dat;
+        return *res;
+"""
 
     # close bracket
     func_preload_builder += "}"
@@ -172,9 +207,6 @@ def gen_client_preload(header_files=CUDA_API_HEADER_FILES, output_file="tally_cl
         preprocess_header_file(header_file, output_file="/tmp/gcc_output.txt")
         func_preload.update(gen_client_preload_from_file("/tmp/gcc_output.txt"))
 
-    # Some special preload functions
-    func_preload.update(SPECIAL_CLIENT_PRELOAD_FUNCS)
-
     # Write to preload.cpp
     with open(output_file, "w") as f:
 
@@ -183,8 +215,12 @@ def gen_client_preload(header_files=CUDA_API_HEADER_FILES, output_file="tally_cl
         f.write(EXTERN_C_BEGIN)
 
         for func_name in func_preload:
-            f.write(func_preload[func_name])
-            f.write("\n\n")
+            if func_name not in SPECIAL_CLIENT_PRELOAD_FUNCS:
+                f.write(func_preload[func_name])
+                f.write("\n\n")
         
         f.write(EXTERN_C_END)
 
+
+# def gen_msg_struct(header_files=CUDA_API_HEADER_FILES, output_file="msg_struct.h"):
+#     pass

@@ -32,7 +32,7 @@
 #include <tally/msg_struct.h>
 #include <tally/const.h>
 #include <tally/kernel_slice.h>
-#include <tally/cuda_api.h>
+#include <tally/generated/cuda_api.h>
 
 class CudaGraphCall {
 
@@ -303,7 +303,7 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
 
     // std::cout << "Processing cubin with size: " << fatCubin_data_size_bytes << std::endl;
-    auto sliced_ptx_fatbin_strs = cubin_cache.get_sliced_ptx_fatbin_strs((const char *)wp->data, fatCubin_data_size_bytes);
+    auto sliced_ptx_fatbin_strs = CubinCache::cache->get_sliced_ptx_fatbin_strs((const char *)wp->data, fatCubin_data_size_bytes);
 
     tracer.sliced_ptx_fatbin_strs.insert(
         tracer.sliced_ptx_fatbin_strs.end(),

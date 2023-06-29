@@ -1,7 +1,10 @@
 #ifndef TALLY_DEF_H
 #define TALLY_DEF_H
 
-#include <tally/cuda_api_enum.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
+
+#include <tally/generated/cuda_api_enum.h>
 
 struct __align__(8) fatBinaryHeader
 {

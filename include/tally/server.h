@@ -1,5 +1,6 @@
 #ifndef TALLY_SERVER_H
 #define TALLY_SERVER_H
+
 #include <signal.h>
 #include <string>
 #include <atomic>
@@ -23,6 +24,9 @@ static void __exit_wrapper(int signal) {
 class TallyServer {
 
 public:
+
+    static TallyServer *server;
+
     int magic;
     int version;
     unsigned long long* fatbin_data;
@@ -35,6 +39,7 @@ public:
     std::map<std::string, void *> _kernel_name_to_addr;
     std::map<void *, void *> _kernel_client_addr_mapping;
     std::vector<std::pair<void *, std::string>> register_queue;
+    std::unordered_map<CUDA_API_ENUM, std::function<void(void *)>> cuda_api_handler_map;
 
     TallyServer()
     {
@@ -50,6 +55,14 @@ public:
         signal(SIGSEGV , __exit_wrapper);
         signal(SIGTERM , __exit_wrapper);
         signal(SIGHUP  , __exit_wrapper);
+
+        cuda_api_handler_map[CUDA_API_ENUM::CUDAMALLOC] = std::bind(&TallyServer::handle_cudaMalloc, this, std::placeholders::_1);
+        cuda_api_handler_map[CUDA_API_ENUM::CUDAFREE] = std::bind(&TallyServer::handle_cudaFree, this, std::placeholders::_1);
+        cuda_api_handler_map[CUDA_API_ENUM::CUDAMEMCPY] = std::bind(&TallyServer::handle_cudaMemcpy, this, std::placeholders::_1);
+        cuda_api_handler_map[CUDA_API_ENUM::CUDALAUNCHKERNEL] = std::bind(&TallyServer::handle_cudaLaunchKernel, this, std::placeholders::_1);
+        cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFUNCTION] = std::bind(&TallyServer::handle___cudaRegisterFunction, this, std::placeholders::_1);
+        cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFATBINARY] = std::bind(&TallyServer::handle___cudaRegisterFatBinary, this, std::placeholders::_1);
+        cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND] = std::bind(&TallyServer::handle___cudaRegisterFatBinaryEnd, this, std::placeholders::_1);
     }
 
     void start(uint32_t interval) {
@@ -65,34 +78,10 @@ public:
 
             char const *dat = buf.get<char const *>();
             MessageHeader_t *msg_header = (MessageHeader_t *) dat;
-
             void *args = (void *) (dat + sizeof(CUDA_API_ENUM));
 
-            switch(msg_header->api_id) {
-                case CUDA_API_ENUM::CUDAMALLOC:
-                    handle_cudaMalloc(args);
-                    break;
-                case CUDA_API_ENUM::CUDAFREE:
-                    handle_cudaFree(args);
-                    break;
-                case CUDA_API_ENUM::CUDAMEMCPY:
-                    handle_cudaMemcpy(args);
-                    break;
-                case CUDA_API_ENUM::CUDALAUNCHKERNEL:
-                    handle_cudaLaunchKernel(args);
-                    break;
-                case CUDA_API_ENUM::__CUDAREGISTERFUNCTION:
-                    handle_register_kernel(args);
-                    break;
-                case CUDA_API_ENUM::__CUDAREGISTERFATBINARY:
-                    handle_fatCubin(args);
-                    break;
-                case CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND:
-                    handle_fatCubin_end();
-                    break;
-                default:
-                    break;
-            }
+            auto handler = cuda_api_handler_map[msg_header->api_id];
+            handler(args);
         }
     }
 
@@ -101,11 +90,9 @@ public:
     void handle_cudaMemcpy(void *args);
     void handle_cudaLaunchKernel(void *args);
 
-    void handle_fatCubin(void *args);
-    void handle_register_kernel(void *args);
-    void handle_fatCubin_end();
+    void handle___cudaRegisterFatBinary(void *args);
+    void handle___cudaRegisterFunction(void *args);
+    void handle___cudaRegisterFatBinaryEnd(void *args);
 };
-
-extern TallyServer tally_server;
 
 #endif // TALLY_SERVER_H
