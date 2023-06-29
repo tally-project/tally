@@ -193,7 +193,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
             cudaEventElapsedTime(&prev_time_ms, _start, _stop);
 
             // Does not invoke the sliced version if overhead is too large.
-            // std::cout << "prev_time_ms: " << prev_time_ms << " sliced_time_ms: " << sliced_time_ms;
+            std::cout << "prev_time_ms: " << prev_time_ms << " sliced_time_ms: " << sliced_time_ms << std::endl;
             if (sliced_time_ms > KERNEL_SLICE_THRESHOLD * prev_time_ms) {
                 tracer.kernel_slice_map[func] = false;
             } else {

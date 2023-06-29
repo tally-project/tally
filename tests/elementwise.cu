@@ -19,23 +19,20 @@ __global__ void elementwiseAddition(float* a, float* b, float* c, int size) {
 
 __global__ void elementwiseAdditionPTB(float* a, float* b, float* c, int size, dim3 original_gridSize) {
 
-    uint32_t part_size = original_gridSize.x / gridDim.x;
-    uint32_t start_idx = blockIdx.x * part_size;
-    uint32_t end_idx = start_idx + part_size;
-    if (blockIdx.x == gridDim.x - 1) {
-        end_idx = original_gridSize.x;
-    }
+    uint32_t num_thread_blocks = original_gridSize.x * original_gridSize.y * original_gridSize.z;
+    uint32_t xy_tbs = original_gridSize.x * original_gridSize.y;
+    dim3 newBlockIdx(0, 0, 0);
 
-    for (int curr_block_idx = start_idx; curr_block_idx < end_idx; curr_block_idx++) {
+    for (int tb_idx = blockIdx.x; tb_idx < num_thread_blocks; tb_idx += gridDim.x) {
 
-        if (curr_block_idx < original_gridSize.x) {
+        newBlockIdx.z = tb_idx / xy_tbs;
+        newBlockIdx.y = (tb_idx - newBlockIdx.z * xy_tbs) / original_gridSize.x;
+        newBlockIdx.x = (tb_idx - newBlockIdx.z * xy_tbs) - newBlockIdx.y * original_gridSize.x;
 
-            int tid = threadIdx.x + curr_block_idx * blockDim.x;
-
-            if (tid < size) {
-                c[tid] = a[tid] + b[tid];
-            }
-
+        int tid = threadIdx.x + newBlockIdx.x * blockDim.x;
+    
+        if (tid < size) {
+            c[tid] = a[tid] + b[tid];
         }
     }
 }
@@ -62,6 +59,14 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
     // Depend on number of PTBs/SM
     dim3 PTB_grid_dim(82 * 4);
 
+    // Warm up
+    if (ptb) {
+        elementwiseAdditionPTB<<<PTB_grid_dim, PTB_block_dim>>>(deviceA, deviceB, deviceC, size, grid_dim);
+    } else {
+        elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
+    }
+
+    cudaDeviceSynchronize();
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
@@ -102,7 +107,7 @@ void runElementwiseAdditionCpu(float* arr_a, float* arr_b, float* arr_c, int siz
 
 int main()
 {
-    int size = 262144;
+    int size = 16777216;
     bool ptb = false;
     
     // Allocate memory on the host (CPU)
@@ -123,7 +128,10 @@ int main()
     runElementwiseAdditionCpu(arr_a, arr_b, res_cpu, size);
 
     for (int i = 0; i < size; i++) {
-        assert(res_gpu[i] == res_cpu[i]);
+        if (abs(res_gpu[i] - res_cpu[i]) > 0.0001) {
+            std::cerr << "result mismatch: res_gpu[i]: " << res_gpu[i] << " " << "res_cpu[i]: " << res_gpu[i] << std::endl;
+            exit(1);
+        }
     }
     
     // Cleanup

@@ -22,17 +22,10 @@ __global__ void matrixMultiply(float *A, float *B, float *C, int width)
 __global__ void matrixMultiplyPTB(float *A, float *B, float *C, int width, dim3 original_gridSize) {
 
     uint32_t num_thread_blocks = original_gridSize.x * original_gridSize.y * original_gridSize.z;
-    uint32_t part_size = (num_thread_blocks + gridDim.x - 1) / gridDim.x;
-    uint32_t start_idx = blockIdx.x * part_size;
-    uint32_t end_idx = start_idx + part_size;
-    if (blockIdx.x == gridDim.x - 1) {
-        end_idx = num_thread_blocks;
-    }
-
-    dim3 newBlockIdx;
     uint32_t xy_tbs = original_gridSize.x * original_gridSize.y;
+    dim3 newBlockIdx(0, 0, 0);
 
-    for (int tb_idx = start_idx; tb_idx < end_idx; tb_idx++) {
+    for (int tb_idx = blockIdx.x; tb_idx < num_thread_blocks; tb_idx += gridDim.x) {
 
         newBlockIdx.z = tb_idx / xy_tbs;
         newBlockIdx.y = (tb_idx - newBlockIdx.z * xy_tbs) / original_gridSize.x;
@@ -68,6 +61,7 @@ __host__ void runmatrixMultiply(float *h_A, float *h_B, float *h_C, int width, b
     // Set up grid and block dimensions
     dim3 blockSize(16, 16);
     dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (width + blockSize.y - 1) / blockSize.y);
+    std::cout << "gridSize: " << gridSize.x << " " << gridSize.y << " " << gridSize.z << std::endl;
 
     // same as before
     dim3 PTB_block_dim(16, 16);
@@ -75,6 +69,14 @@ __host__ void runmatrixMultiply(float *h_A, float *h_B, float *h_C, int width, b
     // Depend on number of PTBs/SM
     dim3 PTB_grid_dim(82 * 4);
  
+    // warmup
+    if (ptb) {
+        matrixMultiplyPTB<<<PTB_grid_dim, PTB_block_dim>>>(d_A, d_B, d_C, width, gridSize);
+    } else {
+        matrixMultiply<<<gridSize, blockSize>>>(d_A, d_B, d_C, width);
+    }
+    
+    cudaDeviceSynchronize();
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
@@ -142,7 +144,11 @@ int main()
     runmatrixMultiplyCpu(arr_a, arr_b, res_cpu, width);
 
     for (int i = 0; i < width * width; ++i) {
-        assert((res_gpu[i] - res_cpu[i]) < 0.0001);
+        // std::cout << "res_gpu[i]: " << res_gpu[i] << " " << "res_cpu[i]: " << res_cpu[i] << std::endl;
+        if (abs(res_gpu[i] - res_cpu[i]) > 0.001) {
+            std::cerr << "result mismatch: res_gpu[i]: " << res_gpu[i] << " " << "res_cpu[i]: " << res_cpu[i] << std::endl;
+            exit(1);
+        }
     }
 
     delete[] arr_a;
