@@ -175,7 +175,7 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
     cubin_file.close();
 
     const char* command = "cuobjdump /tmp/tmp.cubin -elf > /tmp/tmp_cubin.elf";
-    system(command);
+    exec(command);
 
     std::string elf_filename = "/tmp/tmp_cubin.elf";
     auto kernel_names_and_param_sizes = get_kernel_names_and_param_sizes_from_elf(elf_filename);

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <cstdio>
+#include <limits>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -17,14 +18,17 @@
 #include <tally/util.h>
 #include <tally/generated/cuda_api.h>
 
+std::string get_fatbin_str_from_ptx_str(std::string ptx_str);
 void write_binary_to_file(std::string path, const char* data, uint32_t size);
 void write_str_to_file(std::string path, std::string str);
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path);
 std::string gen_sliced_ptx(std::string ptx_path);
 std::string gen_ptb_ptx(std::string ptx_path);
-std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_ptx_fatbin(std::vector<std::pair<std::string, std::string>> &sliced_ptx_fatbin_strs, std::map<std::string, const void *> &kernel_name_map);
+std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_ptx_fatbin(std::vector<std::pair<std::string, std::string>> &ptx_fatbin_strs, std::map<std::string, const void *> &kernel_name_map);
 std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str);
 std::vector<std::pair<std::string, std::vector<uint32_t>>> get_kernel_names_and_param_sizes_from_elf(std::string elf_file_name);
+
+class LaunchConfig;
 
 class CubinCache
 {
@@ -32,17 +36,20 @@ public:
 
     static std::unique_ptr<CubinCache> cache;
 
-    // Cubin size : vec<(cubin data, vec<(sliced_ptx, sliced_fatbin)>)>
-    std::map<size_t, std::vector<std::pair<std::string, std::vector<std::pair<std::string, std::string>>>>> sliced_ptx_cache;
+    // Cubin size : vec<(cubin data, (vec<(sliced_ptx, sliced_fatbin)>, vec<(ptb_ptx, ptb_fatbin)>))>
+    std::map<size_t,std::vector<std::pair<std::string, std::pair<
+                        std::vector<std::pair<std::string, std::string>>,
+                        std::vector<std::pair<std::string, std::string>>>>>>
+        transform_cache;
     std::string cache_file;
 
     CubinCache() :
-        cache_file("CubinCache.txt")
+        cache_file(".tally_cache")
     {
         std::ifstream file(cache_file);
         if (file.is_open()) {
             boost::archive::text_iarchive archive(file);
-            archive >> sliced_ptx_cache;
+            archive >> transform_cache;
             file.close();
         } else {
             std::cout << "cache not exists" << std::endl;
@@ -58,20 +65,23 @@ public:
     {
         std::ofstream file(cache_file);
         boost::archive::text_oarchive archive(file);
-        archive << sliced_ptx_cache;
+        archive << transform_cache;
     }
 
-    std::vector<std::pair<std::string, std::string>> get_sliced_ptx_fatbin_strs(const char* cubin_data, size_t cubin_size)
+    std::pair<std::vector<std::pair<std::string, std::string>>, std::vector<std::pair<std::string, std::string>>>
+    get_transform_ptx_fatbin_strs(const char* cubin_data, size_t cubin_size)
     {
-        std::vector<std::pair<std::string, std::string>> strs;
 
-        if (sliced_ptx_cache.find(cubin_size) != sliced_ptx_cache.end()) {
-            for (auto &_pair : sliced_ptx_cache[cubin_size]) {
+        std::pair<std::vector<std::pair<std::string, std::string>>, std::vector<std::pair<std::string, std::string>>> ptx_fatbin_strs;
+        
+        if (transform_cache.find(cubin_size) != transform_cache.end()) {
+            for (auto &_pair : transform_cache[cubin_size]) {
                 if (memcmp(_pair.first.c_str(), cubin_data, cubin_size) == 0) {
                     return _pair.second;
                 }
             }
         } else {
+
             std::string cubin_tmp_path("/tmp/output.cubin");
             write_binary_to_file(cubin_tmp_path, cubin_data, cubin_size);
             auto ptx_file_names = gen_ptx_from_cubin(cubin_tmp_path);
@@ -81,23 +91,17 @@ public:
 
             for (const auto& ptx_file_name : ptx_file_names) {
                 auto sliced_ptx_str = gen_sliced_ptx(ptx_file_name);
-                write_str_to_file("/tmp/output.ptx", sliced_ptx_str);
-                auto res = exec("nvcc /tmp/output.ptx --fatbin -arch sm_86 -o /tmp/output.fatbin");
+                auto sliced_fatbin_str = get_fatbin_str_from_ptx_str(sliced_ptx_str);
+                ptx_fatbin_strs.first.push_back(std::make_pair(sliced_ptx_str, sliced_fatbin_str));
 
-                if (res.second != 0) {
-                    throw std::runtime_error("Fail to compile PTX.");
-                }
+                auto ptb_ptx_str = gen_ptb_ptx(ptx_file_name);
+                auto ptb_fatbin_str = get_fatbin_str_from_ptx_str(ptb_ptx_str);
+                ptx_fatbin_strs.second.push_back(std::make_pair(ptb_ptx_str, ptb_fatbin_str));
 
-                std::ifstream ifs("/tmp/output.fatbin", std::ios::binary);
-                auto sliced_fatbin_str = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
-
-                strs.push_back(std::make_pair(sliced_ptx_str, sliced_fatbin_str));
                 std::remove(ptx_file_name.c_str());
-                std::remove("/tmp/output.ptx");
-                std::remove("/tmp/output.fatbin");
             }
 
-            sliced_ptx_cache[cubin_size].push_back(std::make_pair(cubin_str, strs));
+            transform_cache[cubin_size].push_back(std::make_pair(cubin_str, ptx_fatbin_strs));
 
             // Avoid too much I/O overhead on very small update.
             if (cubin_size > 4194304) {
@@ -105,7 +109,7 @@ public:
             }
         }
 
-        return strs;
+        return ptx_fatbin_strs;
     }
 };
 
@@ -148,26 +152,71 @@ public:
     }
 };
 
+class LaunchConfig {
+public:
+    // Choose which kernel version to launch
+    bool use_original = true;
+    bool use_sliced = false;
+    bool use_ptb = false;
+    
+    // Specific to use_sliced
+    bool use_cuda_graph = false;
+    uint32_t threads_per_slice = 0;
+
+    // Specific to use_ptb
+    uint32_t num_blocks_per_sm = 0;
+
+    friend std::ostream& operator<<(std::ostream& os, const LaunchConfig& config) {
+        os << "LaunchConfig: ";
+        if (config.use_original) {
+            os << "original";
+        } else if (config.use_sliced) {
+            os << "sliced: use_cuda_graph: ";
+            if (config.use_cuda_graph) {
+                os << "true ";
+            } else {
+                os << "false ";
+            }
+            os << "threads_per_slice: " << config.threads_per_slice;
+        } else if (config.use_ptb) {
+            os << "PTB: num_blocks_per_sm: " << config.num_blocks_per_sm;
+        }
+        return os;
+    }
+
+    LaunchConfig(bool use_original=true, bool use_sliced=false, bool use_ptb=false, bool use_cuda_graph=false, uint32_t threads_per_slice=0, uint32_t num_blocks_per_sm=0) :
+        use_original(use_original), use_sliced(use_sliced), use_ptb(use_ptb), use_cuda_graph(use_cuda_graph),
+        threads_per_slice(threads_per_slice), num_blocks_per_sm(num_blocks_per_sm)
+    {}
+
+    cudaError_t launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, bool run_profile=false, float *elapsed_time_ms=nullptr);
+    static LaunchConfig tune(const void *, dim3, dim3, void **, size_t, cudaStream_t);
+};
 
 class Transform {
 
 public:
 
+    static std::unique_ptr<Transform> tracer;
+
     std::map<std::string, const void *> kernel_name_to_host_func_map;
     std::map<const void *, std::string> host_func_to_kernel_name_map;
-    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
-    std::unordered_map<const void *, bool> kernel_slice_map;
+    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> sliced_kernel_map;
+    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> ptb_kernel_map;
+    std::unordered_map<const void *, LaunchConfig> kernel_profile_map;
     std::vector<CudaGraphCall*> cuda_graph_vec;
     cudaStream_t stream;
 
     std::vector<std::pair<std::string, std::string>> sliced_ptx_fatbin_strs;
+    std::vector<std::pair<std::string, std::string>> ptb_ptx_fatbin_strs;
     bool kernels_registered = false;
 
     void register_kernels()
     {
         lcudaStreamCreate(&stream);
 
-        kernel_map = register_kernels_from_ptx_fatbin(sliced_ptx_fatbin_strs, kernel_name_to_host_func_map);
+        ptb_kernel_map = register_kernels_from_ptx_fatbin(ptb_ptx_fatbin_strs, kernel_name_to_host_func_map);
+        sliced_kernel_map = register_kernels_from_ptx_fatbin(sliced_ptx_fatbin_strs, kernel_name_to_host_func_map);
         kernels_registered = true;
     }
 

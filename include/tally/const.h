@@ -8,5 +8,6 @@ static const char* LIBCUDNN_PATH = "/usr/local/cuda/lib64/libcudnn.so";
 extern uint32_t THREADS_PER_SLICE;
 extern bool USE_CUDA_GRAPH;
 extern uint32_t KERNEL_SLICE_THRESHOLD;
+extern uint32_t TRANSFORM_THREADS_THRESHOLD;
 
 #endif // TALLY_CONST_H

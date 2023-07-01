@@ -3,7 +3,7 @@ import argparse
 
 sys.path.append("../python")
 
-from tally.slice.slice import slice_kernel, get_kernel_names
+from tally.transform.slice import slice_kernel, get_kernel_names
 
 parser = argparse.ArgumentParser(prog="kernel slicer", description="Generate sliced version of kernel")
 

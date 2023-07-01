@@ -3,7 +3,7 @@ project(tally LANGUAGES C CXX CUDA)
 enable_language(CUDA)
 
 set(CMAKE_CUDA_COMPILER nvcc)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE "Release")
 
 FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
