@@ -6,6 +6,7 @@
 
 #include <cuda.h>
 
+#include <tally/const.h>
 #include <tally/util.h>
 #include <tally/transform.h>
 #include <tally/generated/cuda_api.h>
@@ -16,6 +17,18 @@
 std::unique_ptr<CubinCache> CubinCache::cache = std::make_unique<CubinCache>();
 std::unique_ptr<Transform> Transform::tracer = std::make_unique<Transform>();
 
+#define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
+template <typename T>
+void check(T err, const char* const func, const char* const file,
+           const int line)
+{
+    if (err != cudaSuccess)
+    {
+        std::cerr << "CUDA Runtime Error at: " << file << ":" << line << std::endl;
+        std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
+    }
+}
+
 LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
     LaunchConfig best_config;
@@ -23,14 +36,15 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
 
     float best_time_ms = std::numeric_limits<float>::max();
     float time_ms;
+    float base_time_ms;
 
     std::cout << "[Profile result]" <<std::endl;
     std::cout << "\tKernel:" << Transform::tracer->host_func_to_kernel_name_map[func] << std::endl;
 
     // default config - use_original=true
     LaunchConfig base_config;
-    base_config.launch(func, gridDim, blockDim, args, sharedMem, stream, true, &time_ms);
-    std::cout << "\tBaseline: Time: " << time_ms << std::endl;
+    base_config.launch(func, gridDim, blockDim, args, sharedMem, stream, true, &base_time_ms);
+    std::cout << "\tBaseline: Time: " << base_time_ms << std::endl;
 
     // some sliced configs
     for (uint32_t _threads_per_block : { 129560, 161280, 174080, 184320, 196608 }) {
@@ -52,13 +66,23 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
     }
     
     for (auto &config : candidates) {
-        config.launch(func, gridDim, blockDim, args, sharedMem, stream, true, &time_ms);
+        try {
+            config.launch(func, gridDim, blockDim, args, sharedMem, stream, true, &time_ms);
+        } catch (const std::exception& e) {
+            std::cout << "caught std::exception& e" << std::endl;
+        }
         std::cout << "\t" << config << " Time: " << time_ms << std::endl;
         if (time_ms < best_time_ms) {
             best_config = config;
             best_time_ms = time_ms;
         }
     }
+
+    if (best_time_ms > USE_TRANSFORM_THRESHOLD * base_time_ms) {
+        best_config = base_config;
+    }
+
+    std::cout << "Choosen: " << best_config << std::endl;
 
     return best_config;
 }
@@ -85,6 +109,8 @@ cudaError_t LaunchConfig::launch(
             cudaEventRecord(_stop);
             cudaEventSynchronize(_stop);
             cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
+            cudaEventDestroy(_start);
+            cudaEventDestroy(_stop);
         }
 
         return err;
@@ -227,6 +253,8 @@ cudaError_t LaunchConfig::launch(
                 cudaEventRecord(_stop);
                 cudaEventSynchronize(_stop);
                 cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
+                cudaEventDestroy(_start);
+                cudaEventDestroy(_stop);
             }
 
             return res;
@@ -236,11 +264,14 @@ cudaError_t LaunchConfig::launch(
                 cudaEventRecord(_stop);
                 cudaEventSynchronize(_stop);
                 cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
+                cudaEventDestroy(_start);
+                cudaEventDestroy(_stop);
             }
 
             return cudaSuccess;
         }
     } else if (use_ptb) {
+
         auto cu_func = Transform::tracer->ptb_kernel_map[func].first;
         auto num_args = Transform::tracer->ptb_kernel_map[func].second;
 
@@ -256,22 +287,23 @@ cudaError_t LaunchConfig::launch(
         KernelParams[num_args - 1] = &gridDim;
 
         if (run_profile) {
-            cudaEventCreate(&_start);
-            cudaEventCreate(&_stop);
-            cudaDeviceSynchronize();
+            CHECK_CUDA_ERROR(cudaEventCreate(&_start));
+            CHECK_CUDA_ERROR(cudaEventCreate(&_stop));
+            CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 
-            cudaEventRecord(_start);
+            CHECK_CUDA_ERROR(cudaEventRecord(_start));
         }
 
         auto res = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
                               blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
 
         if (run_profile) {
-            cudaEventRecord(_stop);
-            cudaEventSynchronize(_stop);
-            cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
+            CHECK_CUDA_ERROR(cudaEventRecord(_stop));
+            CHECK_CUDA_ERROR(cudaEventSynchronize(_stop));
+            CHECK_CUDA_ERROR(cudaEventElapsedTime(elapsed_time_ms, _start, _stop));
+            CHECK_CUDA_ERROR(cudaEventDestroy(_start));
+            CHECK_CUDA_ERROR(cudaEventDestroy(_stop));
         }
-
 
         if (res != CUDA_SUCCESS) {
             std::cerr << "Encountering res != CUDA_SUCCESS" << std::endl;
@@ -347,7 +379,6 @@ std::string gen_ptb_ptx(std::string ptx_path)
     uint32_t num_params = 0;
     uint32_t num_b32_regs = 0;
     uint32_t num_pred_regs = 0;
-    bool use_block_idx_xyz[3] = { false, false, false };
     bool record_kernel = false;
     std::vector<std::string> kernel_lines;
     int32_t brace_counter = 0;
@@ -358,7 +389,7 @@ std::string gen_ptb_ptx(std::string ptx_path)
     uint32_t num_additional_pred_regs = 2;
 
     std::string ptb_ptx_code = "";
-    // bool found = false;
+    bool found = false;
 
     boost::timer::progress_display progress(ptx_code_str.size());
     while (std::getline(ss, line, '\n')) {
@@ -375,8 +406,7 @@ std::string gen_ptb_ptx(std::string ptx_path)
             brace_encountered = false;
             kernel_lines.clear();
 
-            // if (demangleFunc(kernel_name) == "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl<at::native::CUDAFunctor_add<float> >(at::TensorIteratorBase&, at::native::CUDAFunctor_add<float> const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl<at::native::CUDAFunctor_add<float> >(at::TensorIteratorBase&, at::native::CUDAFunctor_add<float> const&)::{lambda(int)#1})" ||
-            //     demangleFunc(kernel_name) == "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, at::detail::Array<char*, 2> >(int, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, at::detail::Array<char*, 2>)") {
+            // if (demangleFunc(kernel_name) == "void at::native::(anonymous namespace)::max_pool_backward_nchw<c10::Half, float>(c10::Half const*, long const*, int, long, long, long, int, int, int, int, int, int, int, int, int, int, c10::Half*)") {
             //     std::cout << "Found target kernel:" << std::endl;
             //     std::cout << kernel_name << std::endl;
             //     std::cout << ptx_code_str << std::endl;
@@ -416,9 +446,10 @@ std::string gen_ptb_ptx(std::string ptx_path)
 
         if (record_kernel && brace_encountered && brace_counter == 0) {
 
+            record_kernel = false;
+
             // Ignore such kernels for now!
             if (num_params == 0) {
-                record_kernel = false;
                 continue;
             }
 
@@ -442,11 +473,14 @@ std::string gen_ptb_ptx(std::string ptx_path)
             std::string tb_idx_ge_num_thread_blocks_reg = "%p" + std::to_string(num_pred_regs);
             std::string tb_idx_lt_num_thread_blocks_reg = "%p" + std::to_string(num_pred_regs + 1);
 
+            std::map<std::string, std::string> reg_replacement_rules;
+            reg_replacement_rules["%ctaid.x"] = newBlockIdx_x_reg;
+            reg_replacement_rules["%ctaid.y"] = newBlockIdx_y_reg;
+            reg_replacement_rules["%ctaid.z"] = newBlockIdx_z_reg;
+
             brace_counter = 0;
             brace_encountered = false;
-            record_kernel = false;
             boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
-            std::map<std::string, std::string> reg_replacement_rules;
 
             for (auto &kernel_line : kernel_lines) {
 
@@ -528,22 +562,6 @@ std::string gen_ptb_ptx(std::string ptx_path)
                 if (boost::regex_search(kernel_line, matches, pred_reg_decl_pattern)) {
                     continue;
                 }
-
-                // Consider moving this before end of kernel
-                // In cases block_idx decl happens out of order
-                if (boost::regex_search(kernel_line, matches, block_idx_pattern)) {
-                    std::string block_idx_match_dim = matches[2];
-                    uint32_t block_idx_match_reg = std::stoi(matches[1]);
-   
-                    if (block_idx_match_dim == "x") {
-                        reg_replacement_rules["%r" + std::to_string(block_idx_match_reg) + "(?!\\d)"] = newBlockIdx_x_reg;
-                    } else if (block_idx_match_dim == "y") {
-                        reg_replacement_rules["%r" + std::to_string(block_idx_match_reg) + "(?!\\d)"] = newBlockIdx_y_reg;
-                    } else if (block_idx_match_dim == "z") {
-                        reg_replacement_rules["%r" + std::to_string(block_idx_match_reg) + "(?!\\d)"] = newBlockIdx_z_reg;
-                    }
-                    continue;
-                }
             
                 // instead of return, branch to loop condition check
                 if (strip(kernel_line) == "ret;") {
@@ -572,7 +590,7 @@ std::string gen_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += "$" + PTB_RETURN_BLOCK_NAME + ":\n";
                     ptb_ptx_code += "ret;\n";
 
-                    ptb_ptx_code += kernel_line;
+                    ptb_ptx_code += kernel_line + "\n";
                     continue;
                 }
 
@@ -586,11 +604,11 @@ std::string gen_ptb_ptx(std::string ptx_path)
         }
     }
 
-    // if (true) {
-    //     std::cout << "ptb_ptx_code:" << std::endl;
-    //     std::cout << ptb_ptx_code << std::endl;
-    //     // exit(0);
-    // }
+    if (found) {
+        std::cout << "ptb_ptx_code:" << std::endl;
+        std::cout << ptb_ptx_code << std::endl;
+        exit(0);
+    }
 
     return ptb_ptx_code;
 }
@@ -616,7 +634,7 @@ std::string gen_sliced_ptx(std::string ptx_path)
 
     uint32_t num_params = 0;
     uint32_t num_b32_regs = 0;
-    bool use_block_idx_xyz[3] = { false, false, false };
+    uint32_t num_additional_b32 = 9;
     bool record_kernel = false;
     std::vector<std::string> kernel_lines;
     int32_t brace_counter = 0;
@@ -639,9 +657,6 @@ std::string gen_sliced_ptx(std::string ptx_path)
             brace_counter = 0;
             brace_encountered = false;
             kernel_lines.clear();
-            
-            // reset to false 
-            memset(use_block_idx_xyz, 0, 3);
 
             kernel_lines.push_back(line);
             continue;
@@ -674,13 +689,6 @@ std::string gen_sliced_ptx(std::string ptx_path)
 
         if (boost::regex_search(line, matches, block_idx_pattern)) {
             std::string block_idx_match_dim = matches[2];
-            if (block_idx_match_dim == "x") {
-                use_block_idx_xyz[0] = true;
-            } else if (block_idx_match_dim == "y") {
-                use_block_idx_xyz[1] = true;
-            } else if (block_idx_match_dim == "z") {
-                use_block_idx_xyz[2] = true;
-            }
             continue;
         }
 
@@ -688,26 +696,70 @@ std::string gen_sliced_ptx(std::string ptx_path)
 
             record_kernel = false;
 
-            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
-            uint32_t num_additional_b32 = 0;
-    
-            uint32_t block_offset_xyz_reg[3];
-            uint32_t new_block_idx_xyz_reg[3];
-
-            uint32_t curr_reg = num_b32_regs;
-
-            for (size_t i = 0; i < 3; i++) {
-                if (use_block_idx_xyz[i]) {
-                    num_additional_b32 += 2;
-                    block_offset_xyz_reg[i] = curr_reg;
-                    new_block_idx_xyz_reg[i] = curr_reg + 1;
-                    curr_reg += 2;
-                }
+            // Ignore such kernels for now!
+            if (num_params == 0) {
+                continue;
             }
 
+            brace_encountered = false;
+
+            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
+
+            std::string blockOffset_x_reg = "%r" + std::to_string(num_b32_regs);
+            std::string blockOffset_y_reg = "%r" + std::to_string(num_b32_regs + 1);
+            std::string blockOffset_z_reg = "%r" + std::to_string(num_b32_regs + 2);
+
+            std::string blockIdx_x_reg = "%r" + std::to_string(num_b32_regs + 3);
+            std::string blockIdx_y_reg = "%r" + std::to_string(num_b32_regs + 4);
+            std::string blockIdx_z_reg = "%r" + std::to_string(num_b32_regs + 5);
+
+            std::string new_blockIdx_x_reg = "%r" + std::to_string(num_b32_regs + 6);
+            std::string new_blockIdx_y_reg = "%r" + std::to_string(num_b32_regs + 7);
+            std::string new_blockIdx_z_reg = "%r" + std::to_string(num_b32_regs + 8);
+
             std::map<std::string, std::string> reg_replacement_rules;
+            reg_replacement_rules["%ctaid.x"] = new_blockIdx_x_reg;
+            reg_replacement_rules["%ctaid.y"] = new_blockIdx_y_reg;
+            reg_replacement_rules["%ctaid.z"] = new_blockIdx_z_reg;
     
             for (auto &kernel_line : kernel_lines) {
+
+                if (strip(kernel_line) == "{") {
+
+                    ptb_ptx_code += kernel_line + "\n";
+
+                    if (brace_encountered) {
+                        continue;
+                    }
+    
+                    brace_encountered = true;
+
+                    // Perform actions at the top
+                    ptb_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
+
+                    // Load blockOffset.x
+                    ptb_ptx_code += "ld.param.u32 " + blockOffset_x_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "];\n";
+                    // Load blockOffset.y
+                    ptb_ptx_code += "ld.param.u32 " + blockOffset_y_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+4];\n";
+                    // Load blockOffset.z
+                    ptb_ptx_code += "ld.param.u32 " + blockOffset_z_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+8];\n";
+
+                    // Load blockIdx.x
+                    ptb_ptx_code += "mov.u32 " + blockIdx_x_reg + ", %ctaid.x;\n";
+                    // Load blockIdx.y
+                    ptb_ptx_code += "mov.u32 " + blockIdx_y_reg + ", %ctaid.y;\n";
+                    // Load blockIdx.z
+                    ptb_ptx_code += "mov.u32 " + blockIdx_z_reg + ", %ctaid.z;\n";
+
+                    // new_blockIdx.x = blockIdx.x + blockOffset.x
+                    ptb_ptx_code += "add.u32 " + new_blockIdx_x_reg + ", " + blockIdx_x_reg + ", " + blockOffset_x_reg + ";\n";
+                    // new_blockIdx.y = blockIdx.y + blockOffset.y
+                    ptb_ptx_code += "add.u32 " + new_blockIdx_y_reg + ", " + blockIdx_y_reg + ", " + blockOffset_y_reg + ";\n";
+                    // new_blockIdx.x = blockIdx.x + blockOffset.x
+                    ptb_ptx_code += "add.u32 " + new_blockIdx_z_reg + ", " + blockIdx_z_reg + ", " + blockOffset_z_reg + ";\n";
+
+                    continue;
+                }
 
                 if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
                     ptb_ptx_code += kernel_line + ",\n";
@@ -716,28 +768,6 @@ std::string gen_sliced_ptx(std::string ptx_path)
                 }
 
                 if (boost::regex_search(kernel_line, matches, b32_reg_decl_pattern)) {
-                    ptb_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
-                    continue;
-                }
-
-                if (boost::regex_search(kernel_line, matches, block_idx_pattern)) {
-                    std::string block_idx_match_dim = matches[2];
-                    uint32_t block_idx_match_reg = std::stoi(matches[1]);
-
-                    int32_t idx = -1;
-                    if (block_idx_match_dim == "x") {
-                        idx = 0;
-                    } else if (block_idx_match_dim == "y") {
-                        idx = 1;
-                    } else if (block_idx_match_dim == "z") {
-                        idx = 2;
-                    }
-
-                    ptb_ptx_code += kernel_line + "\n";
-                    ptb_ptx_code += "ld.param.u32 %r" + std::to_string(block_offset_xyz_reg[idx]) + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+" + std::to_string(idx * 4) + "];\n";
-                    ptb_ptx_code += "add.u32 %r" + std::to_string(new_block_idx_xyz_reg[idx]) + ", %r" + std::to_string(block_idx_match_reg) + ", %r" + std::to_string(block_offset_xyz_reg[idx]) + ";\n";
-                    reg_replacement_rules["%r" + std::to_string(block_idx_match_reg) + "(?!\\d)"] = "%r" + std::to_string(new_block_idx_xyz_reg[idx]);
-
                     continue;
                 }
 
