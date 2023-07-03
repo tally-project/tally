@@ -61,6 +61,17 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 
 void** __cudaRegisterFatBinary( void *fatCubin ) {
     
+    // auto ptb_str = gen_ptb_ptx("./before.ptx");
+    // auto sliced_str = gen_sliced_ptx("./before.ptx");
+
+    // std::cout << "ptb_str:" << std::endl;
+    // std::cout << ptb_str << std::endl;
+
+    // std::cout << "sliced_str:" << std::endl;
+    // std::cout << sliced_str << std::endl;
+
+    // exit(1);
+
     auto *wp = (__fatBinC_Wrapper_t *) fatCubin;
     struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) wp->data;
     size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;

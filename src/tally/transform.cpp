@@ -34,7 +34,8 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
 
     // some sliced configs
     for (uint32_t _threads_per_block : { 129560, 161280, 174080, 184320, 196608 }) {
-        for (bool _use_cuda_graph : { true, false }) {
+        // for (bool _use_cuda_graph : { true, false }) {
+        for (bool _use_cuda_graph : { false }) {
             LaunchConfig config(false, true, false, _use_cuda_graph, _threads_per_block);
             candidates.push_back(config);
         }
@@ -44,7 +45,7 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
 
     // some PTB configs
     uint32_t _num_blocks_per_sm = 1;
-    while(_num_blocks_per_sm * num_threads_per_block < 1580) {
+    while(_num_blocks_per_sm * num_threads_per_block <= 1024) {
         LaunchConfig config(false, false, true, false, 0, _num_blocks_per_sm);
         candidates.push_back(config);
         _num_blocks_per_sm++;
@@ -197,10 +198,18 @@ cudaError_t LaunchConfig::launch(
                 // graph already exists; try to apply changes
                 cudaGraphExecUpdateResult update;
 
-                if (cudaGraphExecUpdate(cuda_graph_call->instance, cuda_graph_call->graph, NULL, &update) != cudaSuccess) 
-                {
-                    cudaGraphExecDestroy(cuda_graph_call->instance);
-                    cudaGraphInstantiate(&(cuda_graph_call->instance), cuda_graph_call->graph, NULL, NULL, 0);
+                std::cout << "try to update" << std::endl;
+                
+                try {
+
+                    if (cudaGraphExecUpdate(cuda_graph_call->instance, cuda_graph_call->graph, NULL, &update) != cudaSuccess) 
+                    {
+                        cudaGraphExecDestroy(cuda_graph_call->instance);
+                        cudaGraphInstantiate(&(cuda_graph_call->instance), cuda_graph_call->graph, NULL, NULL, 0);
+                        std::cout << "update fail" << std::endl;
+                    }
+                } catch (const std::exception& e) {
+                    std::cout << "catched exception" << std::endl;
                 }
             }
 
@@ -333,6 +342,7 @@ std::string gen_ptb_ptx(std::string ptx_path)
 
     std::string PTB_RETURN_BLOCK_NAME = "L__PTB_RETURN";
     std::string PTB_LOOP_BLOCK_NAME = "L__PTB_LOOP";
+    std::string PTB_LOOP_CONDITION_BLOCK_NAME = "L__PTB_LOOP_CONDITION";
 
     uint32_t num_params = 0;
     uint32_t num_b32_regs = 0;
@@ -340,31 +350,15 @@ std::string gen_ptb_ptx(std::string ptx_path)
     bool use_block_idx_xyz[3] = { false, false, false };
     bool record_kernel = false;
     std::vector<std::string> kernel_lines;
+    int32_t brace_counter = 0;
+    int32_t brace_encountered = false;
     std::string kernel_name;
 
     uint32_t num_additional_b32 = 15;
     uint32_t num_additional_pred_regs = 2;
 
-    std::string origGridDim_x_reg = "%r" + std::to_string(num_b32_regs);
-    std::string origGridDim_y_reg = "%r" + std::to_string(num_b32_regs + 1);
-    std::string origGridDim_z_reg = "%r" + std::to_string(num_b32_regs + 2);
-    std::string threadIdx_x_reg = "%r" + std::to_string(num_b32_regs + 3);
-    std::string blockDim_x_reg = "%r" + std::to_string(num_b32_regs + 4);
-    std::string gridDim_x_reg = "%r" + std::to_string(num_b32_regs + 5);
-    std::string xy_tbs_reg = "%r" + std::to_string(num_b32_regs + 6);
-    std::string num_thread_blocks_reg = "%r" + std::to_string(num_b32_regs + 7);
-    std::string tb_idx_reg = "%r" + std::to_string(num_b32_regs + 8);
-    std::string newBlockIdx_z_reg = "%r" + std::to_string(num_b32_regs + 9);
-    std::string newBlockIdx_z_mul_xy_tbs_reg = "%r" + std::to_string(num_b32_regs + 10);
-    std::string tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg = "%r" + std::to_string(num_b32_regs + 11);
-    std::string newBlockIdx_y_reg = "%r" + std::to_string(num_b32_regs + 12);
-    std::string newBlockIdx_y_mul_origGridDim_x_reg = "%r" + std::to_string(num_b32_regs + 13);
-    std::string newBlockIdx_x_reg = "%r" + std::to_string(num_b32_regs + 14);
-
-    std::string tb_idx_ge_num_thread_blocks_reg = "%p" + std::to_string(num_pred_regs);
-    std::string tb_idx_lt_num_thread_blocks_reg = "%p" + std::to_string(num_pred_regs + 1);
-
     std::string ptb_ptx_code = "";
+    // bool found = false;
 
     boost::timer::progress_display progress(ptx_code_str.size());
     while (std::getline(ss, line, '\n')) {
@@ -377,13 +371,32 @@ std::string gen_ptb_ptx(std::string ptx_path)
             num_params = 0;
             num_b32_regs = 0;
             num_pred_regs = 0;
+            brace_counter = 0;
+            brace_encountered = false;
             kernel_lines.clear();
+
+            // if (demangleFunc(kernel_name) == "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl<at::native::CUDAFunctor_add<float> >(at::TensorIteratorBase&, at::native::CUDAFunctor_add<float> const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl<at::native::CUDAFunctor_add<float> >(at::TensorIteratorBase&, at::native::CUDAFunctor_add<float> const&)::{lambda(int)#1})" ||
+            //     demangleFunc(kernel_name) == "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, at::detail::Array<char*, 2> >(int, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, at::detail::Array<char*, 2>)") {
+            //     std::cout << "Found target kernel:" << std::endl;
+            //     std::cout << kernel_name << std::endl;
+            //     std::cout << ptx_code_str << std::endl;
+            //     found = true;
+            // }
         }
         
         if (record_kernel) {
             kernel_lines.push_back(line);
         } else {
             ptb_ptx_code += line + "\n";
+        }
+
+        int32_t numLeftBrace = countLeftBrace(line);
+        int32_t numRightBrace = countRightBrace(line);
+
+        brace_counter += numLeftBrace;
+        brace_counter -= numRightBrace;
+        if (!brace_encountered && numLeftBrace > 0) {
+            brace_encountered = true;
         }
         
         if (boost::regex_search(line, matches, kernel_param_pattern)) {
@@ -401,18 +414,48 @@ std::string gen_ptb_ptx(std::string ptx_path)
             continue;
         }
 
-        if (record_kernel && line == "ret;") {
+        if (record_kernel && brace_encountered && brace_counter == 0) {
 
             // Ignore such kernels for now!
             if (num_params == 0) {
+                record_kernel = false;
                 continue;
             }
 
+            // Now must be at end of kernel
+            std::string origGridDim_x_reg = "%r" + std::to_string(num_b32_regs);
+            std::string origGridDim_y_reg = "%r" + std::to_string(num_b32_regs + 1);
+            std::string origGridDim_z_reg = "%r" + std::to_string(num_b32_regs + 2);
+            std::string threadIdx_x_reg = "%r" + std::to_string(num_b32_regs + 3);
+            std::string blockDim_x_reg = "%r" + std::to_string(num_b32_regs + 4);
+            std::string gridDim_x_reg = "%r" + std::to_string(num_b32_regs + 5);
+            std::string xy_tbs_reg = "%r" + std::to_string(num_b32_regs + 6);
+            std::string num_thread_blocks_reg = "%r" + std::to_string(num_b32_regs + 7);
+            std::string tb_idx_reg = "%r" + std::to_string(num_b32_regs + 8);
+            std::string newBlockIdx_z_reg = "%r" + std::to_string(num_b32_regs + 9);
+            std::string newBlockIdx_z_mul_xy_tbs_reg = "%r" + std::to_string(num_b32_regs + 10);
+            std::string tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg = "%r" + std::to_string(num_b32_regs + 11);
+            std::string newBlockIdx_y_reg = "%r" + std::to_string(num_b32_regs + 12);
+            std::string newBlockIdx_y_mul_origGridDim_x_reg = "%r" + std::to_string(num_b32_regs + 13);
+            std::string newBlockIdx_x_reg = "%r" + std::to_string(num_b32_regs + 14);
+
+            std::string tb_idx_ge_num_thread_blocks_reg = "%p" + std::to_string(num_pred_regs);
+            std::string tb_idx_lt_num_thread_blocks_reg = "%p" + std::to_string(num_pred_regs + 1);
+
+            brace_counter = 0;
+            brace_encountered = false;
             record_kernel = false;
             boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
             std::map<std::string, std::string> reg_replacement_rules;
 
             for (auto &kernel_line : kernel_lines) {
+
+                int32_t numLeftBrace = countLeftBrace(kernel_line);
+                int32_t numRightBrace = countRightBrace(kernel_line);
+
+                brace_counter += numLeftBrace;
+                brace_counter -= numRightBrace;
+                assert(brace_counter >= 0);
 
                 if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
                     ptb_ptx_code += kernel_line + ",\n";
@@ -420,10 +463,17 @@ std::string gen_ptb_ptx(std::string ptx_path)
                     continue;
                 }
 
-                // Perform actions at the top
-                if (kernel_line == "{") {
+                if (strip(kernel_line) == "{") {
 
-                    ptb_ptx_code += "{\n";
+                    ptb_ptx_code += kernel_line + "\n";
+
+                    if (brace_encountered) {
+                        continue;
+                    }
+    
+                    brace_encountered = true;
+
+                    // Perform actions at the top
                     ptb_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
                     ptb_ptx_code += ".reg .pred %p<" + std::to_string(num_pred_regs + num_additional_pred_regs) + ">;\n";
 
@@ -479,6 +529,8 @@ std::string gen_ptb_ptx(std::string ptx_path)
                     continue;
                 }
 
+                // Consider moving this before end of kernel
+                // In cases block_idx decl happens out of order
                 if (boost::regex_search(kernel_line, matches, block_idx_pattern)) {
                     std::string block_idx_match_dim = matches[2];
                     uint32_t block_idx_match_reg = std::stoi(matches[1]);
@@ -493,9 +545,22 @@ std::string gen_ptb_ptx(std::string ptx_path)
                     continue;
                 }
             
-                // instead of return, now in a loop
-                if (kernel_line == "ret;") {
+                // instead of return, branch to loop condition check
+                if (strip(kernel_line) == "ret;") {
+                    ptb_ptx_code += "bra.uni $" + PTB_LOOP_CONDITION_BLOCK_NAME + ";\n";
+                    continue;
+                }
 
+                // Potentially end of kernel
+                if (strip(kernel_line) == "}") {
+                    
+                    if (brace_counter != 0) {
+                        ptb_ptx_code += kernel_line + "\n";
+                        continue;
+                    }
+
+                    // End of kernel
+                    ptb_ptx_code += "$" + PTB_LOOP_CONDITION_BLOCK_NAME + ":\n";
                     // tb_idx += gridDim.x
                     ptb_ptx_code += "add.s32 " + tb_idx_reg + ", " + tb_idx_reg + ", " + gridDim_x_reg + ";\n";
                     // tb_idx < num_thread_blocks
@@ -507,6 +572,7 @@ std::string gen_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += "$" + PTB_RETURN_BLOCK_NAME + ":\n";
                     ptb_ptx_code += "ret;\n";
 
+                    ptb_ptx_code += kernel_line;
                     continue;
                 }
 
@@ -519,6 +585,12 @@ std::string gen_ptb_ptx(std::string ptx_path)
             }
         }
     }
+
+    // if (true) {
+    //     std::cout << "ptb_ptx_code:" << std::endl;
+    //     std::cout << ptb_ptx_code << std::endl;
+    //     // exit(0);
+    // }
 
     return ptb_ptx_code;
 }
@@ -547,6 +619,8 @@ std::string gen_sliced_ptx(std::string ptx_path)
     bool use_block_idx_xyz[3] = { false, false, false };
     bool record_kernel = false;
     std::vector<std::string> kernel_lines;
+    int32_t brace_counter = 0;
+    int32_t brace_encountered = false;
     std::string kernel_name;
 
     boost::timer::progress_display progress(ptx_code_str.size());
@@ -562,6 +636,8 @@ std::string gen_sliced_ptx(std::string ptx_path)
             kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b32_regs = 0;
+            brace_counter = 0;
+            brace_encountered = false;
             kernel_lines.clear();
             
             // reset to false 
@@ -575,6 +651,15 @@ std::string gen_sliced_ptx(std::string ptx_path)
             kernel_lines.push_back(line);
         } else {
             ptb_ptx_code += line + "\n";
+        }
+
+        int32_t numLeftBrace = countLeftBrace(line);
+        int32_t numRightBrace = countRightBrace(line);
+
+        brace_counter += numLeftBrace;
+        brace_counter -= numRightBrace;
+        if (!brace_encountered && numLeftBrace > 0) {
+            brace_encountered = true;
         }
 
         if (boost::regex_search(line, matches, kernel_param_pattern)) {
@@ -599,7 +684,8 @@ std::string gen_sliced_ptx(std::string ptx_path)
             continue;
         }
 
-        if (record_kernel && line == "ret;") {
+        if (record_kernel && brace_encountered && brace_counter == 0) {
+
             record_kernel = false;
 
             boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
@@ -622,7 +708,7 @@ std::string gen_sliced_ptx(std::string ptx_path)
             std::map<std::string, std::string> reg_replacement_rules;
     
             for (auto &kernel_line : kernel_lines) {
-                
+
                 if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
                     ptb_ptx_code += kernel_line + ",\n";
                     ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12]\n";
@@ -729,7 +815,7 @@ std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_
             num_params += 1;
         }
 
-        if (line == "ret;") {
+        if (strip(line) == "ret;") {
             kernel_names_and_nparams.push_back(std::make_pair(kernel_name, num_params));
         }
     }

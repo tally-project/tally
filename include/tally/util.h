@@ -71,6 +71,26 @@ inline std::pair<std::string, std::string> splitOnce(const std::string& str, con
     return {str, ""};
 }
 
+inline int32_t countLeftBrace(const std::string& str) {
+    int32_t count = 0;
+    for (char c : str) {
+        if (c == '{') {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+inline int32_t countRightBrace(const std::string& str) {
+    int32_t count = 0;
+    for (char c : str) {
+        if (c == '}') {
+            count += 1;
+        }
+    }
+    return count;
+}
+
 inline std::string strip(const std::string& str) {
     std::string result = str;
     
