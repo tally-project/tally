@@ -1160,7 +1160,16 @@ void TallyServer::handle_cuGetErrorName(void *__args)
 
 void TallyServer::handle_cuInit(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cuInitArg *) __args;
+    CUresult err = cuInit(
+		args->Flags
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(CUresult))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cuDriverGetVersion(void *__args)
@@ -2885,17 +2894,43 @@ void TallyServer::handle_cuGetExportTable(void *__args)
 
 void TallyServer::handle_cudaDeviceReset(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaDeviceResetArg *) __args;
+    cudaError_t err = cudaDeviceReset(
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaDeviceSynchronize(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaDeviceSynchronizeArg *) __args;
+    cudaError_t err = cudaDeviceSynchronize(
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaDeviceSetLimit(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaDeviceSetLimitArg *) __args;
+    cudaError_t err = cudaDeviceSetLimit(
+		args->limit,
+		args->value
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaDeviceGetLimit(void *__args)
@@ -2920,7 +2955,16 @@ void TallyServer::handle_cudaDeviceGetStreamPriorityRange(void *__args)
 
 void TallyServer::handle_cudaDeviceSetCacheConfig(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaDeviceSetCacheConfigArg *) __args;
+    cudaError_t err = cudaDeviceSetCacheConfig(
+		args->cacheConfig
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaDeviceGetSharedMemConfig(void *__args)
@@ -2930,7 +2974,16 @@ void TallyServer::handle_cudaDeviceGetSharedMemConfig(void *__args)
 
 void TallyServer::handle_cudaDeviceSetSharedMemConfig(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaDeviceSetSharedMemConfigArg *) __args;
+    cudaError_t err = cudaDeviceSetSharedMemConfig(
+		args->config
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaDeviceGetByPCIBusId(void *__args)
@@ -2975,17 +3028,43 @@ void TallyServer::handle_cudaDeviceFlushGPUDirectRDMAWrites(void *__args)
 
 void TallyServer::handle_cudaThreadExit(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaThreadExitArg *) __args;
+    cudaError_t err = cudaThreadExit(
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaThreadSynchronize(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaThreadSynchronizeArg *) __args;
+    cudaError_t err = cudaThreadSynchronize(
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaThreadSetLimit(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaThreadSetLimitArg *) __args;
+    cudaError_t err = cudaThreadSetLimit(
+		args->limit,
+		args->value
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaThreadGetLimit(void *__args)
@@ -3000,17 +3079,42 @@ void TallyServer::handle_cudaThreadGetCacheConfig(void *__args)
 
 void TallyServer::handle_cudaThreadSetCacheConfig(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaThreadSetCacheConfigArg *) __args;
+    cudaError_t err = cudaThreadSetCacheConfig(
+		args->cacheConfig
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaGetLastError(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaGetLastErrorArg *) __args;
+    cudaError_t err = cudaGetLastError(
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaPeekAtLastError(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaPeekAtLastErrorArg *) __args;
+    cudaError_t err = cudaPeekAtLastError(
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaGetErrorName(void *__args)
@@ -3070,7 +3174,16 @@ void TallyServer::handle_cudaChooseDevice(void *__args)
 
 void TallyServer::handle_cudaSetDevice(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaSetDeviceArg *) __args;
+    cudaError_t err = cudaSetDevice(
+		args->device
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaGetDevice(void *__args)
@@ -3085,7 +3198,16 @@ void TallyServer::handle_cudaSetValidDevices(void *__args)
 
 void TallyServer::handle_cudaSetDeviceFlags(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaSetDeviceFlagsArg *) __args;
+    cudaError_t err = cudaSetDeviceFlags(
+		args->flags
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaGetDeviceFlags(void *__args)
@@ -3120,7 +3242,15 @@ void TallyServer::handle_cudaStreamGetFlags(void *__args)
 
 void TallyServer::handle_cudaCtxResetPersistingL2Cache(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaCtxResetPersistingL2CacheArg *) __args;
+    cudaError_t err = cudaCtxResetPersistingL2Cache(
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaStreamCopyAttributes(void *__args)
@@ -6789,10 +6919,26 @@ void TallyServer::handle_cudaProfilerInitialize(void *__args)
 
 void TallyServer::handle_cudaProfilerStart(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaProfilerStartArg *) __args;
+    cudaError_t err = cudaProfilerStart(
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaProfilerStop(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaProfilerStopArg *) __args;
+    cudaError_t err = cudaProfilerStop(
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }

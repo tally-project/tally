@@ -38,8 +38,10 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
     float time_ms;
     float base_time_ms;
 
+    auto kernel_name = Transform::tracer->host_func_to_kernel_name_map[func];
+
     std::cout << "[Profile result]" <<std::endl;
-    std::cout << "\tKernel:" << Transform::tracer->host_func_to_kernel_name_map[func] << std::endl;
+    std::cout << "\tKernel:" << kernel_name << std::endl;
 
     // default config - use_original=true
     LaunchConfig base_config;
@@ -78,7 +80,7 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
         }
     }
 
-    if (best_time_ms > USE_TRANSFORM_THRESHOLD * base_time_ms) {
+    if (best_time_ms >= USE_TRANSFORM_THRESHOLD * base_time_ms) {
         best_config = base_config;
     }
 

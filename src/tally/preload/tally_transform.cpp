@@ -25,16 +25,20 @@ extern "C" {
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
-    cudaError_t err;
+    // std::cout << "cudaLaunchKernel" << std::endl;
 
-    if (!Transform::tracer->kernels_registered) {
-        Transform::tracer->register_kernels();
-    }
+    cudaError_t err;
 
     uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
     uint32_t total_threads = gridDim.x * gridDim.y * gridDim.z * threads_per_block;
 
+    // std::cout << total_threads << std::endl;
+
     if (total_threads > TRANSFORM_THREADS_THRESHOLD) {
+
+        if (!Transform::tracer->kernels_registered) {
+            Transform::tracer->register_kernels();
+        }
 
         if (Transform::tracer->kernel_profile_map.find(func) == Transform::tracer->kernel_profile_map.end()) {
             Transform::tracer->kernel_profile_map[func] = LaunchConfig::tune(func, gridDim, blockDim, args, sharedMem, stream);

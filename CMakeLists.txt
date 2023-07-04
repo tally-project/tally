@@ -6,6 +6,7 @@ set(CMAKE_CUDA_COMPILER nvcc)
 set(CMAKE_CXX_STANDARD 20)
 # set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_BUILD_TYPE "Debug")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
 FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
 
@@ -119,6 +120,7 @@ target_include_directories(server
 )
 
 target_link_libraries(server PUBLIC
+    cuda
     ipc
     dl
     tally

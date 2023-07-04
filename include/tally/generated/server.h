@@ -36,6 +36,8 @@ public:
     std::atomic<bool> is_quit__ {false};
     ipc::channel *send_ipc = nullptr;
     ipc::channel *recv_ipc = nullptr;
+
+	// Key: hostFunc Val: { size(bytes) of each argument }
     std::map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
     std::map<std::string, void *> _kernel_name_to_addr;
     std::map<void *, void *> _kernel_client_addr_mapping;

@@ -93,7 +93,7 @@ void TallyServer::handle_{func_name}(void *__args)
     else:
         handler += f"""
     auto args = (struct {func_name}Arg *) __args;
-    cudaError_t err = {func_name}(
+    {ret_type} err = {func_name}(
 """
 
         for idx, arg_name in enumerate(arg_names):
@@ -105,7 +105,7 @@ void TallyServer::handle_{func_name}(void *__args)
         handler += f"""
     );
 
-    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {{
+    while(!send_ipc->send((void *) &err, sizeof({ret_type}))) {{
         send_ipc->wait_for_recv(1);
     }}
 """

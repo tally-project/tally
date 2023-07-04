@@ -80,7 +80,25 @@ MSG_STRUCT_TEMPLATE_BUTTOM = """
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
-    "cudaFree"
+    "cudaFree",
+    "cudaProfilerStart",
+    "cudaProfilerStop",
+    "cuInit",
+    "cudaDeviceReset",
+    "cudaDeviceSynchronize",
+    "cudaDeviceSetLimit",
+    "cudaDeviceSetCacheConfig",
+    "cudaDeviceSetSharedMemConfig",
+    "cudaThreadExit",
+    "cudaThreadSynchronize",
+    "cudaThreadSetLimit",
+    "cudaThreadSetCacheConfig",
+    "cudaGetLastError",
+    "cudaPeekAtLastError",
+    "cudaSetDevice",
+    "cudaSetDeviceFlags",
+    "cudaCtxResetPersistingL2Cache",
+    
 ]
 
 CLIENT_PRELOAD_TEMPLATE = """
