@@ -191,6 +191,7 @@ public:
 
     cudaError_t launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, bool run_profile=false, float *elapsed_time_ms=nullptr);
     static LaunchConfig tune(const void *, dim3, dim3, void **, size_t, cudaStream_t);
+    std::pair<float, uint32_t> repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, uint32_t dur_seconds);
 };
 
 class Transform {
@@ -199,6 +200,7 @@ public:
 
     static std::unique_ptr<Transform> tracer;
 
+    uint32_t curr_kernel_idx = 0;
     std::map<std::string, const void *> kernel_name_to_host_func_map;
     std::map<const void *, std::string> host_func_to_kernel_name_map;
     std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> sliced_kernel_map;

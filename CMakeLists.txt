@@ -4,8 +4,8 @@ enable_language(CUDA)
 
 set(CMAKE_CUDA_COMPILER nvcc)
 set(CMAKE_CXX_STANDARD 20)
-# set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
+# set(CMAKE_BUILD_TYPE "Debug")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
 FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
@@ -13,7 +13,8 @@ FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
 set (LIBIPC_PROJECT_DIR ${PROJECT_SOURCE_DIR}/third_party/cpp-ipc)
 
 set(TALLY_SRC_FILES
-    ${PROJECT_SOURCE_DIR}/src/tally/const.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/signal.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/env.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/transform.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/generated/cuda_api.cpp
 )

@@ -137,7 +137,7 @@ API_DEF_TEMPLATE_TOP = """
 #include <dlfcn.h>
 
 #include <tally/cuda_api.h>
-#include <tally/const.h>
+#include <tally/env.h>
 
 void *cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
 void *cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);

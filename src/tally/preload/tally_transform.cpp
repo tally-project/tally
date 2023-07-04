@@ -17,7 +17,7 @@
 
 #include <tally/util.h>
 #include <tally/msg_struct.h>
-#include <tally/const.h>
+#include <tally/env.h>
 #include <tally/transform.h>
 #include <tally/generated/cuda_api.h>
 
@@ -27,6 +27,34 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 {
     // std::cout << "cudaLaunchKernel" << std::endl;
 
+    if (!Transform::tracer->kernels_registered) {
+        Transform::tracer->register_kernels();
+    }
+
+    if (PROFILE_KERNEL_TO_KERNEL_PERF && PROFILE_WARMED_UP) {
+
+        // Use this to identify the idx of the kernel launch
+        auto curr_kernel_idx = Transform::tracer->curr_kernel_idx;
+
+        if (curr_kernel_idx == PROFILE_KERNEL_IDX) {
+
+            bool use_original = PROFILE_USE_ORIGINAL;
+            bool use_sliced = PROFILE_USE_SLICED;
+            bool use_ptb = PROFILE_USE_PTB;
+            bool use_cuda_graph = PROFILE_USE_CUDA_GRAPH;
+            uint32_t threads_per_slice = PROFILE_THREADS_PER_SLICE;
+            uint32_t num_blocks_per_sm = PROFILE_NUM_BLOCKS_PER_SM;
+
+            LaunchConfig profile_config(use_original, use_sliced, use_ptb, use_cuda_graph, threads_per_slice, num_blocks_per_sm);
+            auto time_iters = profile_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, PROFILE_DURATION_SECONDS);
+
+            exit(0);
+
+        } else {
+            curr_kernel_idx++;
+        }
+    }
+
     cudaError_t err;
 
     uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
@@ -35,10 +63,6 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     // std::cout << total_threads << std::endl;
 
     if (total_threads > TRANSFORM_THREADS_THRESHOLD) {
-
-        if (!Transform::tracer->kernels_registered) {
-            Transform::tracer->register_kernels();
-        }
 
         if (Transform::tracer->kernel_profile_map.find(func) == Transform::tracer->kernel_profile_map.end()) {
             Transform::tracer->kernel_profile_map[func] = LaunchConfig::tune(func, gridDim, blockDim, args, sharedMem, stream);

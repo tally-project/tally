@@ -3,10 +3,11 @@
 #include <vector>
 #include <regex>
 #include <unordered_map>
+#include <chrono>
 
 #include <cuda.h>
 
-#include <tally/const.h>
+#include <tally/env.h>
 #include <tally/util.h>
 #include <tally/transform.h>
 #include <tally/generated/cuda_api.h>
@@ -29,6 +30,34 @@ void check(T err, const char* const func, const char* const file,
     }
 }
 
+// return (time, iterations)
+std::pair<float, uint32_t> LaunchConfig::repeat_launch(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream, uint32_t dur_seconds)
+{
+    auto startTime = std::chrono::steady_clock::now();
+    uint32_t count = 0;
+    float elapsedSeconds = 0;
+
+    while (true) {
+
+        // Perform your steps here
+        launch(func, gridDim, blockDim, args, sharedMem, stream);
+        count++;
+
+        // Check if 10 seconds have elapsed
+        auto currentTime = std::chrono::steady_clock::now();
+        elapsedSeconds = (float)(std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count()) / 1000.0;
+        if (elapsedSeconds >= 10) {
+
+            cudaDeviceSynchronize();
+            auto currentTime = std::chrono::steady_clock::now();
+            elapsedSeconds = (float)(std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count()) / 1000.0;
+            break;
+        }
+    }
+
+    return std::make_pair(elapsedSeconds, count);
+}
+
 LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
     LaunchConfig best_config;
@@ -41,7 +70,7 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
     auto kernel_name = Transform::tracer->host_func_to_kernel_name_map[func];
 
     std::cout << "[Profile result]" <<std::endl;
-    std::cout << "\tKernel:" << kernel_name << std::endl;
+    std::cout << "\tKernel: " << kernel_name << std::endl;
 
     // default config - use_original=true
     LaunchConfig base_config;
