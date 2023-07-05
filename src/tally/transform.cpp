@@ -4,6 +4,7 @@
 #include <regex>
 #include <unordered_map>
 #include <chrono>
+#include <ctime>
 
 #include <cuda.h>
 
@@ -22,7 +23,15 @@ std::unique_ptr<Transform> Transform::tracer = std::make_unique<Transform>();
 std::pair<float, float> LaunchConfig::repeat_launch(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream, float dur_seconds, uint32_t max_count)
 {
     cudaDeviceSynchronize();
+    float time_ms;
+
+    // get a rough estimate of the kernel duration
+    launch(func, gridDim, blockDim, args, sharedMem, stream, true, &time_ms);
+
+    uint64_t sync_interval = std::max((uint64_t)((dur_seconds / 1000.) / time_ms), 1ul);
+
     auto startTime = std::chrono::steady_clock::now();
+    uint64_t ckpt_count = 0;
     uint64_t count = 0;
     uint64_t elapsed_ns = 0;
 
@@ -31,18 +40,26 @@ std::pair<float, float> LaunchConfig::repeat_launch(const void * func, dim3  gri
         // Perform your steps here
         launch(func, gridDim, blockDim, args, sharedMem, stream);
         count++;
+        ckpt_count++;
+
+        // Avoid launching too many kernels
+        if (ckpt_count == sync_interval) {
+            cudaDeviceSynchronize();
+            ckpt_count = 0;
+        }
 
         auto currentTime = std::chrono::steady_clock::now();
         elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
         if ((max_count > 0 && count >= max_count) || ((double) elapsed_ns) / 1e9 >= dur_seconds) {
             cudaDeviceSynchronize();
             auto currentTime = std::chrono::steady_clock::now();
-            elapsed_ns = (float)(std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count());
+            elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
             break;
         }
+
     }
 
-    return std::make_pair(((float)elapsed_ns / (float) std::pow(10, 6)), (float)count);
+    return std::make_pair(((double)elapsed_ns / 1e6), (double)count);
 }
 
 LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
@@ -66,7 +83,7 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
     LaunchConfig base_config;
 
     // warmup first
-    base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10);
+    base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10000);
 
     auto res = base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10000);
     std::cout << "\tTime: " << res.first << std::endl;
