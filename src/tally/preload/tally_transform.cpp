@@ -72,6 +72,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
             } else {
                 curr_kernel_idx++;
             }
+        } else {
+            std::cout << "Baseline performance does not exist, skipping.." << std::endl;
         }
     }
 

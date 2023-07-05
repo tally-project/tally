@@ -28,7 +28,7 @@ std::pair<float, float> LaunchConfig::repeat_launch(const void * func, dim3  gri
     // get a rough estimate of the kernel duration
     launch(func, gridDim, blockDim, args, sharedMem, stream, true, &time_ms);
 
-    uint64_t sync_interval = std::max((uint64_t)((dur_seconds / 1000.) / time_ms), 1ul);
+    uint64_t sync_interval = std::max((uint64_t)((dur_seconds * 1000.) / time_ms), 1ul);
 
     auto startTime = std::chrono::steady_clock::now();
     uint64_t ckpt_count = 0;
@@ -94,41 +94,46 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
     std::cout << "\tBaseline: Time: " << base_time_ms << std::endl;
     Transform::tracer->kernel_baseline_performance[launch_call] = base_time_ms;
 
-    uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
-    uint32_t total_threads = gridDim.x * gridDim.y * gridDim.z * threads_per_block;
+    if (USE_TRANSFORM) {
 
-    // some sliced configs
-    for (uint32_t _threads_per_block : { 129560, 161280, 174080, 184320, 196608 }) {
-        // for (bool _use_cuda_graph : { true, false }) {
-        for (bool _use_cuda_graph : { false }) {
-            LaunchConfig config(false, true, false, _use_cuda_graph, _threads_per_block);
+        uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
+        uint32_t total_threads = gridDim.x * gridDim.y * gridDim.z * threads_per_block;
+
+        // some sliced configs
+        for (uint32_t _threads_per_block : { 129560, 161280, 174080, 184320, 196608 }) {
+            // for (bool _use_cuda_graph : { true, false }) {
+            for (bool _use_cuda_graph : { false }) {
+                LaunchConfig config(false, true, false, _use_cuda_graph, _threads_per_block);
+                candidates.push_back(config);
+            }
+        }
+
+        // some PTB configs
+        uint32_t _num_blocks_per_sm = 1;
+        while(_num_blocks_per_sm * threads_per_block <= 1024) {
+            LaunchConfig config(false, false, true, false, 0, _num_blocks_per_sm);
             candidates.push_back(config);
+            _num_blocks_per_sm++;
         }
-    }
+        
+        for (auto &config : candidates) {
+            try {
+                auto res = config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10000);
+                time_ms = res.first / res.second;
+            } catch (const std::exception& e) {
+                std::cout << "caught std::exception& e" << std::endl;
+            }
+            std::cout << "\t" << config << " Time: " << time_ms << std::endl;
+            if (time_ms < best_time_ms) {
+                best_config = config;
+                best_time_ms = time_ms;
+            }
+        }
 
-    // some PTB configs
-    uint32_t _num_blocks_per_sm = 1;
-    while(_num_blocks_per_sm * threads_per_block <= 1024) {
-        LaunchConfig config(false, false, true, false, 0, _num_blocks_per_sm);
-        candidates.push_back(config);
-        _num_blocks_per_sm++;
-    }
-    
-    for (auto &config : candidates) {
-        try {
-            auto res = config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10000);
-            time_ms = res.first / res.second;
-        } catch (const std::exception& e) {
-            std::cout << "caught std::exception& e" << std::endl;
+        if (best_time_ms >= USE_TRANSFORM_THRESHOLD * base_time_ms) {
+            best_config = base_config;
         }
-        std::cout << "\t" << config << " Time: " << time_ms << std::endl;
-        if (time_ms < best_time_ms) {
-            best_config = config;
-            best_time_ms = time_ms;
-        }
-    }
-
-    if (best_time_ms >= USE_TRANSFORM_THRESHOLD * base_time_ms) {
+    } else {
         best_config = base_config;
     }
 
