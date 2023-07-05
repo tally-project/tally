@@ -28,6 +28,18 @@ std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> register_kerne
 std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str);
 std::vector<std::pair<std::string, std::vector<uint32_t>>> get_kernel_names_and_param_sizes_from_elf(std::string elf_file_name);
 
+#define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
+template <typename T>
+void check(T err, const char* const func, const char* const file,
+           const int line)
+{
+    if (err != cudaSuccess)
+    {
+        std::cerr << "CUDA Runtime Error at: " << file << ":" << line << std::endl;
+        std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
+    }
+}
+
 class LaunchConfig;
 
 class CubinCache
@@ -113,6 +125,32 @@ public:
     }
 };
 
+struct CudaLaunchCall {
+    const void *func;
+    dim3 gridDim;
+    dim3 blockDim;
+
+    bool operator==(const CudaLaunchCall &other) const
+    { return (func == other.func
+                && gridDim.x == other.gridDim.x
+                && gridDim.y == other.gridDim.y
+                && gridDim.z == other.gridDim.z
+                && blockDim.x == other.blockDim.x
+                && blockDim.y == other.blockDim.y
+                && blockDim.z == other.blockDim.z);
+    }
+};
+
+template <>
+struct std::hash<CudaLaunchCall>
+{
+  std::size_t operator()(const CudaLaunchCall& k) const
+  {
+    auto _hash = std::hash<const void *>()(k.func);
+    return _hash;
+  }
+};
+
 class CudaGraphCall {
 
 public:
@@ -191,7 +229,7 @@ public:
 
     cudaError_t launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, bool run_profile=false, float *elapsed_time_ms=nullptr);
     static LaunchConfig tune(const void *, dim3, dim3, void **, size_t, cudaStream_t);
-    std::pair<float, uint32_t> repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, uint32_t dur_seconds);
+    std::pair<float, float> repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, uint32_t max_count=-1);
 };
 
 class Transform {
@@ -201,11 +239,12 @@ public:
     static std::unique_ptr<Transform> tracer;
 
     uint32_t curr_kernel_idx = 0;
+    std::unordered_map<CudaLaunchCall, float> kernel_baseline_performance;
+    std::unordered_map<CudaLaunchCall, LaunchConfig> kernel_profile_map;
     std::map<std::string, const void *> kernel_name_to_host_func_map;
     std::map<const void *, std::string> host_func_to_kernel_name_map;
     std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> sliced_kernel_map;
     std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> ptb_kernel_map;
-    std::unordered_map<const void *, LaunchConfig> kernel_profile_map;
     std::vector<CudaGraphCall*> cuda_graph_vec;
     cudaStream_t stream;
 

@@ -25,33 +25,53 @@ extern "C" {
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
-    // std::cout << "cudaLaunchKernel" << std::endl;
-
     if (!Transform::tracer->kernels_registered) {
         Transform::tracer->register_kernels();
+        std::cout << "Finished registering kernels" << std::endl;
     }
+
+    auto num_args = Transform::tracer->sliced_kernel_map[func].second;
+    CudaLaunchCall launch_call(func, gridDim, blockDim);
 
     if (PROFILE_KERNEL_TO_KERNEL_PERF && PROFILE_WARMED_UP) {
 
-        // Use this to identify the idx of the kernel launch
-        auto curr_kernel_idx = Transform::tracer->curr_kernel_idx;
+        // Only care about those sliced/PTB
+        if (Transform::tracer->kernel_baseline_performance.find(launch_call) != Transform::tracer->kernel_baseline_performance.end()) {
 
-        if (curr_kernel_idx == PROFILE_KERNEL_IDX) {
+            // Use this to identify the idx of the kernel launch
+            auto curr_kernel_idx = Transform::tracer->curr_kernel_idx;
 
-            bool use_original = PROFILE_USE_ORIGINAL;
-            bool use_sliced = PROFILE_USE_SLICED;
-            bool use_ptb = PROFILE_USE_PTB;
-            bool use_cuda_graph = PROFILE_USE_CUDA_GRAPH;
-            uint32_t threads_per_slice = PROFILE_THREADS_PER_SLICE;
-            uint32_t num_blocks_per_sm = PROFILE_NUM_BLOCKS_PER_SM;
+            if (curr_kernel_idx == PROFILE_KERNEL_IDX) {
 
-            LaunchConfig profile_config(use_original, use_sliced, use_ptb, use_cuda_graph, threads_per_slice, num_blocks_per_sm);
-            auto time_iters = profile_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, PROFILE_DURATION_SECONDS);
+                bool use_original = PROFILE_USE_ORIGINAL;
+                bool use_sliced = PROFILE_USE_SLICED;
+                bool use_ptb = PROFILE_USE_PTB;
+                bool use_cuda_graph = PROFILE_USE_CUDA_GRAPH;
+                uint32_t threads_per_slice = PROFILE_THREADS_PER_SLICE;
+                uint32_t num_blocks_per_sm = PROFILE_NUM_BLOCKS_PER_SM;
 
-            exit(0);
+                LaunchConfig profile_config(use_original, use_sliced, use_ptb, use_cuda_graph, threads_per_slice, num_blocks_per_sm);
+                std::cout << "Profiling config: " << profile_config << std::endl;
+                auto time_iters = profile_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, PROFILE_DURATION_SECONDS);
 
-        } else {
-            curr_kernel_idx++;
+                std::cout << "Kernel: " << Transform::tracer->host_func_to_kernel_name_map[func] << std::endl;
+                std::cout << "\tblockDim: " << blockDim.x << " " << blockDim.y << " " << blockDim.z << std::endl;
+                std::cout << "\tgridDim: " << gridDim.x << " " << gridDim.y << " " << gridDim.z << std::endl;
+                float baseline_tp = 1 / Transform::tracer->kernel_baseline_performance[launch_call];
+                float new_tp = time_iters.second / time_iters.first;
+
+                std::cout << "Time: " << time_iters.first << std::endl;
+                std::cout << "Iters: " << time_iters.second << std::endl;
+                std::cout << "baseline_tp: " << baseline_tp << std::endl;
+                std::cout << "new_tp: " << new_tp << std::endl;
+
+                std::cout << "Normalized throughput: " << new_tp / baseline_tp << std::endl;
+
+                exit(0);
+
+            } else {
+                curr_kernel_idx++;
+            }
         }
     }
 
@@ -60,19 +80,17 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
     uint32_t total_threads = gridDim.x * gridDim.y * gridDim.z * threads_per_block;
 
-    // std::cout << total_threads << std::endl;
-
     if (total_threads > TRANSFORM_THREADS_THRESHOLD) {
 
-        if (Transform::tracer->kernel_profile_map.find(func) == Transform::tracer->kernel_profile_map.end()) {
-            Transform::tracer->kernel_profile_map[func] = LaunchConfig::tune(func, gridDim, blockDim, args, sharedMem, stream);
+        if (Transform::tracer->kernel_profile_map.find(launch_call) == Transform::tracer->kernel_profile_map.end()) {
+            Transform::tracer->kernel_profile_map[launch_call] = LaunchConfig::tune(func, gridDim, blockDim, args, sharedMem, stream);
         }
 
-        auto &config = Transform::tracer->kernel_profile_map[func];
-        err = config.launch(func, gridDim, blockDim, args, sharedMem, stream);
+        auto &config = Transform::tracer->kernel_profile_map[launch_call];
+        CHECK_CUDA_ERROR(config.launch(func, gridDim, blockDim, args, sharedMem, stream));
 
     } else {
-        auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
+        CHECK_CUDA_ERROR(lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream));
     }
 
     return err;

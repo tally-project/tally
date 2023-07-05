@@ -18,24 +18,13 @@
 std::unique_ptr<CubinCache> CubinCache::cache = std::make_unique<CubinCache>();
 std::unique_ptr<Transform> Transform::tracer = std::make_unique<Transform>();
 
-#define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
-template <typename T>
-void check(T err, const char* const func, const char* const file,
-           const int line)
-{
-    if (err != cudaSuccess)
-    {
-        std::cerr << "CUDA Runtime Error at: " << file << ":" << line << std::endl;
-        std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
-    }
-}
-
 // return (time, iterations)
-std::pair<float, uint32_t> LaunchConfig::repeat_launch(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream, uint32_t dur_seconds)
+std::pair<float, float> LaunchConfig::repeat_launch(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream, float dur_seconds, uint32_t max_count)
 {
+    cudaDeviceSynchronize();
     auto startTime = std::chrono::steady_clock::now();
-    uint32_t count = 0;
-    float elapsedSeconds = 0;
+    uint64_t count = 0;
+    uint64_t elapsed_ns = 0;
 
     while (true) {
 
@@ -43,23 +32,22 @@ std::pair<float, uint32_t> LaunchConfig::repeat_launch(const void * func, dim3  
         launch(func, gridDim, blockDim, args, sharedMem, stream);
         count++;
 
-        // Check if 10 seconds have elapsed
         auto currentTime = std::chrono::steady_clock::now();
-        elapsedSeconds = (float)(std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count()) / 1000.0;
-        if (elapsedSeconds >= 10) {
-
+        elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
+        if ((max_count > 0 && count >= max_count) || ((double) elapsed_ns) / 1e9 >= dur_seconds) {
             cudaDeviceSynchronize();
             auto currentTime = std::chrono::steady_clock::now();
-            elapsedSeconds = (float)(std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count()) / 1000.0;
+            elapsed_ns = (float)(std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count());
             break;
         }
     }
 
-    return std::make_pair(elapsedSeconds, count);
+    return std::make_pair(((float)elapsed_ns / (float) std::pow(10, 6)), (float)count);
 }
 
 LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
+    CudaLaunchCall launch_call(func, gridDim, blockDim);
     LaunchConfig best_config;
     std::vector<LaunchConfig> candidates;
 
@@ -71,11 +59,26 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
 
     std::cout << "[Profile result]" <<std::endl;
     std::cout << "\tKernel: " << kernel_name << std::endl;
+    std::cout << "\tblockDim: " << blockDim.x << " " << blockDim.y << " " << blockDim.z << std::endl;
+    std::cout << "\tgridDim: " << gridDim.x << " " << gridDim.y << " " << gridDim.z << std::endl;
 
     // default config - use_original=true
     LaunchConfig base_config;
-    base_config.launch(func, gridDim, blockDim, args, sharedMem, stream, true, &base_time_ms);
+
+    // warmup first
+    base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10);
+
+    auto res = base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10000);
+    std::cout << "\tTime: " << res.first << std::endl;
+    std::cout << "\tIters: " << res.second << std::endl;
+
+    base_time_ms = res.first / res.second;
+
     std::cout << "\tBaseline: Time: " << base_time_ms << std::endl;
+    Transform::tracer->kernel_baseline_performance[launch_call] = base_time_ms;
+
+    uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
+    uint32_t total_threads = gridDim.x * gridDim.y * gridDim.z * threads_per_block;
 
     // some sliced configs
     for (uint32_t _threads_per_block : { 129560, 161280, 174080, 184320, 196608 }) {
@@ -86,11 +89,9 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
         }
     }
 
-    uint32_t num_threads_per_block = blockDim.x * blockDim.y * blockDim.z;
-
     // some PTB configs
     uint32_t _num_blocks_per_sm = 1;
-    while(_num_blocks_per_sm * num_threads_per_block <= 1024) {
+    while(_num_blocks_per_sm * threads_per_block <= 1024) {
         LaunchConfig config(false, false, true, false, 0, _num_blocks_per_sm);
         candidates.push_back(config);
         _num_blocks_per_sm++;
@@ -98,7 +99,8 @@ LaunchConfig LaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim
     
     for (auto &config : candidates) {
         try {
-            config.launch(func, gridDim, blockDim, args, sharedMem, stream, true, &time_ms);
+            auto res = config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10000);
+            time_ms = res.first / res.second;
         } catch (const std::exception& e) {
             std::cout << "caught std::exception& e" << std::endl;
         }
