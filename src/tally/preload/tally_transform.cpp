@@ -19,63 +19,26 @@
 #include <tally/msg_struct.h>
 #include <tally/env.h>
 #include <tally/transform.h>
+#include <tally/daemon.h>
+#include <tally/cache.h>
 #include <tally/generated/cuda_api.h>
 
 extern "C" { 
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
-    if (!Transform::tracer->kernels_registered) {
-        Transform::tracer->register_kernels();
-        std::cout << "Finished registering kernels" << std::endl;
+    if (!TallyDaemon::daemon->kernels_registered) {
+        TallyDaemon::daemon->register_kernels();
+        TallyDaemon::daemon->register_measurements();
+        // std::cout << "Finished registering kernels" << std::endl;
     }
-
-    auto num_args = Transform::tracer->sliced_kernel_map[func].second;
-    CudaLaunchCall launch_call(func, gridDim, blockDim);
 
     if (PROFILE_KERNEL_TO_KERNEL_PERF && PROFILE_WARMED_UP) {
-
-        // Only care about those sliced/PTB
-        if (Transform::tracer->kernel_baseline_performance.find(launch_call) != Transform::tracer->kernel_baseline_performance.end()) {
-
-            // Use this to identify the idx of the kernel launch
-            auto curr_kernel_idx = Transform::tracer->curr_kernel_idx;
-
-            if (curr_kernel_idx == PROFILE_KERNEL_IDX) {
-
-                bool use_original = PROFILE_USE_ORIGINAL;
-                bool use_sliced = PROFILE_USE_SLICED;
-                bool use_ptb = PROFILE_USE_PTB;
-                bool use_cuda_graph = PROFILE_USE_CUDA_GRAPH;
-                uint32_t threads_per_slice = PROFILE_THREADS_PER_SLICE;
-                uint32_t num_blocks_per_sm = PROFILE_NUM_BLOCKS_PER_SM;
-
-                LaunchConfig profile_config(use_original, use_sliced, use_ptb, use_cuda_graph, threads_per_slice, num_blocks_per_sm);
-                std::cout << "Profiling config: " << profile_config << std::endl;
-                auto time_iters = profile_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, PROFILE_DURATION_SECONDS);
-
-                std::cout << "Kernel: " << Transform::tracer->host_func_to_kernel_name_map[func] << std::endl;
-                std::cout << "\tblockDim: " << blockDim.x << " " << blockDim.y << " " << blockDim.z << std::endl;
-                std::cout << "\tgridDim: " << gridDim.x << " " << gridDim.y << " " << gridDim.z << std::endl;
-                float baseline_tp = 1 / Transform::tracer->kernel_baseline_performance[launch_call];
-                float new_tp = time_iters.second / time_iters.first;
-
-                std::cout << "Time: " << time_iters.first << std::endl;
-                std::cout << "Iters: " << time_iters.second << std::endl;
-                std::cout << "baseline_tp: " << baseline_tp << std::endl;
-                std::cout << "new_tp: " << new_tp << std::endl;
-
-                std::cout << "Normalized throughput: " << new_tp / baseline_tp << std::endl;
-
-                exit(0);
-
-            } else {
-                curr_kernel_idx++;
-            }
-        } else {
-            std::cout << "Baseline performance does not exist, skipping.." << std::endl;
-        }
+        CudaLaunchConfig::profile_kernel(func, gridDim, blockDim, args, sharedMem, stream);
     }
+
+    auto num_args = TallyDaemon::daemon->sliced_kernel_map[func].second;
+    CudaLaunchCall launch_call(func, gridDim, blockDim);
 
     cudaError_t err;
 
@@ -84,11 +47,15 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
     if (total_threads > TRANSFORM_THREADS_THRESHOLD) {
 
-        if (Transform::tracer->kernel_profile_map.find(launch_call) == Transform::tracer->kernel_profile_map.end()) {
-            Transform::tracer->kernel_profile_map[launch_call] = LaunchConfig::tune(func, gridDim, blockDim, args, sharedMem, stream);
+        CudaLaunchConfig config;
+
+        if (TallyDaemon::daemon->has_launch_config(launch_call)) {
+            config = TallyDaemon::daemon->get_launch_config(launch_call);
+        } else {
+            config = CudaLaunchConfig::tune(func, gridDim, blockDim, args, sharedMem, stream);
+            assert(TallyDaemon::daemon->has_launch_config(launch_call));
         }
 
-        auto &config = Transform::tracer->kernel_profile_map[launch_call];
         CHECK_CUDA_ERROR(config.launch(func, gridDim, blockDim, args, sharedMem, stream));
 
     } else {
@@ -100,8 +67,11 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
-    Transform::tracer->kernel_name_to_host_func_map[std::string(deviceFun)] = hostFun;
-    Transform::tracer->host_func_to_kernel_name_map[hostFun] = demangleFunc(std::string(deviceFun));
+    std::string mangled_kernel_name = std::string(deviceFun);
+    std::string demangled_kernel_name = demangleFunc(mangled_kernel_name);
+    TallyDaemon::daemon->mangled_kernel_name_to_host_func_map[mangled_kernel_name] = hostFun;
+    TallyDaemon::daemon->demangled_kernel_name_to_host_func_map[demangled_kernel_name] = hostFun;
+    TallyDaemon::daemon->host_func_to_demangled_kernel_name_map[hostFun] = demangled_kernel_name;
 
     assert(l__cudaRegisterFunction);
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
@@ -109,35 +79,11 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 
 void** __cudaRegisterFatBinary( void *fatCubin ) {
     
-    // auto ptb_str = gen_ptb_ptx("./before.ptx");
-    // auto sliced_str = gen_sliced_ptx("./before.ptx");
-
-    // std::cout << "ptb_str:" << std::endl;
-    // std::cout << ptb_str << std::endl;
-
-    // std::cout << "sliced_str:" << std::endl;
-    // std::cout << sliced_str << std::endl;
-
-    // exit(1);
-
     auto *wp = (__fatBinC_Wrapper_t *) fatCubin;
     struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) wp->data;
     size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
 
-    // std::cout << "Processing cubin with size: " << fatCubin_data_size_bytes << std::endl;
-    auto ptx_fatbin_strs = CubinCache::cache->get_transform_ptx_fatbin_strs((const char *)wp->data, fatCubin_data_size_bytes);
-
-    Transform::tracer->sliced_ptx_fatbin_strs.insert(
-        Transform::tracer->sliced_ptx_fatbin_strs.end(),
-        std::make_move_iterator(ptx_fatbin_strs.first.begin()),
-        std::make_move_iterator(ptx_fatbin_strs.first.end())
-    );
-
-    Transform::tracer->ptb_ptx_fatbin_strs.insert(
-        Transform::tracer->ptb_ptx_fatbin_strs.end(),
-        std::make_move_iterator(ptx_fatbin_strs.second.begin()),
-        std::make_move_iterator(ptx_fatbin_strs.second.end())
-    );
+    TallyDaemon::daemon->register_fat_binary((const char *)wp->data, fatCubin_data_size_bytes);
 
     assert(l__cudaRegisterFatBinary);
     return l__cudaRegisterFatBinary(fatCubin);

@@ -32,7 +32,7 @@ void __attribute__((constructor)) register_env_vars()
 {
     if (!TALLY_INITIALIZED) {
 
-        std::cout << "register_env_vars" << std::endl;
+        // std::cout << "register_env_vars" << std::endl;
 
         REGISTER_UINT32_ENV_VAR(TRANSFORM_THREADS_THRESHOLD, 129560);
         REGISTER_BOOL_ENV_VAR(USE_CUDA_GRAPH, false);

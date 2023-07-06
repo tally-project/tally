@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <cstring>
+#include <numeric>
 
 #include <cuda_runtime.h>
 #include <cuda.h>

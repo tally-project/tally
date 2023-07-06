@@ -1,4 +1,6 @@
 #include <cstring>
+#include <dlfcn.h>
+#include <cassert>
 
 #include <tally/transform.h>
 #include <tally/util.h>

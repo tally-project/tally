@@ -9,7 +9,7 @@ void register_signal_handler()
         register_env_vars();
     }
 
-    std::cout << "Registering Signal handlers" << std::endl;
+    // std::cout << "Registering Signal handlers" << std::endl;
 
     if (PROFILE_KERNEL_TO_KERNEL_PERF) {
         std::signal(SIGUSR1, warmup_signal_handler);
