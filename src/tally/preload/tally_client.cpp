@@ -22,6 +22,7 @@
 #include "libipc/ipc.h"
 
 #include "tally/util.h"
+#include "tally/ipc_util.h"
 #include "tally/msg_struct.h"
 #include "tally/transform.h"
 #include "tally/client.h"
@@ -38,18 +39,15 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
     uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct registerKernelArg) + kernel_func_len * sizeof(char);
 
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFUNCTION;
 
-    struct registerKernelArg *arg_ptr = (struct registerKernelArg *)(msg + sizeof(CUDA_API_ENUM));
+    auto arg_ptr = (struct registerKernelArg *)(msg + sizeof(CUDA_API_ENUM));
     arg_ptr->host_func = (void*) hostFun;
     arg_ptr->kernel_func_len = kernel_func_len;
     memcpy(arg_ptr->data, deviceFun, kernel_func_len * sizeof(char));
 
-    while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-        TallyClient::client->send_ipc->wait_for_recv(1);
-    }
-    std::free(msg);
+    CLIENT_SEND_MSG_AND_FREE;
 
     TallyClient::client->_kernel_addr_to_args[hostFun] = TallyClient::client->_kernel_name_to_args[deviceFunName];
 }
@@ -68,10 +66,10 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
     }
 
     msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAMEMCPY;
     
-    struct cudaMemcpyArg *arg_ptr = (struct cudaMemcpyArg *)(msg + sizeof(CUDA_API_ENUM));
+    auto arg_ptr = (struct cudaMemcpyArg *)(msg + sizeof(CUDA_API_ENUM));
     arg_ptr->dst = dst;
     arg_ptr->src = (void *)src;
     arg_ptr->count = count;
@@ -82,19 +80,10 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
         memcpy(arg_ptr->data, src, count);
     }
 
-    while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-        TallyClient::client->send_ipc->wait_for_recv(1);
-    }
-    std::free(msg);
+    CLIENT_SEND_MSG_AND_FREE;
+    CLIENT_RECV_MSG;
 
-    ipc::buff_t buf;
-    while (buf.empty()) {
-        buf = TallyClient::client->recv_ipc->recv(1000);
-    }
-
-    const char *dat = buf.get<const char *>();
-
-    struct cudaMemcpyResponse *res = (struct cudaMemcpyResponse *) dat;
+    auto res = (struct cudaMemcpyResponse *) dat;
 
     // Copy data to the host ptr
     if (kind == cudaMemcpyDeviceToHost) {
@@ -104,30 +93,25 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
 	return res->err;
 }
 
-
 void** __cudaRegisterFatBinary( void *fatCubin ) {
-    __fatBinC_Wrapper_t *wp = (__fatBinC_Wrapper_t *) fatCubin;
-
+    auto wp = (__fatBinC_Wrapper_t *) fatCubin;
     int magic = wp->magic;
     int version = wp->version;
 
-    struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) wp->data;
+    auto fbh = (struct fatBinaryHeader *) wp->data;
     size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
     uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct __cudaRegisterFatBinaryArg) + fatCubin_data_size_bytes;
 
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARY;
 
-    struct __cudaRegisterFatBinaryArg *arg_ptr = (struct __cudaRegisterFatBinaryArg *)(msg + sizeof(CUDA_API_ENUM));
+    auto arg_ptr = (struct __cudaRegisterFatBinaryArg *)(msg + sizeof(CUDA_API_ENUM));
     arg_ptr->magic = magic;
     arg_ptr->version = version;
     memcpy(arg_ptr->data, wp->data, fatCubin_data_size_bytes);
 
-    while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-        TallyClient::client->send_ipc->wait_for_recv(1);
-    }
-    std::free(msg);
+    CLIENT_SEND_MSG_AND_FREE;
 
     write_binary_to_file("/tmp/tmp.cubin", reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
     exec("cuobjdump /tmp/tmp.cubin -elf > /tmp/tmp_cubin.elf");
@@ -144,20 +128,15 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     return nullptr;
 }
 
-
-
 void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 {
     uint32_t msg_len = sizeof(CUDA_API_ENUM);
 
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND;
 
-    while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-        TallyClient::client->send_ipc->wait_for_recv(1);
-    }
-    std::free(msg);
+    CLIENT_SEND_MSG_AND_FREE;
 }
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
@@ -177,30 +156,21 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     uint8_t *msg;
 
     msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDALAUNCHKERNEL;
 
-    struct cudaLaunchKernelArg *arg_ptr = (struct cudaLaunchKernelArg *)(msg + sizeof(CUDA_API_ENUM));
-
+    auto arg_ptr = (struct cudaLaunchKernelArg *)(msg + sizeof(CUDA_API_ENUM));
     arg_ptr->host_func = func;
     arg_ptr->gridDim = gridDim;
     arg_ptr->blockDim = blockDim;
     arg_ptr->sharedMem = sharedMem;
+    arg_ptr->stream = stream;
     memcpy(arg_ptr->params, params_data, params_size);
 
-    while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-        TallyClient::client->send_ipc->wait_for_recv(1);
-    }
-    std::free(msg);
+    CLIENT_SEND_MSG_AND_FREE;
+    CLIENT_RECV_MSG;
 
-    ipc::buff_t buf;
-    while (buf.empty()) {
-        buf = TallyClient::client->recv_ipc->recv(1000);
-    }
-
-    const char *dat = buf.get<const char *>();
-    cudaError_t *err = (cudaError_t *) dat;
-
+    auto err = (cudaError_t *) dat;
     return *err;
 }
 
@@ -209,25 +179,17 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
     static const uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMallocArg);
 
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAMALLOC;
     
-    struct cudaMallocArg *arg_ptr = (struct cudaMallocArg *)(msg + sizeof(CUDA_API_ENUM));
+    auto arg_ptr = (struct cudaMallocArg *)(msg + sizeof(CUDA_API_ENUM));
     arg_ptr->devPtr = devPtr;
     arg_ptr->size = size;
 
-    while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-        TallyClient::client->send_ipc->wait_for_recv(1);
-    }
-    std::free(msg);
+    CLIENT_SEND_MSG_AND_FREE;
+    CLIENT_RECV_MSG;
 
-    ipc::buff_t buf;
-    while (buf.empty()) {
-        buf = TallyClient::client->recv_ipc->recv(1000);
-    }
-
-    const char *dat = buf.get<const char *>();
-    struct cudaMallocResponse *res = (struct cudaMallocResponse *) dat;
+    auto res = (struct cudaMallocResponse *) dat;
 
     *devPtr = res->ptr;
 	return res->err;

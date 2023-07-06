@@ -3217,17 +3217,44 @@ void TallyServer::handle_cudaGetDeviceFlags(void *__args)
 
 void TallyServer::handle_cudaStreamCreate(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaStreamCreateArg *) __args;
+
+    cudaStream_t  pStream;
+    cudaError_t err = cudaStreamCreate(&pStream);
+
+    struct cudaStreamCreateResponse res { pStream, err };
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaStreamCreateResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaStreamCreateWithFlags(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaStreamCreateWithFlagsArg *) __args;
+
+    cudaStream_t  pStream;
+    cudaError_t err = cudaStreamCreateWithFlags(&pStream, args->flags);
+
+    struct cudaStreamCreateWithFlagsResponse res { pStream, err };
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaStreamCreateWithFlagsResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaStreamCreateWithPriority(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaStreamCreateWithPriorityArg *) __args;
+
+    cudaStream_t  pStream;
+    cudaError_t err = cudaStreamCreateWithPriority(&pStream, args->flags, args->priority);
+
+    struct cudaStreamCreateWithPriorityResponse res { pStream, err };
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaStreamCreateWithPriorityResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaStreamGetPriority(void *__args)
@@ -3335,42 +3362,117 @@ void TallyServer::handle_cudaStreamUpdateCaptureDependencies(void *__args)
 
 void TallyServer::handle_cudaEventCreate(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaEventCreateArg *) __args;
+
+    cudaEvent_t  event;
+    cudaError_t err = cudaEventCreate(&event);
+
+    struct cudaEventCreateResponse res { event, err };
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaEventCreateResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaEventCreateWithFlags(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaEventCreateWithFlagsArg *) __args;
+
+    cudaEvent_t  event;
+    cudaError_t err = cudaEventCreateWithFlags(&event, args->flags);
+
+    struct cudaEventCreateWithFlagsResponse res { event, err };
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaEventCreateWithFlagsResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaEventRecord(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaEventRecordArg *) __args;
+    cudaError_t err = cudaEventRecord(
+		args->event,
+		args->stream
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaEventRecordWithFlags(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaEventRecordWithFlagsArg *) __args;
+    cudaError_t err = cudaEventRecordWithFlags(
+		args->event,
+		args->stream,
+		args->flags
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaEventQuery(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaEventQueryArg *) __args;
+    cudaError_t err = cudaEventQuery(
+		args->event
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaEventSynchronize(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaEventSynchronizeArg *) __args;
+    cudaError_t err = cudaEventSynchronize(
+		args->event
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaEventDestroy(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaEventDestroyArg *) __args;
+    cudaError_t err = cudaEventDestroy(
+		args->event
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaEventElapsedTime(void *__args)
 {
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cudaEventElapsedTimeArg *) __args;
+
+    float  ms;
+    cudaError_t err = cudaEventElapsedTime(&ms, args->start, args->end);
+
+    struct cudaEventElapsedTimeResponse res { ms, err };
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaEventElapsedTimeResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaImportExternalMemory(void *__args)

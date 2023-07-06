@@ -12,8 +12,10 @@ from tally.preload.client_consts import (
     TALLY_SERVER_HEADER_TEMPLATE_TOP,
     TALLY_SERVER_HEADER_TEMPLATE_BUTTOM,
     SPECIAL_CLIENT_PRELOAD_FUNCS,
+    CUDA_RESOURCE_CREATE_FUNCS,
     CLIENT_PRELOAD_TEMPLATE,
-    FORWARD_API_CALLS
+    FORWARD_API_CALLS,
+    get_preload_func_template
 )
 from tally.preload.preload_util import (
     gen_func_sig_args_str,
@@ -58,19 +60,29 @@ def gen_client_msg_struct(func_sig):
     else:
         return None
 
-    # Currently only generate functions that are forward calls
-    if func_name not in FORWARD_API_CALLS:
-        return None
-
     msg_struct = ""
-    msg_struct += f"struct {func_name}Arg {{\n"
 
-    for i in range(len(arg_types)):
-        msg_struct += f"\t{arg_types[i]} {arg_names[i]};\n"
+    # Currently only generate functions that are forward calls
+    if func_name in FORWARD_API_CALLS or func_name in CUDA_RESOURCE_CREATE_FUNCS:
+
+        msg_struct += f"struct {func_name}Arg {{\n"
+
+        for i in range(len(arg_types)):
+            msg_struct += f"\t{arg_types[i]} {arg_names[i]};\n"
+        
+        msg_struct += "};\n"
+
+    if func_name in CUDA_RESOURCE_CREATE_FUNCS:
+        msg_struct += "\n"
+        msg_struct += f"struct {func_name}Response {{\n"
+        msg_struct += f"\t{arg_types[0].strip('*')} {arg_names[0]};\n"
+        msg_struct += f"\t{ret_type} err;\n"
+        msg_struct += "};\n"
     
-    msg_struct += "};\n"
+    if msg_struct:
+        return msg_struct
 
-    return msg_struct
+    return None
 
 
 def gen_server_handler(func_sig):
@@ -88,9 +100,28 @@ def gen_server_handler(func_sig):
 void TallyServer::handle_{func_name}(void *__args)
 {{
 """
-    if func_name not in FORWARD_API_CALLS:
-        handler += "\tthrow std::runtime_error(\"Unimplemented.\");\n"
-    else:
+    if func_name in CUDA_RESOURCE_CREATE_FUNCS:
+
+        resource_type = arg_types[0].strip("*")
+
+        handler += f"""
+    auto args = (struct {func_name}Arg *) __args;
+
+    {resource_type} {arg_names[0]};
+    {ret_type} err = {func_name}(&{arg_names[0]}"""
+
+        # args->flags
+        for i in range(1, len(arg_names)):
+            handler += f", args->{arg_names[i]}"
+    
+        handler += f""");
+
+    struct {func_name}Response res {{ {arg_names[0]}, err }};
+    while(!send_ipc->send((void *) &res, sizeof(struct {func_name}Response))) {{
+        send_ipc->wait_for_recv(1);
+    }}
+"""
+    elif func_name in FORWARD_API_CALLS:
         handler += f"""
     auto args = (struct {func_name}Arg *) __args;
     {ret_type} err = {func_name}(
@@ -109,6 +140,8 @@ void TallyServer::handle_{func_name}(void *__args)
         send_ipc->wait_for_recv(1);
     }}
 """
+    else:
+        handler += "\tthrow std::runtime_error(\"Unimplemented.\");\n"
 
     handler += "}\n"
 
@@ -136,8 +169,25 @@ def gen_func_client_preload(func_sig):
     func_preload_builder += f"{ret_type} {func_name}({args_str_no_val})\n"
     func_preload_builder += "{\n"
 
-    if func_name not in FORWARD_API_CALLS:
+    if func_name in CUDA_RESOURCE_CREATE_FUNCS:
+        func_preload_builder += get_preload_func_template(func_name, arg_names)
 
+        res_struct = f"{func_name}Response"
+
+        func_preload_builder += f"""
+    auto res = ({res_struct} *) dat;
+    *{arg_names[0]} = res->{arg_names[0]};
+    return res->err;
+"""
+    
+    elif func_name in FORWARD_API_CALLS:
+        func_preload_builder += get_preload_func_template(func_name, arg_names)
+
+        func_preload_builder += f"""
+        auto res = ({ret_type} *) dat;
+        return *res;
+"""
+    else:
         # print
         func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
 
@@ -149,38 +199,6 @@ def gen_func_client_preload(func_sig):
 
         if ret_type != "void":
             func_preload_builder += f"\treturn res;\n"
-    
-    else:
-        arg_struct = f"{func_name}Arg"
-
-        func_preload_builder +=  f"""
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct {arg_struct});
-
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::{func_name.upper()};
-    
-    struct {arg_struct} *arg_ptr = (struct {arg_struct} *)(msg + sizeof(CUDA_API_ENUM));
-    """
-        
-        for arg_name in arg_names:
-            func_preload_builder += f"arg_ptr->{arg_name} = {arg_name};\n"
-
-        func_preload_builder += f"""
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {{
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }}
-        std::free(msg);
-
-        ipc::buff_t buf;
-        while (buf.empty()) {{
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }}
-
-        const char *dat = buf.get<const char *>();
-        {ret_type} *res = ({ret_type} *) dat;
-        return *res;
-"""
 
     # close bracket
     func_preload_builder += "}"
@@ -272,7 +290,7 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
         f.write(MSG_STRUCT_TEMPLATE_TOP)
     
         for func_name in client_code_dict:
-            if func_name in FORWARD_API_CALLS:
+            if client_code_dict[func_name]['struct']:
                 f.write(f"{client_code_dict[func_name]['struct']}\n")
 
         f.write(MSG_STRUCT_TEMPLATE_BUTTOM)

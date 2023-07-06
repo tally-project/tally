@@ -77,30 +77,6 @@ MSG_STRUCT_TEMPLATE_BUTTOM = """
 #endif // TALLY_GENERATED_MSG_STRUCT_H
 """
 
-# These api calls can be directly forwarded to the server without addtional logic
-# this means no value needs to be assigned
-FORWARD_API_CALLS = [
-    "cudaFree",
-    "cudaProfilerStart",
-    "cudaProfilerStop",
-    "cuInit",
-    "cudaDeviceReset",
-    "cudaDeviceSynchronize",
-    "cudaDeviceSetLimit",
-    "cudaDeviceSetCacheConfig",
-    "cudaDeviceSetSharedMemConfig",
-    "cudaThreadExit",
-    "cudaThreadSynchronize",
-    "cudaThreadSetLimit",
-    "cudaThreadSetCacheConfig",
-    "cudaGetLastError",
-    "cudaPeekAtLastError",
-    "cudaSetDevice",
-    "cudaSetDeviceFlags",
-    "cudaCtxResetPersistingL2Cache",
-    
-]
-
 CLIENT_PRELOAD_TEMPLATE = """
 #include <dlfcn.h>
 #include <stdio.h>
@@ -119,6 +95,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 
 #include "tally/msg_struct.h"
 #include "tally/client.h"
+#include "tally/ipc_util.h"
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
 #include "tally/generated/msg_struct.h"
@@ -185,6 +162,35 @@ TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
 #endif // TALLY_SERVER_H
 """
 
+# These api calls can be directly forwarded to the server without addtional logic
+# this means no value needs to be assigned
+FORWARD_API_CALLS = [
+    "cudaFree",
+    "cudaProfilerStart",
+    "cudaProfilerStop",
+    "cuInit",
+    "cudaDeviceReset",
+    "cudaDeviceSynchronize",
+    "cudaDeviceSetLimit",
+    "cudaDeviceSetCacheConfig",
+    "cudaDeviceSetSharedMemConfig",
+    "cudaThreadExit",
+    "cudaThreadSynchronize",
+    "cudaThreadSetLimit",
+    "cudaThreadSetCacheConfig",
+    "cudaGetLastError",
+    "cudaPeekAtLastError",
+    "cudaSetDevice",
+    "cudaSetDeviceFlags",
+    "cudaCtxResetPersistingL2Cache",
+    "cudaEventRecord",
+    "cudaEventRecordWithFlags",
+    "cudaEventQuery",
+    "cudaEventSynchronize",
+    "cudaEventDestroy",
+
+]
+
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "cudaMalloc",
     "cudaMemcpy",
@@ -193,3 +199,37 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "__cudaRegisterFatBinary",
     "__cudaRegisterFatBinaryEnd"
 ]
+
+# API calls that create some resource
+# such as cudaStreamCreate, cudaEventCreate
+# These will return a pointer to the user
+CUDA_RESOURCE_CREATE_FUNCS = [
+    "cudaStreamCreate",
+    "cudaStreamCreateWithFlags",
+    "cudaStreamCreateWithPriority",
+    "cudaEventCreate",
+    "cudaEventCreateWithFlags",
+    "cudaEventElapsedTime"
+]
+
+def get_preload_func_template(func_name, arg_names):
+    arg_struct = f"{func_name}Arg"
+
+    preload_body = ""
+    preload_body += f"""
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct {arg_struct});
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::{func_name.upper()};
+    
+    struct {arg_struct} *arg_ptr = (struct {arg_struct} *)(msg + sizeof(CUDA_API_ENUM));
+"""
+
+    for arg_name in arg_names:
+        preload_body += f"\targ_ptr->{arg_name} = {arg_name};\n"
+    
+    preload_body += "\tCLIENT_SEND_MSG_AND_FREE;\n"
+    preload_body += "\tCLIENT_RECV_MSG;\n"
+
+    return preload_body

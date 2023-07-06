@@ -98,11 +98,6 @@ void TallyServer::handle_cudaMemcpy(void *__args)
 void TallyServer::handle_cudaLaunchKernel(void *__args)
 {
     auto args = (cudaLaunchKernelArg *) __args;
-    static cudaError_t (*lcudaLaunchKernel) (const void *, dim3 , dim3 , void **, size_t , cudaStream_t );
-    if (!lcudaLaunchKernel) {
-        lcudaLaunchKernel = (cudaError_t (*) (const void *, dim3 , dim3 , void **, size_t , cudaStream_t )) dlsym(RTLD_NEXT, "cudaLaunchKernel");
-    }
-    assert(lcudaLaunchKernel);
 
     void *kernel_server_addr = _kernel_client_addr_mapping[(void *) args->host_func];
     auto &arg_sizes = _kernel_addr_to_args[kernel_server_addr];
@@ -118,7 +113,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args)
         offset += arg_sizes[i];
     }
 
-    auto err = lcudaLaunchKernel((const void *) kernel_server_addr, args->gridDim, args->blockDim, &__args_arr[0], args->sharedMem, cudaStreamDefault);
+    auto err = lcudaLaunchKernel((const void *) kernel_server_addr, args->gridDim, args->blockDim, &__args_arr[0], args->sharedMem, args->stream);
 
     while (!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
         send_ipc->wait_for_recv(1);
@@ -194,6 +189,3 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
     cudaMalloc((void**)&arr, sizeof(int));
     cudaFree(arr);
 }
-
-
-

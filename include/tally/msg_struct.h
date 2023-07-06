@@ -41,6 +41,7 @@ struct cudaLaunchKernelArg {
     dim3 gridDim;
     dim3 blockDim;
     size_t sharedMem;
+    cudaStream_t stream;
     char params[];
 };
 

@@ -16,6 +16,7 @@
 
 #include "tally/msg_struct.h"
 #include "tally/client.h"
+#include "tally/ipc_util.h"
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
 #include "tally/generated/msg_struct.h"
@@ -50,20 +51,11 @@ CUresult cuInit(unsigned int  Flags)
     msg_header->api_id = CUDA_API_ENUM::CUINIT;
     
     struct cuInitArg *arg_ptr = (struct cuInitArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->Flags = Flags;
+	arg_ptr->Flags = Flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
-
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        CUresult *res = (CUresult *) dat;
+        auto res = (CUresult *) dat;
         return *res;
 }
 
@@ -2829,19 +2821,10 @@ cudaError_t cudaDeviceReset()
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICERESET;
     
     struct cudaDeviceResetArg *arg_ptr = (struct cudaDeviceResetArg *)(msg + sizeof(CUDA_API_ENUM));
-    
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -2855,19 +2838,10 @@ cudaError_t cudaDeviceSynchronize()
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICESYNCHRONIZE;
     
     struct cudaDeviceSynchronizeArg *arg_ptr = (struct cudaDeviceSynchronizeArg *)(msg + sizeof(CUDA_API_ENUM));
-    
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -2881,21 +2855,12 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETLIMIT;
     
     struct cudaDeviceSetLimitArg *arg_ptr = (struct cudaDeviceSetLimitArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->limit = limit;
-arg_ptr->value = value;
+	arg_ptr->limit = limit;
+	arg_ptr->value = value;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
-
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -2941,20 +2906,11 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETCACHECONFIG;
     
     struct cudaDeviceSetCacheConfigArg *arg_ptr = (struct cudaDeviceSetCacheConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->cacheConfig = cacheConfig;
+	arg_ptr->cacheConfig = cacheConfig;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
-
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -2976,20 +2932,11 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETSHAREDMEMCONFIG;
     
     struct cudaDeviceSetSharedMemConfigArg *arg_ptr = (struct cudaDeviceSetSharedMemConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->config = config;
+	arg_ptr->config = config;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
-
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -3067,19 +3014,10 @@ cudaError_t cudaThreadExit()
     msg_header->api_id = CUDA_API_ENUM::CUDATHREADEXIT;
     
     struct cudaThreadExitArg *arg_ptr = (struct cudaThreadExitArg *)(msg + sizeof(CUDA_API_ENUM));
-    
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -3093,19 +3031,10 @@ cudaError_t cudaThreadSynchronize()
     msg_header->api_id = CUDA_API_ENUM::CUDATHREADSYNCHRONIZE;
     
     struct cudaThreadSynchronizeArg *arg_ptr = (struct cudaThreadSynchronizeArg *)(msg + sizeof(CUDA_API_ENUM));
-    
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -3119,21 +3048,12 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
     msg_header->api_id = CUDA_API_ENUM::CUDATHREADSETLIMIT;
     
     struct cudaThreadSetLimitArg *arg_ptr = (struct cudaThreadSetLimitArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->limit = limit;
-arg_ptr->value = value;
+	arg_ptr->limit = limit;
+	arg_ptr->value = value;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
-
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -3163,20 +3083,11 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
     msg_header->api_id = CUDA_API_ENUM::CUDATHREADSETCACHECONFIG;
     
     struct cudaThreadSetCacheConfigArg *arg_ptr = (struct cudaThreadSetCacheConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->cacheConfig = cacheConfig;
+	arg_ptr->cacheConfig = cacheConfig;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
-
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -3190,19 +3101,10 @@ cudaError_t cudaGetLastError()
     msg_header->api_id = CUDA_API_ENUM::CUDAGETLASTERROR;
     
     struct cudaGetLastErrorArg *arg_ptr = (struct cudaGetLastErrorArg *)(msg + sizeof(CUDA_API_ENUM));
-    
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -3216,19 +3118,10 @@ cudaError_t cudaPeekAtLastError()
     msg_header->api_id = CUDA_API_ENUM::CUDAPEEKATLASTERROR;
     
     struct cudaPeekAtLastErrorArg *arg_ptr = (struct cudaPeekAtLastErrorArg *)(msg + sizeof(CUDA_API_ENUM));
-    
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -3330,20 +3223,11 @@ cudaError_t cudaSetDevice(int  device)
     msg_header->api_id = CUDA_API_ENUM::CUDASETDEVICE;
     
     struct cudaSetDeviceArg *arg_ptr = (struct cudaSetDeviceArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->device = device;
+	arg_ptr->device = device;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
-
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -3373,20 +3257,11 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
     msg_header->api_id = CUDA_API_ENUM::CUDASETDEVICEFLAGS;
     
     struct cudaSetDeviceFlagsArg *arg_ptr = (struct cudaSetDeviceFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->flags = flags;
+	arg_ptr->flags = flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
-
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -3400,26 +3275,62 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 
 cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 {
-	printf("cudaStreamCreate hooked\n");
-	cudaError_t res = 
-		lcudaStreamCreate(pStream);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCREATE;
+    
+    struct cudaStreamCreateArg *arg_ptr = (struct cudaStreamCreateArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pStream = pStream;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaStreamCreateResponse *) dat;
+    *pStream = res->pStream;
+    return res->err;
 }
 
 cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flags)
 {
-	printf("cudaStreamCreateWithFlags hooked\n");
-	cudaError_t res = 
-		lcudaStreamCreateWithFlags(pStream, flags);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithFlagsArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCREATEWITHFLAGS;
+    
+    struct cudaStreamCreateWithFlagsArg *arg_ptr = (struct cudaStreamCreateWithFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pStream = pStream;
+	arg_ptr->flags = flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaStreamCreateWithFlagsResponse *) dat;
+    *pStream = res->pStream;
+    return res->err;
 }
 
 cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  flags, int  priority)
 {
-	printf("cudaStreamCreateWithPriority hooked\n");
-	cudaError_t res = 
-		lcudaStreamCreateWithPriority(pStream, flags, priority);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithPriorityArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCREATEWITHPRIORITY;
+    
+    struct cudaStreamCreateWithPriorityArg *arg_ptr = (struct cudaStreamCreateWithPriorityArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pStream = pStream;
+	arg_ptr->flags = flags;
+	arg_ptr->priority = priority;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaStreamCreateWithPriorityResponse *) dat;
+    *pStream = res->pStream;
+    return res->err;
 }
 
 cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
@@ -3448,19 +3359,10 @@ cudaError_t cudaCtxResetPersistingL2Cache()
     msg_header->api_id = CUDA_API_ENUM::CUDACTXRESETPERSISTINGL2CACHE;
     
     struct cudaCtxResetPersistingL2CacheArg *arg_ptr = (struct cudaCtxResetPersistingL2CacheArg *)(msg + sizeof(CUDA_API_ENUM));
-    
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -3594,66 +3496,155 @@ cudaError_t cudaStreamUpdateCaptureDependencies(cudaStream_t  stream, cudaGraphN
 
 cudaError_t cudaEventCreate(cudaEvent_t * event)
 {
-	printf("cudaEventCreate hooked\n");
-	cudaError_t res = 
-		lcudaEventCreate(event);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTCREATE;
+    
+    struct cudaEventCreateArg *arg_ptr = (struct cudaEventCreateArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->event = event;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaEventCreateResponse *) dat;
+    *event = res->event;
+    return res->err;
 }
 
 cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 {
-	printf("cudaEventCreateWithFlags hooked\n");
-	cudaError_t res = 
-		lcudaEventCreateWithFlags(event, flags);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateWithFlagsArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTCREATEWITHFLAGS;
+    
+    struct cudaEventCreateWithFlagsArg *arg_ptr = (struct cudaEventCreateWithFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->event = event;
+	arg_ptr->flags = flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaEventCreateWithFlagsResponse *) dat;
+    *event = res->event;
+    return res->err;
 }
 
 cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 {
-	printf("cudaEventRecord hooked\n");
-	cudaError_t res = 
-		lcudaEventRecord(event, stream);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTRECORD;
+    
+    struct cudaEventRecordArg *arg_ptr = (struct cudaEventRecordArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->event = event;
+	arg_ptr->stream = stream;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, unsigned int  flags)
 {
-	printf("cudaEventRecordWithFlags hooked\n");
-	cudaError_t res = 
-		lcudaEventRecordWithFlags(event, stream, flags);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordWithFlagsArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTRECORDWITHFLAGS;
+    
+    struct cudaEventRecordWithFlagsArg *arg_ptr = (struct cudaEventRecordWithFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->event = event;
+	arg_ptr->stream = stream;
+	arg_ptr->flags = flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaEventQuery(cudaEvent_t  event)
 {
-	printf("cudaEventQuery hooked\n");
-	cudaError_t res = 
-		lcudaEventQuery(event);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventQueryArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTQUERY;
+    
+    struct cudaEventQueryArg *arg_ptr = (struct cudaEventQueryArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->event = event;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 {
-	printf("cudaEventSynchronize hooked\n");
-	cudaError_t res = 
-		lcudaEventSynchronize(event);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventSynchronizeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTSYNCHRONIZE;
+    
+    struct cudaEventSynchronizeArg *arg_ptr = (struct cudaEventSynchronizeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->event = event;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaEventDestroy(cudaEvent_t  event)
 {
-	printf("cudaEventDestroy hooked\n");
-	cudaError_t res = 
-		lcudaEventDestroy(event);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventDestroyArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTDESTROY;
+    
+    struct cudaEventDestroyArg *arg_ptr = (struct cudaEventDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->event = event;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  end)
 {
-	printf("cudaEventElapsedTime hooked\n");
-	cudaError_t res = 
-		lcudaEventElapsedTime(ms, start, end);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventElapsedTimeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTELAPSEDTIME;
+    
+    struct cudaEventElapsedTimeArg *arg_ptr = (struct cudaEventElapsedTimeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->ms = ms;
+	arg_ptr->start = start;
+	arg_ptr->end = end;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaEventElapsedTimeResponse *) dat;
+    *ms = res->ms;
+    return res->err;
 }
 
 cudaError_t cudaImportExternalMemory(cudaExternalMemory_t * extMem_out, const struct cudaExternalMemoryHandleDesc * memHandleDesc)
@@ -3858,20 +3849,11 @@ cudaError_t cudaFree(void * devPtr)
     msg_header->api_id = CUDA_API_ENUM::CUDAFREE;
     
     struct cudaFreeArg *arg_ptr = (struct cudaFreeArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->devPtr = devPtr;
+	arg_ptr->devPtr = devPtr;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
-
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -9339,19 +9321,10 @@ cudaError_t cudaProfilerStart()
     msg_header->api_id = CUDA_API_ENUM::CUDAPROFILERSTART;
     
     struct cudaProfilerStartArg *arg_ptr = (struct cudaProfilerStartArg *)(msg + sizeof(CUDA_API_ENUM));
-    
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
@@ -9365,19 +9338,10 @@ cudaError_t cudaProfilerStop()
     msg_header->api_id = CUDA_API_ENUM::CUDAPROFILERSTOP;
     
     struct cudaProfilerStopArg *arg_ptr = (struct cudaProfilerStopArg *)(msg + sizeof(CUDA_API_ENUM));
-    
-        while (!TallyClient::client->send_ipc->send(msg, msg_len)) {
-            TallyClient::client->send_ipc->wait_for_recv(1);
-        }
-        std::free(msg);
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
 
-        ipc::buff_t buf;
-        while (buf.empty()) {
-            buf = TallyClient::client->recv_ipc->recv(1000);
-        }
-
-        const char *dat = buf.get<const char *>();
-        cudaError_t *res = (cudaError_t *) dat;
+        auto res = (cudaError_t *) dat;
         return *res;
 }
 
