@@ -10,6 +10,8 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
 FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
 
+add_subdirectory(third_party/spdlog)
+
 set (LIBIPC_PROJECT_DIR ${PROJECT_SOURCE_DIR}/third_party/cpp-ipc)
 
 set(TALLY_SRC_FILES
@@ -127,11 +129,13 @@ target_include_directories(server
 
 target_link_libraries(server PUBLIC
     cuda
+    cublas
     ipc
     dl
     tally
     PUBLIC Boost::serialization
     PUBLIC Boost::regex
+    spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
 )
 
 add_subdirectory(tests)

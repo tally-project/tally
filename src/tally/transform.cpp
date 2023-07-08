@@ -63,13 +63,6 @@ std::string gen_ptb_ptx(std::string ptx_path)
             brace_counter = 0;
             brace_encountered = false;
             kernel_lines.clear();
-
-            // if (demangleFunc(kernel_name) == "void at::native::(anonymous namespace)::max_pool_backward_nchw<c10::Half, float>(c10::Half const*, long const*, int, long, long, long, int, int, int, int, int, int, int, int, int, int, c10::Half*)") {
-            //     std::cout << "Found target kernel:" << std::endl;
-            //     std::cout << kernel_name << std::endl;
-            //     std::cout << ptx_code_str << std::endl;
-            //     found = true;
-            // }
         }
         
         if (record_kernel) {

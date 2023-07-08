@@ -12,7 +12,7 @@ from tally.preload.client_consts import (
     TALLY_SERVER_HEADER_TEMPLATE_TOP,
     TALLY_SERVER_HEADER_TEMPLATE_BUTTOM,
     SPECIAL_CLIENT_PRELOAD_FUNCS,
-    CUDA_RESOURCE_CREATE_FUNCS,
+    CUDA_GET_FIRST_PARAM_FUNCS,
     CLIENT_PRELOAD_TEMPLATE,
     FORWARD_API_CALLS,
     get_preload_func_template
@@ -63,7 +63,7 @@ def gen_client_msg_struct(func_sig):
     msg_struct = ""
 
     # Currently only generate functions that are forward calls
-    if func_name in FORWARD_API_CALLS or func_name in CUDA_RESOURCE_CREATE_FUNCS:
+    if func_name in FORWARD_API_CALLS or func_name in CUDA_GET_FIRST_PARAM_FUNCS:
 
         msg_struct += f"struct {func_name}Arg {{\n"
 
@@ -72,7 +72,7 @@ def gen_client_msg_struct(func_sig):
         
         msg_struct += "};\n"
 
-    if func_name in CUDA_RESOURCE_CREATE_FUNCS:
+    if func_name in CUDA_GET_FIRST_PARAM_FUNCS:
         msg_struct += "\n"
         msg_struct += f"struct {func_name}Response {{\n"
         msg_struct += f"\t{arg_types[0].strip('*')} {arg_names[0]};\n"
@@ -100,7 +100,10 @@ def gen_server_handler(func_sig):
 void TallyServer::handle_{func_name}(void *__args)
 {{
 """
-    if func_name in CUDA_RESOURCE_CREATE_FUNCS:
+
+    handler += f"\tspdlog::info(\"Received request: {func_name}\");\n"
+
+    if func_name in CUDA_GET_FIRST_PARAM_FUNCS:
 
         resource_type = arg_types[0].strip("*")
 
@@ -169,7 +172,7 @@ def gen_func_client_preload(func_sig):
     func_preload_builder += f"{ret_type} {func_name}({args_str_no_val})\n"
     func_preload_builder += "{\n"
 
-    if func_name in CUDA_RESOURCE_CREATE_FUNCS:
+    if func_name in CUDA_GET_FIRST_PARAM_FUNCS:
         func_preload_builder += get_preload_func_template(func_name, arg_names)
 
         res_struct = f"{func_name}Response"
@@ -306,6 +309,8 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
     with open(server_cpp_output_file, 'w') as f:
         f.write("""
 #include <cstring>
+                
+#include "spdlog/spdlog.h"
 
 #include <tally/transform.h>
 #include <tally/util.h>

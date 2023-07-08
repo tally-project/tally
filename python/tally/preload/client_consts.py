@@ -115,6 +115,8 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 
 #include <cuda_runtime.h>
 #include <cuda.h>
+#include <cublas_v2.h>
+#include <cuda_profiler_api.h>
 
 #include "libipc/ipc.h"
 
@@ -188,7 +190,22 @@ FORWARD_API_CALLS = [
     "cudaEventQuery",
     "cudaEventSynchronize",
     "cudaEventDestroy",
-
+    "cudaDeviceSetMemPool",
+    "cudaSetDeviceFlags",
+    "cudaStreamCopyAttributes",
+    "cudaStreamDestroy",
+    "cudaStreamWaitEvent",
+    "cudaStreamSynchronize",
+    "cudaStreamQuery",
+    "cudaStreamBeginCapture",
+    "cudaStreamEndCapture",
+    "cublasDestroy_v2",
+    "cublasGetCudartVersion",
+    "cuDeviceSetMemPool",
+    "cuFlushGPUDirectRDMAWrites",
+    "cuDevicePrimaryCtxRelease_v2",
+    "cuDevicePrimaryCtxSetFlags_v2",
+    "cuDevicePrimaryCtxReset_v2"
 ]
 
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
@@ -200,16 +217,43 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "__cudaRegisterFatBinaryEnd"
 ]
 
-# API calls that create some resource
-# such as cudaStreamCreate, cudaEventCreate
-# These will return a pointer to the user
-CUDA_RESOURCE_CREATE_FUNCS = [
+# API calls that has the first argument set
+# by CUDA API call, such as cudaStreamCreate
+CUDA_GET_FIRST_PARAM_FUNCS = [
     "cudaStreamCreate",
     "cudaStreamCreateWithFlags",
     "cudaStreamCreateWithPriority",
     "cudaEventCreate",
     "cudaEventCreateWithFlags",
-    "cudaEventElapsedTime"
+    "cudaEventElapsedTime",
+    "cudaDeviceGetLimit",
+    "cudaDeviceGetCacheConfig",
+    "cudaDeviceGetSharedMemConfig"
+    "cudaIpcGetEventHandle",
+    "cudaIpcOpenEventHandle",
+    "cudaThreadGetLimit",
+    "cudaThreadGetCacheConfig",
+    "cudaGetDeviceCount",
+    "cudaGetDeviceProperties",
+    "cudaDeviceGetAttribute",
+    "cudaDeviceGetDefaultMemPool",
+    "cudaDeviceGetMemPool",
+    "cudaDeviceGetP2PAttribute",
+    "cudaGetDevice",
+    "cudaGetDeviceFlags",
+    "cudaGraphCreate",
+    "lcublasCreate_v2",
+    "cuDriverGetVersion",
+    "cuDeviceGet",
+    "cuDeviceGetCount",
+    "cuDeviceGetUuid",
+    "cuDeviceGetUuid_v2",
+    "cuDeviceTotalMem_v2",
+    "cuDeviceGetAttribute",
+    "cuDeviceGetMemPool",
+    "cuDeviceGetDefaultMemPool",
+    "cuDeviceGetProperties",
+    "cuDevicePrimaryCtxRetain"
 ]
 
 def get_preload_func_template(func_name, arg_names):

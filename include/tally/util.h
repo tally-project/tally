@@ -13,5 +13,6 @@ bool startsWith(const std::string& str, const std::string& prefix);
 bool containsSubstring(const std::string& str, const std::string& substring);
 void write_str_to_file(std::string path, std::string str);
 void write_binary_to_file(std::string path, const char* data, uint32_t size);
+std::string strip_space_and_colon(const std::string& input);
 
 #endif // TALLY_UTIL_H

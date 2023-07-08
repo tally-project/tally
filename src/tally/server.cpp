@@ -2,6 +2,8 @@
 #include <dlfcn.h>
 #include <cassert>
 
+#include "spdlog/spdlog.h"
+
 #include <tally/transform.h>
 #include <tally/util.h>
 #include <tally/msg_struct.h>
@@ -19,6 +21,7 @@ TallyServer::TallyServer()
         is_quit__.store(true, std::memory_order_release);
         if (send_ipc != nullptr) send_ipc->disconnect();
         if (recv_ipc != nullptr) recv_ipc->disconnect();
+        spdlog::info("Tally server shutting down ...");
         exit(0);
     };
 
@@ -27,11 +30,14 @@ TallyServer::TallyServer()
     signal(SIGSEGV , __exit_wrapper);
     signal(SIGTERM , __exit_wrapper);
     signal(SIGHUP  , __exit_wrapper);
+
+    spdlog::info("Tally server is up ...");
 }
 
 void TallyServer::start(uint32_t interval) {
-    send_ipc = new ipc::channel("server-to-client", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server", ipc::receiver);
+
+    send_ipc = new ipc::channel("server-to-client-3000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-3000", ipc::receiver);
 
     while (!is_quit__.load(std::memory_order_acquire)) {
         ipc::buff_t buf;
@@ -51,6 +57,7 @@ void TallyServer::start(uint32_t interval) {
 
 void TallyServer::handle_cudaMalloc(void *__args)
 {
+    spdlog::info("Received request: cudaMalloc");
     auto args = (struct cudaMallocArg *) __args;
 
     // The client "supposedly" should remember this address
@@ -62,10 +69,13 @@ void TallyServer::handle_cudaMalloc(void *__args)
     while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
         send_ipc->wait_for_recv(1);
     }
+
+    spdlog::info("Complete request: cudaMalloc");
 }
 
 void TallyServer::handle_cudaMemcpy(void *__args)
 {
+    spdlog::info("Received request: cudaMemcpy");
     auto args = (struct cudaMemcpyArg *) __args;
     struct cudaMemcpyResponse *res;
     size_t res_size = 0;
@@ -93,10 +103,13 @@ void TallyServer::handle_cudaMemcpy(void *__args)
     while(!send_ipc->send((void *) res, res_size)) {
         send_ipc->wait_for_recv(1);
     }
+
+    spdlog::info("Complete request: cudaMemcpy");
 }
 
 void TallyServer::handle_cudaLaunchKernel(void *__args)
 {
+    spdlog::info("Received request: cudaLaunchKernel");
     auto args = (cudaLaunchKernelArg *) __args;
 
     void *kernel_server_addr = _kernel_client_addr_mapping[(void *) args->host_func];
@@ -118,10 +131,13 @@ void TallyServer::handle_cudaLaunchKernel(void *__args)
     while (!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
         send_ipc->wait_for_recv(1);
     }
+
+    spdlog::info("Complete request: cudaLaunchKernel");
 }
 
 void TallyServer::handle___cudaRegisterFatBinary(void *__args)
 {
+    spdlog::info("Received request: __cudaRegisterFatBinary");
     auto args = (fatBinArg *) __args;
     magic = args->magic;
     version = args->version;
@@ -129,19 +145,27 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args)
     struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) args->data;
     fatBinSize = fbh->headerSize + fbh->fatSize;
 
+    spdlog::info("Received fatbin of size: " + std::to_string(fatBinSize));
+
     fatbin_data = (unsigned long long *) malloc(fatBinSize);
     memcpy(fatbin_data, args->data, fatBinSize);
+
+    spdlog::info("Complete request: __cudaRegisterFatBinary");
 }
 
 void TallyServer::handle___cudaRegisterFunction(void *__args)
 {
+    spdlog::info("Received request: __cudaRegisterFunction");
     auto args = (struct registerKernelArg *) __args;
     std::string kernel_name {args->data, args->kernel_func_len};
     register_queue.push_back( std::make_pair(args->host_func, kernel_name));
+
+    spdlog::info("Complete request: __cudaRegisterFunction");
 }
 
 void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
 {
+    spdlog::info("Received request: __cudaRegisterFatBinaryEnd");
 	assert(l__cudaRegisterFatBinaryEnd);
     assert(l__cudaRegisterFatBinary);
     assert(l__cudaRegisterFunction);
@@ -167,14 +191,19 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
 
     l__cudaRegisterFatBinaryEnd(handle);
 
-    std::ofstream cubin_file("/tmp/tmp.cubin", std::ios::binary); // Open the file in binary mode
+    std::ofstream cubin_file("/tmp/tmp_server.cubin", std::ios::binary); // Open the file in binary mode
     cubin_file.write(reinterpret_cast<const char*>(fatbin_data), fatBinSize);
     cubin_file.close();
 
-    const char* command = "cuobjdump /tmp/tmp.cubin -elf > /tmp/tmp_cubin.elf";
-    exec(command);
+    const char* command = "cuobjdump /tmp/tmp_server.cubin -elf > /tmp/tmp_server.elf";
+    auto cmd_output = exec(command);
+    int return_status = cmd_output.second;
+    if (return_status != 0) {
+        std::cout << "command fails." << std::endl;
+        exit(return_status);
+    }
 
-    std::string elf_filename = "/tmp/tmp_cubin.elf";
+    std::string elf_filename = "/tmp/tmp_server.elf";
     auto kernel_names_and_param_sizes = get_kernel_names_and_param_sizes_from_elf(elf_filename);
 
     for (auto &pair : kernel_names_and_param_sizes) {
@@ -188,4 +217,10 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
     int *arr;
     cudaMalloc((void**)&arr, sizeof(int));
     cudaFree(arr);
+
+    // Assume register would be complete by this point
+    register_queue.clear();
+    free(fatbin_data);
+
+    spdlog::info("Complete request: __cudaRegisterFatBinaryEnd");
 }

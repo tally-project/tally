@@ -22,8 +22,8 @@ public:
 
     TallyClient()
     {
-        send_ipc = new ipc::channel("client-to-server", ipc::sender);
-        recv_ipc = new ipc::channel("server-to-client", ipc::receiver);
+        send_ipc = new ipc::channel("client-to-server-3000", ipc::sender);
+        recv_ipc = new ipc::channel("server-to-client-3000", ipc::receiver);
     }
 
     ~TallyClient()

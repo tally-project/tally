@@ -61,26 +61,60 @@ CUresult cuInit(unsigned int  Flags)
 
 CUresult cuDriverGetVersion(int * driverVersion)
 {
-	printf("cuDriverGetVersion hooked\n");
-	CUresult res = 
-		lcuDriverGetVersion(driverVersion);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDriverGetVersionArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDRIVERGETVERSION;
+    
+    struct cuDriverGetVersionArg *arg_ptr = (struct cuDriverGetVersionArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->driverVersion = driverVersion;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDriverGetVersionResponse *) dat;
+    *driverVersion = res->driverVersion;
+    return res->err;
 }
 
 CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 {
-	printf("cuDeviceGet hooked\n");
-	CUresult res = 
-		lcuDeviceGet(device, ordinal);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGET;
+    
+    struct cuDeviceGetArg *arg_ptr = (struct cuDeviceGetArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->device = device;
+	arg_ptr->ordinal = ordinal;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDeviceGetResponse *) dat;
+    *device = res->device;
+    return res->err;
 }
 
 CUresult cuDeviceGetCount(int * count)
 {
-	printf("cuDeviceGetCount hooked\n");
-	CUresult res = 
-		lcuDeviceGetCount(count);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetCountArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETCOUNT;
+    
+    struct cuDeviceGetCountArg *arg_ptr = (struct cuDeviceGetCountArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->count = count;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDeviceGetCountResponse *) dat;
+    *count = res->count;
+    return res->err;
 }
 
 CUresult cuDeviceGetName(char * name, int  len, CUdevice  dev)
@@ -93,18 +127,42 @@ CUresult cuDeviceGetName(char * name, int  len, CUdevice  dev)
 
 CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 {
-	printf("cuDeviceGetUuid hooked\n");
-	CUresult res = 
-		lcuDeviceGetUuid(uuid, dev);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuidArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETUUID;
+    
+    struct cuDeviceGetUuidArg *arg_ptr = (struct cuDeviceGetUuidArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->uuid = uuid;
+	arg_ptr->dev = dev;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDeviceGetUuidResponse *) dat;
+    *uuid = res->uuid;
+    return res->err;
 }
 
 CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 {
-	printf("cuDeviceGetUuid_v2 hooked\n");
-	CUresult res = 
-		lcuDeviceGetUuid_v2(uuid, dev);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuid_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETUUID_V2;
+    
+    struct cuDeviceGetUuid_v2Arg *arg_ptr = (struct cuDeviceGetUuid_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->uuid = uuid;
+	arg_ptr->dev = dev;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDeviceGetUuid_v2Response *) dat;
+    *uuid = res->uuid;
+    return res->err;
 }
 
 CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  dev)
@@ -117,18 +175,43 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
 
 CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 {
-	printf("cuDeviceTotalMem_v2 hooked\n");
-	CUresult res = 
-		lcuDeviceTotalMem_v2(bytes, dev);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceTotalMem_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICETOTALMEM_V2;
+    
+    struct cuDeviceTotalMem_v2Arg *arg_ptr = (struct cuDeviceTotalMem_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->bytes = bytes;
+	arg_ptr->dev = dev;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDeviceTotalMem_v2Response *) dat;
+    *bytes = res->bytes;
+    return res->err;
 }
 
 CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  dev)
 {
-	printf("cuDeviceGetAttribute hooked\n");
-	CUresult res = 
-		lcuDeviceGetAttribute(pi, attrib, dev);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetAttributeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETATTRIBUTE;
+    
+    struct cuDeviceGetAttributeArg *arg_ptr = (struct cuDeviceGetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pi = pi;
+	arg_ptr->attrib = attrib;
+	arg_ptr->dev = dev;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDeviceGetAttributeResponse *) dat;
+    *pi = res->pi;
+    return res->err;
 }
 
 CUresult cuDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, CUdevice  dev, int  flags)
@@ -141,42 +224,100 @@ CUresult cuDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, CUdevice  dev,
 
 CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 {
-	printf("cuDeviceSetMemPool hooked\n");
-	CUresult res = 
-		lcuDeviceSetMemPool(dev, pool);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceSetMemPoolArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICESETMEMPOOL;
+    
+    struct cuDeviceSetMemPoolArg *arg_ptr = (struct cuDeviceSetMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dev = dev;
+	arg_ptr->pool = pool;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (CUresult *) dat;
+        return *res;
 }
 
 CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 {
-	printf("cuDeviceGetMemPool hooked\n");
-	CUresult res = 
-		lcuDeviceGetMemPool(pool, dev);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetMemPoolArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETMEMPOOL;
+    
+    struct cuDeviceGetMemPoolArg *arg_ptr = (struct cuDeviceGetMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pool = pool;
+	arg_ptr->dev = dev;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDeviceGetMemPoolResponse *) dat;
+    *pool = res->pool;
+    return res->err;
 }
 
 CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 {
-	printf("cuDeviceGetDefaultMemPool hooked\n");
-	CUresult res = 
-		lcuDeviceGetDefaultMemPool(pool_out, dev);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetDefaultMemPoolArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETDEFAULTMEMPOOL;
+    
+    struct cuDeviceGetDefaultMemPoolArg *arg_ptr = (struct cuDeviceGetDefaultMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pool_out = pool_out;
+	arg_ptr->dev = dev;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDeviceGetDefaultMemPoolResponse *) dat;
+    *pool_out = res->pool_out;
+    return res->err;
 }
 
 CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CUflushGPUDirectRDMAWritesScope  scope)
 {
-	printf("cuFlushGPUDirectRDMAWrites hooked\n");
-	CUresult res = 
-		lcuFlushGPUDirectRDMAWrites(target, scope);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuFlushGPUDirectRDMAWritesArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUFLUSHGPUDIRECTRDMAWRITES;
+    
+    struct cuFlushGPUDirectRDMAWritesArg *arg_ptr = (struct cuFlushGPUDirectRDMAWritesArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->target = target;
+	arg_ptr->scope = scope;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (CUresult *) dat;
+        return *res;
 }
 
 CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 {
-	printf("cuDeviceGetProperties hooked\n");
-	CUresult res = 
-		lcuDeviceGetProperties(prop, dev);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetPropertiesArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETPROPERTIES;
+    
+    struct cuDeviceGetPropertiesArg *arg_ptr = (struct cuDeviceGetPropertiesArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->prop = prop;
+	arg_ptr->dev = dev;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDeviceGetPropertiesResponse *) dat;
+    *prop = res->prop;
+    return res->err;
 }
 
 CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
@@ -189,26 +330,59 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
 
 CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 {
-	printf("cuDevicePrimaryCtxRetain hooked\n");
-	CUresult res = 
-		lcuDevicePrimaryCtxRetain(pctx, dev);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRetainArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRETAIN;
+    
+    struct cuDevicePrimaryCtxRetainArg *arg_ptr = (struct cuDevicePrimaryCtxRetainArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pctx = pctx;
+	arg_ptr->dev = dev;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cuDevicePrimaryCtxRetainResponse *) dat;
+    *pctx = res->pctx;
+    return res->err;
 }
 
 CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 {
-	printf("cuDevicePrimaryCtxRelease_v2 hooked\n");
-	CUresult res = 
-		lcuDevicePrimaryCtxRelease_v2(dev);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRelease_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRELEASE_V2;
+    
+    struct cuDevicePrimaryCtxRelease_v2Arg *arg_ptr = (struct cuDevicePrimaryCtxRelease_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dev = dev;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (CUresult *) dat;
+        return *res;
 }
 
 CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 {
-	printf("cuDevicePrimaryCtxSetFlags_v2 hooked\n");
-	CUresult res = 
-		lcuDevicePrimaryCtxSetFlags_v2(dev, flags);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxSetFlags_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXSETFLAGS_V2;
+    
+    struct cuDevicePrimaryCtxSetFlags_v2Arg *arg_ptr = (struct cuDevicePrimaryCtxSetFlags_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dev = dev;
+	arg_ptr->flags = flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (CUresult *) dat;
+        return *res;
 }
 
 CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * active)
@@ -221,10 +395,20 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
 
 CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 {
-	printf("cuDevicePrimaryCtxReset_v2 hooked\n");
-	CUresult res = 
-		lcuDevicePrimaryCtxReset_v2(dev);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxReset_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRESET_V2;
+    
+    struct cuDevicePrimaryCtxReset_v2Arg *arg_ptr = (struct cuDevicePrimaryCtxReset_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dev = dev;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (CUresult *) dat;
+        return *res;
 }
 
 CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUdevice  dev)
@@ -2866,10 +3050,22 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 
 cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 {
-	printf("cudaDeviceGetLimit hooked\n");
-	cudaError_t res = 
-		lcudaDeviceGetLimit(pValue, limit);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetLimitArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETLIMIT;
+    
+    struct cudaDeviceGetLimitArg *arg_ptr = (struct cudaDeviceGetLimitArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pValue = pValue;
+	arg_ptr->limit = limit;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaDeviceGetLimitResponse *) dat;
+    *pValue = res->pValue;
+    return res->err;
 }
 
 cudaError_t cudaDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, const struct cudaChannelFormatDesc * fmtDesc, int  device)
@@ -2882,10 +3078,21 @@ cudaError_t cudaDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, co
 
 cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 {
-	printf("cudaDeviceGetCacheConfig hooked\n");
-	cudaError_t res = 
-		lcudaDeviceGetCacheConfig(pCacheConfig);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetCacheConfigArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETCACHECONFIG;
+    
+    struct cudaDeviceGetCacheConfigArg *arg_ptr = (struct cudaDeviceGetCacheConfigArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pCacheConfig = pCacheConfig;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaDeviceGetCacheConfigResponse *) dat;
+    *pCacheConfig = res->pCacheConfig;
+    return res->err;
 }
 
 cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatestPriority)
@@ -2966,10 +3173,22 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
 
 cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  handle)
 {
-	printf("cudaIpcOpenEventHandle hooked\n");
-	cudaError_t res = 
-		lcudaIpcOpenEventHandle(event, handle);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenEventHandleArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAIPCOPENEVENTHANDLE;
+    
+    struct cudaIpcOpenEventHandleArg *arg_ptr = (struct cudaIpcOpenEventHandleArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->event = event;
+	arg_ptr->handle = handle;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaIpcOpenEventHandleResponse *) dat;
+    *event = res->event;
+    return res->err;
 }
 
 cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
@@ -3059,18 +3278,41 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 
 cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 {
-	printf("cudaThreadGetLimit hooked\n");
-	cudaError_t res = 
-		lcudaThreadGetLimit(pValue, limit);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetLimitArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDATHREADGETLIMIT;
+    
+    struct cudaThreadGetLimitArg *arg_ptr = (struct cudaThreadGetLimitArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pValue = pValue;
+	arg_ptr->limit = limit;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaThreadGetLimitResponse *) dat;
+    *pValue = res->pValue;
+    return res->err;
 }
 
 cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 {
-	printf("cudaThreadGetCacheConfig hooked\n");
-	cudaError_t res = 
-		lcudaThreadGetCacheConfig(pCacheConfig);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetCacheConfigArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDATHREADGETCACHECONFIG;
+    
+    struct cudaThreadGetCacheConfigArg *arg_ptr = (struct cudaThreadGetCacheConfigArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pCacheConfig = pCacheConfig;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaThreadGetCacheConfigResponse *) dat;
+    *pCacheConfig = res->pCacheConfig;
+    return res->err;
 }
 
 cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
@@ -3143,50 +3385,121 @@ const char* cudaGetErrorString(cudaError_t  error)
 
 cudaError_t cudaGetDeviceCount(int * count)
 {
-	printf("cudaGetDeviceCount hooked\n");
-	cudaError_t res = 
-		lcudaGetDeviceCount(count);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceCountArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICECOUNT;
+    
+    struct cudaGetDeviceCountArg *arg_ptr = (struct cudaGetDeviceCountArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->count = count;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaGetDeviceCountResponse *) dat;
+    *count = res->count;
+    return res->err;
 }
 
 cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
 {
-	printf("cudaGetDeviceProperties hooked\n");
-	cudaError_t res = 
-		lcudaGetDeviceProperties(prop, device);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDevicePropertiesArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICEPROPERTIES;
+    
+    struct cudaGetDevicePropertiesArg *arg_ptr = (struct cudaGetDevicePropertiesArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->prop = prop;
+	arg_ptr->device = device;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaGetDevicePropertiesResponse *) dat;
+    *prop = res->prop;
+    return res->err;
 }
 
 cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  device)
 {
-	printf("cudaDeviceGetAttribute hooked\n");
-	cudaError_t res = 
-		lcudaDeviceGetAttribute(value, attr, device);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetAttributeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETATTRIBUTE;
+    
+    struct cudaDeviceGetAttributeArg *arg_ptr = (struct cudaDeviceGetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->value = value;
+	arg_ptr->attr = attr;
+	arg_ptr->device = device;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaDeviceGetAttributeResponse *) dat;
+    *value = res->value;
+    return res->err;
 }
 
 cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 {
-	printf("cudaDeviceGetDefaultMemPool hooked\n");
-	cudaError_t res = 
-		lcudaDeviceGetDefaultMemPool(memPool, device);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetDefaultMemPoolArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETDEFAULTMEMPOOL;
+    
+    struct cudaDeviceGetDefaultMemPoolArg *arg_ptr = (struct cudaDeviceGetDefaultMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->memPool = memPool;
+	arg_ptr->device = device;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaDeviceGetDefaultMemPoolResponse *) dat;
+    *memPool = res->memPool;
+    return res->err;
 }
 
 cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 {
-	printf("cudaDeviceSetMemPool hooked\n");
-	cudaError_t res = 
-		lcudaDeviceSetMemPool(device, memPool);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetMemPoolArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETMEMPOOL;
+    
+    struct cudaDeviceSetMemPoolArg *arg_ptr = (struct cudaDeviceSetMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->device = device;
+	arg_ptr->memPool = memPool;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 {
-	printf("cudaDeviceGetMemPool hooked\n");
-	cudaError_t res = 
-		lcudaDeviceGetMemPool(memPool, device);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetMemPoolArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETMEMPOOL;
+    
+    struct cudaDeviceGetMemPoolArg *arg_ptr = (struct cudaDeviceGetMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->memPool = memPool;
+	arg_ptr->device = device;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaDeviceGetMemPoolResponse *) dat;
+    *memPool = res->memPool;
+    return res->err;
 }
 
 cudaError_t cudaDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, int  device, int  flags)
@@ -3199,10 +3512,24 @@ cudaError_t cudaDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, int  devi
 
 cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr, int  srcDevice, int  dstDevice)
 {
-	printf("cudaDeviceGetP2PAttribute hooked\n");
-	cudaError_t res = 
-		lcudaDeviceGetP2PAttribute(value, attr, srcDevice, dstDevice);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetP2PAttributeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETP2PATTRIBUTE;
+    
+    struct cudaDeviceGetP2PAttributeArg *arg_ptr = (struct cudaDeviceGetP2PAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->value = value;
+	arg_ptr->attr = attr;
+	arg_ptr->srcDevice = srcDevice;
+	arg_ptr->dstDevice = dstDevice;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaDeviceGetP2PAttributeResponse *) dat;
+    *value = res->value;
+    return res->err;
 }
 
 cudaError_t cudaChooseDevice(int * device, const struct cudaDeviceProp * prop)
@@ -3233,10 +3560,21 @@ cudaError_t cudaSetDevice(int  device)
 
 cudaError_t cudaGetDevice(int * device)
 {
-	printf("cudaGetDevice hooked\n");
-	cudaError_t res = 
-		lcudaGetDevice(device);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICE;
+    
+    struct cudaGetDeviceArg *arg_ptr = (struct cudaGetDeviceArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->device = device;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaGetDeviceResponse *) dat;
+    *device = res->device;
+    return res->err;
 }
 
 cudaError_t cudaSetValidDevices(int * device_arr, int  len)
@@ -3267,10 +3605,21 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 
 cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 {
-	printf("cudaGetDeviceFlags hooked\n");
-	cudaError_t res = 
-		lcudaGetDeviceFlags(flags);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceFlagsArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICEFLAGS;
+    
+    struct cudaGetDeviceFlagsArg *arg_ptr = (struct cudaGetDeviceFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->flags = flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaGetDeviceFlagsResponse *) dat;
+    *flags = res->flags;
+    return res->err;
 }
 
 cudaError_t cudaStreamCreate(cudaStream_t * pStream)
@@ -3368,10 +3717,21 @@ cudaError_t cudaCtxResetPersistingL2Cache()
 
 cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 {
-	printf("cudaStreamCopyAttributes hooked\n");
-	cudaError_t res = 
-		lcudaStreamCopyAttributes(dst, src);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCopyAttributesArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCOPYATTRIBUTES;
+    
+    struct cudaStreamCopyAttributesArg *arg_ptr = (struct cudaStreamCopyAttributesArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dst = dst;
+	arg_ptr->src = src;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaStreamGetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID  attr, union cudaStreamAttrValue * value_out)
@@ -3392,18 +3752,40 @@ cudaError_t cudaStreamSetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID 
 
 cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 {
-	printf("cudaStreamDestroy hooked\n");
-	cudaError_t res = 
-		lcudaStreamDestroy(stream);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamDestroyArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMDESTROY;
+    
+    struct cudaStreamDestroyArg *arg_ptr = (struct cudaStreamDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->stream = stream;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsigned int  flags)
 {
-	printf("cudaStreamWaitEvent hooked\n");
-	cudaError_t res = 
-		lcudaStreamWaitEvent(stream, event, flags);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamWaitEventArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMWAITEVENT;
+    
+    struct cudaStreamWaitEventArg *arg_ptr = (struct cudaStreamWaitEventArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->stream = stream;
+	arg_ptr->event = event;
+	arg_ptr->flags = flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaStreamAddCallback(cudaStream_t  stream, cudaStreamCallback_t  callback, void * userData, unsigned int  flags)
@@ -3416,18 +3798,38 @@ cudaError_t cudaStreamAddCallback(cudaStream_t  stream, cudaStreamCallback_t  ca
 
 cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 {
-	printf("cudaStreamSynchronize hooked\n");
-	cudaError_t res = 
-		lcudaStreamSynchronize(stream);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamSynchronizeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMSYNCHRONIZE;
+    
+    struct cudaStreamSynchronizeArg *arg_ptr = (struct cudaStreamSynchronizeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->stream = stream;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaStreamQuery(cudaStream_t  stream)
 {
-	printf("cudaStreamQuery hooked\n");
-	cudaError_t res = 
-		lcudaStreamQuery(stream);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamQueryArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMQUERY;
+    
+    struct cudaStreamQueryArg *arg_ptr = (struct cudaStreamQueryArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->stream = stream;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaStreamAttachMemAsync(cudaStream_t  stream, void * devPtr, size_t  length, unsigned int  flags)
@@ -3440,10 +3842,21 @@ cudaError_t cudaStreamAttachMemAsync(cudaStream_t  stream, void * devPtr, size_t
 
 cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureMode  mode)
 {
-	printf("cudaStreamBeginCapture hooked\n");
-	cudaError_t res = 
-		lcudaStreamBeginCapture(stream, mode);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamBeginCaptureArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMBEGINCAPTURE;
+    
+    struct cudaStreamBeginCaptureArg *arg_ptr = (struct cudaStreamBeginCaptureArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->stream = stream;
+	arg_ptr->mode = mode;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mode)
@@ -3456,10 +3869,21 @@ cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mod
 
 cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 {
-	printf("cudaStreamEndCapture hooked\n");
-	cudaError_t res = 
-		lcudaStreamEndCapture(stream, pGraph);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamEndCaptureArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMENDCAPTURE;
+    
+    struct cudaStreamEndCaptureArg *arg_ptr = (struct cudaStreamEndCaptureArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->stream = stream;
+	arg_ptr->pGraph = pGraph;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cudaError_t *) dat;
+        return *res;
 }
 
 cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus)
@@ -4643,10 +5067,22 @@ cudaError_t cudaRuntimeGetVersion(int * runtimeVersion)
 
 cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 {
-	printf("cudaGraphCreate hooked\n");
-	cudaError_t res = 
-		lcudaGraphCreate(pGraph, flags);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGraphCreateArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAGRAPHCREATE;
+    
+    struct cudaGraphCreateArg *arg_ptr = (struct cudaGraphCreateArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pGraph = pGraph;
+	arg_ptr->flags = flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaGraphCreateResponse *) dat;
+    *pGraph = res->pGraph;
+    return res->err;
 }
 
 cudaError_t cudaGraphAddKernelNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaKernelNodeParams * pNodeParams)
@@ -7107,10 +7543,20 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 
 cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 {
-	printf("cublasDestroy_v2 hooked\n");
-	cublasStatus_t res = 
-		lcublasDestroy_v2(handle);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasDestroy_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASDESTROY_V2;
+    
+    struct cublasDestroy_v2Arg *arg_ptr = (struct cublasDestroy_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (cublasStatus_t *) dat;
+        return *res;
 }
 
 cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
@@ -7131,10 +7577,19 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 
 size_t cublasGetCudartVersion()
 {
-	printf("cublasGetCudartVersion hooked\n");
-	size_t res = 
-		lcublasGetCudartVersion();
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetCudartVersionArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASGETCUDARTVERSION;
+    
+    struct cublasGetCudartVersionArg *arg_ptr = (struct cublasGetCudartVersionArg *)(msg + sizeof(CUDA_API_ENUM));
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+        auto res = (size_t *) dat;
+        return *res;
 }
 
 cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, size_t  workspaceSizeInBytes)

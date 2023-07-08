@@ -14,6 +14,8 @@
 #include <string>
 #include <cstring>
 #include <numeric>
+#include <thread>
+#include <chrono>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -113,10 +115,16 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
 
     CLIENT_SEND_MSG_AND_FREE;
 
-    write_binary_to_file("/tmp/tmp.cubin", reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
-    exec("cuobjdump /tmp/tmp.cubin -elf > /tmp/tmp_cubin.elf");
+    write_binary_to_file("/tmp/tmp_client.cubin", reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
+    std::string command("cuobjdump /tmp/tmp_client.cubin -elf > /tmp/tmp_client.elf");
+    auto cmd_output = exec(command);
+    int return_status = cmd_output.second;
+    if (return_status != 0) {
+        std::cout << "command fails." << std::endl;
+        exit(return_status);
+    }
     
-    std::string elf_filename = "/tmp/tmp_cubin.elf";
+    std::string elf_filename = "/tmp/tmp_client.elf";
     auto kernel_names_and_param_sizes = get_kernel_names_and_param_sizes_from_elf(elf_filename);
 
     for (auto &pair : kernel_names_and_param_sizes) {

@@ -88,6 +88,16 @@ std::string strip(const std::string& str) {
     return result;
 }
 
+std::string strip_space_and_colon(const std::string& input) {
+    std::string result;
+    for (char c : input) {
+        if (c != ' ' && c != ':') {
+            result += c;
+        }
+    }
+    return result;
+}
+
 bool startsWith(const std::string& str, const std::string& prefix) {
     return str.compare(0, prefix.length(), prefix) == 0;
 }
