@@ -3,6 +3,7 @@
 #include <iostream>
 #include <array>
 #include <fstream>
+#include <unistd.h>
 
 #include <tally/util.h>
 
@@ -118,4 +119,10 @@ void write_binary_to_file(std::string path, const char* data, uint32_t size)
     std::ofstream file(path, std::ios::binary); // Open the file in binary mode
     file.write(data, size);
     file.close();
+}
+
+std::string get_tmp_file_path(std::string suffix)
+{
+    std::string tmp_file = "/tmp/tmp_" + std::to_string(getpid()) + suffix;
+    return tmp_file;
 }

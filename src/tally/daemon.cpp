@@ -100,34 +100,11 @@ void TallyDaemon::register_measurements()
 
 void TallyDaemon::register_fat_binary(const char* cubin_data, size_t cubin_size)
 {
-    auto sliced_data = TallyCache::cache->transform_cache.get_sliced_data(cubin_data, cubin_size);
-    auto ptb_data = TallyCache::cache->transform_cache.get_ptb_data(cubin_data, cubin_size);
+    auto sliced_data = TallyCache::cache->cubin_cache.get_sliced_data(cubin_data, cubin_size);
+    auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
 
-    // Not exist in cache
-    if (sliced_data.size() == 0) {
-        std::string cubin_tmp_path("/tmp/output.cubin");
-        write_binary_to_file(cubin_tmp_path, cubin_data, cubin_size);
-        auto ptx_file_names = gen_ptx_from_cubin(cubin_tmp_path);
-        std::remove(cubin_tmp_path.c_str());
-
-        std::string cubin_str(cubin_data, cubin_size);
-
-        for (const auto& ptx_file_name : ptx_file_names) {
-            auto sliced_ptx_str = gen_sliced_ptx(ptx_file_name);
-            auto sliced_fatbin_str = get_fatbin_str_from_ptx_str(sliced_ptx_str);
-            sliced_data.push_back(std::make_pair(sliced_ptx_str, sliced_fatbin_str));
-
-            auto ptb_ptx_str = gen_ptb_ptx(ptx_file_name);
-            auto ptb_fatbin_str = get_fatbin_str_from_ptx_str(ptb_ptx_str);
-            ptb_data.push_back(std::make_pair(ptb_ptx_str, ptb_fatbin_str));
-
-            std::remove(ptx_file_name.c_str());
-        }
-
-        TallyCache::cache->transform_cache.add_data(cubin_str, cubin_size, sliced_data, ptb_data);
-        TallyCache::cache->save_transform_cache();
-    }
-
-    sliced_ptx_fatbin_strs.insert(sliced_ptx_fatbin_strs.end(), std::make_move_iterator(sliced_data.begin()), std::make_move_iterator(sliced_data.end()));
-    ptb_ptx_fatbin_strs.insert(ptb_ptx_fatbin_strs.end(), std::make_move_iterator(ptb_data.begin()), std::make_move_iterator(ptb_data.end()));
+    // Cannot compile those generated code yet because CUDA is not yet initialized
+    // So accumulate them first
+    merge_vec(sliced_ptx_fatbin_strs, sliced_data);
+    merge_vec(ptb_ptx_fatbin_strs, ptb_data);
 }

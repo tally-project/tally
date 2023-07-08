@@ -2,6 +2,7 @@
 #define TALLY_UTIL_H
 
 #include <string>
+#include <vector>
 
 std::string demangleFunc(std::string mangledName);
 std::pair<std::string, int> exec(std::string cmd);
@@ -14,5 +15,11 @@ bool containsSubstring(const std::string& str, const std::string& substring);
 void write_str_to_file(std::string path, std::string str);
 void write_binary_to_file(std::string path, const char* data, uint32_t size);
 std::string strip_space_and_colon(const std::string& input);
+std::string get_tmp_file_path(std::string suffix);
+
+template <typename T>
+void merge_vec(std::vector<T>& dest, const std::vector<T>& src) {
+    dest.insert(dest.end(), src.begin(), src.end());
+}
 
 #endif // TALLY_UTIL_H

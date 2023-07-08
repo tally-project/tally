@@ -1,5 +1,6 @@
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
 
 #include <boost/regex.hpp>
 
@@ -113,19 +114,20 @@ std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_
     return kernel_names_and_nparams;
 }
 
-std::vector<std::pair<std::string, std::vector<uint32_t>>> get_kernel_names_and_param_sizes_from_elf(std::string elf_file_name)
+std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_from_elf(std::string elf_path)
 {
-    // key: func_name, val: [ <ordinal, size> ]
-    using ordinal_size_pair = std::pair<uint32_t, uint32_t>;
-    std::vector<std::pair<std::string, std::vector<uint32_t>>> kernel_names_and_param_sizes;
-
-    std::ifstream elf_file(elf_file_name);
+    std::ifstream elf_file(elf_path);
     if (!elf_file.is_open()) {
-        std::cerr << elf_file_name << " not found." << std::endl;
+        std::cerr << elf_path << " not found." << std::endl;
         throw std::runtime_error("file not found");
     }
+    
     std::string elf_code_str((std::istreambuf_iterator<char>(elf_file)), std::istreambuf_iterator<char>());
     std::stringstream ss(elf_code_str);
+
+    // key: func_name, val: [ <ordinal, size> ]
+    using ordinal_size_pair = std::pair<uint32_t, uint32_t>;
+    std::map<std::string, std::vector<uint32_t>> kernel_names_and_param_sizes;
     std::string line;
 
     while (std::getline(ss, line, '\n')) {
@@ -184,7 +186,7 @@ std::vector<std::pair<std::string, std::vector<uint32_t>>> get_kernel_names_and_
                 param_sizes.push_back(pair.second);
             }
 
-            kernel_names_and_param_sizes.push_back(std::make_pair(kernel_name, param_sizes));
+            kernel_names_and_param_sizes[kernel_name] = param_sizes;
         }
     }    
 

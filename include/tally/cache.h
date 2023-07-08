@@ -19,7 +19,7 @@ class TallyCache
 public:
     static std::shared_ptr<TallyCache> cache;
 
-    TransformCache transform_cache;
+    CubinCache cubin_cache;
     PerformanceCache performance_cache;
 
     std::string transform_cache_file;
@@ -43,7 +43,7 @@ public:
     }
 
     void save_transform_cache() {
-        save_cache_to_file<TransformCache>(transform_cache_file, transform_cache);
+        save_cache_to_file<CubinCache>(transform_cache_file, cubin_cache);
     }
 
     void save_performance_cache() {
@@ -51,7 +51,7 @@ public:
     }
 
     void load_cache() {
-        load_cache_from_file<TransformCache>(transform_cache_file, transform_cache);
+        load_cache_from_file<CubinCache>(transform_cache_file, cubin_cache);
         load_cache_from_file<PerformanceCache>(performance_cache_file, performance_cache);
     }
 

@@ -112,6 +112,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <map>
 #include <iostream>
 #include <functional>
+#include <memory>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -132,12 +133,13 @@ class TallyServer {
 
 public:
 
-    static TallyServer *server;
+    static std::unique_ptr<TallyServer> server;
 
     int magic;
     int version;
-    unsigned long long* fatbin_data;
+    unsigned long long* fatbin_data = nullptr;
     uint32_t fatBinSize;
+    bool cubin_registered = false;
 
     std::atomic<bool> is_quit__ {false};
     ipc::channel *send_ipc = nullptr;
@@ -152,6 +154,7 @@ public:
 
     void start(uint32_t interval);
     void register_api_handler();
+    void load_cache();
 
 """
 

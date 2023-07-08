@@ -10,7 +10,7 @@
 #define CLIENT_RECV_MSG \
     ipc::buff_t buf; \
     while (buf.empty()) { \
-        buf = TallyClient::client->recv_ipc->recv(1000); \
+        buf = TallyClient::client->recv_ipc->recv(10000); \
     } \
     const char *dat = buf.get<const char *>();
 

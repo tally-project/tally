@@ -58,11 +58,21 @@ struct std::hash<CudaLaunchKeyConfig>
 };
 
 // For each cubin file
-class TransformData
+// Don't forget to modify serialization.h when modifying this struct
+class CubinData
 {
 public:
+    // magic
+    int magic;
+
+    // version
+    int version;
+
     // a cubin file
     std::string cubin_data;
+
+    // Key: kernel name, value: vector of the sizes of arguments in ordinal order
+    std::map<std::string, std::vector<uint32_t>> kernel_args;
 
     // All the sliced PTX files and fatbin
     std::vector<std::pair<std::string, std::string>> sliced_data;
@@ -71,13 +81,18 @@ public:
     std::vector<std::pair<std::string, std::string>> ptb_data;
 };
 
-class TransformCache
+class CubinCache
 {
 public:
     // Cubin size : Cubin data
-    std::map<size_t, std::vector<TransformData>> cubin_map;
+    std::map<size_t, std::vector<CubinData>> cubin_map;
 
-    TransformData* find_transform_data(const char* cubin_data, size_t cubin_size)
+    bool contains(const char* cubin_data, size_t cubin_size)
+    {
+        return find_transform_data(cubin_data, cubin_size) != nullptr;
+    }
+
+    CubinData* find_transform_data(const char* cubin_data, size_t cubin_size)
     {
         if (cubin_map.find(cubin_size) != cubin_map.end()) {
             for (auto &data : cubin_map[cubin_size]) {
@@ -94,30 +109,38 @@ public:
     get_ptb_data(const char* cubin_data, size_t cubin_size)
     {
         auto transform_data = find_transform_data(cubin_data, cubin_size);
-        if (transform_data) {
-            return transform_data->ptb_data;
-        }
-        return std::vector<std::pair<std::string, std::string>>();
+        assert(transform_data);
+        return transform_data->ptb_data;
     }
 
     std::vector<std::pair<std::string, std::string>>
     get_sliced_data(const char* cubin_data, size_t cubin_size)
     {
         auto transform_data = find_transform_data(cubin_data, cubin_size);
-        if (transform_data) {
-            return transform_data->sliced_data;
-        }
-        return std::vector<std::pair<std::string, std::string>>();
+        assert(transform_data);
+        return transform_data->sliced_data;
+    }
+
+    std::map<std::string, std::vector<uint32_t>>
+    get_kernel_args(const char* cubin_data, size_t cubin_size)
+    {
+        std::cout << "get_kernel_args of size " << cubin_size << std::endl;
+        auto transform_data = find_transform_data(cubin_data, cubin_size);
+        assert(transform_data);
+        return transform_data->kernel_args;
     }
 
     void add_data(
-        std::string &cubin_str,
         size_t cubin_size,
+        int magic,
+        int version,
+        std::string &cubin_str,
+        std::map<std::string, std::vector<uint32_t>> &kernel_args,
         std::vector<std::pair<std::string, std::string>> &sliced_data,
         std::vector<std::pair<std::string, std::string>> &ptb_data
     )
     {
-        cubin_map[cubin_size].push_back( TransformData { cubin_str, sliced_data, ptb_data } );
+        cubin_map[cubin_size].push_back( CubinData { magic, version, cubin_str, kernel_args, sliced_data, ptb_data } );
     }
 };
 

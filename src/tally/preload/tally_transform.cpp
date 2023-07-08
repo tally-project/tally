@@ -21,6 +21,7 @@
 #include <tally/transform.h>
 #include <tally/daemon.h>
 #include <tally/cache.h>
+#include <tally/cache_util.h>
 #include <tally/generated/cuda_api.h>
 
 extern "C" { 
@@ -37,7 +38,6 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
         CudaLaunchConfig::profile_kernel(func, gridDim, blockDim, args, sharedMem, stream);
     }
 
-    auto num_args = TallyDaemon::daemon->sliced_kernel_map[func].second;
     CudaLaunchCall launch_call(func, gridDim, blockDim);
 
     cudaError_t err;
@@ -79,11 +79,18 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 
 void** __cudaRegisterFatBinary( void *fatCubin ) {
     
-    auto *wp = (__fatBinC_Wrapper_t *) fatCubin;
-    struct fatBinaryHeader *fbh = (struct fatBinaryHeader *) wp->data;
-    size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
+    auto wp = (__fatBinC_Wrapper_t *) fatCubin;
+    int magic = wp->magic;
+    int version = wp->version;
+    const char *cubin_data = (const char *) wp->data;
+    auto header = (struct fatBinaryHeader *) wp->data;
+    size_t cubin_size = header->headerSize + header->fatSize;
 
-    TallyDaemon::daemon->register_fat_binary((const char *)wp->data, fatCubin_data_size_bytes);
+    // Load necessary data into cache if not exists
+    cache_cubin_data(cubin_data, cubin_size, magic, version);
+
+    // register using cache
+    TallyDaemon::daemon->register_fat_binary(cubin_data, cubin_size);
 
     assert(l__cudaRegisterFatBinary);
     return l__cudaRegisterFatBinary(fatCubin);

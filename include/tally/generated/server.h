@@ -8,6 +8,7 @@
 #include <map>
 #include <iostream>
 #include <functional>
+#include <memory>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -28,12 +29,13 @@ class TallyServer {
 
 public:
 
-    static TallyServer *server;
+    static std::unique_ptr<TallyServer> server;
 
     int magic;
     int version;
-    unsigned long long* fatbin_data;
-    uint32_t fatBinSize;
+    unsigned long long* fatbin_data = nullptr;
+    size_t fatBinSize;
+    bool cubin_registered = false;
 
     std::atomic<bool> is_quit__ {false};
     ipc::channel *send_ipc = nullptr;
@@ -48,6 +50,7 @@ public:
 
     void start(uint32_t interval);
     void register_api_handler();
+    void load_cache();
 
 	void handle_cuGetErrorString(void *args);
 	void handle_cuGetErrorName(void *args);

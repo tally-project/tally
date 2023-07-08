@@ -129,7 +129,7 @@ int main()
 
     for (int i = 0; i < size; i++) {
         if (abs(res_gpu[i] - res_cpu[i]) > 0.0001) {
-            std::cerr << "result mismatch: res_gpu[i]: " << res_gpu[i] << " " << "res_cpu[i]: " << res_gpu[i] << std::endl;
+            std::cerr << "result mismatch: res_gpu[i]: " << res_gpu[i] << " " << "res_cpu[i]: " << res_cpu[i] << std::endl;
             exit(1);
         }
     }
