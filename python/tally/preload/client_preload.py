@@ -172,6 +172,8 @@ def gen_func_client_preload(func_sig):
     func_preload_builder += f"{ret_type} {func_name}({args_str_no_val})\n"
     func_preload_builder += "{\n"
 
+    func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
+
     if func_name in CUDA_GET_FIRST_PARAM_FUNCS:
         func_preload_builder += get_preload_func_template(func_name, arg_names)
 
@@ -191,8 +193,8 @@ def gen_func_client_preload(func_sig):
         return *res;
 """
     else:
-        # print
-        func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
+        # # print
+        # func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
 
         # call original
         if ret_type != "void":

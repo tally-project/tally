@@ -51,6 +51,7 @@ struct cudaMemcpyResponse {
 };
 
 struct __cudaRegisterFatBinaryArg {
+    bool cached;
     int magic;
     int version;
     char data[];
@@ -61,12 +62,6 @@ struct registerKernelArg {
     uint32_t kernel_func_len; 
     char data[]; // kernel_func_name
 };
-
-typedef struct {
-    int magic;
-    int version;
-    unsigned long long data[];
-} fatBinArg;
 
 typedef struct {
     int magic;

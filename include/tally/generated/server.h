@@ -34,7 +34,7 @@ public:
     int magic;
     int version;
     unsigned long long* fatbin_data = nullptr;
-    size_t fatBinSize;
+    uint32_t fatBinSize;
     bool cubin_registered = false;
 
     std::atomic<bool> is_quit__ {false};

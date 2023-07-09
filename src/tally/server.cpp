@@ -36,8 +36,8 @@ TallyServer::TallyServer()
 
 void TallyServer::start(uint32_t interval) {
 
-    send_ipc = new ipc::channel("server-to-client-0000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-0000", ipc::receiver);
+    send_ipc = new ipc::channel("server-to-client-40000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-40000", ipc::receiver);
 
     load_cache();
 
@@ -180,7 +180,8 @@ void TallyServer::handle_cudaLaunchKernel(void *__args)
 void TallyServer::handle___cudaRegisterFatBinary(void *__args)
 {
     spdlog::info("Received request: __cudaRegisterFatBinary");
-    auto args = (fatBinArg *) __args;
+    auto args = (__cudaRegisterFatBinaryArg *) __args;
+    bool cached = args->cached;
     magic = args->magic;
     version = args->version;
 
@@ -188,7 +189,15 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args)
     size_t cubin_size = header->headerSize + header->fatSize;
     const char *cubin_data = (const char *) args->data;
 
-    cubin_registered = TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size);
+    if (cached) {
+        cubin_registered = true;
+    } else {
+        cubin_registered = TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size);
+    }
+
+    if (cubin_registered) {
+        spdlog::info("Fat binary exists in cache, skipping register");
+    }
 
     // Free data from last time
     // TODO: change this to managed pointer
@@ -236,7 +245,7 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
     for (auto &kernel_pair : register_queue) {
         auto &client_addr = kernel_pair.first;
         auto &kernel_name = kernel_pair.second;
-
+        
         if (!cubin_registered) {
             // allocate an address for the kernel
             kernel_server_addr = malloc(8);
@@ -251,10 +260,12 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
 
         // For now, hoping that the client addr does not appear more than once
         // TODO: fix this
-        assert(_kernel_client_addr_mapping.find(client_addr) == _kernel_client_addr_mapping.end());
-
-        // Associate this client addr with the server address
-        _kernel_client_addr_mapping[client_addr] = _kernel_name_to_addr[kernel_name];
+        if (_kernel_client_addr_mapping.find(client_addr) != _kernel_client_addr_mapping.end()) {
+            assert(_kernel_client_addr_mapping[client_addr] = _kernel_name_to_addr[kernel_name]);
+        } else {
+            // Associate this client addr with the server address
+            _kernel_client_addr_mapping[client_addr] = _kernel_name_to_addr[kernel_name];
+        }
     }
 
     if (!cubin_registered) {

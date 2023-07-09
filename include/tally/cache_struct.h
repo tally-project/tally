@@ -124,7 +124,6 @@ public:
     std::map<std::string, std::vector<uint32_t>>
     get_kernel_args(const char* cubin_data, size_t cubin_size)
     {
-        std::cout << "get_kernel_args of size " << cubin_size << std::endl;
         auto transform_data = find_transform_data(cubin_data, cubin_size);
         assert(transform_data);
         return transform_data->kernel_args;

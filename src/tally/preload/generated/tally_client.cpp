@@ -43,6 +43,7 @@ CUresult cuGetErrorName(CUresult  error, const char ** pStr)
 
 CUresult cuInit(unsigned int  Flags)
 {
+	printf("cuInit hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuInitArg);
 
@@ -61,6 +62,7 @@ CUresult cuInit(unsigned int  Flags)
 
 CUresult cuDriverGetVersion(int * driverVersion)
 {
+	printf("cuDriverGetVersion hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDriverGetVersionArg);
 
@@ -80,6 +82,7 @@ CUresult cuDriverGetVersion(int * driverVersion)
 
 CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 {
+	printf("cuDeviceGet hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetArg);
 
@@ -100,6 +103,7 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 
 CUresult cuDeviceGetCount(int * count)
 {
+	printf("cuDeviceGetCount hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetCountArg);
 
@@ -127,6 +131,7 @@ CUresult cuDeviceGetName(char * name, int  len, CUdevice  dev)
 
 CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 {
+	printf("cuDeviceGetUuid hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuidArg);
 
@@ -147,6 +152,7 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 
 CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 {
+	printf("cuDeviceGetUuid_v2 hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuid_v2Arg);
 
@@ -175,6 +181,7 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
 
 CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 {
+	printf("cuDeviceTotalMem_v2 hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceTotalMem_v2Arg);
 
@@ -195,6 +202,7 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 
 CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  dev)
 {
+	printf("cuDeviceGetAttribute hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetAttributeArg);
 
@@ -224,6 +232,7 @@ CUresult cuDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, CUdevice  dev,
 
 CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 {
+	printf("cuDeviceSetMemPool hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceSetMemPoolArg);
 
@@ -243,6 +252,7 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 
 CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 {
+	printf("cuDeviceGetMemPool hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetMemPoolArg);
 
@@ -263,6 +273,7 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 
 CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 {
+	printf("cuDeviceGetDefaultMemPool hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetDefaultMemPoolArg);
 
@@ -283,6 +294,7 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 
 CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CUflushGPUDirectRDMAWritesScope  scope)
 {
+	printf("cuFlushGPUDirectRDMAWrites hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuFlushGPUDirectRDMAWritesArg);
 
@@ -302,6 +314,7 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
 
 CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 {
+	printf("cuDeviceGetProperties hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetPropertiesArg);
 
@@ -330,6 +343,7 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
 
 CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 {
+	printf("cuDevicePrimaryCtxRetain hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRetainArg);
 
@@ -350,6 +364,7 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 
 CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 {
+	printf("cuDevicePrimaryCtxRelease_v2 hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRelease_v2Arg);
 
@@ -368,6 +383,7 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 
 CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 {
+	printf("cuDevicePrimaryCtxSetFlags_v2 hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxSetFlags_v2Arg);
 
@@ -395,6 +411,7 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
 
 CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 {
+	printf("cuDevicePrimaryCtxReset_v2 hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxReset_v2Arg);
 
@@ -2997,6 +3014,7 @@ CUresult cuGetExportTable(const void ** ppExportTable, const CUuuid * pExportTab
 
 cudaError_t cudaDeviceReset()
 {
+	printf("cudaDeviceReset hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceResetArg);
 
@@ -3014,6 +3032,7 @@ cudaError_t cudaDeviceReset()
 
 cudaError_t cudaDeviceSynchronize()
 {
+	printf("cudaDeviceSynchronize hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSynchronizeArg);
 
@@ -3031,6 +3050,7 @@ cudaError_t cudaDeviceSynchronize()
 
 cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 {
+	printf("cudaDeviceSetLimit hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetLimitArg);
 
@@ -3050,6 +3070,7 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 
 cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 {
+	printf("cudaDeviceGetLimit hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetLimitArg);
 
@@ -3078,6 +3099,7 @@ cudaError_t cudaDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, co
 
 cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 {
+	printf("cudaDeviceGetCacheConfig hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetCacheConfigArg);
 
@@ -3105,6 +3127,7 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
 
 cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
 {
+	printf("cudaDeviceSetCacheConfig hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetCacheConfigArg);
 
@@ -3131,6 +3154,7 @@ cudaError_t cudaDeviceGetSharedMemConfig(enum cudaSharedMemConfig * pConfig)
 
 cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
 {
+	printf("cudaDeviceSetSharedMemConfig hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetSharedMemConfigArg);
 
@@ -3173,6 +3197,7 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
 
 cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  handle)
 {
+	printf("cudaIpcOpenEventHandle hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenEventHandleArg);
 
@@ -3225,6 +3250,7 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
 
 cudaError_t cudaThreadExit()
 {
+	printf("cudaThreadExit hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadExitArg);
 
@@ -3242,6 +3268,7 @@ cudaError_t cudaThreadExit()
 
 cudaError_t cudaThreadSynchronize()
 {
+	printf("cudaThreadSynchronize hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSynchronizeArg);
 
@@ -3259,6 +3286,7 @@ cudaError_t cudaThreadSynchronize()
 
 cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 {
+	printf("cudaThreadSetLimit hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSetLimitArg);
 
@@ -3278,6 +3306,7 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 
 cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 {
+	printf("cudaThreadGetLimit hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetLimitArg);
 
@@ -3298,6 +3327,7 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 
 cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 {
+	printf("cudaThreadGetCacheConfig hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetCacheConfigArg);
 
@@ -3317,6 +3347,7 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 
 cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
 {
+	printf("cudaThreadSetCacheConfig hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSetCacheConfigArg);
 
@@ -3335,6 +3366,7 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
 
 cudaError_t cudaGetLastError()
 {
+	printf("cudaGetLastError hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetLastErrorArg);
 
@@ -3352,6 +3384,7 @@ cudaError_t cudaGetLastError()
 
 cudaError_t cudaPeekAtLastError()
 {
+	printf("cudaPeekAtLastError hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaPeekAtLastErrorArg);
 
@@ -3385,6 +3418,7 @@ const char* cudaGetErrorString(cudaError_t  error)
 
 cudaError_t cudaGetDeviceCount(int * count)
 {
+	printf("cudaGetDeviceCount hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceCountArg);
 
@@ -3404,6 +3438,7 @@ cudaError_t cudaGetDeviceCount(int * count)
 
 cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
 {
+	printf("cudaGetDeviceProperties hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDevicePropertiesArg);
 
@@ -3424,6 +3459,7 @@ cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
 
 cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  device)
 {
+	printf("cudaDeviceGetAttribute hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetAttributeArg);
 
@@ -3445,6 +3481,7 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
 
 cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 {
+	printf("cudaDeviceGetDefaultMemPool hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetDefaultMemPoolArg);
 
@@ -3465,6 +3502,7 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 
 cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 {
+	printf("cudaDeviceSetMemPool hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetMemPoolArg);
 
@@ -3484,6 +3522,7 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 
 cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 {
+	printf("cudaDeviceGetMemPool hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetMemPoolArg);
 
@@ -3512,6 +3551,7 @@ cudaError_t cudaDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, int  devi
 
 cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr, int  srcDevice, int  dstDevice)
 {
+	printf("cudaDeviceGetP2PAttribute hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetP2PAttributeArg);
 
@@ -3542,6 +3582,7 @@ cudaError_t cudaChooseDevice(int * device, const struct cudaDeviceProp * prop)
 
 cudaError_t cudaSetDevice(int  device)
 {
+	printf("cudaSetDevice hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaSetDeviceArg);
 
@@ -3560,6 +3601,7 @@ cudaError_t cudaSetDevice(int  device)
 
 cudaError_t cudaGetDevice(int * device)
 {
+	printf("cudaGetDevice hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceArg);
 
@@ -3587,6 +3629,7 @@ cudaError_t cudaSetValidDevices(int * device_arr, int  len)
 
 cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 {
+	printf("cudaSetDeviceFlags hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaSetDeviceFlagsArg);
 
@@ -3605,6 +3648,7 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 
 cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 {
+	printf("cudaGetDeviceFlags hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceFlagsArg);
 
@@ -3624,6 +3668,7 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 
 cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 {
+	printf("cudaStreamCreate hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateArg);
 
@@ -3643,6 +3688,7 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 
 cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flags)
 {
+	printf("cudaStreamCreateWithFlags hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithFlagsArg);
 
@@ -3663,6 +3709,7 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
 
 cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  flags, int  priority)
 {
+	printf("cudaStreamCreateWithPriority hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithPriorityArg);
 
@@ -3700,6 +3747,7 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 
 cudaError_t cudaCtxResetPersistingL2Cache()
 {
+	printf("cudaCtxResetPersistingL2Cache hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaCtxResetPersistingL2CacheArg);
 
@@ -3717,6 +3765,7 @@ cudaError_t cudaCtxResetPersistingL2Cache()
 
 cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 {
+	printf("cudaStreamCopyAttributes hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCopyAttributesArg);
 
@@ -3752,6 +3801,7 @@ cudaError_t cudaStreamSetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID 
 
 cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 {
+	printf("cudaStreamDestroy hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamDestroyArg);
 
@@ -3770,6 +3820,7 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 
 cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsigned int  flags)
 {
+	printf("cudaStreamWaitEvent hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamWaitEventArg);
 
@@ -3798,6 +3849,7 @@ cudaError_t cudaStreamAddCallback(cudaStream_t  stream, cudaStreamCallback_t  ca
 
 cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 {
+	printf("cudaStreamSynchronize hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamSynchronizeArg);
 
@@ -3816,6 +3868,7 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 
 cudaError_t cudaStreamQuery(cudaStream_t  stream)
 {
+	printf("cudaStreamQuery hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamQueryArg);
 
@@ -3842,6 +3895,7 @@ cudaError_t cudaStreamAttachMemAsync(cudaStream_t  stream, void * devPtr, size_t
 
 cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureMode  mode)
 {
+	printf("cudaStreamBeginCapture hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamBeginCaptureArg);
 
@@ -3869,6 +3923,7 @@ cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mod
 
 cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 {
+	printf("cudaStreamEndCapture hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamEndCaptureArg);
 
@@ -3920,6 +3975,7 @@ cudaError_t cudaStreamUpdateCaptureDependencies(cudaStream_t  stream, cudaGraphN
 
 cudaError_t cudaEventCreate(cudaEvent_t * event)
 {
+	printf("cudaEventCreate hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateArg);
 
@@ -3939,6 +3995,7 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
 
 cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 {
+	printf("cudaEventCreateWithFlags hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateWithFlagsArg);
 
@@ -3959,6 +4016,7 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 
 cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 {
+	printf("cudaEventRecord hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordArg);
 
@@ -3978,6 +4036,7 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 
 cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, unsigned int  flags)
 {
+	printf("cudaEventRecordWithFlags hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordWithFlagsArg);
 
@@ -3998,6 +4057,7 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
 
 cudaError_t cudaEventQuery(cudaEvent_t  event)
 {
+	printf("cudaEventQuery hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventQueryArg);
 
@@ -4016,6 +4076,7 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
 
 cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 {
+	printf("cudaEventSynchronize hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventSynchronizeArg);
 
@@ -4034,6 +4095,7 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 
 cudaError_t cudaEventDestroy(cudaEvent_t  event)
 {
+	printf("cudaEventDestroy hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventDestroyArg);
 
@@ -4052,6 +4114,7 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
 
 cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  end)
 {
+	printf("cudaEventElapsedTime hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventElapsedTimeArg);
 
@@ -4265,6 +4328,7 @@ cudaError_t cudaMallocArray(cudaArray_t * array, const struct cudaChannelFormatD
 
 cudaError_t cudaFree(void * devPtr)
 {
+	printf("cudaFree hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaFreeArg);
 
@@ -5067,6 +5131,7 @@ cudaError_t cudaRuntimeGetVersion(int * runtimeVersion)
 
 cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 {
+	printf("cudaGraphCreate hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGraphCreateArg);
 
@@ -7543,6 +7608,7 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 
 cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 {
+	printf("cublasDestroy_v2 hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasDestroy_v2Arg);
 
@@ -7577,6 +7643,7 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 
 size_t cublasGetCudartVersion()
 {
+	printf("cublasGetCudartVersion hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetCudartVersionArg);
 
@@ -9768,6 +9835,7 @@ cudaError_t cudaProfilerInitialize(const char * configFile, const char * outputF
 
 cudaError_t cudaProfilerStart()
 {
+	printf("cudaProfilerStart hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaProfilerStartArg);
 
@@ -9785,6 +9853,7 @@ cudaError_t cudaProfilerStart()
 
 cudaError_t cudaProfilerStop()
 {
+	printf("cudaProfilerStop hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaProfilerStopArg);
 

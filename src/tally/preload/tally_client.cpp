@@ -25,13 +25,69 @@
 
 #include "tally/util.h"
 #include "tally/ipc_util.h"
+#include "tally/cache.h"
 #include "tally/msg_struct.h"
 #include "tally/transform.h"
 #include "tally/client.h"
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
 
-extern "C" { 
+extern "C" {
+
+void** __cudaRegisterFatBinary( void *fatCubin ) {
+    auto wp = (__fatBinC_Wrapper_t *) fatCubin;
+    int magic = wp->magic;
+    int version = wp->version;
+
+    auto fbh = (struct fatBinaryHeader *) wp->data;
+    const char *cubin_data = (const char *) wp->data;
+    size_t cubin_size = fbh->headerSize + fbh->fatSize;
+
+    bool cached = TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size);
+    uint32_t msg_len;
+
+    if (!cached) {
+        msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct __cudaRegisterFatBinaryArg) + cubin_size;
+    } else {
+        msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct __cudaRegisterFatBinaryArg);
+    }
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARY;
+
+    auto arg_ptr = (struct __cudaRegisterFatBinaryArg *)(msg + sizeof(CUDA_API_ENUM));
+    arg_ptr->cached = cached;
+    arg_ptr->magic = magic;
+    arg_ptr->version = version;
+    if (!cached) {
+        memcpy(arg_ptr->data, wp->data, cubin_size);
+    }
+
+    CLIENT_SEND_MSG_AND_FREE;
+
+    std::map<std::string, std::vector<uint32_t>> kernel_args;
+
+    if (cached) {
+        kernel_args = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
+    } else {
+        auto tmp_cubin_file = get_tmp_file_path(".cubin");
+        write_binary_to_file(tmp_cubin_file, cubin_data, cubin_size);
+        auto tmp_elf_file = get_tmp_file_path(".elf");
+        std::string command("cuobjdump " + tmp_cubin_file + " -elf > " + tmp_elf_file);
+        exec(command);
+        
+        kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
+    }
+
+    for (auto &pair : kernel_args) {
+        auto &kernel_name = pair.first;
+        auto &param_sizes = pair.second;
+        TallyClient::client->_kernel_name_to_args[kernel_name] = param_sizes;
+    }
+
+    return nullptr;
+}
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
@@ -52,6 +108,17 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
     CLIENT_SEND_MSG_AND_FREE;
 
     TallyClient::client->_kernel_addr_to_args[hostFun] = TallyClient::client->_kernel_name_to_args[deviceFunName];
+}
+
+void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
+{
+    uint32_t msg_len = sizeof(CUDA_API_ENUM);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND;
+
+    CLIENT_SEND_MSG_AND_FREE;
 }
 
 cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind)
@@ -93,58 +160,6 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
     }
 
 	return res->err;
-}
-
-void** __cudaRegisterFatBinary( void *fatCubin ) {
-    auto wp = (__fatBinC_Wrapper_t *) fatCubin;
-    int magic = wp->magic;
-    int version = wp->version;
-
-    auto fbh = (struct fatBinaryHeader *) wp->data;
-    size_t fatCubin_data_size_bytes = fbh->headerSize + fbh->fatSize;
-    uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct __cudaRegisterFatBinaryArg) + fatCubin_data_size_bytes;
-
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    auto msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARY;
-
-    auto arg_ptr = (struct __cudaRegisterFatBinaryArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->magic = magic;
-    arg_ptr->version = version;
-    memcpy(arg_ptr->data, wp->data, fatCubin_data_size_bytes);
-
-    CLIENT_SEND_MSG_AND_FREE;
-
-    write_binary_to_file("/tmp/tmp_client.cubin", reinterpret_cast<const char*>(wp->data), fatCubin_data_size_bytes);
-    std::string command("cuobjdump /tmp/tmp_client.cubin -elf > /tmp/tmp_client.elf");
-    auto cmd_output = exec(command);
-    int return_status = cmd_output.second;
-    if (return_status != 0) {
-        std::cout << "command fails." << std::endl;
-        exit(return_status);
-    }
-    
-    std::string elf_filename = "/tmp/tmp_client.elf";
-    auto kernel_names_and_param_sizes = get_kernel_names_and_param_sizes_from_elf(elf_filename);
-
-    for (auto &pair : kernel_names_and_param_sizes) {
-        auto &kernel_name = pair.first;
-        auto &param_sizes = pair.second;
-        TallyClient::client->_kernel_name_to_args[kernel_name] = param_sizes;
-    }
-
-    return nullptr;
-}
-
-void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
-{
-    uint32_t msg_len = sizeof(CUDA_API_ENUM);
-
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    auto msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND;
-
-    CLIENT_SEND_MSG_AND_FREE;
 }
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
