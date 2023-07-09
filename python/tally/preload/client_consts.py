@@ -93,6 +93,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 #include <unistd.h>
 #include <cstring>
 
+#include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
 #include "tally/client.h"
 #include "tally/ipc_util.h"

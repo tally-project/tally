@@ -182,6 +182,7 @@ def gen_func_client_preload(func_sig):
         func_preload_builder += f"""
     auto res = ({res_struct} *) dat;
     *{arg_names[0]} = res->{arg_names[0]};
+    {'CHECK_CUDA_ERROR(res->err);' if ret_type == 'cudaError_t' else ''}
     return res->err;
 """
     
@@ -189,8 +190,9 @@ def gen_func_client_preload(func_sig):
         func_preload_builder += get_preload_func_template(func_name, arg_names)
 
         func_preload_builder += f"""
-        auto res = ({ret_type} *) dat;
-        return *res;
+    auto res = ({ret_type} *) dat;
+    {'CHECK_CUDA_ERROR(*res);' if ret_type == 'cudaError_t' else ''}
+    return *res;
 """
     else:
         # # print
@@ -201,6 +203,9 @@ def gen_func_client_preload(func_sig):
             func_preload_builder += f"\t{ret_type} res = \n"
             
         func_preload_builder += f"\t\t{preload_func_name}({arg_names_str});\n"
+
+        if ret_type == "cudaError_t":
+            func_preload_builder += "CHECK_CUDA_ERROR(res);"
 
         if ret_type != "void":
             func_preload_builder += f"\treturn res;\n"

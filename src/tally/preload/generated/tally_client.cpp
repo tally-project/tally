@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <cstring>
 
+#include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
 #include "tally/client.h"
 #include "tally/ipc_util.h"
@@ -56,8 +57,9 @@ CUresult cuInit(unsigned int  Flags)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (CUresult *) dat;
-        return *res;
+    auto res = (CUresult *) dat;
+    
+    return *res;
 }
 
 CUresult cuDriverGetVersion(int * driverVersion)
@@ -77,6 +79,7 @@ CUresult cuDriverGetVersion(int * driverVersion)
 
     auto res = (cuDriverGetVersionResponse *) dat;
     *driverVersion = res->driverVersion;
+    
     return res->err;
 }
 
@@ -98,6 +101,7 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 
     auto res = (cuDeviceGetResponse *) dat;
     *device = res->device;
+    
     return res->err;
 }
 
@@ -118,6 +122,7 @@ CUresult cuDeviceGetCount(int * count)
 
     auto res = (cuDeviceGetCountResponse *) dat;
     *count = res->count;
+    
     return res->err;
 }
 
@@ -147,6 +152,7 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 
     auto res = (cuDeviceGetUuidResponse *) dat;
     *uuid = res->uuid;
+    
     return res->err;
 }
 
@@ -168,6 +174,7 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 
     auto res = (cuDeviceGetUuid_v2Response *) dat;
     *uuid = res->uuid;
+    
     return res->err;
 }
 
@@ -197,6 +204,7 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 
     auto res = (cuDeviceTotalMem_v2Response *) dat;
     *bytes = res->bytes;
+    
     return res->err;
 }
 
@@ -219,6 +227,7 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
 
     auto res = (cuDeviceGetAttributeResponse *) dat;
     *pi = res->pi;
+    
     return res->err;
 }
 
@@ -246,8 +255,9 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (CUresult *) dat;
-        return *res;
+    auto res = (CUresult *) dat;
+    
+    return *res;
 }
 
 CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
@@ -268,6 +278,7 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 
     auto res = (cuDeviceGetMemPoolResponse *) dat;
     *pool = res->pool;
+    
     return res->err;
 }
 
@@ -289,6 +300,7 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 
     auto res = (cuDeviceGetDefaultMemPoolResponse *) dat;
     *pool_out = res->pool_out;
+    
     return res->err;
 }
 
@@ -308,8 +320,9 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (CUresult *) dat;
-        return *res;
+    auto res = (CUresult *) dat;
+    
+    return *res;
 }
 
 CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
@@ -330,6 +343,7 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 
     auto res = (cuDeviceGetPropertiesResponse *) dat;
     *prop = res->prop;
+    
     return res->err;
 }
 
@@ -359,6 +373,7 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 
     auto res = (cuDevicePrimaryCtxRetainResponse *) dat;
     *pctx = res->pctx;
+    
     return res->err;
 }
 
@@ -377,8 +392,9 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (CUresult *) dat;
-        return *res;
+    auto res = (CUresult *) dat;
+    
+    return *res;
 }
 
 CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
@@ -397,8 +413,9 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (CUresult *) dat;
-        return *res;
+    auto res = (CUresult *) dat;
+    
+    return *res;
 }
 
 CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * active)
@@ -424,8 +441,9 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (CUresult *) dat;
-        return *res;
+    auto res = (CUresult *) dat;
+    
+    return *res;
 }
 
 CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUdevice  dev)
@@ -3026,8 +3044,9 @@ cudaError_t cudaDeviceReset()
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaDeviceSynchronize()
@@ -3044,8 +3063,9 @@ cudaError_t cudaDeviceSynchronize()
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
@@ -3064,8 +3084,9 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
@@ -3086,6 +3107,7 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 
     auto res = (cudaDeviceGetLimitResponse *) dat;
     *pValue = res->pValue;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3094,7 +3116,7 @@ cudaError_t cudaDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, co
 	printf("cudaDeviceGetTexture1DLinearMaxWidth hooked\n");
 	cudaError_t res = 
 		lcudaDeviceGetTexture1DLinearMaxWidth(maxWidthInElements, fmtDesc, device);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
@@ -3114,6 +3136,7 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 
     auto res = (cudaDeviceGetCacheConfigResponse *) dat;
     *pCacheConfig = res->pCacheConfig;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3122,7 +3145,7 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
 	printf("cudaDeviceGetStreamPriorityRange hooked\n");
 	cudaError_t res = 
 		lcudaDeviceGetStreamPriorityRange(leastPriority, greatestPriority);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
@@ -3140,8 +3163,9 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaDeviceGetSharedMemConfig(enum cudaSharedMemConfig * pConfig)
@@ -3149,7 +3173,7 @@ cudaError_t cudaDeviceGetSharedMemConfig(enum cudaSharedMemConfig * pConfig)
 	printf("cudaDeviceGetSharedMemConfig hooked\n");
 	cudaError_t res = 
 		lcudaDeviceGetSharedMemConfig(pConfig);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
@@ -3167,8 +3191,9 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaDeviceGetByPCIBusId(int * device, const char * pciBusId)
@@ -3176,7 +3201,7 @@ cudaError_t cudaDeviceGetByPCIBusId(int * device, const char * pciBusId)
 	printf("cudaDeviceGetByPCIBusId hooked\n");
 	cudaError_t res = 
 		lcudaDeviceGetByPCIBusId(device, pciBusId);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
@@ -3184,7 +3209,7 @@ cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
 	printf("cudaDeviceGetPCIBusId hooked\n");
 	cudaError_t res = 
 		lcudaDeviceGetPCIBusId(pciBusId, len, device);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  event)
@@ -3192,7 +3217,7 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
 	printf("cudaIpcGetEventHandle hooked\n");
 	cudaError_t res = 
 		lcudaIpcGetEventHandle(handle, event);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  handle)
@@ -3213,6 +3238,7 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
 
     auto res = (cudaIpcOpenEventHandleResponse *) dat;
     *event = res->event;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3221,7 +3247,7 @@ cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
 	printf("cudaIpcGetMemHandle hooked\n");
 	cudaError_t res = 
 		lcudaIpcGetMemHandle(handle, devPtr);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, unsigned int  flags)
@@ -3229,7 +3255,7 @@ cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, uns
 	printf("cudaIpcOpenMemHandle hooked\n");
 	cudaError_t res = 
 		lcudaIpcOpenMemHandle(devPtr, handle, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaIpcCloseMemHandle(void * devPtr)
@@ -3237,7 +3263,7 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
 	printf("cudaIpcCloseMemHandle hooked\n");
 	cudaError_t res = 
 		lcudaIpcCloseMemHandle(devPtr);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWritesTarget  target, enum cudaFlushGPUDirectRDMAWritesScope  scope)
@@ -3245,7 +3271,7 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
 	printf("cudaDeviceFlushGPUDirectRDMAWrites hooked\n");
 	cudaError_t res = 
 		lcudaDeviceFlushGPUDirectRDMAWrites(target, scope);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaThreadExit()
@@ -3262,8 +3288,9 @@ cudaError_t cudaThreadExit()
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaThreadSynchronize()
@@ -3280,8 +3307,9 @@ cudaError_t cudaThreadSynchronize()
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
@@ -3300,8 +3328,9 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
@@ -3322,6 +3351,7 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 
     auto res = (cudaThreadGetLimitResponse *) dat;
     *pValue = res->pValue;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3342,6 +3372,7 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 
     auto res = (cudaThreadGetCacheConfigResponse *) dat;
     *pCacheConfig = res->pCacheConfig;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3360,8 +3391,9 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaGetLastError()
@@ -3378,8 +3410,9 @@ cudaError_t cudaGetLastError()
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaPeekAtLastError()
@@ -3396,8 +3429,9 @@ cudaError_t cudaPeekAtLastError()
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 const char* cudaGetErrorName(cudaError_t  error)
@@ -3433,6 +3467,7 @@ cudaError_t cudaGetDeviceCount(int * count)
 
     auto res = (cudaGetDeviceCountResponse *) dat;
     *count = res->count;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3454,6 +3489,7 @@ cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
 
     auto res = (cudaGetDevicePropertiesResponse *) dat;
     *prop = res->prop;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3476,6 +3512,7 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
 
     auto res = (cudaDeviceGetAttributeResponse *) dat;
     *value = res->value;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3497,6 +3534,7 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 
     auto res = (cudaDeviceGetDefaultMemPoolResponse *) dat;
     *memPool = res->memPool;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3516,8 +3554,9 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
@@ -3538,6 +3577,7 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 
     auto res = (cudaDeviceGetMemPoolResponse *) dat;
     *memPool = res->memPool;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3546,7 +3586,7 @@ cudaError_t cudaDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, int  devi
 	printf("cudaDeviceGetNvSciSyncAttributes hooked\n");
 	cudaError_t res = 
 		lcudaDeviceGetNvSciSyncAttributes(nvSciSyncAttrList, device, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr, int  srcDevice, int  dstDevice)
@@ -3569,6 +3609,7 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
 
     auto res = (cudaDeviceGetP2PAttributeResponse *) dat;
     *value = res->value;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3577,7 +3618,7 @@ cudaError_t cudaChooseDevice(int * device, const struct cudaDeviceProp * prop)
 	printf("cudaChooseDevice hooked\n");
 	cudaError_t res = 
 		lcudaChooseDevice(device, prop);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaSetDevice(int  device)
@@ -3595,8 +3636,9 @@ cudaError_t cudaSetDevice(int  device)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaGetDevice(int * device)
@@ -3616,6 +3658,7 @@ cudaError_t cudaGetDevice(int * device)
 
     auto res = (cudaGetDeviceResponse *) dat;
     *device = res->device;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3624,7 +3667,7 @@ cudaError_t cudaSetValidDevices(int * device_arr, int  len)
 	printf("cudaSetValidDevices hooked\n");
 	cudaError_t res = 
 		lcudaSetValidDevices(device_arr, len);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaSetDeviceFlags(unsigned int  flags)
@@ -3642,8 +3685,9 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaGetDeviceFlags(unsigned int * flags)
@@ -3663,6 +3707,7 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 
     auto res = (cudaGetDeviceFlagsResponse *) dat;
     *flags = res->flags;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3683,6 +3728,7 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 
     auto res = (cudaStreamCreateResponse *) dat;
     *pStream = res->pStream;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3704,6 +3750,7 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
 
     auto res = (cudaStreamCreateWithFlagsResponse *) dat;
     *pStream = res->pStream;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3726,6 +3773,7 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
 
     auto res = (cudaStreamCreateWithPriorityResponse *) dat;
     *pStream = res->pStream;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -3734,7 +3782,7 @@ cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
 	printf("cudaStreamGetPriority hooked\n");
 	cudaError_t res = 
 		lcudaStreamGetPriority(hStream, priority);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
@@ -3742,7 +3790,7 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 	printf("cudaStreamGetFlags hooked\n");
 	cudaError_t res = 
 		lcudaStreamGetFlags(hStream, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaCtxResetPersistingL2Cache()
@@ -3759,8 +3807,9 @@ cudaError_t cudaCtxResetPersistingL2Cache()
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
@@ -3779,8 +3828,9 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaStreamGetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID  attr, union cudaStreamAttrValue * value_out)
@@ -3788,7 +3838,7 @@ cudaError_t cudaStreamGetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID 
 	printf("cudaStreamGetAttribute hooked\n");
 	cudaError_t res = 
 		lcudaStreamGetAttribute(hStream, attr, value_out);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaStreamSetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID  attr, const union cudaStreamAttrValue * value)
@@ -3796,7 +3846,7 @@ cudaError_t cudaStreamSetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID 
 	printf("cudaStreamSetAttribute hooked\n");
 	cudaError_t res = 
 		lcudaStreamSetAttribute(hStream, attr, value);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaStreamDestroy(cudaStream_t  stream)
@@ -3814,8 +3864,9 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsigned int  flags)
@@ -3835,8 +3886,9 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaStreamAddCallback(cudaStream_t  stream, cudaStreamCallback_t  callback, void * userData, unsigned int  flags)
@@ -3844,7 +3896,7 @@ cudaError_t cudaStreamAddCallback(cudaStream_t  stream, cudaStreamCallback_t  ca
 	printf("cudaStreamAddCallback hooked\n");
 	cudaError_t res = 
 		lcudaStreamAddCallback(stream, callback, userData, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
@@ -3862,8 +3914,9 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaStreamQuery(cudaStream_t  stream)
@@ -3881,8 +3934,9 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaStreamAttachMemAsync(cudaStream_t  stream, void * devPtr, size_t  length, unsigned int  flags)
@@ -3890,7 +3944,7 @@ cudaError_t cudaStreamAttachMemAsync(cudaStream_t  stream, void * devPtr, size_t
 	printf("cudaStreamAttachMemAsync hooked\n");
 	cudaError_t res = 
 		lcudaStreamAttachMemAsync(stream, devPtr, length, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureMode  mode)
@@ -3909,8 +3963,9 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mode)
@@ -3918,7 +3973,7 @@ cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mod
 	printf("cudaThreadExchangeStreamCaptureMode hooked\n");
 	cudaError_t res = 
 		lcudaThreadExchangeStreamCaptureMode(mode);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
@@ -3937,8 +3992,9 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus)
@@ -3946,7 +4002,7 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
 	printf("cudaStreamIsCapturing hooked\n");
 	cudaError_t res = 
 		lcudaStreamIsCapturing(stream, pCaptureStatus);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus, unsigned long long * pId)
@@ -3954,7 +4010,7 @@ cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptur
 	printf("cudaStreamGetCaptureInfo hooked\n");
 	cudaError_t res = 
 		lcudaStreamGetCaptureInfo(stream, pCaptureStatus, pId);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCaptureStatus * captureStatus_out, unsigned long long * id_out, cudaGraph_t * graph_out, const cudaGraphNode_t ** dependencies_out, size_t * numDependencies_out)
@@ -3962,7 +4018,7 @@ cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCap
 	printf("cudaStreamGetCaptureInfo_v2 hooked\n");
 	cudaError_t res = 
 		lcudaStreamGetCaptureInfo_v2(stream, captureStatus_out, id_out, graph_out, dependencies_out, numDependencies_out);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaStreamUpdateCaptureDependencies(cudaStream_t  stream, cudaGraphNode_t * dependencies, size_t  numDependencies, unsigned int  flags)
@@ -3970,7 +4026,7 @@ cudaError_t cudaStreamUpdateCaptureDependencies(cudaStream_t  stream, cudaGraphN
 	printf("cudaStreamUpdateCaptureDependencies hooked\n");
 	cudaError_t res = 
 		lcudaStreamUpdateCaptureDependencies(stream, dependencies, numDependencies, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaEventCreate(cudaEvent_t * event)
@@ -3990,6 +4046,7 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
 
     auto res = (cudaEventCreateResponse *) dat;
     *event = res->event;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -4011,6 +4068,7 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 
     auto res = (cudaEventCreateWithFlagsResponse *) dat;
     *event = res->event;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -4030,8 +4088,9 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, unsigned int  flags)
@@ -4051,8 +4110,9 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaEventQuery(cudaEvent_t  event)
@@ -4070,8 +4130,9 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaEventSynchronize(cudaEvent_t  event)
@@ -4089,8 +4150,9 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaEventDestroy(cudaEvent_t  event)
@@ -4108,8 +4170,9 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  end)
@@ -4131,6 +4194,7 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
 
     auto res = (cudaEventElapsedTimeResponse *) dat;
     *ms = res->ms;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -4139,7 +4203,7 @@ cudaError_t cudaImportExternalMemory(cudaExternalMemory_t * extMem_out, const st
 	printf("cudaImportExternalMemory hooked\n");
 	cudaError_t res = 
 		lcudaImportExternalMemory(extMem_out, memHandleDesc);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaExternalMemoryGetMappedBuffer(void ** devPtr, cudaExternalMemory_t  extMem, const struct cudaExternalMemoryBufferDesc * bufferDesc)
@@ -4147,7 +4211,7 @@ cudaError_t cudaExternalMemoryGetMappedBuffer(void ** devPtr, cudaExternalMemory
 	printf("cudaExternalMemoryGetMappedBuffer hooked\n");
 	cudaError_t res = 
 		lcudaExternalMemoryGetMappedBuffer(devPtr, extMem, bufferDesc);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaExternalMemoryGetMappedMipmappedArray(cudaMipmappedArray_t * mipmap, cudaExternalMemory_t  extMem, const struct cudaExternalMemoryMipmappedArrayDesc * mipmapDesc)
@@ -4155,7 +4219,7 @@ cudaError_t cudaExternalMemoryGetMappedMipmappedArray(cudaMipmappedArray_t * mip
 	printf("cudaExternalMemoryGetMappedMipmappedArray hooked\n");
 	cudaError_t res = 
 		lcudaExternalMemoryGetMappedMipmappedArray(mipmap, extMem, mipmapDesc);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDestroyExternalMemory(cudaExternalMemory_t  extMem)
@@ -4163,7 +4227,7 @@ cudaError_t cudaDestroyExternalMemory(cudaExternalMemory_t  extMem)
 	printf("cudaDestroyExternalMemory hooked\n");
 	cudaError_t res = 
 		lcudaDestroyExternalMemory(extMem);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaImportExternalSemaphore(cudaExternalSemaphore_t * extSem_out, const struct cudaExternalSemaphoreHandleDesc * semHandleDesc)
@@ -4171,7 +4235,7 @@ cudaError_t cudaImportExternalSemaphore(cudaExternalSemaphore_t * extSem_out, co
 	printf("cudaImportExternalSemaphore hooked\n");
 	cudaError_t res = 
 		lcudaImportExternalSemaphore(extSem_out, semHandleDesc);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaSignalExternalSemaphoresAsync_v2(const cudaExternalSemaphore_t * extSemArray, const struct cudaExternalSemaphoreSignalParams * paramsArray, unsigned int  numExtSems, cudaStream_t  stream)
@@ -4179,7 +4243,7 @@ cudaError_t cudaSignalExternalSemaphoresAsync_v2(const cudaExternalSemaphore_t *
 	printf("cudaSignalExternalSemaphoresAsync_v2 hooked\n");
 	cudaError_t res = 
 		lcudaSignalExternalSemaphoresAsync_v2(extSemArray, paramsArray, numExtSems, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaWaitExternalSemaphoresAsync_v2(const cudaExternalSemaphore_t * extSemArray, const struct cudaExternalSemaphoreWaitParams * paramsArray, unsigned int  numExtSems, cudaStream_t  stream)
@@ -4187,7 +4251,7 @@ cudaError_t cudaWaitExternalSemaphoresAsync_v2(const cudaExternalSemaphore_t * e
 	printf("cudaWaitExternalSemaphoresAsync_v2 hooked\n");
 	cudaError_t res = 
 		lcudaWaitExternalSemaphoresAsync_v2(extSemArray, paramsArray, numExtSems, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDestroyExternalSemaphore(cudaExternalSemaphore_t  extSem)
@@ -4195,7 +4259,7 @@ cudaError_t cudaDestroyExternalSemaphore(cudaExternalSemaphore_t  extSem)
 	printf("cudaDestroyExternalSemaphore hooked\n");
 	cudaError_t res = 
 		lcudaDestroyExternalSemaphore(extSem);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaLaunchCooperativeKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
@@ -4203,7 +4267,7 @@ cudaError_t cudaLaunchCooperativeKernel(const void * func, dim3  gridDim, dim3  
 	printf("cudaLaunchCooperativeKernel hooked\n");
 	cudaError_t res = 
 		lcudaLaunchCooperativeKernel(func, gridDim, blockDim, args, sharedMem, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaLaunchCooperativeKernelMultiDevice(struct cudaLaunchParams * launchParamsList, unsigned int  numDevices, unsigned int  flags)
@@ -4211,7 +4275,7 @@ cudaError_t cudaLaunchCooperativeKernelMultiDevice(struct cudaLaunchParams * lau
 	printf("cudaLaunchCooperativeKernelMultiDevice hooked\n");
 	cudaError_t res = 
 		lcudaLaunchCooperativeKernelMultiDevice(launchParamsList, numDevices, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaFuncSetCacheConfig(const void * func, enum cudaFuncCache  cacheConfig)
@@ -4219,7 +4283,7 @@ cudaError_t cudaFuncSetCacheConfig(const void * func, enum cudaFuncCache  cacheC
 	printf("cudaFuncSetCacheConfig hooked\n");
 	cudaError_t res = 
 		lcudaFuncSetCacheConfig(func, cacheConfig);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaFuncSetSharedMemConfig(const void * func, enum cudaSharedMemConfig  config)
@@ -4227,7 +4291,7 @@ cudaError_t cudaFuncSetSharedMemConfig(const void * func, enum cudaSharedMemConf
 	printf("cudaFuncSetSharedMemConfig hooked\n");
 	cudaError_t res = 
 		lcudaFuncSetSharedMemConfig(func, config);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaFuncGetAttributes(struct cudaFuncAttributes * attr, const void * func)
@@ -4235,7 +4299,7 @@ cudaError_t cudaFuncGetAttributes(struct cudaFuncAttributes * attr, const void *
 	printf("cudaFuncGetAttributes hooked\n");
 	cudaError_t res = 
 		lcudaFuncGetAttributes(attr, func);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr, int  value)
@@ -4243,7 +4307,7 @@ cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr
 	printf("cudaFuncSetAttribute hooked\n");
 	cudaError_t res = 
 		lcudaFuncSetAttribute(func, attr, value);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaSetDoubleForDevice(double * d)
@@ -4251,7 +4315,7 @@ cudaError_t cudaSetDoubleForDevice(double * d)
 	printf("cudaSetDoubleForDevice hooked\n");
 	cudaError_t res = 
 		lcudaSetDoubleForDevice(d);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaSetDoubleForHost(double * d)
@@ -4259,7 +4323,7 @@ cudaError_t cudaSetDoubleForHost(double * d)
 	printf("cudaSetDoubleForHost hooked\n");
 	cudaError_t res = 
 		lcudaSetDoubleForHost(d);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaLaunchHostFunc(cudaStream_t  stream, cudaHostFn_t  fn, void * userData)
@@ -4267,7 +4331,7 @@ cudaError_t cudaLaunchHostFunc(cudaStream_t  stream, cudaHostFn_t  fn, void * us
 	printf("cudaLaunchHostFunc hooked\n");
 	cudaError_t res = 
 		lcudaLaunchHostFunc(stream, fn, userData);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessor(int * numBlocks, const void * func, int  blockSize, size_t  dynamicSMemSize)
@@ -4275,7 +4339,7 @@ cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessor(int * numBlocks, const
 	printf("cudaOccupancyMaxActiveBlocksPerMultiprocessor hooked\n");
 	cudaError_t res = 
 		lcudaOccupancyMaxActiveBlocksPerMultiprocessor(numBlocks, func, blockSize, dynamicSMemSize);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaOccupancyAvailableDynamicSMemPerBlock(size_t * dynamicSmemSize, const void * func, int  numBlocks, int  blockSize)
@@ -4283,7 +4347,7 @@ cudaError_t cudaOccupancyAvailableDynamicSMemPerBlock(size_t * dynamicSmemSize, 
 	printf("cudaOccupancyAvailableDynamicSMemPerBlock hooked\n");
 	cudaError_t res = 
 		lcudaOccupancyAvailableDynamicSMemPerBlock(dynamicSmemSize, func, numBlocks, blockSize);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBlocks, const void * func, int  blockSize, size_t  dynamicSMemSize, unsigned int  flags)
@@ -4291,7 +4355,7 @@ cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBloc
 	printf("cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags hooked\n");
 	cudaError_t res = 
 		lcudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(numBlocks, func, blockSize, dynamicSMemSize, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMallocManaged(void ** devPtr, size_t  size, unsigned int  flags)
@@ -4299,7 +4363,7 @@ cudaError_t cudaMallocManaged(void ** devPtr, size_t  size, unsigned int  flags)
 	printf("cudaMallocManaged hooked\n");
 	cudaError_t res = 
 		lcudaMallocManaged(devPtr, size, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMallocHost(void ** ptr, size_t  size)
@@ -4307,7 +4371,7 @@ cudaError_t cudaMallocHost(void ** ptr, size_t  size)
 	printf("cudaMallocHost hooked\n");
 	cudaError_t res = 
 		lcudaMallocHost(ptr, size);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMallocPitch(void ** devPtr, size_t * pitch, size_t  width, size_t  height)
@@ -4315,7 +4379,7 @@ cudaError_t cudaMallocPitch(void ** devPtr, size_t * pitch, size_t  width, size_
 	printf("cudaMallocPitch hooked\n");
 	cudaError_t res = 
 		lcudaMallocPitch(devPtr, pitch, width, height);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMallocArray(cudaArray_t * array, const struct cudaChannelFormatDesc * desc, size_t  width, size_t  height, unsigned int  flags)
@@ -4323,7 +4387,7 @@ cudaError_t cudaMallocArray(cudaArray_t * array, const struct cudaChannelFormatD
 	printf("cudaMallocArray hooked\n");
 	cudaError_t res = 
 		lcudaMallocArray(array, desc, width, height, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaFree(void * devPtr)
@@ -4341,8 +4405,9 @@ cudaError_t cudaFree(void * devPtr)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaFreeHost(void * ptr)
@@ -4350,7 +4415,7 @@ cudaError_t cudaFreeHost(void * ptr)
 	printf("cudaFreeHost hooked\n");
 	cudaError_t res = 
 		lcudaFreeHost(ptr);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaFreeArray(cudaArray_t  array)
@@ -4358,7 +4423,7 @@ cudaError_t cudaFreeArray(cudaArray_t  array)
 	printf("cudaFreeArray hooked\n");
 	cudaError_t res = 
 		lcudaFreeArray(array);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaFreeMipmappedArray(cudaMipmappedArray_t  mipmappedArray)
@@ -4366,7 +4431,7 @@ cudaError_t cudaFreeMipmappedArray(cudaMipmappedArray_t  mipmappedArray)
 	printf("cudaFreeMipmappedArray hooked\n");
 	cudaError_t res = 
 		lcudaFreeMipmappedArray(mipmappedArray);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaHostAlloc(void ** pHost, size_t  size, unsigned int  flags)
@@ -4374,7 +4439,7 @@ cudaError_t cudaHostAlloc(void ** pHost, size_t  size, unsigned int  flags)
 	printf("cudaHostAlloc hooked\n");
 	cudaError_t res = 
 		lcudaHostAlloc(pHost, size, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaHostRegister(void * ptr, size_t  size, unsigned int  flags)
@@ -4382,7 +4447,7 @@ cudaError_t cudaHostRegister(void * ptr, size_t  size, unsigned int  flags)
 	printf("cudaHostRegister hooked\n");
 	cudaError_t res = 
 		lcudaHostRegister(ptr, size, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaHostUnregister(void * ptr)
@@ -4390,7 +4455,7 @@ cudaError_t cudaHostUnregister(void * ptr)
 	printf("cudaHostUnregister hooked\n");
 	cudaError_t res = 
 		lcudaHostUnregister(ptr);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaHostGetDevicePointer(void ** pDevice, void * pHost, unsigned int  flags)
@@ -4398,7 +4463,7 @@ cudaError_t cudaHostGetDevicePointer(void ** pDevice, void * pHost, unsigned int
 	printf("cudaHostGetDevicePointer hooked\n");
 	cudaError_t res = 
 		lcudaHostGetDevicePointer(pDevice, pHost, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaHostGetFlags(unsigned int * pFlags, void * pHost)
@@ -4406,7 +4471,7 @@ cudaError_t cudaHostGetFlags(unsigned int * pFlags, void * pHost)
 	printf("cudaHostGetFlags hooked\n");
 	cudaError_t res = 
 		lcudaHostGetFlags(pFlags, pHost);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMalloc3D(struct cudaPitchedPtr*  pitchedDevPtr, struct cudaExtent  extent)
@@ -4414,7 +4479,7 @@ cudaError_t cudaMalloc3D(struct cudaPitchedPtr*  pitchedDevPtr, struct cudaExten
 	printf("cudaMalloc3D hooked\n");
 	cudaError_t res = 
 		lcudaMalloc3D(pitchedDevPtr, extent);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMalloc3DArray(cudaArray_t * array, const struct cudaChannelFormatDesc*  desc, struct cudaExtent  extent, unsigned int  flags)
@@ -4422,7 +4487,7 @@ cudaError_t cudaMalloc3DArray(cudaArray_t * array, const struct cudaChannelForma
 	printf("cudaMalloc3DArray hooked\n");
 	cudaError_t res = 
 		lcudaMalloc3DArray(array, desc, extent, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMallocMipmappedArray(cudaMipmappedArray_t * mipmappedArray, const struct cudaChannelFormatDesc*  desc, struct cudaExtent  extent, unsigned int  numLevels, unsigned int  flags)
@@ -4430,7 +4495,7 @@ cudaError_t cudaMallocMipmappedArray(cudaMipmappedArray_t * mipmappedArray, cons
 	printf("cudaMallocMipmappedArray hooked\n");
 	cudaError_t res = 
 		lcudaMallocMipmappedArray(mipmappedArray, desc, extent, numLevels, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetMipmappedArrayLevel(cudaArray_t * levelArray, cudaMipmappedArray_const_t  mipmappedArray, unsigned int  level)
@@ -4438,7 +4503,7 @@ cudaError_t cudaGetMipmappedArrayLevel(cudaArray_t * levelArray, cudaMipmappedAr
 	printf("cudaGetMipmappedArrayLevel hooked\n");
 	cudaError_t res = 
 		lcudaGetMipmappedArrayLevel(levelArray, mipmappedArray, level);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy3D(const struct cudaMemcpy3DParms * p)
@@ -4446,7 +4511,7 @@ cudaError_t cudaMemcpy3D(const struct cudaMemcpy3DParms * p)
 	printf("cudaMemcpy3D hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy3D(p);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy3DPeer(const struct cudaMemcpy3DPeerParms * p)
@@ -4454,7 +4519,7 @@ cudaError_t cudaMemcpy3DPeer(const struct cudaMemcpy3DPeerParms * p)
 	printf("cudaMemcpy3DPeer hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy3DPeer(p);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy3DAsync(const struct cudaMemcpy3DParms * p, cudaStream_t  stream)
@@ -4462,7 +4527,7 @@ cudaError_t cudaMemcpy3DAsync(const struct cudaMemcpy3DParms * p, cudaStream_t  
 	printf("cudaMemcpy3DAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy3DAsync(p, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy3DPeerAsync(const struct cudaMemcpy3DPeerParms * p, cudaStream_t  stream)
@@ -4470,7 +4535,7 @@ cudaError_t cudaMemcpy3DPeerAsync(const struct cudaMemcpy3DPeerParms * p, cudaSt
 	printf("cudaMemcpy3DPeerAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy3DPeerAsync(p, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
@@ -4478,7 +4543,7 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
 	printf("cudaMemGetInfo hooked\n");
 	cudaError_t res = 
 		lcudaMemGetInfo(free, total);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaArrayGetInfo(struct cudaChannelFormatDesc * desc, struct cudaExtent * extent, unsigned int * flags, cudaArray_t  array)
@@ -4486,7 +4551,7 @@ cudaError_t cudaArrayGetInfo(struct cudaChannelFormatDesc * desc, struct cudaExt
 	printf("cudaArrayGetInfo hooked\n");
 	cudaError_t res = 
 		lcudaArrayGetInfo(desc, extent, flags, array);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaArrayGetPlane(cudaArray_t * pPlaneArray, cudaArray_t  hArray, unsigned int  planeIdx)
@@ -4494,7 +4559,7 @@ cudaError_t cudaArrayGetPlane(cudaArray_t * pPlaneArray, cudaArray_t  hArray, un
 	printf("cudaArrayGetPlane hooked\n");
 	cudaError_t res = 
 		lcudaArrayGetPlane(pPlaneArray, hArray, planeIdx);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaArrayGetSparseProperties(struct cudaArraySparseProperties * sparseProperties, cudaArray_t  array)
@@ -4502,7 +4567,7 @@ cudaError_t cudaArrayGetSparseProperties(struct cudaArraySparseProperties * spar
 	printf("cudaArrayGetSparseProperties hooked\n");
 	cudaError_t res = 
 		lcudaArrayGetSparseProperties(sparseProperties, array);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMipmappedArrayGetSparseProperties(struct cudaArraySparseProperties * sparseProperties, cudaMipmappedArray_t  mipmap)
@@ -4510,7 +4575,7 @@ cudaError_t cudaMipmappedArrayGetSparseProperties(struct cudaArraySparseProperti
 	printf("cudaMipmappedArrayGetSparseProperties hooked\n");
 	cudaError_t res = 
 		lcudaMipmappedArrayGetSparseProperties(sparseProperties, mipmap);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyPeer(void * dst, int  dstDevice, const void * src, int  srcDevice, size_t  count)
@@ -4518,7 +4583,7 @@ cudaError_t cudaMemcpyPeer(void * dst, int  dstDevice, const void * src, int  sr
 	printf("cudaMemcpyPeer hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyPeer(dst, dstDevice, src, srcDevice, count);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy2D(void * dst, size_t  dpitch, const void * src, size_t  spitch, size_t  width, size_t  height, enum cudaMemcpyKind  kind)
@@ -4526,7 +4591,7 @@ cudaError_t cudaMemcpy2D(void * dst, size_t  dpitch, const void * src, size_t  s
 	printf("cudaMemcpy2D hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy2D(dst, dpitch, src, spitch, width, height, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy2DToArray(cudaArray_t  dst, size_t  wOffset, size_t  hOffset, const void * src, size_t  spitch, size_t  width, size_t  height, enum cudaMemcpyKind  kind)
@@ -4534,7 +4599,7 @@ cudaError_t cudaMemcpy2DToArray(cudaArray_t  dst, size_t  wOffset, size_t  hOffs
 	printf("cudaMemcpy2DToArray hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy2DToArray(dst, wOffset, hOffset, src, spitch, width, height, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy2DFromArray(void * dst, size_t  dpitch, cudaArray_const_t  src, size_t  wOffset, size_t  hOffset, size_t  width, size_t  height, enum cudaMemcpyKind  kind)
@@ -4542,7 +4607,7 @@ cudaError_t cudaMemcpy2DFromArray(void * dst, size_t  dpitch, cudaArray_const_t 
 	printf("cudaMemcpy2DFromArray hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy2DFromArray(dst, dpitch, src, wOffset, hOffset, width, height, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy2DArrayToArray(cudaArray_t  dst, size_t  wOffsetDst, size_t  hOffsetDst, cudaArray_const_t  src, size_t  wOffsetSrc, size_t  hOffsetSrc, size_t  width, size_t  height, enum cudaMemcpyKind  kind)
@@ -4550,7 +4615,7 @@ cudaError_t cudaMemcpy2DArrayToArray(cudaArray_t  dst, size_t  wOffsetDst, size_
 	printf("cudaMemcpy2DArrayToArray hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy2DArrayToArray(dst, wOffsetDst, hOffsetDst, src, wOffsetSrc, hOffsetSrc, width, height, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyToSymbol(const void * symbol, const void * src, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
@@ -4558,7 +4623,7 @@ cudaError_t cudaMemcpyToSymbol(const void * symbol, const void * src, size_t  co
 	printf("cudaMemcpyToSymbol hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyToSymbol(symbol, src, count, offset, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyFromSymbol(void * dst, const void * symbol, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
@@ -4566,7 +4631,7 @@ cudaError_t cudaMemcpyFromSymbol(void * dst, const void * symbol, size_t  count,
 	printf("cudaMemcpyFromSymbol hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyFromSymbol(dst, symbol, count, offset, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
@@ -4574,7 +4639,7 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
 	printf("cudaMemcpyAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyAsync(dst, src, count, kind, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyPeerAsync(void * dst, int  dstDevice, const void * src, int  srcDevice, size_t  count, cudaStream_t  stream)
@@ -4582,7 +4647,7 @@ cudaError_t cudaMemcpyPeerAsync(void * dst, int  dstDevice, const void * src, in
 	printf("cudaMemcpyPeerAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyPeerAsync(dst, dstDevice, src, srcDevice, count, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy2DAsync(void * dst, size_t  dpitch, const void * src, size_t  spitch, size_t  width, size_t  height, enum cudaMemcpyKind  kind, cudaStream_t  stream)
@@ -4590,7 +4655,7 @@ cudaError_t cudaMemcpy2DAsync(void * dst, size_t  dpitch, const void * src, size
 	printf("cudaMemcpy2DAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy2DAsync(dst, dpitch, src, spitch, width, height, kind, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy2DToArrayAsync(cudaArray_t  dst, size_t  wOffset, size_t  hOffset, const void * src, size_t  spitch, size_t  width, size_t  height, enum cudaMemcpyKind  kind, cudaStream_t  stream)
@@ -4598,7 +4663,7 @@ cudaError_t cudaMemcpy2DToArrayAsync(cudaArray_t  dst, size_t  wOffset, size_t  
 	printf("cudaMemcpy2DToArrayAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy2DToArrayAsync(dst, wOffset, hOffset, src, spitch, width, height, kind, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpy2DFromArrayAsync(void * dst, size_t  dpitch, cudaArray_const_t  src, size_t  wOffset, size_t  hOffset, size_t  width, size_t  height, enum cudaMemcpyKind  kind, cudaStream_t  stream)
@@ -4606,7 +4671,7 @@ cudaError_t cudaMemcpy2DFromArrayAsync(void * dst, size_t  dpitch, cudaArray_con
 	printf("cudaMemcpy2DFromArrayAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpy2DFromArrayAsync(dst, dpitch, src, wOffset, hOffset, width, height, kind, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyToSymbolAsync(const void * symbol, const void * src, size_t  count, size_t  offset, enum cudaMemcpyKind  kind, cudaStream_t  stream)
@@ -4614,7 +4679,7 @@ cudaError_t cudaMemcpyToSymbolAsync(const void * symbol, const void * src, size_
 	printf("cudaMemcpyToSymbolAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyToSymbolAsync(symbol, src, count, offset, kind, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyFromSymbolAsync(void * dst, const void * symbol, size_t  count, size_t  offset, enum cudaMemcpyKind  kind, cudaStream_t  stream)
@@ -4622,7 +4687,7 @@ cudaError_t cudaMemcpyFromSymbolAsync(void * dst, const void * symbol, size_t  c
 	printf("cudaMemcpyFromSymbolAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyFromSymbolAsync(dst, symbol, count, offset, kind, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
@@ -4630,7 +4695,7 @@ cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
 	printf("cudaMemset hooked\n");
 	cudaError_t res = 
 		lcudaMemset(devPtr, value, count);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemset2D(void * devPtr, size_t  pitch, int  value, size_t  width, size_t  height)
@@ -4638,7 +4703,7 @@ cudaError_t cudaMemset2D(void * devPtr, size_t  pitch, int  value, size_t  width
 	printf("cudaMemset2D hooked\n");
 	cudaError_t res = 
 		lcudaMemset2D(devPtr, pitch, value, width, height);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemset3D(struct cudaPitchedPtr  pitchedDevPtr, int  value, struct cudaExtent  extent)
@@ -4646,7 +4711,7 @@ cudaError_t cudaMemset3D(struct cudaPitchedPtr  pitchedDevPtr, int  value, struc
 	printf("cudaMemset3D hooked\n");
 	cudaError_t res = 
 		lcudaMemset3D(pitchedDevPtr, value, extent);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream_t  stream)
@@ -4654,7 +4719,7 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
 	printf("cudaMemsetAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemsetAsync(devPtr, value, count, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemset2DAsync(void * devPtr, size_t  pitch, int  value, size_t  width, size_t  height, cudaStream_t  stream)
@@ -4662,7 +4727,7 @@ cudaError_t cudaMemset2DAsync(void * devPtr, size_t  pitch, int  value, size_t  
 	printf("cudaMemset2DAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemset2DAsync(devPtr, pitch, value, width, height, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemset3DAsync(struct cudaPitchedPtr  pitchedDevPtr, int  value, struct cudaExtent  extent, cudaStream_t  stream)
@@ -4670,7 +4735,7 @@ cudaError_t cudaMemset3DAsync(struct cudaPitchedPtr  pitchedDevPtr, int  value, 
 	printf("cudaMemset3DAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemset3DAsync(pitchedDevPtr, value, extent, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetSymbolAddress(void ** devPtr, const void * symbol)
@@ -4678,7 +4743,7 @@ cudaError_t cudaGetSymbolAddress(void ** devPtr, const void * symbol)
 	printf("cudaGetSymbolAddress hooked\n");
 	cudaError_t res = 
 		lcudaGetSymbolAddress(devPtr, symbol);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetSymbolSize(size_t * size, const void * symbol)
@@ -4686,7 +4751,7 @@ cudaError_t cudaGetSymbolSize(size_t * size, const void * symbol)
 	printf("cudaGetSymbolSize hooked\n");
 	cudaError_t res = 
 		lcudaGetSymbolSize(size, symbol);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPrefetchAsync(const void * devPtr, size_t  count, int  dstDevice, cudaStream_t  stream)
@@ -4694,7 +4759,7 @@ cudaError_t cudaMemPrefetchAsync(const void * devPtr, size_t  count, int  dstDev
 	printf("cudaMemPrefetchAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemPrefetchAsync(devPtr, count, dstDevice, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemAdvise(const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, int  device)
@@ -4702,7 +4767,7 @@ cudaError_t cudaMemAdvise(const void * devPtr, size_t  count, enum cudaMemoryAdv
 	printf("cudaMemAdvise hooked\n");
 	cudaError_t res = 
 		lcudaMemAdvise(devPtr, count, advice, device);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemRangeGetAttribute(void * data, size_t  dataSize, enum cudaMemRangeAttribute  attribute, const void * devPtr, size_t  count)
@@ -4710,7 +4775,7 @@ cudaError_t cudaMemRangeGetAttribute(void * data, size_t  dataSize, enum cudaMem
 	printf("cudaMemRangeGetAttribute hooked\n");
 	cudaError_t res = 
 		lcudaMemRangeGetAttribute(data, dataSize, attribute, devPtr, count);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemRangeGetAttributes(void ** data, size_t * dataSizes, enum cudaMemRangeAttribute * attributes, size_t  numAttributes, const void * devPtr, size_t  count)
@@ -4718,7 +4783,7 @@ cudaError_t cudaMemRangeGetAttributes(void ** data, size_t * dataSizes, enum cud
 	printf("cudaMemRangeGetAttributes hooked\n");
 	cudaError_t res = 
 		lcudaMemRangeGetAttributes(data, dataSizes, attributes, numAttributes, devPtr, count);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyToArray(cudaArray_t  dst, size_t  wOffset, size_t  hOffset, const void * src, size_t  count, enum cudaMemcpyKind  kind)
@@ -4726,7 +4791,7 @@ cudaError_t cudaMemcpyToArray(cudaArray_t  dst, size_t  wOffset, size_t  hOffset
 	printf("cudaMemcpyToArray hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyToArray(dst, wOffset, hOffset, src, count, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyFromArray(void * dst, cudaArray_const_t  src, size_t  wOffset, size_t  hOffset, size_t  count, enum cudaMemcpyKind  kind)
@@ -4734,7 +4799,7 @@ cudaError_t cudaMemcpyFromArray(void * dst, cudaArray_const_t  src, size_t  wOff
 	printf("cudaMemcpyFromArray hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyFromArray(dst, src, wOffset, hOffset, count, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyArrayToArray(cudaArray_t  dst, size_t  wOffsetDst, size_t  hOffsetDst, cudaArray_const_t  src, size_t  wOffsetSrc, size_t  hOffsetSrc, size_t  count, enum cudaMemcpyKind  kind)
@@ -4742,7 +4807,7 @@ cudaError_t cudaMemcpyArrayToArray(cudaArray_t  dst, size_t  wOffsetDst, size_t 
 	printf("cudaMemcpyArrayToArray hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyArrayToArray(dst, wOffsetDst, hOffsetDst, src, wOffsetSrc, hOffsetSrc, count, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyToArrayAsync(cudaArray_t  dst, size_t  wOffset, size_t  hOffset, const void * src, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
@@ -4750,7 +4815,7 @@ cudaError_t cudaMemcpyToArrayAsync(cudaArray_t  dst, size_t  wOffset, size_t  hO
 	printf("cudaMemcpyToArrayAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyToArrayAsync(dst, wOffset, hOffset, src, count, kind, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemcpyFromArrayAsync(void * dst, cudaArray_const_t  src, size_t  wOffset, size_t  hOffset, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
@@ -4758,7 +4823,7 @@ cudaError_t cudaMemcpyFromArrayAsync(void * dst, cudaArray_const_t  src, size_t 
 	printf("cudaMemcpyFromArrayAsync hooked\n");
 	cudaError_t res = 
 		lcudaMemcpyFromArrayAsync(dst, src, wOffset, hOffset, count, kind, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMallocAsync(void ** devPtr, size_t  size, cudaStream_t  hStream)
@@ -4766,7 +4831,7 @@ cudaError_t cudaMallocAsync(void ** devPtr, size_t  size, cudaStream_t  hStream)
 	printf("cudaMallocAsync hooked\n");
 	cudaError_t res = 
 		lcudaMallocAsync(devPtr, size, hStream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaFreeAsync(void * devPtr, cudaStream_t  hStream)
@@ -4774,7 +4839,7 @@ cudaError_t cudaFreeAsync(void * devPtr, cudaStream_t  hStream)
 	printf("cudaFreeAsync hooked\n");
 	cudaError_t res = 
 		lcudaFreeAsync(devPtr, hStream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolTrimTo(cudaMemPool_t  memPool, size_t  minBytesToKeep)
@@ -4782,7 +4847,7 @@ cudaError_t cudaMemPoolTrimTo(cudaMemPool_t  memPool, size_t  minBytesToKeep)
 	printf("cudaMemPoolTrimTo hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolTrimTo(memPool, minBytesToKeep);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolSetAttribute(cudaMemPool_t  memPool, enum cudaMemPoolAttr  attr, void * value)
@@ -4790,7 +4855,7 @@ cudaError_t cudaMemPoolSetAttribute(cudaMemPool_t  memPool, enum cudaMemPoolAttr
 	printf("cudaMemPoolSetAttribute hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolSetAttribute(memPool, attr, value);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolGetAttribute(cudaMemPool_t  memPool, enum cudaMemPoolAttr  attr, void * value)
@@ -4798,7 +4863,7 @@ cudaError_t cudaMemPoolGetAttribute(cudaMemPool_t  memPool, enum cudaMemPoolAttr
 	printf("cudaMemPoolGetAttribute hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolGetAttribute(memPool, attr, value);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolSetAccess(cudaMemPool_t  memPool, const struct cudaMemAccessDesc * descList, size_t  count)
@@ -4806,7 +4871,7 @@ cudaError_t cudaMemPoolSetAccess(cudaMemPool_t  memPool, const struct cudaMemAcc
 	printf("cudaMemPoolSetAccess hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolSetAccess(memPool, descList, count);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolGetAccess(enum cudaMemAccessFlags * flags, cudaMemPool_t  memPool, struct cudaMemLocation * location)
@@ -4814,7 +4879,7 @@ cudaError_t cudaMemPoolGetAccess(enum cudaMemAccessFlags * flags, cudaMemPool_t 
 	printf("cudaMemPoolGetAccess hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolGetAccess(flags, memPool, location);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolCreate(cudaMemPool_t * memPool, const struct cudaMemPoolProps * poolProps)
@@ -4822,7 +4887,7 @@ cudaError_t cudaMemPoolCreate(cudaMemPool_t * memPool, const struct cudaMemPoolP
 	printf("cudaMemPoolCreate hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolCreate(memPool, poolProps);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolDestroy(cudaMemPool_t  memPool)
@@ -4830,7 +4895,7 @@ cudaError_t cudaMemPoolDestroy(cudaMemPool_t  memPool)
 	printf("cudaMemPoolDestroy hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolDestroy(memPool);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMallocFromPoolAsync(void ** ptr, size_t  size, cudaMemPool_t  memPool, cudaStream_t  stream)
@@ -4838,7 +4903,7 @@ cudaError_t cudaMallocFromPoolAsync(void ** ptr, size_t  size, cudaMemPool_t  me
 	printf("cudaMallocFromPoolAsync hooked\n");
 	cudaError_t res = 
 		lcudaMallocFromPoolAsync(ptr, size, memPool, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolExportToShareableHandle(void * shareableHandle, cudaMemPool_t  memPool, enum cudaMemAllocationHandleType  handleType, unsigned int  flags)
@@ -4846,7 +4911,7 @@ cudaError_t cudaMemPoolExportToShareableHandle(void * shareableHandle, cudaMemPo
 	printf("cudaMemPoolExportToShareableHandle hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolExportToShareableHandle(shareableHandle, memPool, handleType, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolImportFromShareableHandle(cudaMemPool_t * memPool, void * shareableHandle, enum cudaMemAllocationHandleType  handleType, unsigned int  flags)
@@ -4854,7 +4919,7 @@ cudaError_t cudaMemPoolImportFromShareableHandle(cudaMemPool_t * memPool, void *
 	printf("cudaMemPoolImportFromShareableHandle hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolImportFromShareableHandle(memPool, shareableHandle, handleType, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolExportPointer(struct cudaMemPoolPtrExportData * exportData, void * ptr)
@@ -4862,7 +4927,7 @@ cudaError_t cudaMemPoolExportPointer(struct cudaMemPoolPtrExportData * exportDat
 	printf("cudaMemPoolExportPointer hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolExportPointer(exportData, ptr);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaMemPoolImportPointer(void ** ptr, cudaMemPool_t  memPool, struct cudaMemPoolPtrExportData * exportData)
@@ -4870,7 +4935,7 @@ cudaError_t cudaMemPoolImportPointer(void ** ptr, cudaMemPool_t  memPool, struct
 	printf("cudaMemPoolImportPointer hooked\n");
 	cudaError_t res = 
 		lcudaMemPoolImportPointer(ptr, memPool, exportData);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaPointerGetAttributes(struct cudaPointerAttributes * attributes, const void * ptr)
@@ -4878,7 +4943,7 @@ cudaError_t cudaPointerGetAttributes(struct cudaPointerAttributes * attributes, 
 	printf("cudaPointerGetAttributes hooked\n");
 	cudaError_t res = 
 		lcudaPointerGetAttributes(attributes, ptr);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceCanAccessPeer(int * canAccessPeer, int  device, int  peerDevice)
@@ -4886,7 +4951,7 @@ cudaError_t cudaDeviceCanAccessPeer(int * canAccessPeer, int  device, int  peerD
 	printf("cudaDeviceCanAccessPeer hooked\n");
 	cudaError_t res = 
 		lcudaDeviceCanAccessPeer(canAccessPeer, device, peerDevice);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceEnablePeerAccess(int  peerDevice, unsigned int  flags)
@@ -4894,7 +4959,7 @@ cudaError_t cudaDeviceEnablePeerAccess(int  peerDevice, unsigned int  flags)
 	printf("cudaDeviceEnablePeerAccess hooked\n");
 	cudaError_t res = 
 		lcudaDeviceEnablePeerAccess(peerDevice, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceDisablePeerAccess(int  peerDevice)
@@ -4902,7 +4967,7 @@ cudaError_t cudaDeviceDisablePeerAccess(int  peerDevice)
 	printf("cudaDeviceDisablePeerAccess hooked\n");
 	cudaError_t res = 
 		lcudaDeviceDisablePeerAccess(peerDevice);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphicsUnregisterResource(cudaGraphicsResource_t  resource)
@@ -4910,7 +4975,7 @@ cudaError_t cudaGraphicsUnregisterResource(cudaGraphicsResource_t  resource)
 	printf("cudaGraphicsUnregisterResource hooked\n");
 	cudaError_t res = 
 		lcudaGraphicsUnregisterResource(resource);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphicsResourceSetMapFlags(cudaGraphicsResource_t  resource, unsigned int  flags)
@@ -4918,7 +4983,7 @@ cudaError_t cudaGraphicsResourceSetMapFlags(cudaGraphicsResource_t  resource, un
 	printf("cudaGraphicsResourceSetMapFlags hooked\n");
 	cudaError_t res = 
 		lcudaGraphicsResourceSetMapFlags(resource, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphicsMapResources(int  count, cudaGraphicsResource_t * resources, cudaStream_t  stream)
@@ -4926,7 +4991,7 @@ cudaError_t cudaGraphicsMapResources(int  count, cudaGraphicsResource_t * resour
 	printf("cudaGraphicsMapResources hooked\n");
 	cudaError_t res = 
 		lcudaGraphicsMapResources(count, resources, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphicsUnmapResources(int  count, cudaGraphicsResource_t * resources, cudaStream_t  stream)
@@ -4934,7 +4999,7 @@ cudaError_t cudaGraphicsUnmapResources(int  count, cudaGraphicsResource_t * reso
 	printf("cudaGraphicsUnmapResources hooked\n");
 	cudaError_t res = 
 		lcudaGraphicsUnmapResources(count, resources, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphicsResourceGetMappedPointer(void ** devPtr, size_t * size, cudaGraphicsResource_t  resource)
@@ -4942,7 +5007,7 @@ cudaError_t cudaGraphicsResourceGetMappedPointer(void ** devPtr, size_t * size, 
 	printf("cudaGraphicsResourceGetMappedPointer hooked\n");
 	cudaError_t res = 
 		lcudaGraphicsResourceGetMappedPointer(devPtr, size, resource);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphicsSubResourceGetMappedArray(cudaArray_t * array, cudaGraphicsResource_t  resource, unsigned int  arrayIndex, unsigned int  mipLevel)
@@ -4950,7 +5015,7 @@ cudaError_t cudaGraphicsSubResourceGetMappedArray(cudaArray_t * array, cudaGraph
 	printf("cudaGraphicsSubResourceGetMappedArray hooked\n");
 	cudaError_t res = 
 		lcudaGraphicsSubResourceGetMappedArray(array, resource, arrayIndex, mipLevel);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphicsResourceGetMappedMipmappedArray(cudaMipmappedArray_t * mipmappedArray, cudaGraphicsResource_t  resource)
@@ -4958,7 +5023,7 @@ cudaError_t cudaGraphicsResourceGetMappedMipmappedArray(cudaMipmappedArray_t * m
 	printf("cudaGraphicsResourceGetMappedMipmappedArray hooked\n");
 	cudaError_t res = 
 		lcudaGraphicsResourceGetMappedMipmappedArray(mipmappedArray, resource);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaBindTexture(size_t * offset, const struct textureReference * texref, const void * devPtr, const struct cudaChannelFormatDesc * desc, size_t  size)
@@ -4966,7 +5031,7 @@ cudaError_t cudaBindTexture(size_t * offset, const struct textureReference * tex
 	printf("cudaBindTexture hooked\n");
 	cudaError_t res = 
 		lcudaBindTexture(offset, texref, devPtr, desc, size);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaBindTexture2D(size_t * offset, const struct textureReference * texref, const void * devPtr, const struct cudaChannelFormatDesc * desc, size_t  width, size_t  height, size_t  pitch)
@@ -4974,7 +5039,7 @@ cudaError_t cudaBindTexture2D(size_t * offset, const struct textureReference * t
 	printf("cudaBindTexture2D hooked\n");
 	cudaError_t res = 
 		lcudaBindTexture2D(offset, texref, devPtr, desc, width, height, pitch);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaBindTextureToArray(const struct textureReference * texref, cudaArray_const_t  array, const struct cudaChannelFormatDesc * desc)
@@ -4982,7 +5047,7 @@ cudaError_t cudaBindTextureToArray(const struct textureReference * texref, cudaA
 	printf("cudaBindTextureToArray hooked\n");
 	cudaError_t res = 
 		lcudaBindTextureToArray(texref, array, desc);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaBindTextureToMipmappedArray(const struct textureReference * texref, cudaMipmappedArray_const_t  mipmappedArray, const struct cudaChannelFormatDesc * desc)
@@ -4990,7 +5055,7 @@ cudaError_t cudaBindTextureToMipmappedArray(const struct textureReference * texr
 	printf("cudaBindTextureToMipmappedArray hooked\n");
 	cudaError_t res = 
 		lcudaBindTextureToMipmappedArray(texref, mipmappedArray, desc);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaUnbindTexture(const struct textureReference * texref)
@@ -4998,7 +5063,7 @@ cudaError_t cudaUnbindTexture(const struct textureReference * texref)
 	printf("cudaUnbindTexture hooked\n");
 	cudaError_t res = 
 		lcudaUnbindTexture(texref);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetTextureAlignmentOffset(size_t * offset, const struct textureReference * texref)
@@ -5006,7 +5071,7 @@ cudaError_t cudaGetTextureAlignmentOffset(size_t * offset, const struct textureR
 	printf("cudaGetTextureAlignmentOffset hooked\n");
 	cudaError_t res = 
 		lcudaGetTextureAlignmentOffset(offset, texref);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetTextureReference(const struct textureReference ** texref, const void * symbol)
@@ -5014,7 +5079,7 @@ cudaError_t cudaGetTextureReference(const struct textureReference ** texref, con
 	printf("cudaGetTextureReference hooked\n");
 	cudaError_t res = 
 		lcudaGetTextureReference(texref, symbol);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaBindSurfaceToArray(const struct surfaceReference * surfref, cudaArray_const_t  array, const struct cudaChannelFormatDesc * desc)
@@ -5022,7 +5087,7 @@ cudaError_t cudaBindSurfaceToArray(const struct surfaceReference * surfref, cuda
 	printf("cudaBindSurfaceToArray hooked\n");
 	cudaError_t res = 
 		lcudaBindSurfaceToArray(surfref, array, desc);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetSurfaceReference(const struct surfaceReference ** surfref, const void * symbol)
@@ -5030,7 +5095,7 @@ cudaError_t cudaGetSurfaceReference(const struct surfaceReference ** surfref, co
 	printf("cudaGetSurfaceReference hooked\n");
 	cudaError_t res = 
 		lcudaGetSurfaceReference(surfref, symbol);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc * desc, cudaArray_const_t  array)
@@ -5038,7 +5103,7 @@ cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc * desc, cudaArray_co
 	printf("cudaGetChannelDesc hooked\n");
 	cudaError_t res = 
 		lcudaGetChannelDesc(desc, array);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 struct cudaChannelFormatDesc cudaCreateChannelDesc(int  x, int  y, int  z, int  w, enum cudaChannelFormatKind  f)
@@ -5054,7 +5119,7 @@ cudaError_t cudaCreateTextureObject(cudaTextureObject_t * pTexObject, const stru
 	printf("cudaCreateTextureObject hooked\n");
 	cudaError_t res = 
 		lcudaCreateTextureObject(pTexObject, pResDesc, pTexDesc, pResViewDesc);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDestroyTextureObject(cudaTextureObject_t  texObject)
@@ -5062,7 +5127,7 @@ cudaError_t cudaDestroyTextureObject(cudaTextureObject_t  texObject)
 	printf("cudaDestroyTextureObject hooked\n");
 	cudaError_t res = 
 		lcudaDestroyTextureObject(texObject);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetTextureObjectResourceDesc(struct cudaResourceDesc * pResDesc, cudaTextureObject_t  texObject)
@@ -5070,7 +5135,7 @@ cudaError_t cudaGetTextureObjectResourceDesc(struct cudaResourceDesc * pResDesc,
 	printf("cudaGetTextureObjectResourceDesc hooked\n");
 	cudaError_t res = 
 		lcudaGetTextureObjectResourceDesc(pResDesc, texObject);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetTextureObjectTextureDesc(struct cudaTextureDesc * pTexDesc, cudaTextureObject_t  texObject)
@@ -5078,7 +5143,7 @@ cudaError_t cudaGetTextureObjectTextureDesc(struct cudaTextureDesc * pTexDesc, c
 	printf("cudaGetTextureObjectTextureDesc hooked\n");
 	cudaError_t res = 
 		lcudaGetTextureObjectTextureDesc(pTexDesc, texObject);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetTextureObjectResourceViewDesc(struct cudaResourceViewDesc * pResViewDesc, cudaTextureObject_t  texObject)
@@ -5086,7 +5151,7 @@ cudaError_t cudaGetTextureObjectResourceViewDesc(struct cudaResourceViewDesc * p
 	printf("cudaGetTextureObjectResourceViewDesc hooked\n");
 	cudaError_t res = 
 		lcudaGetTextureObjectResourceViewDesc(pResViewDesc, texObject);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaCreateSurfaceObject(cudaSurfaceObject_t * pSurfObject, const struct cudaResourceDesc * pResDesc)
@@ -5094,7 +5159,7 @@ cudaError_t cudaCreateSurfaceObject(cudaSurfaceObject_t * pSurfObject, const str
 	printf("cudaCreateSurfaceObject hooked\n");
 	cudaError_t res = 
 		lcudaCreateSurfaceObject(pSurfObject, pResDesc);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDestroySurfaceObject(cudaSurfaceObject_t  surfObject)
@@ -5102,7 +5167,7 @@ cudaError_t cudaDestroySurfaceObject(cudaSurfaceObject_t  surfObject)
 	printf("cudaDestroySurfaceObject hooked\n");
 	cudaError_t res = 
 		lcudaDestroySurfaceObject(surfObject);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetSurfaceObjectResourceDesc(struct cudaResourceDesc * pResDesc, cudaSurfaceObject_t  surfObject)
@@ -5110,7 +5175,7 @@ cudaError_t cudaGetSurfaceObjectResourceDesc(struct cudaResourceDesc * pResDesc,
 	printf("cudaGetSurfaceObjectResourceDesc hooked\n");
 	cudaError_t res = 
 		lcudaGetSurfaceObjectResourceDesc(pResDesc, surfObject);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDriverGetVersion(int * driverVersion)
@@ -5118,7 +5183,7 @@ cudaError_t cudaDriverGetVersion(int * driverVersion)
 	printf("cudaDriverGetVersion hooked\n");
 	cudaError_t res = 
 		lcudaDriverGetVersion(driverVersion);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaRuntimeGetVersion(int * runtimeVersion)
@@ -5126,7 +5191,7 @@ cudaError_t cudaRuntimeGetVersion(int * runtimeVersion)
 	printf("cudaRuntimeGetVersion hooked\n");
 	cudaError_t res = 
 		lcudaRuntimeGetVersion(runtimeVersion);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
@@ -5147,6 +5212,7 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 
     auto res = (cudaGraphCreateResponse *) dat;
     *pGraph = res->pGraph;
+    CHECK_CUDA_ERROR(res->err);
     return res->err;
 }
 
@@ -5155,7 +5221,7 @@ cudaError_t cudaGraphAddKernelNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  gr
 	printf("cudaGraphAddKernelNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddKernelNode(pGraphNode, graph, pDependencies, numDependencies, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphKernelNodeGetParams(cudaGraphNode_t  node, struct cudaKernelNodeParams * pNodeParams)
@@ -5163,7 +5229,7 @@ cudaError_t cudaGraphKernelNodeGetParams(cudaGraphNode_t  node, struct cudaKerne
 	printf("cudaGraphKernelNodeGetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphKernelNodeGetParams(node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphKernelNodeSetParams(cudaGraphNode_t  node, const struct cudaKernelNodeParams * pNodeParams)
@@ -5171,7 +5237,7 @@ cudaError_t cudaGraphKernelNodeSetParams(cudaGraphNode_t  node, const struct cud
 	printf("cudaGraphKernelNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphKernelNodeSetParams(node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphKernelNodeCopyAttributes(cudaGraphNode_t  hSrc, cudaGraphNode_t  hDst)
@@ -5179,7 +5245,7 @@ cudaError_t cudaGraphKernelNodeCopyAttributes(cudaGraphNode_t  hSrc, cudaGraphNo
 	printf("cudaGraphKernelNodeCopyAttributes hooked\n");
 	cudaError_t res = 
 		lcudaGraphKernelNodeCopyAttributes(hSrc, hDst);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphKernelNodeGetAttribute(cudaGraphNode_t  hNode, enum cudaKernelNodeAttrID  attr, union cudaKernelNodeAttrValue * value_out)
@@ -5187,7 +5253,7 @@ cudaError_t cudaGraphKernelNodeGetAttribute(cudaGraphNode_t  hNode, enum cudaKer
 	printf("cudaGraphKernelNodeGetAttribute hooked\n");
 	cudaError_t res = 
 		lcudaGraphKernelNodeGetAttribute(hNode, attr, value_out);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphKernelNodeSetAttribute(cudaGraphNode_t  hNode, enum cudaKernelNodeAttrID  attr, const union cudaKernelNodeAttrValue * value)
@@ -5195,7 +5261,7 @@ cudaError_t cudaGraphKernelNodeSetAttribute(cudaGraphNode_t  hNode, enum cudaKer
 	printf("cudaGraphKernelNodeSetAttribute hooked\n");
 	cudaError_t res = 
 		lcudaGraphKernelNodeSetAttribute(hNode, attr, value);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddMemcpyNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaMemcpy3DParms * pCopyParams)
@@ -5203,7 +5269,7 @@ cudaError_t cudaGraphAddMemcpyNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  gr
 	printf("cudaGraphAddMemcpyNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddMemcpyNode(pGraphNode, graph, pDependencies, numDependencies, pCopyParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddMemcpyNodeToSymbol(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const void*  symbol, const void*  src, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
@@ -5211,7 +5277,7 @@ cudaError_t cudaGraphAddMemcpyNodeToSymbol(cudaGraphNode_t * pGraphNode, cudaGra
 	printf("cudaGraphAddMemcpyNodeToSymbol hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddMemcpyNodeToSymbol(pGraphNode, graph, pDependencies, numDependencies, symbol, src, count, offset, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddMemcpyNodeFromSymbol(cudaGraphNode_t*  pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t*  pDependencies, size_t  numDependencies, void*  dst, const void*  symbol, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
@@ -5219,7 +5285,7 @@ cudaError_t cudaGraphAddMemcpyNodeFromSymbol(cudaGraphNode_t*  pGraphNode, cudaG
 	printf("cudaGraphAddMemcpyNodeFromSymbol hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddMemcpyNodeFromSymbol(pGraphNode, graph, pDependencies, numDependencies, dst, symbol, count, offset, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddMemcpyNode1D(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, void*  dst, const void*  src, size_t  count, enum cudaMemcpyKind  kind)
@@ -5227,7 +5293,7 @@ cudaError_t cudaGraphAddMemcpyNode1D(cudaGraphNode_t * pGraphNode, cudaGraph_t  
 	printf("cudaGraphAddMemcpyNode1D hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddMemcpyNode1D(pGraphNode, graph, pDependencies, numDependencies, dst, src, count, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphMemcpyNodeGetParams(cudaGraphNode_t  node, struct cudaMemcpy3DParms * pNodeParams)
@@ -5235,7 +5301,7 @@ cudaError_t cudaGraphMemcpyNodeGetParams(cudaGraphNode_t  node, struct cudaMemcp
 	printf("cudaGraphMemcpyNodeGetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphMemcpyNodeGetParams(node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphMemcpyNodeSetParams(cudaGraphNode_t  node, const struct cudaMemcpy3DParms * pNodeParams)
@@ -5243,7 +5309,7 @@ cudaError_t cudaGraphMemcpyNodeSetParams(cudaGraphNode_t  node, const struct cud
 	printf("cudaGraphMemcpyNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphMemcpyNodeSetParams(node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphMemcpyNodeSetParamsToSymbol(cudaGraphNode_t  node, const void*  symbol, const void*  src, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
@@ -5251,7 +5317,7 @@ cudaError_t cudaGraphMemcpyNodeSetParamsToSymbol(cudaGraphNode_t  node, const vo
 	printf("cudaGraphMemcpyNodeSetParamsToSymbol hooked\n");
 	cudaError_t res = 
 		lcudaGraphMemcpyNodeSetParamsToSymbol(node, symbol, src, count, offset, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphMemcpyNodeSetParamsFromSymbol(cudaGraphNode_t  node, void*  dst, const void*  symbol, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
@@ -5259,7 +5325,7 @@ cudaError_t cudaGraphMemcpyNodeSetParamsFromSymbol(cudaGraphNode_t  node, void* 
 	printf("cudaGraphMemcpyNodeSetParamsFromSymbol hooked\n");
 	cudaError_t res = 
 		lcudaGraphMemcpyNodeSetParamsFromSymbol(node, dst, symbol, count, offset, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphMemcpyNodeSetParams1D(cudaGraphNode_t  node, void*  dst, const void*  src, size_t  count, enum cudaMemcpyKind  kind)
@@ -5267,7 +5333,7 @@ cudaError_t cudaGraphMemcpyNodeSetParams1D(cudaGraphNode_t  node, void*  dst, co
 	printf("cudaGraphMemcpyNodeSetParams1D hooked\n");
 	cudaError_t res = 
 		lcudaGraphMemcpyNodeSetParams1D(node, dst, src, count, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddMemsetNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaMemsetParams * pMemsetParams)
@@ -5275,7 +5341,7 @@ cudaError_t cudaGraphAddMemsetNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  gr
 	printf("cudaGraphAddMemsetNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddMemsetNode(pGraphNode, graph, pDependencies, numDependencies, pMemsetParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphMemsetNodeGetParams(cudaGraphNode_t  node, struct cudaMemsetParams * pNodeParams)
@@ -5283,7 +5349,7 @@ cudaError_t cudaGraphMemsetNodeGetParams(cudaGraphNode_t  node, struct cudaMemse
 	printf("cudaGraphMemsetNodeGetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphMemsetNodeGetParams(node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphMemsetNodeSetParams(cudaGraphNode_t  node, const struct cudaMemsetParams * pNodeParams)
@@ -5291,7 +5357,7 @@ cudaError_t cudaGraphMemsetNodeSetParams(cudaGraphNode_t  node, const struct cud
 	printf("cudaGraphMemsetNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphMemsetNodeSetParams(node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddHostNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaHostNodeParams * pNodeParams)
@@ -5299,7 +5365,7 @@ cudaError_t cudaGraphAddHostNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  grap
 	printf("cudaGraphAddHostNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddHostNode(pGraphNode, graph, pDependencies, numDependencies, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphHostNodeGetParams(cudaGraphNode_t  node, struct cudaHostNodeParams * pNodeParams)
@@ -5307,7 +5373,7 @@ cudaError_t cudaGraphHostNodeGetParams(cudaGraphNode_t  node, struct cudaHostNod
 	printf("cudaGraphHostNodeGetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphHostNodeGetParams(node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphHostNodeSetParams(cudaGraphNode_t  node, const struct cudaHostNodeParams * pNodeParams)
@@ -5315,7 +5381,7 @@ cudaError_t cudaGraphHostNodeSetParams(cudaGraphNode_t  node, const struct cudaH
 	printf("cudaGraphHostNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphHostNodeSetParams(node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddChildGraphNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, cudaGraph_t  childGraph)
@@ -5323,7 +5389,7 @@ cudaError_t cudaGraphAddChildGraphNode(cudaGraphNode_t * pGraphNode, cudaGraph_t
 	printf("cudaGraphAddChildGraphNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddChildGraphNode(pGraphNode, graph, pDependencies, numDependencies, childGraph);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphChildGraphNodeGetGraph(cudaGraphNode_t  node, cudaGraph_t * pGraph)
@@ -5331,7 +5397,7 @@ cudaError_t cudaGraphChildGraphNodeGetGraph(cudaGraphNode_t  node, cudaGraph_t *
 	printf("cudaGraphChildGraphNodeGetGraph hooked\n");
 	cudaError_t res = 
 		lcudaGraphChildGraphNodeGetGraph(node, pGraph);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddEmptyNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies)
@@ -5339,7 +5405,7 @@ cudaError_t cudaGraphAddEmptyNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  gra
 	printf("cudaGraphAddEmptyNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddEmptyNode(pGraphNode, graph, pDependencies, numDependencies);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddEventRecordNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, cudaEvent_t  event)
@@ -5347,7 +5413,7 @@ cudaError_t cudaGraphAddEventRecordNode(cudaGraphNode_t * pGraphNode, cudaGraph_
 	printf("cudaGraphAddEventRecordNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddEventRecordNode(pGraphNode, graph, pDependencies, numDependencies, event);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphEventRecordNodeGetEvent(cudaGraphNode_t  node, cudaEvent_t * event_out)
@@ -5355,7 +5421,7 @@ cudaError_t cudaGraphEventRecordNodeGetEvent(cudaGraphNode_t  node, cudaEvent_t 
 	printf("cudaGraphEventRecordNodeGetEvent hooked\n");
 	cudaError_t res = 
 		lcudaGraphEventRecordNodeGetEvent(node, event_out);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphEventRecordNodeSetEvent(cudaGraphNode_t  node, cudaEvent_t  event)
@@ -5363,7 +5429,7 @@ cudaError_t cudaGraphEventRecordNodeSetEvent(cudaGraphNode_t  node, cudaEvent_t 
 	printf("cudaGraphEventRecordNodeSetEvent hooked\n");
 	cudaError_t res = 
 		lcudaGraphEventRecordNodeSetEvent(node, event);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddEventWaitNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, cudaEvent_t  event)
@@ -5371,7 +5437,7 @@ cudaError_t cudaGraphAddEventWaitNode(cudaGraphNode_t * pGraphNode, cudaGraph_t 
 	printf("cudaGraphAddEventWaitNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddEventWaitNode(pGraphNode, graph, pDependencies, numDependencies, event);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphEventWaitNodeGetEvent(cudaGraphNode_t  node, cudaEvent_t * event_out)
@@ -5379,7 +5445,7 @@ cudaError_t cudaGraphEventWaitNodeGetEvent(cudaGraphNode_t  node, cudaEvent_t * 
 	printf("cudaGraphEventWaitNodeGetEvent hooked\n");
 	cudaError_t res = 
 		lcudaGraphEventWaitNodeGetEvent(node, event_out);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphEventWaitNodeSetEvent(cudaGraphNode_t  node, cudaEvent_t  event)
@@ -5387,7 +5453,7 @@ cudaError_t cudaGraphEventWaitNodeSetEvent(cudaGraphNode_t  node, cudaEvent_t  e
 	printf("cudaGraphEventWaitNodeSetEvent hooked\n");
 	cudaError_t res = 
 		lcudaGraphEventWaitNodeSetEvent(node, event);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddExternalSemaphoresSignalNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaExternalSemaphoreSignalNodeParams * nodeParams)
@@ -5395,7 +5461,7 @@ cudaError_t cudaGraphAddExternalSemaphoresSignalNode(cudaGraphNode_t * pGraphNod
 	printf("cudaGraphAddExternalSemaphoresSignalNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddExternalSemaphoresSignalNode(pGraphNode, graph, pDependencies, numDependencies, nodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExternalSemaphoresSignalNodeGetParams(cudaGraphNode_t  hNode, struct cudaExternalSemaphoreSignalNodeParams * params_out)
@@ -5403,7 +5469,7 @@ cudaError_t cudaGraphExternalSemaphoresSignalNodeGetParams(cudaGraphNode_t  hNod
 	printf("cudaGraphExternalSemaphoresSignalNodeGetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExternalSemaphoresSignalNodeGetParams(hNode, params_out);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExternalSemaphoresSignalNodeSetParams(cudaGraphNode_t  hNode, const struct cudaExternalSemaphoreSignalNodeParams * nodeParams)
@@ -5411,7 +5477,7 @@ cudaError_t cudaGraphExternalSemaphoresSignalNodeSetParams(cudaGraphNode_t  hNod
 	printf("cudaGraphExternalSemaphoresSignalNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExternalSemaphoresSignalNodeSetParams(hNode, nodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddExternalSemaphoresWaitNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaExternalSemaphoreWaitNodeParams * nodeParams)
@@ -5419,7 +5485,7 @@ cudaError_t cudaGraphAddExternalSemaphoresWaitNode(cudaGraphNode_t * pGraphNode,
 	printf("cudaGraphAddExternalSemaphoresWaitNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddExternalSemaphoresWaitNode(pGraphNode, graph, pDependencies, numDependencies, nodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExternalSemaphoresWaitNodeGetParams(cudaGraphNode_t  hNode, struct cudaExternalSemaphoreWaitNodeParams * params_out)
@@ -5427,7 +5493,7 @@ cudaError_t cudaGraphExternalSemaphoresWaitNodeGetParams(cudaGraphNode_t  hNode,
 	printf("cudaGraphExternalSemaphoresWaitNodeGetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExternalSemaphoresWaitNodeGetParams(hNode, params_out);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExternalSemaphoresWaitNodeSetParams(cudaGraphNode_t  hNode, const struct cudaExternalSemaphoreWaitNodeParams * nodeParams)
@@ -5435,7 +5501,7 @@ cudaError_t cudaGraphExternalSemaphoresWaitNodeSetParams(cudaGraphNode_t  hNode,
 	printf("cudaGraphExternalSemaphoresWaitNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExternalSemaphoresWaitNodeSetParams(hNode, nodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddMemAllocNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, struct cudaMemAllocNodeParams * nodeParams)
@@ -5443,7 +5509,7 @@ cudaError_t cudaGraphAddMemAllocNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  
 	printf("cudaGraphAddMemAllocNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddMemAllocNode(pGraphNode, graph, pDependencies, numDependencies, nodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphMemAllocNodeGetParams(cudaGraphNode_t  node, struct cudaMemAllocNodeParams * params_out)
@@ -5451,7 +5517,7 @@ cudaError_t cudaGraphMemAllocNodeGetParams(cudaGraphNode_t  node, struct cudaMem
 	printf("cudaGraphMemAllocNodeGetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphMemAllocNodeGetParams(node, params_out);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddMemFreeNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, void * dptr)
@@ -5459,7 +5525,7 @@ cudaError_t cudaGraphAddMemFreeNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  g
 	printf("cudaGraphAddMemFreeNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddMemFreeNode(pGraphNode, graph, pDependencies, numDependencies, dptr);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphMemFreeNodeGetParams(cudaGraphNode_t  node, void * dptr_out)
@@ -5467,7 +5533,7 @@ cudaError_t cudaGraphMemFreeNodeGetParams(cudaGraphNode_t  node, void * dptr_out
 	printf("cudaGraphMemFreeNodeGetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphMemFreeNodeGetParams(node, dptr_out);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceGraphMemTrim(int  device)
@@ -5475,7 +5541,7 @@ cudaError_t cudaDeviceGraphMemTrim(int  device)
 	printf("cudaDeviceGraphMemTrim hooked\n");
 	cudaError_t res = 
 		lcudaDeviceGraphMemTrim(device);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceGetGraphMemAttribute(int  device, enum cudaGraphMemAttributeType  attr, void*  value)
@@ -5483,7 +5549,7 @@ cudaError_t cudaDeviceGetGraphMemAttribute(int  device, enum cudaGraphMemAttribu
 	printf("cudaDeviceGetGraphMemAttribute hooked\n");
 	cudaError_t res = 
 		lcudaDeviceGetGraphMemAttribute(device, attr, value);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaDeviceSetGraphMemAttribute(int  device, enum cudaGraphMemAttributeType  attr, void*  value)
@@ -5491,7 +5557,7 @@ cudaError_t cudaDeviceSetGraphMemAttribute(int  device, enum cudaGraphMemAttribu
 	printf("cudaDeviceSetGraphMemAttribute hooked\n");
 	cudaError_t res = 
 		lcudaDeviceSetGraphMemAttribute(device, attr, value);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphClone(cudaGraph_t * pGraphClone, cudaGraph_t  originalGraph)
@@ -5499,7 +5565,7 @@ cudaError_t cudaGraphClone(cudaGraph_t * pGraphClone, cudaGraph_t  originalGraph
 	printf("cudaGraphClone hooked\n");
 	cudaError_t res = 
 		lcudaGraphClone(pGraphClone, originalGraph);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphNodeFindInClone(cudaGraphNode_t * pNode, cudaGraphNode_t  originalNode, cudaGraph_t  clonedGraph)
@@ -5507,7 +5573,7 @@ cudaError_t cudaGraphNodeFindInClone(cudaGraphNode_t * pNode, cudaGraphNode_t  o
 	printf("cudaGraphNodeFindInClone hooked\n");
 	cudaError_t res = 
 		lcudaGraphNodeFindInClone(pNode, originalNode, clonedGraph);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphNodeGetType(cudaGraphNode_t  node, enum cudaGraphNodeType * pType)
@@ -5515,7 +5581,7 @@ cudaError_t cudaGraphNodeGetType(cudaGraphNode_t  node, enum cudaGraphNodeType *
 	printf("cudaGraphNodeGetType hooked\n");
 	cudaError_t res = 
 		lcudaGraphNodeGetType(node, pType);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphGetNodes(cudaGraph_t  graph, cudaGraphNode_t * nodes, size_t * numNodes)
@@ -5523,7 +5589,7 @@ cudaError_t cudaGraphGetNodes(cudaGraph_t  graph, cudaGraphNode_t * nodes, size_
 	printf("cudaGraphGetNodes hooked\n");
 	cudaError_t res = 
 		lcudaGraphGetNodes(graph, nodes, numNodes);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphGetRootNodes(cudaGraph_t  graph, cudaGraphNode_t * pRootNodes, size_t * pNumRootNodes)
@@ -5531,7 +5597,7 @@ cudaError_t cudaGraphGetRootNodes(cudaGraph_t  graph, cudaGraphNode_t * pRootNod
 	printf("cudaGraphGetRootNodes hooked\n");
 	cudaError_t res = 
 		lcudaGraphGetRootNodes(graph, pRootNodes, pNumRootNodes);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphGetEdges(cudaGraph_t  graph, cudaGraphNode_t * from, cudaGraphNode_t * to, size_t * numEdges)
@@ -5539,7 +5605,7 @@ cudaError_t cudaGraphGetEdges(cudaGraph_t  graph, cudaGraphNode_t * from, cudaGr
 	printf("cudaGraphGetEdges hooked\n");
 	cudaError_t res = 
 		lcudaGraphGetEdges(graph, from, to, numEdges);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphNodeGetDependencies(cudaGraphNode_t  node, cudaGraphNode_t * pDependencies, size_t * pNumDependencies)
@@ -5547,7 +5613,7 @@ cudaError_t cudaGraphNodeGetDependencies(cudaGraphNode_t  node, cudaGraphNode_t 
 	printf("cudaGraphNodeGetDependencies hooked\n");
 	cudaError_t res = 
 		lcudaGraphNodeGetDependencies(node, pDependencies, pNumDependencies);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphNodeGetDependentNodes(cudaGraphNode_t  node, cudaGraphNode_t * pDependentNodes, size_t * pNumDependentNodes)
@@ -5555,7 +5621,7 @@ cudaError_t cudaGraphNodeGetDependentNodes(cudaGraphNode_t  node, cudaGraphNode_
 	printf("cudaGraphNodeGetDependentNodes hooked\n");
 	cudaError_t res = 
 		lcudaGraphNodeGetDependentNodes(node, pDependentNodes, pNumDependentNodes);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphAddDependencies(cudaGraph_t  graph, const cudaGraphNode_t * from, const cudaGraphNode_t * to, size_t  numDependencies)
@@ -5563,7 +5629,7 @@ cudaError_t cudaGraphAddDependencies(cudaGraph_t  graph, const cudaGraphNode_t *
 	printf("cudaGraphAddDependencies hooked\n");
 	cudaError_t res = 
 		lcudaGraphAddDependencies(graph, from, to, numDependencies);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphRemoveDependencies(cudaGraph_t  graph, const cudaGraphNode_t * from, const cudaGraphNode_t * to, size_t  numDependencies)
@@ -5571,7 +5637,7 @@ cudaError_t cudaGraphRemoveDependencies(cudaGraph_t  graph, const cudaGraphNode_
 	printf("cudaGraphRemoveDependencies hooked\n");
 	cudaError_t res = 
 		lcudaGraphRemoveDependencies(graph, from, to, numDependencies);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphDestroyNode(cudaGraphNode_t  node)
@@ -5579,7 +5645,7 @@ cudaError_t cudaGraphDestroyNode(cudaGraphNode_t  node)
 	printf("cudaGraphDestroyNode hooked\n");
 	cudaError_t res = 
 		lcudaGraphDestroyNode(node);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphNode_t * pErrorNode, char * pLogBuffer, size_t  bufferSize)
@@ -5587,7 +5653,7 @@ cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  grap
 	printf("cudaGraphInstantiate hooked\n");
 	cudaError_t res = 
 		lcudaGraphInstantiate(pGraphExec, graph, pErrorNode, pLogBuffer, bufferSize);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags)
@@ -5595,7 +5661,7 @@ cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t * pGraphExec, cudaGrap
 	printf("cudaGraphInstantiateWithFlags hooked\n");
 	cudaError_t res = 
 		lcudaGraphInstantiateWithFlags(pGraphExec, graph, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecKernelNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const struct cudaKernelNodeParams * pNodeParams)
@@ -5603,7 +5669,7 @@ cudaError_t cudaGraphExecKernelNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGr
 	printf("cudaGraphExecKernelNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecKernelNodeSetParams(hGraphExec, node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecMemcpyNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const struct cudaMemcpy3DParms * pNodeParams)
@@ -5611,7 +5677,7 @@ cudaError_t cudaGraphExecMemcpyNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGr
 	printf("cudaGraphExecMemcpyNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecMemcpyNodeSetParams(hGraphExec, node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecMemcpyNodeSetParamsToSymbol(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const void*  symbol, const void*  src, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
@@ -5619,7 +5685,7 @@ cudaError_t cudaGraphExecMemcpyNodeSetParamsToSymbol(cudaGraphExec_t  hGraphExec
 	printf("cudaGraphExecMemcpyNodeSetParamsToSymbol hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecMemcpyNodeSetParamsToSymbol(hGraphExec, node, symbol, src, count, offset, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecMemcpyNodeSetParamsFromSymbol(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, void*  dst, const void*  symbol, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
@@ -5627,7 +5693,7 @@ cudaError_t cudaGraphExecMemcpyNodeSetParamsFromSymbol(cudaGraphExec_t  hGraphEx
 	printf("cudaGraphExecMemcpyNodeSetParamsFromSymbol hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecMemcpyNodeSetParamsFromSymbol(hGraphExec, node, dst, symbol, count, offset, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecMemcpyNodeSetParams1D(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, void*  dst, const void*  src, size_t  count, enum cudaMemcpyKind  kind)
@@ -5635,7 +5701,7 @@ cudaError_t cudaGraphExecMemcpyNodeSetParams1D(cudaGraphExec_t  hGraphExec, cuda
 	printf("cudaGraphExecMemcpyNodeSetParams1D hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecMemcpyNodeSetParams1D(hGraphExec, node, dst, src, count, kind);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecMemsetNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const struct cudaMemsetParams * pNodeParams)
@@ -5643,7 +5709,7 @@ cudaError_t cudaGraphExecMemsetNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGr
 	printf("cudaGraphExecMemsetNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecMemsetNodeSetParams(hGraphExec, node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecHostNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const struct cudaHostNodeParams * pNodeParams)
@@ -5651,7 +5717,7 @@ cudaError_t cudaGraphExecHostNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGrap
 	printf("cudaGraphExecHostNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecHostNodeSetParams(hGraphExec, node, pNodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecChildGraphNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, cudaGraph_t  childGraph)
@@ -5659,7 +5725,7 @@ cudaError_t cudaGraphExecChildGraphNodeSetParams(cudaGraphExec_t  hGraphExec, cu
 	printf("cudaGraphExecChildGraphNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecChildGraphNodeSetParams(hGraphExec, node, childGraph);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecEventRecordNodeSetEvent(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, cudaEvent_t  event)
@@ -5667,7 +5733,7 @@ cudaError_t cudaGraphExecEventRecordNodeSetEvent(cudaGraphExec_t  hGraphExec, cu
 	printf("cudaGraphExecEventRecordNodeSetEvent hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecEventRecordNodeSetEvent(hGraphExec, hNode, event);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecEventWaitNodeSetEvent(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, cudaEvent_t  event)
@@ -5675,7 +5741,7 @@ cudaError_t cudaGraphExecEventWaitNodeSetEvent(cudaGraphExec_t  hGraphExec, cuda
 	printf("cudaGraphExecEventWaitNodeSetEvent hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecEventWaitNodeSetEvent(hGraphExec, hNode, event);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecExternalSemaphoresSignalNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, const struct cudaExternalSemaphoreSignalNodeParams * nodeParams)
@@ -5683,7 +5749,7 @@ cudaError_t cudaGraphExecExternalSemaphoresSignalNodeSetParams(cudaGraphExec_t  
 	printf("cudaGraphExecExternalSemaphoresSignalNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecExternalSemaphoresSignalNodeSetParams(hGraphExec, hNode, nodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecExternalSemaphoresWaitNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, const struct cudaExternalSemaphoreWaitNodeParams * nodeParams)
@@ -5691,7 +5757,7 @@ cudaError_t cudaGraphExecExternalSemaphoresWaitNodeSetParams(cudaGraphExec_t  hG
 	printf("cudaGraphExecExternalSemaphoresWaitNodeSetParams hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecExternalSemaphoresWaitNodeSetParams(hGraphExec, hNode, nodeParams);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecUpdate(cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph, cudaGraphNode_t * hErrorNode_out, enum cudaGraphExecUpdateResult * updateResult_out)
@@ -5699,7 +5765,7 @@ cudaError_t cudaGraphExecUpdate(cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph
 	printf("cudaGraphExecUpdate hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecUpdate(hGraphExec, hGraph, hErrorNode_out, updateResult_out);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphUpload(cudaGraphExec_t  graphExec, cudaStream_t  stream)
@@ -5707,7 +5773,7 @@ cudaError_t cudaGraphUpload(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 	printf("cudaGraphUpload hooked\n");
 	cudaError_t res = 
 		lcudaGraphUpload(graphExec, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphLaunch(cudaGraphExec_t  graphExec, cudaStream_t  stream)
@@ -5715,7 +5781,7 @@ cudaError_t cudaGraphLaunch(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 	printf("cudaGraphLaunch hooked\n");
 	cudaError_t res = 
 		lcudaGraphLaunch(graphExec, stream);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphExecDestroy(cudaGraphExec_t  graphExec)
@@ -5723,7 +5789,7 @@ cudaError_t cudaGraphExecDestroy(cudaGraphExec_t  graphExec)
 	printf("cudaGraphExecDestroy hooked\n");
 	cudaError_t res = 
 		lcudaGraphExecDestroy(graphExec);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphDestroy(cudaGraph_t  graph)
@@ -5731,7 +5797,7 @@ cudaError_t cudaGraphDestroy(cudaGraph_t  graph)
 	printf("cudaGraphDestroy hooked\n");
 	cudaError_t res = 
 		lcudaGraphDestroy(graph);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphDebugDotPrint(cudaGraph_t  graph, const char * path, unsigned int  flags)
@@ -5739,7 +5805,7 @@ cudaError_t cudaGraphDebugDotPrint(cudaGraph_t  graph, const char * path, unsign
 	printf("cudaGraphDebugDotPrint hooked\n");
 	cudaError_t res = 
 		lcudaGraphDebugDotPrint(graph, path, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaUserObjectCreate(cudaUserObject_t * object_out, void * ptr, cudaHostFn_t  destroy, unsigned int  initialRefcount, unsigned int  flags)
@@ -5747,7 +5813,7 @@ cudaError_t cudaUserObjectCreate(cudaUserObject_t * object_out, void * ptr, cuda
 	printf("cudaUserObjectCreate hooked\n");
 	cudaError_t res = 
 		lcudaUserObjectCreate(object_out, ptr, destroy, initialRefcount, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaUserObjectRetain(cudaUserObject_t  object, unsigned int  count)
@@ -5755,7 +5821,7 @@ cudaError_t cudaUserObjectRetain(cudaUserObject_t  object, unsigned int  count)
 	printf("cudaUserObjectRetain hooked\n");
 	cudaError_t res = 
 		lcudaUserObjectRetain(object, count);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaUserObjectRelease(cudaUserObject_t  object, unsigned int  count)
@@ -5763,7 +5829,7 @@ cudaError_t cudaUserObjectRelease(cudaUserObject_t  object, unsigned int  count)
 	printf("cudaUserObjectRelease hooked\n");
 	cudaError_t res = 
 		lcudaUserObjectRelease(object, count);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphRetainUserObject(cudaGraph_t  graph, cudaUserObject_t  object, unsigned int  count, unsigned int  flags)
@@ -5771,7 +5837,7 @@ cudaError_t cudaGraphRetainUserObject(cudaGraph_t  graph, cudaUserObject_t  obje
 	printf("cudaGraphRetainUserObject hooked\n");
 	cudaError_t res = 
 		lcudaGraphRetainUserObject(graph, object, count, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGraphReleaseUserObject(cudaGraph_t  graph, cudaUserObject_t  object, unsigned int  count)
@@ -5779,7 +5845,7 @@ cudaError_t cudaGraphReleaseUserObject(cudaGraph_t  graph, cudaUserObject_t  obj
 	printf("cudaGraphReleaseUserObject hooked\n");
 	cudaError_t res = 
 		lcudaGraphReleaseUserObject(graph, object, count);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetDriverEntryPoint(const char * symbol, void ** funcPtr, unsigned long long  flags)
@@ -5787,7 +5853,7 @@ cudaError_t cudaGetDriverEntryPoint(const char * symbol, void ** funcPtr, unsign
 	printf("cudaGetDriverEntryPoint hooked\n");
 	cudaError_t res = 
 		lcudaGetDriverEntryPoint(symbol, funcPtr, flags);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetExportTable(const void ** ppExportTable, const cudaUUID_t * pExportTableId)
@@ -5795,7 +5861,7 @@ cudaError_t cudaGetExportTable(const void ** ppExportTable, const cudaUUID_t * p
 	printf("cudaGetExportTable hooked\n");
 	cudaError_t res = 
 		lcudaGetExportTable(ppExportTable, pExportTableId);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaGetFuncBySymbol(cudaFunction_t*  functionPtr, const void*  symbolPtr)
@@ -5803,7 +5869,7 @@ cudaError_t cudaGetFuncBySymbol(cudaFunction_t*  functionPtr, const void*  symbo
 	printf("cudaGetFuncBySymbol hooked\n");
 	cudaError_t res = 
 		lcudaGetFuncBySymbol(functionPtr, symbolPtr);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 size_t cudnnGetVersion()
@@ -7621,8 +7687,9 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cublasStatus_t *) dat;
-        return *res;
+    auto res = (cublasStatus_t *) dat;
+    
+    return *res;
 }
 
 cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
@@ -7655,8 +7722,9 @@ size_t cublasGetCudartVersion()
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (size_t *) dat;
-        return *res;
+    auto res = (size_t *) dat;
+    
+    return *res;
 }
 
 cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, size_t  workspaceSizeInBytes)
@@ -9830,7 +9898,7 @@ cudaError_t cudaProfilerInitialize(const char * configFile, const char * outputF
 	printf("cudaProfilerInitialize hooked\n");
 	cudaError_t res = 
 		lcudaProfilerInitialize(configFile, outputFile, outputMode);
-	return res;
+CHECK_CUDA_ERROR(res);	return res;
 }
 
 cudaError_t cudaProfilerStart()
@@ -9847,8 +9915,9 @@ cudaError_t cudaProfilerStart()
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 cudaError_t cudaProfilerStop()
@@ -9865,8 +9934,9 @@ cudaError_t cudaProfilerStop()
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
-        auto res = (cudaError_t *) dat;
-        return *res;
+    auto res = (cudaError_t *) dat;
+    CHECK_CUDA_ERROR(*res);
+    return *res;
 }
 
 
