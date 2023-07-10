@@ -137,6 +137,18 @@ struct cuDevicePrimaryCtxSetFlags_v2Arg {
 	unsigned int  flags;
 };
 
+struct cuDevicePrimaryCtxGetStateArg {
+	CUdevice  dev;
+	unsigned int * flags;
+	int * active;
+};
+
+struct cuDevicePrimaryCtxGetStateResponse {
+	unsigned int  flags;
+	int  active;
+	CUresult err;
+};
+
 struct cuDevicePrimaryCtxReset_v2Arg {
 	CUdevice  dev;
 };

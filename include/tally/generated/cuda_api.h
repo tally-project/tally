@@ -8,6 +8,7 @@
 #include <cudnn.h>
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
+#include <nvrtc.h>
 
 extern CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuGetErrorName) (CUresult  error, const char ** pStr);

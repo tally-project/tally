@@ -1155,13 +1155,13 @@ void TallyServer::register_api_handler() {
 void TallyServer::handle_cuGetErrorString(void *__args)
 {
 	spdlog::info("Received request: cuGetErrorString");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGetErrorName(void *__args)
 {
 	spdlog::info("Received request: cuGetErrorName");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuInit(void *__args)
@@ -1227,7 +1227,7 @@ void TallyServer::handle_cuDeviceGetCount(void *__args)
 void TallyServer::handle_cuDeviceGetName(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetName");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceGetUuid(void *__args)
@@ -1263,7 +1263,7 @@ void TallyServer::handle_cuDeviceGetUuid_v2(void *__args)
 void TallyServer::handle_cuDeviceGetLuid(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetLuid");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceTotalMem_v2(void *__args)
@@ -1299,7 +1299,7 @@ void TallyServer::handle_cuDeviceGetAttribute(void *__args)
 void TallyServer::handle_cuDeviceGetNvSciSyncAttributes(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetNvSciSyncAttributes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceSetMemPool(void *__args)
@@ -1382,7 +1382,7 @@ void TallyServer::handle_cuDeviceGetProperties(void *__args)
 void TallyServer::handle_cuDeviceComputeCapability(void *__args)
 {
 	spdlog::info("Received request: cuDeviceComputeCapability");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDevicePrimaryCtxRetain(void *__args)
@@ -1434,7 +1434,17 @@ void TallyServer::handle_cuDevicePrimaryCtxSetFlags_v2(void *__args)
 void TallyServer::handle_cuDevicePrimaryCtxGetState(void *__args)
 {
 	spdlog::info("Received request: cuDevicePrimaryCtxGetState");
-	throw std::runtime_error("Unimplemented.");
+
+    auto args = (struct cuDevicePrimaryCtxGetStateArg *) __args;
+
+    unsigned int  flags;
+    int  active;
+    CUresult err = cuDevicePrimaryCtxGetState(args->dev, &flags, &active);
+
+    struct cuDevicePrimaryCtxGetStateResponse res { flags, active, err };
+    while(!send_ipc->send((void *) &res, sizeof(struct cuDevicePrimaryCtxGetStateResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cuDevicePrimaryCtxReset_v2(void *__args)
@@ -1455,1939 +1465,1939 @@ void TallyServer::handle_cuDevicePrimaryCtxReset_v2(void *__args)
 void TallyServer::handle_cuDeviceGetExecAffinitySupport(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetExecAffinitySupport");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxCreate_v2(void *__args)
 {
 	spdlog::info("Received request: cuCtxCreate_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxCreate_v3(void *__args)
 {
 	spdlog::info("Received request: cuCtxCreate_v3");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxDestroy_v2(void *__args)
 {
 	spdlog::info("Received request: cuCtxDestroy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxPushCurrent_v2(void *__args)
 {
 	spdlog::info("Received request: cuCtxPushCurrent_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxPopCurrent_v2(void *__args)
 {
 	spdlog::info("Received request: cuCtxPopCurrent_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxSetCurrent(void *__args)
 {
 	spdlog::info("Received request: cuCtxSetCurrent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxGetCurrent(void *__args)
 {
 	spdlog::info("Received request: cuCtxGetCurrent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxGetDevice(void *__args)
 {
 	spdlog::info("Received request: cuCtxGetDevice");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxGetFlags(void *__args)
 {
 	spdlog::info("Received request: cuCtxGetFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxSynchronize(void *__args)
 {
 	spdlog::info("Received request: cuCtxSynchronize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxSetLimit(void *__args)
 {
 	spdlog::info("Received request: cuCtxSetLimit");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxGetLimit(void *__args)
 {
 	spdlog::info("Received request: cuCtxGetLimit");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxGetCacheConfig(void *__args)
 {
 	spdlog::info("Received request: cuCtxGetCacheConfig");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxSetCacheConfig(void *__args)
 {
 	spdlog::info("Received request: cuCtxSetCacheConfig");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxGetSharedMemConfig(void *__args)
 {
 	spdlog::info("Received request: cuCtxGetSharedMemConfig");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxSetSharedMemConfig(void *__args)
 {
 	spdlog::info("Received request: cuCtxSetSharedMemConfig");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxGetApiVersion(void *__args)
 {
 	spdlog::info("Received request: cuCtxGetApiVersion");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxGetStreamPriorityRange(void *__args)
 {
 	spdlog::info("Received request: cuCtxGetStreamPriorityRange");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxResetPersistingL2Cache(void *__args)
 {
 	spdlog::info("Received request: cuCtxResetPersistingL2Cache");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxGetExecAffinity(void *__args)
 {
 	spdlog::info("Received request: cuCtxGetExecAffinity");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxAttach(void *__args)
 {
 	spdlog::info("Received request: cuCtxAttach");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxDetach(void *__args)
 {
 	spdlog::info("Received request: cuCtxDetach");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuModuleLoad(void *__args)
 {
 	spdlog::info("Received request: cuModuleLoad");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuModuleLoadData(void *__args)
 {
 	spdlog::info("Received request: cuModuleLoadData");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuModuleLoadDataEx(void *__args)
 {
 	spdlog::info("Received request: cuModuleLoadDataEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuModuleLoadFatBinary(void *__args)
 {
 	spdlog::info("Received request: cuModuleLoadFatBinary");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuModuleUnload(void *__args)
 {
 	spdlog::info("Received request: cuModuleUnload");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuModuleGetFunction(void *__args)
 {
 	spdlog::info("Received request: cuModuleGetFunction");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuModuleGetGlobal_v2(void *__args)
 {
 	spdlog::info("Received request: cuModuleGetGlobal_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuModuleGetTexRef(void *__args)
 {
 	spdlog::info("Received request: cuModuleGetTexRef");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuModuleGetSurfRef(void *__args)
 {
 	spdlog::info("Received request: cuModuleGetSurfRef");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLinkCreate_v2(void *__args)
 {
 	spdlog::info("Received request: cuLinkCreate_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLinkAddData_v2(void *__args)
 {
 	spdlog::info("Received request: cuLinkAddData_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLinkAddFile_v2(void *__args)
 {
 	spdlog::info("Received request: cuLinkAddFile_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLinkComplete(void *__args)
 {
 	spdlog::info("Received request: cuLinkComplete");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLinkDestroy(void *__args)
 {
 	spdlog::info("Received request: cuLinkDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemGetInfo_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemGetInfo_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemAlloc_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemAlloc_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemAllocPitch_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemAllocPitch_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemFree_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemFree_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemGetAddressRange_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemGetAddressRange_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemAllocHost_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemAllocHost_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemFreeHost(void *__args)
 {
 	spdlog::info("Received request: cuMemFreeHost");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemHostAlloc(void *__args)
 {
 	spdlog::info("Received request: cuMemHostAlloc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemHostGetDevicePointer_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemHostGetDevicePointer_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemHostGetFlags(void *__args)
 {
 	spdlog::info("Received request: cuMemHostGetFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemAllocManaged(void *__args)
 {
 	spdlog::info("Received request: cuMemAllocManaged");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceGetByPCIBusId(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetByPCIBusId");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceGetPCIBusId(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetPCIBusId");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuIpcGetEventHandle(void *__args)
 {
 	spdlog::info("Received request: cuIpcGetEventHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuIpcOpenEventHandle(void *__args)
 {
 	spdlog::info("Received request: cuIpcOpenEventHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuIpcGetMemHandle(void *__args)
 {
 	spdlog::info("Received request: cuIpcGetMemHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuIpcOpenMemHandle_v2(void *__args)
 {
 	spdlog::info("Received request: cuIpcOpenMemHandle_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuIpcCloseMemHandle(void *__args)
 {
 	spdlog::info("Received request: cuIpcCloseMemHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemHostRegister_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemHostRegister_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemHostUnregister(void *__args)
 {
 	spdlog::info("Received request: cuMemHostUnregister");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpy(void *__args)
 {
 	spdlog::info("Received request: cuMemcpy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyPeer(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyPeer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyHtoD_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyHtoD_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyDtoH_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyDtoH_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyDtoD_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyDtoD_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyDtoA_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyDtoA_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyAtoD_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyAtoD_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyHtoA_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyHtoA_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyAtoH_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyAtoH_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyAtoA_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyAtoA_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpy2D_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpy2D_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpy2DUnaligned_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpy2DUnaligned_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpy3D_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpy3D_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpy3DPeer(void *__args)
 {
 	spdlog::info("Received request: cuMemcpy3DPeer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyAsync(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyPeerAsync(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyPeerAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyHtoDAsync_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyHtoDAsync_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyDtoHAsync_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyDtoHAsync_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyDtoDAsync_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyDtoDAsync_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyHtoAAsync_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyHtoAAsync_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpyAtoHAsync_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpyAtoHAsync_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpy2DAsync_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpy2DAsync_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpy3DAsync_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemcpy3DAsync_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemcpy3DPeerAsync(void *__args)
 {
 	spdlog::info("Received request: cuMemcpy3DPeerAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD8_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD8_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD16_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD16_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD32_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD32_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD2D8_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD2D8_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD2D16_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD2D16_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD2D32_v2(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD2D32_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD8Async(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD8Async");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD16Async(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD16Async");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD32Async(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD32Async");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD2D8Async(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD2D8Async");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD2D16Async(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD2D16Async");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemsetD2D32Async(void *__args)
 {
 	spdlog::info("Received request: cuMemsetD2D32Async");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuArrayCreate_v2(void *__args)
 {
 	spdlog::info("Received request: cuArrayCreate_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuArrayGetDescriptor_v2(void *__args)
 {
 	spdlog::info("Received request: cuArrayGetDescriptor_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuArrayGetSparseProperties(void *__args)
 {
 	spdlog::info("Received request: cuArrayGetSparseProperties");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMipmappedArrayGetSparseProperties(void *__args)
 {
 	spdlog::info("Received request: cuMipmappedArrayGetSparseProperties");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuArrayGetPlane(void *__args)
 {
 	spdlog::info("Received request: cuArrayGetPlane");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuArrayDestroy(void *__args)
 {
 	spdlog::info("Received request: cuArrayDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuArray3DCreate_v2(void *__args)
 {
 	spdlog::info("Received request: cuArray3DCreate_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuArray3DGetDescriptor_v2(void *__args)
 {
 	spdlog::info("Received request: cuArray3DGetDescriptor_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMipmappedArrayCreate(void *__args)
 {
 	spdlog::info("Received request: cuMipmappedArrayCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMipmappedArrayGetLevel(void *__args)
 {
 	spdlog::info("Received request: cuMipmappedArrayGetLevel");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMipmappedArrayDestroy(void *__args)
 {
 	spdlog::info("Received request: cuMipmappedArrayDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemAddressReserve(void *__args)
 {
 	spdlog::info("Received request: cuMemAddressReserve");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemAddressFree(void *__args)
 {
 	spdlog::info("Received request: cuMemAddressFree");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemCreate(void *__args)
 {
 	spdlog::info("Received request: cuMemCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemRelease(void *__args)
 {
 	spdlog::info("Received request: cuMemRelease");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemMap(void *__args)
 {
 	spdlog::info("Received request: cuMemMap");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemMapArrayAsync(void *__args)
 {
 	spdlog::info("Received request: cuMemMapArrayAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemUnmap(void *__args)
 {
 	spdlog::info("Received request: cuMemUnmap");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemSetAccess(void *__args)
 {
 	spdlog::info("Received request: cuMemSetAccess");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemGetAccess(void *__args)
 {
 	spdlog::info("Received request: cuMemGetAccess");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemExportToShareableHandle(void *__args)
 {
 	spdlog::info("Received request: cuMemExportToShareableHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemImportFromShareableHandle(void *__args)
 {
 	spdlog::info("Received request: cuMemImportFromShareableHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemGetAllocationGranularity(void *__args)
 {
 	spdlog::info("Received request: cuMemGetAllocationGranularity");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemGetAllocationPropertiesFromHandle(void *__args)
 {
 	spdlog::info("Received request: cuMemGetAllocationPropertiesFromHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemRetainAllocationHandle(void *__args)
 {
 	spdlog::info("Received request: cuMemRetainAllocationHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemFreeAsync(void *__args)
 {
 	spdlog::info("Received request: cuMemFreeAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemAllocAsync(void *__args)
 {
 	spdlog::info("Received request: cuMemAllocAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolTrimTo(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolTrimTo");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolSetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolSetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolSetAccess(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolSetAccess");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolGetAccess(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolGetAccess");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolCreate(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolDestroy(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemAllocFromPoolAsync(void *__args)
 {
 	spdlog::info("Received request: cuMemAllocFromPoolAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolExportToShareableHandle(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolExportToShareableHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolImportFromShareableHandle(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolImportFromShareableHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolExportPointer(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolExportPointer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPoolImportPointer(void *__args)
 {
 	spdlog::info("Received request: cuMemPoolImportPointer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuPointerGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuPointerGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemPrefetchAsync(void *__args)
 {
 	spdlog::info("Received request: cuMemPrefetchAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemAdvise(void *__args)
 {
 	spdlog::info("Received request: cuMemAdvise");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemRangeGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuMemRangeGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuMemRangeGetAttributes(void *__args)
 {
 	spdlog::info("Received request: cuMemRangeGetAttributes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuPointerSetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuPointerSetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuPointerGetAttributes(void *__args)
 {
 	spdlog::info("Received request: cuPointerGetAttributes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamCreate(void *__args)
 {
 	spdlog::info("Received request: cuStreamCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamCreateWithPriority(void *__args)
 {
 	spdlog::info("Received request: cuStreamCreateWithPriority");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamGetPriority(void *__args)
 {
 	spdlog::info("Received request: cuStreamGetPriority");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamGetFlags(void *__args)
 {
 	spdlog::info("Received request: cuStreamGetFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamGetCtx(void *__args)
 {
 	spdlog::info("Received request: cuStreamGetCtx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamWaitEvent(void *__args)
 {
 	spdlog::info("Received request: cuStreamWaitEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamAddCallback(void *__args)
 {
 	spdlog::info("Received request: cuStreamAddCallback");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamBeginCapture_v2(void *__args)
 {
 	spdlog::info("Received request: cuStreamBeginCapture_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuThreadExchangeStreamCaptureMode(void *__args)
 {
 	spdlog::info("Received request: cuThreadExchangeStreamCaptureMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamEndCapture(void *__args)
 {
 	spdlog::info("Received request: cuStreamEndCapture");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamIsCapturing(void *__args)
 {
 	spdlog::info("Received request: cuStreamIsCapturing");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamGetCaptureInfo(void *__args)
 {
 	spdlog::info("Received request: cuStreamGetCaptureInfo");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamGetCaptureInfo_v2(void *__args)
 {
 	spdlog::info("Received request: cuStreamGetCaptureInfo_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamUpdateCaptureDependencies(void *__args)
 {
 	spdlog::info("Received request: cuStreamUpdateCaptureDependencies");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamAttachMemAsync(void *__args)
 {
 	spdlog::info("Received request: cuStreamAttachMemAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamQuery(void *__args)
 {
 	spdlog::info("Received request: cuStreamQuery");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamSynchronize(void *__args)
 {
 	spdlog::info("Received request: cuStreamSynchronize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamDestroy_v2(void *__args)
 {
 	spdlog::info("Received request: cuStreamDestroy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamCopyAttributes(void *__args)
 {
 	spdlog::info("Received request: cuStreamCopyAttributes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuStreamGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamSetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuStreamSetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuEventCreate(void *__args)
 {
 	spdlog::info("Received request: cuEventCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuEventRecord(void *__args)
 {
 	spdlog::info("Received request: cuEventRecord");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuEventRecordWithFlags(void *__args)
 {
 	spdlog::info("Received request: cuEventRecordWithFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuEventQuery(void *__args)
 {
 	spdlog::info("Received request: cuEventQuery");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuEventSynchronize(void *__args)
 {
 	spdlog::info("Received request: cuEventSynchronize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuEventDestroy_v2(void *__args)
 {
 	spdlog::info("Received request: cuEventDestroy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuEventElapsedTime(void *__args)
 {
 	spdlog::info("Received request: cuEventElapsedTime");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuImportExternalMemory(void *__args)
 {
 	spdlog::info("Received request: cuImportExternalMemory");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuExternalMemoryGetMappedBuffer(void *__args)
 {
 	spdlog::info("Received request: cuExternalMemoryGetMappedBuffer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuExternalMemoryGetMappedMipmappedArray(void *__args)
 {
 	spdlog::info("Received request: cuExternalMemoryGetMappedMipmappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDestroyExternalMemory(void *__args)
 {
 	spdlog::info("Received request: cuDestroyExternalMemory");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuImportExternalSemaphore(void *__args)
 {
 	spdlog::info("Received request: cuImportExternalSemaphore");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuSignalExternalSemaphoresAsync(void *__args)
 {
 	spdlog::info("Received request: cuSignalExternalSemaphoresAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuWaitExternalSemaphoresAsync(void *__args)
 {
 	spdlog::info("Received request: cuWaitExternalSemaphoresAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDestroyExternalSemaphore(void *__args)
 {
 	spdlog::info("Received request: cuDestroyExternalSemaphore");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamWaitValue32(void *__args)
 {
 	spdlog::info("Received request: cuStreamWaitValue32");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamWaitValue64(void *__args)
 {
 	spdlog::info("Received request: cuStreamWaitValue64");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamWriteValue32(void *__args)
 {
 	spdlog::info("Received request: cuStreamWriteValue32");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamWriteValue64(void *__args)
 {
 	spdlog::info("Received request: cuStreamWriteValue64");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuStreamBatchMemOp(void *__args)
 {
 	spdlog::info("Received request: cuStreamBatchMemOp");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuFuncGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuFuncGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuFuncSetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuFuncSetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuFuncSetCacheConfig(void *__args)
 {
 	spdlog::info("Received request: cuFuncSetCacheConfig");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuFuncSetSharedMemConfig(void *__args)
 {
 	spdlog::info("Received request: cuFuncSetSharedMemConfig");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuFuncGetModule(void *__args)
 {
 	spdlog::info("Received request: cuFuncGetModule");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLaunchKernel(void *__args)
 {
 	spdlog::info("Received request: cuLaunchKernel");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLaunchCooperativeKernel(void *__args)
 {
 	spdlog::info("Received request: cuLaunchCooperativeKernel");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLaunchCooperativeKernelMultiDevice(void *__args)
 {
 	spdlog::info("Received request: cuLaunchCooperativeKernelMultiDevice");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLaunchHostFunc(void *__args)
 {
 	spdlog::info("Received request: cuLaunchHostFunc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuFuncSetBlockShape(void *__args)
 {
 	spdlog::info("Received request: cuFuncSetBlockShape");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuFuncSetSharedSize(void *__args)
 {
 	spdlog::info("Received request: cuFuncSetSharedSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuParamSetSize(void *__args)
 {
 	spdlog::info("Received request: cuParamSetSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuParamSeti(void *__args)
 {
 	spdlog::info("Received request: cuParamSeti");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuParamSetf(void *__args)
 {
 	spdlog::info("Received request: cuParamSetf");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuParamSetv(void *__args)
 {
 	spdlog::info("Received request: cuParamSetv");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLaunch(void *__args)
 {
 	spdlog::info("Received request: cuLaunch");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLaunchGrid(void *__args)
 {
 	spdlog::info("Received request: cuLaunchGrid");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuLaunchGridAsync(void *__args)
 {
 	spdlog::info("Received request: cuLaunchGridAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuParamSetTexRef(void *__args)
 {
 	spdlog::info("Received request: cuParamSetTexRef");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphCreate(void *__args)
 {
 	spdlog::info("Received request: cuGraphCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddKernelNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddKernelNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphKernelNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphKernelNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphKernelNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphKernelNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddMemcpyNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddMemcpyNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphMemcpyNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphMemcpyNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphMemcpyNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphMemcpyNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddMemsetNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddMemsetNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphMemsetNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphMemsetNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphMemsetNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphMemsetNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddHostNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddHostNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphHostNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphHostNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphHostNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphHostNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddChildGraphNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddChildGraphNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphChildGraphNodeGetGraph(void *__args)
 {
 	spdlog::info("Received request: cuGraphChildGraphNodeGetGraph");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddEmptyNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddEmptyNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddEventRecordNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddEventRecordNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphEventRecordNodeGetEvent(void *__args)
 {
 	spdlog::info("Received request: cuGraphEventRecordNodeGetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphEventRecordNodeSetEvent(void *__args)
 {
 	spdlog::info("Received request: cuGraphEventRecordNodeSetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddEventWaitNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddEventWaitNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphEventWaitNodeGetEvent(void *__args)
 {
 	spdlog::info("Received request: cuGraphEventWaitNodeGetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphEventWaitNodeSetEvent(void *__args)
 {
 	spdlog::info("Received request: cuGraphEventWaitNodeSetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddExternalSemaphoresSignalNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddExternalSemaphoresSignalNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExternalSemaphoresSignalNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExternalSemaphoresSignalNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExternalSemaphoresSignalNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExternalSemaphoresSignalNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddExternalSemaphoresWaitNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddExternalSemaphoresWaitNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExternalSemaphoresWaitNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExternalSemaphoresWaitNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExternalSemaphoresWaitNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExternalSemaphoresWaitNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddMemAllocNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddMemAllocNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphMemAllocNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphMemAllocNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddMemFreeNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddMemFreeNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphMemFreeNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphMemFreeNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceGraphMemTrim(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGraphMemTrim");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceGetGraphMemAttribute(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetGraphMemAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceSetGraphMemAttribute(void *__args)
 {
 	spdlog::info("Received request: cuDeviceSetGraphMemAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphClone(void *__args)
 {
 	spdlog::info("Received request: cuGraphClone");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphNodeFindInClone(void *__args)
 {
 	spdlog::info("Received request: cuGraphNodeFindInClone");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphNodeGetType(void *__args)
 {
 	spdlog::info("Received request: cuGraphNodeGetType");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphGetNodes(void *__args)
 {
 	spdlog::info("Received request: cuGraphGetNodes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphGetRootNodes(void *__args)
 {
 	spdlog::info("Received request: cuGraphGetRootNodes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphGetEdges(void *__args)
 {
 	spdlog::info("Received request: cuGraphGetEdges");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphNodeGetDependencies(void *__args)
 {
 	spdlog::info("Received request: cuGraphNodeGetDependencies");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphNodeGetDependentNodes(void *__args)
 {
 	spdlog::info("Received request: cuGraphNodeGetDependentNodes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphAddDependencies(void *__args)
 {
 	spdlog::info("Received request: cuGraphAddDependencies");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphRemoveDependencies(void *__args)
 {
 	spdlog::info("Received request: cuGraphRemoveDependencies");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphDestroyNode(void *__args)
 {
 	spdlog::info("Received request: cuGraphDestroyNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphInstantiate_v2(void *__args)
 {
 	spdlog::info("Received request: cuGraphInstantiate_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphInstantiateWithFlags(void *__args)
 {
 	spdlog::info("Received request: cuGraphInstantiateWithFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecKernelNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecKernelNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecMemcpyNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecMemcpyNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecMemsetNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecMemsetNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecHostNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecHostNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecChildGraphNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecChildGraphNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecEventRecordNodeSetEvent(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecEventRecordNodeSetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecEventWaitNodeSetEvent(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecEventWaitNodeSetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecExternalSemaphoresSignalNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecExternalSemaphoresSignalNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecExternalSemaphoresWaitNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecExternalSemaphoresWaitNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphUpload(void *__args)
 {
 	spdlog::info("Received request: cuGraphUpload");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphLaunch(void *__args)
 {
 	spdlog::info("Received request: cuGraphLaunch");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecDestroy(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphDestroy(void *__args)
 {
 	spdlog::info("Received request: cuGraphDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphExecUpdate(void *__args)
 {
 	spdlog::info("Received request: cuGraphExecUpdate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphKernelNodeCopyAttributes(void *__args)
 {
 	spdlog::info("Received request: cuGraphKernelNodeCopyAttributes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphKernelNodeGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuGraphKernelNodeGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphKernelNodeSetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuGraphKernelNodeSetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphDebugDotPrint(void *__args)
 {
 	spdlog::info("Received request: cuGraphDebugDotPrint");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuUserObjectCreate(void *__args)
 {
 	spdlog::info("Received request: cuUserObjectCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuUserObjectRetain(void *__args)
 {
 	spdlog::info("Received request: cuUserObjectRetain");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuUserObjectRelease(void *__args)
 {
 	spdlog::info("Received request: cuUserObjectRelease");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphRetainUserObject(void *__args)
 {
 	spdlog::info("Received request: cuGraphRetainUserObject");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphReleaseUserObject(void *__args)
 {
 	spdlog::info("Received request: cuGraphReleaseUserObject");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuOccupancyMaxActiveBlocksPerMultiprocessor(void *__args)
 {
 	spdlog::info("Received request: cuOccupancyMaxActiveBlocksPerMultiprocessor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(void *__args)
 {
 	spdlog::info("Received request: cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuOccupancyMaxPotentialBlockSize(void *__args)
 {
 	spdlog::info("Received request: cuOccupancyMaxPotentialBlockSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuOccupancyMaxPotentialBlockSizeWithFlags(void *__args)
 {
 	spdlog::info("Received request: cuOccupancyMaxPotentialBlockSizeWithFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuOccupancyAvailableDynamicSMemPerBlock(void *__args)
 {
 	spdlog::info("Received request: cuOccupancyAvailableDynamicSMemPerBlock");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetArray(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetMipmappedArray(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetMipmappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetAddress_v2(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetAddress_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetAddress2D_v3(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetAddress2D_v3");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetAddressMode(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetAddressMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetFilterMode(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetFilterMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetMipmapFilterMode(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetMipmapFilterMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetMipmapLevelBias(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetMipmapLevelBias");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetMipmapLevelClamp(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetMipmapLevelClamp");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetMaxAnisotropy(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetMaxAnisotropy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetBorderColor(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetBorderColor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefSetFlags(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetAddress_v2(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetAddress_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetArray(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetMipmappedArray(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetMipmappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetAddressMode(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetAddressMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetFilterMode(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetFilterMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetMipmapFilterMode(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetMipmapFilterMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetMipmapLevelBias(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetMipmapLevelBias");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetMipmapLevelClamp(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetMipmapLevelClamp");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetMaxAnisotropy(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetMaxAnisotropy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetBorderColor(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetBorderColor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefGetFlags(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefCreate(void *__args)
 {
 	spdlog::info("Received request: cuTexRefCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexRefDestroy(void *__args)
 {
 	spdlog::info("Received request: cuTexRefDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuSurfRefSetArray(void *__args)
 {
 	spdlog::info("Received request: cuSurfRefSetArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuSurfRefGetArray(void *__args)
 {
 	spdlog::info("Received request: cuSurfRefGetArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexObjectCreate(void *__args)
 {
 	spdlog::info("Received request: cuTexObjectCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexObjectDestroy(void *__args)
 {
 	spdlog::info("Received request: cuTexObjectDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexObjectGetResourceDesc(void *__args)
 {
 	spdlog::info("Received request: cuTexObjectGetResourceDesc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexObjectGetTextureDesc(void *__args)
 {
 	spdlog::info("Received request: cuTexObjectGetTextureDesc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuTexObjectGetResourceViewDesc(void *__args)
 {
 	spdlog::info("Received request: cuTexObjectGetResourceViewDesc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuSurfObjectCreate(void *__args)
 {
 	spdlog::info("Received request: cuSurfObjectCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuSurfObjectDestroy(void *__args)
 {
 	spdlog::info("Received request: cuSurfObjectDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuSurfObjectGetResourceDesc(void *__args)
 {
 	spdlog::info("Received request: cuSurfObjectGetResourceDesc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceCanAccessPeer(void *__args)
 {
 	spdlog::info("Received request: cuDeviceCanAccessPeer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxEnablePeerAccess(void *__args)
 {
 	spdlog::info("Received request: cuCtxEnablePeerAccess");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuCtxDisablePeerAccess(void *__args)
 {
 	spdlog::info("Received request: cuCtxDisablePeerAccess");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceGetP2PAttribute(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetP2PAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphicsUnregisterResource(void *__args)
 {
 	spdlog::info("Received request: cuGraphicsUnregisterResource");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphicsSubResourceGetMappedArray(void *__args)
 {
 	spdlog::info("Received request: cuGraphicsSubResourceGetMappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphicsResourceGetMappedMipmappedArray(void *__args)
 {
 	spdlog::info("Received request: cuGraphicsResourceGetMappedMipmappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphicsResourceGetMappedPointer_v2(void *__args)
 {
 	spdlog::info("Received request: cuGraphicsResourceGetMappedPointer_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphicsResourceSetMapFlags_v2(void *__args)
 {
 	spdlog::info("Received request: cuGraphicsResourceSetMapFlags_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphicsMapResources(void *__args)
 {
 	spdlog::info("Received request: cuGraphicsMapResources");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGraphicsUnmapResources(void *__args)
 {
 	spdlog::info("Received request: cuGraphicsUnmapResources");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGetProcAddress(void *__args)
 {
 	spdlog::info("Received request: cuGetProcAddress");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuGetExportTable(void *__args)
 {
 	spdlog::info("Received request: cuGetExportTable");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceReset(void *__args)
@@ -3452,7 +3462,7 @@ void TallyServer::handle_cudaDeviceGetLimit(void *__args)
 void TallyServer::handle_cudaDeviceGetTexture1DLinearMaxWidth(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetTexture1DLinearMaxWidth");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceGetCacheConfig(void *__args)
@@ -3473,7 +3483,7 @@ void TallyServer::handle_cudaDeviceGetCacheConfig(void *__args)
 void TallyServer::handle_cudaDeviceGetStreamPriorityRange(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetStreamPriorityRange");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceSetCacheConfig(void *__args)
@@ -3494,7 +3504,7 @@ void TallyServer::handle_cudaDeviceSetCacheConfig(void *__args)
 void TallyServer::handle_cudaDeviceGetSharedMemConfig(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetSharedMemConfig");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceSetSharedMemConfig(void *__args)
@@ -3515,19 +3525,19 @@ void TallyServer::handle_cudaDeviceSetSharedMemConfig(void *__args)
 void TallyServer::handle_cudaDeviceGetByPCIBusId(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetByPCIBusId");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceGetPCIBusId(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetPCIBusId");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaIpcGetEventHandle(void *__args)
 {
 	spdlog::info("Received request: cudaIpcGetEventHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaIpcOpenEventHandle(void *__args)
@@ -3548,25 +3558,25 @@ void TallyServer::handle_cudaIpcOpenEventHandle(void *__args)
 void TallyServer::handle_cudaIpcGetMemHandle(void *__args)
 {
 	spdlog::info("Received request: cudaIpcGetMemHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaIpcOpenMemHandle(void *__args)
 {
 	spdlog::info("Received request: cudaIpcOpenMemHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaIpcCloseMemHandle(void *__args)
 {
 	spdlog::info("Received request: cudaIpcCloseMemHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceFlushGPUDirectRDMAWrites(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceFlushGPUDirectRDMAWrites");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaThreadExit(void *__args)
@@ -3689,13 +3699,13 @@ void TallyServer::handle_cudaPeekAtLastError(void *__args)
 void TallyServer::handle_cudaGetErrorName(void *__args)
 {
 	spdlog::info("Received request: cudaGetErrorName");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetErrorString(void *__args)
 {
 	spdlog::info("Received request: cudaGetErrorString");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetDeviceCount(void *__args)
@@ -3792,7 +3802,7 @@ void TallyServer::handle_cudaDeviceGetMemPool(void *__args)
 void TallyServer::handle_cudaDeviceGetNvSciSyncAttributes(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetNvSciSyncAttributes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceGetP2PAttribute(void *__args)
@@ -3813,7 +3823,7 @@ void TallyServer::handle_cudaDeviceGetP2PAttribute(void *__args)
 void TallyServer::handle_cudaChooseDevice(void *__args)
 {
 	spdlog::info("Received request: cudaChooseDevice");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaSetDevice(void *__args)
@@ -3849,7 +3859,7 @@ void TallyServer::handle_cudaGetDevice(void *__args)
 void TallyServer::handle_cudaSetValidDevices(void *__args)
 {
 	spdlog::info("Received request: cudaSetValidDevices");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaSetDeviceFlags(void *__args)
@@ -3930,13 +3940,13 @@ void TallyServer::handle_cudaStreamCreateWithPriority(void *__args)
 void TallyServer::handle_cudaStreamGetPriority(void *__args)
 {
 	spdlog::info("Received request: cudaStreamGetPriority");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaStreamGetFlags(void *__args)
 {
 	spdlog::info("Received request: cudaStreamGetFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaCtxResetPersistingL2Cache(void *__args)
@@ -3972,13 +3982,13 @@ void TallyServer::handle_cudaStreamCopyAttributes(void *__args)
 void TallyServer::handle_cudaStreamGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaStreamGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaStreamSetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaStreamSetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaStreamDestroy(void *__args)
@@ -4016,7 +4026,7 @@ void TallyServer::handle_cudaStreamWaitEvent(void *__args)
 void TallyServer::handle_cudaStreamAddCallback(void *__args)
 {
 	spdlog::info("Received request: cudaStreamAddCallback");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaStreamSynchronize(void *__args)
@@ -4052,7 +4062,7 @@ void TallyServer::handle_cudaStreamQuery(void *__args)
 void TallyServer::handle_cudaStreamAttachMemAsync(void *__args)
 {
 	spdlog::info("Received request: cudaStreamAttachMemAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaStreamBeginCapture(void *__args)
@@ -4074,7 +4084,7 @@ void TallyServer::handle_cudaStreamBeginCapture(void *__args)
 void TallyServer::handle_cudaThreadExchangeStreamCaptureMode(void *__args)
 {
 	spdlog::info("Received request: cudaThreadExchangeStreamCaptureMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaStreamEndCapture(void *__args)
@@ -4096,25 +4106,25 @@ void TallyServer::handle_cudaStreamEndCapture(void *__args)
 void TallyServer::handle_cudaStreamIsCapturing(void *__args)
 {
 	spdlog::info("Received request: cudaStreamIsCapturing");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaStreamGetCaptureInfo(void *__args)
 {
 	spdlog::info("Received request: cudaStreamGetCaptureInfo");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaStreamGetCaptureInfo_v2(void *__args)
 {
 	spdlog::info("Received request: cudaStreamGetCaptureInfo_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaStreamUpdateCaptureDependencies(void *__args)
 {
 	spdlog::info("Received request: cudaStreamUpdateCaptureDependencies");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaEventCreate(void *__args)
@@ -4243,145 +4253,145 @@ void TallyServer::handle_cudaEventElapsedTime(void *__args)
 void TallyServer::handle_cudaImportExternalMemory(void *__args)
 {
 	spdlog::info("Received request: cudaImportExternalMemory");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaExternalMemoryGetMappedBuffer(void *__args)
 {
 	spdlog::info("Received request: cudaExternalMemoryGetMappedBuffer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaExternalMemoryGetMappedMipmappedArray(void *__args)
 {
 	spdlog::info("Received request: cudaExternalMemoryGetMappedMipmappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDestroyExternalMemory(void *__args)
 {
 	spdlog::info("Received request: cudaDestroyExternalMemory");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaImportExternalSemaphore(void *__args)
 {
 	spdlog::info("Received request: cudaImportExternalSemaphore");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaSignalExternalSemaphoresAsync_v2(void *__args)
 {
 	spdlog::info("Received request: cudaSignalExternalSemaphoresAsync_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaWaitExternalSemaphoresAsync_v2(void *__args)
 {
 	spdlog::info("Received request: cudaWaitExternalSemaphoresAsync_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDestroyExternalSemaphore(void *__args)
 {
 	spdlog::info("Received request: cudaDestroyExternalSemaphore");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaLaunchCooperativeKernel(void *__args)
 {
 	spdlog::info("Received request: cudaLaunchCooperativeKernel");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaLaunchCooperativeKernelMultiDevice(void *__args)
 {
 	spdlog::info("Received request: cudaLaunchCooperativeKernelMultiDevice");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaFuncSetCacheConfig(void *__args)
 {
 	spdlog::info("Received request: cudaFuncSetCacheConfig");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaFuncSetSharedMemConfig(void *__args)
 {
 	spdlog::info("Received request: cudaFuncSetSharedMemConfig");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaFuncGetAttributes(void *__args)
 {
 	spdlog::info("Received request: cudaFuncGetAttributes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaFuncSetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaFuncSetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaSetDoubleForDevice(void *__args)
 {
 	spdlog::info("Received request: cudaSetDoubleForDevice");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaSetDoubleForHost(void *__args)
 {
 	spdlog::info("Received request: cudaSetDoubleForHost");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaLaunchHostFunc(void *__args)
 {
 	spdlog::info("Received request: cudaLaunchHostFunc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessor(void *__args)
 {
 	spdlog::info("Received request: cudaOccupancyMaxActiveBlocksPerMultiprocessor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaOccupancyAvailableDynamicSMemPerBlock(void *__args)
 {
 	spdlog::info("Received request: cudaOccupancyAvailableDynamicSMemPerBlock");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(void *__args)
 {
 	spdlog::info("Received request: cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMallocManaged(void *__args)
 {
 	spdlog::info("Received request: cudaMallocManaged");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMallocHost(void *__args)
 {
 	spdlog::info("Received request: cudaMallocHost");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMallocPitch(void *__args)
 {
 	spdlog::info("Received request: cudaMallocPitch");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMallocArray(void *__args)
 {
 	spdlog::info("Received request: cudaMallocArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaFree(void *__args)
@@ -4402,589 +4412,589 @@ void TallyServer::handle_cudaFree(void *__args)
 void TallyServer::handle_cudaFreeHost(void *__args)
 {
 	spdlog::info("Received request: cudaFreeHost");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaFreeArray(void *__args)
 {
 	spdlog::info("Received request: cudaFreeArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaFreeMipmappedArray(void *__args)
 {
 	spdlog::info("Received request: cudaFreeMipmappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaHostAlloc(void *__args)
 {
 	spdlog::info("Received request: cudaHostAlloc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaHostRegister(void *__args)
 {
 	spdlog::info("Received request: cudaHostRegister");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaHostUnregister(void *__args)
 {
 	spdlog::info("Received request: cudaHostUnregister");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaHostGetDevicePointer(void *__args)
 {
 	spdlog::info("Received request: cudaHostGetDevicePointer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaHostGetFlags(void *__args)
 {
 	spdlog::info("Received request: cudaHostGetFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMalloc3D(void *__args)
 {
 	spdlog::info("Received request: cudaMalloc3D");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMalloc3DArray(void *__args)
 {
 	spdlog::info("Received request: cudaMalloc3DArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMallocMipmappedArray(void *__args)
 {
 	spdlog::info("Received request: cudaMallocMipmappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetMipmappedArrayLevel(void *__args)
 {
 	spdlog::info("Received request: cudaGetMipmappedArrayLevel");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy3D(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy3D");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy3DPeer(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy3DPeer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy3DAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy3DAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy3DPeerAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy3DPeerAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemGetInfo(void *__args)
 {
 	spdlog::info("Received request: cudaMemGetInfo");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaArrayGetInfo(void *__args)
 {
 	spdlog::info("Received request: cudaArrayGetInfo");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaArrayGetPlane(void *__args)
 {
 	spdlog::info("Received request: cudaArrayGetPlane");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaArrayGetSparseProperties(void *__args)
 {
 	spdlog::info("Received request: cudaArrayGetSparseProperties");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMipmappedArrayGetSparseProperties(void *__args)
 {
 	spdlog::info("Received request: cudaMipmappedArrayGetSparseProperties");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyPeer(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyPeer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy2D(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy2D");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy2DToArray(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy2DToArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy2DFromArray(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy2DFromArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy2DArrayToArray(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy2DArrayToArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyToSymbol(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyToSymbol");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyFromSymbol(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyFromSymbol");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyPeerAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyPeerAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy2DAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy2DAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy2DToArrayAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy2DToArrayAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpy2DFromArrayAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpy2DFromArrayAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyToSymbolAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyToSymbolAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyFromSymbolAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyFromSymbolAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemset(void *__args)
 {
 	spdlog::info("Received request: cudaMemset");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemset2D(void *__args)
 {
 	spdlog::info("Received request: cudaMemset2D");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemset3D(void *__args)
 {
 	spdlog::info("Received request: cudaMemset3D");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemsetAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemsetAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemset2DAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemset2DAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemset3DAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemset3DAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetSymbolAddress(void *__args)
 {
 	spdlog::info("Received request: cudaGetSymbolAddress");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetSymbolSize(void *__args)
 {
 	spdlog::info("Received request: cudaGetSymbolSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPrefetchAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemPrefetchAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemAdvise(void *__args)
 {
 	spdlog::info("Received request: cudaMemAdvise");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemRangeGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaMemRangeGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemRangeGetAttributes(void *__args)
 {
 	spdlog::info("Received request: cudaMemRangeGetAttributes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyToArray(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyToArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyFromArray(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyFromArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyArrayToArray(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyArrayToArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyToArrayAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyToArrayAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemcpyFromArrayAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyFromArrayAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMallocAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMallocAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaFreeAsync(void *__args)
 {
 	spdlog::info("Received request: cudaFreeAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolTrimTo(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolTrimTo");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolSetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolSetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolSetAccess(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolSetAccess");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolGetAccess(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolGetAccess");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolCreate(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolDestroy(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMallocFromPoolAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMallocFromPoolAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolExportToShareableHandle(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolExportToShareableHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolImportFromShareableHandle(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolImportFromShareableHandle");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolExportPointer(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolExportPointer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaMemPoolImportPointer(void *__args)
 {
 	spdlog::info("Received request: cudaMemPoolImportPointer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaPointerGetAttributes(void *__args)
 {
 	spdlog::info("Received request: cudaPointerGetAttributes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceCanAccessPeer(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceCanAccessPeer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceEnablePeerAccess(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceEnablePeerAccess");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceDisablePeerAccess(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceDisablePeerAccess");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphicsUnregisterResource(void *__args)
 {
 	spdlog::info("Received request: cudaGraphicsUnregisterResource");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphicsResourceSetMapFlags(void *__args)
 {
 	spdlog::info("Received request: cudaGraphicsResourceSetMapFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphicsMapResources(void *__args)
 {
 	spdlog::info("Received request: cudaGraphicsMapResources");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphicsUnmapResources(void *__args)
 {
 	spdlog::info("Received request: cudaGraphicsUnmapResources");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphicsResourceGetMappedPointer(void *__args)
 {
 	spdlog::info("Received request: cudaGraphicsResourceGetMappedPointer");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphicsSubResourceGetMappedArray(void *__args)
 {
 	spdlog::info("Received request: cudaGraphicsSubResourceGetMappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphicsResourceGetMappedMipmappedArray(void *__args)
 {
 	spdlog::info("Received request: cudaGraphicsResourceGetMappedMipmappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaBindTexture(void *__args)
 {
 	spdlog::info("Received request: cudaBindTexture");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaBindTexture2D(void *__args)
 {
 	spdlog::info("Received request: cudaBindTexture2D");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaBindTextureToArray(void *__args)
 {
 	spdlog::info("Received request: cudaBindTextureToArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaBindTextureToMipmappedArray(void *__args)
 {
 	spdlog::info("Received request: cudaBindTextureToMipmappedArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaUnbindTexture(void *__args)
 {
 	spdlog::info("Received request: cudaUnbindTexture");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetTextureAlignmentOffset(void *__args)
 {
 	spdlog::info("Received request: cudaGetTextureAlignmentOffset");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetTextureReference(void *__args)
 {
 	spdlog::info("Received request: cudaGetTextureReference");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaBindSurfaceToArray(void *__args)
 {
 	spdlog::info("Received request: cudaBindSurfaceToArray");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetSurfaceReference(void *__args)
 {
 	spdlog::info("Received request: cudaGetSurfaceReference");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetChannelDesc(void *__args)
 {
 	spdlog::info("Received request: cudaGetChannelDesc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaCreateChannelDesc(void *__args)
 {
 	spdlog::info("Received request: cudaCreateChannelDesc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaCreateTextureObject(void *__args)
 {
 	spdlog::info("Received request: cudaCreateTextureObject");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDestroyTextureObject(void *__args)
 {
 	spdlog::info("Received request: cudaDestroyTextureObject");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetTextureObjectResourceDesc(void *__args)
 {
 	spdlog::info("Received request: cudaGetTextureObjectResourceDesc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetTextureObjectTextureDesc(void *__args)
 {
 	spdlog::info("Received request: cudaGetTextureObjectTextureDesc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetTextureObjectResourceViewDesc(void *__args)
 {
 	spdlog::info("Received request: cudaGetTextureObjectResourceViewDesc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaCreateSurfaceObject(void *__args)
 {
 	spdlog::info("Received request: cudaCreateSurfaceObject");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDestroySurfaceObject(void *__args)
 {
 	spdlog::info("Received request: cudaDestroySurfaceObject");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetSurfaceObjectResourceDesc(void *__args)
 {
 	spdlog::info("Received request: cudaGetSurfaceObjectResourceDesc");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDriverGetVersion(void *__args)
 {
 	spdlog::info("Received request: cudaDriverGetVersion");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaRuntimeGetVersion(void *__args)
 {
 	spdlog::info("Received request: cudaRuntimeGetVersion");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphCreate(void *__args)
@@ -5005,1843 +5015,1843 @@ void TallyServer::handle_cudaGraphCreate(void *__args)
 void TallyServer::handle_cudaGraphAddKernelNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddKernelNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphKernelNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphKernelNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphKernelNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphKernelNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphKernelNodeCopyAttributes(void *__args)
 {
 	spdlog::info("Received request: cudaGraphKernelNodeCopyAttributes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphKernelNodeGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaGraphKernelNodeGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphKernelNodeSetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaGraphKernelNodeSetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddMemcpyNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddMemcpyNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddMemcpyNodeToSymbol(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddMemcpyNodeToSymbol");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddMemcpyNodeFromSymbol(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddMemcpyNodeFromSymbol");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddMemcpyNode1D(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddMemcpyNode1D");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphMemcpyNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphMemcpyNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphMemcpyNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphMemcpyNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphMemcpyNodeSetParamsToSymbol(void *__args)
 {
 	spdlog::info("Received request: cudaGraphMemcpyNodeSetParamsToSymbol");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphMemcpyNodeSetParamsFromSymbol(void *__args)
 {
 	spdlog::info("Received request: cudaGraphMemcpyNodeSetParamsFromSymbol");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphMemcpyNodeSetParams1D(void *__args)
 {
 	spdlog::info("Received request: cudaGraphMemcpyNodeSetParams1D");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddMemsetNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddMemsetNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphMemsetNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphMemsetNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphMemsetNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphMemsetNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddHostNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddHostNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphHostNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphHostNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphHostNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphHostNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddChildGraphNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddChildGraphNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphChildGraphNodeGetGraph(void *__args)
 {
 	spdlog::info("Received request: cudaGraphChildGraphNodeGetGraph");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddEmptyNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddEmptyNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddEventRecordNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddEventRecordNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphEventRecordNodeGetEvent(void *__args)
 {
 	spdlog::info("Received request: cudaGraphEventRecordNodeGetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphEventRecordNodeSetEvent(void *__args)
 {
 	spdlog::info("Received request: cudaGraphEventRecordNodeSetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddEventWaitNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddEventWaitNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphEventWaitNodeGetEvent(void *__args)
 {
 	spdlog::info("Received request: cudaGraphEventWaitNodeGetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphEventWaitNodeSetEvent(void *__args)
 {
 	spdlog::info("Received request: cudaGraphEventWaitNodeSetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddExternalSemaphoresSignalNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddExternalSemaphoresSignalNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExternalSemaphoresSignalNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExternalSemaphoresSignalNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExternalSemaphoresSignalNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExternalSemaphoresSignalNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddExternalSemaphoresWaitNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddExternalSemaphoresWaitNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExternalSemaphoresWaitNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExternalSemaphoresWaitNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExternalSemaphoresWaitNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExternalSemaphoresWaitNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddMemAllocNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddMemAllocNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphMemAllocNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphMemAllocNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddMemFreeNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddMemFreeNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphMemFreeNodeGetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphMemFreeNodeGetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceGraphMemTrim(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGraphMemTrim");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceGetGraphMemAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetGraphMemAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaDeviceSetGraphMemAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceSetGraphMemAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphClone(void *__args)
 {
 	spdlog::info("Received request: cudaGraphClone");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphNodeFindInClone(void *__args)
 {
 	spdlog::info("Received request: cudaGraphNodeFindInClone");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphNodeGetType(void *__args)
 {
 	spdlog::info("Received request: cudaGraphNodeGetType");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphGetNodes(void *__args)
 {
 	spdlog::info("Received request: cudaGraphGetNodes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphGetRootNodes(void *__args)
 {
 	spdlog::info("Received request: cudaGraphGetRootNodes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphGetEdges(void *__args)
 {
 	spdlog::info("Received request: cudaGraphGetEdges");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphNodeGetDependencies(void *__args)
 {
 	spdlog::info("Received request: cudaGraphNodeGetDependencies");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphNodeGetDependentNodes(void *__args)
 {
 	spdlog::info("Received request: cudaGraphNodeGetDependentNodes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphAddDependencies(void *__args)
 {
 	spdlog::info("Received request: cudaGraphAddDependencies");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphRemoveDependencies(void *__args)
 {
 	spdlog::info("Received request: cudaGraphRemoveDependencies");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphDestroyNode(void *__args)
 {
 	spdlog::info("Received request: cudaGraphDestroyNode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphInstantiate(void *__args)
 {
 	spdlog::info("Received request: cudaGraphInstantiate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphInstantiateWithFlags(void *__args)
 {
 	spdlog::info("Received request: cudaGraphInstantiateWithFlags");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecKernelNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecKernelNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecMemcpyNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecMemcpyNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecMemcpyNodeSetParamsToSymbol(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecMemcpyNodeSetParamsToSymbol");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecMemcpyNodeSetParamsFromSymbol(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecMemcpyNodeSetParamsFromSymbol");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecMemcpyNodeSetParams1D(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecMemcpyNodeSetParams1D");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecMemsetNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecMemsetNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecHostNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecHostNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecChildGraphNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecChildGraphNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecEventRecordNodeSetEvent(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecEventRecordNodeSetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecEventWaitNodeSetEvent(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecEventWaitNodeSetEvent");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecExternalSemaphoresSignalNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecExternalSemaphoresSignalNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecExternalSemaphoresWaitNodeSetParams(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecExternalSemaphoresWaitNodeSetParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecUpdate(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecUpdate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphUpload(void *__args)
 {
 	spdlog::info("Received request: cudaGraphUpload");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphLaunch(void *__args)
 {
 	spdlog::info("Received request: cudaGraphLaunch");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphExecDestroy(void *__args)
 {
 	spdlog::info("Received request: cudaGraphExecDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphDestroy(void *__args)
 {
 	spdlog::info("Received request: cudaGraphDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphDebugDotPrint(void *__args)
 {
 	spdlog::info("Received request: cudaGraphDebugDotPrint");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaUserObjectCreate(void *__args)
 {
 	spdlog::info("Received request: cudaUserObjectCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaUserObjectRetain(void *__args)
 {
 	spdlog::info("Received request: cudaUserObjectRetain");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaUserObjectRelease(void *__args)
 {
 	spdlog::info("Received request: cudaUserObjectRelease");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphRetainUserObject(void *__args)
 {
 	spdlog::info("Received request: cudaGraphRetainUserObject");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGraphReleaseUserObject(void *__args)
 {
 	spdlog::info("Received request: cudaGraphReleaseUserObject");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetDriverEntryPoint(void *__args)
 {
 	spdlog::info("Received request: cudaGetDriverEntryPoint");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetExportTable(void *__args)
 {
 	spdlog::info("Received request: cudaGetExportTable");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaGetFuncBySymbol(void *__args)
 {
 	spdlog::info("Received request: cudaGetFuncBySymbol");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetVersion(void *__args)
 {
 	spdlog::info("Received request: cudnnGetVersion");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetMaxDeviceVersion(void *__args)
 {
 	spdlog::info("Received request: cudnnGetMaxDeviceVersion");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetCudartVersion(void *__args)
 {
 	spdlog::info("Received request: cudnnGetCudartVersion");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetErrorString(void *__args)
 {
 	spdlog::info("Received request: cudnnGetErrorString");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnQueryRuntimeError(void *__args)
 {
 	spdlog::info("Received request: cudnnQueryRuntimeError");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetProperty(void *__args)
 {
 	spdlog::info("Received request: cudnnGetProperty");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreate(void *__args)
 {
 	spdlog::info("Received request: cudnnCreate");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroy(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroy");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetStream(void *__args)
 {
 	spdlog::info("Received request: cudnnSetStream");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetStream(void *__args)
 {
 	spdlog::info("Received request: cudnnGetStream");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetTensor4dDescriptorEx(void *__args)
 {
 	spdlog::info("Received request: cudnnSetTensor4dDescriptorEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetTensor4dDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetTensor4dDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetTensorNdDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetTensorNdDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetTensorNdDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetTensorNdDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetTensorSizeInBytes(void *__args)
 {
 	spdlog::info("Received request: cudnnGetTensorSizeInBytes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnAddTensor(void *__args)
 {
 	spdlog::info("Received request: cudnnAddTensor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateOpTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateOpTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetOpTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetOpTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetOpTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetOpTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyOpTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyOpTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnOpTensor(void *__args)
 {
 	spdlog::info("Received request: cudnnOpTensor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateReduceTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateReduceTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetReduceTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetReduceTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetReduceTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetReduceTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyReduceTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyReduceTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetReductionIndicesSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetReductionIndicesSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetReductionWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetReductionWorkspaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnReduceTensor(void *__args)
 {
 	spdlog::info("Received request: cudnnReduceTensor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetTensor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetTensor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnScaleTensor(void *__args)
 {
 	spdlog::info("Received request: cudnnScaleTensor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateFilterDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateFilterDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetFilterSizeInBytes(void *__args)
 {
 	spdlog::info("Received request: cudnnGetFilterSizeInBytes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyFilterDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyFilterDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSoftmaxForward(void *__args)
 {
 	spdlog::info("Received request: cudnnSoftmaxForward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreatePoolingDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreatePoolingDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetPooling2dDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetPooling2dDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetPooling2dDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetPooling2dDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetPoolingNdDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetPoolingNdDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetPoolingNdDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetPoolingNdDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetPoolingNdForwardOutputDim(void *__args)
 {
 	spdlog::info("Received request: cudnnGetPoolingNdForwardOutputDim");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetPooling2dForwardOutputDim(void *__args)
 {
 	spdlog::info("Received request: cudnnGetPooling2dForwardOutputDim");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyPoolingDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyPoolingDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnPoolingForward(void *__args)
 {
 	spdlog::info("Received request: cudnnPoolingForward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateActivationDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateActivationDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetActivationDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetActivationDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetActivationDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetActivationDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetActivationDescriptorSwishBeta(void *__args)
 {
 	spdlog::info("Received request: cudnnSetActivationDescriptorSwishBeta");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetActivationDescriptorSwishBeta(void *__args)
 {
 	spdlog::info("Received request: cudnnGetActivationDescriptorSwishBeta");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyActivationDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyActivationDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnActivationForward(void *__args)
 {
 	spdlog::info("Received request: cudnnActivationForward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateLRNDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateLRNDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetLRNDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetLRNDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetLRNDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetLRNDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyLRNDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyLRNDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnLRNCrossChannelForward(void *__args)
 {
 	spdlog::info("Received request: cudnnLRNCrossChannelForward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDivisiveNormalizationForward(void *__args)
 {
 	spdlog::info("Received request: cudnnDivisiveNormalizationForward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDeriveBNTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDeriveBNTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBatchNormalizationForwardInference(void *__args)
 {
 	spdlog::info("Received request: cudnnBatchNormalizationForwardInference");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDeriveNormTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDeriveNormTensorDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnNormalizationForwardInference(void *__args)
 {
 	spdlog::info("Received request: cudnnNormalizationForwardInference");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateDropoutDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateDropoutDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyDropoutDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyDropoutDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDropoutGetStatesSize(void *__args)
 {
 	spdlog::info("Received request: cudnnDropoutGetStatesSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDropoutGetReserveSpaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnDropoutGetReserveSpaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetDropoutDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetDropoutDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRestoreDropoutDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnRestoreDropoutDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetDropoutDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetDropoutDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDropoutForward(void *__args)
 {
 	spdlog::info("Received request: cudnnDropoutForward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateAlgorithmDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateAlgorithmDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetAlgorithmDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetAlgorithmDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetAlgorithmDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetAlgorithmDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCopyAlgorithmDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCopyAlgorithmDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyAlgorithmDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyAlgorithmDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetAlgorithmSpaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetAlgorithmSpaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSaveAlgorithm(void *__args)
 {
 	spdlog::info("Received request: cudnnSaveAlgorithm");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRestoreAlgorithm(void *__args)
 {
 	spdlog::info("Received request: cudnnRestoreAlgorithm");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetCallback(void *__args)
 {
 	spdlog::info("Received request: cudnnSetCallback");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetCallback(void *__args)
 {
 	spdlog::info("Received request: cudnnGetCallback");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnOpsInferVersionCheck(void *__args)
 {
 	spdlog::info("Received request: cudnnOpsInferVersionCheck");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnPoolingBackward(void *__args)
 {
 	spdlog::info("Received request: cudnnPoolingBackward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnActivationBackward(void *__args)
 {
 	spdlog::info("Received request: cudnnActivationBackward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnLRNCrossChannelBackward(void *__args)
 {
 	spdlog::info("Received request: cudnnLRNCrossChannelBackward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDivisiveNormalizationBackward(void *__args)
 {
 	spdlog::info("Received request: cudnnDivisiveNormalizationBackward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetBatchNormalizationBackwardExWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetBatchNormalizationBackwardExWorkspaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetBatchNormalizationTrainingExReserveSpaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetBatchNormalizationTrainingExReserveSpaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBatchNormalizationForwardTraining(void *__args)
 {
 	spdlog::info("Received request: cudnnBatchNormalizationForwardTraining");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBatchNormalizationForwardTrainingEx(void *__args)
 {
 	spdlog::info("Received request: cudnnBatchNormalizationForwardTrainingEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBatchNormalizationBackward(void *__args)
 {
 	spdlog::info("Received request: cudnnBatchNormalizationBackward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args)
 {
 	spdlog::info("Received request: cudnnBatchNormalizationBackwardEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetNormalizationForwardTrainingWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetNormalizationForwardTrainingWorkspaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetNormalizationBackwardWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetNormalizationBackwardWorkspaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetNormalizationTrainingReserveSpaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetNormalizationTrainingReserveSpaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnNormalizationForwardTraining(void *__args)
 {
 	spdlog::info("Received request: cudnnNormalizationForwardTraining");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnNormalizationBackward(void *__args)
 {
 	spdlog::info("Received request: cudnnNormalizationBackward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDropoutBackward(void *__args)
 {
 	spdlog::info("Received request: cudnnDropoutBackward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnOpsTrainVersionCheck(void *__args)
 {
 	spdlog::info("Received request: cudnnOpsTrainVersionCheck");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateRNNDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateRNNDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyRNNDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyRNNDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetRNNDescriptor_v8(void *__args)
 {
 	spdlog::info("Received request: cudnnSetRNNDescriptor_v8");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNDescriptor_v8(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNDescriptor_v8");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetRNNDescriptor_v6(void *__args)
 {
 	spdlog::info("Received request: cudnnSetRNNDescriptor_v6");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNDescriptor_v6(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNDescriptor_v6");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetRNNMatrixMathType(void *__args)
 {
 	spdlog::info("Received request: cudnnSetRNNMatrixMathType");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNMatrixMathType(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNMatrixMathType");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetRNNBiasMode(void *__args)
 {
 	spdlog::info("Received request: cudnnSetRNNBiasMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNBiasMode(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNBiasMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNSetClip_v8(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNSetClip_v8");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNGetClip_v8(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNGetClip_v8");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNSetClip(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNSetClip");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNGetClip(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNGetClip");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetRNNProjectionLayers(void *__args)
 {
 	spdlog::info("Received request: cudnnSetRNNProjectionLayers");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNProjectionLayers(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNProjectionLayers");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreatePersistentRNNPlan(void *__args)
 {
 	spdlog::info("Received request: cudnnCreatePersistentRNNPlan");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyPersistentRNNPlan(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyPersistentRNNPlan");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetPersistentRNNPlan(void *__args)
 {
 	spdlog::info("Received request: cudnnSetPersistentRNNPlan");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBuildRNNDynamic(void *__args)
 {
 	spdlog::info("Received request: cudnnBuildRNNDynamic");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNWorkspaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNTrainingReserveSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNTrainingReserveSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNTempSpaceSizes(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNTempSpaceSizes");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNParamsSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNParamsSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNWeightSpaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNWeightSpaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNLinLayerMatrixParams(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNLinLayerMatrixParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNLinLayerBiasParams(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNLinLayerBiasParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNWeightParams(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNWeightParams");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNForwardInference(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNForwardInference");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetRNNPaddingMode(void *__args)
 {
 	spdlog::info("Received request: cudnnSetRNNPaddingMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNPaddingMode(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNPaddingMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateRNNDataDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateRNNDataDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyRNNDataDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyRNNDataDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetRNNDataDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetRNNDataDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNDataDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNDataDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNForwardInferenceEx(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNForwardInferenceEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNForward(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNForward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetRNNAlgorithmDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetRNNAlgorithmDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNForwardInferenceAlgorithmMaxCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNForwardInferenceAlgorithmMaxCount");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateSeqDataDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateSeqDataDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroySeqDataDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroySeqDataDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetSeqDataDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetSeqDataDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetSeqDataDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetSeqDataDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateAttnDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateAttnDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyAttnDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyAttnDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetAttnDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetAttnDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetAttnDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetAttnDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetMultiHeadAttnBuffers(void *__args)
 {
 	spdlog::info("Received request: cudnnGetMultiHeadAttnBuffers");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetMultiHeadAttnWeights(void *__args)
 {
 	spdlog::info("Received request: cudnnGetMultiHeadAttnWeights");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnMultiHeadAttnForward(void *__args)
 {
 	spdlog::info("Received request: cudnnMultiHeadAttnForward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnAdvInferVersionCheck(void *__args)
 {
 	spdlog::info("Received request: cudnnAdvInferVersionCheck");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNForwardTraining(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNForwardTraining");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNBackwardData(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNBackwardData");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNBackwardData_v8(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNBackwardData_v8");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNBackwardWeights(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNBackwardWeights");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNBackwardWeights_v8(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNBackwardWeights_v8");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNForwardTrainingEx(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNForwardTrainingEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNBackwardDataEx(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNBackwardDataEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnRNNBackwardWeightsEx(void *__args)
 {
 	spdlog::info("Received request: cudnnRNNBackwardWeightsEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNForwardTrainingAlgorithmMaxCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNForwardTrainingAlgorithmMaxCount");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNBackwardDataAlgorithmMaxCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNBackwardDataAlgorithmMaxCount");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetRNNBackwardWeightsAlgorithmMaxCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNBackwardWeightsAlgorithmMaxCount");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnMultiHeadAttnBackwardData(void *__args)
 {
 	spdlog::info("Received request: cudnnMultiHeadAttnBackwardData");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnMultiHeadAttnBackwardWeights(void *__args)
 {
 	spdlog::info("Received request: cudnnMultiHeadAttnBackwardWeights");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateCTCLossDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateCTCLossDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetCTCLossDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetCTCLossDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetCTCLossDescriptorEx(void *__args)
 {
 	spdlog::info("Received request: cudnnSetCTCLossDescriptorEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetCTCLossDescriptor_v8(void *__args)
 {
 	spdlog::info("Received request: cudnnSetCTCLossDescriptor_v8");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetCTCLossDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetCTCLossDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetCTCLossDescriptorEx(void *__args)
 {
 	spdlog::info("Received request: cudnnGetCTCLossDescriptorEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetCTCLossDescriptor_v8(void *__args)
 {
 	spdlog::info("Received request: cudnnGetCTCLossDescriptor_v8");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyCTCLossDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyCTCLossDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCTCLoss(void *__args)
 {
 	spdlog::info("Received request: cudnnCTCLoss");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCTCLoss_v8(void *__args)
 {
 	spdlog::info("Received request: cudnnCTCLoss_v8");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetCTCLossWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetCTCLossWorkspaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetCTCLossWorkspaceSize_v8(void *__args)
 {
 	spdlog::info("Received request: cudnnGetCTCLossWorkspaceSize_v8");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnAdvTrainVersionCheck(void *__args)
 {
 	spdlog::info("Received request: cudnnAdvTrainVersionCheck");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateConvolutionDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateConvolutionDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyConvolutionDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyConvolutionDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetConvolutionMathType(void *__args)
 {
 	spdlog::info("Received request: cudnnSetConvolutionMathType");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionMathType(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionMathType");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetConvolutionGroupCount(void *__args)
 {
 	spdlog::info("Received request: cudnnSetConvolutionGroupCount");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionGroupCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionGroupCount");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetConvolutionReorderType(void *__args)
 {
 	spdlog::info("Received request: cudnnSetConvolutionReorderType");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionReorderType(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionReorderType");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetConvolution2dDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetConvolution2dDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolution2dDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolution2dDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetConvolutionNdDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnSetConvolutionNdDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionNdDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionNdDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolution2dForwardOutputDim(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolution2dForwardOutputDim");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionNdForwardOutputDim(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionNdForwardOutputDim");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionForwardAlgorithmMaxCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionForwardAlgorithmMaxCount");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnIm2Col(void *__args)
 {
 	spdlog::info("Received request: cudnnIm2Col");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnReorderFilterAndBias(void *__args)
 {
 	spdlog::info("Received request: cudnnReorderFilterAndBias");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionForwardWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionForwardWorkspaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnConvolutionForward(void *__args)
 {
 	spdlog::info("Received request: cudnnConvolutionForward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnConvolutionBiasActivationForward(void *__args)
 {
 	spdlog::info("Received request: cudnnConvolutionBiasActivationForward");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionBackwardDataAlgorithmMaxCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionBackwardDataAlgorithmMaxCount");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionBackwardDataWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionBackwardDataWorkspaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnConvolutionBackwardData(void *__args)
 {
 	spdlog::info("Received request: cudnnConvolutionBackwardData");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCnnInferVersionCheck(void *__args)
 {
 	spdlog::info("Received request: cudnnCnnInferVersionCheck");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionBackwardFilterAlgorithmMaxCount");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetConvolutionBackwardFilterWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionBackwardFilterWorkspaceSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnConvolutionBackwardFilter(void *__args)
 {
 	spdlog::info("Received request: cudnnConvolutionBackwardFilter");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnConvolutionBackwardBias(void *__args)
 {
 	spdlog::info("Received request: cudnnConvolutionBackwardBias");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateFusedOpsConstParamPack(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateFusedOpsConstParamPack");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyFusedOpsConstParamPack(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyFusedOpsConstParamPack");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetFusedOpsConstParamPackAttribute(void *__args)
 {
 	spdlog::info("Received request: cudnnSetFusedOpsConstParamPackAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetFusedOpsConstParamPackAttribute(void *__args)
 {
 	spdlog::info("Received request: cudnnGetFusedOpsConstParamPackAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateFusedOpsVariantParamPack(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateFusedOpsVariantParamPack");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyFusedOpsVariantParamPack(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyFusedOpsVariantParamPack");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnSetFusedOpsVariantParamPackAttribute(void *__args)
 {
 	spdlog::info("Received request: cudnnSetFusedOpsVariantParamPackAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnGetFusedOpsVariantParamPackAttribute(void *__args)
 {
 	spdlog::info("Received request: cudnnGetFusedOpsVariantParamPackAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCreateFusedOpsPlan(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateFusedOpsPlan");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnDestroyFusedOpsPlan(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyFusedOpsPlan");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnMakeFusedOpsPlan(void *__args)
 {
 	spdlog::info("Received request: cudnnMakeFusedOpsPlan");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnFusedOpsExecute(void *__args)
 {
 	spdlog::info("Received request: cudnnFusedOpsExecute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnCnnTrainVersionCheck(void *__args)
 {
 	spdlog::info("Received request: cudnnCnnTrainVersionCheck");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBackendCreateDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnBackendCreateDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBackendDestroyDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnBackendDestroyDescriptor");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBackendInitialize(void *__args)
 {
 	spdlog::info("Received request: cudnnBackendInitialize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBackendFinalize(void *__args)
 {
 	spdlog::info("Received request: cudnnBackendFinalize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBackendSetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudnnBackendSetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBackendGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudnnBackendGetAttribute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudnnBackendExecute(void *__args)
 {
 	spdlog::info("Received request: cudnnBackendExecute");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCreate_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCreate_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDestroy_v2(void *__args)
@@ -6862,13 +6872,13 @@ void TallyServer::handle_cublasDestroy_v2(void *__args)
 void TallyServer::handle_cublasGetVersion_v2(void *__args)
 {
 	spdlog::info("Received request: cublasGetVersion_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetProperty(void *__args)
 {
 	spdlog::info("Received request: cublasGetProperty");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetCudartVersion(void *__args)
@@ -6888,1633 +6898,1633 @@ void TallyServer::handle_cublasGetCudartVersion(void *__args)
 void TallyServer::handle_cublasSetWorkspace_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSetWorkspace_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSetStream_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSetStream_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetStream_v2(void *__args)
 {
 	spdlog::info("Received request: cublasGetStream_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetPointerMode_v2(void *__args)
 {
 	spdlog::info("Received request: cublasGetPointerMode_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSetPointerMode_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSetPointerMode_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetAtomicsMode(void *__args)
 {
 	spdlog::info("Received request: cublasGetAtomicsMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSetAtomicsMode(void *__args)
 {
 	spdlog::info("Received request: cublasSetAtomicsMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetMathMode(void *__args)
 {
 	spdlog::info("Received request: cublasGetMathMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSetMathMode(void *__args)
 {
 	spdlog::info("Received request: cublasSetMathMode");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetSmCountTarget(void *__args)
 {
 	spdlog::info("Received request: cublasGetSmCountTarget");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSetSmCountTarget(void *__args)
 {
 	spdlog::info("Received request: cublasSetSmCountTarget");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetStatusName(void *__args)
 {
 	spdlog::info("Received request: cublasGetStatusName");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetStatusString(void *__args)
 {
 	spdlog::info("Received request: cublasGetStatusString");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasLoggerConfigure(void *__args)
 {
 	spdlog::info("Received request: cublasLoggerConfigure");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSetLoggerCallback(void *__args)
 {
 	spdlog::info("Received request: cublasSetLoggerCallback");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetLoggerCallback(void *__args)
 {
 	spdlog::info("Received request: cublasGetLoggerCallback");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSetVector(void *__args)
 {
 	spdlog::info("Received request: cublasSetVector");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetVector(void *__args)
 {
 	spdlog::info("Received request: cublasGetVector");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSetMatrix(void *__args)
 {
 	spdlog::info("Received request: cublasSetMatrix");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetMatrix(void *__args)
 {
 	spdlog::info("Received request: cublasGetMatrix");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSetVectorAsync(void *__args)
 {
 	spdlog::info("Received request: cublasSetVectorAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetVectorAsync(void *__args)
 {
 	spdlog::info("Received request: cublasGetVectorAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSetMatrixAsync(void *__args)
 {
 	spdlog::info("Received request: cublasSetMatrixAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGetMatrixAsync(void *__args)
 {
 	spdlog::info("Received request: cublasGetMatrixAsync");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasXerbla(void *__args)
 {
 	spdlog::info("Received request: cublasXerbla");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasNrm2Ex(void *__args)
 {
 	spdlog::info("Received request: cublasNrm2Ex");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSnrm2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSnrm2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDnrm2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDnrm2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasScnrm2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasScnrm2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDznrm2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDznrm2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDotEx(void *__args)
 {
 	spdlog::info("Received request: cublasDotEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDotcEx(void *__args)
 {
 	spdlog::info("Received request: cublasDotcEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSdot_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSdot_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDdot_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDdot_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCdotu_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCdotu_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCdotc_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCdotc_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZdotu_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZdotu_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZdotc_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZdotc_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasScalEx(void *__args)
 {
 	spdlog::info("Received request: cublasScalEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSscal_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSscal_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDscal_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDscal_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCscal_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCscal_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsscal_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCsscal_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZscal_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZscal_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZdscal_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZdscal_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasAxpyEx(void *__args)
 {
 	spdlog::info("Received request: cublasAxpyEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSaxpy_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSaxpy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDaxpy_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDaxpy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCaxpy_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCaxpy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZaxpy_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZaxpy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCopyEx(void *__args)
 {
 	spdlog::info("Received request: cublasCopyEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasScopy_v2(void *__args)
 {
 	spdlog::info("Received request: cublasScopy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDcopy_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDcopy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCcopy_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCcopy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZcopy_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZcopy_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSswap_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSswap_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDswap_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDswap_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCswap_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCswap_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZswap_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZswap_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSwapEx(void *__args)
 {
 	spdlog::info("Received request: cublasSwapEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasIsamax_v2(void *__args)
 {
 	spdlog::info("Received request: cublasIsamax_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasIdamax_v2(void *__args)
 {
 	spdlog::info("Received request: cublasIdamax_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasIcamax_v2(void *__args)
 {
 	spdlog::info("Received request: cublasIcamax_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasIzamax_v2(void *__args)
 {
 	spdlog::info("Received request: cublasIzamax_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasIamaxEx(void *__args)
 {
 	spdlog::info("Received request: cublasIamaxEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasIsamin_v2(void *__args)
 {
 	spdlog::info("Received request: cublasIsamin_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasIdamin_v2(void *__args)
 {
 	spdlog::info("Received request: cublasIdamin_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasIcamin_v2(void *__args)
 {
 	spdlog::info("Received request: cublasIcamin_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasIzamin_v2(void *__args)
 {
 	spdlog::info("Received request: cublasIzamin_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasIaminEx(void *__args)
 {
 	spdlog::info("Received request: cublasIaminEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasAsumEx(void *__args)
 {
 	spdlog::info("Received request: cublasAsumEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSasum_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSasum_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDasum_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDasum_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasScasum_v2(void *__args)
 {
 	spdlog::info("Received request: cublasScasum_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDzasum_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDzasum_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSrot_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSrot_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDrot_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDrot_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCrot_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCrot_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsrot_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCsrot_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZrot_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZrot_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZdrot_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZdrot_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasRotEx(void *__args)
 {
 	spdlog::info("Received request: cublasRotEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSrotg_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSrotg_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDrotg_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDrotg_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCrotg_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCrotg_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZrotg_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZrotg_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasRotgEx(void *__args)
 {
 	spdlog::info("Received request: cublasRotgEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSrotm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSrotm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDrotm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDrotm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasRotmEx(void *__args)
 {
 	spdlog::info("Received request: cublasRotmEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSrotmg_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSrotmg_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDrotmg_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDrotmg_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasRotmgEx(void *__args)
 {
 	spdlog::info("Received request: cublasRotmgEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgemv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSgemv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgemv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDgemv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgemv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCgemv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgemv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZgemv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSgbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDgbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCgbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZgbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStrmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasStrmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtrmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDtrmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtrmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCtrmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtrmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZtrmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasStbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDtbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCtbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZtbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStpmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasStpmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtpmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDtpmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtpmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCtpmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtpmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZtpmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStrsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasStrsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtrsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDtrsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtrsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCtrsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtrsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZtrsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStpsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasStpsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtpsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDtpsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtpsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCtpsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtpsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZtpsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStbsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasStbsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtbsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDtbsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtbsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCtbsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtbsv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZtbsv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSsymv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSsymv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDsymv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDsymv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsymv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCsymv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZsymv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZsymv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasChemv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasChemv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZhemv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZhemv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSsbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSsbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDsbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDsbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasChbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasChbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZhbmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZhbmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSspmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSspmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDspmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDspmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasChpmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasChpmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZhpmv_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZhpmv_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSger_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSger_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDger_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDger_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgeru_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCgeru_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgerc_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCgerc_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgeru_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZgeru_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgerc_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZgerc_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSsyr_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSsyr_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDsyr_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDsyr_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsyr_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCsyr_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZsyr_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZsyr_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCher_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCher_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZher_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZher_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSspr_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSspr_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDspr_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDspr_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasChpr_v2(void *__args)
 {
 	spdlog::info("Received request: cublasChpr_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZhpr_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZhpr_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSsyr2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSsyr2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDsyr2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDsyr2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsyr2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCsyr2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZsyr2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZsyr2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCher2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCher2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZher2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZher2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSspr2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSspr2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDspr2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDspr2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasChpr2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasChpr2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZhpr2_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZhpr2_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgemm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSgemm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgemm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDgemm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgemm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCgemm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgemm3m(void *__args)
 {
 	spdlog::info("Received request: cublasCgemm3m");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgemm3mEx(void *__args)
 {
 	spdlog::info("Received request: cublasCgemm3mEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgemm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZgemm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgemm3m(void *__args)
 {
 	spdlog::info("Received request: cublasZgemm3m");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasHgemm(void *__args)
 {
 	spdlog::info("Received request: cublasHgemm");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgemmEx(void *__args)
 {
 	spdlog::info("Received request: cublasSgemmEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGemmEx(void *__args)
 {
 	spdlog::info("Received request: cublasGemmEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgemmEx(void *__args)
 {
 	spdlog::info("Received request: cublasCgemmEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasUint8gemmBias(void *__args)
 {
 	spdlog::info("Received request: cublasUint8gemmBias");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSsyrk_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSsyrk_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDsyrk_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDsyrk_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsyrk_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCsyrk_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZsyrk_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZsyrk_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsyrkEx(void *__args)
 {
 	spdlog::info("Received request: cublasCsyrkEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsyrk3mEx(void *__args)
 {
 	spdlog::info("Received request: cublasCsyrk3mEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCherk_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCherk_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZherk_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZherk_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCherkEx(void *__args)
 {
 	spdlog::info("Received request: cublasCherkEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCherk3mEx(void *__args)
 {
 	spdlog::info("Received request: cublasCherk3mEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSsyr2k_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSsyr2k_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDsyr2k_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDsyr2k_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsyr2k_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCsyr2k_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZsyr2k_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZsyr2k_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCher2k_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCher2k_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZher2k_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZher2k_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSsyrkx(void *__args)
 {
 	spdlog::info("Received request: cublasSsyrkx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDsyrkx(void *__args)
 {
 	spdlog::info("Received request: cublasDsyrkx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsyrkx(void *__args)
 {
 	spdlog::info("Received request: cublasCsyrkx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZsyrkx(void *__args)
 {
 	spdlog::info("Received request: cublasZsyrkx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCherkx(void *__args)
 {
 	spdlog::info("Received request: cublasCherkx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZherkx(void *__args)
 {
 	spdlog::info("Received request: cublasZherkx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSsymm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSsymm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDsymm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDsymm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCsymm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCsymm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZsymm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZsymm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasChemm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasChemm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZhemm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZhemm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStrsm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasStrsm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtrsm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDtrsm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtrsm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCtrsm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtrsm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZtrsm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStrmm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasStrmm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtrmm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDtrmm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtrmm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCtrmm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtrmm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasZtrmm_v2");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasHgemmBatched(void *__args)
 {
 	spdlog::info("Received request: cublasHgemmBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgemmBatched(void *__args)
 {
 	spdlog::info("Received request: cublasSgemmBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgemmBatched(void *__args)
 {
 	spdlog::info("Received request: cublasDgemmBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgemmBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCgemmBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgemm3mBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCgemm3mBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgemmBatched(void *__args)
 {
 	spdlog::info("Received request: cublasZgemmBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGemmBatchedEx(void *__args)
 {
 	spdlog::info("Received request: cublasGemmBatchedEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasGemmStridedBatchedEx(void *__args)
 {
 	spdlog::info("Received request: cublasGemmStridedBatchedEx");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgemmStridedBatched(void *__args)
 {
 	spdlog::info("Received request: cublasSgemmStridedBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgemmStridedBatched(void *__args)
 {
 	spdlog::info("Received request: cublasDgemmStridedBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgemmStridedBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCgemmStridedBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgemm3mStridedBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCgemm3mStridedBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgemmStridedBatched(void *__args)
 {
 	spdlog::info("Received request: cublasZgemmStridedBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasHgemmStridedBatched(void *__args)
 {
 	spdlog::info("Received request: cublasHgemmStridedBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgeam(void *__args)
 {
 	spdlog::info("Received request: cublasSgeam");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgeam(void *__args)
 {
 	spdlog::info("Received request: cublasDgeam");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgeam(void *__args)
 {
 	spdlog::info("Received request: cublasCgeam");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgeam(void *__args)
 {
 	spdlog::info("Received request: cublasZgeam");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgetrfBatched(void *__args)
 {
 	spdlog::info("Received request: cublasSgetrfBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgetrfBatched(void *__args)
 {
 	spdlog::info("Received request: cublasDgetrfBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgetrfBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCgetrfBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgetrfBatched(void *__args)
 {
 	spdlog::info("Received request: cublasZgetrfBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgetriBatched(void *__args)
 {
 	spdlog::info("Received request: cublasSgetriBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgetriBatched(void *__args)
 {
 	spdlog::info("Received request: cublasDgetriBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgetriBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCgetriBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgetriBatched(void *__args)
 {
 	spdlog::info("Received request: cublasZgetriBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgetrsBatched(void *__args)
 {
 	spdlog::info("Received request: cublasSgetrsBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgetrsBatched(void *__args)
 {
 	spdlog::info("Received request: cublasDgetrsBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgetrsBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCgetrsBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgetrsBatched(void *__args)
 {
 	spdlog::info("Received request: cublasZgetrsBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStrsmBatched(void *__args)
 {
 	spdlog::info("Received request: cublasStrsmBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtrsmBatched(void *__args)
 {
 	spdlog::info("Received request: cublasDtrsmBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtrsmBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCtrsmBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtrsmBatched(void *__args)
 {
 	spdlog::info("Received request: cublasZtrsmBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSmatinvBatched(void *__args)
 {
 	spdlog::info("Received request: cublasSmatinvBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDmatinvBatched(void *__args)
 {
 	spdlog::info("Received request: cublasDmatinvBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCmatinvBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCmatinvBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZmatinvBatched(void *__args)
 {
 	spdlog::info("Received request: cublasZmatinvBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgeqrfBatched(void *__args)
 {
 	spdlog::info("Received request: cublasSgeqrfBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgeqrfBatched(void *__args)
 {
 	spdlog::info("Received request: cublasDgeqrfBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgeqrfBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCgeqrfBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgeqrfBatched(void *__args)
 {
 	spdlog::info("Received request: cublasZgeqrfBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSgelsBatched(void *__args)
 {
 	spdlog::info("Received request: cublasSgelsBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDgelsBatched(void *__args)
 {
 	spdlog::info("Received request: cublasDgelsBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCgelsBatched(void *__args)
 {
 	spdlog::info("Received request: cublasCgelsBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZgelsBatched(void *__args)
 {
 	spdlog::info("Received request: cublasZgelsBatched");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasSdgmm(void *__args)
 {
 	spdlog::info("Received request: cublasSdgmm");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDdgmm(void *__args)
 {
 	spdlog::info("Received request: cublasDdgmm");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCdgmm(void *__args)
 {
 	spdlog::info("Received request: cublasCdgmm");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZdgmm(void *__args)
 {
 	spdlog::info("Received request: cublasZdgmm");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStpttr(void *__args)
 {
 	spdlog::info("Received request: cublasStpttr");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtpttr(void *__args)
 {
 	spdlog::info("Received request: cublasDtpttr");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtpttr(void *__args)
 {
 	spdlog::info("Received request: cublasCtpttr");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtpttr(void *__args)
 {
 	spdlog::info("Received request: cublasZtpttr");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasStrttp(void *__args)
 {
 	spdlog::info("Received request: cublasStrttp");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasDtrttp(void *__args)
 {
 	spdlog::info("Received request: cublasDtrttp");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasCtrttp(void *__args)
 {
 	spdlog::info("Received request: cublasCtrttp");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cublasZtrttp(void *__args)
 {
 	spdlog::info("Received request: cublasZtrttp");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaProfilerInitialize(void *__args)
 {
 	spdlog::info("Received request: cudaProfilerInitialize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cudaProfilerStart(void *__args)
@@ -8548,11 +8558,11 @@ void TallyServer::handle_cudaProfilerStop(void *__args)
 void TallyServer::handle_nvrtcGetCUBINSize(void *__args)
 {
 	spdlog::info("Received request: nvrtcGetCUBINSize");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_nvrtcGetCUBIN(void *__args)
 {
 	spdlog::info("Received request: nvrtcGetCUBIN");
-	throw std::runtime_error("Unimplemented.");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }

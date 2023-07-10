@@ -34,6 +34,24 @@
 
 extern "C" {
 
+void *dlopen(const char *filename, int flag)
+{
+    static void* (*ldlopen) (const char *, int );
+    if (!ldlopen) {
+        ldlopen = (void* (*) (const char *, int  )) dlsym(RTLD_NEXT, "dlopen");
+    }
+    assert(ldlopen);
+
+    if (filename) {
+        std::string f_name(filename);
+        if (f_name == "libcuda.so.1") {
+            return ldlopen("/home/zhaowe58/tally/build/libtally_client.so", flag);
+        }
+    }
+
+    return ldlopen(filename, flag);
+}
+
 void** __cudaRegisterFatBinary( void *fatCubin ) {
     auto wp = (__fatBinC_Wrapper_t *) fatCubin;
     int magic = wp->magic;

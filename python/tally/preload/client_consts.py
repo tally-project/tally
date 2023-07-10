@@ -24,6 +24,7 @@ API_DECL_TEMPLATE_TOP = """
 #include <cudnn.h>
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
+#include <nvrtc.h>
 
 """
 
@@ -119,6 +120,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <cuda.h>
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
+#include <nvrtc.h>
 
 #include "libipc/ipc.h"
 
@@ -223,7 +225,7 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
-CUDA_GET_FIRST_PARAM_FUNCS = [
+CUDA_GET_1_PARAM_FUNCS = [
     "cudaStreamCreate",
     "cudaStreamCreateWithFlags",
     "cudaStreamCreateWithPriority",
@@ -258,6 +260,10 @@ CUDA_GET_FIRST_PARAM_FUNCS = [
     "cuDeviceGetDefaultMemPool",
     "cuDeviceGetProperties",
     "cuDevicePrimaryCtxRetain"
+]
+
+CUDA_GET_2_3_PARAM_FUNCS = [
+    "cuDevicePrimaryCtxGetState"
 ]
 
 def get_preload_func_template(func_name, arg_names):

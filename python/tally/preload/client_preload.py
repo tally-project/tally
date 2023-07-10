@@ -12,7 +12,8 @@ from tally.preload.client_consts import (
     TALLY_SERVER_HEADER_TEMPLATE_TOP,
     TALLY_SERVER_HEADER_TEMPLATE_BUTTOM,
     SPECIAL_CLIENT_PRELOAD_FUNCS,
-    CUDA_GET_FIRST_PARAM_FUNCS,
+    CUDA_GET_1_PARAM_FUNCS,
+    CUDA_GET_2_3_PARAM_FUNCS,
     CLIENT_PRELOAD_TEMPLATE,
     FORWARD_API_CALLS,
     get_preload_func_template
@@ -63,7 +64,9 @@ def gen_client_msg_struct(func_sig):
     msg_struct = ""
 
     # Currently only generate functions that are forward calls
-    if func_name in FORWARD_API_CALLS or func_name in CUDA_GET_FIRST_PARAM_FUNCS:
+    if (func_name in FORWARD_API_CALLS or
+        func_name in CUDA_GET_1_PARAM_FUNCS or
+        func_name in CUDA_GET_2_3_PARAM_FUNCS):
 
         msg_struct += f"struct {func_name}Arg {{\n"
 
@@ -72,10 +75,18 @@ def gen_client_msg_struct(func_sig):
         
         msg_struct += "};\n"
 
-    if func_name in CUDA_GET_FIRST_PARAM_FUNCS:
+    if func_name in CUDA_GET_1_PARAM_FUNCS:
         msg_struct += "\n"
         msg_struct += f"struct {func_name}Response {{\n"
         msg_struct += f"\t{arg_types[0].strip('*')} {arg_names[0]};\n"
+        msg_struct += f"\t{ret_type} err;\n"
+        msg_struct += "};\n"
+    
+    if func_name in CUDA_GET_2_3_PARAM_FUNCS:
+        msg_struct += "\n"
+        msg_struct += f"struct {func_name}Response {{\n"
+        msg_struct += f"\t{arg_types[1].strip('*')} {arg_names[1]};\n"
+        msg_struct += f"\t{arg_types[2].strip('*')} {arg_names[2]};\n"
         msg_struct += f"\t{ret_type} err;\n"
         msg_struct += "};\n"
     
@@ -103,7 +114,7 @@ void TallyServer::handle_{func_name}(void *__args)
 
     handler += f"\tspdlog::info(\"Received request: {func_name}\");\n"
 
-    if func_name in CUDA_GET_FIRST_PARAM_FUNCS:
+    if func_name in CUDA_GET_1_PARAM_FUNCS:
 
         resource_type = arg_types[0].strip("*")
 
@@ -120,6 +131,29 @@ void TallyServer::handle_{func_name}(void *__args)
         handler += f""");
 
     struct {func_name}Response res {{ {arg_names[0]}, err }};
+    while(!send_ipc->send((void *) &res, sizeof(struct {func_name}Response))) {{
+        send_ipc->wait_for_recv(1);
+    }}
+"""
+    elif func_name in CUDA_GET_2_3_PARAM_FUNCS:
+
+        arg_2_resource_type = arg_types[1].strip("*")
+        arg_3_resource_type = arg_types[2].strip("*")
+
+        handler += f"""
+    auto args = (struct {func_name}Arg *) __args;
+
+    {arg_2_resource_type} {arg_names[1]};
+    {arg_3_resource_type} {arg_names[2]};
+    {ret_type} err = {func_name}(args->{arg_names[0]}, &{arg_names[1]}, &{arg_names[2]}"""
+
+        # args->flags
+        for i in range(3, len(arg_names)):
+            handler += f", args->{arg_names[i]}"
+    
+        handler += f""");
+
+    struct {func_name}Response res {{ {arg_names[1]}, {arg_names[2]}, err }};
     while(!send_ipc->send((void *) &res, sizeof(struct {func_name}Response))) {{
         send_ipc->wait_for_recv(1);
     }}
@@ -144,7 +178,7 @@ void TallyServer::handle_{func_name}(void *__args)
     }}
 """
     else:
-        handler += "\tthrow std::runtime_error(\"Unimplemented.\");\n"
+        handler += f"\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": Unimplemented.\");\n"
 
     handler += "}\n"
 
@@ -174,7 +208,7 @@ def gen_func_client_preload(func_sig):
 
     func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
 
-    if func_name in CUDA_GET_FIRST_PARAM_FUNCS:
+    if func_name in CUDA_GET_1_PARAM_FUNCS:
         func_preload_builder += get_preload_func_template(func_name, arg_names)
 
         res_struct = f"{func_name}Response"
@@ -185,27 +219,34 @@ def gen_func_client_preload(func_sig):
     {'CHECK_CUDA_ERROR(res->err);' if ret_type == 'cudaError_t' else ''}
     return res->err;
 """
+    elif func_name in CUDA_GET_2_3_PARAM_FUNCS:
+        func_preload_builder += get_preload_func_template(func_name, arg_names)
+
+        res_struct = f"{func_name}Response"
+
+        func_preload_builder += f"""
+    auto res = ({res_struct} *) dat;
+    *{arg_names[1]} = res->{arg_names[1]};
+    *{arg_names[2]} = res->{arg_names[2]};
+    return res->err;
+"""
     
     elif func_name in FORWARD_API_CALLS:
         func_preload_builder += get_preload_func_template(func_name, arg_names)
 
         func_preload_builder += f"""
     auto res = ({ret_type} *) dat;
-    {'CHECK_CUDA_ERROR(*res);' if ret_type == 'cudaError_t' else ''}
     return *res;
 """
     else:
-        # # print
-        # func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
+
+        func_preload_builder += f"\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": Unimplemented.\");\n"
 
         # call original
         if ret_type != "void":
             func_preload_builder += f"\t{ret_type} res = \n"
             
         func_preload_builder += f"\t\t{preload_func_name}({arg_names_str});\n"
-
-        if ret_type == "cudaError_t":
-            func_preload_builder += "CHECK_CUDA_ERROR(res);"
 
         if ret_type != "void":
             func_preload_builder += f"\treturn res;\n"

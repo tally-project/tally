@@ -6,6 +6,11 @@ set_target_properties(elementwise PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
 )
 
+target_link_libraries(elementwise
+    cuda
+    cudart
+)
+
 add_executable(matmul matmul.cu)
 
 set_target_properties(matmul PROPERTIES
