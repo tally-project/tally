@@ -1182,13 +1182,13 @@ void TallyServer::handle_cuInit(void *__args)
 void TallyServer::handle_cuDriverGetVersion(void *__args)
 {
 	spdlog::info("Received request: cuDriverGetVersion");
+	auto args = (struct cuDriverGetVersionArg *) __args;
+	int  driverVersion;
+	CUresult err = cuDriverGetVersion(&(driverVersion));
+	struct cuDriverGetVersionResponse res {
+		driverVersion,
+		err};
 
-    auto args = (struct cuDriverGetVersionArg *) __args;
-
-    int  driverVersion;
-    CUresult err = cuDriverGetVersion(&driverVersion);
-
-    struct cuDriverGetVersionResponse res { driverVersion, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDriverGetVersionResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1197,13 +1197,13 @@ void TallyServer::handle_cuDriverGetVersion(void *__args)
 void TallyServer::handle_cuDeviceGet(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGet");
+	auto args = (struct cuDeviceGetArg *) __args;
+	CUdevice  device;
+	CUresult err = cuDeviceGet(&(device), args->ordinal);
+	struct cuDeviceGetResponse res {
+		device,
+		err};
 
-    auto args = (struct cuDeviceGetArg *) __args;
-
-    CUdevice  device;
-    CUresult err = cuDeviceGet(&device, args->ordinal);
-
-    struct cuDeviceGetResponse res { device, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDeviceGetResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1212,13 +1212,13 @@ void TallyServer::handle_cuDeviceGet(void *__args)
 void TallyServer::handle_cuDeviceGetCount(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetCount");
+	auto args = (struct cuDeviceGetCountArg *) __args;
+	int  count;
+	CUresult err = cuDeviceGetCount(&(count));
+	struct cuDeviceGetCountResponse res {
+		count,
+		err};
 
-    auto args = (struct cuDeviceGetCountArg *) __args;
-
-    int  count;
-    CUresult err = cuDeviceGetCount(&count);
-
-    struct cuDeviceGetCountResponse res { count, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDeviceGetCountResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1233,13 +1233,13 @@ void TallyServer::handle_cuDeviceGetName(void *__args)
 void TallyServer::handle_cuDeviceGetUuid(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetUuid");
+	auto args = (struct cuDeviceGetUuidArg *) __args;
+	CUuuid  uuid;
+	CUresult err = cuDeviceGetUuid(&(uuid), args->dev);
+	struct cuDeviceGetUuidResponse res {
+		uuid,
+		err};
 
-    auto args = (struct cuDeviceGetUuidArg *) __args;
-
-    CUuuid  uuid;
-    CUresult err = cuDeviceGetUuid(&uuid, args->dev);
-
-    struct cuDeviceGetUuidResponse res { uuid, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDeviceGetUuidResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1248,13 +1248,13 @@ void TallyServer::handle_cuDeviceGetUuid(void *__args)
 void TallyServer::handle_cuDeviceGetUuid_v2(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetUuid_v2");
+	auto args = (struct cuDeviceGetUuid_v2Arg *) __args;
+	CUuuid  uuid;
+	CUresult err = cuDeviceGetUuid_v2(&(uuid), args->dev);
+	struct cuDeviceGetUuid_v2Response res {
+		uuid,
+		err};
 
-    auto args = (struct cuDeviceGetUuid_v2Arg *) __args;
-
-    CUuuid  uuid;
-    CUresult err = cuDeviceGetUuid_v2(&uuid, args->dev);
-
-    struct cuDeviceGetUuid_v2Response res { uuid, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDeviceGetUuid_v2Response))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1269,13 +1269,13 @@ void TallyServer::handle_cuDeviceGetLuid(void *__args)
 void TallyServer::handle_cuDeviceTotalMem_v2(void *__args)
 {
 	spdlog::info("Received request: cuDeviceTotalMem_v2");
+	auto args = (struct cuDeviceTotalMem_v2Arg *) __args;
+	size_t  bytes;
+	CUresult err = cuDeviceTotalMem_v2(&(bytes), args->dev);
+	struct cuDeviceTotalMem_v2Response res {
+		bytes,
+		err};
 
-    auto args = (struct cuDeviceTotalMem_v2Arg *) __args;
-
-    size_t  bytes;
-    CUresult err = cuDeviceTotalMem_v2(&bytes, args->dev);
-
-    struct cuDeviceTotalMem_v2Response res { bytes, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDeviceTotalMem_v2Response))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1284,13 +1284,13 @@ void TallyServer::handle_cuDeviceTotalMem_v2(void *__args)
 void TallyServer::handle_cuDeviceGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetAttribute");
+	auto args = (struct cuDeviceGetAttributeArg *) __args;
+	int  pi;
+	CUresult err = cuDeviceGetAttribute(&(pi), args->attrib, args->dev);
+	struct cuDeviceGetAttributeResponse res {
+		pi,
+		err};
 
-    auto args = (struct cuDeviceGetAttributeArg *) __args;
-
-    int  pi;
-    CUresult err = cuDeviceGetAttribute(&pi, args->attrib, args->dev);
-
-    struct cuDeviceGetAttributeResponse res { pi, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDeviceGetAttributeResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1321,13 +1321,13 @@ void TallyServer::handle_cuDeviceSetMemPool(void *__args)
 void TallyServer::handle_cuDeviceGetMemPool(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetMemPool");
+	auto args = (struct cuDeviceGetMemPoolArg *) __args;
+	CUmemoryPool  pool;
+	CUresult err = cuDeviceGetMemPool(&(pool), args->dev);
+	struct cuDeviceGetMemPoolResponse res {
+		pool,
+		err};
 
-    auto args = (struct cuDeviceGetMemPoolArg *) __args;
-
-    CUmemoryPool  pool;
-    CUresult err = cuDeviceGetMemPool(&pool, args->dev);
-
-    struct cuDeviceGetMemPoolResponse res { pool, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDeviceGetMemPoolResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1336,13 +1336,13 @@ void TallyServer::handle_cuDeviceGetMemPool(void *__args)
 void TallyServer::handle_cuDeviceGetDefaultMemPool(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetDefaultMemPool");
+	auto args = (struct cuDeviceGetDefaultMemPoolArg *) __args;
+	CUmemoryPool  pool_out;
+	CUresult err = cuDeviceGetDefaultMemPool(&(pool_out), args->dev);
+	struct cuDeviceGetDefaultMemPoolResponse res {
+		pool_out,
+		err};
 
-    auto args = (struct cuDeviceGetDefaultMemPoolArg *) __args;
-
-    CUmemoryPool  pool_out;
-    CUresult err = cuDeviceGetDefaultMemPool(&pool_out, args->dev);
-
-    struct cuDeviceGetDefaultMemPoolResponse res { pool_out, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDeviceGetDefaultMemPoolResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1367,13 +1367,13 @@ void TallyServer::handle_cuFlushGPUDirectRDMAWrites(void *__args)
 void TallyServer::handle_cuDeviceGetProperties(void *__args)
 {
 	spdlog::info("Received request: cuDeviceGetProperties");
+	auto args = (struct cuDeviceGetPropertiesArg *) __args;
+	CUdevprop  prop;
+	CUresult err = cuDeviceGetProperties(&(prop), args->dev);
+	struct cuDeviceGetPropertiesResponse res {
+		prop,
+		err};
 
-    auto args = (struct cuDeviceGetPropertiesArg *) __args;
-
-    CUdevprop  prop;
-    CUresult err = cuDeviceGetProperties(&prop, args->dev);
-
-    struct cuDeviceGetPropertiesResponse res { prop, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDeviceGetPropertiesResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1388,13 +1388,13 @@ void TallyServer::handle_cuDeviceComputeCapability(void *__args)
 void TallyServer::handle_cuDevicePrimaryCtxRetain(void *__args)
 {
 	spdlog::info("Received request: cuDevicePrimaryCtxRetain");
+	auto args = (struct cuDevicePrimaryCtxRetainArg *) __args;
+	CUcontext  pctx;
+	CUresult err = cuDevicePrimaryCtxRetain(&(pctx), args->dev);
+	struct cuDevicePrimaryCtxRetainResponse res {
+		pctx,
+		err};
 
-    auto args = (struct cuDevicePrimaryCtxRetainArg *) __args;
-
-    CUcontext  pctx;
-    CUresult err = cuDevicePrimaryCtxRetain(&pctx, args->dev);
-
-    struct cuDevicePrimaryCtxRetainResponse res { pctx, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDevicePrimaryCtxRetainResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -1434,14 +1434,15 @@ void TallyServer::handle_cuDevicePrimaryCtxSetFlags_v2(void *__args)
 void TallyServer::handle_cuDevicePrimaryCtxGetState(void *__args)
 {
 	spdlog::info("Received request: cuDevicePrimaryCtxGetState");
+	auto args = (struct cuDevicePrimaryCtxGetStateArg *) __args;
+	unsigned int  flags;
+	int  active;
+	CUresult err = cuDevicePrimaryCtxGetState(args->dev, &(flags), &(active));
+	struct cuDevicePrimaryCtxGetStateResponse res {
+		flags,
+		active,
+		err};
 
-    auto args = (struct cuDevicePrimaryCtxGetStateArg *) __args;
-
-    unsigned int  flags;
-    int  active;
-    CUresult err = cuDevicePrimaryCtxGetState(args->dev, &flags, &active);
-
-    struct cuDevicePrimaryCtxGetStateResponse res { flags, active, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cuDevicePrimaryCtxGetStateResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3447,13 +3448,13 @@ void TallyServer::handle_cudaDeviceSetLimit(void *__args)
 void TallyServer::handle_cudaDeviceGetLimit(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetLimit");
+	auto args = (struct cudaDeviceGetLimitArg *) __args;
+	size_t  pValue;
+	cudaError_t err = cudaDeviceGetLimit(&(pValue), args->limit);
+	struct cudaDeviceGetLimitResponse res {
+		pValue,
+		err};
 
-    auto args = (struct cudaDeviceGetLimitArg *) __args;
-
-    size_t  pValue;
-    cudaError_t err = cudaDeviceGetLimit(&pValue, args->limit);
-
-    struct cudaDeviceGetLimitResponse res { pValue, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaDeviceGetLimitResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3468,13 +3469,13 @@ void TallyServer::handle_cudaDeviceGetTexture1DLinearMaxWidth(void *__args)
 void TallyServer::handle_cudaDeviceGetCacheConfig(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetCacheConfig");
+	auto args = (struct cudaDeviceGetCacheConfigArg *) __args;
+	enum cudaFuncCache  pCacheConfig;
+	cudaError_t err = cudaDeviceGetCacheConfig(&(pCacheConfig));
+	struct cudaDeviceGetCacheConfigResponse res {
+		pCacheConfig,
+		err};
 
-    auto args = (struct cudaDeviceGetCacheConfigArg *) __args;
-
-    enum cudaFuncCache  pCacheConfig;
-    cudaError_t err = cudaDeviceGetCacheConfig(&pCacheConfig);
-
-    struct cudaDeviceGetCacheConfigResponse res { pCacheConfig, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaDeviceGetCacheConfigResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3483,7 +3484,18 @@ void TallyServer::handle_cudaDeviceGetCacheConfig(void *__args)
 void TallyServer::handle_cudaDeviceGetStreamPriorityRange(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetStreamPriorityRange");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	auto args = (struct cudaDeviceGetStreamPriorityRangeArg *) __args;
+	int  leastPriority;
+	int  greatestPriority;
+	cudaError_t err = cudaDeviceGetStreamPriorityRange(&(leastPriority), &(greatestPriority));
+	struct cudaDeviceGetStreamPriorityRangeResponse res {
+		leastPriority,
+		greatestPriority,
+		err};
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaDeviceGetStreamPriorityRangeResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaDeviceSetCacheConfig(void *__args)
@@ -3543,13 +3555,13 @@ void TallyServer::handle_cudaIpcGetEventHandle(void *__args)
 void TallyServer::handle_cudaIpcOpenEventHandle(void *__args)
 {
 	spdlog::info("Received request: cudaIpcOpenEventHandle");
+	auto args = (struct cudaIpcOpenEventHandleArg *) __args;
+	cudaEvent_t  event;
+	cudaError_t err = cudaIpcOpenEventHandle(&(event), args->handle);
+	struct cudaIpcOpenEventHandleResponse res {
+		event,
+		err};
 
-    auto args = (struct cudaIpcOpenEventHandleArg *) __args;
-
-    cudaEvent_t  event;
-    cudaError_t err = cudaIpcOpenEventHandle(&event, args->handle);
-
-    struct cudaIpcOpenEventHandleResponse res { event, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaIpcOpenEventHandleResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3626,13 +3638,13 @@ void TallyServer::handle_cudaThreadSetLimit(void *__args)
 void TallyServer::handle_cudaThreadGetLimit(void *__args)
 {
 	spdlog::info("Received request: cudaThreadGetLimit");
+	auto args = (struct cudaThreadGetLimitArg *) __args;
+	size_t  pValue;
+	cudaError_t err = cudaThreadGetLimit(&(pValue), args->limit);
+	struct cudaThreadGetLimitResponse res {
+		pValue,
+		err};
 
-    auto args = (struct cudaThreadGetLimitArg *) __args;
-
-    size_t  pValue;
-    cudaError_t err = cudaThreadGetLimit(&pValue, args->limit);
-
-    struct cudaThreadGetLimitResponse res { pValue, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaThreadGetLimitResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3641,13 +3653,13 @@ void TallyServer::handle_cudaThreadGetLimit(void *__args)
 void TallyServer::handle_cudaThreadGetCacheConfig(void *__args)
 {
 	spdlog::info("Received request: cudaThreadGetCacheConfig");
+	auto args = (struct cudaThreadGetCacheConfigArg *) __args;
+	enum cudaFuncCache  pCacheConfig;
+	cudaError_t err = cudaThreadGetCacheConfig(&(pCacheConfig));
+	struct cudaThreadGetCacheConfigResponse res {
+		pCacheConfig,
+		err};
 
-    auto args = (struct cudaThreadGetCacheConfigArg *) __args;
-
-    enum cudaFuncCache  pCacheConfig;
-    cudaError_t err = cudaThreadGetCacheConfig(&pCacheConfig);
-
-    struct cudaThreadGetCacheConfigResponse res { pCacheConfig, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaThreadGetCacheConfigResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3711,13 +3723,13 @@ void TallyServer::handle_cudaGetErrorString(void *__args)
 void TallyServer::handle_cudaGetDeviceCount(void *__args)
 {
 	spdlog::info("Received request: cudaGetDeviceCount");
+	auto args = (struct cudaGetDeviceCountArg *) __args;
+	int  count;
+	cudaError_t err = cudaGetDeviceCount(&(count));
+	struct cudaGetDeviceCountResponse res {
+		count,
+		err};
 
-    auto args = (struct cudaGetDeviceCountArg *) __args;
-
-    int  count;
-    cudaError_t err = cudaGetDeviceCount(&count);
-
-    struct cudaGetDeviceCountResponse res { count, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaGetDeviceCountResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3726,13 +3738,13 @@ void TallyServer::handle_cudaGetDeviceCount(void *__args)
 void TallyServer::handle_cudaGetDeviceProperties(void *__args)
 {
 	spdlog::info("Received request: cudaGetDeviceProperties");
+	auto args = (struct cudaGetDevicePropertiesArg *) __args;
+	struct cudaDeviceProp  prop;
+	cudaError_t err = cudaGetDeviceProperties(&(prop), args->device);
+	struct cudaGetDevicePropertiesResponse res {
+		prop,
+		err};
 
-    auto args = (struct cudaGetDevicePropertiesArg *) __args;
-
-    struct cudaDeviceProp  prop;
-    cudaError_t err = cudaGetDeviceProperties(&prop, args->device);
-
-    struct cudaGetDevicePropertiesResponse res { prop, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaGetDevicePropertiesResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3741,13 +3753,13 @@ void TallyServer::handle_cudaGetDeviceProperties(void *__args)
 void TallyServer::handle_cudaDeviceGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetAttribute");
+	auto args = (struct cudaDeviceGetAttributeArg *) __args;
+	int  value;
+	cudaError_t err = cudaDeviceGetAttribute(&(value), args->attr, args->device);
+	struct cudaDeviceGetAttributeResponse res {
+		value,
+		err};
 
-    auto args = (struct cudaDeviceGetAttributeArg *) __args;
-
-    int  value;
-    cudaError_t err = cudaDeviceGetAttribute(&value, args->attr, args->device);
-
-    struct cudaDeviceGetAttributeResponse res { value, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaDeviceGetAttributeResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3756,13 +3768,13 @@ void TallyServer::handle_cudaDeviceGetAttribute(void *__args)
 void TallyServer::handle_cudaDeviceGetDefaultMemPool(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetDefaultMemPool");
+	auto args = (struct cudaDeviceGetDefaultMemPoolArg *) __args;
+	cudaMemPool_t  memPool;
+	cudaError_t err = cudaDeviceGetDefaultMemPool(&(memPool), args->device);
+	struct cudaDeviceGetDefaultMemPoolResponse res {
+		memPool,
+		err};
 
-    auto args = (struct cudaDeviceGetDefaultMemPoolArg *) __args;
-
-    cudaMemPool_t  memPool;
-    cudaError_t err = cudaDeviceGetDefaultMemPool(&memPool, args->device);
-
-    struct cudaDeviceGetDefaultMemPoolResponse res { memPool, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaDeviceGetDefaultMemPoolResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3787,13 +3799,13 @@ void TallyServer::handle_cudaDeviceSetMemPool(void *__args)
 void TallyServer::handle_cudaDeviceGetMemPool(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetMemPool");
+	auto args = (struct cudaDeviceGetMemPoolArg *) __args;
+	cudaMemPool_t  memPool;
+	cudaError_t err = cudaDeviceGetMemPool(&(memPool), args->device);
+	struct cudaDeviceGetMemPoolResponse res {
+		memPool,
+		err};
 
-    auto args = (struct cudaDeviceGetMemPoolArg *) __args;
-
-    cudaMemPool_t  memPool;
-    cudaError_t err = cudaDeviceGetMemPool(&memPool, args->device);
-
-    struct cudaDeviceGetMemPoolResponse res { memPool, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaDeviceGetMemPoolResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3808,13 +3820,13 @@ void TallyServer::handle_cudaDeviceGetNvSciSyncAttributes(void *__args)
 void TallyServer::handle_cudaDeviceGetP2PAttribute(void *__args)
 {
 	spdlog::info("Received request: cudaDeviceGetP2PAttribute");
+	auto args = (struct cudaDeviceGetP2PAttributeArg *) __args;
+	int  value;
+	cudaError_t err = cudaDeviceGetP2PAttribute(&(value), args->attr, args->srcDevice, args->dstDevice);
+	struct cudaDeviceGetP2PAttributeResponse res {
+		value,
+		err};
 
-    auto args = (struct cudaDeviceGetP2PAttributeArg *) __args;
-
-    int  value;
-    cudaError_t err = cudaDeviceGetP2PAttribute(&value, args->attr, args->srcDevice, args->dstDevice);
-
-    struct cudaDeviceGetP2PAttributeResponse res { value, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaDeviceGetP2PAttributeResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3844,13 +3856,13 @@ void TallyServer::handle_cudaSetDevice(void *__args)
 void TallyServer::handle_cudaGetDevice(void *__args)
 {
 	spdlog::info("Received request: cudaGetDevice");
+	auto args = (struct cudaGetDeviceArg *) __args;
+	int  device;
+	cudaError_t err = cudaGetDevice(&(device));
+	struct cudaGetDeviceResponse res {
+		device,
+		err};
 
-    auto args = (struct cudaGetDeviceArg *) __args;
-
-    int  device;
-    cudaError_t err = cudaGetDevice(&device);
-
-    struct cudaGetDeviceResponse res { device, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaGetDeviceResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3880,13 +3892,13 @@ void TallyServer::handle_cudaSetDeviceFlags(void *__args)
 void TallyServer::handle_cudaGetDeviceFlags(void *__args)
 {
 	spdlog::info("Received request: cudaGetDeviceFlags");
+	auto args = (struct cudaGetDeviceFlagsArg *) __args;
+	unsigned int  flags;
+	cudaError_t err = cudaGetDeviceFlags(&(flags));
+	struct cudaGetDeviceFlagsResponse res {
+		flags,
+		err};
 
-    auto args = (struct cudaGetDeviceFlagsArg *) __args;
-
-    unsigned int  flags;
-    cudaError_t err = cudaGetDeviceFlags(&flags);
-
-    struct cudaGetDeviceFlagsResponse res { flags, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaGetDeviceFlagsResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3895,13 +3907,13 @@ void TallyServer::handle_cudaGetDeviceFlags(void *__args)
 void TallyServer::handle_cudaStreamCreate(void *__args)
 {
 	spdlog::info("Received request: cudaStreamCreate");
+	auto args = (struct cudaStreamCreateArg *) __args;
+	cudaStream_t  pStream;
+	cudaError_t err = cudaStreamCreate(&(pStream));
+	struct cudaStreamCreateResponse res {
+		pStream,
+		err};
 
-    auto args = (struct cudaStreamCreateArg *) __args;
-
-    cudaStream_t  pStream;
-    cudaError_t err = cudaStreamCreate(&pStream);
-
-    struct cudaStreamCreateResponse res { pStream, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaStreamCreateResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3910,13 +3922,13 @@ void TallyServer::handle_cudaStreamCreate(void *__args)
 void TallyServer::handle_cudaStreamCreateWithFlags(void *__args)
 {
 	spdlog::info("Received request: cudaStreamCreateWithFlags");
+	auto args = (struct cudaStreamCreateWithFlagsArg *) __args;
+	cudaStream_t  pStream;
+	cudaError_t err = cudaStreamCreateWithFlags(&(pStream), args->flags);
+	struct cudaStreamCreateWithFlagsResponse res {
+		pStream,
+		err};
 
-    auto args = (struct cudaStreamCreateWithFlagsArg *) __args;
-
-    cudaStream_t  pStream;
-    cudaError_t err = cudaStreamCreateWithFlags(&pStream, args->flags);
-
-    struct cudaStreamCreateWithFlagsResponse res { pStream, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaStreamCreateWithFlagsResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -3925,13 +3937,13 @@ void TallyServer::handle_cudaStreamCreateWithFlags(void *__args)
 void TallyServer::handle_cudaStreamCreateWithPriority(void *__args)
 {
 	spdlog::info("Received request: cudaStreamCreateWithPriority");
+	auto args = (struct cudaStreamCreateWithPriorityArg *) __args;
+	cudaStream_t  pStream;
+	cudaError_t err = cudaStreamCreateWithPriority(&(pStream), args->flags, args->priority);
+	struct cudaStreamCreateWithPriorityResponse res {
+		pStream,
+		err};
 
-    auto args = (struct cudaStreamCreateWithPriorityArg *) __args;
-
-    cudaStream_t  pStream;
-    cudaError_t err = cudaStreamCreateWithPriority(&pStream, args->flags, args->priority);
-
-    struct cudaStreamCreateWithPriorityResponse res { pStream, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaStreamCreateWithPriorityResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -4106,7 +4118,16 @@ void TallyServer::handle_cudaStreamEndCapture(void *__args)
 void TallyServer::handle_cudaStreamIsCapturing(void *__args)
 {
 	spdlog::info("Received request: cudaStreamIsCapturing");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	auto args = (struct cudaStreamIsCapturingArg *) __args;
+	enum cudaStreamCaptureStatus  pCaptureStatus;
+	cudaError_t err = cudaStreamIsCapturing(args->stream, &(pCaptureStatus));
+	struct cudaStreamIsCapturingResponse res {
+		pCaptureStatus,
+		err};
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaStreamIsCapturingResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaStreamGetCaptureInfo(void *__args)
@@ -4130,13 +4151,13 @@ void TallyServer::handle_cudaStreamUpdateCaptureDependencies(void *__args)
 void TallyServer::handle_cudaEventCreate(void *__args)
 {
 	spdlog::info("Received request: cudaEventCreate");
+	auto args = (struct cudaEventCreateArg *) __args;
+	cudaEvent_t  event;
+	cudaError_t err = cudaEventCreate(&(event));
+	struct cudaEventCreateResponse res {
+		event,
+		err};
 
-    auto args = (struct cudaEventCreateArg *) __args;
-
-    cudaEvent_t  event;
-    cudaError_t err = cudaEventCreate(&event);
-
-    struct cudaEventCreateResponse res { event, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaEventCreateResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -4145,13 +4166,13 @@ void TallyServer::handle_cudaEventCreate(void *__args)
 void TallyServer::handle_cudaEventCreateWithFlags(void *__args)
 {
 	spdlog::info("Received request: cudaEventCreateWithFlags");
+	auto args = (struct cudaEventCreateWithFlagsArg *) __args;
+	cudaEvent_t  event;
+	cudaError_t err = cudaEventCreateWithFlags(&(event), args->flags);
+	struct cudaEventCreateWithFlagsResponse res {
+		event,
+		err};
 
-    auto args = (struct cudaEventCreateWithFlagsArg *) __args;
-
-    cudaEvent_t  event;
-    cudaError_t err = cudaEventCreateWithFlags(&event, args->flags);
-
-    struct cudaEventCreateWithFlagsResponse res { event, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaEventCreateWithFlagsResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -4238,13 +4259,13 @@ void TallyServer::handle_cudaEventDestroy(void *__args)
 void TallyServer::handle_cudaEventElapsedTime(void *__args)
 {
 	spdlog::info("Received request: cudaEventElapsedTime");
+	auto args = (struct cudaEventElapsedTimeArg *) __args;
+	float  ms;
+	cudaError_t err = cudaEventElapsedTime(&(ms), args->start, args->end);
+	struct cudaEventElapsedTimeResponse res {
+		ms,
+		err};
 
-    auto args = (struct cudaEventElapsedTimeArg *) __args;
-
-    float  ms;
-    cudaError_t err = cudaEventElapsedTime(&ms, args->start, args->end);
-
-    struct cudaEventElapsedTimeResponse res { ms, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaEventElapsedTimeResponse))) {
         send_ipc->wait_for_recv(1);
     }
@@ -5000,13 +5021,13 @@ void TallyServer::handle_cudaRuntimeGetVersion(void *__args)
 void TallyServer::handle_cudaGraphCreate(void *__args)
 {
 	spdlog::info("Received request: cudaGraphCreate");
+	auto args = (struct cudaGraphCreateArg *) __args;
+	cudaGraph_t  pGraph;
+	cudaError_t err = cudaGraphCreate(&(pGraph), args->flags);
+	struct cudaGraphCreateResponse res {
+		pGraph,
+		err};
 
-    auto args = (struct cudaGraphCreateArg *) __args;
-
-    cudaGraph_t  pGraph;
-    cudaError_t err = cudaGraphCreate(&pGraph, args->flags);
-
-    struct cudaGraphCreateResponse res { pGraph, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaGraphCreateResponse))) {
         send_ipc->wait_for_recv(1);
     }

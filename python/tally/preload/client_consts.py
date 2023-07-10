@@ -262,9 +262,49 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cuDevicePrimaryCtxRetain"
 ]
 
+CUDA_GET_2_PARAM_FUNCS = [
+    "cudaStreamIsCapturing"
+]
+
 CUDA_GET_2_3_PARAM_FUNCS = [
     "cuDevicePrimaryCtxGetState"
 ]
+
+CUDA_GET_1_2_PARAM_FUNCS = [
+    "cudaDeviceGetStreamPriorityRange"
+]
+
+CUDA_GET_1_PARAM_FUNC_KEY = 1
+CUDA_GET_2_3_PARAM_FUNC_KEY = 2
+CUDA_GET_1_2_PARAM_FUNC_KEY = 3
+CUDA_GET_2_PARAM_FUNC_KEY = 4
+
+PARAM_INDICES = {
+    CUDA_GET_1_PARAM_FUNC_KEY: [0],
+    CUDA_GET_2_PARAM_FUNC_KEY: [1],
+    CUDA_GET_2_3_PARAM_FUNC_KEY: [1, 2],
+    CUDA_GET_1_2_PARAM_FUNC_KEY: [0, 1]
+}
+
+def is_get_param_func(func_name):
+    if (func_name in CUDA_GET_1_PARAM_FUNCS or
+        func_name in CUDA_GET_2_3_PARAM_FUNCS or
+        func_name in CUDA_GET_1_2_PARAM_FUNCS or
+        func_name in CUDA_GET_2_PARAM_FUNCS):
+        return True
+    return False
+
+def get_param_group(func_name):
+    if func_name in CUDA_GET_1_PARAM_FUNCS:
+        return CUDA_GET_1_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_2_3_PARAM_FUNCS:
+        return CUDA_GET_2_3_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_1_2_PARAM_FUNCS:
+        return CUDA_GET_1_2_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_2_PARAM_FUNCS:
+        return CUDA_GET_2_PARAM_FUNC_KEY
+    else:
+        assert(False)
 
 def get_preload_func_template(func_name, arg_names):
     arg_struct = f"{func_name}Arg"

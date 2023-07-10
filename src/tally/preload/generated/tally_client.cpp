@@ -77,11 +77,9 @@ CUresult cuDriverGetVersion(int * driverVersion)
 	arg_ptr->driverVersion = driverVersion;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDriverGetVersionResponse *) dat;
-    *driverVersion = res->driverVersion;
-    
-    return res->err;
+	auto res = (cuDriverGetVersionResponse *) dat;
+	*driverVersion = res->driverVersion;
+return res->err;
 }
 
 CUresult cuDeviceGet(CUdevice * device, int  ordinal)
@@ -99,11 +97,9 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 	arg_ptr->ordinal = ordinal;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDeviceGetResponse *) dat;
-    *device = res->device;
-    
-    return res->err;
+	auto res = (cuDeviceGetResponse *) dat;
+	*device = res->device;
+return res->err;
 }
 
 CUresult cuDeviceGetCount(int * count)
@@ -120,11 +116,9 @@ CUresult cuDeviceGetCount(int * count)
 	arg_ptr->count = count;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDeviceGetCountResponse *) dat;
-    *count = res->count;
-    
-    return res->err;
+	auto res = (cuDeviceGetCountResponse *) dat;
+	*count = res->count;
+return res->err;
 }
 
 CUresult cuDeviceGetName(char * name, int  len, CUdevice  dev)
@@ -151,11 +145,9 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 	arg_ptr->dev = dev;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDeviceGetUuidResponse *) dat;
-    *uuid = res->uuid;
-    
-    return res->err;
+	auto res = (cuDeviceGetUuidResponse *) dat;
+	*uuid = res->uuid;
+return res->err;
 }
 
 CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
@@ -173,11 +165,9 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 	arg_ptr->dev = dev;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDeviceGetUuid_v2Response *) dat;
-    *uuid = res->uuid;
-    
-    return res->err;
+	auto res = (cuDeviceGetUuid_v2Response *) dat;
+	*uuid = res->uuid;
+return res->err;
 }
 
 CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  dev)
@@ -204,11 +194,9 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 	arg_ptr->dev = dev;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDeviceTotalMem_v2Response *) dat;
-    *bytes = res->bytes;
-    
-    return res->err;
+	auto res = (cuDeviceTotalMem_v2Response *) dat;
+	*bytes = res->bytes;
+return res->err;
 }
 
 CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  dev)
@@ -227,11 +215,9 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
 	arg_ptr->dev = dev;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDeviceGetAttributeResponse *) dat;
-    *pi = res->pi;
-    
-    return res->err;
+	auto res = (cuDeviceGetAttributeResponse *) dat;
+	*pi = res->pi;
+return res->err;
 }
 
 CUresult cuDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, CUdevice  dev, int  flags)
@@ -278,11 +264,9 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 	arg_ptr->dev = dev;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDeviceGetMemPoolResponse *) dat;
-    *pool = res->pool;
-    
-    return res->err;
+	auto res = (cuDeviceGetMemPoolResponse *) dat;
+	*pool = res->pool;
+return res->err;
 }
 
 CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
@@ -300,11 +284,9 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 	arg_ptr->dev = dev;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDeviceGetDefaultMemPoolResponse *) dat;
-    *pool_out = res->pool_out;
-    
-    return res->err;
+	auto res = (cuDeviceGetDefaultMemPoolResponse *) dat;
+	*pool_out = res->pool_out;
+return res->err;
 }
 
 CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CUflushGPUDirectRDMAWritesScope  scope)
@@ -342,11 +324,9 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 	arg_ptr->dev = dev;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDeviceGetPropertiesResponse *) dat;
-    *prop = res->prop;
-    
-    return res->err;
+	auto res = (cuDeviceGetPropertiesResponse *) dat;
+	*prop = res->prop;
+return res->err;
 }
 
 CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
@@ -373,11 +353,9 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 	arg_ptr->dev = dev;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDevicePrimaryCtxRetainResponse *) dat;
-    *pctx = res->pctx;
-    
-    return res->err;
+	auto res = (cuDevicePrimaryCtxRetainResponse *) dat;
+	*pctx = res->pctx;
+return res->err;
 }
 
 CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
@@ -435,11 +413,10 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
 	arg_ptr->active = active;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cuDevicePrimaryCtxGetStateResponse *) dat;
-    *flags = res->flags;
-    *active = res->active;
-    return res->err;
+	auto res = (cuDevicePrimaryCtxGetStateResponse *) dat;
+	*flags = res->flags;
+	*active = res->active;
+return res->err;
 }
 
 CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
@@ -3439,11 +3416,9 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 	arg_ptr->limit = limit;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaDeviceGetLimitResponse *) dat;
-    *pValue = res->pValue;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaDeviceGetLimitResponse *) dat;
+	*pValue = res->pValue;
+return res->err;
 }
 
 cudaError_t cudaDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, const struct cudaChannelFormatDesc * fmtDesc, int  device)
@@ -3469,20 +3444,30 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 	arg_ptr->pCacheConfig = pCacheConfig;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaDeviceGetCacheConfigResponse *) dat;
-    *pCacheConfig = res->pCacheConfig;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaDeviceGetCacheConfigResponse *) dat;
+	*pCacheConfig = res->pCacheConfig;
+return res->err;
 }
 
 cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatestPriority)
 {
 	printf("cudaDeviceGetStreamPriorityRange hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cudaError_t res = 
-		lcudaDeviceGetStreamPriorityRange(leastPriority, greatestPriority);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetStreamPriorityRangeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETSTREAMPRIORITYRANGE;
+    
+    struct cudaDeviceGetStreamPriorityRangeArg *arg_ptr = (struct cudaDeviceGetStreamPriorityRangeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->leastPriority = leastPriority;
+	arg_ptr->greatestPriority = greatestPriority;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudaDeviceGetStreamPriorityRangeResponse *) dat;
+	*leastPriority = res->leastPriority;
+	*greatestPriority = res->greatestPriority;
+return res->err;
 }
 
 cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
@@ -3574,11 +3559,9 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
 	arg_ptr->handle = handle;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaIpcOpenEventHandleResponse *) dat;
-    *event = res->event;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaIpcOpenEventHandleResponse *) dat;
+	*event = res->event;
+return res->err;
 }
 
 cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
@@ -3688,11 +3671,9 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 	arg_ptr->limit = limit;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaThreadGetLimitResponse *) dat;
-    *pValue = res->pValue;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaThreadGetLimitResponse *) dat;
+	*pValue = res->pValue;
+return res->err;
 }
 
 cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
@@ -3709,11 +3690,9 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 	arg_ptr->pCacheConfig = pCacheConfig;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaThreadGetCacheConfigResponse *) dat;
-    *pCacheConfig = res->pCacheConfig;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaThreadGetCacheConfigResponse *) dat;
+	*pCacheConfig = res->pCacheConfig;
+return res->err;
 }
 
 cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
@@ -3803,11 +3782,9 @@ cudaError_t cudaGetDeviceCount(int * count)
 	arg_ptr->count = count;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaGetDeviceCountResponse *) dat;
-    *count = res->count;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaGetDeviceCountResponse *) dat;
+	*count = res->count;
+return res->err;
 }
 
 cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
@@ -3825,11 +3802,9 @@ cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
 	arg_ptr->device = device;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaGetDevicePropertiesResponse *) dat;
-    *prop = res->prop;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaGetDevicePropertiesResponse *) dat;
+	*prop = res->prop;
+return res->err;
 }
 
 cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  device)
@@ -3848,11 +3823,9 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
 	arg_ptr->device = device;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaDeviceGetAttributeResponse *) dat;
-    *value = res->value;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaDeviceGetAttributeResponse *) dat;
+	*value = res->value;
+return res->err;
 }
 
 cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
@@ -3870,11 +3843,9 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 	arg_ptr->device = device;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaDeviceGetDefaultMemPoolResponse *) dat;
-    *memPool = res->memPool;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaDeviceGetDefaultMemPoolResponse *) dat;
+	*memPool = res->memPool;
+return res->err;
 }
 
 cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
@@ -3912,11 +3883,9 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 	arg_ptr->device = device;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaDeviceGetMemPoolResponse *) dat;
-    *memPool = res->memPool;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaDeviceGetMemPoolResponse *) dat;
+	*memPool = res->memPool;
+return res->err;
 }
 
 cudaError_t cudaDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, int  device, int  flags)
@@ -3945,11 +3914,9 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
 	arg_ptr->dstDevice = dstDevice;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaDeviceGetP2PAttributeResponse *) dat;
-    *value = res->value;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaDeviceGetP2PAttributeResponse *) dat;
+	*value = res->value;
+return res->err;
 }
 
 cudaError_t cudaChooseDevice(int * device, const struct cudaDeviceProp * prop)
@@ -3994,11 +3961,9 @@ cudaError_t cudaGetDevice(int * device)
 	arg_ptr->device = device;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaGetDeviceResponse *) dat;
-    *device = res->device;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaGetDeviceResponse *) dat;
+	*device = res->device;
+return res->err;
 }
 
 cudaError_t cudaSetValidDevices(int * device_arr, int  len)
@@ -4043,11 +4008,9 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 	arg_ptr->flags = flags;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaGetDeviceFlagsResponse *) dat;
-    *flags = res->flags;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaGetDeviceFlagsResponse *) dat;
+	*flags = res->flags;
+return res->err;
 }
 
 cudaError_t cudaStreamCreate(cudaStream_t * pStream)
@@ -4064,11 +4027,9 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 	arg_ptr->pStream = pStream;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaStreamCreateResponse *) dat;
-    *pStream = res->pStream;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaStreamCreateResponse *) dat;
+	*pStream = res->pStream;
+return res->err;
 }
 
 cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flags)
@@ -4086,11 +4047,9 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
 	arg_ptr->flags = flags;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaStreamCreateWithFlagsResponse *) dat;
-    *pStream = res->pStream;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaStreamCreateWithFlagsResponse *) dat;
+	*pStream = res->pStream;
+return res->err;
 }
 
 cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  flags, int  priority)
@@ -4109,11 +4068,9 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
 	arg_ptr->priority = priority;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaStreamCreateWithPriorityResponse *) dat;
-    *pStream = res->pStream;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaStreamCreateWithPriorityResponse *) dat;
+	*pStream = res->pStream;
+return res->err;
 }
 
 cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
@@ -4338,10 +4295,21 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus)
 {
 	printf("cudaStreamIsCapturing hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cudaError_t res = 
-		lcudaStreamIsCapturing(stream, pCaptureStatus);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamIsCapturingArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMISCAPTURING;
+    
+    struct cudaStreamIsCapturingArg *arg_ptr = (struct cudaStreamIsCapturingArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->stream = stream;
+	arg_ptr->pCaptureStatus = pCaptureStatus;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudaStreamIsCapturingResponse *) dat;
+	*pCaptureStatus = res->pCaptureStatus;
+return res->err;
 }
 
 cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus, unsigned long long * pId)
@@ -4385,11 +4353,9 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
 	arg_ptr->event = event;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaEventCreateResponse *) dat;
-    *event = res->event;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaEventCreateResponse *) dat;
+	*event = res->event;
+return res->err;
 }
 
 cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
@@ -4407,11 +4373,9 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 	arg_ptr->flags = flags;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaEventCreateWithFlagsResponse *) dat;
-    *event = res->event;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaEventCreateWithFlagsResponse *) dat;
+	*event = res->event;
+return res->err;
 }
 
 cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
@@ -4528,11 +4492,9 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
 	arg_ptr->end = end;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaEventElapsedTimeResponse *) dat;
-    *ms = res->ms;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaEventElapsedTimeResponse *) dat;
+	*ms = res->ms;
+return res->err;
 }
 
 cudaError_t cudaImportExternalMemory(cudaExternalMemory_t * extMem_out, const struct cudaExternalMemoryHandleDesc * memHandleDesc)
@@ -5667,11 +5629,9 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 	arg_ptr->flags = flags;
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
-
-    auto res = (cudaGraphCreateResponse *) dat;
-    *pGraph = res->pGraph;
-    CHECK_CUDA_ERROR(res->err);
-    return res->err;
+	auto res = (cudaGraphCreateResponse *) dat;
+	*pGraph = res->pGraph;
+return res->err;
 }
 
 cudaError_t cudaGraphAddKernelNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaKernelNodeParams * pNodeParams)

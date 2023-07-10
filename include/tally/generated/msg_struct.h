@@ -183,6 +183,17 @@ struct cudaDeviceGetCacheConfigResponse {
 	cudaError_t err;
 };
 
+struct cudaDeviceGetStreamPriorityRangeArg {
+	int * leastPriority;
+	int * greatestPriority;
+};
+
+struct cudaDeviceGetStreamPriorityRangeResponse {
+	int  leastPriority;
+	int  greatestPriority;
+	cudaError_t err;
+};
+
 struct cudaDeviceSetCacheConfigArg {
 	enum cudaFuncCache  cacheConfig;
 };
@@ -398,6 +409,16 @@ struct cudaStreamBeginCaptureArg {
 struct cudaStreamEndCaptureArg {
 	cudaStream_t  stream;
 	cudaGraph_t * pGraph;
+};
+
+struct cudaStreamIsCapturingArg {
+	cudaStream_t  stream;
+	enum cudaStreamCaptureStatus * pCaptureStatus;
+};
+
+struct cudaStreamIsCapturingResponse {
+	enum cudaStreamCaptureStatus  pCaptureStatus;
+	cudaError_t err;
 };
 
 struct cudaEventCreateArg {
