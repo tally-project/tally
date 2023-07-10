@@ -1,7 +1,7 @@
 import subprocess
 
 from tally.preload.consts import IGNORE_KEYWORDS, FUNC_SIG_MUST_CONTAIN, FUNC_SIG_MUST_NOT_CONTAIN
-from tally.util.util import split_and_strip, remove_keywords
+from tally.util.util import split_and_strip, remove_keywords, is_alnum_underscore
 
 def get_func_name_from_sig(func_sig):
     parse_res = parse_func_sig(func_sig)
@@ -107,6 +107,7 @@ def generate_func_sig_from_file(file):
         for line in f:
 
             line = line.strip()
+
             if not line or line.startswith("#"):
                 continue
 
@@ -116,7 +117,7 @@ def generate_func_sig_from_file(file):
                         "(" in line or
                         "CUresult" in line or
                         "cudaError_t" in line or
-                        len(line.split(" ")) == 1 or
+                        (len(line.split(" ")) == 1 and is_alnum_underscore(line)) or
                         "const" in line
                     ):
 

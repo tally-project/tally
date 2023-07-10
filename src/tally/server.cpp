@@ -114,65 +114,10 @@ void TallyServer::handle_cudaMalloc(void *__args)
     void *devPtr;
     cudaError_t err = cudaMalloc(&devPtr, args->size);
 
+    std::cout << "devPtr: " << devPtr << std::endl;
+
     struct cudaMallocResponse res { devPtr, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
-        send_ipc->wait_for_recv(1);
-    }
-}
-
-void TallyServer::handle_cudaMemcpy(void *__args)
-{
-    spdlog::info("Received request: cudaMemcpy");
-    auto args = (struct cudaMemcpyArg *) __args;
-    struct cudaMemcpyResponse *res;
-    size_t res_size = 0;
-
-    if (args->kind == cudaMemcpyHostToDevice) {
-
-        // Only care about dst (pointer to device memory) from the client call
-        cudaError_t err = cudaMemcpy(args->dst, args->data, args->count, args->kind);
-
-        res_size = sizeof(cudaError_t);
-        res = (struct cudaMemcpyResponse *) malloc(res_size);
-        res->err = err;
-    } else if (args->kind == cudaMemcpyDeviceToHost){
-        res_size = sizeof(cudaError_t) + args->count;
-        res = (struct cudaMemcpyResponse *) malloc(res_size);
-
-        // Only care about src (pointer to device memory) from the client call
-        cudaError_t err = cudaMemcpy(res->data, args->src, args->count, args->kind);
-
-        res->err = err;
-    } else {
-        throw std::runtime_error("Unknown memcpy kind!");
-    }
-
-    while(!send_ipc->send((void *) res, res_size)) {
-        send_ipc->wait_for_recv(1);
-    }
-}
-
-void TallyServer::handle_cudaLaunchKernel(void *__args)
-{
-    spdlog::info("Received request: cudaLaunchKernel");
-    auto args = (cudaLaunchKernelArg *) __args;
-    void *kernel_server_addr = _kernel_client_addr_mapping[(void *) args->host_func];
-    auto &arg_sizes = _kernel_addr_to_args[kernel_server_addr];
-    auto argc = arg_sizes.size();
-
-    void *__args_arr[argc];
-    int __args_idx = 0;
-    int offset = 0;
-
-    for (size_t i = 0; i < argc; i++) {
-        __args_arr[__args_idx] = (void *) (args->params + offset);
-        ++__args_idx;
-        offset += arg_sizes[i];
-    }
-
-    auto err = lcudaLaunchKernel((const void *) kernel_server_addr, args->gridDim, args->blockDim, &__args_arr[0], args->sharedMem, args->stream);
-
-    while (!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
         send_ipc->wait_for_recv(1);
     }
 }
@@ -278,4 +223,126 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
     cudaFree(arr);
 
     spdlog::info("Complete request: __cudaRegisterFatBinaryEnd");
+}
+
+void TallyServer::handle_cudaMemcpy(void *__args)
+{
+    spdlog::info("Received request: cudaMemcpy");
+    auto args = (struct cudaMemcpyArg *) __args;
+    struct cudaMemcpyResponse *res;
+    size_t res_size = 0;
+
+    if (args->kind == cudaMemcpyHostToDevice) {
+
+        std::cout << "copy to devPtr: " << args->dst << std::endl;
+
+        // Only care about dst (pointer to device memory) from the client call
+        cudaError_t err = cudaMemcpy(args->dst, args->data, args->count, args->kind);
+
+        res_size = sizeof(cudaError_t);
+        res = (struct cudaMemcpyResponse *) malloc(res_size);
+        res->err = err;
+    } else if (args->kind == cudaMemcpyDeviceToHost){
+        res_size = sizeof(cudaError_t) + args->count;
+        res = (struct cudaMemcpyResponse *) malloc(res_size);
+
+        // Only care about src (pointer to device memory) from the client call
+        cudaError_t err = cudaMemcpy(res->data, args->src, args->count, args->kind);
+
+        res->err = err;
+    } else {
+        throw std::runtime_error("Unknown memcpy kind!");
+    }
+
+    while(!send_ipc->send((void *) res, res_size)) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudaMemcpyAsync(void *__args)
+{
+    spdlog::info("Received request: cudaMemcpyAsync");
+    auto args = (struct cudaMemcpyAsyncArg *) __args;
+    struct cudaMemcpyAsyncResponse *res;
+    size_t res_size = 0;
+
+    if (args->kind == cudaMemcpyHostToDevice) {
+
+        // Only care about dst (pointer to device memory) from the client call
+        cudaError_t err = cudaMemcpyAsync(args->dst, args->data, args->count, args->kind, args->stream);
+
+        res_size = sizeof(cudaError_t);
+        res = (struct cudaMemcpyAsyncResponse *) malloc(res_size);
+        res->err = err;
+    } else if (args->kind == cudaMemcpyDeviceToHost){
+        res_size = sizeof(cudaError_t) + args->count;
+        res = (struct cudaMemcpyAsyncResponse *) malloc(res_size);
+
+        // Only care about src (pointer to device memory) from the client call
+        cudaError_t err = cudaMemcpyAsync(res->data, args->src, args->count, args->kind, args->stream);
+
+        res->err = err;
+    } else {
+        throw std::runtime_error("Unknown memcpy kind!");
+    }
+
+    while(!send_ipc->send((void *) res, res_size)) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudaLaunchKernel(void *__args)
+{
+    spdlog::info("Received request: cudaLaunchKernel");
+    auto args = (cudaLaunchKernelArg *) __args;
+    void *kernel_server_addr = _kernel_client_addr_mapping[(void *) args->host_func];
+    auto &arg_sizes = _kernel_addr_to_args[kernel_server_addr];
+    auto argc = arg_sizes.size();
+
+    void *__args_arr[argc];
+    int __args_idx = 0;
+    int offset = 0;
+
+    for (size_t i = 0; i < argc; i++) {
+        __args_arr[__args_idx] = (void *) (args->params + offset);
+        ++__args_idx;
+        offset += arg_sizes[i];
+    }
+
+    auto err = lcudaLaunchKernel((const void *) kernel_server_addr, args->gridDim, args->blockDim, &__args_arr[0], args->sharedMem, args->stream);
+
+    while (!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cublasSgemm_v2(void *__args)
+{
+	spdlog::info("Received request: cublasSgemm_v2");
+
+    auto args = (struct cublasSgemm_v2Arg *) __args;
+
+    const float alpha = args->alpha;
+    const float beta = args->beta;
+
+    cublasStatus_t err = cublasSgemm_v2(
+		args->handle,
+		args->transa,
+		args->transb,
+		args->m,
+		args->n,
+		args->k,
+		&alpha,
+		args->A,
+		args->lda,
+		args->B,
+		args->ldb,
+		&beta,
+		args->C,
+		args->ldc
+    );
+	
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }

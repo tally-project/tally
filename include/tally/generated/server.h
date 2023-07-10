@@ -15,6 +15,7 @@
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
 #include <nvrtc.h>
+#include <cublasLt.h>
 
 #include "libipc/ipc.h"
 
@@ -762,6 +763,7 @@ public:
 	void handle_cudnnSetCallback(void *args);
 	void handle_cudnnGetCallback(void *args);
 	void handle_cudnnOpsInferVersionCheck(void *args);
+	void handle_cudnnSoftmaxBackward(void *args);
 	void handle_cudnnPoolingBackward(void *args);
 	void handle_cudnnActivationBackward(void *args);
 	void handle_cudnnLRNCrossChannelBackward(void *args);
@@ -1186,6 +1188,40 @@ public:
 	void handle_cudaProfilerStop(void *args);
 	void handle_nvrtcGetCUBINSize(void *args);
 	void handle_nvrtcGetCUBIN(void *args);
+	void handle_cublasLtCreate(void *args);
+	void handle_cublasLtDestroy(void *args);
+	void handle_cublasLtGetStatusName(void *args);
+	void handle_cublasLtGetStatusString(void *args);
+	void handle_cublasLtGetVersion(void *args);
+	void handle_cublasLtGetCudartVersion(void *args);
+	void handle_cublasLtGetProperty(void *args);
+	void handle_cublasLtMatmul(void *args);
+	void handle_cublasLtMatrixLayoutInit_internal(void *args);
+	void handle_cublasLtMatrixLayoutCreate(void *args);
+	void handle_cublasLtMatrixLayoutDestroy(void *args);
+	void handle_cublasLtMatrixLayoutSetAttribute(void *args);
+	void handle_cublasLtMatrixLayoutGetAttribute(void *args);
+	void handle_cublasLtMatmulDescInit_internal(void *args);
+	void handle_cublasLtMatmulDescCreate(void *args);
+	void handle_cublasLtMatmulDescDestroy(void *args);
+	void handle_cublasLtMatmulDescSetAttribute(void *args);
+	void handle_cublasLtMatmulDescGetAttribute(void *args);
+	void handle_cublasLtMatmulPreferenceInit_internal(void *args);
+	void handle_cublasLtMatmulPreferenceCreate(void *args);
+	void handle_cublasLtMatmulPreferenceDestroy(void *args);
+	void handle_cublasLtMatmulPreferenceSetAttribute(void *args);
+	void handle_cublasLtMatmulPreferenceGetAttribute(void *args);
+	void handle_cublasLtMatmulAlgoInit(void *args);
+	void handle_cublasLtMatmulAlgoCheck(void *args);
+	void handle_cublasLtMatmulAlgoCapGetAttribute(void *args);
+	void handle_cublasLtMatmulAlgoConfigSetAttribute(void *args);
+	void handle_cublasLtMatmulAlgoConfigGetAttribute(void *args);
+	void handle_cublasLtLoggerSetCallback(void *args);
+	void handle_cublasLtLoggerSetFile(void *args);
+	void handle_cublasLtLoggerOpenFile(void *args);
+	void handle_cublasLtLoggerSetLevel(void *args);
+	void handle_cublasLtLoggerSetMask(void *args);
+	void handle_cublasLtLoggerForceDisable(void *args);
 
     void handle___cudaRegisterFatBinary(void *args);
     void handle___cudaRegisterFunction(void *args);

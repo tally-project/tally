@@ -720,6 +720,7 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETCALLBACK] = std::bind(&TallyServer::handle_cudnnSetCallback, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCALLBACK] = std::bind(&TallyServer::handle_cudnnGetCallback, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNOPSINFERVERSIONCHECK] = std::bind(&TallyServer::handle_cudnnOpsInferVersionCheck, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSOFTMAXBACKWARD] = std::bind(&TallyServer::handle_cudnnSoftmaxBackward, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNPOOLINGBACKWARD] = std::bind(&TallyServer::handle_cudnnPoolingBackward, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNACTIVATIONBACKWARD] = std::bind(&TallyServer::handle_cudnnActivationBackward, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNLRNCROSSCHANNELBACKWARD] = std::bind(&TallyServer::handle_cudnnLRNCrossChannelBackward, this, std::placeholders::_1);
@@ -1144,9 +1145,45 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDAPROFILERSTOP] = std::bind(&TallyServer::handle_cudaProfilerStop, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::NVRTCGETCUBINSIZE] = std::bind(&TallyServer::handle_nvrtcGetCUBINSize, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::NVRTCGETCUBIN] = std::bind(&TallyServer::handle_nvrtcGetCUBIN, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTCREATE] = std::bind(&TallyServer::handle_cublasLtCreate, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTDESTROY] = std::bind(&TallyServer::handle_cublasLtDestroy, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTGETSTATUSNAME] = std::bind(&TallyServer::handle_cublasLtGetStatusName, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTGETSTATUSSTRING] = std::bind(&TallyServer::handle_cublasLtGetStatusString, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTGETVERSION] = std::bind(&TallyServer::handle_cublasLtGetVersion, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTGETCUDARTVERSION] = std::bind(&TallyServer::handle_cublasLtGetCudartVersion, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTGETPROPERTY] = std::bind(&TallyServer::handle_cublasLtGetProperty, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMUL] = std::bind(&TallyServer::handle_cublasLtMatmul, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTINIT_INTERNAL] = std::bind(&TallyServer::handle_cublasLtMatrixLayoutInit_internal, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTCREATE] = std::bind(&TallyServer::handle_cublasLtMatrixLayoutCreate, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTDESTROY] = std::bind(&TallyServer::handle_cublasLtMatrixLayoutDestroy, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTSETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatrixLayoutSetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTGETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatrixLayoutGetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULDESCINIT_INTERNAL] = std::bind(&TallyServer::handle_cublasLtMatmulDescInit_internal, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULDESCCREATE] = std::bind(&TallyServer::handle_cublasLtMatmulDescCreate, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULDESCDESTROY] = std::bind(&TallyServer::handle_cublasLtMatmulDescDestroy, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULDESCSETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulDescSetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULDESCGETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulDescGetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEINIT_INTERNAL] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceInit_internal, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCECREATE] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceCreate, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEDESTROY] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceDestroy, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCESETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceSetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEGETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceGetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOINIT] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoInit, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOCHECK] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoCheck, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOCAPGETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoCapGetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOCONFIGSETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoConfigSetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOCONFIGGETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoConfigGetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTLOGGERSETCALLBACK] = std::bind(&TallyServer::handle_cublasLtLoggerSetCallback, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTLOGGERSETFILE] = std::bind(&TallyServer::handle_cublasLtLoggerSetFile, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTLOGGEROPENFILE] = std::bind(&TallyServer::handle_cublasLtLoggerOpenFile, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTLOGGERSETLEVEL] = std::bind(&TallyServer::handle_cublasLtLoggerSetLevel, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTLOGGERSETMASK] = std::bind(&TallyServer::handle_cublasLtLoggerSetMask, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTLOGGERFORCEDISABLE] = std::bind(&TallyServer::handle_cublasLtLoggerForceDisable, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDAMALLOC] = std::bind(&TallyServer::handle_cudaMalloc, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDAMEMCPY] = std::bind(&TallyServer::handle_cudaMemcpy, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDAMEMCPYASYNC] = std::bind(&TallyServer::handle_cudaMemcpyAsync, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDALAUNCHKERNEL] = std::bind(&TallyServer::handle_cudaLaunchKernel, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASSGEMM_V2] = std::bind(&TallyServer::handle_cublasSgemm_v2, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFUNCTION] = std::bind(&TallyServer::handle___cudaRegisterFunction, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFATBINARY] = std::bind(&TallyServer::handle___cudaRegisterFatBinary, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND] = std::bind(&TallyServer::handle___cudaRegisterFatBinaryEnd, this, std::placeholders::_1);
@@ -4598,12 +4635,6 @@ void TallyServer::handle_cudaMemcpyFromSymbol(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-void TallyServer::handle_cudaMemcpyAsync(void *__args)
-{
-	spdlog::info("Received request: cudaMemcpyAsync");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 void TallyServer::handle_cudaMemcpyPeerAsync(void *__args)
 {
 	spdlog::info("Received request: cudaMemcpyPeerAsync");
@@ -6011,6 +6042,12 @@ void TallyServer::handle_cudnnOpsInferVersionCheck(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnSoftmaxBackward(void *__args)
+{
+	spdlog::info("Received request: cudnnSoftmaxBackward");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnPoolingBackward(void *__args)
 {
 	spdlog::info("Received request: cudnnPoolingBackward");
@@ -6872,7 +6909,16 @@ void TallyServer::handle_cudnnBackendExecute(void *__args)
 void TallyServer::handle_cublasCreate_v2(void *__args)
 {
 	spdlog::info("Received request: cublasCreate_v2");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	auto args = (struct cublasCreate_v2Arg *) __args;
+	cublasHandle_t handle;
+	cublasStatus_t err = cublasCreate_v2(&(handle));
+	struct cublasCreate_v2Response res {
+		handle,
+		err};
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cublasCreate_v2Response))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasDestroy_v2(void *__args)
@@ -6893,7 +6939,16 @@ void TallyServer::handle_cublasDestroy_v2(void *__args)
 void TallyServer::handle_cublasGetVersion_v2(void *__args)
 {
 	spdlog::info("Received request: cublasGetVersion_v2");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	auto args = (struct cublasGetVersion_v2Arg *) __args;
+	int version;
+	cublasStatus_t err = cublasGetVersion_v2(args->handle, &(version));
+	struct cublasGetVersion_v2Response res {
+		version,
+		err};
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cublasGetVersion_v2Response))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasGetProperty(void *__args)
@@ -6919,13 +6974,34 @@ void TallyServer::handle_cublasGetCudartVersion(void *__args)
 void TallyServer::handle_cublasSetWorkspace_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSetWorkspace_v2");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    auto args = (struct cublasSetWorkspace_v2Arg *) __args;
+    cublasStatus_t err = cublasSetWorkspace_v2(
+		args->handle,
+		args->workspace,
+		args->workspaceSizeInBytes
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasSetStream_v2(void *__args)
 {
 	spdlog::info("Received request: cublasSetStream_v2");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    auto args = (struct cublasSetStream_v2Arg *) __args;
+    cublasStatus_t err = cublasSetStream_v2(
+		args->handle,
+		args->streamId
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasGetStream_v2(void *__args)
@@ -6967,7 +7043,17 @@ void TallyServer::handle_cublasGetMathMode(void *__args)
 void TallyServer::handle_cublasSetMathMode(void *__args)
 {
 	spdlog::info("Received request: cublasSetMathMode");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    auto args = (struct cublasSetMathModeArg *) __args;
+    cublasStatus_t err = cublasSetMathMode(
+		args->handle,
+		args->mode
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasGetSmCountTarget(void *__args)
@@ -7906,12 +7992,6 @@ void TallyServer::handle_cublasZhpr2_v2(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-void TallyServer::handle_cublasSgemm_v2(void *__args)
-{
-	spdlog::info("Received request: cublasSgemm_v2");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 void TallyServer::handle_cublasDgemm_v2(void *__args)
 {
 	spdlog::info("Received request: cublasDgemm_v2");
@@ -8585,5 +8665,209 @@ void TallyServer::handle_nvrtcGetCUBINSize(void *__args)
 void TallyServer::handle_nvrtcGetCUBIN(void *__args)
 {
 	spdlog::info("Received request: nvrtcGetCUBIN");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtCreate(void *__args)
+{
+	spdlog::info("Received request: cublasLtCreate");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtDestroy(void *__args)
+{
+	spdlog::info("Received request: cublasLtDestroy");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtGetStatusName(void *__args)
+{
+	spdlog::info("Received request: cublasLtGetStatusName");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtGetStatusString(void *__args)
+{
+	spdlog::info("Received request: cublasLtGetStatusString");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtGetVersion(void *__args)
+{
+	spdlog::info("Received request: cublasLtGetVersion");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtGetCudartVersion(void *__args)
+{
+	spdlog::info("Received request: cublasLtGetCudartVersion");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtGetProperty(void *__args)
+{
+	spdlog::info("Received request: cublasLtGetProperty");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmul(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmul");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatrixLayoutInit_internal(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixLayoutInit_internal");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatrixLayoutCreate(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixLayoutCreate");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatrixLayoutDestroy(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixLayoutDestroy");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatrixLayoutSetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixLayoutSetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatrixLayoutGetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixLayoutGetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulDescInit_internal(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulDescInit_internal");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulDescCreate(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulDescCreate");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulDescDestroy(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulDescDestroy");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulDescSetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulDescSetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulDescGetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulDescGetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulPreferenceInit_internal(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulPreferenceInit_internal");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulPreferenceCreate(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulPreferenceCreate");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulPreferenceDestroy(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulPreferenceDestroy");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulPreferenceSetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulPreferenceSetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulPreferenceGetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulPreferenceGetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulAlgoInit(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulAlgoInit");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulAlgoCheck(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulAlgoCheck");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulAlgoCapGetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulAlgoCapGetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulAlgoConfigSetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulAlgoConfigSetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulAlgoConfigGetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulAlgoConfigGetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtLoggerSetCallback(void *__args)
+{
+	spdlog::info("Received request: cublasLtLoggerSetCallback");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtLoggerSetFile(void *__args)
+{
+	spdlog::info("Received request: cublasLtLoggerSetFile");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtLoggerOpenFile(void *__args)
+{
+	spdlog::info("Received request: cublasLtLoggerOpenFile");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtLoggerSetLevel(void *__args)
+{
+	spdlog::info("Received request: cublasLtLoggerSetLevel");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtLoggerSetMask(void *__args)
+{
+	spdlog::info("Received request: cublasLtLoggerSetMask");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtLoggerForceDisable(void *__args)
+{
+	spdlog::info("Received request: cublasLtLoggerForceDisable");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }

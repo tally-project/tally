@@ -1,8 +1,11 @@
 #ifndef TALLY_DEF_H
 #define TALLY_DEF_H
 
-#include <cuda.h>
 #include <cuda_runtime.h>
+#include <cuda.h>
+#include <cublas_v2.h>
+#include <cuda_profiler_api.h>
+#include <cublasLt.h>
 
 #include <tally/generated/cuda_api_enum.h>
 
@@ -13,6 +16,27 @@ struct __align__(8) fatBinaryHeader
     unsigned short         headerSize;
     unsigned long long int fatSize;
 };
+
+struct __cudaRegisterFatBinaryArg {
+    bool cached;
+    int magic;
+    int version;
+    char data[];
+};
+
+struct registerKernelArg {
+    void *host_func;
+    uint32_t kernel_func_len; 
+    char data[]; // kernel_func_name
+};
+
+typedef struct {
+    int magic;
+    int version;
+    const unsigned long long* data;
+    void *filename_or_fatbins;  /* version 1: offline filename,
+                                * version 2: array of prelinked fatbins */
+} my__fatBinC_Wrapper_t;
 
 typedef struct MessageHeader {
     CUDA_API_ENUM api_id;
@@ -36,6 +60,15 @@ struct cudaMemcpyArg {
     char data[];
 };
 
+struct cudaMemcpyAsyncArg {
+    void *dst;
+    void *src;
+    size_t count;
+    enum cudaMemcpyKind kind;
+    cudaStream_t stream;
+    char data[];
+};
+
 struct cudaLaunchKernelArg {
     const void *host_func;
     dim3 gridDim;
@@ -50,25 +83,26 @@ struct cudaMemcpyResponse {
     char data[];
 };
 
-struct __cudaRegisterFatBinaryArg {
-    bool cached;
-    int magic;
-    int version;
+struct cudaMemcpyAsyncResponse {
+    cudaError_t err;
     char data[];
 };
 
-struct registerKernelArg {
-    void *host_func;
-    uint32_t kernel_func_len; 
-    char data[]; // kernel_func_name
+struct cublasSgemm_v2Arg {
+	cublasHandle_t handle;
+	cublasOperation_t transa;
+	cublasOperation_t transb;
+	int m;
+	int n;
+	int k;
+	float alpha;
+	const float *A;
+	int lda;
+	const float *B;
+	int ldb;
+	float beta;
+	float *C;
+	int ldc;
 };
-
-typedef struct {
-    int magic;
-    int version;
-    const unsigned long long* data;
-    void *filename_or_fatbins;  /* version 1: offline filename,
-                                * version 2: array of prelinked fatbins */
-} my__fatBinC_Wrapper_t;
 
 #endif // TALLY_DEF_H

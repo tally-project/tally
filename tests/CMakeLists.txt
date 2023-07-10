@@ -24,3 +24,16 @@ set_target_properties(max_pool PROPERTIES
     CUDA_ARCHITECTURES "86"
     CUDA_RUNTIME_LIBRARY Shared
 )
+
+add_executable(cublas_test cublas.cu)
+
+target_link_libraries(cublas_test
+    cuda
+    cudart
+    cublas
+)
+
+set_target_properties(cublas_test PROPERTIES
+    CUDA_ARCHITECTURES "86"
+    CUDA_RUNTIME_LIBRARY Shared
+)

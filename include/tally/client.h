@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <iostream>
 
 #include "libipc/ipc.h"
 
@@ -30,17 +31,22 @@ public:
 
     TallyClient()
     {
-        __exit = [&](int) {
-            if (send_ipc != nullptr) send_ipc->disconnect();
-            if (recv_ipc != nullptr) recv_ipc->disconnect();
-            exit(0);
-        };
+        // __exit = [&](int sig_num) {
 
-        signal(SIGINT  , __exit_wrapper);
-        signal(SIGABRT , __exit_wrapper);
-        signal(SIGSEGV , __exit_wrapper);
-        signal(SIGTERM , __exit_wrapper);
-        signal(SIGHUP  , __exit_wrapper);
+        //     if (sig_num == SIGSEGV) {
+        //         std::cout << "Encountered segfault. Shutting down... " << std::endl;
+        //     }
+
+        //     if (send_ipc != nullptr) send_ipc->disconnect();
+        //     if (recv_ipc != nullptr) recv_ipc->disconnect();
+        //     exit(0);
+        // };
+
+        // signal(SIGINT  , __exit_wrapper);
+        // signal(SIGABRT , __exit_wrapper);
+        // signal(SIGSEGV , __exit_wrapper);
+        // signal(SIGTERM , __exit_wrapper);
+        // signal(SIGHUP  , __exit_wrapper);
 
         send_ipc = new ipc::channel("client-to-server-110000", ipc::sender);
         recv_ipc = new ipc::channel("server-to-client-110000", ipc::receiver);

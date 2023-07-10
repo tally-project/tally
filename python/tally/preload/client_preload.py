@@ -84,7 +84,7 @@ def gen_client_msg_struct(func_sig):
         msg_struct += f"struct {func_name}Response {{\n"
 
         for idx in PARAM_INDICES[group]:
-            msg_struct += f"\t{arg_types[idx].strip('*')} {arg_names[idx]};\n"
+            msg_struct += f"\t{arg_types[idx].strip().strip('*')} {arg_names[idx]};\n"
 
         msg_struct += f"\t{ret_type} err;\n"
         msg_struct += "};\n"
@@ -120,7 +120,7 @@ void TallyServer::handle_{func_name}(void *__args)
         handler += f"\tauto args = (struct {func_name}Arg *) __args;\n"
 
         for idx in indices:
-            handler += f"\t{arg_types[idx].strip('*')} {arg_names[idx]};\n"
+            handler += f"\t{arg_types[idx].strip().strip('*')} {arg_names[idx]};\n"
 
         handler += f"\t{ret_type} err = {func_name}("
 

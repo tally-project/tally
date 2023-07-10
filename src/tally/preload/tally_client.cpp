@@ -19,6 +19,8 @@
 
 #include <cuda_runtime.h>
 #include <cuda.h>
+#include <cublas_v2.h>
+#include <cuda_profiler_api.h>
 #include <fatbinary_section.h>
 
 #include "libipc/ipc.h"
@@ -181,6 +183,48 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
 	return res->err;
 }
 
+cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
+{
+	uint32_t msg_len;
+    uint8_t *msg;
+    
+    if (kind == cudaMemcpyHostToDevice) {
+        msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMemcpyAsyncArg) + count;
+    } else if (kind == cudaMemcpyDeviceToHost){
+        msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMemcpyAsyncArg);
+    } else {
+        throw std::runtime_error("Unknown memcpy kind!");
+    }
+
+    msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAMEMCPYASYNC;
+
+    auto arg_ptr = (struct cudaMemcpyAsyncArg *)(msg + sizeof(CUDA_API_ENUM));
+    arg_ptr->dst = dst;
+    arg_ptr->src = (void *)src;
+    arg_ptr->count = count;
+    arg_ptr->kind = kind;
+    arg_ptr->stream = stream;
+
+    // Copy data to the message
+    if (kind == cudaMemcpyHostToDevice) {
+        memcpy(arg_ptr->data, src, count);
+    }
+
+    CLIENT_SEND_MSG_AND_FREE;
+    CLIENT_RECV_MSG;
+
+    auto res = (struct cudaMemcpyAsyncResponse *) dat;
+
+    // Copy data to the host ptr
+    if (kind == cudaMemcpyDeviceToHost) {
+        memcpy(dst, res->data, count);
+    }
+
+	return res->err;
+}
+
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
     auto &params_info = TallyClient::client->_kernel_addr_to_args[func];
@@ -235,6 +279,38 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 
     *devPtr = res->ptr;
 	return res->err;
+}
+
+cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
+{
+	printf("cublasSgemm_v2 hooked\n");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSgemm_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASSGEMM_V2;
+    
+    struct cublasSgemm_v2Arg *arg_ptr = (struct cublasSgemm_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->transa = transa;
+	arg_ptr->transb = transb;
+	arg_ptr->m = m;
+	arg_ptr->n = n;
+	arg_ptr->k = k;
+	arg_ptr->alpha = *alpha;
+	arg_ptr->A = A;
+	arg_ptr->lda = lda;
+	arg_ptr->B = B;
+	arg_ptr->ldb = ldb;
+	arg_ptr->beta = *beta;
+	arg_ptr->C = C;
+	arg_ptr->ldc = ldc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
 }
 
 }

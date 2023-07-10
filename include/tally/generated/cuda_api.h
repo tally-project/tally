@@ -9,6 +9,7 @@
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
 #include <nvrtc.h>
+#include <cublasLt.h>
 
 extern CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuGetErrorName) (CUresult  error, const char ** pStr);
@@ -719,6 +720,7 @@ extern cudnnStatus_t (*lcudnnRestoreAlgorithm) (cudnnHandle_t  handle, void * al
 extern cudnnStatus_t (*lcudnnSetCallback) (unsigned  mask, void * udata, cudnnCallback_t  fptr);
 extern cudnnStatus_t (*lcudnnGetCallback) (unsigned * mask, void ** udata, cudnnCallback_t * fptr);
 extern cudnnStatus_t (*lcudnnOpsInferVersionCheck) ();
+extern cudnnStatus_t (*lcudnnSoftmaxBackward) (cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t  algo, cudnnSoftmaxMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx);
 extern cudnnStatus_t (*lcudnnPoolingBackward) (cudnnHandle_t  handle, const cudnnPoolingDescriptor_t  poolingDesc, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx);
 extern cudnnStatus_t (*lcudnnActivationBackward) (cudnnHandle_t  handle, cudnnActivationDescriptor_t  activationDesc, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx);
 extern cudnnStatus_t (*lcudnnLRNCrossChannelBackward) (cudnnHandle_t  handle, cudnnLRNDescriptor_t  normDesc, cudnnLRNMode_t  lrnMode, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx);
@@ -1143,6 +1145,40 @@ extern cudaError_t (*lcudaProfilerStart) ();
 extern cudaError_t (*lcudaProfilerStop) ();
 extern nvrtcResult (*lnvrtcGetCUBINSize) (nvrtcProgram  prog, size_t * cubinSizeRet);
 extern nvrtcResult (*lnvrtcGetCUBIN) (nvrtcProgram  prog, char * cubin);
+extern cublasStatus_t (*lcublasLtCreate) (cublasLtHandle_t*  lightHandle);
+extern cublasStatus_t (*lcublasLtDestroy) (cublasLtHandle_t  lightHandle);
+extern const char* (*lcublasLtGetStatusName) (cublasStatus_t  status);
+extern const char* (*lcublasLtGetStatusString) (cublasStatus_t  status);
+extern size_t (*lcublasLtGetVersion) ();
+extern size_t (*lcublasLtGetCudartVersion) ();
+extern cublasStatus_t (*lcublasLtGetProperty) (libraryPropertyType  type, int*  value);
+extern cublasStatus_t (*lcublasLtMatmul) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream);
+extern cublasStatus_t (*lcublasLtMatrixLayoutInit_internal) (cublasLtMatrixLayout_t  matLayout, size_t  size, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld);
+extern cublasStatus_t (*lcublasLtMatrixLayoutCreate) (cublasLtMatrixLayout_t*  matLayout, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld);
+extern cublasStatus_t (*lcublasLtMatrixLayoutDestroy) (cublasLtMatrixLayout_t  matLayout);
+extern cublasStatus_t (*lcublasLtMatrixLayoutSetAttribute) (cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, const void*  buf, size_t  sizeInBytes);
+extern cublasStatus_t (*lcublasLtMatrixLayoutGetAttribute) (cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten);
+extern cublasStatus_t (*lcublasLtMatmulDescInit_internal) (cublasLtMatmulDesc_t  matmulDesc, size_t  size, cublasComputeType_t  computeType, cudaDataType_t  scaleType);
+extern cublasStatus_t (*lcublasLtMatmulDescCreate) (cublasLtMatmulDesc_t*  matmulDesc, cublasComputeType_t  computeType, cudaDataType_t  scaleType);
+extern cublasStatus_t (*lcublasLtMatmulDescDestroy) (cublasLtMatmulDesc_t  matmulDesc);
+extern cublasStatus_t (*lcublasLtMatmulDescSetAttribute) (cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes);
+extern cublasStatus_t (*lcublasLtMatmulDescGetAttribute) (cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten);
+extern cublasStatus_t (*lcublasLtMatmulPreferenceInit_internal) (cublasLtMatmulPreference_t  pref, size_t  size);
+extern cublasStatus_t (*lcublasLtMatmulPreferenceCreate) (cublasLtMatmulPreference_t*  pref);
+extern cublasStatus_t (*lcublasLtMatmulPreferenceDestroy) (cublasLtMatmulPreference_t  pref);
+extern cublasStatus_t (*lcublasLtMatmulPreferenceSetAttribute) (cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, const void*  buf, size_t  sizeInBytes);
+extern cublasStatus_t (*lcublasLtMatmulPreferenceGetAttribute) (cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten);
+extern cublasStatus_t (*lcublasLtMatmulAlgoInit) (cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  algoId, cublasLtMatmulAlgo_t*  algo);
+extern cublasStatus_t (*lcublasLtMatmulAlgoCheck) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulHeuristicResult_t*  result);
+extern cublasStatus_t (*lcublasLtMatmulAlgoCapGetAttribute) (const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoCapAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten);
+extern cublasStatus_t (*lcublasLtMatmulAlgoConfigSetAttribute) (cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, const void*  buf, size_t  sizeInBytes);
+extern cublasStatus_t (*lcublasLtMatmulAlgoConfigGetAttribute) (const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten);
+extern cublasStatus_t (*lcublasLtLoggerSetCallback) (cublasLtLoggerCallback_t  callback);
+extern cublasStatus_t (*lcublasLtLoggerSetFile) (FILE*  file);
+extern cublasStatus_t (*lcublasLtLoggerOpenFile) (const char*  logFile);
+extern cublasStatus_t (*lcublasLtLoggerSetLevel) (int  level);
+extern cublasStatus_t (*lcublasLtLoggerSetMask) (int  mask);
+extern cublasStatus_t (*lcublasLtLoggerForceDisable) ();
 
 
 extern void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);

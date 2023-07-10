@@ -25,6 +25,7 @@ API_DECL_TEMPLATE_TOP = """
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
 #include <nvrtc.h>
+#include <cublasLt.h>
 
 """
 
@@ -70,6 +71,12 @@ MSG_STRUCT_TEMPLATE_TOP = """
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <cudnn.h>
+#include <cublas_v2.h>
+#include <cuda_profiler_api.h>
+#include <nvrtc.h>
+#include <cublasLt.h>
+
 
 """
 
@@ -121,6 +128,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
 #include <nvrtc.h>
+#include <cublasLt.h>
 
 #include "libipc/ipc.h"
 
@@ -211,13 +219,19 @@ FORWARD_API_CALLS = [
     "cuFlushGPUDirectRDMAWrites",
     "cuDevicePrimaryCtxRelease_v2",
     "cuDevicePrimaryCtxSetFlags_v2",
-    "cuDevicePrimaryCtxReset_v2"
+    "cuDevicePrimaryCtxReset_v2",
+    "cublasSetStream_v2",
+    "cublasSetWorkspace_v2",
+    "cublasSetMathMode"
 ]
 
+# implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "cudaMalloc",
     "cudaMemcpy",
+    "cudaMemcpyAsync",
     "cudaLaunchKernel",
+    "cublasSgemm_v2",
     "__cudaRegisterFunction",
     "__cudaRegisterFatBinary",
     "__cudaRegisterFatBinaryEnd"
@@ -248,7 +262,7 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cudaGetDevice",
     "cudaGetDeviceFlags",
     "cudaGraphCreate",
-    "lcublasCreate_v2",
+    "cublasCreate_v2",
     "cuDriverGetVersion",
     "cuDeviceGet",
     "cuDeviceGetCount",
@@ -263,7 +277,8 @@ CUDA_GET_1_PARAM_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
-    "cudaStreamIsCapturing"
+    "cudaStreamIsCapturing",
+    "cublasGetVersion_v2"
 ]
 
 CUDA_GET_2_3_PARAM_FUNCS = [

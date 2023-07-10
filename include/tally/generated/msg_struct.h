@@ -4,6 +4,12 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <cudnn.h>
+#include <cublas_v2.h>
+#include <cuda_profiler_api.h>
+#include <nvrtc.h>
+#include <cublasLt.h>
+
 
 struct cuInitArg {
 	unsigned int  Flags;
@@ -488,11 +494,46 @@ struct cudaGraphCreateResponse {
 	cudaError_t err;
 };
 
+struct cublasCreate_v2Arg {
+	cublasHandle_t*  handle;
+};
+
+struct cublasCreate_v2Response {
+	cublasHandle_t handle;
+	cublasStatus_t err;
+};
+
 struct cublasDestroy_v2Arg {
 	cublasHandle_t  handle;
 };
 
+struct cublasGetVersion_v2Arg {
+	cublasHandle_t  handle;
+	int*  version;
+};
+
+struct cublasGetVersion_v2Response {
+	int version;
+	cublasStatus_t err;
+};
+
 struct cublasGetCudartVersionArg {
+};
+
+struct cublasSetWorkspace_v2Arg {
+	cublasHandle_t  handle;
+	void*  workspace;
+	size_t  workspaceSizeInBytes;
+};
+
+struct cublasSetStream_v2Arg {
+	cublasHandle_t  handle;
+	cudaStream_t  streamId;
+};
+
+struct cublasSetMathModeArg {
+	cublasHandle_t  handle;
+	cublasMath_t  mode;
 };
 
 struct cudaProfilerStartArg {

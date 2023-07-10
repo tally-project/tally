@@ -20,6 +20,7 @@
 #include <cudnn.h>
 #include <cublas_v2.h>
 #include <nvrtc.h>
+#include <cublasLt.h>
 
 // g++ -I/usr/local/cuda/include -fPIC -shared -o preload.so preload.cpp
 
@@ -24433,6 +24434,41 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
 	return res;
 }
 
+cudnnStatus_t cudnnSoftmaxBackward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t  algo, cudnnSoftmaxMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)
+{
+	static cudnnStatus_t (*lcudnnSoftmaxBackward) (cudnnHandle_t , cudnnSoftmaxAlgorithm_t , cudnnSoftmaxMode_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const cudnnTensorDescriptor_t , void *);
+	if (!lcudnnSoftmaxBackward) {
+		lcudnnSoftmaxBackward = (cudnnStatus_t (*) (cudnnHandle_t , cudnnSoftmaxAlgorithm_t , cudnnSoftmaxMode_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const cudnnTensorDescriptor_t , void *)) dlsym(tracer.cudnn_handle, "cudnnSoftmaxBackward");
+		tracer._kernel_map[(void *) lcudnnSoftmaxBackward] = std::string("cudnnSoftmaxBackward");
+	}
+	assert(lcudnnSoftmaxBackward);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSoftmaxBackward(handle, algo, mode, alpha, yDesc, y, dyDesc, dy, beta, dxDesc, dx);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSoftmaxBackward);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnPoolingBackward(cudnnHandle_t  handle, const cudnnPoolingDescriptor_t  poolingDesc, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)
 {
 	static cudnnStatus_t (*lcudnnPoolingBackward) (cudnnHandle_t , const cudnnPoolingDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const cudnnTensorDescriptor_t , void *);
@@ -38697,6 +38733,1196 @@ nvrtcResult nvrtcGetCUBIN(nvrtcProgram  prog, char * cubin)
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lnvrtcGetCUBIN);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
+{
+	static cublasStatus_t (*lcublasLtCreate) (cublasLtHandle_t* );
+	if (!lcublasLtCreate) {
+		lcublasLtCreate = (cublasStatus_t (*) (cublasLtHandle_t* )) dlsym(RTLD_NEXT, "cublasLtCreate");
+		tracer._kernel_map[(void *) lcublasLtCreate] = std::string("cublasLtCreate");
+	}
+	assert(lcublasLtCreate);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtCreate(lightHandle);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtCreate);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
+{
+	static cublasStatus_t (*lcublasLtDestroy) (cublasLtHandle_t );
+	if (!lcublasLtDestroy) {
+		lcublasLtDestroy = (cublasStatus_t (*) (cublasLtHandle_t )) dlsym(RTLD_NEXT, "cublasLtDestroy");
+		tracer._kernel_map[(void *) lcublasLtDestroy] = std::string("cublasLtDestroy");
+	}
+	assert(lcublasLtDestroy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtDestroy(lightHandle);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtDestroy);
+	}
+	return res;
+}
+
+const char* cublasLtGetStatusName(cublasStatus_t  status)
+{
+	static const char* (*lcublasLtGetStatusName) (cublasStatus_t );
+	if (!lcublasLtGetStatusName) {
+		lcublasLtGetStatusName = (const char* (*) (cublasStatus_t )) dlsym(RTLD_NEXT, "cublasLtGetStatusName");
+		tracer._kernel_map[(void *) lcublasLtGetStatusName] = std::string("cublasLtGetStatusName");
+	}
+	assert(lcublasLtGetStatusName);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	const char* res = 
+		lcublasLtGetStatusName(status);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtGetStatusName);
+	}
+	return res;
+}
+
+const char* cublasLtGetStatusString(cublasStatus_t  status)
+{
+	static const char* (*lcublasLtGetStatusString) (cublasStatus_t );
+	if (!lcublasLtGetStatusString) {
+		lcublasLtGetStatusString = (const char* (*) (cublasStatus_t )) dlsym(RTLD_NEXT, "cublasLtGetStatusString");
+		tracer._kernel_map[(void *) lcublasLtGetStatusString] = std::string("cublasLtGetStatusString");
+	}
+	assert(lcublasLtGetStatusString);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	const char* res = 
+		lcublasLtGetStatusString(status);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtGetStatusString);
+	}
+	return res;
+}
+
+size_t cublasLtGetVersion()
+{
+	static size_t (*lcublasLtGetVersion) ();
+	if (!lcublasLtGetVersion) {
+		lcublasLtGetVersion = (size_t (*) ()) dlsym(RTLD_NEXT, "cublasLtGetVersion");
+		tracer._kernel_map[(void *) lcublasLtGetVersion] = std::string("cublasLtGetVersion");
+	}
+	assert(lcublasLtGetVersion);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	size_t res = 
+		lcublasLtGetVersion();
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtGetVersion);
+	}
+	return res;
+}
+
+size_t cublasLtGetCudartVersion()
+{
+	static size_t (*lcublasLtGetCudartVersion) ();
+	if (!lcublasLtGetCudartVersion) {
+		lcublasLtGetCudartVersion = (size_t (*) ()) dlsym(RTLD_NEXT, "cublasLtGetCudartVersion");
+		tracer._kernel_map[(void *) lcublasLtGetCudartVersion] = std::string("cublasLtGetCudartVersion");
+	}
+	assert(lcublasLtGetCudartVersion);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	size_t res = 
+		lcublasLtGetCudartVersion();
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtGetCudartVersion);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtGetProperty(libraryPropertyType  type, int*  value)
+{
+	static cublasStatus_t (*lcublasLtGetProperty) (libraryPropertyType , int* );
+	if (!lcublasLtGetProperty) {
+		lcublasLtGetProperty = (cublasStatus_t (*) (libraryPropertyType , int* )) dlsym(RTLD_NEXT, "cublasLtGetProperty");
+		tracer._kernel_map[(void *) lcublasLtGetProperty] = std::string("cublasLtGetProperty");
+	}
+	assert(lcublasLtGetProperty);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtGetProperty(type, value);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtGetProperty);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)
+{
+	static cublasStatus_t (*lcublasLtMatmul) (cublasLtHandle_t , cublasLtMatmulDesc_t , const void* , const void* , cublasLtMatrixLayout_t , const void* , cublasLtMatrixLayout_t , const void* , const void* , cublasLtMatrixLayout_t , void* , cublasLtMatrixLayout_t , const cublasLtMatmulAlgo_t* , void* , size_t , cudaStream_t );
+	if (!lcublasLtMatmul) {
+		lcublasLtMatmul = (cublasStatus_t (*) (cublasLtHandle_t , cublasLtMatmulDesc_t , const void* , const void* , cublasLtMatrixLayout_t , const void* , cublasLtMatrixLayout_t , const void* , const void* , cublasLtMatrixLayout_t , void* , cublasLtMatrixLayout_t , const cublasLtMatmulAlgo_t* , void* , size_t , cudaStream_t )) dlsym(RTLD_NEXT, "cublasLtMatmul");
+		tracer._kernel_map[(void *) lcublasLtMatmul] = std::string("cublasLtMatmul");
+	}
+	assert(lcublasLtMatmul);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmul(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmul);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutInit_internal(cublasLtMatrixLayout_t  matLayout, size_t  size, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)
+{
+	static cublasStatus_t (*lcublasLtMatrixLayoutInit_internal) (cublasLtMatrixLayout_t , size_t , cudaDataType , uint64_t , uint64_t , int64_t );
+	if (!lcublasLtMatrixLayoutInit_internal) {
+		lcublasLtMatrixLayoutInit_internal = (cublasStatus_t (*) (cublasLtMatrixLayout_t , size_t , cudaDataType , uint64_t , uint64_t , int64_t )) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutInit_internal");
+		tracer._kernel_map[(void *) lcublasLtMatrixLayoutInit_internal] = std::string("cublasLtMatrixLayoutInit_internal");
+	}
+	assert(lcublasLtMatrixLayoutInit_internal);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixLayoutInit_internal(matLayout, size, type, rows, cols, ld);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixLayoutInit_internal);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)
+{
+	static cublasStatus_t (*lcublasLtMatrixLayoutCreate) (cublasLtMatrixLayout_t* , cudaDataType , uint64_t , uint64_t , int64_t );
+	if (!lcublasLtMatrixLayoutCreate) {
+		lcublasLtMatrixLayoutCreate = (cublasStatus_t (*) (cublasLtMatrixLayout_t* , cudaDataType , uint64_t , uint64_t , int64_t )) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutCreate");
+		tracer._kernel_map[(void *) lcublasLtMatrixLayoutCreate] = std::string("cublasLtMatrixLayoutCreate");
+	}
+	assert(lcublasLtMatrixLayoutCreate);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixLayoutCreate);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
+{
+	static cublasStatus_t (*lcublasLtMatrixLayoutDestroy) (cublasLtMatrixLayout_t );
+	if (!lcublasLtMatrixLayoutDestroy) {
+		lcublasLtMatrixLayoutDestroy = (cublasStatus_t (*) (cublasLtMatrixLayout_t )) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutDestroy");
+		tracer._kernel_map[(void *) lcublasLtMatrixLayoutDestroy] = std::string("cublasLtMatrixLayoutDestroy");
+	}
+	assert(lcublasLtMatrixLayoutDestroy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixLayoutDestroy(matLayout);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixLayoutDestroy);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	static cublasStatus_t (*lcublasLtMatrixLayoutSetAttribute) (cublasLtMatrixLayout_t , cublasLtMatrixLayoutAttribute_t , const void* , size_t );
+	if (!lcublasLtMatrixLayoutSetAttribute) {
+		lcublasLtMatrixLayoutSetAttribute = (cublasStatus_t (*) (cublasLtMatrixLayout_t , cublasLtMatrixLayoutAttribute_t , const void* , size_t )) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutSetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatrixLayoutSetAttribute] = std::string("cublasLtMatrixLayoutSetAttribute");
+	}
+	assert(lcublasLtMatrixLayoutSetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixLayoutSetAttribute(matLayout, attr, buf, sizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixLayoutSetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutGetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	static cublasStatus_t (*lcublasLtMatrixLayoutGetAttribute) (cublasLtMatrixLayout_t , cublasLtMatrixLayoutAttribute_t , void* , size_t , size_t* );
+	if (!lcublasLtMatrixLayoutGetAttribute) {
+		lcublasLtMatrixLayoutGetAttribute = (cublasStatus_t (*) (cublasLtMatrixLayout_t , cublasLtMatrixLayoutAttribute_t , void* , size_t , size_t* )) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutGetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatrixLayoutGetAttribute] = std::string("cublasLtMatrixLayoutGetAttribute");
+	}
+	assert(lcublasLtMatrixLayoutGetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixLayoutGetAttribute(matLayout, attr, buf, sizeInBytes, sizeWritten);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixLayoutGetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulDescInit_internal(cublasLtMatmulDesc_t  matmulDesc, size_t  size, cublasComputeType_t  computeType, cudaDataType_t  scaleType)
+{
+	static cublasStatus_t (*lcublasLtMatmulDescInit_internal) (cublasLtMatmulDesc_t , size_t , cublasComputeType_t , cudaDataType_t );
+	if (!lcublasLtMatmulDescInit_internal) {
+		lcublasLtMatmulDescInit_internal = (cublasStatus_t (*) (cublasLtMatmulDesc_t , size_t , cublasComputeType_t , cudaDataType_t )) dlsym(RTLD_NEXT, "cublasLtMatmulDescInit_internal");
+		tracer._kernel_map[(void *) lcublasLtMatmulDescInit_internal] = std::string("cublasLtMatmulDescInit_internal");
+	}
+	assert(lcublasLtMatmulDescInit_internal);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulDescInit_internal(matmulDesc, size, computeType, scaleType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulDescInit_internal);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cublasComputeType_t  computeType, cudaDataType_t  scaleType)
+{
+	static cublasStatus_t (*lcublasLtMatmulDescCreate) (cublasLtMatmulDesc_t* , cublasComputeType_t , cudaDataType_t );
+	if (!lcublasLtMatmulDescCreate) {
+		lcublasLtMatmulDescCreate = (cublasStatus_t (*) (cublasLtMatmulDesc_t* , cublasComputeType_t , cudaDataType_t )) dlsym(RTLD_NEXT, "cublasLtMatmulDescCreate");
+		tracer._kernel_map[(void *) lcublasLtMatmulDescCreate] = std::string("cublasLtMatmulDescCreate");
+	}
+	assert(lcublasLtMatmulDescCreate);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulDescCreate);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
+{
+	static cublasStatus_t (*lcublasLtMatmulDescDestroy) (cublasLtMatmulDesc_t );
+	if (!lcublasLtMatmulDescDestroy) {
+		lcublasLtMatmulDescDestroy = (cublasStatus_t (*) (cublasLtMatmulDesc_t )) dlsym(RTLD_NEXT, "cublasLtMatmulDescDestroy");
+		tracer._kernel_map[(void *) lcublasLtMatmulDescDestroy] = std::string("cublasLtMatmulDescDestroy");
+	}
+	assert(lcublasLtMatmulDescDestroy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulDescDestroy(matmulDesc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulDescDestroy);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	static cublasStatus_t (*lcublasLtMatmulDescSetAttribute) (cublasLtMatmulDesc_t , cublasLtMatmulDescAttributes_t , const void* , size_t );
+	if (!lcublasLtMatmulDescSetAttribute) {
+		lcublasLtMatmulDescSetAttribute = (cublasStatus_t (*) (cublasLtMatmulDesc_t , cublasLtMatmulDescAttributes_t , const void* , size_t )) dlsym(RTLD_NEXT, "cublasLtMatmulDescSetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatmulDescSetAttribute] = std::string("cublasLtMatmulDescSetAttribute");
+	}
+	assert(lcublasLtMatmulDescSetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulDescSetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulDescGetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	static cublasStatus_t (*lcublasLtMatmulDescGetAttribute) (cublasLtMatmulDesc_t , cublasLtMatmulDescAttributes_t , void* , size_t , size_t* );
+	if (!lcublasLtMatmulDescGetAttribute) {
+		lcublasLtMatmulDescGetAttribute = (cublasStatus_t (*) (cublasLtMatmulDesc_t , cublasLtMatmulDescAttributes_t , void* , size_t , size_t* )) dlsym(RTLD_NEXT, "cublasLtMatmulDescGetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatmulDescGetAttribute] = std::string("cublasLtMatmulDescGetAttribute");
+	}
+	assert(lcublasLtMatmulDescGetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulDescGetAttribute(matmulDesc, attr, buf, sizeInBytes, sizeWritten);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulDescGetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceInit_internal(cublasLtMatmulPreference_t  pref, size_t  size)
+{
+	static cublasStatus_t (*lcublasLtMatmulPreferenceInit_internal) (cublasLtMatmulPreference_t , size_t );
+	if (!lcublasLtMatmulPreferenceInit_internal) {
+		lcublasLtMatmulPreferenceInit_internal = (cublasStatus_t (*) (cublasLtMatmulPreference_t , size_t )) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceInit_internal");
+		tracer._kernel_map[(void *) lcublasLtMatmulPreferenceInit_internal] = std::string("cublasLtMatmulPreferenceInit_internal");
+	}
+	assert(lcublasLtMatmulPreferenceInit_internal);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulPreferenceInit_internal(pref, size);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulPreferenceInit_internal);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
+{
+	static cublasStatus_t (*lcublasLtMatmulPreferenceCreate) (cublasLtMatmulPreference_t* );
+	if (!lcublasLtMatmulPreferenceCreate) {
+		lcublasLtMatmulPreferenceCreate = (cublasStatus_t (*) (cublasLtMatmulPreference_t* )) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceCreate");
+		tracer._kernel_map[(void *) lcublasLtMatmulPreferenceCreate] = std::string("cublasLtMatmulPreferenceCreate");
+	}
+	assert(lcublasLtMatmulPreferenceCreate);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulPreferenceCreate(pref);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulPreferenceCreate);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
+{
+	static cublasStatus_t (*lcublasLtMatmulPreferenceDestroy) (cublasLtMatmulPreference_t );
+	if (!lcublasLtMatmulPreferenceDestroy) {
+		lcublasLtMatmulPreferenceDestroy = (cublasStatus_t (*) (cublasLtMatmulPreference_t )) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceDestroy");
+		tracer._kernel_map[(void *) lcublasLtMatmulPreferenceDestroy] = std::string("cublasLtMatmulPreferenceDestroy");
+	}
+	assert(lcublasLtMatmulPreferenceDestroy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulPreferenceDestroy(pref);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulPreferenceDestroy);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	static cublasStatus_t (*lcublasLtMatmulPreferenceSetAttribute) (cublasLtMatmulPreference_t , cublasLtMatmulPreferenceAttributes_t , const void* , size_t );
+	if (!lcublasLtMatmulPreferenceSetAttribute) {
+		lcublasLtMatmulPreferenceSetAttribute = (cublasStatus_t (*) (cublasLtMatmulPreference_t , cublasLtMatmulPreferenceAttributes_t , const void* , size_t )) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceSetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatmulPreferenceSetAttribute] = std::string("cublasLtMatmulPreferenceSetAttribute");
+	}
+	assert(lcublasLtMatmulPreferenceSetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulPreferenceSetAttribute(pref, attr, buf, sizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulPreferenceSetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceGetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	static cublasStatus_t (*lcublasLtMatmulPreferenceGetAttribute) (cublasLtMatmulPreference_t , cublasLtMatmulPreferenceAttributes_t , void* , size_t , size_t* );
+	if (!lcublasLtMatmulPreferenceGetAttribute) {
+		lcublasLtMatmulPreferenceGetAttribute = (cublasStatus_t (*) (cublasLtMatmulPreference_t , cublasLtMatmulPreferenceAttributes_t , void* , size_t , size_t* )) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceGetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatmulPreferenceGetAttribute] = std::string("cublasLtMatmulPreferenceGetAttribute");
+	}
+	assert(lcublasLtMatmulPreferenceGetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulPreferenceGetAttribute(pref, attr, buf, sizeInBytes, sizeWritten);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulPreferenceGetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoInit(cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  algoId, cublasLtMatmulAlgo_t*  algo)
+{
+	static cublasStatus_t (*lcublasLtMatmulAlgoInit) (cublasLtHandle_t , cublasComputeType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , int , cublasLtMatmulAlgo_t* );
+	if (!lcublasLtMatmulAlgoInit) {
+		lcublasLtMatmulAlgoInit = (cublasStatus_t (*) (cublasLtHandle_t , cublasComputeType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , int , cublasLtMatmulAlgo_t* )) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoInit");
+		tracer._kernel_map[(void *) lcublasLtMatmulAlgoInit] = std::string("cublasLtMatmulAlgoInit");
+	}
+	assert(lcublasLtMatmulAlgoInit);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoInit(lightHandle, computeType, scaleType, Atype, Btype, Ctype, Dtype, algoId, algo);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulAlgoInit);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoCheck(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulHeuristicResult_t*  result)
+{
+	static cublasStatus_t (*lcublasLtMatmulAlgoCheck) (cublasLtHandle_t , cublasLtMatmulDesc_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , const cublasLtMatmulAlgo_t* , cublasLtMatmulHeuristicResult_t* );
+	if (!lcublasLtMatmulAlgoCheck) {
+		lcublasLtMatmulAlgoCheck = (cublasStatus_t (*) (cublasLtHandle_t , cublasLtMatmulDesc_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , const cublasLtMatmulAlgo_t* , cublasLtMatmulHeuristicResult_t* )) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoCheck");
+		tracer._kernel_map[(void *) lcublasLtMatmulAlgoCheck] = std::string("cublasLtMatmulAlgoCheck");
+	}
+	assert(lcublasLtMatmulAlgoCheck);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoCheck(lightHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, algo, result);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulAlgoCheck);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoCapGetAttribute(const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoCapAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	static cublasStatus_t (*lcublasLtMatmulAlgoCapGetAttribute) (const cublasLtMatmulAlgo_t* , cublasLtMatmulAlgoCapAttributes_t , void* , size_t , size_t* );
+	if (!lcublasLtMatmulAlgoCapGetAttribute) {
+		lcublasLtMatmulAlgoCapGetAttribute = (cublasStatus_t (*) (const cublasLtMatmulAlgo_t* , cublasLtMatmulAlgoCapAttributes_t , void* , size_t , size_t* )) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoCapGetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatmulAlgoCapGetAttribute] = std::string("cublasLtMatmulAlgoCapGetAttribute");
+	}
+	assert(lcublasLtMatmulAlgoCapGetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoCapGetAttribute(algo, attr, buf, sizeInBytes, sizeWritten);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulAlgoCapGetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoConfigSetAttribute(cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	static cublasStatus_t (*lcublasLtMatmulAlgoConfigSetAttribute) (cublasLtMatmulAlgo_t* , cublasLtMatmulAlgoConfigAttributes_t , const void* , size_t );
+	if (!lcublasLtMatmulAlgoConfigSetAttribute) {
+		lcublasLtMatmulAlgoConfigSetAttribute = (cublasStatus_t (*) (cublasLtMatmulAlgo_t* , cublasLtMatmulAlgoConfigAttributes_t , const void* , size_t )) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoConfigSetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatmulAlgoConfigSetAttribute] = std::string("cublasLtMatmulAlgoConfigSetAttribute");
+	}
+	assert(lcublasLtMatmulAlgoConfigSetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoConfigSetAttribute(algo, attr, buf, sizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulAlgoConfigSetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoConfigGetAttribute(const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	static cublasStatus_t (*lcublasLtMatmulAlgoConfigGetAttribute) (const cublasLtMatmulAlgo_t* , cublasLtMatmulAlgoConfigAttributes_t , void* , size_t , size_t* );
+	if (!lcublasLtMatmulAlgoConfigGetAttribute) {
+		lcublasLtMatmulAlgoConfigGetAttribute = (cublasStatus_t (*) (const cublasLtMatmulAlgo_t* , cublasLtMatmulAlgoConfigAttributes_t , void* , size_t , size_t* )) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoConfigGetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatmulAlgoConfigGetAttribute] = std::string("cublasLtMatmulAlgoConfigGetAttribute");
+	}
+	assert(lcublasLtMatmulAlgoConfigGetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoConfigGetAttribute(algo, attr, buf, sizeInBytes, sizeWritten);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulAlgoConfigGetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerSetCallback(cublasLtLoggerCallback_t  callback)
+{
+	static cublasStatus_t (*lcublasLtLoggerSetCallback) (cublasLtLoggerCallback_t );
+	if (!lcublasLtLoggerSetCallback) {
+		lcublasLtLoggerSetCallback = (cublasStatus_t (*) (cublasLtLoggerCallback_t )) dlsym(RTLD_NEXT, "cublasLtLoggerSetCallback");
+		tracer._kernel_map[(void *) lcublasLtLoggerSetCallback] = std::string("cublasLtLoggerSetCallback");
+	}
+	assert(lcublasLtLoggerSetCallback);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtLoggerSetCallback(callback);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtLoggerSetCallback);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerSetFile(FILE*  file)
+{
+	static cublasStatus_t (*lcublasLtLoggerSetFile) (FILE* );
+	if (!lcublasLtLoggerSetFile) {
+		lcublasLtLoggerSetFile = (cublasStatus_t (*) (FILE* )) dlsym(RTLD_NEXT, "cublasLtLoggerSetFile");
+		tracer._kernel_map[(void *) lcublasLtLoggerSetFile] = std::string("cublasLtLoggerSetFile");
+	}
+	assert(lcublasLtLoggerSetFile);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtLoggerSetFile(file);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtLoggerSetFile);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerOpenFile(const char*  logFile)
+{
+	static cublasStatus_t (*lcublasLtLoggerOpenFile) (const char* );
+	if (!lcublasLtLoggerOpenFile) {
+		lcublasLtLoggerOpenFile = (cublasStatus_t (*) (const char* )) dlsym(RTLD_NEXT, "cublasLtLoggerOpenFile");
+		tracer._kernel_map[(void *) lcublasLtLoggerOpenFile] = std::string("cublasLtLoggerOpenFile");
+	}
+	assert(lcublasLtLoggerOpenFile);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtLoggerOpenFile(logFile);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtLoggerOpenFile);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerSetLevel(int  level)
+{
+	static cublasStatus_t (*lcublasLtLoggerSetLevel) (int );
+	if (!lcublasLtLoggerSetLevel) {
+		lcublasLtLoggerSetLevel = (cublasStatus_t (*) (int )) dlsym(RTLD_NEXT, "cublasLtLoggerSetLevel");
+		tracer._kernel_map[(void *) lcublasLtLoggerSetLevel] = std::string("cublasLtLoggerSetLevel");
+	}
+	assert(lcublasLtLoggerSetLevel);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtLoggerSetLevel(level);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtLoggerSetLevel);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerSetMask(int  mask)
+{
+	static cublasStatus_t (*lcublasLtLoggerSetMask) (int );
+	if (!lcublasLtLoggerSetMask) {
+		lcublasLtLoggerSetMask = (cublasStatus_t (*) (int )) dlsym(RTLD_NEXT, "cublasLtLoggerSetMask");
+		tracer._kernel_map[(void *) lcublasLtLoggerSetMask] = std::string("cublasLtLoggerSetMask");
+	}
+	assert(lcublasLtLoggerSetMask);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtLoggerSetMask(mask);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtLoggerSetMask);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerForceDisable()
+{
+	static cublasStatus_t (*lcublasLtLoggerForceDisable) ();
+	if (!lcublasLtLoggerForceDisable) {
+		lcublasLtLoggerForceDisable = (cublasStatus_t (*) ()) dlsym(RTLD_NEXT, "cublasLtLoggerForceDisable");
+		tracer._kernel_map[(void *) lcublasLtLoggerForceDisable] = std::string("cublasLtLoggerForceDisable");
+	}
+	assert(lcublasLtLoggerForceDisable);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtLoggerForceDisable();
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtLoggerForceDisable);
 	}
 	return res;
 }

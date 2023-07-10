@@ -2136,6 +2136,9 @@ cudnnStatus_t (*lcudnnGetCallback) (unsigned * mask, void ** udata, cudnnCallbac
 cudnnStatus_t (*lcudnnOpsInferVersionCheck) () =
 	(cudnnStatus_t (*) ()) dlsym(cudnn_handle, "cudnnOpsInferVersionCheck");
 
+cudnnStatus_t (*lcudnnSoftmaxBackward) (cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t  algo, cudnnSoftmaxMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t  algo, cudnnSoftmaxMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)) dlsym(cudnn_handle, "cudnnSoftmaxBackward");
+
 cudnnStatus_t (*lcudnnPoolingBackward) (cudnnHandle_t  handle, const cudnnPoolingDescriptor_t  poolingDesc, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnPoolingDescriptor_t  poolingDesc, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)) dlsym(cudnn_handle, "cudnnPoolingBackward");
 
@@ -3407,6 +3410,108 @@ nvrtcResult (*lnvrtcGetCUBINSize) (nvrtcProgram  prog, size_t * cubinSizeRet) =
 
 nvrtcResult (*lnvrtcGetCUBIN) (nvrtcProgram  prog, char * cubin) =
 	(nvrtcResult (*) (nvrtcProgram  prog, char * cubin)) dlsym(RTLD_NEXT, "nvrtcGetCUBIN");
+
+cublasStatus_t (*lcublasLtCreate) (cublasLtHandle_t*  lightHandle) =
+	(cublasStatus_t (*) (cublasLtHandle_t*  lightHandle)) dlsym(RTLD_NEXT, "cublasLtCreate");
+
+cublasStatus_t (*lcublasLtDestroy) (cublasLtHandle_t  lightHandle) =
+	(cublasStatus_t (*) (cublasLtHandle_t  lightHandle)) dlsym(RTLD_NEXT, "cublasLtDestroy");
+
+const char* (*lcublasLtGetStatusName) (cublasStatus_t  status) =
+	(const char* (*) (cublasStatus_t  status)) dlsym(RTLD_NEXT, "cublasLtGetStatusName");
+
+const char* (*lcublasLtGetStatusString) (cublasStatus_t  status) =
+	(const char* (*) (cublasStatus_t  status)) dlsym(RTLD_NEXT, "cublasLtGetStatusString");
+
+size_t (*lcublasLtGetVersion) () =
+	(size_t (*) ()) dlsym(RTLD_NEXT, "cublasLtGetVersion");
+
+size_t (*lcublasLtGetCudartVersion) () =
+	(size_t (*) ()) dlsym(RTLD_NEXT, "cublasLtGetCudartVersion");
+
+cublasStatus_t (*lcublasLtGetProperty) (libraryPropertyType  type, int*  value) =
+	(cublasStatus_t (*) (libraryPropertyType  type, int*  value)) dlsym(RTLD_NEXT, "cublasLtGetProperty");
+
+cublasStatus_t (*lcublasLtMatmul) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream) =
+	(cublasStatus_t (*) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)) dlsym(RTLD_NEXT, "cublasLtMatmul");
+
+cublasStatus_t (*lcublasLtMatrixLayoutInit_internal) (cublasLtMatrixLayout_t  matLayout, size_t  size, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld) =
+	(cublasStatus_t (*) (cublasLtMatrixLayout_t  matLayout, size_t  size, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutInit_internal");
+
+cublasStatus_t (*lcublasLtMatrixLayoutCreate) (cublasLtMatrixLayout_t*  matLayout, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld) =
+	(cublasStatus_t (*) (cublasLtMatrixLayout_t*  matLayout, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutCreate");
+
+cublasStatus_t (*lcublasLtMatrixLayoutDestroy) (cublasLtMatrixLayout_t  matLayout) =
+	(cublasStatus_t (*) (cublasLtMatrixLayout_t  matLayout)) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutDestroy");
+
+cublasStatus_t (*lcublasLtMatrixLayoutSetAttribute) (cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, const void*  buf, size_t  sizeInBytes) =
+	(cublasStatus_t (*) (cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, const void*  buf, size_t  sizeInBytes)) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutSetAttribute");
+
+cublasStatus_t (*lcublasLtMatrixLayoutGetAttribute) (cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten) =
+	(cublasStatus_t (*) (cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutGetAttribute");
+
+cublasStatus_t (*lcublasLtMatmulDescInit_internal) (cublasLtMatmulDesc_t  matmulDesc, size_t  size, cublasComputeType_t  computeType, cudaDataType_t  scaleType) =
+	(cublasStatus_t (*) (cublasLtMatmulDesc_t  matmulDesc, size_t  size, cublasComputeType_t  computeType, cudaDataType_t  scaleType)) dlsym(RTLD_NEXT, "cublasLtMatmulDescInit_internal");
+
+cublasStatus_t (*lcublasLtMatmulDescCreate) (cublasLtMatmulDesc_t*  matmulDesc, cublasComputeType_t  computeType, cudaDataType_t  scaleType) =
+	(cublasStatus_t (*) (cublasLtMatmulDesc_t*  matmulDesc, cublasComputeType_t  computeType, cudaDataType_t  scaleType)) dlsym(RTLD_NEXT, "cublasLtMatmulDescCreate");
+
+cublasStatus_t (*lcublasLtMatmulDescDestroy) (cublasLtMatmulDesc_t  matmulDesc) =
+	(cublasStatus_t (*) (cublasLtMatmulDesc_t  matmulDesc)) dlsym(RTLD_NEXT, "cublasLtMatmulDescDestroy");
+
+cublasStatus_t (*lcublasLtMatmulDescSetAttribute) (cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes) =
+	(cublasStatus_t (*) (cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)) dlsym(RTLD_NEXT, "cublasLtMatmulDescSetAttribute");
+
+cublasStatus_t (*lcublasLtMatmulDescGetAttribute) (cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten) =
+	(cublasStatus_t (*) (cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)) dlsym(RTLD_NEXT, "cublasLtMatmulDescGetAttribute");
+
+cublasStatus_t (*lcublasLtMatmulPreferenceInit_internal) (cublasLtMatmulPreference_t  pref, size_t  size) =
+	(cublasStatus_t (*) (cublasLtMatmulPreference_t  pref, size_t  size)) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceInit_internal");
+
+cublasStatus_t (*lcublasLtMatmulPreferenceCreate) (cublasLtMatmulPreference_t*  pref) =
+	(cublasStatus_t (*) (cublasLtMatmulPreference_t*  pref)) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceCreate");
+
+cublasStatus_t (*lcublasLtMatmulPreferenceDestroy) (cublasLtMatmulPreference_t  pref) =
+	(cublasStatus_t (*) (cublasLtMatmulPreference_t  pref)) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceDestroy");
+
+cublasStatus_t (*lcublasLtMatmulPreferenceSetAttribute) (cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, const void*  buf, size_t  sizeInBytes) =
+	(cublasStatus_t (*) (cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, const void*  buf, size_t  sizeInBytes)) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceSetAttribute");
+
+cublasStatus_t (*lcublasLtMatmulPreferenceGetAttribute) (cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten) =
+	(cublasStatus_t (*) (cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceGetAttribute");
+
+cublasStatus_t (*lcublasLtMatmulAlgoInit) (cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  algoId, cublasLtMatmulAlgo_t*  algo) =
+	(cublasStatus_t (*) (cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  algoId, cublasLtMatmulAlgo_t*  algo)) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoInit");
+
+cublasStatus_t (*lcublasLtMatmulAlgoCheck) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulHeuristicResult_t*  result) =
+	(cublasStatus_t (*) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulHeuristicResult_t*  result)) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoCheck");
+
+cublasStatus_t (*lcublasLtMatmulAlgoCapGetAttribute) (const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoCapAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten) =
+	(cublasStatus_t (*) (const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoCapAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoCapGetAttribute");
+
+cublasStatus_t (*lcublasLtMatmulAlgoConfigSetAttribute) (cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, const void*  buf, size_t  sizeInBytes) =
+	(cublasStatus_t (*) (cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, const void*  buf, size_t  sizeInBytes)) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoConfigSetAttribute");
+
+cublasStatus_t (*lcublasLtMatmulAlgoConfigGetAttribute) (const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten) =
+	(cublasStatus_t (*) (const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoConfigGetAttribute");
+
+cublasStatus_t (*lcublasLtLoggerSetCallback) (cublasLtLoggerCallback_t  callback) =
+	(cublasStatus_t (*) (cublasLtLoggerCallback_t  callback)) dlsym(RTLD_NEXT, "cublasLtLoggerSetCallback");
+
+cublasStatus_t (*lcublasLtLoggerSetFile) (FILE*  file) =
+	(cublasStatus_t (*) (FILE*  file)) dlsym(RTLD_NEXT, "cublasLtLoggerSetFile");
+
+cublasStatus_t (*lcublasLtLoggerOpenFile) (const char*  logFile) =
+	(cublasStatus_t (*) (const char*  logFile)) dlsym(RTLD_NEXT, "cublasLtLoggerOpenFile");
+
+cublasStatus_t (*lcublasLtLoggerSetLevel) (int  level) =
+	(cublasStatus_t (*) (int  level)) dlsym(RTLD_NEXT, "cublasLtLoggerSetLevel");
+
+cublasStatus_t (*lcublasLtLoggerSetMask) (int  mask) =
+	(cublasStatus_t (*) (int  mask)) dlsym(RTLD_NEXT, "cublasLtLoggerSetMask");
+
+cublasStatus_t (*lcublasLtLoggerForceDisable) () =
+	(cublasStatus_t (*) ()) dlsym(RTLD_NEXT, "cublasLtLoggerForceDisable");
 
 
 

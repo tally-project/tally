@@ -1,3 +1,5 @@
+import re
+
 def split_and_strip(_str, splitter=" ", max_count=-1, rsplit=False):
     if not rsplit:
         parts = _str.split(splitter, max_count)
@@ -28,3 +30,6 @@ def remove_keywords(_str, ignore_keywords):
             _str = _str.replace(keyword, " ")
     
     return _str.strip()
+
+def is_alnum_underscore(word):
+    return re.match(r'^[A-Za-z0-9_]+$', word)

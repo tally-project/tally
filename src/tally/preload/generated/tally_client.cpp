@@ -4984,15 +4984,6 @@ cudaError_t cudaMemcpyFromSymbol(void * dst, const void * symbol, size_t  count,
 	return res;
 }
 
-cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
-{
-	printf("cudaMemcpyAsync hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cudaError_t res = 
-		lcudaMemcpyAsync(dst, src, count, kind, stream);
-	return res;
-}
-
 cudaError_t cudaMemcpyPeerAsync(void * dst, int  dstDevice, const void * src, int  srcDevice, size_t  count, cudaStream_t  stream)
 {
 	printf("cudaMemcpyPeerAsync hooked\n");
@@ -7101,6 +7092,15 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
 	return res;
 }
 
+cudnnStatus_t cudnnSoftmaxBackward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t  algo, cudnnSoftmaxMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)
+{
+	printf("cudnnSoftmaxBackward hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSoftmaxBackward(handle, algo, mode, alpha, yDesc, y, dyDesc, dy, beta, dxDesc, dx);
+	return res;
+}
+
 cudnnStatus_t cudnnPoolingBackward(cudnnHandle_t  handle, const cudnnPoolingDescriptor_t  poolingDesc, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)
 {
 	printf("cudnnPoolingBackward hooked\n");
@@ -8391,10 +8391,20 @@ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_
 cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 {
 	printf("cublasCreate_v2 hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasCreate_v2(handle);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasCreate_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASCREATE_V2;
+    
+    struct cublasCreate_v2Arg *arg_ptr = (struct cublasCreate_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cublasCreate_v2Response *) dat;
+	*handle = res->handle;
+return res->err;
 }
 
 cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
@@ -8419,10 +8429,21 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 {
 	printf("cublasGetVersion_v2 hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasGetVersion_v2(handle, version);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetVersion_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASGETVERSION_V2;
+    
+    struct cublasGetVersion_v2Arg *arg_ptr = (struct cublasGetVersion_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->version = version;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cublasGetVersion_v2Response *) dat;
+	*version = res->version;
+return res->err;
 }
 
 cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
@@ -8455,19 +8476,42 @@ size_t cublasGetCudartVersion()
 cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, size_t  workspaceSizeInBytes)
 {
 	printf("cublasSetWorkspace_v2 hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetWorkspace_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASSETWORKSPACE_V2;
+    
+    struct cublasSetWorkspace_v2Arg *arg_ptr = (struct cublasSetWorkspace_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->workspace = workspace;
+	arg_ptr->workspaceSizeInBytes = workspaceSizeInBytes;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
 }
 
 cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId)
 {
 	printf("cublasSetStream_v2 hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasSetStream_v2(handle, streamId);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetStream_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASSETSTREAM_V2;
+    
+    struct cublasSetStream_v2Arg *arg_ptr = (struct cublasSetStream_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->streamId = streamId;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
 }
 
 cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamId)
@@ -8527,10 +8571,21 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
 cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 {
 	printf("cublasSetMathMode hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasSetMathMode(handle, mode);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetMathModeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASSETMATHMODE;
+    
+    struct cublasSetMathModeArg *arg_ptr = (struct cublasSetMathModeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->mode = mode;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
 }
 
 cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarget)
@@ -9935,15 +9990,6 @@ cublasStatus_t cublasZhpr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
-cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
-{
-	printf("cublasSgemm_v2 hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasSgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-	return res;
-}
-
 cublasStatus_t cublasDgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	printf("cublasDgemm_v2 hooked\n");
@@ -10949,6 +10995,312 @@ nvrtcResult nvrtcGetCUBIN(nvrtcProgram  prog, char * cubin)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	nvrtcResult res = 
 		lnvrtcGetCUBIN(prog, cubin);
+	return res;
+}
+
+cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
+{
+	printf("cublasLtCreate hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtCreate(lightHandle);
+	return res;
+}
+
+cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
+{
+	printf("cublasLtDestroy hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtDestroy(lightHandle);
+	return res;
+}
+
+const char* cublasLtGetStatusName(cublasStatus_t  status)
+{
+	printf("cublasLtGetStatusName hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	const char* res = 
+		lcublasLtGetStatusName(status);
+	return res;
+}
+
+const char* cublasLtGetStatusString(cublasStatus_t  status)
+{
+	printf("cublasLtGetStatusString hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	const char* res = 
+		lcublasLtGetStatusString(status);
+	return res;
+}
+
+size_t cublasLtGetVersion()
+{
+	printf("cublasLtGetVersion hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	size_t res = 
+		lcublasLtGetVersion();
+	return res;
+}
+
+size_t cublasLtGetCudartVersion()
+{
+	printf("cublasLtGetCudartVersion hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	size_t res = 
+		lcublasLtGetCudartVersion();
+	return res;
+}
+
+cublasStatus_t cublasLtGetProperty(libraryPropertyType  type, int*  value)
+{
+	printf("cublasLtGetProperty hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtGetProperty(type, value);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)
+{
+	printf("cublasLtMatmul hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmul(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutInit_internal(cublasLtMatrixLayout_t  matLayout, size_t  size, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)
+{
+	printf("cublasLtMatrixLayoutInit_internal hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatrixLayoutInit_internal(matLayout, size, type, rows, cols, ld);
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)
+{
+	printf("cublasLtMatrixLayoutCreate hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
+{
+	printf("cublasLtMatrixLayoutDestroy hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatrixLayoutDestroy(matLayout);
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	printf("cublasLtMatrixLayoutSetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatrixLayoutSetAttribute(matLayout, attr, buf, sizeInBytes);
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutGetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	printf("cublasLtMatrixLayoutGetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatrixLayoutGetAttribute(matLayout, attr, buf, sizeInBytes, sizeWritten);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulDescInit_internal(cublasLtMatmulDesc_t  matmulDesc, size_t  size, cublasComputeType_t  computeType, cudaDataType_t  scaleType)
+{
+	printf("cublasLtMatmulDescInit_internal hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulDescInit_internal(matmulDesc, size, computeType, scaleType);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cublasComputeType_t  computeType, cudaDataType_t  scaleType)
+{
+	printf("cublasLtMatmulDescCreate hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
+{
+	printf("cublasLtMatmulDescDestroy hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulDescDestroy(matmulDesc);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	printf("cublasLtMatmulDescSetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulDescGetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	printf("cublasLtMatmulDescGetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulDescGetAttribute(matmulDesc, attr, buf, sizeInBytes, sizeWritten);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceInit_internal(cublasLtMatmulPreference_t  pref, size_t  size)
+{
+	printf("cublasLtMatmulPreferenceInit_internal hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulPreferenceInit_internal(pref, size);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
+{
+	printf("cublasLtMatmulPreferenceCreate hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulPreferenceCreate(pref);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
+{
+	printf("cublasLtMatmulPreferenceDestroy hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulPreferenceDestroy(pref);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	printf("cublasLtMatmulPreferenceSetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulPreferenceSetAttribute(pref, attr, buf, sizeInBytes);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceGetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	printf("cublasLtMatmulPreferenceGetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulPreferenceGetAttribute(pref, attr, buf, sizeInBytes, sizeWritten);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoInit(cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  algoId, cublasLtMatmulAlgo_t*  algo)
+{
+	printf("cublasLtMatmulAlgoInit hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoInit(lightHandle, computeType, scaleType, Atype, Btype, Ctype, Dtype, algoId, algo);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoCheck(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulHeuristicResult_t*  result)
+{
+	printf("cublasLtMatmulAlgoCheck hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoCheck(lightHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, algo, result);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoCapGetAttribute(const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoCapAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	printf("cublasLtMatmulAlgoCapGetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoCapGetAttribute(algo, attr, buf, sizeInBytes, sizeWritten);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoConfigSetAttribute(cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	printf("cublasLtMatmulAlgoConfigSetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoConfigSetAttribute(algo, attr, buf, sizeInBytes);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoConfigGetAttribute(const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	printf("cublasLtMatmulAlgoConfigGetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoConfigGetAttribute(algo, attr, buf, sizeInBytes, sizeWritten);
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerSetCallback(cublasLtLoggerCallback_t  callback)
+{
+	printf("cublasLtLoggerSetCallback hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtLoggerSetCallback(callback);
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerSetFile(FILE*  file)
+{
+	printf("cublasLtLoggerSetFile hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtLoggerSetFile(file);
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerOpenFile(const char*  logFile)
+{
+	printf("cublasLtLoggerOpenFile hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtLoggerOpenFile(logFile);
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerSetLevel(int  level)
+{
+	printf("cublasLtLoggerSetLevel hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtLoggerSetLevel(level);
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerSetMask(int  mask)
+{
+	printf("cublasLtLoggerSetMask hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtLoggerSetMask(mask);
+	return res;
+}
+
+cublasStatus_t cublasLtLoggerForceDisable()
+{
+	printf("cublasLtLoggerForceDisable hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtLoggerForceDisable();
 	return res;
 }
 
