@@ -1142,6 +1142,8 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDAPROFILERINITIALIZE] = std::bind(&TallyServer::handle_cudaProfilerInitialize, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDAPROFILERSTART] = std::bind(&TallyServer::handle_cudaProfilerStart, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDAPROFILERSTOP] = std::bind(&TallyServer::handle_cudaProfilerStop, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::NVRTCGETCUBINSIZE] = std::bind(&TallyServer::handle_nvrtcGetCUBINSize, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::NVRTCGETCUBIN] = std::bind(&TallyServer::handle_nvrtcGetCUBIN, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDAMALLOC] = std::bind(&TallyServer::handle_cudaMalloc, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDAMEMCPY] = std::bind(&TallyServer::handle_cudaMemcpy, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDALAUNCHKERNEL] = std::bind(&TallyServer::handle_cudaLaunchKernel, this, std::placeholders::_1);
@@ -8541,4 +8543,16 @@ void TallyServer::handle_cudaProfilerStop(void *__args)
     while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
         send_ipc->wait_for_recv(1);
     }
+}
+
+void TallyServer::handle_nvrtcGetCUBINSize(void *__args)
+{
+	spdlog::info("Received request: nvrtcGetCUBINSize");
+	throw std::runtime_error("Unimplemented.");
+}
+
+void TallyServer::handle_nvrtcGetCUBIN(void *__args)
+{
+	spdlog::info("Received request: nvrtcGetCUBIN");
+	throw std::runtime_error("Unimplemented.");
 }

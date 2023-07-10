@@ -1140,6 +1140,8 @@ extern cublasStatus_t (*lcublasZtrttp) (cublasHandle_t  handle, cublasFillMode_t
 extern cudaError_t (*lcudaProfilerInitialize) (const char * configFile, const char * outputFile, cudaOutputMode_t  outputMode);
 extern cudaError_t (*lcudaProfilerStart) ();
 extern cudaError_t (*lcudaProfilerStop) ();
+extern nvrtcResult (*lnvrtcGetCUBINSize) (nvrtcProgram  prog, size_t * cubinSizeRet);
+extern nvrtcResult (*lnvrtcGetCUBIN) (nvrtcProgram  prog, char * cubin);
 
 
 extern void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);

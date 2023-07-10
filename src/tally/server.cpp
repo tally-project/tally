@@ -36,8 +36,8 @@ TallyServer::TallyServer()
 
 void TallyServer::start(uint32_t interval) {
 
-    send_ipc = new ipc::channel("server-to-client-100000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-100000", ipc::receiver);
+    send_ipc = new ipc::channel("server-to-client-110000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-110000", ipc::receiver);
 
     load_cache();
 

@@ -3402,6 +3402,12 @@ cudaError_t (*lcudaProfilerStart) () =
 cudaError_t (*lcudaProfilerStop) () =
 	(cudaError_t (*) ()) dlsym(cudart_handle, "cudaProfilerStop");
 
+nvrtcResult (*lnvrtcGetCUBINSize) (nvrtcProgram  prog, size_t * cubinSizeRet) =
+	(nvrtcResult (*) (nvrtcProgram  prog, size_t * cubinSizeRet)) dlsym(RTLD_NEXT, "nvrtcGetCUBINSize");
+
+nvrtcResult (*lnvrtcGetCUBIN) (nvrtcProgram  prog, char * cubin) =
+	(nvrtcResult (*) (nvrtcProgram  prog, char * cubin)) dlsym(RTLD_NEXT, "nvrtcGetCUBIN");
+
 
 
 void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *)

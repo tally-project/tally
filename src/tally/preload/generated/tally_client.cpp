@@ -3468,9 +3468,6 @@ cudaError_t cudaGetDeviceCount(int * count)
     auto res = (cudaGetDeviceCountResponse *) dat;
     *count = res->count;
     CHECK_CUDA_ERROR(res->err);
-
-	printf("cudaGetDeviceCount: %d\n", *count);
-
     return res->err;
 }
 
@@ -3662,9 +3659,6 @@ cudaError_t cudaGetDevice(int * device)
     auto res = (cudaGetDeviceResponse *) dat;
     *device = res->device;
     CHECK_CUDA_ERROR(res->err);
-
-	printf("cudaGetDevice: %d\n", *device);
-
     return res->err;
 }
 
@@ -9943,6 +9937,22 @@ cudaError_t cudaProfilerStop()
     auto res = (cudaError_t *) dat;
     CHECK_CUDA_ERROR(*res);
     return *res;
+}
+
+nvrtcResult nvrtcGetCUBINSize(nvrtcProgram  prog, size_t * cubinSizeRet)
+{
+	printf("nvrtcGetCUBINSize hooked\n");
+	nvrtcResult res = 
+		lnvrtcGetCUBINSize(prog, cubinSizeRet);
+	return res;
+}
+
+nvrtcResult nvrtcGetCUBIN(nvrtcProgram  prog, char * cubin)
+{
+	printf("nvrtcGetCUBIN hooked\n");
+	nvrtcResult res = 
+		lnvrtcGetCUBIN(prog, cubin);
+	return res;
 }
 
 

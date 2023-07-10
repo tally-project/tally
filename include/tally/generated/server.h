@@ -1183,6 +1183,8 @@ public:
 	void handle_cudaProfilerInitialize(void *args);
 	void handle_cudaProfilerStart(void *args);
 	void handle_cudaProfilerStop(void *args);
+	void handle_nvrtcGetCUBINSize(void *args);
+	void handle_nvrtcGetCUBIN(void *args);
 
     void handle___cudaRegisterFatBinary(void *args);
     void handle___cudaRegisterFunction(void *args);

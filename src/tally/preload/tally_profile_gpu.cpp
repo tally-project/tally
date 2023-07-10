@@ -38630,6 +38630,76 @@ cudaError_t cudaProfilerStop()
 }
         
 
+nvrtcResult nvrtcGetCUBINSize(nvrtcProgram  prog, size_t * cubinSizeRet)
+{
+	static nvrtcResult (*lnvrtcGetCUBINSize) (nvrtcProgram , size_t *);
+	if (!lnvrtcGetCUBINSize) {
+		lnvrtcGetCUBINSize = (nvrtcResult (*) (nvrtcProgram , size_t *)) dlsym(RTLD_NEXT, "nvrtcGetCUBINSize");
+		tracer._kernel_map[(void *) lnvrtcGetCUBINSize] = std::string("nvrtcGetCUBINSize");
+	}
+	assert(lnvrtcGetCUBINSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetCUBINSize(prog, cubinSizeRet);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetCUBINSize);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetCUBIN(nvrtcProgram  prog, char * cubin)
+{
+	static nvrtcResult (*lnvrtcGetCUBIN) (nvrtcProgram , char *);
+	if (!lnvrtcGetCUBIN) {
+		lnvrtcGetCUBIN = (nvrtcResult (*) (nvrtcProgram , char *)) dlsym(RTLD_NEXT, "nvrtcGetCUBIN");
+		tracer._kernel_map[(void *) lnvrtcGetCUBIN] = std::string("nvrtcGetCUBIN");
+	}
+	assert(lnvrtcGetCUBIN);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetCUBIN(prog, cubin);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetCUBIN);
+	}
+	return res;
+}
+
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {

@@ -28912,6 +28912,58 @@ cudaError_t cudaProfilerStop()
 }
         
 
+nvrtcResult nvrtcGetCUBINSize(nvrtcProgram  prog, size_t * cubinSizeRet)
+{
+	static nvrtcResult (*lnvrtcGetCUBINSize) (nvrtcProgram , size_t *);
+	if (!lnvrtcGetCUBINSize) {
+		lnvrtcGetCUBINSize = (nvrtcResult (*) (nvrtcProgram , size_t *)) dlsym(RTLD_NEXT, "nvrtcGetCUBINSize");
+		tracer._kernel_map[(void *) lnvrtcGetCUBINSize] = std::string("nvrtcGetCUBINSize");
+	}
+	assert(lnvrtcGetCUBINSize);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	nvrtcResult res = 
+		lnvrtcGetCUBINSize(prog, cubinSizeRet);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetCUBINSize);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetCUBIN(nvrtcProgram  prog, char * cubin)
+{
+	static nvrtcResult (*lnvrtcGetCUBIN) (nvrtcProgram , char *);
+	if (!lnvrtcGetCUBIN) {
+		lnvrtcGetCUBIN = (nvrtcResult (*) (nvrtcProgram , char *)) dlsym(RTLD_NEXT, "nvrtcGetCUBIN");
+		tracer._kernel_map[(void *) lnvrtcGetCUBIN] = std::string("nvrtcGetCUBIN");
+	}
+	assert(lnvrtcGetCUBIN);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	nvrtcResult res = 
+		lnvrtcGetCUBIN(prog, cubin);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetCUBIN);
+	}
+	return res;
+}
+
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
