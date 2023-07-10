@@ -74,9 +74,10 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
         auto tmp_cubin_file = get_tmp_file_path(".cubin");
         write_binary_to_file(tmp_cubin_file, cubin_data, cubin_size);
         auto tmp_elf_file = get_tmp_file_path(".elf");
+
         std::string command("cuobjdump " + tmp_cubin_file + " -elf > " + tmp_elf_file);
-        exec(command);
-        
+        launch_shell(command);
+
         kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
     }
 

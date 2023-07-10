@@ -46,13 +46,13 @@ void cache_cubin_data(const char* cubin_data, size_t cubin_size, int magic, int 
 
     // Generate transformed version from the PTX code
     for (const auto& ptx_file_name : ptx_file_names) {
-        auto sliced_ptx_str = gen_sliced_ptx(ptx_file_name);
-        auto sliced_fatbin_str = get_fatbin_str_from_ptx_str(sliced_ptx_str);
-        sliced_data.push_back(std::make_pair(sliced_ptx_str, sliced_fatbin_str));
+        // auto sliced_ptx_str = gen_sliced_ptx(ptx_file_name);
+        // auto sliced_fatbin_str = get_fatbin_str_from_ptx_str(sliced_ptx_str);
+        // sliced_data.push_back(std::make_pair(sliced_ptx_str, sliced_fatbin_str));
 
-        auto ptb_ptx_str = gen_ptb_ptx(ptx_file_name);
-        auto ptb_fatbin_str = get_fatbin_str_from_ptx_str(ptb_ptx_str);
-        ptb_data.push_back(std::make_pair(ptb_ptx_str, ptb_fatbin_str));
+        // auto ptb_ptx_str = gen_ptb_ptx(ptx_file_name);
+        // auto ptb_fatbin_str = get_fatbin_str_from_ptx_str(ptb_ptx_str);
+        // ptb_data.push_back(std::make_pair(ptb_ptx_str, ptb_fatbin_str));
 
         // Delete ptx
         std::remove(ptx_file_name.c_str());

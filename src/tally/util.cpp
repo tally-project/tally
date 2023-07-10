@@ -34,13 +34,22 @@ std::pair<std::string, int> exec(std::string cmd) {
     while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
         result += buffer.data();
     }
-
+    
     int status = pclose(pipe);
     if (status == -1) {
         return std::make_pair("", -1);
     }
 
     return std::make_pair(result, WEXITSTATUS(status));
+}
+
+void launch_shell(std::string cmd)
+{
+    FILE* pipe = popen(cmd.c_str(), "r");
+    if (!pipe) {
+        std::cerr << "Error executing command: " << cmd << std::endl;
+    }
+    pclose(pipe);
 }
 
 std::pair<std::string, std::string> splitOnce(const std::string& str, const std::string& delimiter) {

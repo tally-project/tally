@@ -69,6 +69,8 @@ target_link_libraries(tally_client PUBLIC
     $<$<NOT:$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>:pthread>
     $<$<NOT:$<OR:$<STREQUAL:${CMAKE_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>>:rt>)
 
+target_compile_definitions(tally_client PRIVATE IS_CLIENT="TRUE")
+
 add_library(tally_transform SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_transform.cpp ${TALLY_SRC_FILES})
 
 target_include_directories(tally_transform

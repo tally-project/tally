@@ -6,6 +6,7 @@
 
 std::string demangleFunc(std::string mangledName);
 std::pair<std::string, int> exec(std::string cmd);
+void launch_shell(std::string cmd);
 std::pair<std::string, std::string> splitOnce(const std::string& str, const std::string& delimiter);
 int32_t countLeftBrace(const std::string& str);
 int32_t countRightBrace(const std::string& str);

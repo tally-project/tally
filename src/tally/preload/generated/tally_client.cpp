@@ -3468,6 +3468,9 @@ cudaError_t cudaGetDeviceCount(int * count)
     auto res = (cudaGetDeviceCountResponse *) dat;
     *count = res->count;
     CHECK_CUDA_ERROR(res->err);
+
+	printf("cudaGetDeviceCount: %d\n", *count);
+
     return res->err;
 }
 
@@ -3659,6 +3662,9 @@ cudaError_t cudaGetDevice(int * device)
     auto res = (cudaGetDeviceResponse *) dat;
     *device = res->device;
     CHECK_CUDA_ERROR(res->err);
+
+	printf("cudaGetDevice: %d\n", *device);
+
     return res->err;
 }
 
