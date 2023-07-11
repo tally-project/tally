@@ -105,4 +105,64 @@ struct cublasSgemm_v2Arg {
 	int ldc;
 };
 
+struct cublasLtMatmulDescSetAttributeArg {
+    cublasLtMatmulDesc_t  matmulDesc;
+    cublasLtMatmulDescAttributes_t  attr;
+    size_t  sizeInBytes;
+    char  buf[];
+};
+
+struct cublasLtMatrixLayoutSetAttributeArg {
+    cublasLtMatrixLayout_t  matLayout;
+    cublasLtMatrixLayoutAttribute_t  attr;
+    size_t  sizeInBytes;
+    char buf[];
+};
+
+struct cublasLtMatmulPreferenceSetAttributeArg {
+    cublasLtMatmulPreference_t  pref;
+    cublasLtMatmulPreferenceAttributes_t  attr;
+    size_t  sizeInBytes;
+    char buf[];
+};
+
+struct cublasLtMatmulAlgoGetHeuristicArg {
+    cublasLtHandle_t  lightHandle;
+    cublasLtMatmulDesc_t  operationDesc;
+    cublasLtMatrixLayout_t  Adesc;
+    cublasLtMatrixLayout_t  Bdesc;
+    cublasLtMatrixLayout_t  Cdesc;
+    cublasLtMatrixLayout_t  Ddesc;
+    cublasLtMatmulPreference_t  preference;
+    int  requestedAlgoCount;
+    // head of the result array
+    // server need to keep track of the addresses
+    cublasLtMatmulHeuristicResult_t *heuristicResultsArray;
+};
+
+struct cublasLtMatmulAlgoGetHeuristicResponse {
+    int returnAlgoCount;
+    cublasStatus_t err;
+    cublasLtMatmulHeuristicResult_t  heuristicResultsArray[];
+};
+
+struct cublasLtMatmulArg {
+    cublasLtHandle_t  lightHandle;
+    cublasLtMatmulDesc_t  computeDesc;
+    uint64_t  alpha; // Don't know what type it is, so copy 64 bits
+    const void*  A;
+    cublasLtMatrixLayout_t  Adesc;
+    const void*  B;
+    cublasLtMatrixLayout_t  Bdesc;
+    uint64_t  beta; // Don't know what type it is, so copy 64 bits
+    void*  C;
+    cublasLtMatrixLayout_t  Cdesc;
+    void*  D;
+    cublasLtMatrixLayout_t  Ddesc;
+    cublasLtMatmulAlgo_t algo;
+    void*  workspace;
+    size_t  workspaceSizeInBytes;
+    cudaStream_t  stream;
+};
+
 #endif // TALLY_DEF_H

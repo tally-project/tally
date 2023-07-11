@@ -135,6 +135,7 @@ target_link_libraries(server PUBLIC
     ipc
     dl
     tally
+    cublasLt
     PUBLIC Boost::serialization
     PUBLIC Boost::regex
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>

@@ -31,25 +31,25 @@ public:
 
     TallyClient()
     {
-        // __exit = [&](int sig_num) {
+        __exit = [&](int sig_num) {
 
-        //     if (sig_num == SIGSEGV) {
-        //         std::cout << "Encountered segfault. Shutting down... " << std::endl;
-        //     }
+            if (sig_num == SIGSEGV) {
+                std::cout << "Encountered segfault. Shutting down... " << std::endl;
+            }
 
-        //     if (send_ipc != nullptr) send_ipc->disconnect();
-        //     if (recv_ipc != nullptr) recv_ipc->disconnect();
-        //     exit(0);
-        // };
+            if (send_ipc != nullptr) send_ipc->disconnect();
+            if (recv_ipc != nullptr) recv_ipc->disconnect();
+            exit(0);
+        };
 
-        // signal(SIGINT  , __exit_wrapper);
-        // signal(SIGABRT , __exit_wrapper);
-        // signal(SIGSEGV , __exit_wrapper);
-        // signal(SIGTERM , __exit_wrapper);
-        // signal(SIGHUP  , __exit_wrapper);
+        signal(SIGINT  , __exit_wrapper);
+        signal(SIGABRT , __exit_wrapper);
+        signal(SIGSEGV , __exit_wrapper);
+        signal(SIGTERM , __exit_wrapper);
+        signal(SIGHUP  , __exit_wrapper);
 
-        send_ipc = new ipc::channel("client-to-server-110000", ipc::sender);
-        recv_ipc = new ipc::channel("server-to-client-110000", ipc::receiver);
+        send_ipc = new ipc::channel("client-to-server-140000", ipc::sender);
+        recv_ipc = new ipc::channel("server-to-client-140000", ipc::receiver);
     }
 
     ~TallyClient(){}

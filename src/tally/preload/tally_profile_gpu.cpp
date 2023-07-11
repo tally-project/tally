@@ -467,6 +467,41 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 	return res;
 }
 
+CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray_format  format, unsigned  numChannels, CUdevice  dev)
+{
+	static CUresult (*lcuDeviceGetTexture1DLinearMaxWidth) (size_t *, CUarray_format , unsigned , CUdevice );
+	if (!lcuDeviceGetTexture1DLinearMaxWidth) {
+		lcuDeviceGetTexture1DLinearMaxWidth = (CUresult (*) (size_t *, CUarray_format , unsigned , CUdevice )) dlsym(RTLD_NEXT, "cuDeviceGetTexture1DLinearMaxWidth");
+		tracer._kernel_map[(void *) lcuDeviceGetTexture1DLinearMaxWidth] = std::string("cuDeviceGetTexture1DLinearMaxWidth");
+	}
+	assert(lcuDeviceGetTexture1DLinearMaxWidth);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	CUresult res = 
+		lcuDeviceGetTexture1DLinearMaxWidth(maxWidthInElements, format, numChannels, dev);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuDeviceGetTexture1DLinearMaxWidth);
+	}
+	return res;
+}
+
 CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  dev)
 {
 	static CUresult (*lcuDeviceGetAttribute) (int *, CUdevice_attribute , CUdevice );
@@ -10687,6 +10722,41 @@ CUresult cuTexRefSetAddress2D_v3(CUtexref  hTexRef, const CUDA_ARRAY_DESCRIPTOR 
 	return res;
 }
 
+CUresult cuTexRefSetFormat(CUtexref  hTexRef, CUarray_format  fmt, int  NumPackedComponents)
+{
+	static CUresult (*lcuTexRefSetFormat) (CUtexref , CUarray_format , int );
+	if (!lcuTexRefSetFormat) {
+		lcuTexRefSetFormat = (CUresult (*) (CUtexref , CUarray_format , int )) dlsym(RTLD_NEXT, "cuTexRefSetFormat");
+		tracer._kernel_map[(void *) lcuTexRefSetFormat] = std::string("cuTexRefSetFormat");
+	}
+	assert(lcuTexRefSetFormat);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	CUresult res = 
+		lcuTexRefSetFormat(hTexRef, fmt, NumPackedComponents);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuTexRefSetFormat);
+	}
+	return res;
+}
+
 CUresult cuTexRefSetAddressMode(CUtexref  hTexRef, int  dim, CUaddress_mode  am)
 {
 	static CUresult (*lcuTexRefSetAddressMode) (CUtexref , int , CUaddress_mode );
@@ -11138,6 +11208,41 @@ CUresult cuTexRefGetFilterMode(CUfilter_mode * pfm, CUtexref  hTexRef)
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcuTexRefGetFilterMode);
+	}
+	return res;
+}
+
+CUresult cuTexRefGetFormat(CUarray_format * pFormat, int * pNumChannels, CUtexref  hTexRef)
+{
+	static CUresult (*lcuTexRefGetFormat) (CUarray_format *, int *, CUtexref );
+	if (!lcuTexRefGetFormat) {
+		lcuTexRefGetFormat = (CUresult (*) (CUarray_format *, int *, CUtexref )) dlsym(RTLD_NEXT, "cuTexRefGetFormat");
+		tracer._kernel_map[(void *) lcuTexRefGetFormat] = std::string("cuTexRefGetFormat");
+	}
+	assert(lcuTexRefGetFormat);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	CUresult res = 
+		lcuTexRefGetFormat(pFormat, pNumChannels, hTexRef);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuTexRefGetFormat);
 	}
 	return res;
 }
@@ -22138,6 +22243,41 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
 	return res;
 }
 
+cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cudnnTensorFormat_t  format, cudnnDataType_t  dataType, int  n, int  c, int  h, int  w)
+{
+	static cudnnStatus_t (*lcudnnSetTensor4dDescriptor) (cudnnTensorDescriptor_t , cudnnTensorFormat_t , cudnnDataType_t , int , int , int , int );
+	if (!lcudnnSetTensor4dDescriptor) {
+		lcudnnSetTensor4dDescriptor = (cudnnStatus_t (*) (cudnnTensorDescriptor_t , cudnnTensorFormat_t , cudnnDataType_t , int , int , int , int )) dlsym(tracer.cudnn_handle, "cudnnSetTensor4dDescriptor");
+		tracer._kernel_map[(void *) lcudnnSetTensor4dDescriptor] = std::string("cudnnSetTensor4dDescriptor");
+	}
+	assert(lcudnnSetTensor4dDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSetTensor4dDescriptor(tensorDesc, format, dataType, n, c, h, w);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSetTensor4dDescriptor);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, cudnnDataType_t  dataType, int  n, int  c, int  h, int  w, int  nStride, int  cStride, int  hStride, int  wStride)
 {
 	static cudnnStatus_t (*lcudnnSetTensor4dDescriptorEx) (cudnnTensorDescriptor_t , cudnnDataType_t , int , int , int , int , int , int , int , int );
@@ -22221,6 +22361,41 @@ cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 	return res;
 }
 
+cudnnStatus_t cudnnSetTensorNdDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, cudnnTensorFormat_t  format, cudnnDataType_t  dataType, int  nbDims, const int  dimA[])
+{
+	static cudnnStatus_t (*lcudnnSetTensorNdDescriptorEx) (cudnnTensorDescriptor_t , cudnnTensorFormat_t , cudnnDataType_t , int , const int []);
+	if (!lcudnnSetTensorNdDescriptorEx) {
+		lcudnnSetTensorNdDescriptorEx = (cudnnStatus_t (*) (cudnnTensorDescriptor_t , cudnnTensorFormat_t , cudnnDataType_t , int , const int [])) dlsym(tracer.cudnn_handle, "cudnnSetTensorNdDescriptorEx");
+		tracer._kernel_map[(void *) lcudnnSetTensorNdDescriptorEx] = std::string("cudnnSetTensorNdDescriptorEx");
+	}
+	assert(lcudnnSetTensorNdDescriptorEx);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSetTensorNdDescriptorEx(tensorDesc, format, dataType, nbDims, dimA);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSetTensorNdDescriptorEx);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t  tensorDesc, int  nbDimsRequested, cudnnDataType_t * dataType, int * nbDims, int  dimA[], int  strideA[])
 {
 	static cudnnStatus_t (*lcudnnGetTensorNdDescriptor) (const cudnnTensorDescriptor_t , int , cudnnDataType_t *, int *, int [], int []);
@@ -22301,6 +22476,251 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
 	assert(lcudnnDestroyTensorDescriptor);
 	cudnnStatus_t res = 
 		lcudnnDestroyTensorDescriptor(tensorDesc);
+	return res;
+}
+
+cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  transformDesc, const cudnnTensorDescriptor_t  srcDesc, cudnnTensorDescriptor_t  destDesc, size_t * destSizeInBytes)
+{
+	static cudnnStatus_t (*lcudnnInitTransformDest) (const cudnnTensorTransformDescriptor_t , const cudnnTensorDescriptor_t , cudnnTensorDescriptor_t , size_t *);
+	if (!lcudnnInitTransformDest) {
+		lcudnnInitTransformDest = (cudnnStatus_t (*) (const cudnnTensorTransformDescriptor_t , const cudnnTensorDescriptor_t , cudnnTensorDescriptor_t , size_t *)) dlsym(tracer.cudnn_handle, "cudnnInitTransformDest");
+		tracer._kernel_map[(void *) lcudnnInitTransformDest] = std::string("cudnnInitTransformDest");
+	}
+	assert(lcudnnInitTransformDest);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnInitTransformDest(transformDesc, srcDesc, destDesc, destSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnInitTransformDest);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescriptor_t * transformDesc)
+{
+	static cudnnStatus_t (*lcudnnCreateTensorTransformDescriptor) (cudnnTensorTransformDescriptor_t *);
+	if (!lcudnnCreateTensorTransformDescriptor) {
+		lcudnnCreateTensorTransformDescriptor = (cudnnStatus_t (*) (cudnnTensorTransformDescriptor_t *)) dlsym(tracer.cudnn_handle, "cudnnCreateTensorTransformDescriptor");
+		tracer._kernel_map[(void *) lcudnnCreateTensorTransformDescriptor] = std::string("cudnnCreateTensorTransformDescriptor");
+	}
+	assert(lcudnnCreateTensorTransformDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnCreateTensorTransformDescriptor(transformDesc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnCreateTensorTransformDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnSetTensorTransformDescriptor(cudnnTensorTransformDescriptor_t  transformDesc, const uint32_t  nbDims, const cudnnTensorFormat_t  destFormat, const int32_t  padBeforeA[], const int32_t  padAfterA[], const uint32_t  foldA[], const cudnnFoldingDirection_t  direction)
+{
+	static cudnnStatus_t (*lcudnnSetTensorTransformDescriptor) (cudnnTensorTransformDescriptor_t , const uint32_t , const cudnnTensorFormat_t , const int32_t [], const int32_t [], const uint32_t [], const cudnnFoldingDirection_t );
+	if (!lcudnnSetTensorTransformDescriptor) {
+		lcudnnSetTensorTransformDescriptor = (cudnnStatus_t (*) (cudnnTensorTransformDescriptor_t , const uint32_t , const cudnnTensorFormat_t , const int32_t [], const int32_t [], const uint32_t [], const cudnnFoldingDirection_t )) dlsym(tracer.cudnn_handle, "cudnnSetTensorTransformDescriptor");
+		tracer._kernel_map[(void *) lcudnnSetTensorTransformDescriptor] = std::string("cudnnSetTensorTransformDescriptor");
+	}
+	assert(lcudnnSetTensorTransformDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSetTensorTransformDescriptor(transformDesc, nbDims, destFormat, padBeforeA, padAfterA, foldA, direction);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSetTensorTransformDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnGetTensorTransformDescriptor(cudnnTensorTransformDescriptor_t  transformDesc, uint32_t  nbDimsRequested, cudnnTensorFormat_t * destFormat, int32_t  padBeforeA[], int32_t  padAfterA[], uint32_t  foldA[], cudnnFoldingDirection_t * direction)
+{
+	static cudnnStatus_t (*lcudnnGetTensorTransformDescriptor) (cudnnTensorTransformDescriptor_t , uint32_t , cudnnTensorFormat_t *, int32_t [], int32_t [], uint32_t [], cudnnFoldingDirection_t *);
+	if (!lcudnnGetTensorTransformDescriptor) {
+		lcudnnGetTensorTransformDescriptor = (cudnnStatus_t (*) (cudnnTensorTransformDescriptor_t , uint32_t , cudnnTensorFormat_t *, int32_t [], int32_t [], uint32_t [], cudnnFoldingDirection_t *)) dlsym(tracer.cudnn_handle, "cudnnGetTensorTransformDescriptor");
+		tracer._kernel_map[(void *) lcudnnGetTensorTransformDescriptor] = std::string("cudnnGetTensorTransformDescriptor");
+	}
+	assert(lcudnnGetTensorTransformDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnGetTensorTransformDescriptor(transformDesc, nbDimsRequested, destFormat, padBeforeA, padAfterA, foldA, direction);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnGetTensorTransformDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescriptor_t  transformDesc)
+{
+	static cudnnStatus_t (*lcudnnDestroyTensorTransformDescriptor) (cudnnTensorTransformDescriptor_t );
+	if (!lcudnnDestroyTensorTransformDescriptor) {
+		lcudnnDestroyTensorTransformDescriptor = (cudnnStatus_t (*) (cudnnTensorTransformDescriptor_t )) dlsym(tracer.cudnn_handle, "cudnnDestroyTensorTransformDescriptor");
+		tracer._kernel_map[(void *) lcudnnDestroyTensorTransformDescriptor] = std::string("cudnnDestroyTensorTransformDescriptor");
+	}
+	assert(lcudnnDestroyTensorTransformDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnDestroyTensorTransformDescriptor(transformDesc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnDestroyTensorTransformDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
+{
+	static cudnnStatus_t (*lcudnnTransformTensor) (cudnnHandle_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const cudnnTensorDescriptor_t , void *);
+	if (!lcudnnTransformTensor) {
+		lcudnnTransformTensor = (cudnnStatus_t (*) (cudnnHandle_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const cudnnTensorDescriptor_t , void *)) dlsym(tracer.cudnn_handle, "cudnnTransformTensor");
+		tracer._kernel_map[(void *) lcudnnTransformTensor] = std::string("cudnnTransformTensor");
+	}
+	assert(lcudnnTransformTensor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnTransformTensor(handle, alpha, xDesc, x, beta, yDesc, y);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnTransformTensor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnTransformTensorEx(cudnnHandle_t  handle, const cudnnTensorTransformDescriptor_t  transDesc, const void * alpha, const cudnnTensorDescriptor_t  srcDesc, const void * srcData, const void * beta, const cudnnTensorDescriptor_t  destDesc, void * destData)
+{
+	static cudnnStatus_t (*lcudnnTransformTensorEx) (cudnnHandle_t , const cudnnTensorTransformDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const cudnnTensorDescriptor_t , void *);
+	if (!lcudnnTransformTensorEx) {
+		lcudnnTransformTensorEx = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnTensorTransformDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const cudnnTensorDescriptor_t , void *)) dlsym(tracer.cudnn_handle, "cudnnTransformTensorEx");
+		tracer._kernel_map[(void *) lcudnnTransformTensorEx] = std::string("cudnnTransformTensorEx");
+	}
+	assert(lcudnnTransformTensorEx);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnTransformTensorEx(handle, transDesc, alpha, srcDesc, srcData, beta, destDesc, destData);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnTransformTensorEx);
+	}
 	return res;
 }
 
@@ -22842,6 +23262,146 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
 	return res;
 }
 
+cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  k, int  c, int  h, int  w)
+{
+	static cudnnStatus_t (*lcudnnSetFilter4dDescriptor) (cudnnFilterDescriptor_t , cudnnDataType_t , cudnnTensorFormat_t , int , int , int , int );
+	if (!lcudnnSetFilter4dDescriptor) {
+		lcudnnSetFilter4dDescriptor = (cudnnStatus_t (*) (cudnnFilterDescriptor_t , cudnnDataType_t , cudnnTensorFormat_t , int , int , int , int )) dlsym(tracer.cudnn_handle, "cudnnSetFilter4dDescriptor");
+		tracer._kernel_map[(void *) lcudnnSetFilter4dDescriptor] = std::string("cudnnSetFilter4dDescriptor");
+	}
+	assert(lcudnnSetFilter4dDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSetFilter4dDescriptor(filterDesc, dataType, format, k, c, h, w);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSetFilter4dDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnGetFilter4dDescriptor(const cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * k, int * c, int * h, int * w)
+{
+	static cudnnStatus_t (*lcudnnGetFilter4dDescriptor) (const cudnnFilterDescriptor_t , cudnnDataType_t *, cudnnTensorFormat_t *, int *, int *, int *, int *);
+	if (!lcudnnGetFilter4dDescriptor) {
+		lcudnnGetFilter4dDescriptor = (cudnnStatus_t (*) (const cudnnFilterDescriptor_t , cudnnDataType_t *, cudnnTensorFormat_t *, int *, int *, int *, int *)) dlsym(tracer.cudnn_handle, "cudnnGetFilter4dDescriptor");
+		tracer._kernel_map[(void *) lcudnnGetFilter4dDescriptor] = std::string("cudnnGetFilter4dDescriptor");
+	}
+	assert(lcudnnGetFilter4dDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnGetFilter4dDescriptor(filterDesc, dataType, format, k, c, h, w);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnGetFilter4dDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  nbDims, const int  filterDimA[])
+{
+	static cudnnStatus_t (*lcudnnSetFilterNdDescriptor) (cudnnFilterDescriptor_t , cudnnDataType_t , cudnnTensorFormat_t , int , const int []);
+	if (!lcudnnSetFilterNdDescriptor) {
+		lcudnnSetFilterNdDescriptor = (cudnnStatus_t (*) (cudnnFilterDescriptor_t , cudnnDataType_t , cudnnTensorFormat_t , int , const int [])) dlsym(tracer.cudnn_handle, "cudnnSetFilterNdDescriptor");
+		tracer._kernel_map[(void *) lcudnnSetFilterNdDescriptor] = std::string("cudnnSetFilterNdDescriptor");
+	}
+	assert(lcudnnSetFilterNdDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSetFilterNdDescriptor(filterDesc, dataType, format, nbDims, filterDimA);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSetFilterNdDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnGetFilterNdDescriptor(const cudnnFilterDescriptor_t  filterDesc, int  nbDimsRequested, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * nbDims, int  filterDimA[])
+{
+	static cudnnStatus_t (*lcudnnGetFilterNdDescriptor) (const cudnnFilterDescriptor_t , int , cudnnDataType_t *, cudnnTensorFormat_t *, int *, int []);
+	if (!lcudnnGetFilterNdDescriptor) {
+		lcudnnGetFilterNdDescriptor = (cudnnStatus_t (*) (const cudnnFilterDescriptor_t , int , cudnnDataType_t *, cudnnTensorFormat_t *, int *, int [])) dlsym(tracer.cudnn_handle, "cudnnGetFilterNdDescriptor");
+		tracer._kernel_map[(void *) lcudnnGetFilterNdDescriptor] = std::string("cudnnGetFilterNdDescriptor");
+	}
+	assert(lcudnnGetFilterNdDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnGetFilterNdDescriptor(filterDesc, nbDimsRequested, dataType, format, nbDims, filterDimA);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnGetFilterNdDescriptor);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDesc, size_t * size)
 {
 	static cudnnStatus_t (*lcudnnGetFilterSizeInBytes) (const cudnnFilterDescriptor_t , size_t *);
@@ -22873,6 +23433,41 @@ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDes
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudnnGetFilterSizeInBytes);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnTransformFilter(cudnnHandle_t  handle, const cudnnTensorTransformDescriptor_t  transDesc, const void * alpha, const cudnnFilterDescriptor_t  srcDesc, const void * srcData, const void * beta, const cudnnFilterDescriptor_t  destDesc, void * destData)
+{
+	static cudnnStatus_t (*lcudnnTransformFilter) (cudnnHandle_t , const cudnnTensorTransformDescriptor_t , const void *, const cudnnFilterDescriptor_t , const void *, const void *, const cudnnFilterDescriptor_t , void *);
+	if (!lcudnnTransformFilter) {
+		lcudnnTransformFilter = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnTensorTransformDescriptor_t , const void *, const cudnnFilterDescriptor_t , const void *, const void *, const cudnnFilterDescriptor_t , void *)) dlsym(tracer.cudnn_handle, "cudnnTransformFilter");
+		tracer._kernel_map[(void *) lcudnnTransformFilter] = std::string("cudnnTransformFilter");
+	}
+	assert(lcudnnTransformFilter);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnTransformFilter(handle, transDesc, alpha, srcDesc, srcData, beta, destDesc, destData);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnTransformFilter);
 	}
 	return res;
 }
@@ -23835,6 +24430,181 @@ cudnnStatus_t cudnnNormalizationForwardInference(cudnnHandle_t  handle, cudnnNor
 	return res;
 }
 
+cudnnStatus_t cudnnCreateSpatialTransformerDescriptor(cudnnSpatialTransformerDescriptor_t * stDesc)
+{
+	static cudnnStatus_t (*lcudnnCreateSpatialTransformerDescriptor) (cudnnSpatialTransformerDescriptor_t *);
+	if (!lcudnnCreateSpatialTransformerDescriptor) {
+		lcudnnCreateSpatialTransformerDescriptor = (cudnnStatus_t (*) (cudnnSpatialTransformerDescriptor_t *)) dlsym(tracer.cudnn_handle, "cudnnCreateSpatialTransformerDescriptor");
+		tracer._kernel_map[(void *) lcudnnCreateSpatialTransformerDescriptor] = std::string("cudnnCreateSpatialTransformerDescriptor");
+	}
+	assert(lcudnnCreateSpatialTransformerDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnCreateSpatialTransformerDescriptor(stDesc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnCreateSpatialTransformerDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnSetSpatialTransformerNdDescriptor(cudnnSpatialTransformerDescriptor_t  stDesc, cudnnSamplerType_t  samplerType, cudnnDataType_t  dataType, const int  nbDims, const int  dimA[])
+{
+	static cudnnStatus_t (*lcudnnSetSpatialTransformerNdDescriptor) (cudnnSpatialTransformerDescriptor_t , cudnnSamplerType_t , cudnnDataType_t , const int , const int []);
+	if (!lcudnnSetSpatialTransformerNdDescriptor) {
+		lcudnnSetSpatialTransformerNdDescriptor = (cudnnStatus_t (*) (cudnnSpatialTransformerDescriptor_t , cudnnSamplerType_t , cudnnDataType_t , const int , const int [])) dlsym(tracer.cudnn_handle, "cudnnSetSpatialTransformerNdDescriptor");
+		tracer._kernel_map[(void *) lcudnnSetSpatialTransformerNdDescriptor] = std::string("cudnnSetSpatialTransformerNdDescriptor");
+	}
+	assert(lcudnnSetSpatialTransformerNdDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSetSpatialTransformerNdDescriptor(stDesc, samplerType, dataType, nbDims, dimA);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSetSpatialTransformerNdDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnDestroySpatialTransformerDescriptor(cudnnSpatialTransformerDescriptor_t  stDesc)
+{
+	static cudnnStatus_t (*lcudnnDestroySpatialTransformerDescriptor) (cudnnSpatialTransformerDescriptor_t );
+	if (!lcudnnDestroySpatialTransformerDescriptor) {
+		lcudnnDestroySpatialTransformerDescriptor = (cudnnStatus_t (*) (cudnnSpatialTransformerDescriptor_t )) dlsym(tracer.cudnn_handle, "cudnnDestroySpatialTransformerDescriptor");
+		tracer._kernel_map[(void *) lcudnnDestroySpatialTransformerDescriptor] = std::string("cudnnDestroySpatialTransformerDescriptor");
+	}
+	assert(lcudnnDestroySpatialTransformerDescriptor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnDestroySpatialTransformerDescriptor(stDesc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnDestroySpatialTransformerDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnSpatialTfGridGeneratorForward(cudnnHandle_t  handle, const cudnnSpatialTransformerDescriptor_t  stDesc, const void * theta, void * grid)
+{
+	static cudnnStatus_t (*lcudnnSpatialTfGridGeneratorForward) (cudnnHandle_t , const cudnnSpatialTransformerDescriptor_t , const void *, void *);
+	if (!lcudnnSpatialTfGridGeneratorForward) {
+		lcudnnSpatialTfGridGeneratorForward = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnSpatialTransformerDescriptor_t , const void *, void *)) dlsym(tracer.cudnn_handle, "cudnnSpatialTfGridGeneratorForward");
+		tracer._kernel_map[(void *) lcudnnSpatialTfGridGeneratorForward] = std::string("cudnnSpatialTfGridGeneratorForward");
+	}
+	assert(lcudnnSpatialTfGridGeneratorForward);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSpatialTfGridGeneratorForward(handle, stDesc, theta, grid);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSpatialTfGridGeneratorForward);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnSpatialTfSamplerForward(cudnnHandle_t  handle, cudnnSpatialTransformerDescriptor_t  stDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * grid, const void * beta, cudnnTensorDescriptor_t  yDesc, void * y)
+{
+	static cudnnStatus_t (*lcudnnSpatialTfSamplerForward) (cudnnHandle_t , cudnnSpatialTransformerDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const void *, cudnnTensorDescriptor_t , void *);
+	if (!lcudnnSpatialTfSamplerForward) {
+		lcudnnSpatialTfSamplerForward = (cudnnStatus_t (*) (cudnnHandle_t , cudnnSpatialTransformerDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const void *, cudnnTensorDescriptor_t , void *)) dlsym(tracer.cudnn_handle, "cudnnSpatialTfSamplerForward");
+		tracer._kernel_map[(void *) lcudnnSpatialTfSamplerForward] = std::string("cudnnSpatialTfSamplerForward");
+	}
+	assert(lcudnnSpatialTfSamplerForward);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSpatialTfSamplerForward(handle, stDesc, alpha, xDesc, x, grid, beta, yDesc, y);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSpatialTfSamplerForward);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDesc)
 {
 	static cudnnStatus_t (*lcudnnCreateDropoutDescriptor) (cudnnDropoutDescriptor_t *);
@@ -24220,6 +24990,146 @@ cudnnStatus_t cudnnDestroyAlgorithmDescriptor(cudnnAlgorithmDescriptor_t  algoDe
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudnnDestroyAlgorithmDescriptor);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnCreateAlgorithmPerformance(cudnnAlgorithmPerformance_t * algoPerf, int  numberToCreate)
+{
+	static cudnnStatus_t (*lcudnnCreateAlgorithmPerformance) (cudnnAlgorithmPerformance_t *, int );
+	if (!lcudnnCreateAlgorithmPerformance) {
+		lcudnnCreateAlgorithmPerformance = (cudnnStatus_t (*) (cudnnAlgorithmPerformance_t *, int )) dlsym(tracer.cudnn_handle, "cudnnCreateAlgorithmPerformance");
+		tracer._kernel_map[(void *) lcudnnCreateAlgorithmPerformance] = std::string("cudnnCreateAlgorithmPerformance");
+	}
+	assert(lcudnnCreateAlgorithmPerformance);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnCreateAlgorithmPerformance(algoPerf, numberToCreate);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnCreateAlgorithmPerformance);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnSetAlgorithmPerformance(cudnnAlgorithmPerformance_t  algoPerf, cudnnAlgorithmDescriptor_t  algoDesc, cudnnStatus_t  status, float  time, size_t  memory)
+{
+	static cudnnStatus_t (*lcudnnSetAlgorithmPerformance) (cudnnAlgorithmPerformance_t , cudnnAlgorithmDescriptor_t , cudnnStatus_t , float , size_t );
+	if (!lcudnnSetAlgorithmPerformance) {
+		lcudnnSetAlgorithmPerformance = (cudnnStatus_t (*) (cudnnAlgorithmPerformance_t , cudnnAlgorithmDescriptor_t , cudnnStatus_t , float , size_t )) dlsym(tracer.cudnn_handle, "cudnnSetAlgorithmPerformance");
+		tracer._kernel_map[(void *) lcudnnSetAlgorithmPerformance] = std::string("cudnnSetAlgorithmPerformance");
+	}
+	assert(lcudnnSetAlgorithmPerformance);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSetAlgorithmPerformance(algoPerf, algoDesc, status, time, memory);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSetAlgorithmPerformance);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnGetAlgorithmPerformance(const cudnnAlgorithmPerformance_t  algoPerf, cudnnAlgorithmDescriptor_t * algoDesc, cudnnStatus_t * status, float * time, size_t * memory)
+{
+	static cudnnStatus_t (*lcudnnGetAlgorithmPerformance) (const cudnnAlgorithmPerformance_t , cudnnAlgorithmDescriptor_t *, cudnnStatus_t *, float *, size_t *);
+	if (!lcudnnGetAlgorithmPerformance) {
+		lcudnnGetAlgorithmPerformance = (cudnnStatus_t (*) (const cudnnAlgorithmPerformance_t , cudnnAlgorithmDescriptor_t *, cudnnStatus_t *, float *, size_t *)) dlsym(tracer.cudnn_handle, "cudnnGetAlgorithmPerformance");
+		tracer._kernel_map[(void *) lcudnnGetAlgorithmPerformance] = std::string("cudnnGetAlgorithmPerformance");
+	}
+	assert(lcudnnGetAlgorithmPerformance);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnGetAlgorithmPerformance(algoPerf, algoDesc, status, time, memory);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnGetAlgorithmPerformance);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnDestroyAlgorithmPerformance(cudnnAlgorithmPerformance_t * algoPerf, int  numberToDestroy)
+{
+	static cudnnStatus_t (*lcudnnDestroyAlgorithmPerformance) (cudnnAlgorithmPerformance_t *, int );
+	if (!lcudnnDestroyAlgorithmPerformance) {
+		lcudnnDestroyAlgorithmPerformance = (cudnnStatus_t (*) (cudnnAlgorithmPerformance_t *, int )) dlsym(tracer.cudnn_handle, "cudnnDestroyAlgorithmPerformance");
+		tracer._kernel_map[(void *) lcudnnDestroyAlgorithmPerformance] = std::string("cudnnDestroyAlgorithmPerformance");
+	}
+	assert(lcudnnDestroyAlgorithmPerformance);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnDestroyAlgorithmPerformance(algoPerf, numberToDestroy);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnDestroyAlgorithmPerformance);
 	}
 	return res;
 }
@@ -24959,6 +25869,76 @@ cudnnStatus_t cudnnNormalizationBackward(cudnnHandle_t  handle, cudnnNormMode_t 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudnnNormalizationBackward);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnSpatialTfGridGeneratorBackward(cudnnHandle_t  handle, const cudnnSpatialTransformerDescriptor_t  stDesc, const void * dgrid, void * dtheta)
+{
+	static cudnnStatus_t (*lcudnnSpatialTfGridGeneratorBackward) (cudnnHandle_t , const cudnnSpatialTransformerDescriptor_t , const void *, void *);
+	if (!lcudnnSpatialTfGridGeneratorBackward) {
+		lcudnnSpatialTfGridGeneratorBackward = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnSpatialTransformerDescriptor_t , const void *, void *)) dlsym(tracer.cudnn_handle, "cudnnSpatialTfGridGeneratorBackward");
+		tracer._kernel_map[(void *) lcudnnSpatialTfGridGeneratorBackward] = std::string("cudnnSpatialTfGridGeneratorBackward");
+	}
+	assert(lcudnnSpatialTfGridGeneratorBackward);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSpatialTfGridGeneratorBackward(handle, stDesc, dgrid, dtheta);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSpatialTfGridGeneratorBackward);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnSpatialTfSamplerBackward(cudnnHandle_t  handle, cudnnSpatialTransformerDescriptor_t  stDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx, const void * alphaDgrid, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * grid, const void * betaDgrid, void * dgrid)
+{
+	static cudnnStatus_t (*lcudnnSpatialTfSamplerBackward) (cudnnHandle_t , cudnnSpatialTransformerDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const cudnnTensorDescriptor_t , void *, const void *, const cudnnTensorDescriptor_t , const void *, const void *, const void *, void *);
+	if (!lcudnnSpatialTfSamplerBackward) {
+		lcudnnSpatialTfSamplerBackward = (cudnnStatus_t (*) (cudnnHandle_t , cudnnSpatialTransformerDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const void *, const cudnnTensorDescriptor_t , void *, const void *, const cudnnTensorDescriptor_t , const void *, const void *, const void *, void *)) dlsym(tracer.cudnn_handle, "cudnnSpatialTfSamplerBackward");
+		tracer._kernel_map[(void *) lcudnnSpatialTfSamplerBackward] = std::string("cudnnSpatialTfSamplerBackward");
+	}
+	assert(lcudnnSpatialTfSamplerBackward);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnSpatialTfSamplerBackward(handle, stDesc, alpha, xDesc, x, beta, dxDesc, dx, alphaDgrid, dyDesc, dy, grid, betaDgrid, dgrid);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnSpatialTfSamplerBackward);
 	}
 	return res;
 }
@@ -26200,6 +27180,41 @@ cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle
 	return res;
 }
 
+cudnnStatus_t cudnnFindRNNForwardInferenceAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes)
+{
+	static cudnnStatus_t (*lcudnnFindRNNForwardInferenceAlgorithmEx) (cudnnHandle_t , const cudnnRNNDescriptor_t , const int , const cudnnTensorDescriptor_t *, const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnFilterDescriptor_t , const void *, const cudnnTensorDescriptor_t *, void *, const cudnnTensorDescriptor_t , void *, const cudnnTensorDescriptor_t , void *, const float , const int , int *, cudnnAlgorithmPerformance_t *, void *, size_t );
+	if (!lcudnnFindRNNForwardInferenceAlgorithmEx) {
+		lcudnnFindRNNForwardInferenceAlgorithmEx = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnRNNDescriptor_t , const int , const cudnnTensorDescriptor_t *, const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnFilterDescriptor_t , const void *, const cudnnTensorDescriptor_t *, void *, const cudnnTensorDescriptor_t , void *, const cudnnTensorDescriptor_t , void *, const float , const int , int *, cudnnAlgorithmPerformance_t *, void *, size_t )) dlsym(tracer.cudnn_handle, "cudnnFindRNNForwardInferenceAlgorithmEx");
+		tracer._kernel_map[(void *) lcudnnFindRNNForwardInferenceAlgorithmEx] = std::string("cudnnFindRNNForwardInferenceAlgorithmEx");
+	}
+	assert(lcudnnFindRNNForwardInferenceAlgorithmEx);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnFindRNNForwardInferenceAlgorithmEx(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnFindRNNForwardInferenceAlgorithmEx);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDesc)
 {
 	static cudnnStatus_t (*lcudnnCreateSeqDataDescriptor) (cudnnSeqDataDescriptor_t *);
@@ -26935,6 +27950,41 @@ cudnnStatus_t cudnnGetRNNForwardTrainingAlgorithmMaxCount(cudnnHandle_t  handle,
 	return res;
 }
 
+cudnnStatus_t cudnnFindRNNForwardTrainingAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
+{
+	static cudnnStatus_t (*lcudnnFindRNNForwardTrainingAlgorithmEx) (cudnnHandle_t , const cudnnRNNDescriptor_t , const int , const cudnnTensorDescriptor_t *, const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnFilterDescriptor_t , const void *, const cudnnTensorDescriptor_t *, void *, const cudnnTensorDescriptor_t , void *, const cudnnTensorDescriptor_t , void *, const float , const int , int *, cudnnAlgorithmPerformance_t *, void *, size_t , void *, size_t );
+	if (!lcudnnFindRNNForwardTrainingAlgorithmEx) {
+		lcudnnFindRNNForwardTrainingAlgorithmEx = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnRNNDescriptor_t , const int , const cudnnTensorDescriptor_t *, const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnFilterDescriptor_t , const void *, const cudnnTensorDescriptor_t *, void *, const cudnnTensorDescriptor_t , void *, const cudnnTensorDescriptor_t , void *, const float , const int , int *, cudnnAlgorithmPerformance_t *, void *, size_t , void *, size_t )) dlsym(tracer.cudnn_handle, "cudnnFindRNNForwardTrainingAlgorithmEx");
+		tracer._kernel_map[(void *) lcudnnFindRNNForwardTrainingAlgorithmEx] = std::string("cudnnFindRNNForwardTrainingAlgorithmEx");
+	}
+	assert(lcudnnFindRNNForwardTrainingAlgorithmEx);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnFindRNNForwardTrainingAlgorithmEx(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnFindRNNForwardTrainingAlgorithmEx);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnGetRNNBackwardDataAlgorithmMaxCount(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)
 {
 	static cudnnStatus_t (*lcudnnGetRNNBackwardDataAlgorithmMaxCount) (cudnnHandle_t , const cudnnRNNDescriptor_t , int *);
@@ -26970,6 +28020,41 @@ cudnnStatus_t cudnnGetRNNBackwardDataAlgorithmMaxCount(cudnnHandle_t  handle, co
 	return res;
 }
 
+cudnnStatus_t cudnnFindRNNBackwardDataAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * yDesc, const void * y, const cudnnTensorDescriptor_t * dyDesc, const void * dy, const cudnnTensorDescriptor_t  dhyDesc, const void * dhy, const cudnnTensorDescriptor_t  dcyDesc, const void * dcy, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnTensorDescriptor_t * dxDesc, void * dx, const cudnnTensorDescriptor_t  dhxDesc, void * dhx, const cudnnTensorDescriptor_t  dcxDesc, void * dcx, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
+{
+	static cudnnStatus_t (*lcudnnFindRNNBackwardDataAlgorithmEx) (cudnnHandle_t , const cudnnRNNDescriptor_t , const int , const cudnnTensorDescriptor_t *, const void *, const cudnnTensorDescriptor_t *, const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnFilterDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t *, void *, const cudnnTensorDescriptor_t , void *, const cudnnTensorDescriptor_t , void *, const float , const int , int *, cudnnAlgorithmPerformance_t *, void *, size_t , void *, size_t );
+	if (!lcudnnFindRNNBackwardDataAlgorithmEx) {
+		lcudnnFindRNNBackwardDataAlgorithmEx = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnRNNDescriptor_t , const int , const cudnnTensorDescriptor_t *, const void *, const cudnnTensorDescriptor_t *, const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnFilterDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t *, void *, const cudnnTensorDescriptor_t , void *, const cudnnTensorDescriptor_t , void *, const float , const int , int *, cudnnAlgorithmPerformance_t *, void *, size_t , void *, size_t )) dlsym(tracer.cudnn_handle, "cudnnFindRNNBackwardDataAlgorithmEx");
+		tracer._kernel_map[(void *) lcudnnFindRNNBackwardDataAlgorithmEx] = std::string("cudnnFindRNNBackwardDataAlgorithmEx");
+	}
+	assert(lcudnnFindRNNBackwardDataAlgorithmEx);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnFindRNNBackwardDataAlgorithmEx(handle, rnnDesc, seqLength, yDesc, y, dyDesc, dy, dhyDesc, dhy, dcyDesc, dcy, wDesc, w, hxDesc, hx, cxDesc, cx, dxDesc, dx, dhxDesc, dhx, dcxDesc, dcx, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnFindRNNBackwardDataAlgorithmEx);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnGetRNNBackwardWeightsAlgorithmMaxCount(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)
 {
 	static cudnnStatus_t (*lcudnnGetRNNBackwardWeightsAlgorithmMaxCount) (cudnnHandle_t , const cudnnRNNDescriptor_t , int *);
@@ -27001,6 +28086,41 @@ cudnnStatus_t cudnnGetRNNBackwardWeightsAlgorithmMaxCount(cudnnHandle_t  handle,
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudnnGetRNNBackwardWeightsAlgorithmMaxCount);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnFindRNNBackwardWeightsAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t * yDesc, const void * y, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, const void * workspace, size_t  workSpaceSizeInBytes, const cudnnFilterDescriptor_t  dwDesc, void * dw, const void * reserveSpace, size_t  reserveSpaceSizeInBytes)
+{
+	static cudnnStatus_t (*lcudnnFindRNNBackwardWeightsAlgorithmEx) (cudnnHandle_t , const cudnnRNNDescriptor_t , const int , const cudnnTensorDescriptor_t *, const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t *, const void *, const float , const int , int *, cudnnAlgorithmPerformance_t *, const void *, size_t , const cudnnFilterDescriptor_t , void *, const void *, size_t );
+	if (!lcudnnFindRNNBackwardWeightsAlgorithmEx) {
+		lcudnnFindRNNBackwardWeightsAlgorithmEx = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnRNNDescriptor_t , const int , const cudnnTensorDescriptor_t *, const void *, const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t *, const void *, const float , const int , int *, cudnnAlgorithmPerformance_t *, const void *, size_t , const cudnnFilterDescriptor_t , void *, const void *, size_t )) dlsym(tracer.cudnn_handle, "cudnnFindRNNBackwardWeightsAlgorithmEx");
+		tracer._kernel_map[(void *) lcudnnFindRNNBackwardWeightsAlgorithmEx] = std::string("cudnnFindRNNBackwardWeightsAlgorithmEx");
+	}
+	assert(lcudnnFindRNNBackwardWeightsAlgorithmEx);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnFindRNNBackwardWeightsAlgorithmEx(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, yDesc, y, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes, dwDesc, dw, reserveSpace, reserveSpaceSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnFindRNNBackwardWeightsAlgorithmEx);
 	}
 	return res;
 }
@@ -28055,6 +29175,111 @@ cudnnStatus_t cudnnGetConvolutionForwardAlgorithmMaxCount(cudnnHandle_t  handle,
 	return res;
 }
 
+cudnnStatus_t cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnFilterDescriptor_t  filterDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  destDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults)
+{
+	static cudnnStatus_t (*lcudnnGetConvolutionForwardAlgorithm_v7) (cudnnHandle_t , const cudnnTensorDescriptor_t , const cudnnFilterDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , const int , int *, cudnnConvolutionFwdAlgoPerf_t *);
+	if (!lcudnnGetConvolutionForwardAlgorithm_v7) {
+		lcudnnGetConvolutionForwardAlgorithm_v7 = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnTensorDescriptor_t , const cudnnFilterDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , const int , int *, cudnnConvolutionFwdAlgoPerf_t *)) dlsym(tracer.cudnn_handle, "cudnnGetConvolutionForwardAlgorithm_v7");
+		tracer._kernel_map[(void *) lcudnnGetConvolutionForwardAlgorithm_v7] = std::string("cudnnGetConvolutionForwardAlgorithm_v7");
+	}
+	assert(lcudnnGetConvolutionForwardAlgorithm_v7);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnGetConvolutionForwardAlgorithm_v7(handle, srcDesc, filterDesc, convDesc, destDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnGetConvolutionForwardAlgorithm_v7);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults)
+{
+	static cudnnStatus_t (*lcudnnFindConvolutionForwardAlgorithm) (cudnnHandle_t , const cudnnTensorDescriptor_t , const cudnnFilterDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , const int , int *, cudnnConvolutionFwdAlgoPerf_t *);
+	if (!lcudnnFindConvolutionForwardAlgorithm) {
+		lcudnnFindConvolutionForwardAlgorithm = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnTensorDescriptor_t , const cudnnFilterDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , const int , int *, cudnnConvolutionFwdAlgoPerf_t *)) dlsym(tracer.cudnn_handle, "cudnnFindConvolutionForwardAlgorithm");
+		tracer._kernel_map[(void *) lcudnnFindConvolutionForwardAlgorithm] = std::string("cudnnFindConvolutionForwardAlgorithm");
+	}
+	assert(lcudnnFindConvolutionForwardAlgorithm);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionForwardAlgorithm(handle, xDesc, wDesc, convDesc, yDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnFindConvolutionForwardAlgorithm);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnFindConvolutionForwardAlgorithmEx(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, void * y, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)
+{
+	static cudnnStatus_t (*lcudnnFindConvolutionForwardAlgorithmEx) (cudnnHandle_t , const cudnnTensorDescriptor_t , const void *, const cudnnFilterDescriptor_t , const void *, const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , void *, const int , int *, cudnnConvolutionFwdAlgoPerf_t *, void *, size_t );
+	if (!lcudnnFindConvolutionForwardAlgorithmEx) {
+		lcudnnFindConvolutionForwardAlgorithmEx = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnTensorDescriptor_t , const void *, const cudnnFilterDescriptor_t , const void *, const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , void *, const int , int *, cudnnConvolutionFwdAlgoPerf_t *, void *, size_t )) dlsym(tracer.cudnn_handle, "cudnnFindConvolutionForwardAlgorithmEx");
+		tracer._kernel_map[(void *) lcudnnFindConvolutionForwardAlgorithmEx] = std::string("cudnnFindConvolutionForwardAlgorithmEx");
+	}
+	assert(lcudnnFindConvolutionForwardAlgorithmEx);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionForwardAlgorithmEx(handle, xDesc, x, wDesc, w, convDesc, yDesc, y, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnFindConvolutionForwardAlgorithmEx);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnIm2Col(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, void * colBuffer)
 {
 	static cudnnStatus_t (*lcudnnIm2Col) (cudnnHandle_t , const cudnnTensorDescriptor_t , const void *, const cudnnFilterDescriptor_t , const cudnnConvolutionDescriptor_t , void *);
@@ -28265,6 +29490,111 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  ha
 	return res;
 }
 
+cudnnStatus_t cudnnFindConvolutionBackwardDataAlgorithm(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults)
+{
+	static cudnnStatus_t (*lcudnnFindConvolutionBackwardDataAlgorithm) (cudnnHandle_t , const cudnnFilterDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , const int , int *, cudnnConvolutionBwdDataAlgoPerf_t *);
+	if (!lcudnnFindConvolutionBackwardDataAlgorithm) {
+		lcudnnFindConvolutionBackwardDataAlgorithm = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnFilterDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , const int , int *, cudnnConvolutionBwdDataAlgoPerf_t *)) dlsym(tracer.cudnn_handle, "cudnnFindConvolutionBackwardDataAlgorithm");
+		tracer._kernel_map[(void *) lcudnnFindConvolutionBackwardDataAlgorithm] = std::string("cudnnFindConvolutionBackwardDataAlgorithm");
+	}
+	assert(lcudnnFindConvolutionBackwardDataAlgorithm);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionBackwardDataAlgorithm(handle, wDesc, dyDesc, convDesc, dxDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnFindConvolutionBackwardDataAlgorithm);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnFindConvolutionBackwardDataAlgorithmEx(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, void * dx, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)
+{
+	static cudnnStatus_t (*lcudnnFindConvolutionBackwardDataAlgorithmEx) (cudnnHandle_t , const cudnnFilterDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , void *, const int , int *, cudnnConvolutionBwdDataAlgoPerf_t *, void *, size_t );
+	if (!lcudnnFindConvolutionBackwardDataAlgorithmEx) {
+		lcudnnFindConvolutionBackwardDataAlgorithmEx = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnFilterDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , void *, const int , int *, cudnnConvolutionBwdDataAlgoPerf_t *, void *, size_t )) dlsym(tracer.cudnn_handle, "cudnnFindConvolutionBackwardDataAlgorithmEx");
+		tracer._kernel_map[(void *) lcudnnFindConvolutionBackwardDataAlgorithmEx] = std::string("cudnnFindConvolutionBackwardDataAlgorithmEx");
+	}
+	assert(lcudnnFindConvolutionBackwardDataAlgorithmEx);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionBackwardDataAlgorithmEx(handle, wDesc, w, dyDesc, dy, convDesc, dxDesc, dx, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnFindConvolutionBackwardDataAlgorithmEx);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithm_v7(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  gradDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults)
+{
+	static cudnnStatus_t (*lcudnnGetConvolutionBackwardDataAlgorithm_v7) (cudnnHandle_t , const cudnnFilterDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , const int , int *, cudnnConvolutionBwdDataAlgoPerf_t *);
+	if (!lcudnnGetConvolutionBackwardDataAlgorithm_v7) {
+		lcudnnGetConvolutionBackwardDataAlgorithm_v7 = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnFilterDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , const int , int *, cudnnConvolutionBwdDataAlgoPerf_t *)) dlsym(tracer.cudnn_handle, "cudnnGetConvolutionBackwardDataAlgorithm_v7");
+		tracer._kernel_map[(void *) lcudnnGetConvolutionBackwardDataAlgorithm_v7] = std::string("cudnnGetConvolutionBackwardDataAlgorithm_v7");
+	}
+	assert(lcudnnGetConvolutionBackwardDataAlgorithm_v7);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnGetConvolutionBackwardDataAlgorithm_v7(handle, filterDesc, diffDesc, convDesc, gradDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnGetConvolutionBackwardDataAlgorithm_v7);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, cudnnConvolutionBwdDataAlgo_t  algo, size_t * sizeInBytes)
 {
 	static cudnnStatus_t (*lcudnnGetConvolutionBackwardDataWorkspaceSize) (cudnnHandle_t , const cudnnFilterDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , cudnnConvolutionBwdDataAlgo_t , size_t *);
@@ -28335,6 +29665,41 @@ cudnnStatus_t cudnnConvolutionBackwardData(cudnnHandle_t  handle, const void * a
 	return res;
 }
 
+cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  gradDesc, const cudnnTensorFormat_t  transformFormat, cudnnFilterDescriptor_t  foldedFilterDesc, cudnnTensorDescriptor_t  paddedDiffDesc, cudnnConvolutionDescriptor_t  foldedConvDesc, cudnnTensorDescriptor_t  foldedGradDesc, cudnnTensorTransformDescriptor_t  filterFoldTransDesc, cudnnTensorTransformDescriptor_t  diffPadTransDesc, cudnnTensorTransformDescriptor_t  gradFoldTransDesc, cudnnTensorTransformDescriptor_t  gradUnfoldTransDesc)
+{
+	static cudnnStatus_t (*lcudnnGetFoldedConvBackwardDataDescriptors) (const cudnnHandle_t , const cudnnFilterDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , const cudnnTensorFormat_t , cudnnFilterDescriptor_t , cudnnTensorDescriptor_t , cudnnConvolutionDescriptor_t , cudnnTensorDescriptor_t , cudnnTensorTransformDescriptor_t , cudnnTensorTransformDescriptor_t , cudnnTensorTransformDescriptor_t , cudnnTensorTransformDescriptor_t );
+	if (!lcudnnGetFoldedConvBackwardDataDescriptors) {
+		lcudnnGetFoldedConvBackwardDataDescriptors = (cudnnStatus_t (*) (const cudnnHandle_t , const cudnnFilterDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnTensorDescriptor_t , const cudnnTensorFormat_t , cudnnFilterDescriptor_t , cudnnTensorDescriptor_t , cudnnConvolutionDescriptor_t , cudnnTensorDescriptor_t , cudnnTensorTransformDescriptor_t , cudnnTensorTransformDescriptor_t , cudnnTensorTransformDescriptor_t , cudnnTensorTransformDescriptor_t )) dlsym(tracer.cudnn_handle, "cudnnGetFoldedConvBackwardDataDescriptors");
+		tracer._kernel_map[(void *) lcudnnGetFoldedConvBackwardDataDescriptors] = std::string("cudnnGetFoldedConvBackwardDataDescriptors");
+	}
+	assert(lcudnnGetFoldedConvBackwardDataDescriptors);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnGetFoldedConvBackwardDataDescriptors(handle, filterDesc, diffDesc, convDesc, gradDesc, transformFormat, foldedFilterDesc, paddedDiffDesc, foldedConvDesc, foldedGradDesc, filterFoldTransDesc, diffPadTransDesc, gradFoldTransDesc, gradUnfoldTransDesc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnGetFoldedConvBackwardDataDescriptors);
+	}
+	return res;
+}
+
 cudnnStatus_t cudnnCnnInferVersionCheck()
 {
 	static cudnnStatus_t (*lcudnnCnnInferVersionCheck) ();
@@ -28401,6 +29766,111 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudnnGetConvolutionBackwardFilterAlgorithmMaxCount);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithm(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  dwDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults)
+{
+	static cudnnStatus_t (*lcudnnFindConvolutionBackwardFilterAlgorithm) (cudnnHandle_t , const cudnnTensorDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnFilterDescriptor_t , const int , int *, cudnnConvolutionBwdFilterAlgoPerf_t *);
+	if (!lcudnnFindConvolutionBackwardFilterAlgorithm) {
+		lcudnnFindConvolutionBackwardFilterAlgorithm = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnTensorDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnFilterDescriptor_t , const int , int *, cudnnConvolutionBwdFilterAlgoPerf_t *)) dlsym(tracer.cudnn_handle, "cudnnFindConvolutionBackwardFilterAlgorithm");
+		tracer._kernel_map[(void *) lcudnnFindConvolutionBackwardFilterAlgorithm] = std::string("cudnnFindConvolutionBackwardFilterAlgorithm");
+	}
+	assert(lcudnnFindConvolutionBackwardFilterAlgorithm);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionBackwardFilterAlgorithm(handle, xDesc, dyDesc, convDesc, dwDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnFindConvolutionBackwardFilterAlgorithm);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithmEx(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  dyDesc, const void * y, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  dwDesc, void * dw, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)
+{
+	static cudnnStatus_t (*lcudnnFindConvolutionBackwardFilterAlgorithmEx) (cudnnHandle_t , const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnConvolutionDescriptor_t , const cudnnFilterDescriptor_t , void *, const int , int *, cudnnConvolutionBwdFilterAlgoPerf_t *, void *, size_t );
+	if (!lcudnnFindConvolutionBackwardFilterAlgorithmEx) {
+		lcudnnFindConvolutionBackwardFilterAlgorithmEx = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnTensorDescriptor_t , const void *, const cudnnTensorDescriptor_t , const void *, const cudnnConvolutionDescriptor_t , const cudnnFilterDescriptor_t , void *, const int , int *, cudnnConvolutionBwdFilterAlgoPerf_t *, void *, size_t )) dlsym(tracer.cudnn_handle, "cudnnFindConvolutionBackwardFilterAlgorithmEx");
+		tracer._kernel_map[(void *) lcudnnFindConvolutionBackwardFilterAlgorithmEx] = std::string("cudnnFindConvolutionBackwardFilterAlgorithmEx");
+	}
+	assert(lcudnnFindConvolutionBackwardFilterAlgorithmEx);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionBackwardFilterAlgorithmEx(handle, xDesc, x, dyDesc, y, convDesc, dwDesc, dw, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnFindConvolutionBackwardFilterAlgorithmEx);
+	}
+	return res;
+}
+
+cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm_v7(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  gradDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults)
+{
+	static cudnnStatus_t (*lcudnnGetConvolutionBackwardFilterAlgorithm_v7) (cudnnHandle_t , const cudnnTensorDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnFilterDescriptor_t , const int , int *, cudnnConvolutionBwdFilterAlgoPerf_t *);
+	if (!lcudnnGetConvolutionBackwardFilterAlgorithm_v7) {
+		lcudnnGetConvolutionBackwardFilterAlgorithm_v7 = (cudnnStatus_t (*) (cudnnHandle_t , const cudnnTensorDescriptor_t , const cudnnTensorDescriptor_t , const cudnnConvolutionDescriptor_t , const cudnnFilterDescriptor_t , const int , int *, cudnnConvolutionBwdFilterAlgoPerf_t *)) dlsym(tracer.cudnn_handle, "cudnnGetConvolutionBackwardFilterAlgorithm_v7");
+		tracer._kernel_map[(void *) lcudnnGetConvolutionBackwardFilterAlgorithm_v7] = std::string("cudnnGetConvolutionBackwardFilterAlgorithm_v7");
+	}
+	assert(lcudnnGetConvolutionBackwardFilterAlgorithm_v7);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cudnnStatus_t res = 
+		lcudnnGetConvolutionBackwardFilterAlgorithm_v7(handle, srcDesc, diffDesc, convDesc, gradDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudnnGetConvolutionBackwardFilterAlgorithm_v7);
 	}
 	return res;
 }
@@ -39017,6 +40487,41 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 	return res;
 }
 
+cublasStatus_t cublasLtMatrixTransform(cublasLtHandle_t  lightHandle, cublasLtMatrixTransformDesc_t  transformDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  beta, const void*  B, cublasLtMatrixLayout_t  Bdesc, void*  C, cublasLtMatrixLayout_t  Cdesc, cudaStream_t  stream)
+{
+	static cublasStatus_t (*lcublasLtMatrixTransform) (cublasLtHandle_t , cublasLtMatrixTransformDesc_t , const void* , const void* , cublasLtMatrixLayout_t , const void* , const void* , cublasLtMatrixLayout_t , void* , cublasLtMatrixLayout_t , cudaStream_t );
+	if (!lcublasLtMatrixTransform) {
+		lcublasLtMatrixTransform = (cublasStatus_t (*) (cublasLtHandle_t , cublasLtMatrixTransformDesc_t , const void* , const void* , cublasLtMatrixLayout_t , const void* , const void* , cublasLtMatrixLayout_t , void* , cublasLtMatrixLayout_t , cudaStream_t )) dlsym(RTLD_NEXT, "cublasLtMatrixTransform");
+		tracer._kernel_map[(void *) lcublasLtMatrixTransform] = std::string("cublasLtMatrixTransform");
+	}
+	assert(lcublasLtMatrixTransform);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixTransform(lightHandle, transformDesc, alpha, A, Adesc, beta, B, Bdesc, C, Cdesc, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixTransform);
+	}
+	return res;
+}
+
 cublasStatus_t cublasLtMatrixLayoutInit_internal(cublasLtMatrixLayout_t  matLayout, size_t  size, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)
 {
 	static cublasStatus_t (*lcublasLtMatrixLayoutInit_internal) (cublasLtMatrixLayout_t , size_t , cudaDataType , uint64_t , uint64_t , int64_t );
@@ -39367,6 +40872,181 @@ cublasStatus_t cublasLtMatmulDescGetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 	return res;
 }
 
+cublasStatus_t cublasLtMatrixTransformDescInit_internal(cublasLtMatrixTransformDesc_t  transformDesc, size_t  size, cudaDataType  scaleType)
+{
+	static cublasStatus_t (*lcublasLtMatrixTransformDescInit_internal) (cublasLtMatrixTransformDesc_t , size_t , cudaDataType );
+	if (!lcublasLtMatrixTransformDescInit_internal) {
+		lcublasLtMatrixTransformDescInit_internal = (cublasStatus_t (*) (cublasLtMatrixTransformDesc_t , size_t , cudaDataType )) dlsym(RTLD_NEXT, "cublasLtMatrixTransformDescInit_internal");
+		tracer._kernel_map[(void *) lcublasLtMatrixTransformDescInit_internal] = std::string("cublasLtMatrixTransformDescInit_internal");
+	}
+	assert(lcublasLtMatrixTransformDescInit_internal);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixTransformDescInit_internal(transformDesc, size, scaleType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixTransformDescInit_internal);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t*  transformDesc, cudaDataType  scaleType)
+{
+	static cublasStatus_t (*lcublasLtMatrixTransformDescCreate) (cublasLtMatrixTransformDesc_t* , cudaDataType );
+	if (!lcublasLtMatrixTransformDescCreate) {
+		lcublasLtMatrixTransformDescCreate = (cublasStatus_t (*) (cublasLtMatrixTransformDesc_t* , cudaDataType )) dlsym(RTLD_NEXT, "cublasLtMatrixTransformDescCreate");
+		tracer._kernel_map[(void *) lcublasLtMatrixTransformDescCreate] = std::string("cublasLtMatrixTransformDescCreate");
+	}
+	assert(lcublasLtMatrixTransformDescCreate);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixTransformDescCreate(transformDesc, scaleType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixTransformDescCreate);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t  transformDesc)
+{
+	static cublasStatus_t (*lcublasLtMatrixTransformDescDestroy) (cublasLtMatrixTransformDesc_t );
+	if (!lcublasLtMatrixTransformDescDestroy) {
+		lcublasLtMatrixTransformDescDestroy = (cublasStatus_t (*) (cublasLtMatrixTransformDesc_t )) dlsym(RTLD_NEXT, "cublasLtMatrixTransformDescDestroy");
+		tracer._kernel_map[(void *) lcublasLtMatrixTransformDescDestroy] = std::string("cublasLtMatrixTransformDescDestroy");
+	}
+	assert(lcublasLtMatrixTransformDescDestroy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixTransformDescDestroy(transformDesc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixTransformDescDestroy);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixTransformDescSetAttribute(cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	static cublasStatus_t (*lcublasLtMatrixTransformDescSetAttribute) (cublasLtMatrixTransformDesc_t , cublasLtMatrixTransformDescAttributes_t , const void* , size_t );
+	if (!lcublasLtMatrixTransformDescSetAttribute) {
+		lcublasLtMatrixTransformDescSetAttribute = (cublasStatus_t (*) (cublasLtMatrixTransformDesc_t , cublasLtMatrixTransformDescAttributes_t , const void* , size_t )) dlsym(RTLD_NEXT, "cublasLtMatrixTransformDescSetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatrixTransformDescSetAttribute] = std::string("cublasLtMatrixTransformDescSetAttribute");
+	}
+	assert(lcublasLtMatrixTransformDescSetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixTransformDescSetAttribute(transformDesc, attr, buf, sizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixTransformDescSetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixTransformDescGetAttribute(cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	static cublasStatus_t (*lcublasLtMatrixTransformDescGetAttribute) (cublasLtMatrixTransformDesc_t , cublasLtMatrixTransformDescAttributes_t , void* , size_t , size_t* );
+	if (!lcublasLtMatrixTransformDescGetAttribute) {
+		lcublasLtMatrixTransformDescGetAttribute = (cublasStatus_t (*) (cublasLtMatrixTransformDesc_t , cublasLtMatrixTransformDescAttributes_t , void* , size_t , size_t* )) dlsym(RTLD_NEXT, "cublasLtMatrixTransformDescGetAttribute");
+		tracer._kernel_map[(void *) lcublasLtMatrixTransformDescGetAttribute] = std::string("cublasLtMatrixTransformDescGetAttribute");
+	}
+	assert(lcublasLtMatrixTransformDescGetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatrixTransformDescGetAttribute(transformDesc, attr, buf, sizeInBytes, sizeWritten);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatrixTransformDescGetAttribute);
+	}
+	return res;
+}
+
 cublasStatus_t cublasLtMatmulPreferenceInit_internal(cublasLtMatmulPreference_t  pref, size_t  size)
 {
 	static cublasStatus_t (*lcublasLtMatmulPreferenceInit_internal) (cublasLtMatmulPreference_t , size_t );
@@ -39538,6 +41218,76 @@ cublasStatus_t cublasLtMatmulPreferenceGetAttribute(cublasLtMatmulPreference_t  
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasLtMatmulPreferenceGetAttribute);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, cublasLtMatmulPreference_t  preference, int  requestedAlgoCount, cublasLtMatmulHeuristicResult_t  heuristicResultsArray[], int*  returnAlgoCount)
+{
+	static cublasStatus_t (*lcublasLtMatmulAlgoGetHeuristic) (cublasLtHandle_t , cublasLtMatmulDesc_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , cublasLtMatmulPreference_t , int , cublasLtMatmulHeuristicResult_t [], int* );
+	if (!lcublasLtMatmulAlgoGetHeuristic) {
+		lcublasLtMatmulAlgoGetHeuristic = (cublasStatus_t (*) (cublasLtHandle_t , cublasLtMatmulDesc_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , cublasLtMatrixLayout_t , cublasLtMatmulPreference_t , int , cublasLtMatmulHeuristicResult_t [], int* )) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoGetHeuristic");
+		tracer._kernel_map[(void *) lcublasLtMatmulAlgoGetHeuristic] = std::string("cublasLtMatmulAlgoGetHeuristic");
+	}
+	assert(lcublasLtMatmulAlgoGetHeuristic);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoGetHeuristic(lightHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, preference, requestedAlgoCount, heuristicResultsArray, returnAlgoCount);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulAlgoGetHeuristic);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoGetIds(cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  requestedAlgoCount, int  algoIdsArray[], int*  returnAlgoCount)
+{
+	static cublasStatus_t (*lcublasLtMatmulAlgoGetIds) (cublasLtHandle_t , cublasComputeType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , int , int [], int* );
+	if (!lcublasLtMatmulAlgoGetIds) {
+		lcublasLtMatmulAlgoGetIds = (cublasStatus_t (*) (cublasLtHandle_t , cublasComputeType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , cudaDataType_t , int , int [], int* )) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoGetIds");
+		tracer._kernel_map[(void *) lcublasLtMatmulAlgoGetIds] = std::string("cublasLtMatmulAlgoGetIds");
+	}
+	assert(lcublasLtMatmulAlgoGetIds);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoGetIds(lightHandle, computeType, scaleType, Atype, Btype, Ctype, Dtype, requestedAlgoCount, algoIdsArray, returnAlgoCount);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtMatmulAlgoGetIds);
 	}
 	return res;
 }

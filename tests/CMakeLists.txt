@@ -37,3 +37,17 @@ set_target_properties(cublas_test PROPERTIES
     CUDA_ARCHITECTURES "86"
     CUDA_RUNTIME_LIBRARY Shared
 )
+
+add_executable(cublasLt_test cublasLt.cu)
+
+target_link_libraries(cublasLt_test
+    cuda
+    cudart
+    cublas
+    cublasLt
+)
+
+set_target_properties(cublasLt_test PROPERTIES
+    CUDA_ARCHITECTURES "86"
+    CUDA_RUNTIME_LIBRARY Shared
+)

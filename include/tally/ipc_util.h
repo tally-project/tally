@@ -8,10 +8,10 @@
     std::free(msg);
 
 #define CLIENT_RECV_MSG \
-    ipc::buff_t buf; \
-    while (buf.empty()) { \
-        buf = TallyClient::client->recv_ipc->recv(10000); \
+    ipc::buff_t ipc_buf; \
+    while (ipc_buf.empty()) { \
+        ipc_buf = TallyClient::client->recv_ipc->recv(10000); \
     } \
-    const char *dat = buf.get<const char *>();
+    const char *dat = ipc_buf.get<const char *>();
 
 #endif // TALLY_IPC_UTIL_H

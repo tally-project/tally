@@ -29,10 +29,13 @@
 #include "tally/ipc_util.h"
 #include "tally/cache.h"
 #include "tally/msg_struct.h"
+#include "tally/generated/msg_struct.h"
 #include "tally/transform.h"
 #include "tally/client.h"
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
+
+cublasLtMatmulPreference_t preference = NULL;
 
 extern "C" {
 
@@ -306,11 +309,151 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 	arg_ptr->beta = *beta;
 	arg_ptr->C = C;
 	arg_ptr->ldc = ldc;
+
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
     auto res = (cublasStatus_t *) dat;
     return *res;
+}
+
+// Warning: cublasLtMatmulAlgo_t may be a fake pointer
+// when created by cublasLtMatmulAlgoInit
+// At some point need to keep track which pointers are fake and which are real
+cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)
+{
+	printf("cublasLtMatmul hooked\n");
+	
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMUL;
+    
+    struct cublasLtMatmulArg *arg_ptr = (struct cublasLtMatmulArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->lightHandle = lightHandle;
+    arg_ptr->computeDesc = computeDesc;
+    arg_ptr->alpha = *((uint64_t *) alpha); // copy the 64 bits from the pointer
+    arg_ptr->A = A;
+    arg_ptr->Adesc = Adesc;
+    arg_ptr->B = B;
+    arg_ptr->Bdesc = Bdesc;
+    arg_ptr->beta = *((uint64_t *) beta);
+    arg_ptr->C = (void *)C;
+    arg_ptr->Cdesc = Cdesc;
+    arg_ptr->D = D;
+    arg_ptr->Ddesc = Ddesc;
+    memcpy(&(arg_ptr->algo), algo, sizeof(cublasLtMatmulAlgo_t));
+    arg_ptr->workspace = workspace;
+    arg_ptr->workspaceSizeInBytes = workspaceSizeInBytes;
+    arg_ptr->stream = stream;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
+}
+
+
+cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	printf("cublasLtMatmulDescSetAttribute hooked\n");
+	
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescSetAttributeArg) + sizeInBytes;
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCSETATTRIBUTE;
+
+    struct cublasLtMatmulDescSetAttributeArg *arg_ptr = (struct cublasLtMatmulDescSetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->matmulDesc = matmulDesc;
+    arg_ptr->attr = attr;
+    arg_ptr->sizeInBytes = sizeInBytes;
+    memcpy(arg_ptr->buf, buf, sizeInBytes);
+
+    CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
+}
+
+cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	printf("cublasLtMatrixLayoutSetAttribute hooked\n");
+	
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutSetAttributeArg) + sizeInBytes;
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTSETATTRIBUTE;
+
+    struct cublasLtMatrixLayoutSetAttributeArg *arg_ptr = (struct cublasLtMatrixLayoutSetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->matLayout = matLayout;
+    arg_ptr->attr = attr;
+    arg_ptr->sizeInBytes = sizeInBytes;
+    memcpy(arg_ptr->buf, buf, sizeInBytes);
+
+    CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	printf("cublasLtMatmulPreferenceSetAttribute hooked\n");
+	
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceSetAttributeArg) + sizeInBytes;
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCESETATTRIBUTE;
+
+    struct cublasLtMatmulPreferenceSetAttributeArg *arg_ptr = (struct cublasLtMatmulPreferenceSetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pref = pref;
+    arg_ptr->attr = attr;
+    arg_ptr->sizeInBytes = sizeInBytes;
+    memcpy(arg_ptr->buf, buf, sizeInBytes);
+
+    CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, cublasLtMatmulPreference_t  preference, int  requestedAlgoCount, cublasLtMatmulHeuristicResult_t  heuristicResultsArray[], int*  returnAlgoCount)
+{
+	printf("cublasLtMatmulAlgoGetHeuristic hooked\n");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulAlgoGetHeuristicArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULALGOGETHEURISTIC;
+
+    struct cublasLtMatmulAlgoGetHeuristicArg *arg_ptr = (struct cublasLtMatmulAlgoGetHeuristicArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->lightHandle = lightHandle;
+    arg_ptr->operationDesc = operationDesc;
+    arg_ptr->Adesc = Adesc;
+    arg_ptr->Bdesc = Bdesc;
+    arg_ptr->Cdesc = Cdesc;
+    arg_ptr->Ddesc = Ddesc;
+    arg_ptr->preference = preference;
+    arg_ptr->requestedAlgoCount = requestedAlgoCount;
+    arg_ptr->heuristicResultsArray = heuristicResultsArray;
+
+    CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	
+    auto res = (cublasLtMatmulAlgoGetHeuristicResponse *) dat;
+    *returnAlgoCount = res->returnAlgoCount;
+    memcpy(heuristicResultsArray, res->heuristicResultsArray, sizeof(cublasLtMatmulHeuristicResult_t) * res->returnAlgoCount);
+
+    return res->err;
 }
 
 }

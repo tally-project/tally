@@ -42,6 +42,9 @@ CUresult (*lcuDeviceGetLuid) (char * luid, unsigned int * deviceNodeMask, CUdevi
 CUresult (*lcuDeviceTotalMem_v2) (size_t * bytes, CUdevice  dev) =
 	(CUresult (*) (size_t * bytes, CUdevice  dev)) dlsym(cuda_handle, "cuDeviceTotalMem_v2");
 
+CUresult (*lcuDeviceGetTexture1DLinearMaxWidth) (size_t * maxWidthInElements, CUarray_format  format, unsigned  numChannels, CUdevice  dev) =
+	(CUresult (*) (size_t * maxWidthInElements, CUarray_format  format, unsigned  numChannels, CUdevice  dev)) dlsym(cuda_handle, "cuDeviceGetTexture1DLinearMaxWidth");
+
 CUresult (*lcuDeviceGetAttribute) (int * pi, CUdevice_attribute  attrib, CUdevice  dev) =
 	(CUresult (*) (int * pi, CUdevice_attribute  attrib, CUdevice  dev)) dlsym(cuda_handle, "cuDeviceGetAttribute");
 
@@ -918,6 +921,9 @@ CUresult (*lcuTexRefSetAddress_v2) (size_t * ByteOffset, CUtexref  hTexRef, CUde
 CUresult (*lcuTexRefSetAddress2D_v3) (CUtexref  hTexRef, const CUDA_ARRAY_DESCRIPTOR * desc, CUdeviceptr  dptr, size_t  Pitch) =
 	(CUresult (*) (CUtexref  hTexRef, const CUDA_ARRAY_DESCRIPTOR * desc, CUdeviceptr  dptr, size_t  Pitch)) dlsym(cuda_handle, "cuTexRefSetAddress2D_v3");
 
+CUresult (*lcuTexRefSetFormat) (CUtexref  hTexRef, CUarray_format  fmt, int  NumPackedComponents) =
+	(CUresult (*) (CUtexref  hTexRef, CUarray_format  fmt, int  NumPackedComponents)) dlsym(cuda_handle, "cuTexRefSetFormat");
+
 CUresult (*lcuTexRefSetAddressMode) (CUtexref  hTexRef, int  dim, CUaddress_mode  am) =
 	(CUresult (*) (CUtexref  hTexRef, int  dim, CUaddress_mode  am)) dlsym(cuda_handle, "cuTexRefSetAddressMode");
 
@@ -956,6 +962,9 @@ CUresult (*lcuTexRefGetAddressMode) (CUaddress_mode * pam, CUtexref  hTexRef, in
 
 CUresult (*lcuTexRefGetFilterMode) (CUfilter_mode * pfm, CUtexref  hTexRef) =
 	(CUresult (*) (CUfilter_mode * pfm, CUtexref  hTexRef)) dlsym(cuda_handle, "cuTexRefGetFilterMode");
+
+CUresult (*lcuTexRefGetFormat) (CUarray_format * pFormat, int * pNumChannels, CUtexref  hTexRef) =
+	(CUresult (*) (CUarray_format * pFormat, int * pNumChannels, CUtexref  hTexRef)) dlsym(cuda_handle, "cuTexRefGetFormat");
 
 CUresult (*lcuTexRefGetMipmapFilterMode) (CUfilter_mode * pfm, CUtexref  hTexRef) =
 	(CUresult (*) (CUfilter_mode * pfm, CUtexref  hTexRef)) dlsym(cuda_handle, "cuTexRefGetMipmapFilterMode");
@@ -1926,6 +1935,9 @@ cudnnStatus_t (*lcudnnGetStream) (cudnnHandle_t  handle, cudaStream_t * streamId
 cudnnStatus_t (*lcudnnCreateTensorDescriptor) (cudnnTensorDescriptor_t * tensorDesc) =
 	(cudnnStatus_t (*) (cudnnTensorDescriptor_t * tensorDesc)) dlsym(cudnn_handle, "cudnnCreateTensorDescriptor");
 
+cudnnStatus_t (*lcudnnSetTensor4dDescriptor) (cudnnTensorDescriptor_t  tensorDesc, cudnnTensorFormat_t  format, cudnnDataType_t  dataType, int  n, int  c, int  h, int  w) =
+	(cudnnStatus_t (*) (cudnnTensorDescriptor_t  tensorDesc, cudnnTensorFormat_t  format, cudnnDataType_t  dataType, int  n, int  c, int  h, int  w)) dlsym(cudnn_handle, "cudnnSetTensor4dDescriptor");
+
 cudnnStatus_t (*lcudnnSetTensor4dDescriptorEx) (cudnnTensorDescriptor_t  tensorDesc, cudnnDataType_t  dataType, int  n, int  c, int  h, int  w, int  nStride, int  cStride, int  hStride, int  wStride) =
 	(cudnnStatus_t (*) (cudnnTensorDescriptor_t  tensorDesc, cudnnDataType_t  dataType, int  n, int  c, int  h, int  w, int  nStride, int  cStride, int  hStride, int  wStride)) dlsym(cudnn_handle, "cudnnSetTensor4dDescriptorEx");
 
@@ -1935,6 +1947,9 @@ cudnnStatus_t (*lcudnnGetTensor4dDescriptor) (const cudnnTensorDescriptor_t  ten
 cudnnStatus_t (*lcudnnSetTensorNdDescriptor) (cudnnTensorDescriptor_t  tensorDesc, cudnnDataType_t  dataType, int  nbDims, const int  dimA[], const int  strideA[]) =
 	(cudnnStatus_t (*) (cudnnTensorDescriptor_t  tensorDesc, cudnnDataType_t  dataType, int  nbDims, const int  dimA[], const int  strideA[])) dlsym(cudnn_handle, "cudnnSetTensorNdDescriptor");
 
+cudnnStatus_t (*lcudnnSetTensorNdDescriptorEx) (cudnnTensorDescriptor_t  tensorDesc, cudnnTensorFormat_t  format, cudnnDataType_t  dataType, int  nbDims, const int  dimA[]) =
+	(cudnnStatus_t (*) (cudnnTensorDescriptor_t  tensorDesc, cudnnTensorFormat_t  format, cudnnDataType_t  dataType, int  nbDims, const int  dimA[])) dlsym(cudnn_handle, "cudnnSetTensorNdDescriptorEx");
+
 cudnnStatus_t (*lcudnnGetTensorNdDescriptor) (const cudnnTensorDescriptor_t  tensorDesc, int  nbDimsRequested, cudnnDataType_t * dataType, int * nbDims, int  dimA[], int  strideA[]) =
 	(cudnnStatus_t (*) (const cudnnTensorDescriptor_t  tensorDesc, int  nbDimsRequested, cudnnDataType_t * dataType, int * nbDims, int  dimA[], int  strideA[])) dlsym(cudnn_handle, "cudnnGetTensorNdDescriptor");
 
@@ -1943,6 +1958,27 @@ cudnnStatus_t (*lcudnnGetTensorSizeInBytes) (const cudnnTensorDescriptor_t  tens
 
 cudnnStatus_t (*lcudnnDestroyTensorDescriptor) (cudnnTensorDescriptor_t  tensorDesc) =
 	(cudnnStatus_t (*) (cudnnTensorDescriptor_t  tensorDesc)) dlsym(cudnn_handle, "cudnnDestroyTensorDescriptor");
+
+cudnnStatus_t (*lcudnnInitTransformDest) (const cudnnTensorTransformDescriptor_t  transformDesc, const cudnnTensorDescriptor_t  srcDesc, cudnnTensorDescriptor_t  destDesc, size_t * destSizeInBytes) =
+	(cudnnStatus_t (*) (const cudnnTensorTransformDescriptor_t  transformDesc, const cudnnTensorDescriptor_t  srcDesc, cudnnTensorDescriptor_t  destDesc, size_t * destSizeInBytes)) dlsym(cudnn_handle, "cudnnInitTransformDest");
+
+cudnnStatus_t (*lcudnnCreateTensorTransformDescriptor) (cudnnTensorTransformDescriptor_t * transformDesc) =
+	(cudnnStatus_t (*) (cudnnTensorTransformDescriptor_t * transformDesc)) dlsym(cudnn_handle, "cudnnCreateTensorTransformDescriptor");
+
+cudnnStatus_t (*lcudnnSetTensorTransformDescriptor) (cudnnTensorTransformDescriptor_t  transformDesc, const uint32_t  nbDims, const cudnnTensorFormat_t  destFormat, const int32_t  padBeforeA[], const int32_t  padAfterA[], const uint32_t  foldA[], const cudnnFoldingDirection_t  direction) =
+	(cudnnStatus_t (*) (cudnnTensorTransformDescriptor_t  transformDesc, const uint32_t  nbDims, const cudnnTensorFormat_t  destFormat, const int32_t  padBeforeA[], const int32_t  padAfterA[], const uint32_t  foldA[], const cudnnFoldingDirection_t  direction)) dlsym(cudnn_handle, "cudnnSetTensorTransformDescriptor");
+
+cudnnStatus_t (*lcudnnGetTensorTransformDescriptor) (cudnnTensorTransformDescriptor_t  transformDesc, uint32_t  nbDimsRequested, cudnnTensorFormat_t * destFormat, int32_t  padBeforeA[], int32_t  padAfterA[], uint32_t  foldA[], cudnnFoldingDirection_t * direction) =
+	(cudnnStatus_t (*) (cudnnTensorTransformDescriptor_t  transformDesc, uint32_t  nbDimsRequested, cudnnTensorFormat_t * destFormat, int32_t  padBeforeA[], int32_t  padAfterA[], uint32_t  foldA[], cudnnFoldingDirection_t * direction)) dlsym(cudnn_handle, "cudnnGetTensorTransformDescriptor");
+
+cudnnStatus_t (*lcudnnDestroyTensorTransformDescriptor) (cudnnTensorTransformDescriptor_t  transformDesc) =
+	(cudnnStatus_t (*) (cudnnTensorTransformDescriptor_t  transformDesc)) dlsym(cudnn_handle, "cudnnDestroyTensorTransformDescriptor");
+
+cudnnStatus_t (*lcudnnTransformTensor) (cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)) dlsym(cudnn_handle, "cudnnTransformTensor");
+
+cudnnStatus_t (*lcudnnTransformTensorEx) (cudnnHandle_t  handle, const cudnnTensorTransformDescriptor_t  transDesc, const void * alpha, const cudnnTensorDescriptor_t  srcDesc, const void * srcData, const void * beta, const cudnnTensorDescriptor_t  destDesc, void * destData) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnTensorTransformDescriptor_t  transDesc, const void * alpha, const cudnnTensorDescriptor_t  srcDesc, const void * srcData, const void * beta, const cudnnTensorDescriptor_t  destDesc, void * destData)) dlsym(cudnn_handle, "cudnnTransformTensorEx");
 
 cudnnStatus_t (*lcudnnAddTensor) (cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  aDesc, const void * A, const void * beta, const cudnnTensorDescriptor_t  cDesc, void * C) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  aDesc, const void * A, const void * beta, const cudnnTensorDescriptor_t  cDesc, void * C)) dlsym(cudnn_handle, "cudnnAddTensor");
@@ -1992,8 +2028,23 @@ cudnnStatus_t (*lcudnnScaleTensor) (cudnnHandle_t  handle, const cudnnTensorDesc
 cudnnStatus_t (*lcudnnCreateFilterDescriptor) (cudnnFilterDescriptor_t * filterDesc) =
 	(cudnnStatus_t (*) (cudnnFilterDescriptor_t * filterDesc)) dlsym(cudnn_handle, "cudnnCreateFilterDescriptor");
 
+cudnnStatus_t (*lcudnnSetFilter4dDescriptor) (cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  k, int  c, int  h, int  w) =
+	(cudnnStatus_t (*) (cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  k, int  c, int  h, int  w)) dlsym(cudnn_handle, "cudnnSetFilter4dDescriptor");
+
+cudnnStatus_t (*lcudnnGetFilter4dDescriptor) (const cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * k, int * c, int * h, int * w) =
+	(cudnnStatus_t (*) (const cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * k, int * c, int * h, int * w)) dlsym(cudnn_handle, "cudnnGetFilter4dDescriptor");
+
+cudnnStatus_t (*lcudnnSetFilterNdDescriptor) (cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  nbDims, const int  filterDimA[]) =
+	(cudnnStatus_t (*) (cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  nbDims, const int  filterDimA[])) dlsym(cudnn_handle, "cudnnSetFilterNdDescriptor");
+
+cudnnStatus_t (*lcudnnGetFilterNdDescriptor) (const cudnnFilterDescriptor_t  filterDesc, int  nbDimsRequested, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * nbDims, int  filterDimA[]) =
+	(cudnnStatus_t (*) (const cudnnFilterDescriptor_t  filterDesc, int  nbDimsRequested, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * nbDims, int  filterDimA[])) dlsym(cudnn_handle, "cudnnGetFilterNdDescriptor");
+
 cudnnStatus_t (*lcudnnGetFilterSizeInBytes) (const cudnnFilterDescriptor_t  filterDesc, size_t * size) =
 	(cudnnStatus_t (*) (const cudnnFilterDescriptor_t  filterDesc, size_t * size)) dlsym(cudnn_handle, "cudnnGetFilterSizeInBytes");
+
+cudnnStatus_t (*lcudnnTransformFilter) (cudnnHandle_t  handle, const cudnnTensorTransformDescriptor_t  transDesc, const void * alpha, const cudnnFilterDescriptor_t  srcDesc, const void * srcData, const void * beta, const cudnnFilterDescriptor_t  destDesc, void * destData) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnTensorTransformDescriptor_t  transDesc, const void * alpha, const cudnnFilterDescriptor_t  srcDesc, const void * srcData, const void * beta, const cudnnFilterDescriptor_t  destDesc, void * destData)) dlsym(cudnn_handle, "cudnnTransformFilter");
 
 cudnnStatus_t (*lcudnnDestroyFilterDescriptor) (cudnnFilterDescriptor_t  filterDesc) =
 	(cudnnStatus_t (*) (cudnnFilterDescriptor_t  filterDesc)) dlsym(cudnn_handle, "cudnnDestroyFilterDescriptor");
@@ -2079,6 +2130,21 @@ cudnnStatus_t (*lcudnnDeriveNormTensorDescriptor) (cudnnTensorDescriptor_t  deri
 cudnnStatus_t (*lcudnnNormalizationForwardInference) (cudnnHandle_t  handle, cudnnNormMode_t  mode, cudnnNormOps_t  normOps, cudnnNormAlgo_t  algo, const void * alpha, const void * beta, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  normScaleBiasDesc, const void * normScale, const void * normBias, const cudnnTensorDescriptor_t  normMeanVarDesc, const void * estimatedMean, const void * estimatedVariance, const cudnnTensorDescriptor_t  zDesc, const void * z, cudnnActivationDescriptor_t  activationDesc, const cudnnTensorDescriptor_t  yDesc, void * y, double  epsilon, int  groupCnt) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, cudnnNormMode_t  mode, cudnnNormOps_t  normOps, cudnnNormAlgo_t  algo, const void * alpha, const void * beta, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  normScaleBiasDesc, const void * normScale, const void * normBias, const cudnnTensorDescriptor_t  normMeanVarDesc, const void * estimatedMean, const void * estimatedVariance, const cudnnTensorDescriptor_t  zDesc, const void * z, cudnnActivationDescriptor_t  activationDesc, const cudnnTensorDescriptor_t  yDesc, void * y, double  epsilon, int  groupCnt)) dlsym(cudnn_handle, "cudnnNormalizationForwardInference");
 
+cudnnStatus_t (*lcudnnCreateSpatialTransformerDescriptor) (cudnnSpatialTransformerDescriptor_t * stDesc) =
+	(cudnnStatus_t (*) (cudnnSpatialTransformerDescriptor_t * stDesc)) dlsym(cudnn_handle, "cudnnCreateSpatialTransformerDescriptor");
+
+cudnnStatus_t (*lcudnnSetSpatialTransformerNdDescriptor) (cudnnSpatialTransformerDescriptor_t  stDesc, cudnnSamplerType_t  samplerType, cudnnDataType_t  dataType, const int  nbDims, const int  dimA[]) =
+	(cudnnStatus_t (*) (cudnnSpatialTransformerDescriptor_t  stDesc, cudnnSamplerType_t  samplerType, cudnnDataType_t  dataType, const int  nbDims, const int  dimA[])) dlsym(cudnn_handle, "cudnnSetSpatialTransformerNdDescriptor");
+
+cudnnStatus_t (*lcudnnDestroySpatialTransformerDescriptor) (cudnnSpatialTransformerDescriptor_t  stDesc) =
+	(cudnnStatus_t (*) (cudnnSpatialTransformerDescriptor_t  stDesc)) dlsym(cudnn_handle, "cudnnDestroySpatialTransformerDescriptor");
+
+cudnnStatus_t (*lcudnnSpatialTfGridGeneratorForward) (cudnnHandle_t  handle, const cudnnSpatialTransformerDescriptor_t  stDesc, const void * theta, void * grid) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnSpatialTransformerDescriptor_t  stDesc, const void * theta, void * grid)) dlsym(cudnn_handle, "cudnnSpatialTfGridGeneratorForward");
+
+cudnnStatus_t (*lcudnnSpatialTfSamplerForward) (cudnnHandle_t  handle, cudnnSpatialTransformerDescriptor_t  stDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * grid, const void * beta, cudnnTensorDescriptor_t  yDesc, void * y) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, cudnnSpatialTransformerDescriptor_t  stDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * grid, const void * beta, cudnnTensorDescriptor_t  yDesc, void * y)) dlsym(cudnn_handle, "cudnnSpatialTfSamplerForward");
+
 cudnnStatus_t (*lcudnnCreateDropoutDescriptor) (cudnnDropoutDescriptor_t * dropoutDesc) =
 	(cudnnStatus_t (*) (cudnnDropoutDescriptor_t * dropoutDesc)) dlsym(cudnn_handle, "cudnnCreateDropoutDescriptor");
 
@@ -2117,6 +2183,18 @@ cudnnStatus_t (*lcudnnCopyAlgorithmDescriptor) (const cudnnAlgorithmDescriptor_t
 
 cudnnStatus_t (*lcudnnDestroyAlgorithmDescriptor) (cudnnAlgorithmDescriptor_t  algoDesc) =
 	(cudnnStatus_t (*) (cudnnAlgorithmDescriptor_t  algoDesc)) dlsym(cudnn_handle, "cudnnDestroyAlgorithmDescriptor");
+
+cudnnStatus_t (*lcudnnCreateAlgorithmPerformance) (cudnnAlgorithmPerformance_t * algoPerf, int  numberToCreate) =
+	(cudnnStatus_t (*) (cudnnAlgorithmPerformance_t * algoPerf, int  numberToCreate)) dlsym(cudnn_handle, "cudnnCreateAlgorithmPerformance");
+
+cudnnStatus_t (*lcudnnSetAlgorithmPerformance) (cudnnAlgorithmPerformance_t  algoPerf, cudnnAlgorithmDescriptor_t  algoDesc, cudnnStatus_t  status, float  time, size_t  memory) =
+	(cudnnStatus_t (*) (cudnnAlgorithmPerformance_t  algoPerf, cudnnAlgorithmDescriptor_t  algoDesc, cudnnStatus_t  status, float  time, size_t  memory)) dlsym(cudnn_handle, "cudnnSetAlgorithmPerformance");
+
+cudnnStatus_t (*lcudnnGetAlgorithmPerformance) (const cudnnAlgorithmPerformance_t  algoPerf, cudnnAlgorithmDescriptor_t * algoDesc, cudnnStatus_t * status, float * time, size_t * memory) =
+	(cudnnStatus_t (*) (const cudnnAlgorithmPerformance_t  algoPerf, cudnnAlgorithmDescriptor_t * algoDesc, cudnnStatus_t * status, float * time, size_t * memory)) dlsym(cudnn_handle, "cudnnGetAlgorithmPerformance");
+
+cudnnStatus_t (*lcudnnDestroyAlgorithmPerformance) (cudnnAlgorithmPerformance_t * algoPerf, int  numberToDestroy) =
+	(cudnnStatus_t (*) (cudnnAlgorithmPerformance_t * algoPerf, int  numberToDestroy)) dlsym(cudnn_handle, "cudnnDestroyAlgorithmPerformance");
 
 cudnnStatus_t (*lcudnnGetAlgorithmSpaceSize) (cudnnHandle_t  handle, cudnnAlgorithmDescriptor_t  algoDesc, size_t * algoSpaceSizeInBytes) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, cudnnAlgorithmDescriptor_t  algoDesc, size_t * algoSpaceSizeInBytes)) dlsym(cudnn_handle, "cudnnGetAlgorithmSpaceSize");
@@ -2186,6 +2264,12 @@ cudnnStatus_t (*lcudnnNormalizationForwardTraining) (cudnnHandle_t  handle, cudn
 
 cudnnStatus_t (*lcudnnNormalizationBackward) (cudnnHandle_t  handle, cudnnNormMode_t  mode, cudnnNormOps_t  normOps, cudnnNormAlgo_t  algo, const void * alphaDataDiff, const void * betaDataDiff, const void * alphaParamDiff, const void * betaParamDiff, const cudnnTensorDescriptor_t  xDesc, const void * xData, const cudnnTensorDescriptor_t  yDesc, const void * yData, const cudnnTensorDescriptor_t  dyDesc, const void * dyData, const cudnnTensorDescriptor_t  dzDesc, void * dzData, const cudnnTensorDescriptor_t  dxDesc, void * dxData, const cudnnTensorDescriptor_t  dNormScaleBiasDesc, const void * normScaleData, const void * normBiasData, void * dNormScaleData, void * dNormBiasData, double  epsilon, const cudnnTensorDescriptor_t  normMeanVarDesc, const void * savedMean, const void * savedInvVariance, cudnnActivationDescriptor_t  activationDesc, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes, int  groupCnt) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, cudnnNormMode_t  mode, cudnnNormOps_t  normOps, cudnnNormAlgo_t  algo, const void * alphaDataDiff, const void * betaDataDiff, const void * alphaParamDiff, const void * betaParamDiff, const cudnnTensorDescriptor_t  xDesc, const void * xData, const cudnnTensorDescriptor_t  yDesc, const void * yData, const cudnnTensorDescriptor_t  dyDesc, const void * dyData, const cudnnTensorDescriptor_t  dzDesc, void * dzData, const cudnnTensorDescriptor_t  dxDesc, void * dxData, const cudnnTensorDescriptor_t  dNormScaleBiasDesc, const void * normScaleData, const void * normBiasData, void * dNormScaleData, void * dNormBiasData, double  epsilon, const cudnnTensorDescriptor_t  normMeanVarDesc, const void * savedMean, const void * savedInvVariance, cudnnActivationDescriptor_t  activationDesc, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes, int  groupCnt)) dlsym(cudnn_handle, "cudnnNormalizationBackward");
+
+cudnnStatus_t (*lcudnnSpatialTfGridGeneratorBackward) (cudnnHandle_t  handle, const cudnnSpatialTransformerDescriptor_t  stDesc, const void * dgrid, void * dtheta) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnSpatialTransformerDescriptor_t  stDesc, const void * dgrid, void * dtheta)) dlsym(cudnn_handle, "cudnnSpatialTfGridGeneratorBackward");
+
+cudnnStatus_t (*lcudnnSpatialTfSamplerBackward) (cudnnHandle_t  handle, cudnnSpatialTransformerDescriptor_t  stDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx, const void * alphaDgrid, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * grid, const void * betaDgrid, void * dgrid) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, cudnnSpatialTransformerDescriptor_t  stDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx, const void * alphaDgrid, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * grid, const void * betaDgrid, void * dgrid)) dlsym(cudnn_handle, "cudnnSpatialTfSamplerBackward");
 
 cudnnStatus_t (*lcudnnDropoutBackward) (cudnnHandle_t  handle, const cudnnDropoutDescriptor_t  dropoutDesc, const cudnnTensorDescriptor_t  dydesc, const void * dy, const cudnnTensorDescriptor_t  dxdesc, void * dx, void * reserveSpace, size_t  reserveSpaceSizeInBytes) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnDropoutDescriptor_t  dropoutDesc, const cudnnTensorDescriptor_t  dydesc, const void * dy, const cudnnTensorDescriptor_t  dxdesc, void * dx, void * reserveSpace, size_t  reserveSpaceSizeInBytes)) dlsym(cudnn_handle, "cudnnDropoutBackward");
@@ -2310,6 +2394,9 @@ cudnnStatus_t (*lcudnnSetRNNAlgorithmDescriptor) (cudnnHandle_t  handle, cudnnRN
 cudnnStatus_t (*lcudnnGetRNNForwardInferenceAlgorithmMaxCount) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)) dlsym(cudnn_handle, "cudnnGetRNNForwardInferenceAlgorithmMaxCount");
 
+cudnnStatus_t (*lcudnnFindRNNForwardInferenceAlgorithmEx) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes)) dlsym(cudnn_handle, "cudnnFindRNNForwardInferenceAlgorithmEx");
+
 cudnnStatus_t (*lcudnnCreateSeqDataDescriptor) (cudnnSeqDataDescriptor_t * seqDataDesc) =
 	(cudnnStatus_t (*) (cudnnSeqDataDescriptor_t * seqDataDesc)) dlsym(cudnn_handle, "cudnnCreateSeqDataDescriptor");
 
@@ -2373,11 +2460,20 @@ cudnnStatus_t (*lcudnnRNNBackwardWeightsEx) (cudnnHandle_t  handle, const cudnnR
 cudnnStatus_t (*lcudnnGetRNNForwardTrainingAlgorithmMaxCount) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)) dlsym(cudnn_handle, "cudnnGetRNNForwardTrainingAlgorithmMaxCount");
 
+cudnnStatus_t (*lcudnnFindRNNForwardTrainingAlgorithmEx) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)) dlsym(cudnn_handle, "cudnnFindRNNForwardTrainingAlgorithmEx");
+
 cudnnStatus_t (*lcudnnGetRNNBackwardDataAlgorithmMaxCount) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)) dlsym(cudnn_handle, "cudnnGetRNNBackwardDataAlgorithmMaxCount");
 
+cudnnStatus_t (*lcudnnFindRNNBackwardDataAlgorithmEx) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * yDesc, const void * y, const cudnnTensorDescriptor_t * dyDesc, const void * dy, const cudnnTensorDescriptor_t  dhyDesc, const void * dhy, const cudnnTensorDescriptor_t  dcyDesc, const void * dcy, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnTensorDescriptor_t * dxDesc, void * dx, const cudnnTensorDescriptor_t  dhxDesc, void * dhx, const cudnnTensorDescriptor_t  dcxDesc, void * dcx, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * yDesc, const void * y, const cudnnTensorDescriptor_t * dyDesc, const void * dy, const cudnnTensorDescriptor_t  dhyDesc, const void * dhy, const cudnnTensorDescriptor_t  dcyDesc, const void * dcy, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnTensorDescriptor_t * dxDesc, void * dx, const cudnnTensorDescriptor_t  dhxDesc, void * dhx, const cudnnTensorDescriptor_t  dcxDesc, void * dcx, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)) dlsym(cudnn_handle, "cudnnFindRNNBackwardDataAlgorithmEx");
+
 cudnnStatus_t (*lcudnnGetRNNBackwardWeightsAlgorithmMaxCount) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)) dlsym(cudnn_handle, "cudnnGetRNNBackwardWeightsAlgorithmMaxCount");
+
+cudnnStatus_t (*lcudnnFindRNNBackwardWeightsAlgorithmEx) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t * yDesc, const void * y, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, const void * workspace, size_t  workSpaceSizeInBytes, const cudnnFilterDescriptor_t  dwDesc, void * dw, const void * reserveSpace, size_t  reserveSpaceSizeInBytes) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t * yDesc, const void * y, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, const void * workspace, size_t  workSpaceSizeInBytes, const cudnnFilterDescriptor_t  dwDesc, void * dw, const void * reserveSpace, size_t  reserveSpaceSizeInBytes)) dlsym(cudnn_handle, "cudnnFindRNNBackwardWeightsAlgorithmEx");
 
 cudnnStatus_t (*lcudnnMultiHeadAttnBackwardData) (cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsDQDO[], const int  devSeqLengthsDKDV[], const cudnnSeqDataDescriptor_t  doDesc, const void * dout, const cudnnSeqDataDescriptor_t  dqDesc, void * dqueries, const void * queries, const cudnnSeqDataDescriptor_t  dkDesc, void * dkeys, const void * keys, const cudnnSeqDataDescriptor_t  dvDesc, void * dvalues, const void * values, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsDQDO[], const int  devSeqLengthsDKDV[], const cudnnSeqDataDescriptor_t  doDesc, const void * dout, const cudnnSeqDataDescriptor_t  dqDesc, void * dqueries, const void * queries, const cudnnSeqDataDescriptor_t  dkDesc, void * dkeys, const void * keys, const cudnnSeqDataDescriptor_t  dvDesc, void * dvalues, const void * values, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)) dlsym(cudnn_handle, "cudnnMultiHeadAttnBackwardData");
@@ -2469,6 +2565,15 @@ cudnnStatus_t (*lcudnnGetConvolutionNdForwardOutputDim) (const cudnnConvolutionD
 cudnnStatus_t (*lcudnnGetConvolutionForwardAlgorithmMaxCount) (cudnnHandle_t  handle, int * count) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, int * count)) dlsym(cudnn_handle, "cudnnGetConvolutionForwardAlgorithmMaxCount");
 
+cudnnStatus_t (*lcudnnGetConvolutionForwardAlgorithm_v7) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnFilterDescriptor_t  filterDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  destDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnFilterDescriptor_t  filterDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  destDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults)) dlsym(cudnn_handle, "cudnnGetConvolutionForwardAlgorithm_v7");
+
+cudnnStatus_t (*lcudnnFindConvolutionForwardAlgorithm) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults)) dlsym(cudnn_handle, "cudnnFindConvolutionForwardAlgorithm");
+
+cudnnStatus_t (*lcudnnFindConvolutionForwardAlgorithmEx) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, void * y, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, void * y, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)) dlsym(cudnn_handle, "cudnnFindConvolutionForwardAlgorithmEx");
+
 cudnnStatus_t (*lcudnnIm2Col) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, void * colBuffer) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, void * colBuffer)) dlsym(cudnn_handle, "cudnnIm2Col");
 
@@ -2487,17 +2592,38 @@ cudnnStatus_t (*lcudnnConvolutionBiasActivationForward) (cudnnHandle_t  handle, 
 cudnnStatus_t (*lcudnnGetConvolutionBackwardDataAlgorithmMaxCount) (cudnnHandle_t  handle, int * count) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, int * count)) dlsym(cudnn_handle, "cudnnGetConvolutionBackwardDataAlgorithmMaxCount");
 
+cudnnStatus_t (*lcudnnFindConvolutionBackwardDataAlgorithm) (cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults)) dlsym(cudnn_handle, "cudnnFindConvolutionBackwardDataAlgorithm");
+
+cudnnStatus_t (*lcudnnFindConvolutionBackwardDataAlgorithmEx) (cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, void * dx, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, void * dx, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)) dlsym(cudnn_handle, "cudnnFindConvolutionBackwardDataAlgorithmEx");
+
+cudnnStatus_t (*lcudnnGetConvolutionBackwardDataAlgorithm_v7) (cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  gradDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  gradDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults)) dlsym(cudnn_handle, "cudnnGetConvolutionBackwardDataAlgorithm_v7");
+
 cudnnStatus_t (*lcudnnGetConvolutionBackwardDataWorkspaceSize) (cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, cudnnConvolutionBwdDataAlgo_t  algo, size_t * sizeInBytes) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, cudnnConvolutionBwdDataAlgo_t  algo, size_t * sizeInBytes)) dlsym(cudnn_handle, "cudnnGetConvolutionBackwardDataWorkspaceSize");
 
 cudnnStatus_t (*lcudnnConvolutionBackwardData) (cudnnHandle_t  handle, const void * alpha, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnConvolutionDescriptor_t  convDesc, cudnnConvolutionBwdDataAlgo_t  algo, void * workSpace, size_t  workSpaceSizeInBytes, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const void * alpha, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnConvolutionDescriptor_t  convDesc, cudnnConvolutionBwdDataAlgo_t  algo, void * workSpace, size_t  workSpaceSizeInBytes, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)) dlsym(cudnn_handle, "cudnnConvolutionBackwardData");
 
+cudnnStatus_t (*lcudnnGetFoldedConvBackwardDataDescriptors) (const cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  gradDesc, const cudnnTensorFormat_t  transformFormat, cudnnFilterDescriptor_t  foldedFilterDesc, cudnnTensorDescriptor_t  paddedDiffDesc, cudnnConvolutionDescriptor_t  foldedConvDesc, cudnnTensorDescriptor_t  foldedGradDesc, cudnnTensorTransformDescriptor_t  filterFoldTransDesc, cudnnTensorTransformDescriptor_t  diffPadTransDesc, cudnnTensorTransformDescriptor_t  gradFoldTransDesc, cudnnTensorTransformDescriptor_t  gradUnfoldTransDesc) =
+	(cudnnStatus_t (*) (const cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  gradDesc, const cudnnTensorFormat_t  transformFormat, cudnnFilterDescriptor_t  foldedFilterDesc, cudnnTensorDescriptor_t  paddedDiffDesc, cudnnConvolutionDescriptor_t  foldedConvDesc, cudnnTensorDescriptor_t  foldedGradDesc, cudnnTensorTransformDescriptor_t  filterFoldTransDesc, cudnnTensorTransformDescriptor_t  diffPadTransDesc, cudnnTensorTransformDescriptor_t  gradFoldTransDesc, cudnnTensorTransformDescriptor_t  gradUnfoldTransDesc)) dlsym(cudnn_handle, "cudnnGetFoldedConvBackwardDataDescriptors");
+
 cudnnStatus_t (*lcudnnCnnInferVersionCheck) () =
 	(cudnnStatus_t (*) ()) dlsym(cudnn_handle, "cudnnCnnInferVersionCheck");
 
 cudnnStatus_t (*lcudnnGetConvolutionBackwardFilterAlgorithmMaxCount) (cudnnHandle_t  handle, int * count) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, int * count)) dlsym(cudnn_handle, "cudnnGetConvolutionBackwardFilterAlgorithmMaxCount");
+
+cudnnStatus_t (*lcudnnFindConvolutionBackwardFilterAlgorithm) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  dwDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  dwDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults)) dlsym(cudnn_handle, "cudnnFindConvolutionBackwardFilterAlgorithm");
+
+cudnnStatus_t (*lcudnnFindConvolutionBackwardFilterAlgorithmEx) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  dyDesc, const void * y, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  dwDesc, void * dw, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  dyDesc, const void * y, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  dwDesc, void * dw, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)) dlsym(cudnn_handle, "cudnnFindConvolutionBackwardFilterAlgorithmEx");
+
+cudnnStatus_t (*lcudnnGetConvolutionBackwardFilterAlgorithm_v7) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  gradDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  gradDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults)) dlsym(cudnn_handle, "cudnnGetConvolutionBackwardFilterAlgorithm_v7");
 
 cudnnStatus_t (*lcudnnGetConvolutionBackwardFilterWorkspaceSize) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  gradDesc, cudnnConvolutionBwdFilterAlgo_t  algo, size_t * sizeInBytes) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  gradDesc, cudnnConvolutionBwdFilterAlgo_t  algo, size_t * sizeInBytes)) dlsym(cudnn_handle, "cudnnGetConvolutionBackwardFilterWorkspaceSize");
@@ -3435,6 +3561,9 @@ cublasStatus_t (*lcublasLtGetProperty) (libraryPropertyType  type, int*  value) 
 cublasStatus_t (*lcublasLtMatmul) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream) =
 	(cublasStatus_t (*) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)) dlsym(RTLD_NEXT, "cublasLtMatmul");
 
+cublasStatus_t (*lcublasLtMatrixTransform) (cublasLtHandle_t  lightHandle, cublasLtMatrixTransformDesc_t  transformDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  beta, const void*  B, cublasLtMatrixLayout_t  Bdesc, void*  C, cublasLtMatrixLayout_t  Cdesc, cudaStream_t  stream) =
+	(cublasStatus_t (*) (cublasLtHandle_t  lightHandle, cublasLtMatrixTransformDesc_t  transformDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  beta, const void*  B, cublasLtMatrixLayout_t  Bdesc, void*  C, cublasLtMatrixLayout_t  Cdesc, cudaStream_t  stream)) dlsym(RTLD_NEXT, "cublasLtMatrixTransform");
+
 cublasStatus_t (*lcublasLtMatrixLayoutInit_internal) (cublasLtMatrixLayout_t  matLayout, size_t  size, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld) =
 	(cublasStatus_t (*) (cublasLtMatrixLayout_t  matLayout, size_t  size, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)) dlsym(RTLD_NEXT, "cublasLtMatrixLayoutInit_internal");
 
@@ -3465,6 +3594,21 @@ cublasStatus_t (*lcublasLtMatmulDescSetAttribute) (cublasLtMatmulDesc_t  matmulD
 cublasStatus_t (*lcublasLtMatmulDescGetAttribute) (cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten) =
 	(cublasStatus_t (*) (cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)) dlsym(RTLD_NEXT, "cublasLtMatmulDescGetAttribute");
 
+cublasStatus_t (*lcublasLtMatrixTransformDescInit_internal) (cublasLtMatrixTransformDesc_t  transformDesc, size_t  size, cudaDataType  scaleType) =
+	(cublasStatus_t (*) (cublasLtMatrixTransformDesc_t  transformDesc, size_t  size, cudaDataType  scaleType)) dlsym(RTLD_NEXT, "cublasLtMatrixTransformDescInit_internal");
+
+cublasStatus_t (*lcublasLtMatrixTransformDescCreate) (cublasLtMatrixTransformDesc_t*  transformDesc, cudaDataType  scaleType) =
+	(cublasStatus_t (*) (cublasLtMatrixTransformDesc_t*  transformDesc, cudaDataType  scaleType)) dlsym(RTLD_NEXT, "cublasLtMatrixTransformDescCreate");
+
+cublasStatus_t (*lcublasLtMatrixTransformDescDestroy) (cublasLtMatrixTransformDesc_t  transformDesc) =
+	(cublasStatus_t (*) (cublasLtMatrixTransformDesc_t  transformDesc)) dlsym(RTLD_NEXT, "cublasLtMatrixTransformDescDestroy");
+
+cublasStatus_t (*lcublasLtMatrixTransformDescSetAttribute) (cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes) =
+	(cublasStatus_t (*) (cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)) dlsym(RTLD_NEXT, "cublasLtMatrixTransformDescSetAttribute");
+
+cublasStatus_t (*lcublasLtMatrixTransformDescGetAttribute) (cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten) =
+	(cublasStatus_t (*) (cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)) dlsym(RTLD_NEXT, "cublasLtMatrixTransformDescGetAttribute");
+
 cublasStatus_t (*lcublasLtMatmulPreferenceInit_internal) (cublasLtMatmulPreference_t  pref, size_t  size) =
 	(cublasStatus_t (*) (cublasLtMatmulPreference_t  pref, size_t  size)) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceInit_internal");
 
@@ -3479,6 +3623,12 @@ cublasStatus_t (*lcublasLtMatmulPreferenceSetAttribute) (cublasLtMatmulPreferenc
 
 cublasStatus_t (*lcublasLtMatmulPreferenceGetAttribute) (cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten) =
 	(cublasStatus_t (*) (cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)) dlsym(RTLD_NEXT, "cublasLtMatmulPreferenceGetAttribute");
+
+cublasStatus_t (*lcublasLtMatmulAlgoGetHeuristic) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, cublasLtMatmulPreference_t  preference, int  requestedAlgoCount, cublasLtMatmulHeuristicResult_t  heuristicResultsArray[], int*  returnAlgoCount) =
+	(cublasStatus_t (*) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, cublasLtMatmulPreference_t  preference, int  requestedAlgoCount, cublasLtMatmulHeuristicResult_t  heuristicResultsArray[], int*  returnAlgoCount)) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoGetHeuristic");
+
+cublasStatus_t (*lcublasLtMatmulAlgoGetIds) (cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  requestedAlgoCount, int  algoIdsArray[], int*  returnAlgoCount) =
+	(cublasStatus_t (*) (cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  requestedAlgoCount, int  algoIdsArray[], int*  returnAlgoCount)) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoGetIds");
 
 cublasStatus_t (*lcublasLtMatmulAlgoInit) (cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  algoId, cublasLtMatmulAlgo_t*  algo) =
 	(cublasStatus_t (*) (cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  algoId, cublasLtMatmulAlgo_t*  algo)) dlsym(RTLD_NEXT, "cublasLtMatmulAlgoInit");

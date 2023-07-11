@@ -19,10 +19,15 @@ TallyServer::TallyServer()
 {
     register_api_handler();
 
-    __exit = [&](int) {
+    __exit = [&](int sig_num) {
         is_quit__.store(true, std::memory_order_release);
         if (send_ipc != nullptr) send_ipc->disconnect();
         if (recv_ipc != nullptr) recv_ipc->disconnect();
+
+        if (sig_num == SIGSEGV) {
+            spdlog::info("Tally server received segfault signal.");
+        }
+
         spdlog::info("Tally server shutting down ...");
         exit(0);
     };
@@ -36,8 +41,8 @@ TallyServer::TallyServer()
 
 void TallyServer::start(uint32_t interval) {
 
-    send_ipc = new ipc::channel("server-to-client-110000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-110000", ipc::receiver);
+    send_ipc = new ipc::channel("server-to-client-140000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-140000", ipc::receiver);
 
     load_cache();
 
@@ -102,24 +107,6 @@ void TallyServer::load_cache()
         }
     }
 
-}
-
-void TallyServer::handle_cudaMalloc(void *__args)
-{
-    spdlog::info("Received request: cudaMalloc");
-    auto args = (struct cudaMallocArg *) __args;
-
-    // The client "supposedly" should remember this address
-    // So not book-keeping it at the moment
-    void *devPtr;
-    cudaError_t err = cudaMalloc(&devPtr, args->size);
-
-    std::cout << "devPtr: " << devPtr << std::endl;
-
-    struct cudaMallocResponse res { devPtr, err };
-    while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
-        send_ipc->wait_for_recv(1);
-    }
 }
 
 void TallyServer::handle___cudaRegisterFatBinary(void *__args)
@@ -223,6 +210,24 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
     cudaFree(arr);
 
     spdlog::info("Complete request: __cudaRegisterFatBinaryEnd");
+}
+
+void TallyServer::handle_cudaMalloc(void *__args)
+{
+    spdlog::info("Received request: cudaMalloc");
+    auto args = (struct cudaMallocArg *) __args;
+
+    // The client "supposedly" should remember this address
+    // So not book-keeping it at the moment
+    void *devPtr;
+    cudaError_t err = cudaMalloc(&devPtr, args->size);
+
+    std::cout << "devPtr: " << devPtr << std::endl;
+
+    struct cudaMallocResponse res { devPtr, err };
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaMemcpy(void *__args)
@@ -345,4 +350,129 @@ void TallyServer::handle_cublasSgemm_v2(void *__args)
     while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
         send_ipc->wait_for_recv(1);
     }
+}
+
+void TallyServer::handle_cublasLtMatmul(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmul");
+
+    auto args = (struct cublasLtMatmulArg *) __args;
+
+    spdlog::info("before cublasLtMatmul");
+
+    cublasStatus_t err = cublasLtMatmul(
+		args->lightHandle,
+        args->computeDesc,
+        (void *) &(args->alpha),
+        args->A,
+        args->Adesc,
+        args->B,
+        args->Bdesc,
+        (void *) &(args->beta),
+        args->C,
+        args->Cdesc,
+        args->D,
+        args->Ddesc,
+        &(args->algo),
+        args->workspace,
+        args->workspaceSizeInBytes,
+        args->stream
+    );
+
+    spdlog::info("after cublasLtMatmul");
+	
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cublasLtMatmulDescSetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulDescSetAttribute");
+
+    auto args = (struct cublasLtMatmulDescSetAttributeArg *) __args;
+
+    cublasStatus_t err = cublasLtMatmulDescSetAttribute(
+		args->matmulDesc,
+        args->attr,
+        (void *)args->buf,
+        args->sizeInBytes
+    );
+	
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cublasLtMatrixLayoutSetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixLayoutSetAttribute");
+
+    auto args = (struct cublasLtMatrixLayoutSetAttributeArg *) __args;
+
+    cublasStatus_t err = cublasLtMatrixLayoutSetAttribute(
+		args->matLayout,
+        args->attr,
+        (void *)args->buf,
+        args->sizeInBytes
+    );
+	
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cublasLtMatmulPreferenceSetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulPreferenceSetAttribute");
+
+    auto args = (struct cublasLtMatmulPreferenceSetAttributeArg *) __args;
+
+    cublasStatus_t err = cublasLtMatmulPreferenceSetAttribute(
+		args->pref,
+        args->attr,
+        (void *)args->buf,
+        args->sizeInBytes
+    );
+	
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulAlgoGetHeuristic");
+
+    auto args = (struct cublasLtMatmulAlgoGetHeuristicArg *) __args;
+
+    int requestedAlgoCount = args->requestedAlgoCount;
+    cublasLtMatmulHeuristicResult_t heuristicResultsArray[requestedAlgoCount];
+    int returnAlgoCount;
+
+    cublasStatus_t err = cublasLtMatmulAlgoGetHeuristic(
+		args->lightHandle,
+        args->operationDesc,
+        args->Adesc,
+        args->Bdesc,
+        args->Cdesc,
+        args->Ddesc,
+        args->preference,
+        args->requestedAlgoCount,
+        heuristicResultsArray,
+        &returnAlgoCount
+    );
+
+    uint32_t res_len =  sizeof(cublasLtMatmulAlgoGetHeuristicResponse) + sizeof(cublasLtMatmulHeuristicResult_t) * returnAlgoCount;
+    auto res = (struct cublasLtMatmulAlgoGetHeuristicResponse *) std::malloc(res_len);
+
+    res->returnAlgoCount = returnAlgoCount;
+    res->err = err;
+    memcpy(res->heuristicResultsArray, heuristicResultsArray, sizeof(cublasLtMatmulHeuristicResult_t) * returnAlgoCount);
+
+    while(!send_ipc->send((void *) res, res_len)) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    free(res);
 }

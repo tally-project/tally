@@ -22,6 +22,7 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDEVICEGETUUID_V2] = std::bind(&TallyServer::handle_cuDeviceGetUuid_v2, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDEVICEGETLUID] = std::bind(&TallyServer::handle_cuDeviceGetLuid, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDEVICETOTALMEM_V2] = std::bind(&TallyServer::handle_cuDeviceTotalMem_v2, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDEVICEGETTEXTURE1DLINEARMAXWIDTH] = std::bind(&TallyServer::handle_cuDeviceGetTexture1DLinearMaxWidth, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDEVICEGETATTRIBUTE] = std::bind(&TallyServer::handle_cuDeviceGetAttribute, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDEVICEGETNVSCISYNCATTRIBUTES] = std::bind(&TallyServer::handle_cuDeviceGetNvSciSyncAttributes, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDEVICESETMEMPOOL] = std::bind(&TallyServer::handle_cuDeviceSetMemPool, this, std::placeholders::_1);
@@ -314,6 +315,7 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFSETMIPMAPPEDARRAY] = std::bind(&TallyServer::handle_cuTexRefSetMipmappedArray, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFSETADDRESS_V2] = std::bind(&TallyServer::handle_cuTexRefSetAddress_v2, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFSETADDRESS2D_V3] = std::bind(&TallyServer::handle_cuTexRefSetAddress2D_v3, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFSETFORMAT] = std::bind(&TallyServer::handle_cuTexRefSetFormat, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFSETADDRESSMODE] = std::bind(&TallyServer::handle_cuTexRefSetAddressMode, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFSETFILTERMODE] = std::bind(&TallyServer::handle_cuTexRefSetFilterMode, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFSETMIPMAPFILTERMODE] = std::bind(&TallyServer::handle_cuTexRefSetMipmapFilterMode, this, std::placeholders::_1);
@@ -327,6 +329,7 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFGETMIPMAPPEDARRAY] = std::bind(&TallyServer::handle_cuTexRefGetMipmappedArray, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFGETADDRESSMODE] = std::bind(&TallyServer::handle_cuTexRefGetAddressMode, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFGETFILTERMODE] = std::bind(&TallyServer::handle_cuTexRefGetFilterMode, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFGETFORMAT] = std::bind(&TallyServer::handle_cuTexRefGetFormat, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFGETMIPMAPFILTERMODE] = std::bind(&TallyServer::handle_cuTexRefGetMipmapFilterMode, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFGETMIPMAPLEVELBIAS] = std::bind(&TallyServer::handle_cuTexRefGetMipmapLevelBias, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUTEXREFGETMIPMAPLEVELCLAMP] = std::bind(&TallyServer::handle_cuTexRefGetMipmapLevelClamp, this, std::placeholders::_1);
@@ -650,12 +653,21 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETSTREAM] = std::bind(&TallyServer::handle_cudnnSetStream, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETSTREAM] = std::bind(&TallyServer::handle_cudnnGetStream, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATETENSORDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCreateTensorDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETTENSOR4DDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnSetTensor4dDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETTENSOR4DDESCRIPTOREX] = std::bind(&TallyServer::handle_cudnnSetTensor4dDescriptorEx, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETTENSOR4DDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnGetTensor4dDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETTENSORNDDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnSetTensorNdDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETTENSORNDDESCRIPTOREX] = std::bind(&TallyServer::handle_cudnnSetTensorNdDescriptorEx, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETTENSORNDDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnGetTensorNdDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETTENSORSIZEINBYTES] = std::bind(&TallyServer::handle_cudnnGetTensorSizeInBytes, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDESTROYTENSORDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnDestroyTensorDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNINITTRANSFORMDEST] = std::bind(&TallyServer::handle_cudnnInitTransformDest, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATETENSORTRANSFORMDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCreateTensorTransformDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETTENSORTRANSFORMDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnSetTensorTransformDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETTENSORTRANSFORMDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnGetTensorTransformDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDESTROYTENSORTRANSFORMDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnDestroyTensorTransformDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNTRANSFORMTENSOR] = std::bind(&TallyServer::handle_cudnnTransformTensor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNTRANSFORMTENSOREX] = std::bind(&TallyServer::handle_cudnnTransformTensorEx, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNADDTENSOR] = std::bind(&TallyServer::handle_cudnnAddTensor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATEOPTENSORDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCreateOpTensorDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETOPTENSORDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnSetOpTensorDescriptor, this, std::placeholders::_1);
@@ -672,7 +684,12 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETTENSOR] = std::bind(&TallyServer::handle_cudnnSetTensor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSCALETENSOR] = std::bind(&TallyServer::handle_cudnnScaleTensor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATEFILTERDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCreateFilterDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETFILTER4DDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnSetFilter4dDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETFILTER4DDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnGetFilter4dDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETFILTERNDDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnSetFilterNdDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETFILTERNDDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnGetFilterNdDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETFILTERSIZEINBYTES] = std::bind(&TallyServer::handle_cudnnGetFilterSizeInBytes, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNTRANSFORMFILTER] = std::bind(&TallyServer::handle_cudnnTransformFilter, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDESTROYFILTERDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnDestroyFilterDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSOFTMAXFORWARD] = std::bind(&TallyServer::handle_cudnnSoftmaxForward, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATEPOOLINGDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCreatePoolingDescriptor, this, std::placeholders::_1);
@@ -701,6 +718,11 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNBATCHNORMALIZATIONFORWARDINFERENCE] = std::bind(&TallyServer::handle_cudnnBatchNormalizationForwardInference, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDERIVENORMTENSORDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnDeriveNormTensorDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNNORMALIZATIONFORWARDINFERENCE] = std::bind(&TallyServer::handle_cudnnNormalizationForwardInference, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATESPATIALTRANSFORMERDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCreateSpatialTransformerDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETSPATIALTRANSFORMERNDDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnSetSpatialTransformerNdDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDESTROYSPATIALTRANSFORMERDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnDestroySpatialTransformerDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSPATIALTFGRIDGENERATORFORWARD] = std::bind(&TallyServer::handle_cudnnSpatialTfGridGeneratorForward, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSPATIALTFSAMPLERFORWARD] = std::bind(&TallyServer::handle_cudnnSpatialTfSamplerForward, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATEDROPOUTDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCreateDropoutDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDESTROYDROPOUTDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnDestroyDropoutDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDROPOUTGETSTATESSIZE] = std::bind(&TallyServer::handle_cudnnDropoutGetStatesSize, this, std::placeholders::_1);
@@ -714,6 +736,10 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETALGORITHMDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnGetAlgorithmDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCOPYALGORITHMDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCopyAlgorithmDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDESTROYALGORITHMDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnDestroyAlgorithmDescriptor, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATEALGORITHMPERFORMANCE] = std::bind(&TallyServer::handle_cudnnCreateAlgorithmPerformance, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETALGORITHMPERFORMANCE] = std::bind(&TallyServer::handle_cudnnSetAlgorithmPerformance, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETALGORITHMPERFORMANCE] = std::bind(&TallyServer::handle_cudnnGetAlgorithmPerformance, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDESTROYALGORITHMPERFORMANCE] = std::bind(&TallyServer::handle_cudnnDestroyAlgorithmPerformance, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETALGORITHMSPACESIZE] = std::bind(&TallyServer::handle_cudnnGetAlgorithmSpaceSize, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSAVEALGORITHM] = std::bind(&TallyServer::handle_cudnnSaveAlgorithm, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNRESTOREALGORITHM] = std::bind(&TallyServer::handle_cudnnRestoreAlgorithm, this, std::placeholders::_1);
@@ -737,6 +763,8 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETNORMALIZATIONTRAININGRESERVESPACESIZE] = std::bind(&TallyServer::handle_cudnnGetNormalizationTrainingReserveSpaceSize, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNNORMALIZATIONFORWARDTRAINING] = std::bind(&TallyServer::handle_cudnnNormalizationForwardTraining, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNNORMALIZATIONBACKWARD] = std::bind(&TallyServer::handle_cudnnNormalizationBackward, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSPATIALTFGRIDGENERATORBACKWARD] = std::bind(&TallyServer::handle_cudnnSpatialTfGridGeneratorBackward, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSPATIALTFSAMPLERBACKWARD] = std::bind(&TallyServer::handle_cudnnSpatialTfSamplerBackward, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDROPOUTBACKWARD] = std::bind(&TallyServer::handle_cudnnDropoutBackward, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNOPSTRAINVERSIONCHECK] = std::bind(&TallyServer::handle_cudnnOpsTrainVersionCheck, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATERNNDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCreateRNNDescriptor, this, std::placeholders::_1);
@@ -778,6 +806,7 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNRNNFORWARD] = std::bind(&TallyServer::handle_cudnnRNNForward, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETRNNALGORITHMDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnSetRNNAlgorithmDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETRNNFORWARDINFERENCEALGORITHMMAXCOUNT] = std::bind(&TallyServer::handle_cudnnGetRNNForwardInferenceAlgorithmMaxCount, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNFINDRNNFORWARDINFERENCEALGORITHMEX] = std::bind(&TallyServer::handle_cudnnFindRNNForwardInferenceAlgorithmEx, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATESEQDATADESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCreateSeqDataDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNDESTROYSEQDATADESCRIPTOR] = std::bind(&TallyServer::handle_cudnnDestroySeqDataDescriptor, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNSETSEQDATADESCRIPTOR] = std::bind(&TallyServer::handle_cudnnSetSeqDataDescriptor, this, std::placeholders::_1);
@@ -799,8 +828,11 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNRNNBACKWARDDATAEX] = std::bind(&TallyServer::handle_cudnnRNNBackwardDataEx, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNRNNBACKWARDWEIGHTSEX] = std::bind(&TallyServer::handle_cudnnRNNBackwardWeightsEx, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETRNNFORWARDTRAININGALGORITHMMAXCOUNT] = std::bind(&TallyServer::handle_cudnnGetRNNForwardTrainingAlgorithmMaxCount, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNFINDRNNFORWARDTRAININGALGORITHMEX] = std::bind(&TallyServer::handle_cudnnFindRNNForwardTrainingAlgorithmEx, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETRNNBACKWARDDATAALGORITHMMAXCOUNT] = std::bind(&TallyServer::handle_cudnnGetRNNBackwardDataAlgorithmMaxCount, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNFINDRNNBACKWARDDATAALGORITHMEX] = std::bind(&TallyServer::handle_cudnnFindRNNBackwardDataAlgorithmEx, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETRNNBACKWARDWEIGHTSALGORITHMMAXCOUNT] = std::bind(&TallyServer::handle_cudnnGetRNNBackwardWeightsAlgorithmMaxCount, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNFINDRNNBACKWARDWEIGHTSALGORITHMEX] = std::bind(&TallyServer::handle_cudnnFindRNNBackwardWeightsAlgorithmEx, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNMULTIHEADATTNBACKWARDDATA] = std::bind(&TallyServer::handle_cudnnMultiHeadAttnBackwardData, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNMULTIHEADATTNBACKWARDWEIGHTS] = std::bind(&TallyServer::handle_cudnnMultiHeadAttnBackwardWeights, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCREATECTCLOSSDESCRIPTOR] = std::bind(&TallyServer::handle_cudnnCreateCTCLossDescriptor, this, std::placeholders::_1);
@@ -831,16 +863,26 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTION2DFORWARDOUTPUTDIM] = std::bind(&TallyServer::handle_cudnnGetConvolution2dForwardOutputDim, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTIONNDFORWARDOUTPUTDIM] = std::bind(&TallyServer::handle_cudnnGetConvolutionNdForwardOutputDim, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTIONFORWARDALGORITHMMAXCOUNT] = std::bind(&TallyServer::handle_cudnnGetConvolutionForwardAlgorithmMaxCount, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTIONFORWARDALGORITHM_V7] = std::bind(&TallyServer::handle_cudnnGetConvolutionForwardAlgorithm_v7, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNFINDCONVOLUTIONFORWARDALGORITHM] = std::bind(&TallyServer::handle_cudnnFindConvolutionForwardAlgorithm, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNFINDCONVOLUTIONFORWARDALGORITHMEX] = std::bind(&TallyServer::handle_cudnnFindConvolutionForwardAlgorithmEx, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNIM2COL] = std::bind(&TallyServer::handle_cudnnIm2Col, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNREORDERFILTERANDBIAS] = std::bind(&TallyServer::handle_cudnnReorderFilterAndBias, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTIONFORWARDWORKSPACESIZE] = std::bind(&TallyServer::handle_cudnnGetConvolutionForwardWorkspaceSize, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCONVOLUTIONFORWARD] = std::bind(&TallyServer::handle_cudnnConvolutionForward, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCONVOLUTIONBIASACTIVATIONFORWARD] = std::bind(&TallyServer::handle_cudnnConvolutionBiasActivationForward, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDDATAALGORITHMMAXCOUNT] = std::bind(&TallyServer::handle_cudnnGetConvolutionBackwardDataAlgorithmMaxCount, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNFINDCONVOLUTIONBACKWARDDATAALGORITHM] = std::bind(&TallyServer::handle_cudnnFindConvolutionBackwardDataAlgorithm, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNFINDCONVOLUTIONBACKWARDDATAALGORITHMEX] = std::bind(&TallyServer::handle_cudnnFindConvolutionBackwardDataAlgorithmEx, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDDATAALGORITHM_V7] = std::bind(&TallyServer::handle_cudnnGetConvolutionBackwardDataAlgorithm_v7, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDDATAWORKSPACESIZE] = std::bind(&TallyServer::handle_cudnnGetConvolutionBackwardDataWorkspaceSize, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCONVOLUTIONBACKWARDDATA] = std::bind(&TallyServer::handle_cudnnConvolutionBackwardData, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETFOLDEDCONVBACKWARDDATADESCRIPTORS] = std::bind(&TallyServer::handle_cudnnGetFoldedConvBackwardDataDescriptors, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCNNINFERVERSIONCHECK] = std::bind(&TallyServer::handle_cudnnCnnInferVersionCheck, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDFILTERALGORITHMMAXCOUNT] = std::bind(&TallyServer::handle_cudnnGetConvolutionBackwardFilterAlgorithmMaxCount, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNFINDCONVOLUTIONBACKWARDFILTERALGORITHM] = std::bind(&TallyServer::handle_cudnnFindConvolutionBackwardFilterAlgorithm, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNFINDCONVOLUTIONBACKWARDFILTERALGORITHMEX] = std::bind(&TallyServer::handle_cudnnFindConvolutionBackwardFilterAlgorithmEx, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDFILTERALGORITHM_V7] = std::bind(&TallyServer::handle_cudnnGetConvolutionBackwardFilterAlgorithm_v7, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDFILTERWORKSPACESIZE] = std::bind(&TallyServer::handle_cudnnGetConvolutionBackwardFilterWorkspaceSize, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCONVOLUTIONBACKWARDFILTER] = std::bind(&TallyServer::handle_cudnnConvolutionBackwardFilter, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDNNCONVOLUTIONBACKWARDBIAS] = std::bind(&TallyServer::handle_cudnnConvolutionBackwardBias, this, std::placeholders::_1);
@@ -1153,6 +1195,7 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTGETCUDARTVERSION] = std::bind(&TallyServer::handle_cublasLtGetCudartVersion, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTGETPROPERTY] = std::bind(&TallyServer::handle_cublasLtGetProperty, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMUL] = std::bind(&TallyServer::handle_cublasLtMatmul, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXTRANSFORM] = std::bind(&TallyServer::handle_cublasLtMatrixTransform, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTINIT_INTERNAL] = std::bind(&TallyServer::handle_cublasLtMatrixLayoutInit_internal, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTCREATE] = std::bind(&TallyServer::handle_cublasLtMatrixLayoutCreate, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTDESTROY] = std::bind(&TallyServer::handle_cublasLtMatrixLayoutDestroy, this, std::placeholders::_1);
@@ -1163,11 +1206,18 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULDESCDESTROY] = std::bind(&TallyServer::handle_cublasLtMatmulDescDestroy, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULDESCSETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulDescSetAttribute, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULDESCGETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulDescGetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXTRANSFORMDESCINIT_INTERNAL] = std::bind(&TallyServer::handle_cublasLtMatrixTransformDescInit_internal, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXTRANSFORMDESCCREATE] = std::bind(&TallyServer::handle_cublasLtMatrixTransformDescCreate, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXTRANSFORMDESCDESTROY] = std::bind(&TallyServer::handle_cublasLtMatrixTransformDescDestroy, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXTRANSFORMDESCSETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatrixTransformDescSetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXTRANSFORMDESCGETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatrixTransformDescGetAttribute, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEINIT_INTERNAL] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceInit_internal, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCECREATE] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceCreate, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEDESTROY] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceDestroy, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCESETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceSetAttribute, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEGETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceGetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOGETHEURISTIC] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoGetHeuristic, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOGETIDS] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoGetIds, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOINIT] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoInit, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOCHECK] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoCheck, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOCAPGETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoCapGetAttribute, this, std::placeholders::_1);
@@ -1184,6 +1234,11 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUDAMEMCPYASYNC] = std::bind(&TallyServer::handle_cudaMemcpyAsync, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUDALAUNCHKERNEL] = std::bind(&TallyServer::handle_cudaLaunchKernel, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASSGEMM_V2] = std::bind(&TallyServer::handle_cublasSgemm_v2, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULDESCSETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulDescSetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTSETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatrixLayoutSetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCESETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceSetAttribute, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOGETHEURISTIC] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoGetHeuristic, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMUL] = std::bind(&TallyServer::handle_cublasLtMatmul, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFUNCTION] = std::bind(&TallyServer::handle___cudaRegisterFunction, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFATBINARY] = std::bind(&TallyServer::handle___cudaRegisterFatBinary, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND] = std::bind(&TallyServer::handle___cudaRegisterFatBinaryEnd, this, std::placeholders::_1);
@@ -1316,6 +1371,12 @@ void TallyServer::handle_cuDeviceTotalMem_v2(void *__args)
     while(!send_ipc->send((void *) &res, sizeof(struct cuDeviceTotalMem_v2Response))) {
         send_ipc->wait_for_recv(1);
     }
+}
+
+void TallyServer::handle_cuDeviceGetTexture1DLinearMaxWidth(void *__args)
+{
+	spdlog::info("Received request: cuDeviceGetTexture1DLinearMaxWidth");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 void TallyServer::handle_cuDeviceGetAttribute(void *__args)
@@ -3174,6 +3235,12 @@ void TallyServer::handle_cuTexRefSetAddress2D_v3(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cuTexRefSetFormat(void *__args)
+{
+	spdlog::info("Received request: cuTexRefSetFormat");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cuTexRefSetAddressMode(void *__args)
 {
 	spdlog::info("Received request: cuTexRefSetAddressMode");
@@ -3249,6 +3316,12 @@ void TallyServer::handle_cuTexRefGetAddressMode(void *__args)
 void TallyServer::handle_cuTexRefGetFilterMode(void *__args)
 {
 	spdlog::info("Received request: cuTexRefGetFilterMode");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cuTexRefGetFormat(void *__args)
+{
+	spdlog::info("Received request: cuTexRefGetFormat");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -5622,6 +5695,12 @@ void TallyServer::handle_cudnnCreateTensorDescriptor(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnSetTensor4dDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnSetTensor4dDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnSetTensor4dDescriptorEx(void *__args)
 {
 	spdlog::info("Received request: cudnnSetTensor4dDescriptorEx");
@@ -5640,6 +5719,12 @@ void TallyServer::handle_cudnnSetTensorNdDescriptor(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnSetTensorNdDescriptorEx(void *__args)
+{
+	spdlog::info("Received request: cudnnSetTensorNdDescriptorEx");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnGetTensorNdDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnGetTensorNdDescriptor");
@@ -5655,6 +5740,48 @@ void TallyServer::handle_cudnnGetTensorSizeInBytes(void *__args)
 void TallyServer::handle_cudnnDestroyTensorDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyTensorDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnInitTransformDest(void *__args)
+{
+	spdlog::info("Received request: cudnnInitTransformDest");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnCreateTensorTransformDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnCreateTensorTransformDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnSetTensorTransformDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnSetTensorTransformDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnGetTensorTransformDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnGetTensorTransformDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnDestroyTensorTransformDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnDestroyTensorTransformDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnTransformTensor(void *__args)
+{
+	spdlog::info("Received request: cudnnTransformTensor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnTransformTensorEx(void *__args)
+{
+	spdlog::info("Received request: cudnnTransformTensorEx");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -5754,9 +5881,39 @@ void TallyServer::handle_cudnnCreateFilterDescriptor(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnSetFilter4dDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnSetFilter4dDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnGetFilter4dDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnGetFilter4dDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnSetFilterNdDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnSetFilterNdDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnGetFilterNdDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnGetFilterNdDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnGetFilterSizeInBytes(void *__args)
 {
 	spdlog::info("Received request: cudnnGetFilterSizeInBytes");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnTransformFilter(void *__args)
+{
+	spdlog::info("Received request: cudnnTransformFilter");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -5928,6 +6085,36 @@ void TallyServer::handle_cudnnNormalizationForwardInference(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnCreateSpatialTransformerDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnCreateSpatialTransformerDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnSetSpatialTransformerNdDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnSetSpatialTransformerNdDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnDestroySpatialTransformerDescriptor(void *__args)
+{
+	spdlog::info("Received request: cudnnDestroySpatialTransformerDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnSpatialTfGridGeneratorForward(void *__args)
+{
+	spdlog::info("Received request: cudnnSpatialTfGridGeneratorForward");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnSpatialTfSamplerForward(void *__args)
+{
+	spdlog::info("Received request: cudnnSpatialTfSamplerForward");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnCreateDropoutDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateDropoutDescriptor");
@@ -6003,6 +6190,30 @@ void TallyServer::handle_cudnnCopyAlgorithmDescriptor(void *__args)
 void TallyServer::handle_cudnnDestroyAlgorithmDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnDestroyAlgorithmDescriptor");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnCreateAlgorithmPerformance(void *__args)
+{
+	spdlog::info("Received request: cudnnCreateAlgorithmPerformance");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnSetAlgorithmPerformance(void *__args)
+{
+	spdlog::info("Received request: cudnnSetAlgorithmPerformance");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnGetAlgorithmPerformance(void *__args)
+{
+	spdlog::info("Received request: cudnnGetAlgorithmPerformance");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnDestroyAlgorithmPerformance(void *__args)
+{
+	spdlog::info("Received request: cudnnDestroyAlgorithmPerformance");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -6141,6 +6352,18 @@ void TallyServer::handle_cudnnNormalizationForwardTraining(void *__args)
 void TallyServer::handle_cudnnNormalizationBackward(void *__args)
 {
 	spdlog::info("Received request: cudnnNormalizationBackward");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnSpatialTfGridGeneratorBackward(void *__args)
+{
+	spdlog::info("Received request: cudnnSpatialTfGridGeneratorBackward");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnSpatialTfSamplerBackward(void *__args)
+{
+	spdlog::info("Received request: cudnnSpatialTfSamplerBackward");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -6390,6 +6613,12 @@ void TallyServer::handle_cudnnGetRNNForwardInferenceAlgorithmMaxCount(void *__ar
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnFindRNNForwardInferenceAlgorithmEx(void *__args)
+{
+	spdlog::info("Received request: cudnnFindRNNForwardInferenceAlgorithmEx");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnCreateSeqDataDescriptor(void *__args)
 {
 	spdlog::info("Received request: cudnnCreateSeqDataDescriptor");
@@ -6516,15 +6745,33 @@ void TallyServer::handle_cudnnGetRNNForwardTrainingAlgorithmMaxCount(void *__arg
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnFindRNNForwardTrainingAlgorithmEx(void *__args)
+{
+	spdlog::info("Received request: cudnnFindRNNForwardTrainingAlgorithmEx");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnGetRNNBackwardDataAlgorithmMaxCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNBackwardDataAlgorithmMaxCount");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnFindRNNBackwardDataAlgorithmEx(void *__args)
+{
+	spdlog::info("Received request: cudnnFindRNNBackwardDataAlgorithmEx");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnGetRNNBackwardWeightsAlgorithmMaxCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetRNNBackwardWeightsAlgorithmMaxCount");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnFindRNNBackwardWeightsAlgorithmEx(void *__args)
+{
+	spdlog::info("Received request: cudnnFindRNNBackwardWeightsAlgorithmEx");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -6708,6 +6955,24 @@ void TallyServer::handle_cudnnGetConvolutionForwardAlgorithmMaxCount(void *__arg
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnGetConvolutionForwardAlgorithm_v7(void *__args)
+{
+	spdlog::info("Received request: cudnnGetConvolutionForwardAlgorithm_v7");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnFindConvolutionForwardAlgorithm(void *__args)
+{
+	spdlog::info("Received request: cudnnFindConvolutionForwardAlgorithm");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnFindConvolutionForwardAlgorithmEx(void *__args)
+{
+	spdlog::info("Received request: cudnnFindConvolutionForwardAlgorithmEx");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnIm2Col(void *__args)
 {
 	spdlog::info("Received request: cudnnIm2Col");
@@ -6744,6 +7009,24 @@ void TallyServer::handle_cudnnGetConvolutionBackwardDataAlgorithmMaxCount(void *
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnFindConvolutionBackwardDataAlgorithm(void *__args)
+{
+	spdlog::info("Received request: cudnnFindConvolutionBackwardDataAlgorithm");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnFindConvolutionBackwardDataAlgorithmEx(void *__args)
+{
+	spdlog::info("Received request: cudnnFindConvolutionBackwardDataAlgorithmEx");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnGetConvolutionBackwardDataAlgorithm_v7(void *__args)
+{
+	spdlog::info("Received request: cudnnGetConvolutionBackwardDataAlgorithm_v7");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnGetConvolutionBackwardDataWorkspaceSize(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionBackwardDataWorkspaceSize");
@@ -6756,6 +7039,12 @@ void TallyServer::handle_cudnnConvolutionBackwardData(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+void TallyServer::handle_cudnnGetFoldedConvBackwardDataDescriptors(void *__args)
+{
+	spdlog::info("Received request: cudnnGetFoldedConvBackwardDataDescriptors");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 void TallyServer::handle_cudnnCnnInferVersionCheck(void *__args)
 {
 	spdlog::info("Received request: cudnnCnnInferVersionCheck");
@@ -6765,6 +7054,24 @@ void TallyServer::handle_cudnnCnnInferVersionCheck(void *__args)
 void TallyServer::handle_cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(void *__args)
 {
 	spdlog::info("Received request: cudnnGetConvolutionBackwardFilterAlgorithmMaxCount");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnFindConvolutionBackwardFilterAlgorithm(void *__args)
+{
+	spdlog::info("Received request: cudnnFindConvolutionBackwardFilterAlgorithm");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnFindConvolutionBackwardFilterAlgorithmEx(void *__args)
+{
+	spdlog::info("Received request: cudnnFindConvolutionBackwardFilterAlgorithmEx");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudnnGetConvolutionBackwardFilterAlgorithm_v7(void *__args)
+{
+	spdlog::info("Received request: cudnnGetConvolutionBackwardFilterAlgorithm_v7");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -8671,13 +8978,31 @@ void TallyServer::handle_nvrtcGetCUBIN(void *__args)
 void TallyServer::handle_cublasLtCreate(void *__args)
 {
 	spdlog::info("Received request: cublasLtCreate");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	auto args = (struct cublasLtCreateArg *) __args;
+	cublasLtHandle_t lightHandle;
+	cublasStatus_t err = cublasLtCreate(&(lightHandle));
+	struct cublasLtCreateResponse res {
+		lightHandle,
+		err};
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cublasLtCreateResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasLtDestroy(void *__args)
 {
 	spdlog::info("Received request: cublasLtDestroy");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    auto args = (struct cublasLtDestroyArg *) __args;
+    cublasStatus_t err = cublasLtDestroy(
+		args->lightHandle
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasLtGetStatusName(void *__args)
@@ -8710,9 +9035,9 @@ void TallyServer::handle_cublasLtGetProperty(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-void TallyServer::handle_cublasLtMatmul(void *__args)
+void TallyServer::handle_cublasLtMatrixTransform(void *__args)
 {
-	spdlog::info("Received request: cublasLtMatmul");
+	spdlog::info("Received request: cublasLtMatrixTransform");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -8725,19 +9050,31 @@ void TallyServer::handle_cublasLtMatrixLayoutInit_internal(void *__args)
 void TallyServer::handle_cublasLtMatrixLayoutCreate(void *__args)
 {
 	spdlog::info("Received request: cublasLtMatrixLayoutCreate");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	auto args = (struct cublasLtMatrixLayoutCreateArg *) __args;
+	cublasLtMatrixLayout_t matLayout;
+	cublasStatus_t err = cublasLtMatrixLayoutCreate(&(matLayout), args->type, args->rows, args->cols, args->ld);
+	struct cublasLtMatrixLayoutCreateResponse res {
+		matLayout,
+		err};
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cublasLtMatrixLayoutCreateResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasLtMatrixLayoutDestroy(void *__args)
 {
 	spdlog::info("Received request: cublasLtMatrixLayoutDestroy");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
 
-void TallyServer::handle_cublasLtMatrixLayoutSetAttribute(void *__args)
-{
-	spdlog::info("Received request: cublasLtMatrixLayoutSetAttribute");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    auto args = (struct cublasLtMatrixLayoutDestroyArg *) __args;
+    cublasStatus_t err = cublasLtMatrixLayoutDestroy(
+		args->matLayout
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasLtMatrixLayoutGetAttribute(void *__args)
@@ -8755,24 +9092,66 @@ void TallyServer::handle_cublasLtMatmulDescInit_internal(void *__args)
 void TallyServer::handle_cublasLtMatmulDescCreate(void *__args)
 {
 	spdlog::info("Received request: cublasLtMatmulDescCreate");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	auto args = (struct cublasLtMatmulDescCreateArg *) __args;
+	cublasLtMatmulDesc_t matmulDesc;
+	cublasStatus_t err = cublasLtMatmulDescCreate(&(matmulDesc), args->computeType, args->scaleType);
+	struct cublasLtMatmulDescCreateResponse res {
+		matmulDesc,
+		err};
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cublasLtMatmulDescCreateResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasLtMatmulDescDestroy(void *__args)
 {
 	spdlog::info("Received request: cublasLtMatmulDescDestroy");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
 
-void TallyServer::handle_cublasLtMatmulDescSetAttribute(void *__args)
-{
-	spdlog::info("Received request: cublasLtMatmulDescSetAttribute");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    auto args = (struct cublasLtMatmulDescDestroyArg *) __args;
+    cublasStatus_t err = cublasLtMatmulDescDestroy(
+		args->matmulDesc
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasLtMatmulDescGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cublasLtMatmulDescGetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatrixTransformDescInit_internal(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixTransformDescInit_internal");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatrixTransformDescCreate(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixTransformDescCreate");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatrixTransformDescDestroy(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixTransformDescDestroy");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatrixTransformDescSetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixTransformDescSetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatrixTransformDescGetAttribute(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatrixTransformDescGetAttribute");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -8785,24 +9164,42 @@ void TallyServer::handle_cublasLtMatmulPreferenceInit_internal(void *__args)
 void TallyServer::handle_cublasLtMatmulPreferenceCreate(void *__args)
 {
 	spdlog::info("Received request: cublasLtMatmulPreferenceCreate");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	auto args = (struct cublasLtMatmulPreferenceCreateArg *) __args;
+	cublasLtMatmulPreference_t pref;
+	cublasStatus_t err = cublasLtMatmulPreferenceCreate(&(pref));
+	struct cublasLtMatmulPreferenceCreateResponse res {
+		pref,
+		err};
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cublasLtMatmulPreferenceCreateResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasLtMatmulPreferenceDestroy(void *__args)
 {
 	spdlog::info("Received request: cublasLtMatmulPreferenceDestroy");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
 
-void TallyServer::handle_cublasLtMatmulPreferenceSetAttribute(void *__args)
-{
-	spdlog::info("Received request: cublasLtMatmulPreferenceSetAttribute");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    auto args = (struct cublasLtMatmulPreferenceDestroyArg *) __args;
+    cublasStatus_t err = cublasLtMatmulPreferenceDestroy(
+		args->pref
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cublasLtMatmulPreferenceGetAttribute(void *__args)
 {
 	spdlog::info("Received request: cublasLtMatmulPreferenceGetAttribute");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cublasLtMatmulAlgoGetIds(void *__args)
+{
+	spdlog::info("Received request: cublasLtMatmulAlgoGetIds");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 

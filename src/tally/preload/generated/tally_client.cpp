@@ -199,6 +199,15 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 return res->err;
 }
 
+CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray_format  format, unsigned  numChannels, CUdevice  dev)
+{
+	printf("cuDeviceGetTexture1DLinearMaxWidth hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	CUresult res = 
+		lcuDeviceGetTexture1DLinearMaxWidth(maxWidthInElements, format, numChannels, dev);
+	return res;
+}
+
 CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  dev)
 {
 	printf("cuDeviceGetAttribute hooked\n");
@@ -2949,6 +2958,15 @@ CUresult cuTexRefSetAddress2D_v3(CUtexref  hTexRef, const CUDA_ARRAY_DESCRIPTOR 
 	return res;
 }
 
+CUresult cuTexRefSetFormat(CUtexref  hTexRef, CUarray_format  fmt, int  NumPackedComponents)
+{
+	printf("cuTexRefSetFormat hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	CUresult res = 
+		lcuTexRefSetFormat(hTexRef, fmt, NumPackedComponents);
+	return res;
+}
+
 CUresult cuTexRefSetAddressMode(CUtexref  hTexRef, int  dim, CUaddress_mode  am)
 {
 	printf("cuTexRefSetAddressMode hooked\n");
@@ -3063,6 +3081,15 @@ CUresult cuTexRefGetFilterMode(CUfilter_mode * pfm, CUtexref  hTexRef)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	CUresult res = 
 		lcuTexRefGetFilterMode(pfm, hTexRef);
+	return res;
+}
+
+CUresult cuTexRefGetFormat(CUarray_format * pFormat, int * pNumChannels, CUtexref  hTexRef)
+{
+	printf("cuTexRefGetFormat hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	CUresult res = 
+		lcuTexRefGetFormat(pFormat, pNumChannels, hTexRef);
 	return res;
 }
 
@@ -6462,6 +6489,15 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
 	return res;
 }
 
+cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cudnnTensorFormat_t  format, cudnnDataType_t  dataType, int  n, int  c, int  h, int  w)
+{
+	printf("cudnnSetTensor4dDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSetTensor4dDescriptor(tensorDesc, format, dataType, n, c, h, w);
+	return res;
+}
+
 cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, cudnnDataType_t  dataType, int  n, int  c, int  h, int  w, int  nStride, int  cStride, int  hStride, int  wStride)
 {
 	printf("cudnnSetTensor4dDescriptorEx hooked\n");
@@ -6489,6 +6525,15 @@ cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 	return res;
 }
 
+cudnnStatus_t cudnnSetTensorNdDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, cudnnTensorFormat_t  format, cudnnDataType_t  dataType, int  nbDims, const int  dimA[])
+{
+	printf("cudnnSetTensorNdDescriptorEx hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSetTensorNdDescriptorEx(tensorDesc, format, dataType, nbDims, dimA);
+	return res;
+}
+
 cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t  tensorDesc, int  nbDimsRequested, cudnnDataType_t * dataType, int * nbDims, int  dimA[], int  strideA[])
 {
 	printf("cudnnGetTensorNdDescriptor hooked\n");
@@ -6513,6 +6558,69 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	cudnnStatus_t res = 
 		lcudnnDestroyTensorDescriptor(tensorDesc);
+	return res;
+}
+
+cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  transformDesc, const cudnnTensorDescriptor_t  srcDesc, cudnnTensorDescriptor_t  destDesc, size_t * destSizeInBytes)
+{
+	printf("cudnnInitTransformDest hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnInitTransformDest(transformDesc, srcDesc, destDesc, destSizeInBytes);
+	return res;
+}
+
+cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescriptor_t * transformDesc)
+{
+	printf("cudnnCreateTensorTransformDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnCreateTensorTransformDescriptor(transformDesc);
+	return res;
+}
+
+cudnnStatus_t cudnnSetTensorTransformDescriptor(cudnnTensorTransformDescriptor_t  transformDesc, const uint32_t  nbDims, const cudnnTensorFormat_t  destFormat, const int32_t  padBeforeA[], const int32_t  padAfterA[], const uint32_t  foldA[], const cudnnFoldingDirection_t  direction)
+{
+	printf("cudnnSetTensorTransformDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSetTensorTransformDescriptor(transformDesc, nbDims, destFormat, padBeforeA, padAfterA, foldA, direction);
+	return res;
+}
+
+cudnnStatus_t cudnnGetTensorTransformDescriptor(cudnnTensorTransformDescriptor_t  transformDesc, uint32_t  nbDimsRequested, cudnnTensorFormat_t * destFormat, int32_t  padBeforeA[], int32_t  padAfterA[], uint32_t  foldA[], cudnnFoldingDirection_t * direction)
+{
+	printf("cudnnGetTensorTransformDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnGetTensorTransformDescriptor(transformDesc, nbDimsRequested, destFormat, padBeforeA, padAfterA, foldA, direction);
+	return res;
+}
+
+cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescriptor_t  transformDesc)
+{
+	printf("cudnnDestroyTensorTransformDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnDestroyTensorTransformDescriptor(transformDesc);
+	return res;
+}
+
+cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
+{
+	printf("cudnnTransformTensor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnTransformTensor(handle, alpha, xDesc, x, beta, yDesc, y);
+	return res;
+}
+
+cudnnStatus_t cudnnTransformTensorEx(cudnnHandle_t  handle, const cudnnTensorTransformDescriptor_t  transDesc, const void * alpha, const cudnnTensorDescriptor_t  srcDesc, const void * srcData, const void * beta, const cudnnTensorDescriptor_t  destDesc, void * destData)
+{
+	printf("cudnnTransformTensorEx hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnTransformTensorEx(handle, transDesc, alpha, srcDesc, srcData, beta, destDesc, destData);
 	return res;
 }
 
@@ -6660,12 +6768,57 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
 	return res;
 }
 
+cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  k, int  c, int  h, int  w)
+{
+	printf("cudnnSetFilter4dDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSetFilter4dDescriptor(filterDesc, dataType, format, k, c, h, w);
+	return res;
+}
+
+cudnnStatus_t cudnnGetFilter4dDescriptor(const cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * k, int * c, int * h, int * w)
+{
+	printf("cudnnGetFilter4dDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnGetFilter4dDescriptor(filterDesc, dataType, format, k, c, h, w);
+	return res;
+}
+
+cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  nbDims, const int  filterDimA[])
+{
+	printf("cudnnSetFilterNdDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSetFilterNdDescriptor(filterDesc, dataType, format, nbDims, filterDimA);
+	return res;
+}
+
+cudnnStatus_t cudnnGetFilterNdDescriptor(const cudnnFilterDescriptor_t  filterDesc, int  nbDimsRequested, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * nbDims, int  filterDimA[])
+{
+	printf("cudnnGetFilterNdDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnGetFilterNdDescriptor(filterDesc, nbDimsRequested, dataType, format, nbDims, filterDimA);
+	return res;
+}
+
 cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDesc, size_t * size)
 {
 	printf("cudnnGetFilterSizeInBytes hooked\n");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	cudnnStatus_t res = 
 		lcudnnGetFilterSizeInBytes(filterDesc, size);
+	return res;
+}
+
+cudnnStatus_t cudnnTransformFilter(cudnnHandle_t  handle, const cudnnTensorTransformDescriptor_t  transDesc, const void * alpha, const cudnnFilterDescriptor_t  srcDesc, const void * srcData, const void * beta, const cudnnFilterDescriptor_t  destDesc, void * destData)
+{
+	printf("cudnnTransformFilter hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnTransformFilter(handle, transDesc, alpha, srcDesc, srcData, beta, destDesc, destData);
 	return res;
 }
 
@@ -6921,6 +7074,51 @@ cudnnStatus_t cudnnNormalizationForwardInference(cudnnHandle_t  handle, cudnnNor
 	return res;
 }
 
+cudnnStatus_t cudnnCreateSpatialTransformerDescriptor(cudnnSpatialTransformerDescriptor_t * stDesc)
+{
+	printf("cudnnCreateSpatialTransformerDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnCreateSpatialTransformerDescriptor(stDesc);
+	return res;
+}
+
+cudnnStatus_t cudnnSetSpatialTransformerNdDescriptor(cudnnSpatialTransformerDescriptor_t  stDesc, cudnnSamplerType_t  samplerType, cudnnDataType_t  dataType, const int  nbDims, const int  dimA[])
+{
+	printf("cudnnSetSpatialTransformerNdDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSetSpatialTransformerNdDescriptor(stDesc, samplerType, dataType, nbDims, dimA);
+	return res;
+}
+
+cudnnStatus_t cudnnDestroySpatialTransformerDescriptor(cudnnSpatialTransformerDescriptor_t  stDesc)
+{
+	printf("cudnnDestroySpatialTransformerDescriptor hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnDestroySpatialTransformerDescriptor(stDesc);
+	return res;
+}
+
+cudnnStatus_t cudnnSpatialTfGridGeneratorForward(cudnnHandle_t  handle, const cudnnSpatialTransformerDescriptor_t  stDesc, const void * theta, void * grid)
+{
+	printf("cudnnSpatialTfGridGeneratorForward hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSpatialTfGridGeneratorForward(handle, stDesc, theta, grid);
+	return res;
+}
+
+cudnnStatus_t cudnnSpatialTfSamplerForward(cudnnHandle_t  handle, cudnnSpatialTransformerDescriptor_t  stDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * grid, const void * beta, cudnnTensorDescriptor_t  yDesc, void * y)
+{
+	printf("cudnnSpatialTfSamplerForward hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSpatialTfSamplerForward(handle, stDesc, alpha, xDesc, x, grid, beta, yDesc, y);
+	return res;
+}
+
 cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDesc)
 {
 	printf("cudnnCreateDropoutDescriptor hooked\n");
@@ -7035,6 +7233,42 @@ cudnnStatus_t cudnnDestroyAlgorithmDescriptor(cudnnAlgorithmDescriptor_t  algoDe
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	cudnnStatus_t res = 
 		lcudnnDestroyAlgorithmDescriptor(algoDesc);
+	return res;
+}
+
+cudnnStatus_t cudnnCreateAlgorithmPerformance(cudnnAlgorithmPerformance_t * algoPerf, int  numberToCreate)
+{
+	printf("cudnnCreateAlgorithmPerformance hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnCreateAlgorithmPerformance(algoPerf, numberToCreate);
+	return res;
+}
+
+cudnnStatus_t cudnnSetAlgorithmPerformance(cudnnAlgorithmPerformance_t  algoPerf, cudnnAlgorithmDescriptor_t  algoDesc, cudnnStatus_t  status, float  time, size_t  memory)
+{
+	printf("cudnnSetAlgorithmPerformance hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSetAlgorithmPerformance(algoPerf, algoDesc, status, time, memory);
+	return res;
+}
+
+cudnnStatus_t cudnnGetAlgorithmPerformance(const cudnnAlgorithmPerformance_t  algoPerf, cudnnAlgorithmDescriptor_t * algoDesc, cudnnStatus_t * status, float * time, size_t * memory)
+{
+	printf("cudnnGetAlgorithmPerformance hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnGetAlgorithmPerformance(algoPerf, algoDesc, status, time, memory);
+	return res;
+}
+
+cudnnStatus_t cudnnDestroyAlgorithmPerformance(cudnnAlgorithmPerformance_t * algoPerf, int  numberToDestroy)
+{
+	printf("cudnnDestroyAlgorithmPerformance hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnDestroyAlgorithmPerformance(algoPerf, numberToDestroy);
 	return res;
 }
 
@@ -7242,6 +7476,24 @@ cudnnStatus_t cudnnNormalizationBackward(cudnnHandle_t  handle, cudnnNormMode_t 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	cudnnStatus_t res = 
 		lcudnnNormalizationBackward(handle, mode, normOps, algo, alphaDataDiff, betaDataDiff, alphaParamDiff, betaParamDiff, xDesc, xData, yDesc, yData, dyDesc, dyData, dzDesc, dzData, dxDesc, dxData, dNormScaleBiasDesc, normScaleData, normBiasData, dNormScaleData, dNormBiasData, epsilon, normMeanVarDesc, savedMean, savedInvVariance, activationDesc, workSpace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes, groupCnt);
+	return res;
+}
+
+cudnnStatus_t cudnnSpatialTfGridGeneratorBackward(cudnnHandle_t  handle, const cudnnSpatialTransformerDescriptor_t  stDesc, const void * dgrid, void * dtheta)
+{
+	printf("cudnnSpatialTfGridGeneratorBackward hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSpatialTfGridGeneratorBackward(handle, stDesc, dgrid, dtheta);
+	return res;
+}
+
+cudnnStatus_t cudnnSpatialTfSamplerBackward(cudnnHandle_t  handle, cudnnSpatialTransformerDescriptor_t  stDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx, const void * alphaDgrid, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * grid, const void * betaDgrid, void * dgrid)
+{
+	printf("cudnnSpatialTfSamplerBackward hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnSpatialTfSamplerBackward(handle, stDesc, alpha, xDesc, x, beta, dxDesc, dx, alphaDgrid, dyDesc, dy, grid, betaDgrid, dgrid);
 	return res;
 }
 
@@ -7614,6 +7866,15 @@ cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle
 	return res;
 }
 
+cudnnStatus_t cudnnFindRNNForwardInferenceAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes)
+{
+	printf("cudnnFindRNNForwardInferenceAlgorithmEx hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnFindRNNForwardInferenceAlgorithmEx(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes);
+	return res;
+}
+
 cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDesc)
 {
 	printf("cudnnCreateSeqDataDescriptor hooked\n");
@@ -7803,6 +8064,15 @@ cudnnStatus_t cudnnGetRNNForwardTrainingAlgorithmMaxCount(cudnnHandle_t  handle,
 	return res;
 }
 
+cudnnStatus_t cudnnFindRNNForwardTrainingAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
+{
+	printf("cudnnFindRNNForwardTrainingAlgorithmEx hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnFindRNNForwardTrainingAlgorithmEx(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
+	return res;
+}
+
 cudnnStatus_t cudnnGetRNNBackwardDataAlgorithmMaxCount(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)
 {
 	printf("cudnnGetRNNBackwardDataAlgorithmMaxCount hooked\n");
@@ -7812,12 +8082,30 @@ cudnnStatus_t cudnnGetRNNBackwardDataAlgorithmMaxCount(cudnnHandle_t  handle, co
 	return res;
 }
 
+cudnnStatus_t cudnnFindRNNBackwardDataAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * yDesc, const void * y, const cudnnTensorDescriptor_t * dyDesc, const void * dy, const cudnnTensorDescriptor_t  dhyDesc, const void * dhy, const cudnnTensorDescriptor_t  dcyDesc, const void * dcy, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnTensorDescriptor_t * dxDesc, void * dx, const cudnnTensorDescriptor_t  dhxDesc, void * dhx, const cudnnTensorDescriptor_t  dcxDesc, void * dcx, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
+{
+	printf("cudnnFindRNNBackwardDataAlgorithmEx hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnFindRNNBackwardDataAlgorithmEx(handle, rnnDesc, seqLength, yDesc, y, dyDesc, dy, dhyDesc, dhy, dcyDesc, dcy, wDesc, w, hxDesc, hx, cxDesc, cx, dxDesc, dx, dhxDesc, dhx, dcxDesc, dcx, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
+	return res;
+}
+
 cudnnStatus_t cudnnGetRNNBackwardWeightsAlgorithmMaxCount(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)
 {
 	printf("cudnnGetRNNBackwardWeightsAlgorithmMaxCount hooked\n");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	cudnnStatus_t res = 
 		lcudnnGetRNNBackwardWeightsAlgorithmMaxCount(handle, rnnDesc, count);
+	return res;
+}
+
+cudnnStatus_t cudnnFindRNNBackwardWeightsAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t * yDesc, const void * y, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, const void * workspace, size_t  workSpaceSizeInBytes, const cudnnFilterDescriptor_t  dwDesc, void * dw, const void * reserveSpace, size_t  reserveSpaceSizeInBytes)
+{
+	printf("cudnnFindRNNBackwardWeightsAlgorithmEx hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnFindRNNBackwardWeightsAlgorithmEx(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, yDesc, y, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes, dwDesc, dw, reserveSpace, reserveSpaceSizeInBytes);
 	return res;
 }
 
@@ -8091,6 +8379,33 @@ cudnnStatus_t cudnnGetConvolutionForwardAlgorithmMaxCount(cudnnHandle_t  handle,
 	return res;
 }
 
+cudnnStatus_t cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnFilterDescriptor_t  filterDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  destDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults)
+{
+	printf("cudnnGetConvolutionForwardAlgorithm_v7 hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnGetConvolutionForwardAlgorithm_v7(handle, srcDesc, filterDesc, convDesc, destDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+	return res;
+}
+
+cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults)
+{
+	printf("cudnnFindConvolutionForwardAlgorithm hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionForwardAlgorithm(handle, xDesc, wDesc, convDesc, yDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+	return res;
+}
+
+cudnnStatus_t cudnnFindConvolutionForwardAlgorithmEx(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, void * y, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)
+{
+	printf("cudnnFindConvolutionForwardAlgorithmEx hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionForwardAlgorithmEx(handle, xDesc, x, wDesc, w, convDesc, yDesc, y, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
+	return res;
+}
+
 cudnnStatus_t cudnnIm2Col(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, void * colBuffer)
 {
 	printf("cudnnIm2Col hooked\n");
@@ -8145,6 +8460,33 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  ha
 	return res;
 }
 
+cudnnStatus_t cudnnFindConvolutionBackwardDataAlgorithm(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults)
+{
+	printf("cudnnFindConvolutionBackwardDataAlgorithm hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionBackwardDataAlgorithm(handle, wDesc, dyDesc, convDesc, dxDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+	return res;
+}
+
+cudnnStatus_t cudnnFindConvolutionBackwardDataAlgorithmEx(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, void * dx, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)
+{
+	printf("cudnnFindConvolutionBackwardDataAlgorithmEx hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionBackwardDataAlgorithmEx(handle, wDesc, w, dyDesc, dy, convDesc, dxDesc, dx, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
+	return res;
+}
+
+cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithm_v7(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  gradDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults)
+{
+	printf("cudnnGetConvolutionBackwardDataAlgorithm_v7 hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnGetConvolutionBackwardDataAlgorithm_v7(handle, filterDesc, diffDesc, convDesc, gradDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+	return res;
+}
+
 cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, cudnnConvolutionBwdDataAlgo_t  algo, size_t * sizeInBytes)
 {
 	printf("cudnnGetConvolutionBackwardDataWorkspaceSize hooked\n");
@@ -8163,6 +8505,15 @@ cudnnStatus_t cudnnConvolutionBackwardData(cudnnHandle_t  handle, const void * a
 	return res;
 }
 
+cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  gradDesc, const cudnnTensorFormat_t  transformFormat, cudnnFilterDescriptor_t  foldedFilterDesc, cudnnTensorDescriptor_t  paddedDiffDesc, cudnnConvolutionDescriptor_t  foldedConvDesc, cudnnTensorDescriptor_t  foldedGradDesc, cudnnTensorTransformDescriptor_t  filterFoldTransDesc, cudnnTensorTransformDescriptor_t  diffPadTransDesc, cudnnTensorTransformDescriptor_t  gradFoldTransDesc, cudnnTensorTransformDescriptor_t  gradUnfoldTransDesc)
+{
+	printf("cudnnGetFoldedConvBackwardDataDescriptors hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnGetFoldedConvBackwardDataDescriptors(handle, filterDesc, diffDesc, convDesc, gradDesc, transformFormat, foldedFilterDesc, paddedDiffDesc, foldedConvDesc, foldedGradDesc, filterFoldTransDesc, diffPadTransDesc, gradFoldTransDesc, gradUnfoldTransDesc);
+	return res;
+}
+
 cudnnStatus_t cudnnCnnInferVersionCheck()
 {
 	printf("cudnnCnnInferVersionCheck hooked\n");
@@ -8178,6 +8529,33 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	cudnnStatus_t res = 
 		lcudnnGetConvolutionBackwardFilterAlgorithmMaxCount(handle, count);
+	return res;
+}
+
+cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithm(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  dwDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults)
+{
+	printf("cudnnFindConvolutionBackwardFilterAlgorithm hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionBackwardFilterAlgorithm(handle, xDesc, dyDesc, convDesc, dwDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
+	return res;
+}
+
+cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithmEx(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  dyDesc, const void * y, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  dwDesc, void * dw, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)
+{
+	printf("cudnnFindConvolutionBackwardFilterAlgorithmEx hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnFindConvolutionBackwardFilterAlgorithmEx(handle, xDesc, x, dyDesc, y, convDesc, dwDesc, dw, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
+	return res;
+}
+
+cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm_v7(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  gradDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults)
+{
+	printf("cudnnGetConvolutionBackwardFilterAlgorithm_v7 hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudnnStatus_t res = 
+		lcudnnGetConvolutionBackwardFilterAlgorithm_v7(handle, srcDesc, diffDesc, convDesc, gradDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
 	return res;
 }
 
@@ -11001,19 +11379,39 @@ nvrtcResult nvrtcGetCUBIN(nvrtcProgram  prog, char * cubin)
 cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 {
 	printf("cublasLtCreate hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtCreate(lightHandle);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtCreateArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTCREATE;
+    
+    struct cublasLtCreateArg *arg_ptr = (struct cublasLtCreateArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->lightHandle = lightHandle;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cublasLtCreateResponse *) dat;
+	*lightHandle = res->lightHandle;
+return res->err;
 }
 
 cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 {
 	printf("cublasLtDestroy hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtDestroy(lightHandle);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtDestroyArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTDESTROY;
+    
+    struct cublasLtDestroyArg *arg_ptr = (struct cublasLtDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->lightHandle = lightHandle;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
 }
 
 const char* cublasLtGetStatusName(cublasStatus_t  status)
@@ -11061,12 +11459,12 @@ cublasStatus_t cublasLtGetProperty(libraryPropertyType  type, int*  value)
 	return res;
 }
 
-cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)
+cublasStatus_t cublasLtMatrixTransform(cublasLtHandle_t  lightHandle, cublasLtMatrixTransformDesc_t  transformDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  beta, const void*  B, cublasLtMatrixLayout_t  Bdesc, void*  C, cublasLtMatrixLayout_t  Cdesc, cudaStream_t  stream)
 {
-	printf("cublasLtMatmul hooked\n");
+	printf("cublasLtMatrixTransform hooked\n");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	cublasStatus_t res = 
-		lcublasLtMatmul(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
+		lcublasLtMatrixTransform(lightHandle, transformDesc, alpha, A, Adesc, beta, B, Bdesc, C, Cdesc, stream);
 	return res;
 }
 
@@ -11082,28 +11480,43 @@ cublasStatus_t cublasLtMatrixLayoutInit_internal(cublasLtMatrixLayout_t  matLayo
 cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)
 {
 	printf("cublasLtMatrixLayoutCreate hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutCreateArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTCREATE;
+    
+    struct cublasLtMatrixLayoutCreateArg *arg_ptr = (struct cublasLtMatrixLayoutCreateArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->matLayout = matLayout;
+	arg_ptr->type = type;
+	arg_ptr->rows = rows;
+	arg_ptr->cols = cols;
+	arg_ptr->ld = ld;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cublasLtMatrixLayoutCreateResponse *) dat;
+	*matLayout = res->matLayout;
+return res->err;
 }
 
 cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
 {
 	printf("cublasLtMatrixLayoutDestroy hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtMatrixLayoutDestroy(matLayout);
-	return res;
-}
 
-cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, const void*  buf, size_t  sizeInBytes)
-{
-	printf("cublasLtMatrixLayoutSetAttribute hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtMatrixLayoutSetAttribute(matLayout, attr, buf, sizeInBytes);
-	return res;
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutDestroyArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTDESTROY;
+    
+    struct cublasLtMatrixLayoutDestroyArg *arg_ptr = (struct cublasLtMatrixLayoutDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->matLayout = matLayout;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
 }
 
 cublasStatus_t cublasLtMatrixLayoutGetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
@@ -11127,28 +11540,41 @@ cublasStatus_t cublasLtMatmulDescInit_internal(cublasLtMatmulDesc_t  matmulDesc,
 cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cublasComputeType_t  computeType, cudaDataType_t  scaleType)
 {
 	printf("cublasLtMatmulDescCreate hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescCreateArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCCREATE;
+    
+    struct cublasLtMatmulDescCreateArg *arg_ptr = (struct cublasLtMatmulDescCreateArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->matmulDesc = matmulDesc;
+	arg_ptr->computeType = computeType;
+	arg_ptr->scaleType = scaleType;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cublasLtMatmulDescCreateResponse *) dat;
+	*matmulDesc = res->matmulDesc;
+return res->err;
 }
 
 cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
 {
 	printf("cublasLtMatmulDescDestroy hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtMatmulDescDestroy(matmulDesc);
-	return res;
-}
 
-cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
-{
-	printf("cublasLtMatmulDescSetAttribute hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
-	return res;
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescDestroyArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCDESTROY;
+    
+    struct cublasLtMatmulDescDestroyArg *arg_ptr = (struct cublasLtMatmulDescDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->matmulDesc = matmulDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
 }
 
 cublasStatus_t cublasLtMatmulDescGetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
@@ -11157,6 +11583,51 @@ cublasStatus_t cublasLtMatmulDescGetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	cublasStatus_t res = 
 		lcublasLtMatmulDescGetAttribute(matmulDesc, attr, buf, sizeInBytes, sizeWritten);
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixTransformDescInit_internal(cublasLtMatrixTransformDesc_t  transformDesc, size_t  size, cudaDataType  scaleType)
+{
+	printf("cublasLtMatrixTransformDescInit_internal hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatrixTransformDescInit_internal(transformDesc, size, scaleType);
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t*  transformDesc, cudaDataType  scaleType)
+{
+	printf("cublasLtMatrixTransformDescCreate hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatrixTransformDescCreate(transformDesc, scaleType);
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t  transformDesc)
+{
+	printf("cublasLtMatrixTransformDescDestroy hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatrixTransformDescDestroy(transformDesc);
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixTransformDescSetAttribute(cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
+{
+	printf("cublasLtMatrixTransformDescSetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatrixTransformDescSetAttribute(transformDesc, attr, buf, sizeInBytes);
+	return res;
+}
+
+cublasStatus_t cublasLtMatrixTransformDescGetAttribute(cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
+{
+	printf("cublasLtMatrixTransformDescGetAttribute hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatrixTransformDescGetAttribute(transformDesc, attr, buf, sizeInBytes, sizeWritten);
 	return res;
 }
 
@@ -11172,28 +11643,39 @@ cublasStatus_t cublasLtMatmulPreferenceInit_internal(cublasLtMatmulPreference_t 
 cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 {
 	printf("cublasLtMatmulPreferenceCreate hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtMatmulPreferenceCreate(pref);
-	return res;
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceCreateArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCECREATE;
+    
+    struct cublasLtMatmulPreferenceCreateArg *arg_ptr = (struct cublasLtMatmulPreferenceCreateArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pref = pref;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cublasLtMatmulPreferenceCreateResponse *) dat;
+	*pref = res->pref;
+return res->err;
 }
 
 cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 {
 	printf("cublasLtMatmulPreferenceDestroy hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtMatmulPreferenceDestroy(pref);
-	return res;
-}
 
-cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
-{
-	printf("cublasLtMatmulPreferenceSetAttribute hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	cublasStatus_t res = 
-		lcublasLtMatmulPreferenceSetAttribute(pref, attr, buf, sizeInBytes);
-	return res;
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceDestroyArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEDESTROY;
+    
+    struct cublasLtMatmulPreferenceDestroyArg *arg_ptr = (struct cublasLtMatmulPreferenceDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pref = pref;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
 }
 
 cublasStatus_t cublasLtMatmulPreferenceGetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
@@ -11202,6 +11684,15 @@ cublasStatus_t cublasLtMatmulPreferenceGetAttribute(cublasLtMatmulPreference_t  
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	cublasStatus_t res = 
 		lcublasLtMatmulPreferenceGetAttribute(pref, attr, buf, sizeInBytes, sizeWritten);
+	return res;
+}
+
+cublasStatus_t cublasLtMatmulAlgoGetIds(cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  requestedAlgoCount, int  algoIdsArray[], int*  returnAlgoCount)
+{
+	printf("cublasLtMatmulAlgoGetIds hooked\n");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cublasStatus_t res = 
+		lcublasLtMatmulAlgoGetIds(lightHandle, computeType, scaleType, Atype, Btype, Ctype, Dtype, requestedAlgoCount, algoIdsArray, returnAlgoCount);
 	return res;
 }
 

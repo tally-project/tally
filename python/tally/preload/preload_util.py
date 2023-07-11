@@ -1,6 +1,7 @@
 import subprocess
+import re
 
-from tally.preload.consts import IGNORE_KEYWORDS, FUNC_SIG_MUST_CONTAIN, FUNC_SIG_MUST_NOT_CONTAIN
+from tally.preload.consts import IGNORE_KEYWORDS, FUNC_SIG_MUST_CONTAIN, FUNC_SIG_MUST_NOT_CONTAIN, FUNC_SIG_MUST_NOT_CONTAIN_KEYWORDS
 from tally.util.util import split_and_strip, remove_keywords, is_alnum_underscore
 
 def get_func_name_from_sig(func_sig):
@@ -137,9 +138,10 @@ def generate_func_sig_from_file(file):
                     func_sig = acc
                 else:
                     continue
-        
+            
             if (all([word in func_sig for word in FUNC_SIG_MUST_CONTAIN]) and
-                    not any([word in func_sig for word in FUNC_SIG_MUST_NOT_CONTAIN])):
+                    not any([word in func_sig for word in FUNC_SIG_MUST_NOT_CONTAIN]) and
+                    not any([word in re.findall(r'\w+', func_sig) for word in FUNC_SIG_MUST_NOT_CONTAIN_KEYWORDS])):
 
                 func_sig_list.append(func_sig)
         
