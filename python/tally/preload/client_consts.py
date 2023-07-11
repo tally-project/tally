@@ -178,6 +178,31 @@ TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
 #endif // TALLY_SERVER_H
 """
 
+# let the client call the APIs directly
+DIRECT_CALLS = [
+    "cudaGetErrorString",
+    "cuGetProcAddress",
+    "cuGetErrorString",
+    "cuGetErrorName",
+]
+
+# implement manually
+SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaMalloc",
+    "cudaMemcpy",
+    "cudaMemcpyAsync",
+    "cudaLaunchKernel",
+    "cublasSgemm_v2",
+    "cublasLtMatmulDescSetAttribute",
+    "cublasLtMatrixLayoutSetAttribute",
+    "cublasLtMatmulPreferenceSetAttribute",
+    "cublasLtMatmulAlgoGetHeuristic",
+    "cublasLtMatmul",
+    "__cudaRegisterFunction",
+    "__cudaRegisterFatBinary",
+    "__cudaRegisterFatBinaryEnd"
+]
+
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
@@ -226,26 +251,25 @@ FORWARD_API_CALLS = [
     "cublasLtMatmulDescDestroy",
     "cublasLtMatrixLayoutDestroy",
     "cublasLtMatmulPreferenceDestroy",
-    "cublasLtDestroy"
-]
-
-# implement manually
-SPECIAL_CLIENT_PRELOAD_FUNCS = [
-    "cudaMalloc",
-    "cudaMemcpy",
-    "cudaMemcpyAsync",
-    "cudaLaunchKernel",
-    "cublasSgemm_v2",
-    "cublasLtMatmulDescSetAttribute",
-    "cublasLtMatrixLayoutSetAttribute",
-    "cublasLtMatmulPreferenceSetAttribute",
-    "cublasLtMatmulAlgoGetHeuristic",
-    "cublasLtMatmul",
-    "cudaGetErrorString",
-    "cuGetProcAddress",
-    "__cudaRegisterFunction",
-    "__cudaRegisterFatBinary",
-    "__cudaRegisterFatBinaryEnd"
+    "cublasLtDestroy",
+    "cuCtxDestroy_v2",
+    "cuCtxPushCurrent_v2",
+    "cuCtxSetCurrent",
+    "cuCtxSynchronize",
+    "cuCtxSetLimit",
+    "cuCtxSetCacheConfig",
+    "cuCtxSetSharedMemConfig",
+    "cuCtxResetPersistingL2Cache",
+    "cuCtxDetach",
+    "cuModuleUnload",
+    "cudnnDestroy",
+    "cudnnSetStream",
+    "cudnnSetTensor4dDescriptor",
+    "cudnnSetTensor4dDescriptorEx",
+    "cudnnBackendDestroyDescriptor",
+    "cudnnBackendInitialize",
+    "cudnnBackendFinalize",
+    "cudnnBackendExecute"
 ]
 
 # API calls that has the first argument set
@@ -288,12 +312,29 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cublasLtMatmulDescCreate",
     "cublasLtMatrixLayoutCreate",
     "cublasLtMatmulPreferenceCreate",
-    "cublasLtCreate"
+    "cublasLtCreate",
+    "cuDeviceGetTexture1DLinearMaxWidth",
+    "cuDeviceGetExecAffinitySupport",
+    "cuCtxCreate_v2",
+    "cuCtxPopCurrent_v2",
+    "cuCtxGetCurrent",
+    "cuCtxGetDevice",
+    "cuCtxGetFlags",
+    "cuCtxGetLimit",
+    "cuCtxGetCacheConfig",
+    "cuCtxGetSharedMemConfig",
+    "cuCtxGetExecAffinity",
+    "cuCtxAttach",
+    "cudnnCreate",
+    "cudnnCreateTensorDescriptor"
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
     "cudaStreamIsCapturing",
-    "cublasGetVersion_v2"
+    "cublasGetVersion_v2",
+    "cuCtxGetApiVersion",
+    "cudnnGetStream",
+    "cudnnBackendCreateDescriptor"
 ]
 
 CUDA_GET_2_3_PARAM_FUNCS = [
@@ -301,7 +342,10 @@ CUDA_GET_2_3_PARAM_FUNCS = [
 ]
 
 CUDA_GET_1_2_PARAM_FUNCS = [
-    "cudaDeviceGetStreamPriorityRange"
+    "cudaDeviceGetStreamPriorityRange",
+    "cuDeviceGetLuid",
+    "cuDeviceComputeCapability",
+    "cuCtxGetStreamPriorityRange"
 ]
 
 CUDA_GET_1_PARAM_FUNC_KEY = 1

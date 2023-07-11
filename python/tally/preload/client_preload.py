@@ -12,11 +12,10 @@ from tally.preload.client_consts import (
     TALLY_SERVER_HEADER_TEMPLATE_TOP,
     TALLY_SERVER_HEADER_TEMPLATE_BUTTOM,
     SPECIAL_CLIENT_PRELOAD_FUNCS,
-    CUDA_GET_1_PARAM_FUNCS,
-    CUDA_GET_2_3_PARAM_FUNCS,
     PARAM_INDICES,
     CLIENT_PRELOAD_TEMPLATE,
     FORWARD_API_CALLS,
+    DIRECT_CALLS,
     get_preload_func_template,
     is_get_param_func,
     get_param_group
@@ -166,6 +165,8 @@ void TallyServer::handle_{func_name}(void *__args)
         send_ipc->wait_for_recv(1);
     }}
 """
+    elif func_name in DIRECT_CALLS:
+        pass
     else:
         handler += f"\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": Unimplemented.\");\n"
 
@@ -206,7 +207,7 @@ def gen_func_client_preload(func_sig):
         func_preload_builder += f"\tauto res = ({res_struct} *) dat;\n"
         for idx in indices:
             func_preload_builder += f"\t*{arg_names[idx]} = res->{arg_names[idx]};\n"
-        func_preload_builder += f"return res->err;\n"
+        func_preload_builder += f"\treturn res->err;\n"
     
     elif func_name in FORWARD_API_CALLS:
         func_preload_builder += get_preload_func_template(func_name, arg_names)
@@ -215,10 +216,7 @@ def gen_func_client_preload(func_sig):
     auto res = ({ret_type} *) dat;
     return *res;
 """
-    else:
-
-        func_preload_builder += f"\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": Unimplemented.\");\n"
-
+    elif func_name in DIRECT_CALLS:
         # call original
         if ret_type != "void":
             func_preload_builder += f"\t{ret_type} res = \n"
@@ -227,6 +225,8 @@ def gen_func_client_preload(func_sig):
 
         if ret_type != "void":
             func_preload_builder += f"\treturn res;\n"
+    else:
+        func_preload_builder += f"\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": Unimplemented.\");\n"
 
     # close bracket
     func_preload_builder += "}"
@@ -348,7 +348,7 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
 
         f.write("void TallyServer::register_api_handler() {\n")
 
-        for func_name in list(client_code_dict.keys()) + SPECIAL_CLIENT_PRELOAD_FUNCS:
+        for func_name in set(list(client_code_dict.keys()) + SPECIAL_CLIENT_PRELOAD_FUNCS):
             f.write(f"\tcuda_api_handler_map[CUDA_API_ENUM::{func_name.upper()}] = std::bind(&TallyServer::handle_{func_name}, this, std::placeholders::_1);\n")
         
 

@@ -483,7 +483,3 @@ void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args)
 
     free(res);
 }
-
-// do not expect to receive this request
-void TallyServer::handle_cudaGetErrorString(void *__args){}
-void TallyServer::handle_cuGetProcAddress(void *args){}

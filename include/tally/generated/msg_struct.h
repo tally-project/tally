@@ -63,6 +63,18 @@ struct cuDeviceGetUuid_v2Response {
 	CUresult err;
 };
 
+struct cuDeviceGetLuidArg {
+	char * luid;
+	unsigned int * deviceNodeMask;
+	CUdevice  dev;
+};
+
+struct cuDeviceGetLuidResponse {
+	char  luid;
+	unsigned int  deviceNodeMask;
+	CUresult err;
+};
+
 struct cuDeviceTotalMem_v2Arg {
 	size_t * bytes;
 	CUdevice  dev;
@@ -70,6 +82,18 @@ struct cuDeviceTotalMem_v2Arg {
 
 struct cuDeviceTotalMem_v2Response {
 	size_t  bytes;
+	CUresult err;
+};
+
+struct cuDeviceGetTexture1DLinearMaxWidthArg {
+	size_t * maxWidthInElements;
+	CUarray_format  format;
+	unsigned  numChannels;
+	CUdevice  dev;
+};
+
+struct cuDeviceGetTexture1DLinearMaxWidthResponse {
+	size_t  maxWidthInElements;
 	CUresult err;
 };
 
@@ -124,6 +148,18 @@ struct cuDeviceGetPropertiesResponse {
 	CUresult err;
 };
 
+struct cuDeviceComputeCapabilityArg {
+	int * major;
+	int * minor;
+	CUdevice  dev;
+};
+
+struct cuDeviceComputeCapabilityResponse {
+	int  major;
+	int  minor;
+	CUresult err;
+};
+
 struct cuDevicePrimaryCtxRetainArg {
 	CUcontext * pctx;
 	CUdevice  dev;
@@ -157,6 +193,172 @@ struct cuDevicePrimaryCtxGetStateResponse {
 
 struct cuDevicePrimaryCtxReset_v2Arg {
 	CUdevice  dev;
+};
+
+struct cuDeviceGetExecAffinitySupportArg {
+	int * pi;
+	CUexecAffinityType  type;
+	CUdevice  dev;
+};
+
+struct cuDeviceGetExecAffinitySupportResponse {
+	int  pi;
+	CUresult err;
+};
+
+struct cuCtxCreate_v2Arg {
+	CUcontext * pctx;
+	unsigned int  flags;
+	CUdevice  dev;
+};
+
+struct cuCtxCreate_v2Response {
+	CUcontext  pctx;
+	CUresult err;
+};
+
+struct cuCtxDestroy_v2Arg {
+	CUcontext  ctx;
+};
+
+struct cuCtxPushCurrent_v2Arg {
+	CUcontext  ctx;
+};
+
+struct cuCtxPopCurrent_v2Arg {
+	CUcontext * pctx;
+};
+
+struct cuCtxPopCurrent_v2Response {
+	CUcontext  pctx;
+	CUresult err;
+};
+
+struct cuCtxSetCurrentArg {
+	CUcontext  ctx;
+};
+
+struct cuCtxGetCurrentArg {
+	CUcontext * pctx;
+};
+
+struct cuCtxGetCurrentResponse {
+	CUcontext  pctx;
+	CUresult err;
+};
+
+struct cuCtxGetDeviceArg {
+	CUdevice * device;
+};
+
+struct cuCtxGetDeviceResponse {
+	CUdevice  device;
+	CUresult err;
+};
+
+struct cuCtxGetFlagsArg {
+	unsigned int * flags;
+};
+
+struct cuCtxGetFlagsResponse {
+	unsigned int  flags;
+	CUresult err;
+};
+
+struct cuCtxSynchronizeArg {
+};
+
+struct cuCtxSetLimitArg {
+	CUlimit  limit;
+	size_t  value;
+};
+
+struct cuCtxGetLimitArg {
+	size_t * pvalue;
+	CUlimit  limit;
+};
+
+struct cuCtxGetLimitResponse {
+	size_t  pvalue;
+	CUresult err;
+};
+
+struct cuCtxGetCacheConfigArg {
+	CUfunc_cache * pconfig;
+};
+
+struct cuCtxGetCacheConfigResponse {
+	CUfunc_cache  pconfig;
+	CUresult err;
+};
+
+struct cuCtxSetCacheConfigArg {
+	CUfunc_cache  config;
+};
+
+struct cuCtxGetSharedMemConfigArg {
+	CUsharedconfig * pConfig;
+};
+
+struct cuCtxGetSharedMemConfigResponse {
+	CUsharedconfig  pConfig;
+	CUresult err;
+};
+
+struct cuCtxSetSharedMemConfigArg {
+	CUsharedconfig  config;
+};
+
+struct cuCtxGetApiVersionArg {
+	CUcontext  ctx;
+	unsigned int * version;
+};
+
+struct cuCtxGetApiVersionResponse {
+	unsigned int  version;
+	CUresult err;
+};
+
+struct cuCtxGetStreamPriorityRangeArg {
+	int * leastPriority;
+	int * greatestPriority;
+};
+
+struct cuCtxGetStreamPriorityRangeResponse {
+	int  leastPriority;
+	int  greatestPriority;
+	CUresult err;
+};
+
+struct cuCtxResetPersistingL2CacheArg {
+};
+
+struct cuCtxGetExecAffinityArg {
+	CUexecAffinityParam * pExecAffinity;
+	CUexecAffinityType  type;
+};
+
+struct cuCtxGetExecAffinityResponse {
+	CUexecAffinityParam  pExecAffinity;
+	CUresult err;
+};
+
+struct cuCtxAttachArg {
+	CUcontext * pctx;
+	unsigned int  flags;
+};
+
+struct cuCtxAttachResponse {
+	CUcontext  pctx;
+	CUresult err;
+};
+
+struct cuCtxDetachArg {
+	CUcontext  ctx;
+};
+
+struct cuModuleUnloadArg {
+	CUmodule  hmod;
 };
 
 struct cudaDeviceResetArg {
@@ -492,6 +694,94 @@ struct cudaGraphCreateArg {
 struct cudaGraphCreateResponse {
 	cudaGraph_t  pGraph;
 	cudaError_t err;
+};
+
+struct cudnnCreateArg {
+	cudnnHandle_t * handle;
+};
+
+struct cudnnCreateResponse {
+	cudnnHandle_t  handle;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroyArg {
+	cudnnHandle_t  handle;
+};
+
+struct cudnnSetStreamArg {
+	cudnnHandle_t  handle;
+	cudaStream_t  streamId;
+};
+
+struct cudnnGetStreamArg {
+	cudnnHandle_t  handle;
+	cudaStream_t * streamId;
+};
+
+struct cudnnGetStreamResponse {
+	cudaStream_t  streamId;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateTensorDescriptorArg {
+	cudnnTensorDescriptor_t * tensorDesc;
+};
+
+struct cudnnCreateTensorDescriptorResponse {
+	cudnnTensorDescriptor_t  tensorDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnSetTensor4dDescriptorArg {
+	cudnnTensorDescriptor_t  tensorDesc;
+	cudnnTensorFormat_t  format;
+	cudnnDataType_t  dataType;
+	int  n;
+	int  c;
+	int  h;
+	int  w;
+};
+
+struct cudnnSetTensor4dDescriptorExArg {
+	cudnnTensorDescriptor_t  tensorDesc;
+	cudnnDataType_t  dataType;
+	int  n;
+	int  c;
+	int  h;
+	int  w;
+	int  nStride;
+	int  cStride;
+	int  hStride;
+	int  wStride;
+};
+
+struct cudnnBackendCreateDescriptorArg {
+	cudnnBackendDescriptorType_t  descriptorType;
+	cudnnBackendDescriptor_t * descriptor;
+};
+
+struct cudnnBackendCreateDescriptorResponse {
+	cudnnBackendDescriptor_t  descriptor;
+	cudnnStatus_t err;
+};
+
+struct cudnnBackendDestroyDescriptorArg {
+	cudnnBackendDescriptor_t  descriptor;
+};
+
+struct cudnnBackendInitializeArg {
+	cudnnBackendDescriptor_t  descriptor;
+};
+
+struct cudnnBackendFinalizeArg {
+	cudnnBackendDescriptor_t  descriptor;
+};
+
+struct cudnnBackendExecuteArg {
+	cudnnHandle_t  handle;
+	cudnnBackendDescriptor_t  executionPlan;
+	cudnnBackendDescriptor_t  variantPack;
 };
 
 struct cublasCreate_v2Arg {

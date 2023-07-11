@@ -461,17 +461,4 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
     return res->err;
 }
 
-const char* cudaGetErrorString(cudaError_t  error)
-{
-    // printf("cudaGetErrorString hooked\n");
-    return lcudaGetErrorString(error);
-}
-
-CUresult cuGetProcAddress(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags)
-{
-	// printf("cuGetProcAddress hooked\n");
-	return lcuGetProcAddress(symbol, pfn, cudaVersion, flags);
-}
-
-
 }
