@@ -222,8 +222,6 @@ void TallyServer::handle_cudaMalloc(void *__args)
     void *devPtr;
     cudaError_t err = cudaMalloc(&devPtr, args->size);
 
-    std::cout << "devPtr: " << devPtr << std::endl;
-
     struct cudaMallocResponse res { devPtr, err };
     while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
         send_ipc->wait_for_recv(1);
@@ -238,8 +236,6 @@ void TallyServer::handle_cudaMemcpy(void *__args)
     size_t res_size = 0;
 
     if (args->kind == cudaMemcpyHostToDevice) {
-
-        std::cout << "copy to devPtr: " << args->dst << std::endl;
 
         // Only care about dst (pointer to device memory) from the client call
         cudaError_t err = cudaMemcpy(args->dst, args->data, args->count, args->kind);
@@ -270,11 +266,12 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args)
     auto args = (struct cudaMemcpyAsyncArg *) __args;
     struct cudaMemcpyAsyncResponse *res;
     size_t res_size = 0;
+    cudaError_t err;
 
     if (args->kind == cudaMemcpyHostToDevice) {
 
         // Only care about dst (pointer to device memory) from the client call
-        cudaError_t err = cudaMemcpyAsync(args->dst, args->data, args->count, args->kind, args->stream);
+        err = cudaMemcpyAsync(args->dst, args->data, args->count, args->kind, args->stream);
 
         res_size = sizeof(cudaError_t);
         res = (struct cudaMemcpyAsyncResponse *) malloc(res_size);
@@ -284,7 +281,7 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args)
         res = (struct cudaMemcpyAsyncResponse *) malloc(res_size);
 
         // Only care about src (pointer to device memory) from the client call
-        cudaError_t err = cudaMemcpyAsync(res->data, args->src, args->count, args->kind, args->stream);
+        err = cudaMemcpyAsync(res->data, args->src, args->count, args->kind, args->stream);
 
         res->err = err;
     } else {
@@ -294,6 +291,8 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args)
     while(!send_ipc->send((void *) res, res_size)) {
         send_ipc->wait_for_recv(1);
     }
+
+    free(res);
 }
 
 void TallyServer::handle_cudaLaunchKernel(void *__args)
@@ -476,3 +475,7 @@ void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args)
 
     free(res);
 }
+
+// do not expect to receive this request
+void TallyServer::handle_cudaGetErrorString(void *__args){}
+void TallyServer::handle_cuGetProcAddress(void *args){}

@@ -3354,15 +3354,6 @@ CUresult cuGraphicsUnmapResources(unsigned int  count, CUgraphicsResource * reso
 	return res;
 }
 
-CUresult cuGetProcAddress(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags)
-{
-	printf("cuGetProcAddress hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	CUresult res = 
-		lcuGetProcAddress(symbol, pfn, cudaVersion, flags);
-	return res;
-}
-
 CUresult cuGetExportTable(const void ** ppExportTable, const CUuuid * pExportTableId)
 {
 	printf("cuGetExportTable hooked\n");
@@ -3783,15 +3774,6 @@ const char* cudaGetErrorName(cudaError_t  error)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 	const char* res = 
 		lcudaGetErrorName(error);
-	return res;
-}
-
-const char* cudaGetErrorString(cudaError_t  error)
-{
-	printf("cudaGetErrorString hooked\n");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-	const char* res = 
-		lcudaGetErrorString(error);
 	return res;
 }
 

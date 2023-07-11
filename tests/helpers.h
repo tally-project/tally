@@ -36,6 +36,7 @@
 
 #include <cublasLt.h>
 #include <cuda_runtime_api.h>
+#include <cuda.h>
 
 inline void checkCudaStatus(cudaError_t status) {
     if (status != cudaSuccess) {
@@ -77,13 +78,6 @@ struct TestBench {
         checkCudaStatus(cudaFree(Cdev));
         checkCudaStatus(cudaFree(biasDev));
         checkCudaStatus(cudaFree(workspace));
-        if (perTensorScalingEnabled) {
-            checkCudaStatus(cudaFree(AscaleDev));
-            checkCudaStatus(cudaFree(BscaleDev));
-            checkCudaStatus(cudaFree(CscaleDev));
-            checkCudaStatus(cudaFree(DscaleDev));
-            checkCudaStatus(cudaFree(DamaxDev));
-        }
         checkCudaStatus(cudaStreamDestroy(stream));
     }
 
@@ -97,13 +91,6 @@ struct TestBench {
         checkCudaStatus(cudaMemcpyAsync(Adev, Ahost.data(), Ahost.size() * sizeof(Ahost[0]), cudaMemcpyHostToDevice, stream));
         checkCudaStatus(cudaMemcpyAsync(Bdev, Bhost.data(), Bhost.size() * sizeof(Bhost[0]), cudaMemcpyHostToDevice, stream));
         checkCudaStatus(cudaMemcpyAsync(biasDev, biasHost.data(), biasHost.size() * sizeof(biasHost[0]), cudaMemcpyHostToDevice));
-        if (perTensorScalingEnabled) {
-            checkCudaStatus(cudaMemcpyAsync(AscaleDev, &AscaleHost, sizeof(AscaleHost), cudaMemcpyHostToDevice));
-            checkCudaStatus(cudaMemcpyAsync(BscaleDev, &BscaleHost, sizeof(BscaleHost), cudaMemcpyHostToDevice));
-            checkCudaStatus(cudaMemcpyAsync(CscaleDev, &CscaleHost, sizeof(CscaleHost), cudaMemcpyHostToDevice));
-            checkCudaStatus(cudaMemcpyAsync(DscaleDev, &DscaleHost, sizeof(DscaleHost), cudaMemcpyHostToDevice));
-            checkCudaStatus(cudaMemcpyAsync(DamaxDev, &DamaxHost, sizeof(DamaxHost), cudaMemcpyHostToDevice));
-        }
     }
 
     void copyDataFromDevice() {
@@ -123,7 +110,6 @@ struct TestBench {
         streamSynchronize();
     }
 
-    bool perTensorScalingEnabled;
     int m, n, k, N;
     ComputeType alpha, beta;
     size_t workspaceSize;

@@ -1239,6 +1239,8 @@ void TallyServer::register_api_handler() {
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULPREFERENCESETATTRIBUTE] = std::bind(&TallyServer::handle_cublasLtMatmulPreferenceSetAttribute, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMULALGOGETHEURISTIC] = std::bind(&TallyServer::handle_cublasLtMatmulAlgoGetHeuristic, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::CUBLASLTMATMUL] = std::bind(&TallyServer::handle_cublasLtMatmul, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUDAGETERRORSTRING] = std::bind(&TallyServer::handle_cudaGetErrorString, this, std::placeholders::_1);
+	cuda_api_handler_map[CUDA_API_ENUM::CUGETPROCADDRESS] = std::bind(&TallyServer::handle_cuGetProcAddress, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFUNCTION] = std::bind(&TallyServer::handle___cudaRegisterFunction, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFATBINARY] = std::bind(&TallyServer::handle___cudaRegisterFatBinary, this, std::placeholders::_1);
 	cuda_api_handler_map[CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND] = std::bind(&TallyServer::handle___cudaRegisterFatBinaryEnd, this, std::placeholders::_1);
@@ -3499,12 +3501,6 @@ void TallyServer::handle_cuGraphicsUnmapResources(void *__args)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-void TallyServer::handle_cuGetProcAddress(void *__args)
-{
-	spdlog::info("Received request: cuGetProcAddress");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 void TallyServer::handle_cuGetExportTable(void *__args)
 {
 	spdlog::info("Received request: cuGetExportTable");
@@ -3821,12 +3817,6 @@ void TallyServer::handle_cudaPeekAtLastError(void *__args)
 void TallyServer::handle_cudaGetErrorName(void *__args)
 {
 	spdlog::info("Received request: cudaGetErrorName");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-void TallyServer::handle_cudaGetErrorString(void *__args)
-{
-	spdlog::info("Received request: cudaGetErrorString");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 

@@ -147,6 +147,7 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 
 cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind)
 {
+    printf("cudaMemcpy hooked\n");
     uint32_t msg_len;
     uint8_t *msg;
     
@@ -188,6 +189,8 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
 
 cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
+    printf("cudaMemcpyAsync hooked\n");
+
 	uint32_t msg_len;
     uint8_t *msg;
     
@@ -230,6 +233,7 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
+    printf("cudaLaunchKernel hooked\n");
     auto &params_info = TallyClient::client->_kernel_addr_to_args[func];
     uint32_t params_size =  std::accumulate(params_info.begin(), params_info.end(), 0);
 
@@ -265,6 +269,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
 cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 {
+    printf("cudaMalloc hooked\n");
     static const uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMallocArg);
 
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
@@ -455,5 +460,18 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 
     return res->err;
 }
+
+const char* cudaGetErrorString(cudaError_t  error)
+{
+    printf("cudaGetErrorString hooked\n");
+    return lcudaGetErrorString(error);
+}
+
+CUresult cuGetProcAddress(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags)
+{
+	printf("cuGetProcAddress hooked\n");
+	return lcuGetProcAddress(symbol, pfn, cudaVersion, flags);
+}
+
 
 }

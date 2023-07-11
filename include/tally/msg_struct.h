@@ -165,4 +165,13 @@ struct cublasLtMatmulArg {
     cudaStream_t  stream;
 };
 
+struct cudaGetErrorStringArg {
+    cudaError_t  error;
+};
+
+struct cudaGetErrorStringResponse {
+    uint32_t str_len;
+    char data[];
+};
+
 #endif // TALLY_DEF_H

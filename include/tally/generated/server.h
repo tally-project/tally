@@ -45,7 +45,6 @@ public:
     std::map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
     std::map<std::string, void *> _kernel_name_to_addr;
     std::map<void *, void *> _kernel_client_addr_mapping;
-    std::map<void *, void *> _resource_client_addr_mapping;
     std::vector<std::pair<void *, std::string>> register_queue;
     std::unordered_map<CUDA_API_ENUM, std::function<void(void *)>> cuda_api_handler_map;
 
