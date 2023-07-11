@@ -111,7 +111,7 @@ void TallyServer::handle_{func_name}(void *__args)
 {{
 """
 
-    handler += f"\tspdlog::info(\"Received request: {func_name}\");\n"
+    # handler += f"\tspdlog::info(\"Received request: {func_name}\");\n"
 
     if is_get_param_func(func_name):
         group = get_param_group(func_name)
@@ -195,7 +195,7 @@ def gen_func_client_preload(func_sig):
     func_preload_builder += f"{ret_type} {func_name}({args_str_no_val})\n"
     func_preload_builder += "{\n"
 
-    func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
+    # func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
 
     if is_get_param_func(func_name):
         group = get_param_group(func_name)

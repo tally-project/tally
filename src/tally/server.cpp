@@ -41,8 +41,11 @@ TallyServer::TallyServer()
 
 void TallyServer::start(uint32_t interval) {
 
-    send_ipc = new ipc::channel("server-to-client-140000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-140000", ipc::receiver);
+    auto time_ckpt = std::chrono::steady_clock::now();
+    double req_count = 0.; 
+
+    send_ipc = new ipc::channel("server-to-client-180000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-180000", ipc::receiver);
 
     load_cache();
 
@@ -52,6 +55,16 @@ void TallyServer::start(uint32_t interval) {
         ipc::buff_t buf;
         while (buf.empty()) {
             buf = recv_ipc->recv(interval);
+
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - time_ckpt).count();
+            if (elapsed >= 1000) {
+                std::string log_msg = "Tally request processing speed: " + std::to_string(req_count / (double)elapsed * 1000.) + "/s";
+                spdlog::info(log_msg);
+                time_ckpt = now;
+                req_count = 0;
+            }
+
             if (is_quit__.load(std::memory_order_acquire)) return;
         }
 
@@ -61,6 +74,7 @@ void TallyServer::start(uint32_t interval) {
 
         auto handler = cuda_api_handler_map[msg_header->api_id];
         handler(args);
+        req_count++;
     }
 }
 
@@ -111,7 +125,7 @@ void TallyServer::load_cache()
 
 void TallyServer::handle___cudaRegisterFatBinary(void *__args)
 {
-    spdlog::info("Received request: __cudaRegisterFatBinary");
+    // spdlog::info("Received request: __cudaRegisterFatBinary");
     auto args = (__cudaRegisterFatBinaryArg *) __args;
     bool cached = args->cached;
     magic = args->magic;
@@ -128,7 +142,7 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args)
     }
 
     if (cubin_registered) {
-        spdlog::info("Fat binary exists in cache, skipping register");
+        // spdlog::info("Fat binary exists in cache, skipping register");
     }
 
     // Free data from last time
@@ -152,7 +166,7 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args)
 
 void TallyServer::handle___cudaRegisterFunction(void *__args)
 {
-    spdlog::info("Received request: __cudaRegisterFunction");
+    // spdlog::info("Received request: __cudaRegisterFunction");
     auto args = (struct registerKernelArg *) __args;
 
     std::string kernel_name {args->data, args->kernel_func_len};
@@ -161,7 +175,7 @@ void TallyServer::handle___cudaRegisterFunction(void *__args)
 
 void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
 {
-    spdlog::info("Received request: __cudaRegisterFatBinaryEnd");
+    // spdlog::info("Received request: __cudaRegisterFatBinaryEnd");
 
     void **handle;
     void *kernel_server_addr;
@@ -208,13 +222,11 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
     int *arr;
     cudaMalloc((void**)&arr, sizeof(int));
     cudaFree(arr);
-
-    spdlog::info("Complete request: __cudaRegisterFatBinaryEnd");
 }
 
 void TallyServer::handle_cudaMalloc(void *__args)
 {
-    spdlog::info("Received request: cudaMalloc");
+    // spdlog::info("Received request: cudaMalloc");
     auto args = (struct cudaMallocArg *) __args;
 
     // The client "supposedly" should remember this address
@@ -230,7 +242,7 @@ void TallyServer::handle_cudaMalloc(void *__args)
 
 void TallyServer::handle_cudaMemcpy(void *__args)
 {
-    spdlog::info("Received request: cudaMemcpy");
+    // spdlog::info("Received request: cudaMemcpy");
     auto args = (struct cudaMemcpyArg *) __args;
     struct cudaMemcpyResponse *res;
     size_t res_size = 0;
@@ -262,7 +274,7 @@ void TallyServer::handle_cudaMemcpy(void *__args)
 
 void TallyServer::handle_cudaMemcpyAsync(void *__args)
 {
-    spdlog::info("Received request: cudaMemcpyAsync");
+    // spdlog::info("Received request: cudaMemcpyAsync");
     auto args = (struct cudaMemcpyAsyncArg *) __args;
     struct cudaMemcpyAsyncResponse *res;
     size_t res_size = 0;
@@ -297,7 +309,7 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args)
 
 void TallyServer::handle_cudaLaunchKernel(void *__args)
 {
-    spdlog::info("Received request: cudaLaunchKernel");
+    // spdlog::info("Received request: cudaLaunchKernel");
     auto args = (cudaLaunchKernelArg *) __args;
     void *kernel_server_addr = _kernel_client_addr_mapping[(void *) args->host_func];
     auto &arg_sizes = _kernel_addr_to_args[kernel_server_addr];
@@ -322,7 +334,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args)
 
 void TallyServer::handle_cublasSgemm_v2(void *__args)
 {
-	spdlog::info("Received request: cublasSgemm_v2");
+	// spdlog::info("Received request: cublasSgemm_v2");
 
     auto args = (struct cublasSgemm_v2Arg *) __args;
 
@@ -353,11 +365,9 @@ void TallyServer::handle_cublasSgemm_v2(void *__args)
 
 void TallyServer::handle_cublasLtMatmul(void *__args)
 {
-	spdlog::info("Received request: cublasLtMatmul");
+	// spdlog::info("Received request: cublasLtMatmul");
 
     auto args = (struct cublasLtMatmulArg *) __args;
-
-    spdlog::info("before cublasLtMatmul");
 
     cublasStatus_t err = cublasLtMatmul(
 		args->lightHandle,
@@ -378,8 +388,6 @@ void TallyServer::handle_cublasLtMatmul(void *__args)
         args->stream
     );
 
-    spdlog::info("after cublasLtMatmul");
-	
     while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
         send_ipc->wait_for_recv(1);
     }
@@ -387,7 +395,7 @@ void TallyServer::handle_cublasLtMatmul(void *__args)
 
 void TallyServer::handle_cublasLtMatmulDescSetAttribute(void *__args)
 {
-	spdlog::info("Received request: cublasLtMatmulDescSetAttribute");
+	// spdlog::info("Received request: cublasLtMatmulDescSetAttribute");
 
     auto args = (struct cublasLtMatmulDescSetAttributeArg *) __args;
 
@@ -405,7 +413,7 @@ void TallyServer::handle_cublasLtMatmulDescSetAttribute(void *__args)
 
 void TallyServer::handle_cublasLtMatrixLayoutSetAttribute(void *__args)
 {
-	spdlog::info("Received request: cublasLtMatrixLayoutSetAttribute");
+	// spdlog::info("Received request: cublasLtMatrixLayoutSetAttribute");
 
     auto args = (struct cublasLtMatrixLayoutSetAttributeArg *) __args;
 
@@ -423,7 +431,7 @@ void TallyServer::handle_cublasLtMatrixLayoutSetAttribute(void *__args)
 
 void TallyServer::handle_cublasLtMatmulPreferenceSetAttribute(void *__args)
 {
-	spdlog::info("Received request: cublasLtMatmulPreferenceSetAttribute");
+	// spdlog::info("Received request: cublasLtMatmulPreferenceSetAttribute");
 
     auto args = (struct cublasLtMatmulPreferenceSetAttributeArg *) __args;
 
@@ -441,7 +449,7 @@ void TallyServer::handle_cublasLtMatmulPreferenceSetAttribute(void *__args)
 
 void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args)
 {
-	spdlog::info("Received request: cublasLtMatmulAlgoGetHeuristic");
+	// spdlog::info("Received request: cublasLtMatmulAlgoGetHeuristic");
 
     auto args = (struct cublasLtMatmulAlgoGetHeuristicArg *) __args;
 

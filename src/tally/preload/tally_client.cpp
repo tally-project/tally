@@ -147,7 +147,7 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 
 cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind)
 {
-    printf("cudaMemcpy hooked\n");
+    // printf("cudaMemcpy hooked\n");
     uint32_t msg_len;
     uint8_t *msg;
     
@@ -189,7 +189,7 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
 
 cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
-    printf("cudaMemcpyAsync hooked\n");
+    // printf("cudaMemcpyAsync hooked\n");
 
 	uint32_t msg_len;
     uint8_t *msg;
@@ -233,7 +233,7 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
-    printf("cudaLaunchKernel hooked\n");
+    // printf("cudaLaunchKernel hooked\n");
     auto &params_info = TallyClient::client->_kernel_addr_to_args[func];
     uint32_t params_size =  std::accumulate(params_info.begin(), params_info.end(), 0);
 
@@ -269,7 +269,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
 cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 {
-    printf("cudaMalloc hooked\n");
+    // printf("cudaMalloc hooked\n");
     static const uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMallocArg);
 
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
@@ -291,7 +291,7 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 
 cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
 {
-	printf("cublasSgemm_v2 hooked\n");
+	// printf("cublasSgemm_v2 hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSgemm_v2Arg);
 
@@ -327,7 +327,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 // At some point need to keep track which pointers are fake and which are real
 cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)
 {
-	printf("cublasLtMatmul hooked\n");
+	// printf("cublasLtMatmul hooked\n");
 	
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulArg);
 
@@ -363,7 +363,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 
 cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
 {
-	printf("cublasLtMatmulDescSetAttribute hooked\n");
+	// printf("cublasLtMatmulDescSetAttribute hooked\n");
 	
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescSetAttributeArg) + sizeInBytes;
 
@@ -386,7 +386,7 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 
 cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, const void*  buf, size_t  sizeInBytes)
 {
-	printf("cublasLtMatrixLayoutSetAttribute hooked\n");
+	// printf("cublasLtMatrixLayoutSetAttribute hooked\n");
 	
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutSetAttributeArg) + sizeInBytes;
 
@@ -409,7 +409,7 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 
 cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
 {
-	printf("cublasLtMatmulPreferenceSetAttribute hooked\n");
+	// printf("cublasLtMatmulPreferenceSetAttribute hooked\n");
 	
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceSetAttributeArg) + sizeInBytes;
 
@@ -432,7 +432,7 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 
 cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, cublasLtMatmulPreference_t  preference, int  requestedAlgoCount, cublasLtMatmulHeuristicResult_t  heuristicResultsArray[], int*  returnAlgoCount)
 {
-	printf("cublasLtMatmulAlgoGetHeuristic hooked\n");
+	// printf("cublasLtMatmulAlgoGetHeuristic hooked\n");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulAlgoGetHeuristicArg);
 
@@ -463,13 +463,13 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 
 const char* cudaGetErrorString(cudaError_t  error)
 {
-    printf("cudaGetErrorString hooked\n");
+    // printf("cudaGetErrorString hooked\n");
     return lcudaGetErrorString(error);
 }
 
 CUresult cuGetProcAddress(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags)
 {
-	printf("cuGetProcAddress hooked\n");
+	// printf("cuGetProcAddress hooked\n");
 	return lcuGetProcAddress(symbol, pfn, cudaVersion, flags);
 }
 
