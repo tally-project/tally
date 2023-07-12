@@ -8,6 +8,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE "Debug")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
+remove_definitions(-DENABLE_LOGGING)
+
+link_directories(/usr/local/cuda/lib64)
+
 FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
 
 add_subdirectory(third_party/spdlog)
@@ -55,6 +59,8 @@ add_library(tally_client SHARED
     ${TALLY_SRC_FILES}
     ${TALLY_CLIENT_SRC_FILES}
 )
+
+target_compile_definitions(tally_client PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
 
 target_include_directories(tally_client
     PUBLIC ${PROJECT_SOURCE_DIR}/include
@@ -123,6 +129,8 @@ set_target_properties(server PROPERTIES
     CUDA_ARCHITECTURES "86"
     CUDA_RUNTIME_LIBRARY Shared
 )
+
+target_compile_definitions(server PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
 
 target_include_directories(server
     PUBLIC  ${PROJECT_SOURCE_DIR}/include

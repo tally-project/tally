@@ -51,3 +51,18 @@ set_target_properties(cublasLt_test PROPERTIES
     CUDA_ARCHITECTURES "86"
     CUDA_RUNTIME_LIBRARY Shared
 )
+
+add_executable(cudnn_test cudnn_test.cu)
+
+target_link_libraries(cudnn_test
+    cuda
+    cudart
+    cudnn
+)
+
+set_target_properties(cudnn_test PROPERTIES
+    CUDA_ARCHITECTURES "86"
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+add_subdirectory(cudnn-samples)

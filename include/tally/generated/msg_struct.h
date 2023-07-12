@@ -361,6 +361,13 @@ struct cuModuleUnloadArg {
 	CUmodule  hmod;
 };
 
+struct cuMemcpyAsyncArg {
+	CUdeviceptr  dst;
+	CUdeviceptr  src;
+	size_t  ByteCount;
+	CUstream  hStream;
+};
+
 struct cudaDeviceResetArg {
 };
 
@@ -682,8 +689,29 @@ struct cudaEventElapsedTimeResponse {
 	cudaError_t err;
 };
 
+struct cudaMallocArg {
+	void ** devPtr;
+	size_t  size;
+};
+
+struct cudaMallocResponse {
+	void * devPtr;
+	cudaError_t err;
+};
+
 struct cudaFreeArg {
 	void * devPtr;
+};
+
+struct cudaMemGetInfoArg {
+	size_t * free;
+	size_t * total;
+};
+
+struct cudaMemGetInfoResponse {
+	size_t  free;
+	size_t  total;
+	cudaError_t err;
 };
 
 struct cudaGraphCreateArg {
@@ -694,6 +722,25 @@ struct cudaGraphCreateArg {
 struct cudaGraphCreateResponse {
 	cudaGraph_t  pGraph;
 	cudaError_t err;
+};
+
+struct cudnnGetVersionArg {
+};
+
+struct cudnnGetMaxDeviceVersionArg {
+};
+
+struct cudnnGetCudartVersionArg {
+};
+
+struct cudnnGetPropertyArg {
+	libraryPropertyType  type;
+	int * value;
+};
+
+struct cudnnGetPropertyResponse {
+	int  value;
+	cudnnStatus_t err;
 };
 
 struct cudnnCreateArg {
@@ -754,6 +801,127 @@ struct cudnnSetTensor4dDescriptorExArg {
 	int  cStride;
 	int  hStride;
 	int  wStride;
+};
+
+struct cudnnGetTensor4dDescriptorArg {
+	cudnnTensorDescriptor_t  tensorDesc;
+	cudnnDataType_t * dataType;
+	int * n;
+	int * c;
+	int * h;
+	int * w;
+	int * nStride;
+	int * cStride;
+	int * hStride;
+	int * wStride;
+};
+
+struct cudnnGetTensor4dDescriptorResponse {
+	cudnnDataType_t  dataType;
+	int  n;
+	int  c;
+	int  h;
+	int  w;
+	int  nStride;
+	int  cStride;
+	int  hStride;
+	int  wStride;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetTensorSizeInBytesArg {
+	cudnnTensorDescriptor_t  tensorDesc;
+	size_t * size;
+};
+
+struct cudnnGetTensorSizeInBytesResponse {
+	size_t  size;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroyTensorDescriptorArg {
+	cudnnTensorDescriptor_t  tensorDesc;
+};
+
+struct cudnnInitTransformDestArg {
+	cudnnTensorTransformDescriptor_t  transformDesc;
+	cudnnTensorDescriptor_t  srcDesc;
+	cudnnTensorDescriptor_t  destDesc;
+	size_t * destSizeInBytes;
+};
+
+struct cudnnInitTransformDestResponse {
+	size_t  destSizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateTensorTransformDescriptorArg {
+	cudnnTensorTransformDescriptor_t * transformDesc;
+};
+
+struct cudnnCreateTensorTransformDescriptorResponse {
+	cudnnTensorTransformDescriptor_t  transformDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateFilterDescriptorArg {
+	cudnnFilterDescriptor_t * filterDesc;
+};
+
+struct cudnnCreateFilterDescriptorResponse {
+	cudnnFilterDescriptor_t  filterDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroyFilterDescriptorArg {
+	cudnnFilterDescriptor_t  filterDesc;
+};
+
+struct cudnnCreateActivationDescriptorArg {
+	cudnnActivationDescriptor_t * activationDesc;
+};
+
+struct cudnnCreateActivationDescriptorResponse {
+	cudnnActivationDescriptor_t  activationDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnSetActivationDescriptorArg {
+	cudnnActivationDescriptor_t  activationDesc;
+	cudnnActivationMode_t  mode;
+	cudnnNanPropagation_t  reluNanOpt;
+	double  coef;
+};
+
+struct cudnnCreateConvolutionDescriptorArg {
+	cudnnConvolutionDescriptor_t * convDesc;
+};
+
+struct cudnnCreateConvolutionDescriptorResponse {
+	cudnnConvolutionDescriptor_t  convDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroyConvolutionDescriptorArg {
+	cudnnConvolutionDescriptor_t  convDesc;
+};
+
+struct cudnnGetConvolutionForwardWorkspaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnTensorDescriptor_t  xDesc;
+	cudnnFilterDescriptor_t  wDesc;
+	cudnnConvolutionDescriptor_t  convDesc;
+	cudnnTensorDescriptor_t  yDesc;
+	cudnnConvolutionFwdAlgo_t  algo;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetConvolutionForwardWorkspaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnCnnTrainVersionCheckArg {
 };
 
 struct cudnnBackendCreateDescriptorArg {
@@ -819,6 +987,31 @@ struct cublasSetWorkspace_v2Arg {
 struct cublasSetStream_v2Arg {
 	cublasHandle_t  handle;
 	cudaStream_t  streamId;
+};
+
+struct cublasGetStream_v2Arg {
+	cublasHandle_t  handle;
+	cudaStream_t*  streamId;
+};
+
+struct cublasGetStream_v2Response {
+	cudaStream_t streamId;
+	cublasStatus_t err;
+};
+
+struct cublasGetPointerMode_v2Arg {
+	cublasHandle_t  handle;
+	cublasPointerMode_t*  mode;
+};
+
+struct cublasGetPointerMode_v2Response {
+	cublasPointerMode_t mode;
+	cublasStatus_t err;
+};
+
+struct cublasSetPointerMode_v2Arg {
+	cublasHandle_t  handle;
+	cublasPointerMode_t  mode;
 };
 
 struct cublasSetMathModeArg {

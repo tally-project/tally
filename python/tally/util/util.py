@@ -33,3 +33,7 @@ def remove_keywords(_str, ignore_keywords):
 
 def is_alnum_underscore(word):
     return re.match(r'^[A-Za-z0-9_]+$', word)
+
+def rreplace(s, old, new, occurrence=1):
+    li = s.rsplit(old, occurrence)
+    return new.join(li)

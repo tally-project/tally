@@ -6,6 +6,8 @@
 
 #include <tally/transform.h>
 #include <tally/util.h>
+#include <tally/cuda_util.h>
+#include <tally/log.h>
 #include <tally/msg_struct.h>
 #include <tally/cache.h>
 #include <tally/cache_util.h>
@@ -44,8 +46,8 @@ void TallyServer::start(uint32_t interval) {
     auto time_ckpt = std::chrono::steady_clock::now();
     double req_count = 0.; 
 
-    send_ipc = new ipc::channel("server-to-client-180000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-180000", ipc::receiver);
+    send_ipc = new ipc::channel("server-to-client-230000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-230000", ipc::receiver);
 
     load_cache();
 
@@ -58,8 +60,8 @@ void TallyServer::start(uint32_t interval) {
 
             auto now = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - time_ckpt).count();
-            if (elapsed >= 1000) {
-                std::string log_msg = "Tally request processing speed: " + std::to_string(req_count / (double)elapsed * 1000.) + "/s";
+            if (elapsed >= 1000 * 60) {
+                std::string log_msg = "Tally request processing speed: " + std::to_string(req_count / (double)elapsed * 1000. * 60.) + "/min";
                 spdlog::info(log_msg);
                 time_ckpt = now;
                 req_count = 0;
@@ -125,7 +127,7 @@ void TallyServer::load_cache()
 
 void TallyServer::handle___cudaRegisterFatBinary(void *__args)
 {
-    // spdlog::info("Received request: __cudaRegisterFatBinary");
+    TALLY_SPD_LOG("Received request: __cudaRegisterFatBinary");
     auto args = (__cudaRegisterFatBinaryArg *) __args;
     bool cached = args->cached;
     magic = args->magic;
@@ -142,7 +144,7 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args)
     }
 
     if (cubin_registered) {
-        // spdlog::info("Fat binary exists in cache, skipping register");
+        TALLY_SPD_LOG("Fat binary exists in cache, skipping register");
     }
 
     // Free data from last time
@@ -166,7 +168,7 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args)
 
 void TallyServer::handle___cudaRegisterFunction(void *__args)
 {
-    // spdlog::info("Received request: __cudaRegisterFunction");
+    TALLY_SPD_LOG("Received request: __cudaRegisterFunction");
     auto args = (struct registerKernelArg *) __args;
 
     std::string kernel_name {args->data, args->kernel_func_len};
@@ -175,7 +177,7 @@ void TallyServer::handle___cudaRegisterFunction(void *__args)
 
 void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
 {
-    // spdlog::info("Received request: __cudaRegisterFatBinaryEnd");
+    TALLY_SPD_LOG("Received request: __cudaRegisterFatBinaryEnd");
 
     void **handle;
     void *kernel_server_addr;
@@ -224,25 +226,9 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
     cudaFree(arr);
 }
 
-void TallyServer::handle_cudaMalloc(void *__args)
-{
-    // spdlog::info("Received request: cudaMalloc");
-    auto args = (struct cudaMallocArg *) __args;
-
-    // The client "supposedly" should remember this address
-    // So not book-keeping it at the moment
-    void *devPtr;
-    cudaError_t err = cudaMalloc(&devPtr, args->size);
-
-    struct cudaMallocResponse res { devPtr, err };
-    while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
-        send_ipc->wait_for_recv(1);
-    }
-}
-
 void TallyServer::handle_cudaMemcpy(void *__args)
 {
-    // spdlog::info("Received request: cudaMemcpy");
+    TALLY_SPD_LOG("Received request: cudaMemcpy");
     auto args = (struct cudaMemcpyArg *) __args;
     struct cudaMemcpyResponse *res;
     size_t res_size = 0;
@@ -263,6 +249,12 @@ void TallyServer::handle_cudaMemcpy(void *__args)
         cudaError_t err = cudaMemcpy(res->data, args->src, args->count, args->kind);
 
         res->err = err;
+    } else if (args->kind == cudaMemcpyDeviceToDevice) {
+        res_size = sizeof(cudaError_t);
+        res = (struct cudaMemcpyResponse *) malloc(res_size);
+        cudaError_t err = cudaMemcpy(args->dst, args->src, args->count, args->kind);
+        res->err = err;
+
     } else {
         throw std::runtime_error("Unknown memcpy kind!");
     }
@@ -274,7 +266,7 @@ void TallyServer::handle_cudaMemcpy(void *__args)
 
 void TallyServer::handle_cudaMemcpyAsync(void *__args)
 {
-    // spdlog::info("Received request: cudaMemcpyAsync");
+    TALLY_SPD_LOG("Received request: cudaMemcpyAsync");
     auto args = (struct cudaMemcpyAsyncArg *) __args;
     struct cudaMemcpyAsyncResponse *res;
     size_t res_size = 0;
@@ -296,6 +288,12 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args)
         err = cudaMemcpyAsync(res->data, args->src, args->count, args->kind, args->stream);
 
         res->err = err;
+    } else if (args->kind == cudaMemcpyDeviceToDevice) {
+        res_size = sizeof(cudaError_t);
+        res = (struct cudaMemcpyAsyncResponse *) malloc(res_size);
+        err = cudaMemcpyAsync(args->dst, args->src, args->count, args->kind, args->stream);
+        res->err = err;
+
     } else {
         throw std::runtime_error("Unknown memcpy kind!");
     }
@@ -309,7 +307,7 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args)
 
 void TallyServer::handle_cudaLaunchKernel(void *__args)
 {
-    // spdlog::info("Received request: cudaLaunchKernel");
+    TALLY_SPD_LOG("Received request: cudaLaunchKernel");
     auto args = (cudaLaunchKernelArg *) __args;
     void *kernel_server_addr = _kernel_client_addr_mapping[(void *) args->host_func];
     auto &arg_sizes = _kernel_addr_to_args[kernel_server_addr];
@@ -334,7 +332,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args)
 
 void TallyServer::handle_cublasSgemm_v2(void *__args)
 {
-	// spdlog::info("Received request: cublasSgemm_v2");
+	TALLY_SPD_LOG("Received request: cublasSgemm_v2");
 
     auto args = (struct cublasSgemm_v2Arg *) __args;
 
@@ -365,7 +363,7 @@ void TallyServer::handle_cublasSgemm_v2(void *__args)
 
 void TallyServer::handle_cublasLtMatmul(void *__args)
 {
-	// spdlog::info("Received request: cublasLtMatmul");
+	TALLY_SPD_LOG("Received request: cublasLtMatmul");
 
     auto args = (struct cublasLtMatmulArg *) __args;
 
@@ -395,7 +393,7 @@ void TallyServer::handle_cublasLtMatmul(void *__args)
 
 void TallyServer::handle_cublasLtMatmulDescSetAttribute(void *__args)
 {
-	// spdlog::info("Received request: cublasLtMatmulDescSetAttribute");
+	TALLY_SPD_LOG("Received request: cublasLtMatmulDescSetAttribute");
 
     auto args = (struct cublasLtMatmulDescSetAttributeArg *) __args;
 
@@ -413,7 +411,7 @@ void TallyServer::handle_cublasLtMatmulDescSetAttribute(void *__args)
 
 void TallyServer::handle_cublasLtMatrixLayoutSetAttribute(void *__args)
 {
-	// spdlog::info("Received request: cublasLtMatrixLayoutSetAttribute");
+	TALLY_SPD_LOG("Received request: cublasLtMatrixLayoutSetAttribute");
 
     auto args = (struct cublasLtMatrixLayoutSetAttributeArg *) __args;
 
@@ -431,7 +429,7 @@ void TallyServer::handle_cublasLtMatrixLayoutSetAttribute(void *__args)
 
 void TallyServer::handle_cublasLtMatmulPreferenceSetAttribute(void *__args)
 {
-	// spdlog::info("Received request: cublasLtMatmulPreferenceSetAttribute");
+	TALLY_SPD_LOG("Received request: cublasLtMatmulPreferenceSetAttribute");
 
     auto args = (struct cublasLtMatmulPreferenceSetAttributeArg *) __args;
 
@@ -449,7 +447,7 @@ void TallyServer::handle_cublasLtMatmulPreferenceSetAttribute(void *__args)
 
 void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args)
 {
-	// spdlog::info("Received request: cublasLtMatmulAlgoGetHeuristic");
+	TALLY_SPD_LOG("Received request: cublasLtMatmulAlgoGetHeuristic");
 
     auto args = (struct cublasLtMatmulAlgoGetHeuristicArg *) __args;
 
@@ -482,4 +480,295 @@ void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args)
     }
 
     free(res);
+}
+
+void TallyServer::handle_cudnnBackendSetAttribute(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnBackendSetAttribute");
+
+    auto args = (struct cudnnBackendSetAttributeArg *) __args;
+
+    std::cout << "descriptor: " << args->descriptor << std::endl;
+    std::cout << "attributeName: " << args->attributeName << std::endl;
+    std::cout << "attributeType: " << args->attributeType << std::endl;
+    std::cout << "elementCount: " << args->elementCount << std::endl;
+
+    int32_t type_size = get_cudnn_attribute_size(args->attributeType);
+    std::cout << "type_size is " << type_size << std::endl;
+
+
+    if (args->attributeType == CUDNN_TYPE_BACKEND_DESCRIPTOR) {
+        cudnnBackendDescriptor_t *arr = (cudnnBackendDescriptor_t *) args->arrayOfElements;
+        for (int i = 0; i < args->elementCount; i++) {
+            std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
+        }
+    } else if (args->attributeType == CUDNN_TYPE_DATA_TYPE) {
+        cudnnDataType_t *arr = (cudnnDataType_t *) args->arrayOfElements;
+        for (int i = 0; i < args->elementCount; i++) {
+            std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
+        }
+    } else if (args->attributeType == CUDNN_TYPE_CONVOLUTION_MODE) {
+        cudnnConvolutionMode_t *arr = (cudnnConvolutionMode_t *) args->arrayOfElements;
+        for (int i = 0; i < args->elementCount; i++) {
+            std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
+        }
+    } else if (args->attributeType == CUDNN_TYPE_INT64) {
+        int64_t *arr = (int64_t *) args->arrayOfElements;
+        for (int i = 0; i < args->elementCount; i++) {
+            std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
+        }
+    } else if (args->attributeType == CUDNN_TYPE_FLOAT) {
+        float *arr = (float *) args->arrayOfElements;
+        for (int i = 0; i < args->elementCount; i++) {
+            std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
+        }
+    } else if (args->attributeType == CUDNN_TYPE_HANDLE) {
+        cudnnHandle_t *arr = (cudnnHandle_t *) args->arrayOfElements;
+        for (int i = 0; i < args->elementCount; i++) {
+            std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
+        }
+    } else if (args->attributeType == CUDNN_TYPE_VOID_PTR) {
+        void **arr = (void **) args->arrayOfElements;
+        for (int i = 0; i < args->elementCount; i++) {
+            std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
+        }
+    } else {
+        throw std::runtime_error("unhandled attributeType");
+    }
+
+    cudnnStatus_t err = cudnnBackendSetAttribute(
+		args->descriptor,
+        args->attributeName,
+        args->attributeType,
+        args->elementCount,
+        (void *) args->arrayOfElements
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    assert(err == CUDNN_STATUS_SUCCESS);
+}
+
+void TallyServer::handle_cudnnBackendGetAttribute(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnBackendGetAttribute");
+
+    auto args = (struct cudnnBackendGetAttributeArg *) __args;
+
+    std::cout << "descriptor: " << args->descriptor << std::endl;
+    std::cout << "attributeName: " << args->attributeName << std::endl;
+    std::cout << "attributeType: " << args->attributeType << std::endl;
+    std::cout << "requestedElementCount: " << args->requestedElementCount << std::endl;
+
+    int32_t type_size = get_cudnn_attribute_size(args->attributeType);
+    std::cout << "type_size is " << type_size << std::endl;
+
+    int32_t buf_size = type_size * args->requestedElementCount;
+    std::cout << "buf_size: " << buf_size << std::endl;
+
+    void *arrayOfElements = malloc(buf_size);
+    
+    if (args->attributeName == 300) {
+        cudnnBackendDescriptor_t desc;
+
+        int64_t * elementCount = (int64_t *)malloc(sizeof(int64_t));
+
+        cudnnStatus_t err;
+
+        try {
+            err = cudnnBackendGetAttribute(
+                args->descriptor,
+                args->attributeName,
+                args->attributeType,
+                args->requestedElementCount,
+                elementCount,
+                &desc
+            );
+        } catch (std::exception &e) {
+            std::cout << "caught std::execution" << std::endl;
+        }
+
+        std::cout << "returned desc: " << desc << std::endl;    
+        std::cout << "returned elementCount: " << *elementCount << std::endl;
+
+        if (err != CUDNN_STATUS_SUCCESS) {
+            std::cerr << "cudnnStatus_t not success" << std::endl;
+            std::cout << cudnnGetErrorString(err) << std::endl;
+        }
+
+        uint32_t res_len =  sizeof(cudnnBackendGetAttributeResponse) + type_size * *elementCount;
+        auto res = (struct cudnnBackendGetAttributeResponse *) std::malloc(res_len);
+
+        res->elementCount = *elementCount;
+        res->err = err;
+        memcpy(res->arrayOfElements, &desc, type_size * *elementCount);
+        free(arrayOfElements);
+
+        while(!send_ipc->send((void *) res, res_len)) {
+            send_ipc->wait_for_recv(1);
+        }
+        free(res);
+
+
+
+    } else {
+        int64_t elementCount;
+
+        cudnnStatus_t err;
+
+        try {
+            err = cudnnBackendGetAttribute(
+                args->descriptor,
+                args->attributeName,
+                args->attributeType,
+                args->requestedElementCount,
+                &elementCount,
+                arrayOfElements
+            );
+        } catch (std::exception &e) {
+            std::cout << "caught std::execution" << std::endl;
+        }
+
+        std::cout << "returned elementCount: " << elementCount << std::endl;
+
+
+
+        if (err != CUDNN_STATUS_SUCCESS) {
+            std::cerr << "cudnnStatus_t not success" << std::endl;
+            std::cout << cudnnGetErrorString(err) << std::endl;
+        }
+
+        assert(err == CUDNN_STATUS_SUCCESS);
+
+        uint32_t res_len =  sizeof(cudnnBackendGetAttributeResponse) + type_size * elementCount;
+        auto res = (struct cudnnBackendGetAttributeResponse *) std::malloc(res_len);
+
+        res->elementCount = elementCount;
+        res->err = err;
+        memcpy(res->arrayOfElements, arrayOfElements, type_size * elementCount);
+        free(arrayOfElements);
+
+        while(!send_ipc->send((void *) res, res_len)) {
+            send_ipc->wait_for_recv(1);
+        }
+        free(res);
+    }
+}
+
+void TallyServer::handle_cudnnActivationForward(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnActivationForward");
+
+    auto args = (struct cudnnActivationForwardArg *) __args;
+
+    cudnnStatus_t err = cudnnActivationForward(
+        args->handle,
+        args->activationDesc,
+        (void *) &(args->alpha),
+        args->xDesc,
+        args->x,
+        (void *) &(args->beta),
+        args->yDesc,
+        args->y
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    if (err != CUDNN_STATUS_SUCCESS) std::cerr << "cudnnStatus_t not success" << std::endl;
+}
+
+void TallyServer::handle_cudnnSetTensorNdDescriptor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnSetTensorNdDescriptor");
+
+    auto args = (struct cudnnSetTensorNdDescriptorArg *) __args;
+
+    cudnnStatus_t err = cudnnSetTensorNdDescriptor(
+        args->tensorDesc,
+        args->dataType,
+        args->nbDims,
+        args->dimA_and_strideA,
+        args->dimA_and_strideA + args->nbDims
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    if (err != CUDNN_STATUS_SUCCESS) std::cerr << "cudnnStatus_t not success" << std::endl;
+}
+
+void TallyServer::handle_cudnnSetConvolutionNdDescriptor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnSetConvolutionNdDescriptor");
+
+    auto args = (struct cudnnSetConvolutionNdDescriptorArg *) __args;
+
+    cudnnStatus_t err = cudnnSetConvolutionNdDescriptor(
+        args->convDesc,
+        args->arrayLength,
+        args->padA_and_filterStrideA_and_dilationA,
+        args->padA_and_filterStrideA_and_dilationA + args->arrayLength,
+        args->padA_and_filterStrideA_and_dilationA + args->arrayLength * 2,
+        args->mode,
+        args->computeType
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    if (err != CUDNN_STATUS_SUCCESS) std::cerr << "cudnnStatus_t not success" << std::endl;
+}
+
+void TallyServer::handle_cudnnSetFilterNdDescriptor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnSetFilterNdDescriptor");
+
+    auto args = (struct cudnnSetFilterNdDescriptorArg *) __args;
+
+    cudnnStatus_t err = cudnnSetFilterNdDescriptor(
+        args->filterDesc,
+        args->dataType,
+        args->format,
+        args->nbDims,
+        args->filterDimA
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    if (err != CUDNN_STATUS_SUCCESS) std::cerr << "cudnnStatus_t not success" << std::endl;
+}
+
+void TallyServer::handle_cudnnConvolutionForward(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnConvolutionForward");
+
+    auto args = (struct cudnnConvolutionForwardArg *) __args;
+
+    cudnnStatus_t err = cudnnConvolutionForward(
+		args->handle,
+        (void *) &(args->alpha),
+        args->xDesc,
+        args->x,
+        args->wDesc,
+        args->w,
+        args->convDesc,
+        args->algo,
+        args->workSpace,
+        args->workSpaceSizeInBytes,
+        (void *) &(args->beta),
+        args->yDesc,
+        args->y
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
 }

@@ -27,6 +27,7 @@ from tally.preload.preload_util import (
     generate_func_sig_from_file,
     get_func_name_from_sig
 )
+from tally.util.util import rreplace
 
 def gen_client_func_decl_def(func_sig):
 
@@ -72,7 +73,7 @@ def gen_client_msg_struct(func_sig):
         msg_struct += f"struct {func_name}Arg {{\n"
 
         for i in range(len(arg_types)):
-            msg_struct += f"\t{arg_types[i]} {arg_names[i]};\n"
+            msg_struct += f"""\t{arg_types[i].replace("const ", "")} {arg_names[i]};\n"""
         
         msg_struct += "};\n"
 
@@ -83,7 +84,8 @@ def gen_client_msg_struct(func_sig):
         msg_struct += f"struct {func_name}Response {{\n"
 
         for idx in PARAM_INDICES[group]:
-            msg_struct += f"\t{arg_types[idx].strip().strip('*')} {arg_names[idx]};\n"
+            new_arg_type = rreplace(arg_types[idx].strip().replace("const ", ""), "*", "")
+            msg_struct += f"""\t{new_arg_type} {arg_names[idx]};\n"""
 
         msg_struct += f"\t{ret_type} err;\n"
         msg_struct += "};\n"
@@ -110,7 +112,7 @@ void TallyServer::handle_{func_name}(void *__args)
 {{
 """
 
-    # handler += f"\tspdlog::info(\"Received request: {func_name}\");\n"
+    handler += f"\tTALLY_SPD_LOG(\"Received request: {func_name}\");\n"
 
     if is_get_param_func(func_name):
         group = get_param_group(func_name)
@@ -119,7 +121,7 @@ void TallyServer::handle_{func_name}(void *__args)
         handler += f"\tauto args = (struct {func_name}Arg *) __args;\n"
 
         for idx in indices:
-            handler += f"\t{arg_types[idx].strip().strip('*')} {arg_names[idx]};\n"
+            handler += f"\t{rreplace(arg_types[idx].strip(), '*', '')} {arg_names[idx]};\n"
 
         handler += f"\t{ret_type} err = {func_name}("
 
@@ -140,6 +142,9 @@ void TallyServer::handle_{func_name}(void *__args)
         
         handler += f"\t\terr"
         handler += "};\n"
+
+        if ret_type == "cudnnStatus_t":
+            handler += """if (err != CUDNN_STATUS_SUCCESS) std::cerr << "cudnnStatus_t not success" << std::endl; """
 
         handler += f"""
     while(!send_ipc->send((void *) &res, sizeof(struct {func_name}Response))) {{
@@ -165,6 +170,9 @@ void TallyServer::handle_{func_name}(void *__args)
         send_ipc->wait_for_recv(1);
     }}
 """
+        if ret_type == "cudnnStatus_t":
+            handler += """if (err != CUDNN_STATUS_SUCCESS) std::cerr << "cudnnStatus_t not success" << std::endl; """
+
     elif func_name in DIRECT_CALLS:
         pass
     else:
@@ -196,7 +204,7 @@ def gen_func_client_preload(func_sig):
     func_preload_builder += f"{ret_type} {func_name}({args_str_no_val})\n"
     func_preload_builder += "{\n"
 
-    # func_preload_builder += f"\tprintf(\"{func_name} hooked\\n\");\n"
+    func_preload_builder += f"\tTALLY_LOG(\"{func_name} hooked\");\n"
 
     if is_get_param_func(func_name):
         group = get_param_group(func_name)

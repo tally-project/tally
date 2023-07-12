@@ -104,6 +104,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 #include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
 #include "tally/client.h"
+#include "tally/log.h"
 #include "tally/ipc_util.h"
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
@@ -132,6 +133,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 
 #include "libipc/ipc.h"
 
+#include <tally/log.h>
 #include <tally/msg_struct.h>
 
 static std::function<void(int)> __exit;
@@ -184,11 +186,11 @@ DIRECT_CALLS = [
     "cuGetProcAddress",
     "cuGetErrorString",
     "cuGetErrorName",
+    "cudnnGetErrorString",
 ]
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
-    "cudaMalloc",
     "cudaMemcpy",
     "cudaMemcpyAsync",
     "cudaLaunchKernel",
@@ -198,6 +200,13 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "cublasLtMatmulPreferenceSetAttribute",
     "cublasLtMatmulAlgoGetHeuristic",
     "cublasLtMatmul",
+    "cudnnBackendSetAttribute",
+    "cudnnBackendGetAttribute",
+    "cudnnSetTensorNdDescriptor",
+    "cudnnSetConvolutionNdDescriptor",
+    "cudnnSetFilterNdDescriptor",
+    "cudnnActivationForward",
+    "cudnnConvolutionForward",
     "__cudaRegisterFunction",
     "__cudaRegisterFatBinary",
     "__cudaRegisterFatBinaryEnd"
@@ -269,7 +278,17 @@ FORWARD_API_CALLS = [
     "cudnnBackendDestroyDescriptor",
     "cudnnBackendInitialize",
     "cudnnBackendFinalize",
-    "cudnnBackendExecute"
+    "cudnnBackendExecute",
+    "cublasSetPointerMode_v2",
+    "cudnnDestroyFilterDescriptor",
+    "cudnnGetVersion",
+    "cudnnGetMaxDeviceVersion",
+    "cudnnGetCudartVersion",
+    "cudnnDestroyTensorDescriptor",
+    "cuMemcpyAsync",
+    "cudnnCnnTrainVersionCheck",
+    "cudnnSetActivationDescriptor",
+    "cudnnDestroyConvolutionDescriptor"
 ]
 
 # API calls that has the first argument set
@@ -326,7 +345,17 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cuCtxGetExecAffinity",
     "cuCtxAttach",
     "cudnnCreate",
-    "cudnnCreateTensorDescriptor"
+    "cudnnCreateTensorDescriptor",
+    "cudnnCreateTensorTransformDescriptor",
+    "cudaMalloc",
+    "cudnnCreateActivationDescriptor",
+    "cudnnCreateFilterDescriptor",
+    "cudnnCreateConvolutionDescriptor",
+]
+
+# these should just throw unsupported error
+UNSUPPORTED_FUNCS = [
+    "cudaMallocManaged"
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
@@ -334,7 +363,11 @@ CUDA_GET_2_PARAM_FUNCS = [
     "cublasGetVersion_v2",
     "cuCtxGetApiVersion",
     "cudnnGetStream",
-    "cudnnBackendCreateDescriptor"
+    "cudnnBackendCreateDescriptor",
+    "cublasGetStream_v2",
+    "cublasGetPointerMode_v2",
+    "cudnnGetProperty",
+    "cudnnGetTensorSizeInBytes"
 ]
 
 CUDA_GET_2_3_PARAM_FUNCS = [
@@ -345,27 +378,55 @@ CUDA_GET_1_2_PARAM_FUNCS = [
     "cudaDeviceGetStreamPriorityRange",
     "cuDeviceGetLuid",
     "cuDeviceComputeCapability",
-    "cuCtxGetStreamPriorityRange"
+    "cuCtxGetStreamPriorityRange",
+    "cudaMemGetInfo"
+]
+
+CUDA_GET_2_3_4_5_6_7_8_9_10_PARAM_FUNCS = [
+    "cudnnGetTensor4dDescriptor"
+]
+
+CUDA_GET_4_PARAM_FUNCS = [
+    "cudnnInitTransformDest"
+]
+
+CUDA_GET_7_PARAM_FUNCS = [
+    "cudnnGetConvolutionForwardWorkspaceSize"
 ]
 
 CUDA_GET_1_PARAM_FUNC_KEY = 1
 CUDA_GET_2_3_PARAM_FUNC_KEY = 2
 CUDA_GET_1_2_PARAM_FUNC_KEY = 3
 CUDA_GET_2_PARAM_FUNC_KEY = 4
+CUDA_GET_2_3_4_5_6_7_8_9_10_PARAM_FUNC_KEY = 5
+CUDA_GET_4_PARAM_FUNC_KEY = 6
+CUDA_GET_7_PARAM_FUNC_KEY = 7
 
 PARAM_INDICES = {
     CUDA_GET_1_PARAM_FUNC_KEY: [0],
     CUDA_GET_2_PARAM_FUNC_KEY: [1],
     CUDA_GET_2_3_PARAM_FUNC_KEY: [1, 2],
-    CUDA_GET_1_2_PARAM_FUNC_KEY: [0, 1]
+    CUDA_GET_1_2_PARAM_FUNC_KEY: [0, 1],
+    CUDA_GET_2_3_4_5_6_7_8_9_10_PARAM_FUNC_KEY: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    CUDA_GET_4_PARAM_FUNC_KEY: [3],
+    CUDA_GET_7_PARAM_FUNC_KEY: [6]
 }
 
 def is_get_param_func(func_name):
-    if (func_name in CUDA_GET_1_PARAM_FUNCS or
-        func_name in CUDA_GET_2_3_PARAM_FUNCS or
-        func_name in CUDA_GET_1_2_PARAM_FUNCS or
-        func_name in CUDA_GET_2_PARAM_FUNCS):
-        return True
+
+    for funcs in [
+        CUDA_GET_1_PARAM_FUNCS,
+        CUDA_GET_2_3_PARAM_FUNCS,
+        CUDA_GET_1_2_PARAM_FUNCS,
+        CUDA_GET_2_PARAM_FUNCS,
+        CUDA_GET_2_3_PARAM_FUNCS,
+        CUDA_GET_1_2_PARAM_FUNCS,
+        CUDA_GET_2_3_4_5_6_7_8_9_10_PARAM_FUNCS,
+        CUDA_GET_4_PARAM_FUNCS,
+        CUDA_GET_7_PARAM_FUNCS
+    ]:
+        if func_name in funcs:
+            return True
     return False
 
 def get_param_group(func_name):
@@ -377,6 +438,12 @@ def get_param_group(func_name):
         return CUDA_GET_1_2_PARAM_FUNC_KEY
     elif func_name in CUDA_GET_2_PARAM_FUNCS:
         return CUDA_GET_2_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_2_3_4_5_6_7_8_9_10_PARAM_FUNCS:
+        return CUDA_GET_2_3_4_5_6_7_8_9_10_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_4_PARAM_FUNCS:
+        return CUDA_GET_4_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_7_PARAM_FUNCS:
+        return CUDA_GET_7_PARAM_FUNC_KEY
     else:
         assert(False)
 

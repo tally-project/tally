@@ -6,6 +6,7 @@
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
 #include <cublasLt.h>
+#include <cudnn.h>
 
 #include <tally/generated/cuda_api_enum.h>
 
@@ -41,16 +42,6 @@ typedef struct {
 typedef struct MessageHeader {
     CUDA_API_ENUM api_id;
 } MessageHeader_t;
-
-struct cudaMallocArg {
-    void ** devPtr;
-    size_t  size;
-};
-
-struct cudaMallocResponse {
-    void *ptr;
-    cudaError_t err;
-};
 
 struct cudaMemcpyArg {
     void *dst;
@@ -172,6 +163,81 @@ struct cudaGetErrorStringArg {
 struct cudaGetErrorStringResponse {
     uint32_t str_len;
     char data[];
+};
+
+struct cudnnBackendSetAttributeArg {
+    cudnnBackendDescriptor_t  descriptor;
+    cudnnBackendAttributeName_t  attributeName;
+    cudnnBackendAttributeType_t  attributeType;
+    int64_t  elementCount;
+    uint64_t arrayOfElements[];
+};
+
+struct cudnnBackendSetAttributeResponse {
+    cudnnStatus_t err;
+};
+
+struct cudnnBackendGetAttributeArg {
+    cudnnBackendDescriptor_t descriptor;
+    cudnnBackendAttributeName_t  attributeName;
+    cudnnBackendAttributeType_t  attributeType;
+    int64_t  requestedElementCount;
+};
+
+struct cudnnBackendGetAttributeResponse {
+    cudnnStatus_t err;
+    int64_t elementCount;
+    char arrayOfElements[];
+};
+
+struct cudnnActivationForwardArg {
+	cudnnHandle_t  handle;
+	cudnnActivationDescriptor_t  activationDesc;
+	uint64_t alpha;
+	cudnnTensorDescriptor_t  xDesc;
+	void *x;
+	uint64_t beta;
+	cudnnTensorDescriptor_t  yDesc;
+	void *y;
+};
+
+struct cudnnSetTensorNdDescriptorArg {
+    cudnnTensorDescriptor_t  tensorDesc;
+    cudnnDataType_t  dataType;
+    int  nbDims;
+    int  dimA_and_strideA[];
+};
+
+struct cudnnSetConvolutionNdDescriptorArg {
+    cudnnConvolutionDescriptor_t  convDesc;
+    int  arrayLength;
+    cudnnConvolutionMode_t  mode;
+    cudnnDataType_t  computeType;
+    int  padA_and_filterStrideA_and_dilationA[];
+};
+
+struct cudnnSetFilterNdDescriptorArg {
+    cudnnFilterDescriptor_t  filterDesc;
+    cudnnDataType_t  dataType;
+    cudnnTensorFormat_t  format;
+    int  nbDims;
+    int  filterDimA[];
+};
+
+struct cudnnConvolutionForwardArg {
+    cudnnHandle_t  handle;
+    uint64_t alpha;
+    cudnnTensorDescriptor_t  xDesc;
+    void *x;
+    cudnnFilterDescriptor_t  wDesc;
+    void *w;
+    cudnnConvolutionDescriptor_t  convDesc;
+    cudnnConvolutionFwdAlgo_t  algo;
+    void *workSpace;
+    size_t  workSpaceSizeInBytes;
+    uint64_t beta;
+    cudnnTensorDescriptor_t  yDesc;
+    void *y;
 };
 
 #endif // TALLY_DEF_H

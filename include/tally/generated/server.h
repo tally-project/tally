@@ -19,6 +19,7 @@
 
 #include "libipc/ipc.h"
 
+#include <tally/log.h>
 #include <tally/msg_struct.h>
 
 static std::function<void(int)> __exit;

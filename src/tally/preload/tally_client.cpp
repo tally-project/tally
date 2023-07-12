@@ -25,7 +25,9 @@
 
 #include "libipc/ipc.h"
 
+#include "tally/log.h"
 #include "tally/util.h"
+#include "tally/cuda_util.h"
 #include "tally/ipc_util.h"
 #include "tally/cache.h"
 #include "tally/msg_struct.h"
@@ -34,8 +36,6 @@
 #include "tally/client.h"
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
-
-cublasLtMatmulPreference_t preference = NULL;
 
 extern "C" {
 
@@ -75,7 +75,7 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
         msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct __cudaRegisterFatBinaryArg);
     }
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    auto msg = (uint8_t *) std::malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARY;
 
@@ -120,7 +120,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 
     uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct registerKernelArg) + kernel_func_len * sizeof(char);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    auto msg = (uint8_t *) std::malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFUNCTION;
 
@@ -138,7 +138,7 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 {
     uint32_t msg_len = sizeof(CUDA_API_ENUM);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    auto msg = (uint8_t *) std::malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND;
 
@@ -147,13 +147,13 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 
 cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind)
 {
-    // printf("cudaMemcpy hooked\n");
+    TALLY_LOG("cudaMemcpy hooked");
     uint32_t msg_len;
     uint8_t *msg;
     
     if (kind == cudaMemcpyHostToDevice) {
         msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMemcpyArg) + count;
-    } else if (kind == cudaMemcpyDeviceToHost){
+    } else if (kind == cudaMemcpyDeviceToHost || kind == cudaMemcpyDeviceToDevice){
         msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMemcpyArg);
     } else {
         throw std::runtime_error("Unknown memcpy kind!");
@@ -189,18 +189,19 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
 
 cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
-    // printf("cudaMemcpyAsync hooked\n");
+    TALLY_LOG("cudaMemcpyAsync hooked");
 
 	uint32_t msg_len;
     uint8_t *msg;
     
     if (kind == cudaMemcpyHostToDevice) {
         msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMemcpyAsyncArg) + count;
-    } else if (kind == cudaMemcpyDeviceToHost){
+    } else if (kind == cudaMemcpyDeviceToHost || kind == cudaMemcpyDeviceToDevice){
         msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMemcpyAsyncArg);
     } else {
         throw std::runtime_error("Unknown memcpy kind!");
     }
+
 
     msg = (uint8_t *) std::malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
@@ -233,7 +234,7 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
-    // printf("cudaLaunchKernel hooked\n");
+    TALLY_LOG("cudaLaunchKernel hooked");
     auto &params_info = TallyClient::client->_kernel_addr_to_args[func];
     uint32_t params_size =  std::accumulate(params_info.begin(), params_info.end(), 0);
 
@@ -267,36 +268,14 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     return *err;
 }
 
-cudaError_t cudaMalloc(void ** devPtr, size_t  size)
-{
-    // printf("cudaMalloc hooked\n");
-    static const uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(cudaMallocArg);
-
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    auto msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAMALLOC;
-    
-    auto arg_ptr = (struct cudaMallocArg *)(msg + sizeof(CUDA_API_ENUM));
-    arg_ptr->devPtr = devPtr;
-    arg_ptr->size = size;
-
-    CLIENT_SEND_MSG_AND_FREE;
-    CLIENT_RECV_MSG;
-
-    auto res = (struct cudaMallocResponse *) dat;
-
-    *devPtr = res->ptr;
-	return res->err;
-}
-
 cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
 {
-	// printf("cublasSgemm_v2 hooked\n");
+	TALLY_LOG("cublasSgemm_v2 hooked");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSgemm_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSGEMM_V2;
     
     struct cublasSgemm_v2Arg *arg_ptr = (struct cublasSgemm_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
@@ -327,12 +306,12 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 // At some point need to keep track which pointers are fake and which are real
 cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)
 {
-	// printf("cublasLtMatmul hooked\n");
+	TALLY_LOG("cublasLtMatmul hooked");
 	
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMUL;
     
     struct cublasLtMatmulArg *arg_ptr = (struct cublasLtMatmulArg *)(msg + sizeof(CUDA_API_ENUM));
@@ -363,12 +342,12 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 
 cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
 {
-	// printf("cublasLtMatmulDescSetAttribute hooked\n");
+	TALLY_LOG("cublasLtMatmulDescSetAttribute hooked");
 	
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescSetAttributeArg) + sizeInBytes;
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCSETATTRIBUTE;
 
     struct cublasLtMatmulDescSetAttributeArg *arg_ptr = (struct cublasLtMatmulDescSetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
@@ -386,12 +365,12 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 
 cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, const void*  buf, size_t  sizeInBytes)
 {
-	// printf("cublasLtMatrixLayoutSetAttribute hooked\n");
+	TALLY_LOG("cublasLtMatrixLayoutSetAttribute hooked");
 	
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutSetAttributeArg) + sizeInBytes;
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTSETATTRIBUTE;
 
     struct cublasLtMatrixLayoutSetAttributeArg *arg_ptr = (struct cublasLtMatrixLayoutSetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
@@ -409,12 +388,12 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 
 cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
 {
-	// printf("cublasLtMatmulPreferenceSetAttribute hooked\n");
+	TALLY_LOG("cublasLtMatmulPreferenceSetAttribute hooked");
 	
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceSetAttributeArg) + sizeInBytes;
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCESETATTRIBUTE;
 
     struct cublasLtMatmulPreferenceSetAttributeArg *arg_ptr = (struct cublasLtMatmulPreferenceSetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
@@ -432,12 +411,12 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 
 cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, cublasLtMatmulPreference_t  preference, int  requestedAlgoCount, cublasLtMatmulHeuristicResult_t  heuristicResultsArray[], int*  returnAlgoCount)
 {
-	// printf("cublasLtMatmulAlgoGetHeuristic hooked\n");
+	TALLY_LOG("cublasLtMatmulAlgoGetHeuristic hooked");
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulAlgoGetHeuristicArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULALGOGETHEURISTIC;
 
     struct cublasLtMatmulAlgoGetHeuristicArg *arg_ptr = (struct cublasLtMatmulAlgoGetHeuristicArg *)(msg + sizeof(CUDA_API_ENUM));
@@ -459,6 +438,230 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
     memcpy(heuristicResultsArray, res->heuristicResultsArray, sizeof(cublasLtMatmulHeuristicResult_t) * res->returnAlgoCount);
 
     return res->err;
+}
+
+cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cudnnBackendAttributeName_t  attributeName, cudnnBackendAttributeType_t  attributeType, int64_t  elementCount, const void * arrayOfElements)
+{
+	TALLY_LOG("cudnnBackendSetAttribute hooked");
+
+    if (arrayOfElements == nullptr) {
+        TALLY_LOG("arrayOfElements is nullptr!!!!!");
+    }
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendSetAttributeArg) + elementCount * sizeof(uint64_t);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDSETATTRIBUTE;
+
+    auto arg_ptr = (struct cudnnBackendSetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
+    arg_ptr->descriptor = descriptor;
+    arg_ptr->attributeName = attributeName;
+    arg_ptr->attributeType = attributeType;
+    arg_ptr->elementCount = elementCount;
+
+    std::cout << "descriptor: " << descriptor << std::endl;
+    std::cout << "attributeName: " << attributeName << std::endl;
+    std::cout << "attributeType: " << attributeType << std::endl;
+    std::cout << "elementCount: " << elementCount << std::endl;
+
+    if (arrayOfElements) {
+        memcpy(arg_ptr->arrayOfElements, arrayOfElements, sizeof(uint64_t) * elementCount);
+    }
+
+    if (attributeType == CUDNN_TYPE_BACKEND_DESCRIPTOR) {
+        cudnnBackendDescriptor_t desc = *((cudnnBackendDescriptor_t *) arg_ptr->arrayOfElements);
+        std::cout << "CUDNN_TYPE_BACKEND_DESCRIPTOR: " << desc << std::endl;
+    }
+
+    CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	
+    auto res = (struct cudnnBackendSetAttributeResponse *) dat;
+    return res->err;
+}
+
+cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descriptor, cudnnBackendAttributeName_t  attributeName, cudnnBackendAttributeType_t  attributeType, int64_t  requestedElementCount, int64_t * elementCount, void * arrayOfElements)
+{
+	TALLY_LOG("cudnnBackendGetAttribute hooked");
+
+    if (elementCount == nullptr) {
+        TALLY_LOG("elementCount is nullptr!!!!");
+    }
+
+    if (arrayOfElements == nullptr) {
+        TALLY_LOG("arrayOfElements is nullptr!!!!");
+    }
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendGetAttributeArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDGETATTRIBUTE;
+
+    struct cudnnBackendGetAttributeArg *arg_ptr = (struct cudnnBackendGetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->descriptor = descriptor;
+    arg_ptr->attributeName = attributeName;
+    arg_ptr->attributeType = attributeType;
+    arg_ptr->requestedElementCount = requestedElementCount;
+
+    std::cout << "descriptor: " << arg_ptr->descriptor << std::endl;
+    std::cout << "attributeName: " << arg_ptr->attributeName << std::endl;
+    std::cout << "attributeType: " << arg_ptr->attributeType << std::endl;
+    std::cout << "requestedElementCount: " << arg_ptr->requestedElementCount << std::endl;
+
+    CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	
+    auto res = (cudnnBackendGetAttributeResponse *) dat;
+    if (elementCount) {
+        *elementCount = res->elementCount;
+    }
+
+    int32_t type_size = get_cudnn_attribute_size(attributeType);
+    if (arrayOfElements) {
+        memcpy(arrayOfElements, res->arrayOfElements, type_size * res->elementCount);
+    }
+
+    return res->err;
+}
+
+cudnnStatus_t cudnnActivationForward(cudnnHandle_t  handle, cudnnActivationDescriptor_t  activationDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
+{
+	TALLY_LOG("cudnnActivationForward hooked");
+	
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnActivationForwardArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNACTIVATIONFORWARD;
+    
+    auto arg_ptr = (struct cudnnActivationForwardArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+	arg_ptr->activationDesc = activationDesc;
+	arg_ptr->alpha = *((uint64_t *) alpha); // copy the 64 bits from the pointer
+	arg_ptr->xDesc = xDesc;
+	arg_ptr->x = const_cast<void*>(x);
+	arg_ptr->beta = *((uint64_t *) beta); // copy the 64 bits from the pointer
+	arg_ptr->yDesc = yDesc;
+	arg_ptr->y = y;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
+cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t  tensorDesc, cudnnDataType_t  dataType, int  nbDims, const int  dimA[], const int  strideA[])
+{
+    TALLY_LOG("cudnnSetTensorNdDescriptor hooked");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetTensorNdDescriptorArg) + 2 * nbDims * sizeof(int);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETTENSORNDDESCRIPTOR;
+    
+    auto arg_ptr = (struct cudnnSetTensorNdDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->tensorDesc = tensorDesc;
+    arg_ptr->dataType = dataType;
+    arg_ptr->nbDims = nbDims;
+    memcpy(arg_ptr->dimA_and_strideA, dimA, sizeof(int) * nbDims);
+    memcpy(arg_ptr->dimA_and_strideA + nbDims, strideA, sizeof(int) * nbDims);
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
+cudnnStatus_t cudnnSetConvolutionNdDescriptor(cudnnConvolutionDescriptor_t  convDesc, int  arrayLength, const int  padA[], const int  filterStrideA[], const int  dilationA[], cudnnConvolutionMode_t  mode, cudnnDataType_t  computeType)
+{
+	TALLY_LOG("cudnnSetConvolutionNdDescriptor hooked");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetConvolutionNdDescriptorArg) + 3 * arrayLength * sizeof(int);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETCONVOLUTIONNDDESCRIPTOR;
+    
+    auto arg_ptr = (struct cudnnSetConvolutionNdDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->convDesc = convDesc;
+    arg_ptr->arrayLength = arrayLength;
+    arg_ptr->mode = mode;
+    arg_ptr->computeType = computeType;
+    memcpy(arg_ptr->padA_and_filterStrideA_and_dilationA, padA, sizeof(int) * arrayLength);
+    memcpy(arg_ptr->padA_and_filterStrideA_and_dilationA + arrayLength, filterStrideA, sizeof(int) * arrayLength);
+    memcpy(arg_ptr->padA_and_filterStrideA_and_dilationA + 2 * arrayLength, dilationA, sizeof(int) * arrayLength);
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
+cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  nbDims, const int  filterDimA[])
+{
+	TALLY_LOG("cudnnSetFilterNdDescriptor hooked");
+	
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetFilterNdDescriptorArg) + nbDims * sizeof(int);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETFILTERNDDESCRIPTOR;
+    
+    auto arg_ptr = (struct cudnnSetFilterNdDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->filterDesc = filterDesc;
+    arg_ptr->dataType = dataType;
+    arg_ptr->format = format;
+    arg_ptr->nbDims = nbDims;
+    memcpy(arg_ptr->filterDimA, filterDimA, sizeof(int) * nbDims);
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
+cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnConvolutionDescriptor_t  convDesc, cudnnConvolutionFwdAlgo_t  algo, void * workSpace, size_t  workSpaceSizeInBytes, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
+{
+	TALLY_LOG("cudnnConvolutionForward hooked");
+	
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnConvolutionForwardArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNCONVOLUTIONFORWARD;
+    
+    auto arg_ptr = (struct cudnnConvolutionForwardArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+	arg_ptr->alpha = *((uint64_t *) alpha); // copy the 64 bits from the pointer
+	arg_ptr->xDesc = xDesc;
+	arg_ptr->x = const_cast<void*>(x);
+    arg_ptr->wDesc = wDesc;
+    arg_ptr->w = const_cast<void*>(w);
+    arg_ptr->convDesc = convDesc;
+    arg_ptr->algo = algo;
+    arg_ptr->workSpace = workSpace;
+    arg_ptr->workSpaceSizeInBytes = workSpaceSizeInBytes;
+	arg_ptr->beta = *((uint64_t *) beta); // copy the 64 bits from the pointer
+	arg_ptr->yDesc = yDesc;
+	arg_ptr->y = y;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 }
