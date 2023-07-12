@@ -864,6 +864,10 @@ struct cudnnCreateTensorTransformDescriptorResponse {
 	cudnnStatus_t err;
 };
 
+struct cudnnDestroyTensorTransformDescriptorArg {
+	cudnnTensorTransformDescriptor_t  transformDesc;
+};
+
 struct cudnnCreateFilterDescriptorArg {
 	cudnnFilterDescriptor_t * filterDesc;
 };
@@ -873,8 +877,41 @@ struct cudnnCreateFilterDescriptorResponse {
 	cudnnStatus_t err;
 };
 
+struct cudnnSetFilter4dDescriptorArg {
+	cudnnFilterDescriptor_t  filterDesc;
+	cudnnDataType_t  dataType;
+	cudnnTensorFormat_t  format;
+	int  k;
+	int  c;
+	int  h;
+	int  w;
+};
+
+struct cudnnGetFilterSizeInBytesArg {
+	cudnnFilterDescriptor_t  filterDesc;
+	size_t * size;
+};
+
+struct cudnnGetFilterSizeInBytesResponse {
+	size_t  size;
+	cudnnStatus_t err;
+};
+
 struct cudnnDestroyFilterDescriptorArg {
 	cudnnFilterDescriptor_t  filterDesc;
+};
+
+struct cudnnCreatePoolingDescriptorArg {
+	cudnnPoolingDescriptor_t * poolingDesc;
+};
+
+struct cudnnCreatePoolingDescriptorResponse {
+	cudnnPoolingDescriptor_t  poolingDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroyPoolingDescriptorArg {
+	cudnnPoolingDescriptor_t  poolingDesc;
 };
 
 struct cudnnCreateActivationDescriptorArg {
@@ -891,6 +928,31 @@ struct cudnnSetActivationDescriptorArg {
 	cudnnActivationMode_t  mode;
 	cudnnNanPropagation_t  reluNanOpt;
 	double  coef;
+};
+
+struct cudnnDestroyActivationDescriptorArg {
+	cudnnActivationDescriptor_t  activationDesc;
+};
+
+struct cudnnCreateLRNDescriptorArg {
+	cudnnLRNDescriptor_t * normDesc;
+};
+
+struct cudnnCreateLRNDescriptorResponse {
+	cudnnLRNDescriptor_t  normDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnSetLRNDescriptorArg {
+	cudnnLRNDescriptor_t  normDesc;
+	unsigned  lrnN;
+	double  lrnAlpha;
+	double  lrnBeta;
+	double  lrnK;
+};
+
+struct cudnnDestroyLRNDescriptorArg {
+	cudnnLRNDescriptor_t  lrnDesc;
 };
 
 struct cudnnCreateConvolutionDescriptorArg {

@@ -46,8 +46,8 @@ void TallyServer::start(uint32_t interval) {
     auto time_ckpt = std::chrono::steady_clock::now();
     double req_count = 0.; 
 
-    send_ipc = new ipc::channel("server-to-client-230000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-230000", ipc::receiver);
+    send_ipc = new ipc::channel("server-to-client-240000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-240000", ipc::receiver);
 
     load_cache();
 
@@ -769,6 +769,334 @@ void TallyServer::handle_cudnnConvolutionForward(void *__args)
     );
 
     while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnGetConvolutionNdForwardOutputDim(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnGetConvolutionNdForwardOutputDim");
+
+    auto args = (struct cudnnGetConvolutionNdForwardOutputDimArg *) __args;
+
+    uint32_t res_len = sizeof(cudnnGetConvolutionNdForwardOutputDimResponse) + sizeof(int) * args->nbDims;
+    auto res = (cudnnGetConvolutionNdForwardOutputDimResponse *) malloc(res_len);
+
+    res->err = cudnnGetConvolutionNdForwardOutputDim(
+		args->convDesc,
+        args->inputTensorDesc,
+        args->filterDesc,
+        args->nbDims,
+        res->tensorOuputDimA
+    );
+    
+    while(!send_ipc->send((void *) res, res_len)) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    free(res);
+}
+
+void TallyServer::handle_cudnnGetConvolutionForwardAlgorithm_v7(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnGetConvolutionForwardAlgorithm_v7");
+
+    auto args = (struct cudnnGetConvolutionForwardAlgorithm_v7Arg *) __args;
+
+    uint32_t res_len = sizeof(cudnnGetConvolutionForwardAlgorithm_v7Response) + sizeof(cudnnConvolutionFwdAlgoPerf_t) * args->requestedAlgoCount;
+    auto res = (cudnnGetConvolutionForwardAlgorithm_v7Response *) malloc(res_len);
+
+    res->err = cudnnGetConvolutionForwardAlgorithm_v7(
+		args->handle,
+        args->srcDesc,
+        args->filterDesc,
+        args->convDesc,
+        args->destDesc,
+        args->requestedAlgoCount,
+        &res->returnedAlgoCount,
+        res->perfResults
+    );
+
+    while(!send_ipc->send((void *) res, res_len)) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    free(res);
+}
+
+void TallyServer::handle_cudnnFindConvolutionForwardAlgorithm(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnFindConvolutionForwardAlgorithm");
+
+    auto args = (struct cudnnFindConvolutionForwardAlgorithmArg *) __args;
+
+    uint32_t res_len = sizeof(cudnnFindConvolutionForwardAlgorithmResponse) + sizeof(cudnnConvolutionFwdAlgoPerf_t) * args->requestedAlgoCount;
+    auto res = (cudnnFindConvolutionForwardAlgorithmResponse *) malloc(res_len);
+
+    res->err = cudnnFindConvolutionForwardAlgorithm(
+		args->handle,
+        args->xDesc,
+        args->wDesc,
+        args->convDesc,
+        args->yDesc,
+        args->requestedAlgoCount,
+        &res->returnedAlgoCount,
+        res->perfResults
+    );
+
+    while(!send_ipc->send((void *) res, res_len)) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    free(res);
+}
+
+void TallyServer::handle_cudnnAddTensor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnAddTensor");
+
+    auto args = (struct cudnnAddTensorArg *) __args;
+
+    cudnnStatus_t err = cudnnAddTensor(
+		args->handle,
+        (void *) &(args->alpha),
+        args->aDesc,
+        args->A,
+        (void *) &(args->beta),
+        args->cDesc,
+        args->C
+    );
+	
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnSetPoolingNdDescriptor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnSetPoolingNdDescriptor");
+
+    auto args = (struct cudnnSetPoolingNdDescriptorArg *) __args;
+
+    cudnnStatus_t err = cudnnSetPoolingNdDescriptor(
+        args->poolingDesc,
+        args->mode,
+        args->maxpoolingNanOpt,
+        args->nbDims,
+        args->windowDimA_paddingA_strideA,
+        args->windowDimA_paddingA_strideA + args->nbDims,
+        args->windowDimA_paddingA_strideA + args->nbDims * 2
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnGetPoolingNdDescriptor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnGetPoolingNdDescriptor");
+
+    auto args = (struct cudnnGetPoolingNdDescriptorArg *) __args;
+
+    int *windowDimA = (int *) malloc(sizeof(int) * args->nbDimsRequested);
+    int *paddingA = (int *) malloc(sizeof(int) * args->nbDimsRequested);
+    int *strideA = (int *) malloc(sizeof(int) * args->nbDimsRequested);
+
+    cudnnPoolingMode_t mode;
+    cudnnNanPropagation_t maxpoolingNanOpt;
+    int nbDims;
+
+    cudnnStatus_t err = cudnnGetPoolingNdDescriptor(
+        args->poolingDesc,
+        args->nbDimsRequested,
+        &mode,
+        &maxpoolingNanOpt,
+        &nbDims,
+        windowDimA,
+        paddingA,
+        strideA
+    );
+
+    uint32_t res_len = sizeof(cudnnGetPoolingNdDescriptorResponse) + sizeof(int) * nbDims * 3;
+    auto res = (cudnnGetPoolingNdDescriptorResponse *) malloc(res_len);
+
+    res->err = err;
+    res->mode = mode;
+    res->maxpoolingNanOpt = maxpoolingNanOpt;
+    res->nbDims = nbDims;
+    memcpy(res->windowDimA_paddingA_strideA, windowDimA, sizeof(int) * nbDims);
+    memcpy(res->windowDimA_paddingA_strideA + sizeof(int) * nbDims, paddingA, sizeof(int) * nbDims);
+    memcpy(res->windowDimA_paddingA_strideA + sizeof(int) * nbDims * 2, strideA, sizeof(int) * nbDims);
+
+    while(!send_ipc->send((void *) res, res_len)) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnGetPoolingNdForwardOutputDim(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnGetPoolingNdForwardOutputDim");
+
+    auto args = (struct cudnnGetPoolingNdForwardOutputDimArg *) __args;
+
+    uint32_t res_len = sizeof(cudnnGetPoolingNdForwardOutputDimResponse) + sizeof(int) * args->nbDims;
+    auto res = (cudnnGetPoolingNdForwardOutputDimResponse *) malloc(res_len);
+
+    res->err = cudnnGetPoolingNdForwardOutputDim(
+        args->poolingDesc,
+        args->inputTensorDesc,
+        args->nbDims,
+        res->outputTensorDimA
+    );
+
+    while(!send_ipc->send((void *) res, res_len)) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnPoolingForward(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnPoolingForward");
+
+    auto args = (struct cudnnPoolingForwardArg *) __args;
+
+    cudnnStatus_t err = cudnnPoolingForward(
+		args->handle,
+        args->poolingDesc,
+        (void *) &(args->alpha),
+        args->xDesc,
+        args->x,
+        (void *) &(args->beta),
+        args->yDesc,
+        args->y
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cublasSgemv_v2(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cublasSgemv_v2");
+
+    auto args = (struct cublasSgemv_v2Arg *) __args;
+
+    cublasStatus_t err = cublasSgemv_v2(
+		args->handle,
+        args->trans,
+        args->m,
+        args->n,
+        &args->alpha,
+        args->A,
+        args->lda,
+        args->x,
+        args->incx,
+        &args->beta,
+        args->y,
+        args->incy
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnLRNCrossChannelForward(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnLRNCrossChannelForward");
+
+    auto args = (struct cudnnLRNCrossChannelForwardArg *) __args;
+
+    cudnnStatus_t err = cudnnLRNCrossChannelForward(
+		args->handle,
+        args->normDesc,
+        args->lrnMode,
+        &(args->alpha),
+        args->xDesc,
+        args->x,
+        &(args->beta),
+        args->yDesc,
+        args->y
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnSoftmaxForward(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnSoftmaxForward");
+
+    auto args = (struct cudnnSoftmaxForwardArg *) __args;
+
+    cudnnStatus_t err = cudnnSoftmaxForward(
+        args->handle,
+        args->algo,
+        args->mode,
+        &(args->alpha),
+        args->xDesc,
+        args->x,
+        &(args->beta),
+        args->yDesc,
+        args->y
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnTransformTensor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnTransformTensor");
+
+    auto args = (struct cudnnTransformTensorArg *) __args;
+
+    cudnnStatus_t err = cudnnTransformTensor(
+        args->handle,
+        &(args->alpha),
+        args->xDesc,
+        args->x,
+        &(args->beta),
+        args->yDesc,
+        args->y
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cublasSgemmEx(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cublasSgemmEx");
+
+    auto args = (struct cublasSgemmExArg *) __args;
+
+    cublasStatus_t err = cublasSgemmEx(
+        args->handle,
+        args->transa,
+        args->transb,
+        args->m,
+        args->n,
+        args->k,
+        &(args->alpha),
+        args->A,
+        args->Atype,
+        args->lda,
+        args->B,
+        args->Btype,
+        args->ldb,
+        &(args->beta),
+        args->C,
+        args->Ctype,
+        args->ldc
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
         send_ipc->wait_for_recv(1);
     }
 }

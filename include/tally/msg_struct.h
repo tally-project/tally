@@ -240,4 +240,168 @@ struct cudnnConvolutionForwardArg {
     void *y;
 };
 
+struct cudnnGetConvolutionNdForwardOutputDimArg {
+    cudnnConvolutionDescriptor_t  convDesc;
+    cudnnTensorDescriptor_t  inputTensorDesc;
+    cudnnFilterDescriptor_t  filterDesc;
+    int  nbDims;
+};
+
+struct cudnnGetConvolutionNdForwardOutputDimResponse {
+    cudnnStatus_t err;
+    int  tensorOuputDimA[];
+};
+
+struct cudnnGetConvolutionForwardAlgorithm_v7Arg {
+    cudnnHandle_t  handle;
+    cudnnTensorDescriptor_t  srcDesc;
+    cudnnFilterDescriptor_t  filterDesc;
+    cudnnConvolutionDescriptor_t  convDesc;
+    cudnnTensorDescriptor_t  destDesc;
+    int  requestedAlgoCount;
+};
+
+struct cudnnGetConvolutionForwardAlgorithm_v7Response {
+    cudnnStatus_t err;
+    int returnedAlgoCount;
+    cudnnConvolutionFwdAlgoPerf_t perfResults[];
+};
+
+struct cudnnFindConvolutionForwardAlgorithmArg {
+    cudnnHandle_t  handle;
+    cudnnTensorDescriptor_t  xDesc;
+    cudnnFilterDescriptor_t  wDesc;
+    cudnnConvolutionDescriptor_t  convDesc;
+    cudnnTensorDescriptor_t  yDesc;
+    int  requestedAlgoCount;
+};
+
+struct cudnnFindConvolutionForwardAlgorithmResponse {
+    cudnnStatus_t err;
+    int returnedAlgoCount;
+    cudnnConvolutionFwdAlgoPerf_t perfResults[];
+};
+
+struct cudnnAddTensorArg {
+    cudnnHandle_t  handle;
+    uint64_t alpha;
+    cudnnTensorDescriptor_t  aDesc;
+    void *A;
+    uint64_t beta;
+    cudnnTensorDescriptor_t  cDesc;
+    void *C;
+};
+
+struct cudnnSetPoolingNdDescriptorArg {
+    cudnnPoolingDescriptor_t  poolingDesc;
+    cudnnPoolingMode_t  mode;
+    cudnnNanPropagation_t  maxpoolingNanOpt;
+    int  nbDims;
+    int  windowDimA_paddingA_strideA[];
+};
+
+struct cudnnGetPoolingNdDescriptorArg {
+    cudnnPoolingDescriptor_t  poolingDesc;
+    int  nbDimsRequested;
+};
+
+struct cudnnGetPoolingNdDescriptorResponse {
+    cudnnStatus_t err;
+    cudnnPoolingMode_t mode;
+    cudnnNanPropagation_t maxpoolingNanOpt;
+    int nbDims;
+    int windowDimA_paddingA_strideA[];
+};
+
+struct cudnnGetPoolingNdForwardOutputDimArg {
+    cudnnPoolingDescriptor_t  poolingDesc;
+    cudnnTensorDescriptor_t  inputTensorDesc;
+    int  nbDims;
+};
+
+struct cudnnGetPoolingNdForwardOutputDimResponse {
+    cudnnStatus_t err;
+    int  outputTensorDimA[];
+};
+
+struct cudnnPoolingForwardArg {
+    cudnnHandle_t  handle;
+    cudnnPoolingDescriptor_t  poolingDesc;
+    uint64_t alpha;
+    cudnnTensorDescriptor_t  xDesc;
+    void *x;
+    uint64_t beta;
+    cudnnTensorDescriptor_t  yDesc;
+    void *y;
+};
+
+struct cublasSgemv_v2Arg {
+    cublasHandle_t  handle;
+    cublasOperation_t  trans;
+    int  m;
+    int  n;
+    float alpha;
+    float*  A;
+    int  lda;
+    float*  x;
+    int  incx;
+    float beta;
+    float*  y;
+    int  incy;
+};
+
+struct cudnnLRNCrossChannelForwardArg {
+    cudnnHandle_t  handle;
+    cudnnLRNDescriptor_t  normDesc;
+    cudnnLRNMode_t  lrnMode;
+    uint64_t alpha;
+    cudnnTensorDescriptor_t  xDesc;
+    void *x;
+    uint64_t beta;
+    cudnnTensorDescriptor_t  yDesc;
+    void *y;
+};
+
+struct cudnnSoftmaxForwardArg {
+    cudnnHandle_t  handle;
+    cudnnSoftmaxAlgorithm_t  algo;
+    cudnnSoftmaxMode_t  mode;
+    uint64_t alpha;
+    cudnnTensorDescriptor_t  xDesc;
+    void *x;
+    uint64_t beta;
+    cudnnTensorDescriptor_t  yDesc;
+    void *y;
+};
+
+struct cudnnTransformTensorArg {
+    cudnnHandle_t  handle;
+    uint64_t alpha;
+    cudnnTensorDescriptor_t  xDesc;
+    void * x;
+    uint64_t beta;
+    cudnnTensorDescriptor_t  yDesc;
+    void * y;
+};
+
+struct cublasSgemmExArg {
+    cublasHandle_t  handle;
+    cublasOperation_t  transa;
+    cublasOperation_t  transb;
+    int  m;
+    int  n;
+    int  k;
+    float  alpha;
+    void*  A;
+    cudaDataType  Atype;
+    int  lda;
+    void*  B;
+    cudaDataType  Btype;
+    int  ldb;
+    float  beta;
+    void*  C;
+    cudaDataType  Ctype;
+    int  ldc;
+};
+
 #endif // TALLY_DEF_H

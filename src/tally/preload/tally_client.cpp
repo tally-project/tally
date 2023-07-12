@@ -664,4 +664,386 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t  handle, const void * alpha,
     return *res;
 }
 
+cudnnStatus_t cudnnGetConvolutionNdForwardOutputDim(const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  inputTensorDesc, const cudnnFilterDescriptor_t  filterDesc, int  nbDims, int  tensorOuputDimA[])
+{
+	TALLY_LOG("cudnnGetConvolutionNdForwardOutputDim hooked");
+	
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionNdForwardOutputDimArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONNDFORWARDOUTPUTDIM;
+    
+    auto arg_ptr = (struct cudnnGetConvolutionNdForwardOutputDimArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->convDesc = convDesc;
+    arg_ptr->inputTensorDesc = inputTensorDesc;
+    arg_ptr->filterDesc = filterDesc;
+    arg_ptr->nbDims = nbDims;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnGetConvolutionNdForwardOutputDimResponse *) dat;
+    memcpy(tensorOuputDimA, res->tensorOuputDimA, sizeof(int) * nbDims);
+
+    return res->err;
+}
+
+cudnnStatus_t cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnFilterDescriptor_t  filterDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  destDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults)
+{
+	TALLY_LOG("cudnnGetConvolutionForwardAlgorithm_v7 hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionForwardAlgorithm_v7Arg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONFORWARDALGORITHM_V7;
+    
+    auto arg_ptr = (struct cudnnGetConvolutionForwardAlgorithm_v7Arg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->srcDesc = srcDesc;
+    arg_ptr->filterDesc = filterDesc;
+    arg_ptr->convDesc = convDesc;
+    arg_ptr->destDesc = destDesc;
+    arg_ptr->requestedAlgoCount = requestedAlgoCount;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnGetConvolutionForwardAlgorithm_v7Response *) dat;
+    *returnedAlgoCount = res->returnedAlgoCount;
+    memcpy(perfResults, res->perfResults, sizeof(cudnnConvolutionFwdAlgoPerf_t) * requestedAlgoCount);
+
+    return res->err;
+}
+
+cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults)
+{
+	TALLY_LOG("cudnnFindConvolutionForwardAlgorithm hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnFindConvolutionForwardAlgorithmArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNFINDCONVOLUTIONFORWARDALGORITHM;
+    
+    auto arg_ptr = (struct cudnnFindConvolutionForwardAlgorithmArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->xDesc = xDesc;
+    arg_ptr->wDesc = wDesc;
+    arg_ptr->convDesc = convDesc;
+    arg_ptr->yDesc = yDesc;
+    arg_ptr->requestedAlgoCount = requestedAlgoCount;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnFindConvolutionForwardAlgorithmResponse *) dat;
+    *returnedAlgoCount = res->returnedAlgoCount;
+    memcpy(perfResults, res->perfResults, sizeof(cudnnConvolutionFwdAlgoPerf_t) * requestedAlgoCount);
+
+    return res->err;
+}
+
+cudnnStatus_t cudnnAddTensor(cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  aDesc, const void * A, const void * beta, const cudnnTensorDescriptor_t  cDesc, void * C)
+{
+    TALLY_LOG("cudnnAddTensor hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAddTensorArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNADDTENSOR;
+    
+    auto arg_ptr = (struct cudnnAddTensorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->alpha = *((uint64_t *) alpha); // copy the 64 bits from the pointer
+    arg_ptr->aDesc = aDesc;
+    arg_ptr->A = const_cast<void *>(A);
+    arg_ptr->beta = *((uint64_t *) beta); // copy the 64 bits from the pointer
+    arg_ptr->cDesc = cDesc;
+    arg_ptr->C = C;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;	
+}
+
+cudnnStatus_t cudnnSetPoolingNdDescriptor(cudnnPoolingDescriptor_t  poolingDesc, const cudnnPoolingMode_t  mode, const cudnnNanPropagation_t  maxpoolingNanOpt, int  nbDims, const int  windowDimA[], const int  paddingA[], const int  strideA[])
+{
+	TALLY_LOG("cudnnSetPoolingNdDescriptor hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetPoolingNdDescriptorArg) + 3 * nbDims * sizeof(int);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETPOOLINGNDDESCRIPTOR;
+    
+    auto arg_ptr = (struct cudnnSetPoolingNdDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->poolingDesc = poolingDesc;
+    arg_ptr->mode = mode;
+    arg_ptr->maxpoolingNanOpt = maxpoolingNanOpt;
+    arg_ptr->nbDims = nbDims;
+
+    memcpy(arg_ptr->windowDimA_paddingA_strideA, windowDimA, sizeof(int) * nbDims);
+    memcpy(arg_ptr->windowDimA_paddingA_strideA + nbDims, paddingA, sizeof(int) * nbDims);
+    memcpy(arg_ptr->windowDimA_paddingA_strideA + 2 * nbDims, strideA, sizeof(int) * nbDims);
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;	
+}
+
+cudnnStatus_t cudnnGetPoolingNdDescriptor(const cudnnPoolingDescriptor_t  poolingDesc, int  nbDimsRequested, cudnnPoolingMode_t * mode, cudnnNanPropagation_t * maxpoolingNanOpt, int * nbDims, int  windowDimA[], int  paddingA[], int  strideA[])
+{
+	TALLY_LOG("cudnnGetPoolingNdDescriptor hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetPoolingNdDescriptorArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETPOOLINGNDDESCRIPTOR;
+    
+    auto arg_ptr = (struct cudnnGetPoolingNdDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->poolingDesc = poolingDesc;
+    arg_ptr->nbDimsRequested = nbDimsRequested;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnGetPoolingNdDescriptorResponse *) dat;
+    *mode = res->mode;
+    *maxpoolingNanOpt = res->maxpoolingNanOpt;
+    *nbDims = res->nbDims;
+    memcpy(windowDimA, res->windowDimA_paddingA_strideA, sizeof(int) * res->nbDims);
+    memcpy(paddingA, res->windowDimA_paddingA_strideA + res->nbDims, sizeof(int) * res->nbDims);
+    memcpy(strideA, res->windowDimA_paddingA_strideA + res->nbDims * 2, sizeof(int) * res->nbDims);
+
+    return res->err;	
+}
+
+cudnnStatus_t cudnnGetPoolingNdForwardOutputDim(const cudnnPoolingDescriptor_t  poolingDesc, const cudnnTensorDescriptor_t  inputTensorDesc, int  nbDims, int  outputTensorDimA[])
+{
+	TALLY_LOG("cudnnGetPoolingNdForwardOutputDim hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetPoolingNdForwardOutputDimArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETPOOLINGNDFORWARDOUTPUTDIM;
+    
+    auto arg_ptr = (struct cudnnGetPoolingNdForwardOutputDimArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->poolingDesc = poolingDesc;
+    arg_ptr->inputTensorDesc = inputTensorDesc;
+    arg_ptr->nbDims = nbDims;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnGetPoolingNdForwardOutputDimResponse *) dat;
+    memcpy(outputTensorDimA, res->outputTensorDimA, sizeof(int) * nbDims);
+
+    return res->err;	
+}
+
+cudnnStatus_t cudnnPoolingForward(cudnnHandle_t  handle, const cudnnPoolingDescriptor_t  poolingDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
+{
+    TALLY_LOG("cudnnPoolingForward hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnPoolingForwardArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNPOOLINGFORWARD;
+    
+    auto arg_ptr = (struct cudnnPoolingForwardArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->poolingDesc = poolingDesc;
+    arg_ptr->alpha = *((uint64_t *) alpha); // copy the 64 bits from the pointer
+    arg_ptr->xDesc = xDesc;
+    arg_ptr->x = const_cast<void *>(x);
+    arg_ptr->beta = *((uint64_t *) beta); // copy the 64 bits from the pointer
+    arg_ptr->yDesc = yDesc;
+    arg_ptr->y = y;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
+cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy)
+{
+	TALLY_LOG("cublasSgemv_v2 hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSgemv_v2Arg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASSGEMV_V2;
+    
+    auto arg_ptr = (struct cublasSgemv_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->trans = trans;
+    arg_ptr->m = m;
+    arg_ptr->n = n;
+    arg_ptr->alpha = *alpha;
+    arg_ptr->A = const_cast<float *>(A);
+    arg_ptr->lda = lda;
+    arg_ptr->x = const_cast<float *>(x);
+    arg_ptr->incx = incx;
+    arg_ptr->beta = *beta;
+    arg_ptr->y = y;
+    arg_ptr->incy = incy;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
+}
+
+cudnnStatus_t cudnnLRNCrossChannelForward(cudnnHandle_t  handle, cudnnLRNDescriptor_t  normDesc, cudnnLRNMode_t  lrnMode, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
+{
+	TALLY_LOG("cudnnLRNCrossChannelForward hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnLRNCrossChannelForwardArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNLRNCROSSCHANNELFORWARD;
+    
+    auto arg_ptr = (struct cudnnLRNCrossChannelForwardArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->normDesc = normDesc;
+    arg_ptr->lrnMode = lrnMode;
+    arg_ptr->alpha = *((uint64_t *) alpha); // copy the 64 bits from the pointer
+    arg_ptr->xDesc = xDesc;
+    arg_ptr->x = const_cast<void*>(x);
+    arg_ptr->beta = *((uint64_t *) beta); // copy the 64 bits from the pointer
+    arg_ptr->yDesc = yDesc;
+    arg_ptr->y = y;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
+
+cudnnStatus_t cudnnSoftmaxForward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t  algo, cudnnSoftmaxMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
+{
+	TALLY_LOG("cudnnSoftmaxForward hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSoftmaxForwardArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSOFTMAXFORWARD;
+    
+    auto arg_ptr = (struct cudnnSoftmaxForwardArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->algo = algo;
+    arg_ptr->mode = mode;
+    arg_ptr->alpha = *((uint64_t *) alpha); // copy the 64 bits from the pointer
+    arg_ptr->xDesc = xDesc;
+    arg_ptr->x = const_cast<void*>(x);
+    arg_ptr->beta = *((uint64_t *) beta); // copy the 64 bits from the pointer
+    arg_ptr->yDesc = yDesc;
+    arg_ptr->y = y;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
+cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
+{
+	TALLY_LOG("cudnnTransformTensor hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnTransformTensorArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNTRANSFORMTENSOR;
+    
+    auto arg_ptr = (struct cudnnTransformTensorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->alpha = *((uint64_t *) alpha); // copy the 64 bits from the pointer
+    arg_ptr->xDesc = xDesc;
+    arg_ptr->x = const_cast<void*>(x);
+    arg_ptr->beta = *((uint64_t *) beta); // copy the 64 bits from the pointer
+    arg_ptr->yDesc = yDesc;
+    arg_ptr->y = y;
+  
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
+cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc)
+{
+	TALLY_LOG("cublasSgemmEx hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSgemmExArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASSGEMMEX;
+    
+    auto arg_ptr = (struct cublasSgemmExArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->transa = transa;
+    arg_ptr->transb = transb;
+    arg_ptr->m = m;
+    arg_ptr->n = n;
+    arg_ptr->k = k;
+    arg_ptr->alpha = *alpha;
+    arg_ptr->A = const_cast<void*>(A);
+    arg_ptr->Atype = Atype;
+    arg_ptr->lda = lda;
+    arg_ptr->B = const_cast<void*>(B);
+    arg_ptr->Btype = Btype;
+    arg_ptr->ldb = ldb;
+    arg_ptr->beta = *beta;
+    arg_ptr->C = C;
+    arg_ptr->Ctype = Ctype;
+    arg_ptr->ldc = ldc;
+  
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
+}
+
+// cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, int  currIdx, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsQO[], const int  devSeqLengthsKV[], const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const void * residuals, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  oDesc, void * out, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
+// {
+// 	TALLY_LOG("cudnnMultiHeadAttnForward hooked");
+// 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+// }
+
+// cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsDQDO[], const int  devSeqLengthsDKDV[], const cudnnSeqDataDescriptor_t  doDesc, const void * dout, const cudnnSeqDataDescriptor_t  dqDesc, void * dqueries, const void * queries, const cudnnSeqDataDescriptor_t  dkDesc, void * dkeys, const void * keys, const cudnnSeqDataDescriptor_t  dvDesc, void * dvalues, const void * values, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
+// {
+// 	TALLY_LOG("cudnnMultiHeadAttnBackwardData hooked");
+// 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+// }
+
+// cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, cudnnWgradMode_t  addGrad, const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  doDesc, const void * dout, size_t  weightSizeInBytes, const void * weights, void * dweights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
+// {
+// 	TALLY_LOG("cudnnMultiHeadAttnBackwardWeights hooked");
+// 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+// }
+
 }

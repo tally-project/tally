@@ -191,22 +191,35 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasSgemmEx",
+    "cudnnTransformTensor",
+    "cublasSgemv_v2",
+    "cudnnLRNCrossChannelForward",
     "cudaMemcpy",
     "cudaMemcpyAsync",
     "cudaLaunchKernel",
     "cublasSgemm_v2",
+    "cudnnSoftmaxForward",
     "cublasLtMatmulDescSetAttribute",
     "cublasLtMatrixLayoutSetAttribute",
     "cublasLtMatmulPreferenceSetAttribute",
     "cublasLtMatmulAlgoGetHeuristic",
+    "cudnnFindConvolutionForwardAlgorithm",
+    "cudnnAddTensor",
+    "cudnnSetPoolingNdDescriptor",
+    "cudnnGetPoolingNdDescriptor",
+    "cudnnGetPoolingNdForwardOutputDim",
     "cublasLtMatmul",
     "cudnnBackendSetAttribute",
     "cudnnBackendGetAttribute",
     "cudnnSetTensorNdDescriptor",
     "cudnnSetConvolutionNdDescriptor",
+    "cudnnGetConvolutionNdForwardOutputDim",
+    "cudnnGetConvolutionForwardAlgorithm_v7",
     "cudnnSetFilterNdDescriptor",
     "cudnnActivationForward",
     "cudnnConvolutionForward",
+    "cudnnPoolingForward",
     "__cudaRegisterFunction",
     "__cudaRegisterFatBinary",
     "__cudaRegisterFatBinaryEnd"
@@ -215,6 +228,11 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cudnnDestroyTensorTransformDescriptor",
+    "cudnnDestroyLRNDescriptor",
+    "cudnnSetFilter4dDescriptor",
+    "cudnnCreateActivationDescriptor",
+    "cudnnDestroyPoolingDescriptor",
     "cudaFree",
     "cudaProfilerStart",
     "cudaProfilerStop",
@@ -288,12 +306,16 @@ FORWARD_API_CALLS = [
     "cuMemcpyAsync",
     "cudnnCnnTrainVersionCheck",
     "cudnnSetActivationDescriptor",
-    "cudnnDestroyConvolutionDescriptor"
+    "cudnnDestroyConvolutionDescriptor",
+    "cudnnDestroyActivationDescriptor",
+    "cudnnSetLRNDescriptor"
 ]
 
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cudnnCreatePoolingDescriptor",
+    "cudnnCreateLRNDescriptor",
     "cudaStreamCreate",
     "cudaStreamCreateWithFlags",
     "cudaStreamCreateWithPriority",
@@ -359,6 +381,7 @@ UNSUPPORTED_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
+    "cudnnGetFilterSizeInBytes",
     "cudaStreamIsCapturing",
     "cublasGetVersion_v2",
     "cuCtxGetApiVersion",
