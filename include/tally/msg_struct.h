@@ -404,4 +404,108 @@ struct cublasSgemmExArg {
     int  ldc;
 };
 
+struct cudnnSetSeqDataDescriptorArg {
+    cudnnSeqDataDescriptor_t  seqDataDesc;
+    cudnnDataType_t  dataType;
+    int nbDims = 4;
+    int dimA[4];
+    cudnnSeqDataAxis_t axes[4];
+    size_t seqLengthArraySize;
+    void * paddingFill = NULL;
+    int  seqLengthArray[];
+};
+
+struct cudnnGetSeqDataDescriptorArg {
+    cudnnSeqDataDescriptor_t seqDataDesc;
+    int nbDimsRequested;
+    size_t seqLengthSizeRequested;
+    void *paddingFill = NULL;
+};
+
+struct cudnnGetSeqDataDescriptorResponse {
+    cudnnStatus_t err;
+    cudnnDataType_t dataType;
+    int nbDims;
+    size_t seqLengthArraySize;
+    char dimA_axes_seqLengthArray[];
+};
+
+struct cudnnMultiHeadAttnForwardArg {
+    cudnnHandle_t  handle;
+    cudnnAttnDescriptor_t  attnDesc;
+    int  currIdx;
+    int  *devSeqLengthsQO;
+    int  *devSeqLengthsKV;
+    cudnnSeqDataDescriptor_t  qDesc;
+    void * queries;
+    void * residuals;
+    cudnnSeqDataDescriptor_t  kDesc;
+    void * keys;
+    cudnnSeqDataDescriptor_t  vDesc;
+    void * values;
+    cudnnSeqDataDescriptor_t  oDesc;
+    void * out;
+    size_t  weightSizeInBytes;
+    void * weights;
+    size_t  workSpaceSizeInBytes;
+    void * workSpace;
+    size_t  reserveSpaceSizeInBytes;
+    void * reserveSpace;
+
+    // The length of this array is determined by currIdx
+    // if currIdx is negative, need to find out seq length from qDesc
+    int winIdxLen;
+    int  loWinIdx_hiWinIdx[];
+};
+
+struct cudnnMultiHeadAttnBackwardDataArg {
+    cudnnHandle_t  handle;
+    cudnnAttnDescriptor_t  attnDesc;
+    int  *devSeqLengthsDQDO;
+    int  *devSeqLengthsDKDV;
+    cudnnSeqDataDescriptor_t  doDesc;
+    void * dout;
+    cudnnSeqDataDescriptor_t  dqDesc;
+    void * dqueries;
+    void * queries;
+    cudnnSeqDataDescriptor_t  dkDesc;
+    void * dkeys;
+    void * keys;
+    cudnnSeqDataDescriptor_t  dvDesc;
+    void * dvalues;
+    void * values;
+    size_t  weightSizeInBytes;
+    void * weights;
+    size_t  workSpaceSizeInBytes;
+    void * workSpace;
+    size_t  reserveSpaceSizeInBytes;
+    void * reserveSpace;
+
+    // The length of this array is determined by currIdx
+    // if currIdx is negative, need to find out seq length from qDesc
+    int winIdxLen;
+    int loWinIdx_hiWinIdx[];
+};
+
+struct cudnnMultiHeadAttnBackwardWeightsArg {
+	cudnnHandle_t  handle;
+	cudnnAttnDescriptor_t  attnDesc;
+	cudnnWgradMode_t  addGrad;
+	cudnnSeqDataDescriptor_t  qDesc;
+	void * queries;
+	cudnnSeqDataDescriptor_t  kDesc;
+	void * keys;
+	cudnnSeqDataDescriptor_t  vDesc;
+	void * values;
+	cudnnSeqDataDescriptor_t  doDesc;
+	void * dout;
+	size_t  weightSizeInBytes;
+	void * weights;
+	void * dweights;
+	size_t  workSpaceSizeInBytes;
+	void * workSpace;
+	size_t  reserveSpaceSizeInBytes;
+	void * reserveSpace;
+};
+
 #endif // TALLY_DEF_H

@@ -714,6 +714,12 @@ struct cudaMemGetInfoResponse {
 	cudaError_t err;
 };
 
+struct cudaMemsetArg {
+	void * devPtr;
+	int  value;
+	size_t  count;
+};
+
 struct cudaGraphCreateArg {
 	cudaGraph_t * pGraph;
 	unsigned int  flags;
@@ -953,6 +959,102 @@ struct cudnnSetLRNDescriptorArg {
 
 struct cudnnDestroyLRNDescriptorArg {
 	cudnnLRNDescriptor_t  lrnDesc;
+};
+
+struct cudnnCreateDropoutDescriptorArg {
+	cudnnDropoutDescriptor_t * dropoutDesc;
+};
+
+struct cudnnCreateDropoutDescriptorResponse {
+	cudnnDropoutDescriptor_t  dropoutDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroyDropoutDescriptorArg {
+	cudnnDropoutDescriptor_t  dropoutDesc;
+};
+
+struct cudnnDropoutGetStatesSizeArg {
+	cudnnHandle_t  handle;
+	size_t * sizeInBytes;
+};
+
+struct cudnnDropoutGetStatesSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnSetDropoutDescriptorArg {
+	cudnnDropoutDescriptor_t  dropoutDesc;
+	cudnnHandle_t  handle;
+	float  dropout;
+	void * states;
+	size_t  stateSizeInBytes;
+	unsigned long long  seed;
+};
+
+struct cudnnCreateSeqDataDescriptorArg {
+	cudnnSeqDataDescriptor_t * seqDataDesc;
+};
+
+struct cudnnCreateSeqDataDescriptorResponse {
+	cudnnSeqDataDescriptor_t  seqDataDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroySeqDataDescriptorArg {
+	cudnnSeqDataDescriptor_t  seqDataDesc;
+};
+
+struct cudnnCreateAttnDescriptorArg {
+	cudnnAttnDescriptor_t * attnDesc;
+};
+
+struct cudnnCreateAttnDescriptorResponse {
+	cudnnAttnDescriptor_t  attnDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroyAttnDescriptorArg {
+	cudnnAttnDescriptor_t  attnDesc;
+};
+
+struct cudnnSetAttnDescriptorArg {
+	cudnnAttnDescriptor_t  attnDesc;
+	unsigned  attnMode;
+	int  nHeads;
+	double  smScaler;
+	cudnnDataType_t  dataType;
+	cudnnDataType_t  computePrec;
+	cudnnMathType_t  mathType;
+	cudnnDropoutDescriptor_t  attnDropoutDesc;
+	cudnnDropoutDescriptor_t  postDropoutDesc;
+	int  qSize;
+	int  kSize;
+	int  vSize;
+	int  qProjSize;
+	int  kProjSize;
+	int  vProjSize;
+	int  oProjSize;
+	int  qoMaxSeqLength;
+	int  kvMaxSeqLength;
+	int  maxBatchSize;
+	int  maxBeamSize;
+};
+
+struct cudnnGetMultiHeadAttnBuffersArg {
+	cudnnHandle_t  handle;
+	cudnnAttnDescriptor_t  attnDesc;
+	size_t * weightSizeInBytes;
+	size_t * workSpaceSizeInBytes;
+	size_t * reserveSpaceSizeInBytes;
+};
+
+struct cudnnGetMultiHeadAttnBuffersResponse {
+	size_t  weightSizeInBytes;
+	size_t  workSpaceSizeInBytes;
+	size_t  reserveSpaceSizeInBytes;
+	cudnnStatus_t err;
 };
 
 struct cudnnCreateConvolutionDescriptorArg {

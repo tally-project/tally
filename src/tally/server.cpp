@@ -46,8 +46,8 @@ void TallyServer::start(uint32_t interval) {
     auto time_ckpt = std::chrono::steady_clock::now();
     double req_count = 0.; 
 
-    send_ipc = new ipc::channel("server-to-client-240000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-240000", ipc::receiver);
+    send_ipc = new ipc::channel("server-to-client-250000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-250000", ipc::receiver);
 
     load_cache();
 
@@ -1097,6 +1097,180 @@ void TallyServer::handle_cublasSgemmEx(void *__args)
     );
 
     while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnSetSeqDataDescriptor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnSetSeqDataDescriptor");
+
+    auto args = (struct cudnnSetSeqDataDescriptorArg *) __args;
+
+    cudnnStatus_t err = cudnnSetSeqDataDescriptor(
+        args->seqDataDesc,
+        args->dataType,
+        args->nbDims,
+        args->dimA,
+        args->axes,
+        args->seqLengthArraySize,
+        args->seqLengthArray,
+        const_cast<void *>(args->paddingFill)
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnGetSeqDataDescriptor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnGetSeqDataDescriptor");
+
+    auto args = (struct cudnnGetSeqDataDescriptorArg *) __args;
+
+    cudnnDataType_t dataType;
+    int nbDims;
+    size_t seqLengthArraySize;
+    int *dimA = (int *) malloc(sizeof(int) * args->nbDimsRequested);
+    cudnnSeqDataAxis_t *axes = (cudnnSeqDataAxis_t *) malloc(sizeof(cudnnSeqDataAxis_t) * args->nbDimsRequested);
+    int *seqLengthArray = (int *) malloc(sizeof(int) * args->seqLengthSizeRequested);
+
+    cudnnStatus_t err = cudnnGetSeqDataDescriptor(
+        args->seqDataDesc,
+        &dataType,
+        &nbDims,
+        args->nbDimsRequested,
+        dimA,
+        axes,
+        &seqLengthArraySize,
+        args->seqLengthSizeRequested,
+        seqLengthArray,
+        const_cast<void *>(args->paddingFill)
+    );
+
+    uint32_t res_len = sizeof(cudnnGetSeqDataDescriptorResponse) + sizeof(int) * nbDims + sizeof(cudnnSeqDataAxis_t) * nbDims + sizeof(int) * seqLengthArraySize;
+    auto res = (cudnnGetSeqDataDescriptorResponse *) malloc(res_len);
+
+    res->err = err;
+    res->dataType = dataType;
+    res->nbDims = nbDims;
+    res->seqLengthArraySize = seqLengthArraySize;
+
+    memcpy(res->dimA_axes_seqLengthArray, dimA, sizeof(int) * nbDims);
+    memcpy(res->dimA_axes_seqLengthArray + sizeof(int) * nbDims, axes, sizeof(cudnnSeqDataAxis_t) * nbDims);
+    memcpy(res->dimA_axes_seqLengthArray + sizeof(int) * nbDims + sizeof(cudnnSeqDataAxis_t) * nbDims, seqLengthArray, sizeof(int) * seqLengthArraySize);
+
+    while(!send_ipc->send((void *) res, res_len)) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    free(dimA);
+    free(axes);
+    free(seqLengthArray);
+    free(res);
+}
+
+void TallyServer::handle_cudnnMultiHeadAttnForward(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnMultiHeadAttnForward");
+
+    auto args = (struct cudnnMultiHeadAttnForwardArg *) __args;
+
+    cudnnStatus_t err = cudnnMultiHeadAttnForward(
+        args->handle,
+        args->attnDesc,
+        args->currIdx,
+        args->loWinIdx_hiWinIdx,
+        args->loWinIdx_hiWinIdx + args->winIdxLen,
+        args->devSeqLengthsQO,
+        args->devSeqLengthsKV,
+        args->qDesc,
+        args->queries,
+        args->residuals,
+        args->kDesc,
+        args->keys,
+        args->vDesc,
+        args->values,
+        args->oDesc,
+        args->out,
+        args->weightSizeInBytes,
+        args->weights,
+        args->workSpaceSizeInBytes,
+        args->workSpace,
+        args->reserveSpaceSizeInBytes,
+        args->reserveSpace
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnMultiHeadAttnBackwardData(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnMultiHeadAttnBackwardData");
+
+    auto args = (struct cudnnMultiHeadAttnBackwardDataArg *) __args;
+
+    cudnnStatus_t err = cudnnMultiHeadAttnBackwardData(
+        args->handle,
+        args->attnDesc,
+        args->loWinIdx_hiWinIdx,
+        args->loWinIdx_hiWinIdx + args->winIdxLen,
+        args->devSeqLengthsDQDO,
+        args->devSeqLengthsDKDV,
+        args->doDesc,
+        args->dout,
+        args->dqDesc,
+        args->dqueries,
+        args->queries,
+        args->dkDesc,
+        args->dkeys,
+        args->keys,
+        args->dvDesc,
+        args->dvalues,
+        args->values,
+        args->weightSizeInBytes,
+        args->weights,
+        args->workSpaceSizeInBytes,
+        args->workSpace,
+        args->reserveSpaceSizeInBytes,
+        args->reserveSpace
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnMultiHeadAttnBackwardWeights(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnMultiHeadAttnBackwardWeights");
+
+    auto args = (struct cudnnMultiHeadAttnBackwardWeightsArg *) __args;
+    cudnnStatus_t err = cudnnMultiHeadAttnBackwardWeights(
+		args->handle,
+		args->attnDesc,
+		args->addGrad,
+		args->qDesc,
+		args->queries,
+		args->kDesc,
+		args->keys,
+		args->vDesc,
+		args->values,
+		args->doDesc,
+		args->dout,
+		args->weightSizeInBytes,
+		args->weights,
+		args->dweights,
+		args->workSpaceSizeInBytes,
+		args->workSpace,
+		args->reserveSpaceSizeInBytes,
+		args->reserveSpace
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
         send_ipc->wait_for_recv(1);
     }
 }

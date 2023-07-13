@@ -37,6 +37,8 @@
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
 
+std::unordered_map<cudnnSeqDataDescriptor_t, int> seq_desc_to_seq_len_map;
+
 extern "C" {
 
 void *dlopen(const char *filename, int flag)
@@ -1028,17 +1030,207 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
     return *res;
 }
 
-// cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, int  currIdx, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsQO[], const int  devSeqLengthsKV[], const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const void * residuals, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  oDesc, void * out, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
-// {
-// 	TALLY_LOG("cudnnMultiHeadAttnForward hooked");
-// 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-// }
+cudnnStatus_t cudnnSetSeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc, cudnnDataType_t  dataType, int  nbDims, const int  dimA[], const cudnnSeqDataAxis_t  axes[], size_t  seqLengthArraySize, const int  seqLengthArray[], void * paddingFill)
+{
+	TALLY_LOG("cudnnSetSeqDataDescriptor hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetSeqDataDescriptorArg) + seqLengthArraySize * sizeof(int);
 
-// cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsDQDO[], const int  devSeqLengthsDKDV[], const cudnnSeqDataDescriptor_t  doDesc, const void * dout, const cudnnSeqDataDescriptor_t  dqDesc, void * dqueries, const void * queries, const cudnnSeqDataDescriptor_t  dkDesc, void * dkeys, const void * keys, const cudnnSeqDataDescriptor_t  dvDesc, void * dvalues, const void * values, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
-// {
-// 	TALLY_LOG("cudnnMultiHeadAttnBackwardData hooked");
-// 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-// }
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETSEQDATADESCRIPTOR;
+    
+    auto arg_ptr = (struct cudnnSetSeqDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->seqDataDesc = seqDataDesc;
+    arg_ptr->dataType = dataType;
+    arg_ptr->nbDims = 4;
+    memcpy(arg_ptr->dimA, dimA, sizeof(int) * 4);
+    memcpy(arg_ptr->axes, axes, sizeof(cudnnSeqDataAxis_t) * 4);
+    arg_ptr->seqLengthArraySize = seqLengthArraySize;
+    arg_ptr->paddingFill = NULL;
+    memcpy(arg_ptr->seqLengthArray, seqLengthArray, sizeof(int) * seqLengthArraySize);
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    int max_seq_len = -1;
+    for (int i = 0; i < seqLengthArraySize; i++) {
+        max_seq_len = std::max(seqLengthArray[i], max_seq_len);
+    }
+
+    seq_desc_to_seq_len_map[seqDataDesc] = max_seq_len;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
+cudnnStatus_t cudnnGetSeqDataDescriptor(const cudnnSeqDataDescriptor_t  seqDataDesc, cudnnDataType_t * dataType, int * nbDims, int  nbDimsRequested, int  dimA[], cudnnSeqDataAxis_t  axes[], size_t * seqLengthArraySize, size_t  seqLengthSizeRequested, int  seqLengthArray[], void * paddingFill)
+{
+	TALLY_LOG("cudnnGetSeqDataDescriptor hooked");
+	
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetSeqDataDescriptorArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETSEQDATADESCRIPTOR;
+    
+    auto arg_ptr = (struct cudnnGetSeqDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->seqDataDesc = seqDataDesc;
+    arg_ptr->nbDimsRequested = nbDimsRequested;
+    arg_ptr->seqLengthSizeRequested = seqLengthSizeRequested;
+    arg_ptr->paddingFill = NULL;
+  
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnGetSeqDataDescriptorResponse *) dat;
+    *dataType = res->dataType;
+    *nbDims = res->nbDims;
+    *seqLengthArraySize = res->seqLengthArraySize;
+    memcpy(dimA, res->dimA_axes_seqLengthArray, sizeof(int) * res->nbDims);
+    memcpy(axes, res->dimA_axes_seqLengthArray + sizeof(int) * res->nbDims, sizeof(cudnnSeqDataAxis_t) * res->nbDims);
+    memcpy(seqLengthArray, res->dimA_axes_seqLengthArray + sizeof(int) * res->nbDims + sizeof(cudnnSeqDataAxis_t) * res->nbDims, sizeof(int) * res->seqLengthArraySize);
+
+    return res->err;
+}
+
+cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, int  currIdx, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsQO[], const int  devSeqLengthsKV[], const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const void * residuals, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  oDesc, void * out, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
+{
+	TALLY_LOG("cudnnMultiHeadAttnForward hooked");
+	
+    assert(seq_desc_to_seq_len_map.find(qDesc) != seq_desc_to_seq_len_map.end());
+    int winIdxLen;
+
+    if (currIdx < 0) {
+        winIdxLen = seq_desc_to_seq_len_map[qDesc];
+    } else {
+        winIdxLen = currIdx + 1;
+    }
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnMultiHeadAttnForwardArg) + sizeof(int) * winIdxLen * 2;
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNMULTIHEADATTNFORWARD;
+    
+    auto arg_ptr = (struct cudnnMultiHeadAttnForwardArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->attnDesc = attnDesc;
+    arg_ptr->currIdx = currIdx;
+    arg_ptr->devSeqLengthsQO = const_cast<int *>(devSeqLengthsQO);
+    arg_ptr->devSeqLengthsKV = const_cast<int *>(devSeqLengthsKV);
+    arg_ptr->qDesc = qDesc;
+    arg_ptr->queries = const_cast<void *>(queries);
+    arg_ptr->residuals = const_cast<void *>(residuals);
+    arg_ptr->kDesc = kDesc;
+    arg_ptr->keys = const_cast<void *>(keys);
+    arg_ptr->vDesc = vDesc;
+    arg_ptr->values = const_cast<void *>(values);
+    arg_ptr->oDesc = oDesc;
+    arg_ptr->out = out;
+    arg_ptr->weightSizeInBytes = weightSizeInBytes;
+    arg_ptr->weights = const_cast<void *>(weights);
+    arg_ptr->workSpaceSizeInBytes = workSpaceSizeInBytes;
+    arg_ptr->workSpace = workSpace;
+    arg_ptr->reserveSpaceSizeInBytes = reserveSpaceSizeInBytes;
+    arg_ptr->reserveSpace = reserveSpace;
+    arg_ptr->winIdxLen = winIdxLen;
+
+    memcpy(arg_ptr->loWinIdx_hiWinIdx, loWinIdx, sizeof(int) * winIdxLen);
+    memcpy(arg_ptr->loWinIdx_hiWinIdx + winIdxLen, hiWinIdx, sizeof(int) * winIdxLen);
+  
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto err = (cudnnStatus_t *) dat;
+    return *err;
+}
+
+cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsDQDO[], const int  devSeqLengthsDKDV[], const cudnnSeqDataDescriptor_t  doDesc, const void * dout, const cudnnSeqDataDescriptor_t  dqDesc, void * dqueries, const void * queries, const cudnnSeqDataDescriptor_t  dkDesc, void * dkeys, const void * keys, const cudnnSeqDataDescriptor_t  dvDesc, void * dvalues, const void * values, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
+{
+	TALLY_LOG("cudnnMultiHeadAttnBackwardData hooked");
+	
+    assert(seq_desc_to_seq_len_map.find(dqDesc) != seq_desc_to_seq_len_map.end());
+    int winIdxLen = seq_desc_to_seq_len_map[dqDesc];
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnMultiHeadAttnBackwardDataArg) + sizeof(int) * winIdxLen * 2;
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNMULTIHEADATTNBACKWARDDATA;
+    
+    auto arg_ptr = (struct cudnnMultiHeadAttnBackwardDataArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->handle = handle;
+    arg_ptr->attnDesc = attnDesc;
+    arg_ptr->devSeqLengthsDQDO = const_cast<int *>(devSeqLengthsDQDO);
+    arg_ptr->devSeqLengthsDKDV = const_cast<int *>(devSeqLengthsDKDV);
+    arg_ptr->doDesc = doDesc;
+    arg_ptr->dout = const_cast<void *>(dout);
+    arg_ptr->dqDesc = dqDesc;
+    arg_ptr->dqueries = dqueries;
+    arg_ptr->queries = const_cast<void *>(queries);
+    arg_ptr->dkDesc = dkDesc;
+    arg_ptr->dkeys = dkeys;
+    arg_ptr->keys = const_cast<void *>(keys);
+    arg_ptr->dvDesc = dvDesc;
+    arg_ptr->dvalues = dvalues;
+    arg_ptr->values = const_cast<void *>(values);
+    arg_ptr->weightSizeInBytes = weightSizeInBytes;
+    arg_ptr->weights = const_cast<void *>(weights);
+    arg_ptr->workSpaceSizeInBytes = workSpaceSizeInBytes;
+    arg_ptr->workSpace = workSpace;
+    arg_ptr->reserveSpaceSizeInBytes = reserveSpaceSizeInBytes;
+    arg_ptr->reserveSpace = reserveSpace;
+
+    arg_ptr->winIdxLen = winIdxLen;
+    memcpy(arg_ptr->loWinIdx_hiWinIdx, loWinIdx, sizeof(int) * winIdxLen);
+    memcpy(arg_ptr->loWinIdx_hiWinIdx + winIdxLen, hiWinIdx, sizeof(int) * winIdxLen);
+  
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto err = (cudnnStatus_t *) dat;
+    return *err;
+}
+
+cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, cudnnWgradMode_t  addGrad, const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  doDesc, const void * dout, size_t  weightSizeInBytes, const void * weights, void * dweights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
+{
+	TALLY_LOG("cudnnMultiHeadAttnBackwardWeights hooked");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnMultiHeadAttnBackwardWeightsArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNMULTIHEADATTNBACKWARDWEIGHTS;
+    
+    struct cudnnMultiHeadAttnBackwardWeightsArg *arg_ptr = (struct cudnnMultiHeadAttnBackwardWeightsArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->attnDesc = attnDesc;
+	arg_ptr->addGrad = addGrad;
+	arg_ptr->qDesc = qDesc;
+	arg_ptr->queries = const_cast<void *>(queries);
+	arg_ptr->kDesc = kDesc;
+	arg_ptr->keys = const_cast<void *>(keys);
+	arg_ptr->vDesc = vDesc;
+	arg_ptr->values = const_cast<void *>(values);
+	arg_ptr->doDesc = doDesc;
+	arg_ptr->dout = const_cast<void *>(dout);
+	arg_ptr->weightSizeInBytes = weightSizeInBytes;
+	arg_ptr->weights = const_cast<void *>(weights);
+	arg_ptr->dweights = dweights;
+	arg_ptr->workSpaceSizeInBytes = workSpaceSizeInBytes;
+	arg_ptr->workSpace = workSpace;
+	arg_ptr->reserveSpaceSizeInBytes = reserveSpaceSizeInBytes;
+	arg_ptr->reserveSpace = reserveSpace;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
 
 // cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, cudnnWgradMode_t  addGrad, const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  doDesc, const void * dout, size_t  weightSizeInBytes, const void * weights, void * dweights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
 // {

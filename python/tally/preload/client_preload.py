@@ -127,7 +127,7 @@ void TallyServer::handle_{func_name}(void *__args)
 
         for idx in range(len(arg_names)):
             if idx in indices:
-                handler += f"&({arg_names[idx]})"
+                handler += f"(args->{arg_names[idx]} ? &({arg_names[idx]}) : NULL)"
             else:
                 handler += f"args->{arg_names[idx]}"
             if idx != len(arg_names) - 1:
@@ -142,9 +142,6 @@ void TallyServer::handle_{func_name}(void *__args)
         
         handler += f"\t\terr"
         handler += "};\n"
-
-        if ret_type == "cudnnStatus_t":
-            handler += """if (err != CUDNN_STATUS_SUCCESS) std::cerr << "cudnnStatus_t not success" << std::endl; """
 
         handler += f"""
     while(!send_ipc->send((void *) &res, sizeof(struct {func_name}Response))) {{
@@ -214,7 +211,7 @@ def gen_func_client_preload(func_sig):
         func_preload_builder += get_preload_func_template(func_name, arg_names)
         func_preload_builder += f"\tauto res = ({res_struct} *) dat;\n"
         for idx in indices:
-            func_preload_builder += f"\t*{arg_names[idx]} = res->{arg_names[idx]};\n"
+            func_preload_builder += f"\tif ({arg_names[idx]}) {{ *{arg_names[idx]} = res->{arg_names[idx]}; }}\n"
         func_preload_builder += f"\treturn res->err;\n"
     
     elif func_name in FORWARD_API_CALLS:

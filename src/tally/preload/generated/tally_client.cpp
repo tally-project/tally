@@ -77,7 +77,7 @@ CUresult cuDriverGetVersion(int * driverVersion)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDriverGetVersionResponse *) dat;
-	*driverVersion = res->driverVersion;
+	if (driverVersion) { *driverVersion = res->driverVersion; }
 	return res->err;
 }
 
@@ -97,7 +97,7 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetResponse *) dat;
-	*device = res->device;
+	if (device) { *device = res->device; }
 	return res->err;
 }
 
@@ -116,7 +116,7 @@ CUresult cuDeviceGetCount(int * count)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetCountResponse *) dat;
-	*count = res->count;
+	if (count) { *count = res->count; }
 	return res->err;
 }
 
@@ -142,7 +142,7 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetUuidResponse *) dat;
-	*uuid = res->uuid;
+	if (uuid) { *uuid = res->uuid; }
 	return res->err;
 }
 
@@ -162,7 +162,7 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetUuid_v2Response *) dat;
-	*uuid = res->uuid;
+	if (uuid) { *uuid = res->uuid; }
 	return res->err;
 }
 
@@ -183,8 +183,8 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetLuidResponse *) dat;
-	*luid = res->luid;
-	*deviceNodeMask = res->deviceNodeMask;
+	if (luid) { *luid = res->luid; }
+	if (deviceNodeMask) { *deviceNodeMask = res->deviceNodeMask; }
 	return res->err;
 }
 
@@ -204,7 +204,7 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceTotalMem_v2Response *) dat;
-	*bytes = res->bytes;
+	if (bytes) { *bytes = res->bytes; }
 	return res->err;
 }
 
@@ -226,7 +226,7 @@ CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetTexture1DLinearMaxWidthResponse *) dat;
-	*maxWidthInElements = res->maxWidthInElements;
+	if (maxWidthInElements) { *maxWidthInElements = res->maxWidthInElements; }
 	return res->err;
 }
 
@@ -247,7 +247,7 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetAttributeResponse *) dat;
-	*pi = res->pi;
+	if (pi) { *pi = res->pi; }
 	return res->err;
 }
 
@@ -293,7 +293,7 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetMemPoolResponse *) dat;
-	*pool = res->pool;
+	if (pool) { *pool = res->pool; }
 	return res->err;
 }
 
@@ -313,7 +313,7 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetDefaultMemPoolResponse *) dat;
-	*pool_out = res->pool_out;
+	if (pool_out) { *pool_out = res->pool_out; }
 	return res->err;
 }
 
@@ -353,7 +353,7 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetPropertiesResponse *) dat;
-	*prop = res->prop;
+	if (prop) { *prop = res->prop; }
 	return res->err;
 }
 
@@ -374,8 +374,8 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceComputeCapabilityResponse *) dat;
-	*major = res->major;
-	*minor = res->minor;
+	if (major) { *major = res->major; }
+	if (minor) { *minor = res->minor; }
 	return res->err;
 }
 
@@ -395,7 +395,7 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDevicePrimaryCtxRetainResponse *) dat;
-	*pctx = res->pctx;
+	if (pctx) { *pctx = res->pctx; }
 	return res->err;
 }
 
@@ -455,8 +455,8 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDevicePrimaryCtxGetStateResponse *) dat;
-	*flags = res->flags;
-	*active = res->active;
+	if (flags) { *flags = res->flags; }
+	if (active) { *active = res->active; }
 	return res->err;
 }
 
@@ -496,7 +496,7 @@ CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUde
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuDeviceGetExecAffinitySupportResponse *) dat;
-	*pi = res->pi;
+	if (pi) { *pi = res->pi; }
 	return res->err;
 }
 
@@ -517,7 +517,7 @@ CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxCreate_v2Response *) dat;
-	*pctx = res->pctx;
+	if (pctx) { *pctx = res->pctx; }
 	return res->err;
 }
 
@@ -580,7 +580,7 @@ CUresult cuCtxPopCurrent_v2(CUcontext * pctx)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxPopCurrent_v2Response *) dat;
-	*pctx = res->pctx;
+	if (pctx) { *pctx = res->pctx; }
 	return res->err;
 }
 
@@ -618,7 +618,7 @@ CUresult cuCtxGetCurrent(CUcontext * pctx)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxGetCurrentResponse *) dat;
-	*pctx = res->pctx;
+	if (pctx) { *pctx = res->pctx; }
 	return res->err;
 }
 
@@ -637,7 +637,7 @@ CUresult cuCtxGetDevice(CUdevice * device)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxGetDeviceResponse *) dat;
-	*device = res->device;
+	if (device) { *device = res->device; }
 	return res->err;
 }
 
@@ -656,7 +656,7 @@ CUresult cuCtxGetFlags(unsigned int * flags)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxGetFlagsResponse *) dat;
-	*flags = res->flags;
+	if (flags) { *flags = res->flags; }
 	return res->err;
 }
 
@@ -714,7 +714,7 @@ CUresult cuCtxGetLimit(size_t * pvalue, CUlimit  limit)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxGetLimitResponse *) dat;
-	*pvalue = res->pvalue;
+	if (pvalue) { *pvalue = res->pvalue; }
 	return res->err;
 }
 
@@ -733,7 +733,7 @@ CUresult cuCtxGetCacheConfig(CUfunc_cache * pconfig)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxGetCacheConfigResponse *) dat;
-	*pconfig = res->pconfig;
+	if (pconfig) { *pconfig = res->pconfig; }
 	return res->err;
 }
 
@@ -771,7 +771,7 @@ CUresult cuCtxGetSharedMemConfig(CUsharedconfig * pConfig)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxGetSharedMemConfigResponse *) dat;
-	*pConfig = res->pConfig;
+	if (pConfig) { *pConfig = res->pConfig; }
 	return res->err;
 }
 
@@ -810,7 +810,7 @@ CUresult cuCtxGetApiVersion(CUcontext  ctx, unsigned int * version)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxGetApiVersionResponse *) dat;
-	*version = res->version;
+	if (version) { *version = res->version; }
 	return res->err;
 }
 
@@ -830,8 +830,8 @@ CUresult cuCtxGetStreamPriorityRange(int * leastPriority, int * greatestPriority
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxGetStreamPriorityRangeResponse *) dat;
-	*leastPriority = res->leastPriority;
-	*greatestPriority = res->greatestPriority;
+	if (leastPriority) { *leastPriority = res->leastPriority; }
+	if (greatestPriority) { *greatestPriority = res->greatestPriority; }
 	return res->err;
 }
 
@@ -869,7 +869,7 @@ CUresult cuCtxGetExecAffinity(CUexecAffinityParam * pExecAffinity, CUexecAffinit
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxGetExecAffinityResponse *) dat;
-	*pExecAffinity = res->pExecAffinity;
+	if (pExecAffinity) { *pExecAffinity = res->pExecAffinity; }
 	return res->err;
 }
 
@@ -889,7 +889,7 @@ CUresult cuCtxAttach(CUcontext * pctx, unsigned int  flags)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cuCtxAttachResponse *) dat;
-	*pctx = res->pctx;
+	if (pctx) { *pctx = res->pctx; }
 	return res->err;
 }
 
@@ -2827,7 +2827,7 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaDeviceGetLimitResponse *) dat;
-	*pValue = res->pValue;
+	if (pValue) { *pValue = res->pValue; }
 	return res->err;
 }
 
@@ -2852,7 +2852,7 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaDeviceGetCacheConfigResponse *) dat;
-	*pCacheConfig = res->pCacheConfig;
+	if (pCacheConfig) { *pCacheConfig = res->pCacheConfig; }
 	return res->err;
 }
 
@@ -2872,8 +2872,8 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaDeviceGetStreamPriorityRangeResponse *) dat;
-	*leastPriority = res->leastPriority;
-	*greatestPriority = res->greatestPriority;
+	if (leastPriority) { *leastPriority = res->leastPriority; }
+	if (greatestPriority) { *greatestPriority = res->greatestPriority; }
 	return res->err;
 }
 
@@ -2955,7 +2955,7 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaIpcOpenEventHandleResponse *) dat;
-	*event = res->event;
+	if (event) { *event = res->event; }
 	return res->err;
 }
 
@@ -3055,7 +3055,7 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaThreadGetLimitResponse *) dat;
-	*pValue = res->pValue;
+	if (pValue) { *pValue = res->pValue; }
 	return res->err;
 }
 
@@ -3074,7 +3074,7 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaThreadGetCacheConfigResponse *) dat;
-	*pCacheConfig = res->pCacheConfig;
+	if (pCacheConfig) { *pCacheConfig = res->pCacheConfig; }
 	return res->err;
 }
 
@@ -3162,7 +3162,7 @@ cudaError_t cudaGetDeviceCount(int * count)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaGetDeviceCountResponse *) dat;
-	*count = res->count;
+	if (count) { *count = res->count; }
 	return res->err;
 }
 
@@ -3182,7 +3182,7 @@ cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaGetDevicePropertiesResponse *) dat;
-	*prop = res->prop;
+	if (prop) { *prop = res->prop; }
 	return res->err;
 }
 
@@ -3203,7 +3203,7 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaDeviceGetAttributeResponse *) dat;
-	*value = res->value;
+	if (value) { *value = res->value; }
 	return res->err;
 }
 
@@ -3223,7 +3223,7 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaDeviceGetDefaultMemPoolResponse *) dat;
-	*memPool = res->memPool;
+	if (memPool) { *memPool = res->memPool; }
 	return res->err;
 }
 
@@ -3263,7 +3263,7 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaDeviceGetMemPoolResponse *) dat;
-	*memPool = res->memPool;
+	if (memPool) { *memPool = res->memPool; }
 	return res->err;
 }
 
@@ -3291,7 +3291,7 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaDeviceGetP2PAttributeResponse *) dat;
-	*value = res->value;
+	if (value) { *value = res->value; }
 	return res->err;
 }
 
@@ -3335,7 +3335,7 @@ cudaError_t cudaGetDevice(int * device)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaGetDeviceResponse *) dat;
-	*device = res->device;
+	if (device) { *device = res->device; }
 	return res->err;
 }
 
@@ -3379,7 +3379,7 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaGetDeviceFlagsResponse *) dat;
-	*flags = res->flags;
+	if (flags) { *flags = res->flags; }
 	return res->err;
 }
 
@@ -3398,7 +3398,7 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaStreamCreateResponse *) dat;
-	*pStream = res->pStream;
+	if (pStream) { *pStream = res->pStream; }
 	return res->err;
 }
 
@@ -3418,7 +3418,7 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaStreamCreateWithFlagsResponse *) dat;
-	*pStream = res->pStream;
+	if (pStream) { *pStream = res->pStream; }
 	return res->err;
 }
 
@@ -3439,7 +3439,7 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaStreamCreateWithPriorityResponse *) dat;
-	*pStream = res->pStream;
+	if (pStream) { *pStream = res->pStream; }
 	return res->err;
 }
 
@@ -3657,7 +3657,7 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaStreamIsCapturingResponse *) dat;
-	*pCaptureStatus = res->pCaptureStatus;
+	if (pCaptureStatus) { *pCaptureStatus = res->pCaptureStatus; }
 	return res->err;
 }
 
@@ -3694,7 +3694,7 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaEventCreateResponse *) dat;
-	*event = res->event;
+	if (event) { *event = res->event; }
 	return res->err;
 }
 
@@ -3714,7 +3714,7 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaEventCreateWithFlagsResponse *) dat;
-	*event = res->event;
+	if (event) { *event = res->event; }
 	return res->err;
 }
 
@@ -3833,7 +3833,7 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaEventElapsedTimeResponse *) dat;
-	*ms = res->ms;
+	if (ms) { *ms = res->ms; }
 	return res->err;
 }
 
@@ -3979,7 +3979,7 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaMallocResponse *) dat;
-	*devPtr = res->devPtr;
+	if (devPtr) { *devPtr = res->devPtr; }
 	return res->err;
 }
 
@@ -4132,8 +4132,8 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaMemGetInfoResponse *) dat;
-	*free = res->free;
-	*total = res->total;
+	if (free) { *free = res->free; }
+	if (total) { *total = res->total; }
 	return res->err;
 }
 
@@ -4242,7 +4242,22 @@ cudaError_t cudaMemcpyFromSymbolAsync(void * dst, const void * symbol, size_t  c
 cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
 {
 	TALLY_LOG("cudaMemset hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemsetArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAMEMSET;
+    
+    struct cudaMemsetArg *arg_ptr = (struct cudaMemsetArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->devPtr = devPtr;
+	arg_ptr->value = value;
+	arg_ptr->count = count;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaError_t *) dat;
+    return *res;
 }
 
 cudaError_t cudaMemset2D(void * devPtr, size_t  pitch, int  value, size_t  width, size_t  height)
@@ -4633,7 +4648,7 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudaGraphCreateResponse *) dat;
-	*pGraph = res->pGraph;
+	if (pGraph) { *pGraph = res->pGraph; }
 	return res->err;
 }
 
@@ -5213,7 +5228,7 @@ cudnnStatus_t cudnnGetProperty(libraryPropertyType  type, int * value)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnGetPropertyResponse *) dat;
-	*value = res->value;
+	if (value) { *value = res->value; }
 	return res->err;
 }
 
@@ -5232,7 +5247,7 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnCreateResponse *) dat;
-	*handle = res->handle;
+	if (handle) { *handle = res->handle; }
 	return res->err;
 }
 
@@ -5291,7 +5306,7 @@ cudnnStatus_t cudnnGetStream(cudnnHandle_t  handle, cudaStream_t * streamId)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnGetStreamResponse *) dat;
-	*streamId = res->streamId;
+	if (streamId) { *streamId = res->streamId; }
 	return res->err;
 }
 
@@ -5310,7 +5325,7 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnCreateTensorDescriptorResponse *) dat;
-	*tensorDesc = res->tensorDesc;
+	if (tensorDesc) { *tensorDesc = res->tensorDesc; }
 	return res->err;
 }
 
@@ -5391,15 +5406,15 @@ cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t  tensorDe
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnGetTensor4dDescriptorResponse *) dat;
-	*dataType = res->dataType;
-	*n = res->n;
-	*c = res->c;
-	*h = res->h;
-	*w = res->w;
-	*nStride = res->nStride;
-	*cStride = res->cStride;
-	*hStride = res->hStride;
-	*wStride = res->wStride;
+	if (dataType) { *dataType = res->dataType; }
+	if (n) { *n = res->n; }
+	if (c) { *c = res->c; }
+	if (h) { *h = res->h; }
+	if (w) { *w = res->w; }
+	if (nStride) { *nStride = res->nStride; }
+	if (cStride) { *cStride = res->cStride; }
+	if (hStride) { *hStride = res->hStride; }
+	if (wStride) { *wStride = res->wStride; }
 	return res->err;
 }
 
@@ -5431,7 +5446,7 @@ cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDes
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnGetTensorSizeInBytesResponse *) dat;
-	*size = res->size;
+	if (size) { *size = res->size; }
 	return res->err;
 }
 
@@ -5472,7 +5487,7 @@ cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  tra
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnInitTransformDestResponse *) dat;
-	*destSizeInBytes = res->destSizeInBytes;
+	if (destSizeInBytes) { *destSizeInBytes = res->destSizeInBytes; }
 	return res->err;
 }
 
@@ -5491,7 +5506,7 @@ cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescripto
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnCreateTensorTransformDescriptorResponse *) dat;
-	*transformDesc = res->transformDesc;
+	if (transformDesc) { *transformDesc = res->transformDesc; }
 	return res->err;
 }
 
@@ -5631,7 +5646,7 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnCreateFilterDescriptorResponse *) dat;
-	*filterDesc = res->filterDesc;
+	if (filterDesc) { *filterDesc = res->filterDesc; }
 	return res->err;
 }
 
@@ -5688,7 +5703,7 @@ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDes
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnGetFilterSizeInBytesResponse *) dat;
-	*size = res->size;
+	if (size) { *size = res->size; }
 	return res->err;
 }
 
@@ -5732,7 +5747,7 @@ cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t * poolingDes
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnCreatePoolingDescriptorResponse *) dat;
-	*poolingDesc = res->poolingDesc;
+	if (poolingDesc) { *poolingDesc = res->poolingDesc; }
 	return res->err;
 }
 
@@ -5788,7 +5803,7 @@ cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t * acti
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnCreateActivationDescriptorResponse *) dat;
-	*activationDesc = res->activationDesc;
+	if (activationDesc) { *activationDesc = res->activationDesc; }
 	return res->err;
 }
 
@@ -5866,7 +5881,7 @@ cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t * normDesc)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnCreateLRNDescriptorResponse *) dat;
-	*normDesc = res->normDesc;
+	if (normDesc) { *normDesc = res->normDesc; }
 	return res->err;
 }
 
@@ -5981,19 +5996,59 @@ cudnnStatus_t cudnnSpatialTfSamplerForward(cudnnHandle_t  handle, cudnnSpatialTr
 cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDesc)
 {
 	TALLY_LOG("cudnnCreateDropoutDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateDropoutDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEDROPOUTDESCRIPTOR;
+    
+    struct cudnnCreateDropoutDescriptorArg *arg_ptr = (struct cudnnCreateDropoutDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dropoutDesc = dropoutDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnCreateDropoutDescriptorResponse *) dat;
+	if (dropoutDesc) { *dropoutDesc = res->dropoutDesc; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc)
 {
 	TALLY_LOG("cudnnDestroyDropoutDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyDropoutDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYDROPOUTDESCRIPTOR;
+    
+    struct cudnnDestroyDropoutDescriptorArg *arg_ptr = (struct cudnnDestroyDropoutDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dropoutDesc = dropoutDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t  handle, size_t * sizeInBytes)
 {
 	TALLY_LOG("cudnnDropoutGetStatesSize hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDropoutGetStatesSizeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNDROPOUTGETSTATESSIZE;
+    
+    struct cudnnDropoutGetStatesSizeArg *arg_ptr = (struct cudnnDropoutGetStatesSizeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->sizeInBytes = sizeInBytes;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnDropoutGetStatesSizeResponse *) dat;
+	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnDropoutGetReserveSpaceSize(cudnnTensorDescriptor_t  xdesc, size_t * sizeInBytes)
@@ -6005,7 +6060,25 @@ cudnnStatus_t cudnnDropoutGetReserveSpaceSize(cudnnTensorDescriptor_t  xdesc, si
 cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, cudnnHandle_t  handle, float  dropout, void * states, size_t  stateSizeInBytes, unsigned long long  seed)
 {
 	TALLY_LOG("cudnnSetDropoutDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetDropoutDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETDROPOUTDESCRIPTOR;
+    
+    struct cudnnSetDropoutDescriptorArg *arg_ptr = (struct cudnnSetDropoutDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dropoutDesc = dropoutDesc;
+	arg_ptr->handle = handle;
+	arg_ptr->dropout = dropout;
+	arg_ptr->states = states;
+	arg_ptr->stateSizeInBytes = stateSizeInBytes;
+	arg_ptr->seed = seed;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, cudnnHandle_t  handle, float  dropout, void * states, size_t  stateSizeInBytes, unsigned long long  seed)
@@ -6485,43 +6558,115 @@ cudnnStatus_t cudnnFindRNNForwardInferenceAlgorithmEx(cudnnHandle_t  handle, con
 cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDesc)
 {
 	TALLY_LOG("cudnnCreateSeqDataDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateSeqDataDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATESEQDATADESCRIPTOR;
+    
+    struct cudnnCreateSeqDataDescriptorArg *arg_ptr = (struct cudnnCreateSeqDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->seqDataDesc = seqDataDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnCreateSeqDataDescriptorResponse *) dat;
+	if (seqDataDesc) { *seqDataDesc = res->seqDataDesc; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc)
 {
 	TALLY_LOG("cudnnDestroySeqDataDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
 
-cudnnStatus_t cudnnSetSeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc, cudnnDataType_t  dataType, int  nbDims, const int  dimA[], const cudnnSeqDataAxis_t  axes[], size_t  seqLengthArraySize, const int  seqLengthArray[], void * paddingFill)
-{
-	TALLY_LOG("cudnnSetSeqDataDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroySeqDataDescriptorArg);
 
-cudnnStatus_t cudnnGetSeqDataDescriptor(const cudnnSeqDataDescriptor_t  seqDataDesc, cudnnDataType_t * dataType, int * nbDims, int  nbDimsRequested, int  dimA[], cudnnSeqDataAxis_t  axes[], size_t * seqLengthArraySize, size_t  seqLengthSizeRequested, int  seqLengthArray[], void * paddingFill)
-{
-	TALLY_LOG("cudnnGetSeqDataDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYSEQDATADESCRIPTOR;
+    
+    struct cudnnDestroySeqDataDescriptorArg *arg_ptr = (struct cudnnDestroySeqDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->seqDataDesc = seqDataDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t * attnDesc)
 {
 	TALLY_LOG("cudnnCreateAttnDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateAttnDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEATTNDESCRIPTOR;
+    
+    struct cudnnCreateAttnDescriptorArg *arg_ptr = (struct cudnnCreateAttnDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->attnDesc = attnDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnCreateAttnDescriptorResponse *) dat;
+	if (attnDesc) { *attnDesc = res->attnDesc; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
 {
 	TALLY_LOG("cudnnDestroyAttnDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyAttnDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYATTNDESCRIPTOR;
+    
+    struct cudnnDestroyAttnDescriptorArg *arg_ptr = (struct cudnnDestroyAttnDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->attnDesc = attnDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  attnMode, int  nHeads, double  smScaler, cudnnDataType_t  dataType, cudnnDataType_t  computePrec, cudnnMathType_t  mathType, cudnnDropoutDescriptor_t  attnDropoutDesc, cudnnDropoutDescriptor_t  postDropoutDesc, int  qSize, int  kSize, int  vSize, int  qProjSize, int  kProjSize, int  vProjSize, int  oProjSize, int  qoMaxSeqLength, int  kvMaxSeqLength, int  maxBatchSize, int  maxBeamSize)
 {
 	TALLY_LOG("cudnnSetAttnDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetAttnDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETATTNDESCRIPTOR;
+    
+    struct cudnnSetAttnDescriptorArg *arg_ptr = (struct cudnnSetAttnDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->attnDesc = attnDesc;
+	arg_ptr->attnMode = attnMode;
+	arg_ptr->nHeads = nHeads;
+	arg_ptr->smScaler = smScaler;
+	arg_ptr->dataType = dataType;
+	arg_ptr->computePrec = computePrec;
+	arg_ptr->mathType = mathType;
+	arg_ptr->attnDropoutDesc = attnDropoutDesc;
+	arg_ptr->postDropoutDesc = postDropoutDesc;
+	arg_ptr->qSize = qSize;
+	arg_ptr->kSize = kSize;
+	arg_ptr->vSize = vSize;
+	arg_ptr->qProjSize = qProjSize;
+	arg_ptr->kProjSize = kProjSize;
+	arg_ptr->vProjSize = vProjSize;
+	arg_ptr->oProjSize = oProjSize;
+	arg_ptr->qoMaxSeqLength = qoMaxSeqLength;
+	arg_ptr->kvMaxSeqLength = kvMaxSeqLength;
+	arg_ptr->maxBatchSize = maxBatchSize;
+	arg_ptr->maxBeamSize = maxBeamSize;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnGetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned * attnMode, int * nHeads, double * smScaler, cudnnDataType_t * dataType, cudnnDataType_t * computePrec, cudnnMathType_t * mathType, cudnnDropoutDescriptor_t * attnDropoutDesc, cudnnDropoutDescriptor_t * postDropoutDesc, int * qSize, int * kSize, int * vSize, int * qProjSize, int * kProjSize, int * vProjSize, int * oProjSize, int * qoMaxSeqLength, int * kvMaxSeqLength, int * maxBatchSize, int * maxBeamSize)
@@ -6533,18 +6678,31 @@ cudnnStatus_t cudnnGetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned *
 cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, size_t * weightSizeInBytes, size_t * workSpaceSizeInBytes, size_t * reserveSpaceSizeInBytes)
 {
 	TALLY_LOG("cudnnGetMultiHeadAttnBuffers hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetMultiHeadAttnBuffersArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETMULTIHEADATTNBUFFERS;
+    
+    struct cudnnGetMultiHeadAttnBuffersArg *arg_ptr = (struct cudnnGetMultiHeadAttnBuffersArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->attnDesc = attnDesc;
+	arg_ptr->weightSizeInBytes = weightSizeInBytes;
+	arg_ptr->workSpaceSizeInBytes = workSpaceSizeInBytes;
+	arg_ptr->reserveSpaceSizeInBytes = reserveSpaceSizeInBytes;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnGetMultiHeadAttnBuffersResponse *) dat;
+	if (weightSizeInBytes) { *weightSizeInBytes = res->weightSizeInBytes; }
+	if (workSpaceSizeInBytes) { *workSpaceSizeInBytes = res->workSpaceSizeInBytes; }
+	if (reserveSpaceSizeInBytes) { *reserveSpaceSizeInBytes = res->reserveSpaceSizeInBytes; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnGetMultiHeadAttnWeights(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, cudnnMultiHeadAttnWeightKind_t  wKind, size_t  weightSizeInBytes, const void * weights, cudnnTensorDescriptor_t  wDesc, void ** wAddr)
 {
 	TALLY_LOG("cudnnGetMultiHeadAttnWeights hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, int  currIdx, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsQO[], const int  devSeqLengthsKV[], const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const void * residuals, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  oDesc, void * out, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
-{
-	TALLY_LOG("cudnnMultiHeadAttnForward hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -6635,18 +6793,6 @@ cudnnStatus_t cudnnGetRNNBackwardWeightsAlgorithmMaxCount(cudnnHandle_t  handle,
 cudnnStatus_t cudnnFindRNNBackwardWeightsAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t * yDesc, const void * y, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, const void * workspace, size_t  workSpaceSizeInBytes, const cudnnFilterDescriptor_t  dwDesc, void * dw, const void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
 	TALLY_LOG("cudnnFindRNNBackwardWeightsAlgorithmEx hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsDQDO[], const int  devSeqLengthsDKDV[], const cudnnSeqDataDescriptor_t  doDesc, const void * dout, const cudnnSeqDataDescriptor_t  dqDesc, void * dqueries, const void * queries, const cudnnSeqDataDescriptor_t  dkDesc, void * dkeys, const void * keys, const cudnnSeqDataDescriptor_t  dvDesc, void * dvalues, const void * values, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
-{
-	TALLY_LOG("cudnnMultiHeadAttnBackwardData hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, cudnnWgradMode_t  addGrad, const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  doDesc, const void * dout, size_t  weightSizeInBytes, const void * weights, void * dweights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
-{
-	TALLY_LOG("cudnnMultiHeadAttnBackwardWeights hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -6743,7 +6889,7 @@ cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * co
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnCreateConvolutionDescriptorResponse *) dat;
-	*convDesc = res->convDesc;
+	if (convDesc) { *convDesc = res->convDesc; }
 	return res->err;
 }
 
@@ -6871,7 +7017,7 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t  handle, con
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnGetConvolutionForwardWorkspaceSizeResponse *) dat;
-	*sizeInBytes = res->sizeInBytes;
+	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
 	return res->err;
 }
 
@@ -7077,7 +7223,7 @@ cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t  descrip
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cudnnBackendCreateDescriptorResponse *) dat;
-	*descriptor = res->descriptor;
+	if (descriptor) { *descriptor = res->descriptor; }
 	return res->err;
 }
 
@@ -7174,7 +7320,7 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cublasCreate_v2Response *) dat;
-	*handle = res->handle;
+	if (handle) { *handle = res->handle; }
 	return res->err;
 }
 
@@ -7213,7 +7359,7 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cublasGetVersion_v2Response *) dat;
-	*version = res->version;
+	if (version) { *version = res->version; }
 	return res->err;
 }
 
@@ -7298,7 +7444,7 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cublasGetStream_v2Response *) dat;
-	*streamId = res->streamId;
+	if (streamId) { *streamId = res->streamId; }
 	return res->err;
 }
 
@@ -7318,7 +7464,7 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cublasGetPointerMode_v2Response *) dat;
-	*mode = res->mode;
+	if (mode) { *mode = res->mode; }
 	return res->err;
 }
 
@@ -9003,7 +9149,7 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cublasLtCreateResponse *) dat;
-	*lightHandle = res->lightHandle;
+	if (lightHandle) { *lightHandle = res->lightHandle; }
 	return res->err;
 }
 
@@ -9087,7 +9233,7 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cublasLtMatrixLayoutCreateResponse *) dat;
-	*matLayout = res->matLayout;
+	if (matLayout) { *matLayout = res->matLayout; }
 	return res->err;
 }
 
@@ -9139,7 +9285,7 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cublasLtMatmulDescCreateResponse *) dat;
-	*matmulDesc = res->matmulDesc;
+	if (matmulDesc) { *matmulDesc = res->matmulDesc; }
 	return res->err;
 }
 
@@ -9219,7 +9365,7 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 	auto res = (cublasLtMatmulPreferenceCreateResponse *) dat;
-	*pref = res->pref;
+	if (pref) { *pref = res->pref; }
 	return res->err;
 }
 
