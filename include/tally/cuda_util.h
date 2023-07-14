@@ -32,7 +32,6 @@ inline void free_dev_addr(std::vector<DeviceMemoryKey> &dev_addr_map, void *addr
     for (auto it = dev_addr_map.begin(); it != dev_addr_map.end(); it++) {
         auto key = *it;
         if (key.addr == addr) {
-            std::cout << "Erasing addr " << addr << std::endl;
             dev_addr_map.erase(it);
             return;
         }
@@ -151,8 +150,6 @@ inline size_t get_cudnn_attribute_size(cudnnBackendAttributeType_t type)
         default:
             throw std::runtime_error("unknown type");
     }
-
-    // std::cout << "attr_size: " << attr_size << std::endl;
 
     return attr_size;
 }

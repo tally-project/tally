@@ -532,9 +532,6 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
             // pointer points to CPU memory
             if (!found) {
 
-                std::cout << "idx: " << i << std::endl;
-                std::cout << "pointer: " << pointer << std::endl;
-
                 // Get the value from the CPU pointers
                 uint64_t val = *((uint64_t *) pointer);
 

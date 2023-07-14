@@ -246,11 +246,8 @@ void TallyServer::handle_cudaMalloc(void *__args)
     // Keep track that this addr is device memory
     if (err == cudaSuccess) {
         dev_addr_map.push_back( DeviceMemoryKey(devPtr, args->size) );
-    } else {
-        std::cout << "cudaMalloc failed" << std::endl;
-        throw std::runtime_error("cudaMalloc failed");
     }
-
+    
     while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
         send_ipc->wait_for_recv(1);
     }

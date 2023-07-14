@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE "Debug")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
-remove_definitions(-DENABLE_LOGGING)
+option(ENABLE_LOGGING "Enable logging" OFF)
 
 link_directories(/usr/local/cuda/lib64)
 
@@ -60,7 +60,9 @@ add_library(tally_client SHARED
     ${TALLY_CLIENT_SRC_FILES}
 )
 
-target_compile_definitions(tally_client PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
+if(ENABLE_LOGGING)
+    target_compile_definitions(tally_client PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
+endif()
 
 target_include_directories(tally_client
     PUBLIC ${PROJECT_SOURCE_DIR}/include
@@ -130,7 +132,9 @@ set_target_properties(server PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
 )
 
-target_compile_definitions(server PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
+if(ENABLE_LOGGING)
+    target_compile_definitions(server PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
+endif()
 
 target_include_directories(server
     PUBLIC  ${PROJECT_SOURCE_DIR}/include
