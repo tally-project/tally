@@ -167,8 +167,8 @@ void TallyServer::handle_{func_name}(void *__args)
         send_ipc->wait_for_recv(1);
     }}
 """
-        if ret_type == "cudnnStatus_t":
-            handler += """if (err != CUDNN_STATUS_SUCCESS) std::cerr << "cudnnStatus_t not success" << std::endl; """
+        # if ret_type == "cudnnStatus_t":
+        #     handler += """if (err != CUDNN_STATUS_SUCCESS) std::cerr << "cudnnStatus_t not success" << std::endl; """
 
     elif func_name in DIRECT_CALLS:
         pass

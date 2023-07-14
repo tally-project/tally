@@ -6504,13 +6504,39 @@ cudnnStatus_t cudnnGetRNNPaddingMode(cudnnRNNDescriptor_t  rnnDesc, unsigned * p
 cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t * rnnDataDesc)
 {
 	TALLY_LOG("cudnnCreateRNNDataDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateRNNDataDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATERNNDATADESCRIPTOR;
+    
+    struct cudnnCreateRNNDataDescriptorArg *arg_ptr = (struct cudnnCreateRNNDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->rnnDataDesc = rnnDataDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnCreateRNNDataDescriptorResponse *) dat;
+	if (rnnDataDesc) { *rnnDataDesc = res->rnnDataDesc; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc)
 {
 	TALLY_LOG("cudnnDestroyRNNDataDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyRNNDataDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYRNNDATADESCRIPTOR;
+    
+    struct cudnnDestroyRNNDataDescriptorArg *arg_ptr = (struct cudnnDestroyRNNDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->rnnDataDesc = rnnDataDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, cudnnDataType_t  dataType, cudnnRNNDataLayout_t  layout, int  maxSeqLength, int  batchSize, int  vectorSize, const int  seqLengthArray[], void * paddingFill)

@@ -993,6 +993,19 @@ struct cudnnSetDropoutDescriptorArg {
 	unsigned long long  seed;
 };
 
+struct cudnnCreateRNNDataDescriptorArg {
+	cudnnRNNDataDescriptor_t * rnnDataDesc;
+};
+
+struct cudnnCreateRNNDataDescriptorResponse {
+	cudnnRNNDataDescriptor_t  rnnDataDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroyRNNDataDescriptorArg {
+	cudnnRNNDataDescriptor_t  rnnDataDesc;
+};
+
 struct cudnnCreateSeqDataDescriptorArg {
 	cudnnSeqDataDescriptor_t * seqDataDesc;
 };

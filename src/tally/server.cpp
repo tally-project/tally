@@ -46,8 +46,8 @@ void TallyServer::start(uint32_t interval) {
     auto time_ckpt = std::chrono::steady_clock::now();
     double req_count = 0.; 
 
-    send_ipc = new ipc::channel("server-to-client-270000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-270000", ipc::receiver);
+    send_ipc = new ipc::channel("server-to-client-310000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-310000", ipc::receiver);
 
     load_cache();
 
@@ -538,11 +538,11 @@ void TallyServer::handle_cudnnBackendSetAttribute(void *__args)
     void *arrayOfElements = malloc(type_size * args->elementCount);
     memcpy(arrayOfElements, args->arrayOfElements, type_size * args->elementCount);
 
-    std::cout << "descriptor: " << args->descriptor << std::endl;
-    std::cout << "attributeName: " << args->attributeName << std::endl;
-    std::cout << "attributeType: " << args->attributeType << std::endl;
-    std::cout << "elementCount: " << args->elementCount << std::endl;
-    std::cout << "arrayOfElements: " << arrayOfElements << std::endl;
+    // std::cout << "descriptor: " << args->descriptor << std::endl;
+    // std::cout << "attributeName: " << args->attributeName << std::endl;
+    // std::cout << "attributeType: " << args->attributeType << std::endl;
+    // std::cout << "elementCount: " << args->elementCount << std::endl;
+    // std::cout << "arrayOfElements: " << arrayOfElements << std::endl;
 
     cudnnStatus_t err = cudnnBackendSetAttribute(
 		args->descriptor,
@@ -588,12 +588,12 @@ void TallyServer::handle_cudnnBackendGetAttribute(void *__args)
 
     int64_t elementCount = 0;
 
-    std::cout << "descriptor: " << args->descriptor << std::endl;
-    std::cout << "attributeName: " << args->attributeName << std::endl;
-    std::cout << "attributeType: " << args->attributeType << std::endl;
-    std::cout << "requestedElementCount: " << args->requestedElementCount << std::endl;
-    std::cout << "elementCount: " << (args->elementCount ? (&elementCount) : NULL) << std::endl;
-    std::cout << "arrayOfElements: " << (args->arrayOfElements ? (arrayOfElements) : NULL) << std::endl;
+    // std::cout << "descriptor: " << args->descriptor << std::endl;
+    // std::cout << "attributeName: " << args->attributeName << std::endl;
+    // std::cout << "attributeType: " << args->attributeType << std::endl;
+    // std::cout << "requestedElementCount: " << args->requestedElementCount << std::endl;
+    // std::cout << "elementCount: " << (args->elementCount ? (&elementCount) : NULL) << std::endl;
+    // std::cout << "arrayOfElements: " << (args->arrayOfElements ? (arrayOfElements) : NULL) << std::endl;
 
     cudnnStatus_t err = cudnnBackendGetAttribute(
         args->descriptor,
@@ -604,14 +604,19 @@ void TallyServer::handle_cudnnBackendGetAttribute(void *__args)
         args->arrayOfElements ? (arrayOfElements) : NULL
     );
 
-    std::cout << "return from cudnnBackendGetAttribute " << std::endl;
+    // std::cout << "return from cudnnBackendGetAttribute " << std::endl;
 
-    std::cout << "returned elementCount: " << elementCount << std::endl;
+    // std::cout << "returned elementCount: " << elementCount << std::endl;
     
     // assert(err == CUDNN_STATUS_SUCCESS);
 
-    int64_t arrayOfElementsSize = std::min(elementCount, args->requestedElementCount);
-
+    int64_t arrayOfElementsSize;
+    if (args->elementCount) {
+        arrayOfElementsSize = std::min(elementCount, args->requestedElementCount);
+    } else {
+        arrayOfElementsSize = args->requestedElementCount;
+    }
+    
     uint32_t res_len =  sizeof(cudnnBackendGetAttributeResponse) + type_size * arrayOfElementsSize;
     auto res = (struct cudnnBackendGetAttributeResponse *) std::malloc(res_len);
 

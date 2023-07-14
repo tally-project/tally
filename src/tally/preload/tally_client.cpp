@@ -498,12 +498,12 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
 
     assert(arg_ptr->requestedElementCount >= 0);
 
-    std::cout << "descriptor: " << arg_ptr->descriptor << std::endl;
-    std::cout << "attributeName: " << arg_ptr->attributeName << std::endl;
-    std::cout << "attributeType: " << arg_ptr->attributeType << std::endl;
-    std::cout << "requestedElementCount: " << arg_ptr->requestedElementCount << std::endl;
-    std::cout << "elementCount: " << arg_ptr->elementCount << std::endl;
-    std::cout << "arrayOfElements: " << arg_ptr->arrayOfElements << std::endl;
+    // std::cout << "descriptor: " << arg_ptr->descriptor << std::endl;
+    // std::cout << "attributeName: " << arg_ptr->attributeName << std::endl;
+    // std::cout << "attributeType: " << arg_ptr->attributeType << std::endl;
+    // std::cout << "requestedElementCount: " << arg_ptr->requestedElementCount << std::endl;
+    // std::cout << "elementCount: " << arg_ptr->elementCount << std::endl;
+    // std::cout << "arrayOfElements: " << arg_ptr->arrayOfElements << std::endl;
 
     CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
