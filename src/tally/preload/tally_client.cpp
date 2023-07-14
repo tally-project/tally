@@ -446,11 +446,8 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
 {
 	TALLY_LOG("cudnnBackendSetAttribute hooked");
 
-    if (arrayOfElements == nullptr) {
-        TALLY_LOG("arrayOfElements is nullptr!!!!!");
-    }
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendSetAttributeArg) + elementCount * sizeof(uint64_t);
+    int32_t type_size = get_cudnn_attribute_size(attributeType);
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendSetAttributeArg) + elementCount * type_size;
 
     auto msg = (uint8_t *) std::malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
@@ -462,19 +459,13 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
     arg_ptr->attributeType = attributeType;
     arg_ptr->elementCount = elementCount;
 
-    std::cout << "descriptor: " << descriptor << std::endl;
-    std::cout << "attributeName: " << attributeName << std::endl;
-    std::cout << "attributeType: " << attributeType << std::endl;
-    std::cout << "elementCount: " << elementCount << std::endl;
+    // std::cout << "descriptor: " << descriptor << std::endl;
+    // std::cout << "attributeName: " << attributeName << std::endl;
+    // std::cout << "attributeType: " << attributeType << std::endl;
+    // std::cout << "elementCount: " << elementCount << std::endl;
 
-    if (arrayOfElements) {
-        memcpy(arg_ptr->arrayOfElements, arrayOfElements, sizeof(uint64_t) * elementCount);
-    }
-
-    if (attributeType == CUDNN_TYPE_BACKEND_DESCRIPTOR) {
-        cudnnBackendDescriptor_t desc = *((cudnnBackendDescriptor_t *) arg_ptr->arrayOfElements);
-        std::cout << "CUDNN_TYPE_BACKEND_DESCRIPTOR: " << desc << std::endl;
-    }
+    assert(arrayOfElements);
+    memcpy(arg_ptr->arrayOfElements, arrayOfElements, type_size * elementCount);
 
     CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
@@ -487,15 +478,8 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
 {
 	TALLY_LOG("cudnnBackendGetAttribute hooked");
 
-    if (elementCount == nullptr) {
-        TALLY_LOG("elementCount is nullptr!!!!");
-    }
-
-    if (arrayOfElements == nullptr) {
-        TALLY_LOG("arrayOfElements is nullptr!!!!");
-    }
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendGetAttributeArg);
+    int32_t type_size = get_cudnn_attribute_size(attributeType);
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendGetAttributeArg) + requestedElementCount * type_size;
 
     auto msg = (uint8_t *) std::malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
@@ -506,11 +490,20 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
     arg_ptr->attributeName = attributeName;
     arg_ptr->attributeType = attributeType;
     arg_ptr->requestedElementCount = requestedElementCount;
+    arg_ptr->elementCount = elementCount;
+    arg_ptr->arrayOfElements = arrayOfElements;
+    if (arrayOfElements) {
+        memcpy(arg_ptr->arrayOfElementsData, arrayOfElements, requestedElementCount * type_size);
+    }
+
+    assert(arg_ptr->requestedElementCount >= 0);
 
     std::cout << "descriptor: " << arg_ptr->descriptor << std::endl;
     std::cout << "attributeName: " << arg_ptr->attributeName << std::endl;
     std::cout << "attributeType: " << arg_ptr->attributeType << std::endl;
     std::cout << "requestedElementCount: " << arg_ptr->requestedElementCount << std::endl;
+    std::cout << "elementCount: " << arg_ptr->elementCount << std::endl;
+    std::cout << "arrayOfElements: " << arg_ptr->arrayOfElements << std::endl;
 
     CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
@@ -520,9 +513,8 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
         *elementCount = res->elementCount;
     }
 
-    int32_t type_size = get_cudnn_attribute_size(attributeType);
     if (arrayOfElements) {
-        memcpy(arrayOfElements, res->arrayOfElements, type_size * res->elementCount);
+        memcpy(arrayOfElements, res->arrayOfElements, type_size * res->arrayOfElementsSize);
     }
 
     return res->err;

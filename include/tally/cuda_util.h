@@ -24,6 +24,35 @@ void check(T err, const char* const func, const char* const file, const int line
 
 inline size_t get_cudnn_attribute_size(cudnnBackendAttributeType_t type)
 {
+    // std::cout << "sizeof(cudnnHandle_t): " << sizeof(cudnnHandle_t) << std::endl;
+    // std::cout << "sizeof(cudnnDataType_t): " << sizeof(cudnnDataType_t) << std::endl;
+    // std::cout << "sizeof(bool): " << sizeof(bool) << std::endl;
+    // std::cout << "sizeof(int64_t): " << sizeof(int64_t) << std::endl;
+    // std::cout << "sizeof(float): " << sizeof(float) << std::endl;
+    // std::cout << "sizeof(double): " << sizeof(double) << std::endl;
+    // std::cout << "sizeof(void *): " << sizeof(void *) << std::endl;
+    // std::cout << "sizeof(cudnnConvolutionMode_t): " << sizeof(cudnnConvolutionMode_t) << std::endl;
+    // std::cout << "sizeof(cudnnBackendHeurMode_t): " << sizeof(cudnnBackendHeurMode_t) << std::endl;
+    // std::cout << "sizeof(cudnnBackendKnobType_t): " << sizeof(cudnnBackendKnobType_t) << std::endl;
+    // std::cout << "sizeof(cudnnNanPropagation_t): " << sizeof(cudnnNanPropagation_t) << std::endl;
+    // std::cout << "sizeof(cudnnBackendNumericalNote_t): " << sizeof(cudnnBackendNumericalNote_t) << std::endl;
+    // std::cout << "sizeof(cudnnBackendLayoutType_t): " << sizeof(cudnnBackendLayoutType_t) << std::endl;
+    // std::cout << "sizeof(cudnnBackendAttributeName_t): " << sizeof(cudnnBackendAttributeName_t) << std::endl;
+    // std::cout << "sizeof(cudnnPointwiseMode_t): " << sizeof(cudnnPointwiseMode_t) << std::endl;
+    // std::cout << "sizeof(cudnnBackendDescriptor_t): " << sizeof(cudnnBackendDescriptor_t) << std::endl;
+    // std::cout << "sizeof(cudnnGenStatsMode_t): " << sizeof(cudnnGenStatsMode_t) << std::endl;
+    // std::cout << "sizeof(cudnnBnFinalizeStatsMode_t): " << sizeof(cudnnBnFinalizeStatsMode_t) << std::endl;
+    // std::cout << "sizeof(cudnnReduceTensorOp_t): " << sizeof(cudnnReduceTensorOp_t) << std::endl;
+    // std::cout << "sizeof(cudnnBackendBehaviorNote_t): " << sizeof(cudnnBackendBehaviorNote_t) << std::endl;
+    // std::cout << "sizeof(cudnnBackendTensorReordering_t): " << sizeof(cudnnBackendTensorReordering_t) << std::endl;
+    // std::cout << "sizeof(cudnnResampleMode_t): " << sizeof(cudnnResampleMode_t) << std::endl;
+    // std::cout << "sizeof(cudnnPaddingMode_t): " << sizeof(cudnnPaddingMode_t) << std::endl;
+    // std::cout << "sizeof(cudnnSignalMode_t): " << sizeof(cudnnSignalMode_t) << std::endl;
+    // std::cout << "sizeof(cudnnFraction_t): " << sizeof(cudnnFraction_t) << std::endl;
+    // std::cout << "sizeof(cudnnBackendNormMode_t): " << sizeof(cudnnBackendNormMode_t) << std::endl;
+    // std::cout << "sizeof(cudnnBackendNormFwdPhase_t): " << sizeof(cudnnBackendNormFwdPhase_t) << std::endl;
+    // std::cout << "sizeof(cudnnRngDistribution_t): " << sizeof(cudnnRngDistribution_t) << std::endl;
+
     size_t attr_size;
     switch(type) {
         case CUDNN_TYPE_HANDLE:
@@ -120,7 +149,7 @@ inline size_t get_cudnn_attribute_size(cudnnBackendAttributeType_t type)
             throw std::runtime_error("unknown type");
     }
 
-    std::cout << "attr_size: " << attr_size << std::endl;
+    // std::cout << "attr_size: " << attr_size << std::endl;
 
     return attr_size;
 }

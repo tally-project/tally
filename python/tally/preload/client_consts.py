@@ -319,12 +319,14 @@ FORWARD_API_CALLS = [
     "cudnnDestroyActivationDescriptor",
     "cudnnSetLRNDescriptor",
     "cudnnDestroyAttnDescriptor",
-    "cudnnDestroyDropoutDescriptor"
+    "cudnnDestroyDropoutDescriptor",
+    "cudnnDestroyRNNDataDescriptor"
 ]
 
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cudnnCreateRNNDataDescriptor",
     "cudnnCreateDropoutDescriptor",
     "cudnnCreateAttnDescriptor",
     "cudnnCreateSeqDataDescriptor",

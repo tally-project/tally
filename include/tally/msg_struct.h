@@ -170,7 +170,7 @@ struct cudnnBackendSetAttributeArg {
     cudnnBackendAttributeName_t  attributeName;
     cudnnBackendAttributeType_t  attributeType;
     int64_t  elementCount;
-    uint64_t arrayOfElements[];
+    char arrayOfElements[];
 };
 
 struct cudnnBackendSetAttributeResponse {
@@ -182,11 +182,18 @@ struct cudnnBackendGetAttributeArg {
     cudnnBackendAttributeName_t  attributeName;
     cudnnBackendAttributeType_t  attributeType;
     int64_t  requestedElementCount;
+    int64_t * elementCount;
+    void * arrayOfElements;
+
+    // I found out that the data is needed too
+    // So I'll copy the value
+    char arrayOfElementsData[];
 };
 
 struct cudnnBackendGetAttributeResponse {
     cudnnStatus_t err;
     int64_t elementCount;
+    int64_t arrayOfElementsSize;
     char arrayOfElements[];
 };
 
