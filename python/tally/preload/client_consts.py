@@ -191,6 +191,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaFree",
     "cudaMalloc",
     "cudnnMultiHeadAttnBackwardData",
     "cudnnMultiHeadAttnForward",
@@ -244,7 +245,6 @@ FORWARD_API_CALLS = [
     "cudnnSetFilter4dDescriptor",
     "cudnnCreateActivationDescriptor",
     "cudnnDestroyPoolingDescriptor",
-    "cudaFree",
     "cudaProfilerStart",
     "cudaProfilerStop",
     "cuInit",

@@ -5,10 +5,42 @@
 #include <vector>
 #include <iostream>
 #include <unordered_map>
+#include <cassert>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cudnn.h>
+
+struct DeviceMemoryKey {
+    void *addr;
+    size_t size;
+};
+
+inline bool is_dev_addr(const std::vector<DeviceMemoryKey> &dev_addr_map, const void *addr)
+{
+    for (auto &dev_addr_key : dev_addr_map) {
+        if ((uint64_t) addr >= (uint64_t) dev_addr_key.addr && (uint64_t) addr < ((uint64_t) dev_addr_key.addr + dev_addr_key.size)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+inline void free_dev_addr(std::vector<DeviceMemoryKey> &dev_addr_map, void *addr)
+{   
+    for (auto it = dev_addr_map.begin(); it != dev_addr_map.end(); it++) {
+        auto key = *it;
+        if (key.addr == addr) {
+            std::cout << "Erasing addr " << addr << std::endl;
+            dev_addr_map.erase(it);
+            return;
+        }
+    }
+
+    assert(false);
+}
+
 
 #define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
 

@@ -40,7 +40,7 @@
 std::unordered_map<cudnnSeqDataDescriptor_t, int> seq_desc_to_seq_len_map;
 
 // Used to check whether an address points to device memory
-std::unordered_set<void *> dev_addr_map;
+std::vector<DeviceMemoryKey> dev_addr_map;
 
 extern "C" {
 
@@ -170,10 +170,34 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 
     if (res->err == cudaSuccess) {
         // Keep track that this addr is device memory
-        dev_addr_map.insert(res->devPtr);
+        dev_addr_map.push_back( DeviceMemoryKey(res->devPtr, size) );
     }
 
 	return res->err;
+}
+
+cudaError_t cudaFree(void * devPtr)
+{
+	TALLY_LOG("cudaFree hooked");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaFreeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAFREE;
+    
+    struct cudaFreeArg *arg_ptr = (struct cudaFreeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->devPtr = devPtr;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaError_t *) dat;
+
+    if (*res == cudaSuccess) {
+        free_dev_addr(dev_addr_map, devPtr);
+    }
+
+    return *res;
 }
 
 cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind)
@@ -498,10 +522,18 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
 
         for (int i = 0; i < elementCount; i++) {
             auto pointer = pointer_arr[i];
-            auto found = dev_addr_map.find(pointer) != dev_addr_map.end();
-            
+
+            if (pointer == nullptr) {
+                continue;
+            }
+
+            auto found = is_dev_addr(dev_addr_map, pointer);
+
             // pointer points to CPU memory
-            if (!found && pointer != NULL) {
+            if (!found) {
+
+                std::cout << "idx: " << i << std::endl;
+                std::cout << "pointer: " << pointer << std::endl;
 
                 // Get the value from the CPU pointers
                 uint64_t val = *((uint64_t *) pointer);

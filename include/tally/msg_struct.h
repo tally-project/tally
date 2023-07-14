@@ -53,6 +53,10 @@ struct cudaMallocResponse {
 	cudaError_t err;
 };
 
+struct cudaFreeArg {
+	void * devPtr;
+};
+
 struct cudaMemcpyArg {
     void *dst;
     void *src;

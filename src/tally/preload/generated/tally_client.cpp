@@ -3981,25 +3981,6 @@ cudaError_t cudaMallocArray(cudaArray_t * array, const struct cudaChannelFormatD
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaFree(void * devPtr)
-{
-	TALLY_LOG("cudaFree hooked");
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaFreeArg);
-
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAFREE;
-    
-    struct cudaFreeArg *arg_ptr = (struct cudaFreeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->devPtr = devPtr;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-
-    auto res = (cudaError_t *) dat;
-    return *res;
-}
-
 cudaError_t cudaFreeHost(void * ptr)
 {
 	TALLY_LOG("cudaFreeHost hooked");

@@ -689,10 +689,6 @@ struct cudaEventElapsedTimeResponse {
 	cudaError_t err;
 };
 
-struct cudaFreeArg {
-	void * devPtr;
-};
-
 struct cudaMemGetInfoArg {
 	size_t * free;
 	size_t * total;

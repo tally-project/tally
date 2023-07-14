@@ -19,7 +19,7 @@
 std::unique_ptr<TallyServer> TallyServer::server = std::make_unique<TallyServer>();
 
 // Used to check whether an address points to device memory
-std::unordered_set<void *> dev_addr_map;
+std::vector<DeviceMemoryKey> dev_addr_map;
 
 TallyServer::TallyServer()
 {
@@ -237,7 +237,7 @@ void TallyServer::handle_cudaMalloc(void *__args)
 	auto args = (struct cudaMallocArg *) __args;
 	void *devPtr;
 
-	cudaError_t err = cudaMalloc((args->devPtr ? &(devPtr) : NULL), args->size);
+	cudaError_t err = cudaMalloc(&devPtr, args->size);
 	struct cudaMallocResponse res {
 		devPtr,
 		err
@@ -245,10 +245,31 @@ void TallyServer::handle_cudaMalloc(void *__args)
 
     // Keep track that this addr is device memory
     if (err == cudaSuccess) {
-        dev_addr_map.insert(devPtr);
+        dev_addr_map.push_back( DeviceMemoryKey(devPtr, args->size) );
+    } else {
+        std::cout << "cudaMalloc failed" << std::endl;
+        throw std::runtime_error("cudaMalloc failed");
     }
 
     while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudaFree(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudaFree");
+
+    auto args = (struct cudaFreeArg *) __args;
+    cudaError_t err = cudaFree(
+		args->devPtr
+    );
+
+    if (err == cudaSuccess) {
+        free_dev_addr(dev_addr_map, args->devPtr);
+    }
+
+    while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
         send_ipc->wait_for_recv(1);
     }
 }
@@ -526,8 +547,13 @@ void TallyServer::handle_cudnnBackendSetAttribute(void *__args)
 
         for (int i = 0; i < args->elementCount; i++) {
             auto pointer = pointer_arr[i];
-            auto found = dev_addr_map.find(pointer) != dev_addr_map.end();
+
+            if (pointer == nullptr) {
+                continue;
+            }
             
+            auto found = is_dev_addr(dev_addr_map, pointer);
+
             // pointer points to CPU memory
             if (!found) {
                 uint64_t val = (uint64_t) pointer;
