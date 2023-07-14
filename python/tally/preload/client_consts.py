@@ -191,6 +191,10 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudnnRNNForwardTraining",
+    "cudnnGetFilterNdDescriptor",
+    "cudnnGetRNNTrainingReserveSize",
+    "cudnnGetRNNWorkspaceSize",
     "cudaFree",
     "cudaMalloc",
     "cudnnMultiHeadAttnBackwardData",
@@ -322,12 +326,16 @@ FORWARD_API_CALLS = [
     "cudnnSetLRNDescriptor",
     "cudnnDestroyAttnDescriptor",
     "cudnnDestroyDropoutDescriptor",
-    "cudnnDestroyRNNDataDescriptor"
+    "cudnnDestroyRNNDataDescriptor",
+    "cudnnDestroyRNNDescriptor",
+    "cudnnSetRNNDescriptor_v6",
+    "cudnnBuildRNNDynamic"
 ]
 
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cudnnCreateRNNDescriptor",
     "cudnnCreateRNNDataDescriptor",
     "cudnnCreateDropoutDescriptor",
     "cudnnCreateAttnDescriptor",
@@ -428,7 +436,8 @@ CUDA_GET_2_3_4_5_6_7_8_9_10_PARAM_FUNCS = [
 ]
 
 CUDA_GET_4_PARAM_FUNCS = [
-    "cudnnInitTransformDest"
+    "cudnnInitTransformDest",
+    "cudnnGetRNNParamsSize"
 ]
 
 CUDA_GET_7_PARAM_FUNCS = [
@@ -439,6 +448,11 @@ CUDA_GET_3_4_5_PARAM_FUNCS = [
     "cudnnGetMultiHeadAttnBuffers"
 ]
 
+CUDA_GET_9_PARAM_FUNCS = [
+    "cudnnGetRNNLinLayerMatrixParams",
+    "cudnnGetRNNLinLayerBiasParams"    
+]
+
 CUDA_GET_1_PARAM_FUNC_KEY = 1
 CUDA_GET_2_3_PARAM_FUNC_KEY = 2
 CUDA_GET_1_2_PARAM_FUNC_KEY = 3
@@ -447,6 +461,7 @@ CUDA_GET_2_3_4_5_6_7_8_9_10_PARAM_FUNC_KEY = 5
 CUDA_GET_4_PARAM_FUNC_KEY = 6
 CUDA_GET_7_PARAM_FUNC_KEY = 7
 CUDA_GET_3_4_5_PARAM_FUNC_KEY = 8
+CUDA_GET_9_PARAM_FUNC_KEY = 9
 
 PARAM_INDICES = {
     CUDA_GET_1_PARAM_FUNC_KEY: [0],
@@ -456,7 +471,8 @@ PARAM_INDICES = {
     CUDA_GET_2_3_4_5_6_7_8_9_10_PARAM_FUNC_KEY: [1, 2, 3, 4, 5, 6, 7, 8, 9],
     CUDA_GET_4_PARAM_FUNC_KEY: [3],
     CUDA_GET_7_PARAM_FUNC_KEY: [6],
-    CUDA_GET_3_4_5_PARAM_FUNC_KEY: [2, 3, 4]
+    CUDA_GET_3_4_5_PARAM_FUNC_KEY: [2, 3, 4],
+    CUDA_GET_9_PARAM_FUNC_KEY: [8]
 }
 
 def is_get_param_func(func_name):
@@ -471,7 +487,8 @@ def is_get_param_func(func_name):
         CUDA_GET_2_3_4_5_6_7_8_9_10_PARAM_FUNCS,
         CUDA_GET_4_PARAM_FUNCS,
         CUDA_GET_7_PARAM_FUNCS,
-        CUDA_GET_3_4_5_PARAM_FUNCS
+        CUDA_GET_3_4_5_PARAM_FUNCS,
+        CUDA_GET_9_PARAM_FUNCS
     ]:
         if func_name in funcs:
             return True
@@ -494,10 +511,12 @@ def get_param_group(func_name):
         return CUDA_GET_7_PARAM_FUNC_KEY
     elif func_name in CUDA_GET_3_4_5_PARAM_FUNCS:
         return CUDA_GET_3_4_5_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_9_PARAM_FUNCS:
+        return CUDA_GET_9_PARAM_FUNC_KEY
     else:
         assert(False)
 
-def get_preload_func_template(func_name, arg_names):
+def get_preload_func_template(func_name, arg_names, arg_types):
     arg_struct = f"{func_name}Arg"
 
     preload_body = ""
@@ -511,8 +530,12 @@ def get_preload_func_template(func_name, arg_names):
     struct {arg_struct} *arg_ptr = (struct {arg_struct} *)(msg + sizeof(CUDA_API_ENUM));
 """
 
-    for arg_name in arg_names:
-        preload_body += f"\targ_ptr->{arg_name} = {arg_name};\n"
+    for idx, arg_name in enumerate(arg_names):
+        arg_type = arg_types[idx]
+        if arg_type.strip() == "const void *":
+            preload_body += f"\targ_ptr->{arg_name} = const_cast<void *>({arg_name});\n"
+        else:
+            preload_body += f"\targ_ptr->{arg_name} = {arg_name};\n"
     
     preload_body += "\tCLIENT_SEND_MSG_AND_FREE;\n"
     preload_body += "\tCLIENT_RECV_MSG;\n"

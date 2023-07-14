@@ -979,6 +979,85 @@ struct cudnnSetDropoutDescriptorArg {
 	unsigned long long  seed;
 };
 
+struct cudnnCreateRNNDescriptorArg {
+	cudnnRNNDescriptor_t * rnnDesc;
+};
+
+struct cudnnCreateRNNDescriptorResponse {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroyRNNDescriptorArg {
+	cudnnRNNDescriptor_t  rnnDesc;
+};
+
+struct cudnnSetRNNDescriptor_v6Arg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int  hiddenSize;
+	int  numLayers;
+	cudnnDropoutDescriptor_t  dropoutDesc;
+	cudnnRNNInputMode_t  inputMode;
+	cudnnDirectionMode_t  direction;
+	cudnnRNNMode_t  cellMode;
+	cudnnRNNAlgo_t  algo;
+	cudnnDataType_t  mathPrec;
+};
+
+struct cudnnBuildRNNDynamicArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int  miniBatch;
+};
+
+struct cudnnGetRNNParamsSizeArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnTensorDescriptor_t  xDesc;
+	size_t * sizeInBytes;
+	cudnnDataType_t  dataType;
+};
+
+struct cudnnGetRNNParamsSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNLinLayerMatrixParamsArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int  pseudoLayer;
+	cudnnTensorDescriptor_t  xDesc;
+	cudnnFilterDescriptor_t  wDesc;
+	void * w;
+	int  linLayerID;
+	cudnnFilterDescriptor_t  linLayerMatDesc;
+	void ** linLayerMat;
+};
+
+struct cudnnGetRNNLinLayerMatrixParamsResponse {
+	void * linLayerMat;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNLinLayerBiasParamsArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int  pseudoLayer;
+	cudnnTensorDescriptor_t  xDesc;
+	cudnnFilterDescriptor_t  wDesc;
+	void * w;
+	int  linLayerID;
+	cudnnFilterDescriptor_t  linLayerBiasDesc;
+	void ** linLayerBias;
+};
+
+struct cudnnGetRNNLinLayerBiasParamsResponse {
+	void * linLayerBias;
+	cudnnStatus_t err;
+};
+
 struct cudnnCreateRNNDataDescriptorArg {
 	cudnnRNNDataDescriptor_t * rnnDataDesc;
 };

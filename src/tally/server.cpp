@@ -1278,3 +1278,115 @@ void TallyServer::handle_cudnnReorderFilterAndBias(void *__args)
         send_ipc->wait_for_recv(1);
     }
 }
+
+void TallyServer::handle_cudnnGetRNNWorkspaceSize(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnGetRNNWorkspaceSize");
+
+    auto args = (struct cudnnGetRNNWorkspaceSizeArg *) __args;
+
+    cudnnGetRNNWorkspaceSizeResponse res;
+
+    res.err = cudnnGetRNNWorkspaceSize(
+		args->handle,
+        args->rnnDesc,
+        args->seqLength,
+        args->xDesc,
+        &res.sizeInBytes
+    );
+
+    while(!send_ipc->send((void *) &res, sizeof(cudnnGetRNNWorkspaceSizeResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnGetRNNTrainingReserveSize(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnGetRNNTrainingReserveSize");
+
+    auto args = (struct cudnnGetRNNTrainingReserveSizeArg *) __args;
+
+    cudnnGetRNNTrainingReserveSizeResponse res;
+
+    res.err = cudnnGetRNNTrainingReserveSize(
+		args->handle,
+        args->rnnDesc,
+        args->seqLength,
+        args->xDesc,
+        &res.sizeInBytes
+    );
+
+    while(!send_ipc->send((void *) &res, sizeof(cudnnGetRNNTrainingReserveSizeResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnGetFilterNdDescriptor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnGetFilterNdDescriptor");
+
+    auto args = (struct cudnnGetFilterNdDescriptorArg *) __args;
+
+    cudnnStatus_t err;
+    cudnnDataType_t dataType;
+    cudnnTensorFormat_t format;
+    int nbDims;
+    int *filterDimA = (int *) malloc(sizeof(int) * nbDims);
+
+    err = cudnnGetFilterNdDescriptor(
+		args->filterDesc,
+        args->nbDimsRequested,
+        &dataType,
+        &format,
+        &nbDims,
+        filterDimA
+    );
+
+    uint32_t res_len =  sizeof(cudnnGetFilterNdDescriptorResponse) + nbDims * sizeof(int);
+    auto res = (struct cudnnGetFilterNdDescriptorResponse *) std::malloc(res_len);
+
+    res->err = err;
+    res->dataType = dataType;
+    res->format = format;
+    res->nbDims = nbDims;
+    memcpy(res->filterDimA, filterDimA, sizeof(int) * nbDims);
+    
+    while(!send_ipc->send((void *) res, res_len)) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnRNNForwardTraining(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnRNNForwardTraining");
+
+    auto args = (struct cudnnRNNForwardTrainingArg *) __args;
+
+    cudnnStatus_t err = cudnnRNNForwardTraining(
+		args->handle,
+        args->rnnDesc,
+        args->seqLength,
+        args->xDesc_yDesc,
+        args->x,
+        args->hxDesc,
+        args->hx,
+        args->cxDesc,
+        args->cx,
+        args->wDesc,
+        args->w,
+        args->xDesc_yDesc + args->seqLength,
+        args->y,
+        args->hyDesc,
+        args->hy,
+        args->cyDesc,
+        args->cy,
+        args->workSpace,
+        args->workSpaceSizeInBytes,
+        args->reserveSpace,
+        args->reserveSpaceSizeInBytes
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}

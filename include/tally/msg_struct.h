@@ -540,4 +540,64 @@ struct cudnnReorderFilterAndBiasArg {
 	void * reorderedBiasData;
 };
 
+struct cudnnGetRNNWorkspaceSizeArg {
+    cudnnHandle_t  handle;
+    cudnnRNNDescriptor_t  rnnDesc;
+    int  seqLength;
+    cudnnTensorDescriptor_t xDesc[];
+};
+
+struct cudnnGetRNNWorkspaceSizeResponse {
+    cudnnStatus_t err;
+    size_t sizeInBytes;
+};
+
+struct cudnnGetRNNTrainingReserveSizeArg {
+    cudnnHandle_t  handle;
+    cudnnRNNDescriptor_t  rnnDesc;
+    int  seqLength;
+    cudnnTensorDescriptor_t xDesc[];
+};
+
+struct cudnnGetRNNTrainingReserveSizeResponse {
+    cudnnStatus_t err;
+    size_t sizeInBytes;
+};
+
+struct cudnnGetFilterNdDescriptorArg {
+    cudnnFilterDescriptor_t  filterDesc;
+    int  nbDimsRequested;
+};
+
+struct cudnnGetFilterNdDescriptorResponse {
+    cudnnStatus_t err;
+    cudnnDataType_t dataType;
+    cudnnTensorFormat_t format;
+    int nbDims;
+    int filterDimA[];
+};
+
+struct cudnnRNNForwardTrainingArg {
+    cudnnHandle_t  handle;
+    cudnnRNNDescriptor_t  rnnDesc;
+    int  seqLength;
+    void * x;
+    cudnnTensorDescriptor_t  hxDesc;
+    void * hx;
+    cudnnTensorDescriptor_t  cxDesc;
+    void * cx;
+    cudnnFilterDescriptor_t  wDesc;
+    void * w;
+    void * y;
+    cudnnTensorDescriptor_t  hyDesc;
+    void * hy;
+    cudnnTensorDescriptor_t  cyDesc;
+    void * cy;
+    void * workSpace;
+    size_t  workSpaceSizeInBytes;
+    void * reserveSpace;
+    size_t  reserveSpaceSizeInBytes;
+    cudnnTensorDescriptor_t xDesc_yDesc[];
+};
+
 #endif // TALLY_DEF_H

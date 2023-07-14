@@ -1317,4 +1317,121 @@ cudnnStatus_t cudnnReorderFilterAndBias(cudnnHandle_t  handle, const cudnnFilter
     return *res;
 }
 
+cudnnStatus_t cudnnGetRNNWorkspaceSize(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, size_t * sizeInBytes)
+{
+	TALLY_LOG("cudnnGetRNNWorkspaceSize hooked");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWorkspaceSizeArg) + sizeof(cudnnTensorDescriptor_t) * seqLength;
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNWORKSPACESIZE;
+    
+    auto arg_ptr = (struct cudnnGetRNNWorkspaceSizeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+    arg_ptr->rnnDesc = rnnDesc;
+    arg_ptr->seqLength = seqLength;
+    memcpy(arg_ptr->xDesc, xDesc, sizeof(cudnnTensorDescriptor_t) * seqLength);
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnGetRNNWorkspaceSizeResponse *) dat;
+    *sizeInBytes = res->sizeInBytes;
+    return res->err;
+}
+
+cudnnStatus_t cudnnGetRNNTrainingReserveSize(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, size_t * sizeInBytes)
+{
+	TALLY_LOG("cudnnGetRNNTrainingReserveSize hooked");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNTrainingReserveSizeArg) + sizeof(cudnnTensorDescriptor_t) * seqLength;
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNTRAININGRESERVESIZE;
+    
+    auto arg_ptr = (struct cudnnGetRNNTrainingReserveSizeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+    arg_ptr->rnnDesc = rnnDesc;
+    arg_ptr->seqLength = seqLength;
+    memcpy(arg_ptr->xDesc, xDesc, sizeof(cudnnTensorDescriptor_t) * seqLength);
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnGetRNNTrainingReserveSizeResponse *) dat;
+    *sizeInBytes = res->sizeInBytes;
+    return res->err;
+}
+
+cudnnStatus_t cudnnGetFilterNdDescriptor(const cudnnFilterDescriptor_t  filterDesc, int  nbDimsRequested, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * nbDims, int  filterDimA[])
+{
+	TALLY_LOG("cudnnGetFilterNdDescriptor hooked");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetFilterNdDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETFILTERNDDESCRIPTOR;
+    
+    auto arg_ptr = (struct cudnnGetFilterNdDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->filterDesc = filterDesc;
+    arg_ptr->nbDimsRequested = nbDimsRequested;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnGetFilterNdDescriptorResponse *) dat;
+    *dataType = res->dataType;
+    *format = res->format;
+    *nbDims = res->nbDims;
+    memcpy(filterDimA, res->filterDimA, sizeof(int) * res->nbDims);
+
+    return res->err;
+}
+
+cudnnStatus_t cudnnRNNForwardTraining(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
+{
+	TALLY_LOG("cudnnRNNForwardTraining hooked");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNForwardTrainingArg) + sizeof(cudnnTensorDescriptor_t) * seqLength * 2;
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNFORWARDTRAINING;
+    
+    auto arg_ptr = (struct cudnnRNNForwardTrainingArg *)(msg + sizeof(CUDA_API_ENUM));
+
+	arg_ptr->handle = handle;
+    arg_ptr->rnnDesc = rnnDesc;
+    arg_ptr->seqLength = seqLength;
+    arg_ptr->x = const_cast<void *>(x);
+    arg_ptr->hxDesc = hxDesc;
+    arg_ptr->hx = const_cast<void *>(hx);
+    arg_ptr->cxDesc = cxDesc;
+    arg_ptr->cx = const_cast<void *>(cx);
+    arg_ptr->wDesc = wDesc;
+    arg_ptr->w = const_cast<void *>(w);
+    arg_ptr->y = y;
+    arg_ptr->hyDesc = hyDesc;
+    arg_ptr->hy = hy;
+    arg_ptr->cyDesc = cyDesc;
+    arg_ptr->cy = cy;
+    arg_ptr->workSpace = workSpace;
+    arg_ptr->workSpaceSizeInBytes = workSpaceSizeInBytes;
+    arg_ptr->reserveSpace = reserveSpace;
+    arg_ptr->reserveSpaceSizeInBytes = reserveSpaceSizeInBytes;
+
+    memcpy(arg_ptr->xDesc_yDesc, xDesc, sizeof(cudnnTensorDescriptor_t) * seqLength);
+    memcpy(arg_ptr->xDesc_yDesc + seqLength, yDesc, sizeof(cudnnTensorDescriptor_t) * seqLength);
+
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
 }

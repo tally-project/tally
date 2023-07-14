@@ -208,14 +208,14 @@ def gen_func_client_preload(func_sig):
         indices = PARAM_INDICES[group]
         res_struct = f"{func_name}Response"
 
-        func_preload_builder += get_preload_func_template(func_name, arg_names)
+        func_preload_builder += get_preload_func_template(func_name, arg_names, arg_types)
         func_preload_builder += f"\tauto res = ({res_struct} *) dat;\n"
         for idx in indices:
             func_preload_builder += f"\tif ({arg_names[idx]}) {{ *{arg_names[idx]} = res->{arg_names[idx]}; }}\n"
         func_preload_builder += f"\treturn res->err;\n"
     
     elif func_name in FORWARD_API_CALLS:
-        func_preload_builder += get_preload_func_template(func_name, arg_names)
+        func_preload_builder += get_preload_func_template(func_name, arg_names, arg_types)
 
         func_preload_builder += f"""
     auto res = ({ret_type} *) dat;
