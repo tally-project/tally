@@ -1,11 +1,8 @@
-
 #include <dlfcn.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
 #include <iostream>
-#include <sstream>
-#include <cxxabi.h>
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
@@ -16,6 +13,8 @@
 #include <numeric>
 #include <thread>
 #include <chrono>
+#include <unordered_set>
+#include <unordered_map>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -37,7 +36,11 @@
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
 
+// Used to keep track of seq length of a seq description
 std::unordered_map<cudnnSeqDataDescriptor_t, int> seq_desc_to_seq_len_map;
+
+// Used to check whether an address points to device memory
+std::unordered_set<void *> dev_addr_map;
 
 extern "C" {
 
@@ -145,6 +148,32 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
     msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND;
 
     CLIENT_SEND_MSG_AND_FREE;
+}
+
+cudaError_t cudaMalloc(void ** devPtr, size_t  size)
+{
+	TALLY_LOG("cudaMalloc hooked");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMallocArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAMALLOC;
+    
+    struct cudaMallocArg *arg_ptr = (struct cudaMallocArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->devPtr = devPtr;
+	arg_ptr->size = size;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudaMallocResponse *) dat;
+	if (devPtr) { *devPtr = res->devPtr; }
+
+    if (res->err == cudaSuccess) {
+        // Keep track that this addr is device memory
+        dev_addr_map.insert(res->devPtr);
+    }
+
+	return res->err;
 }
 
 cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind)
@@ -459,13 +488,29 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
     arg_ptr->attributeType = attributeType;
     arg_ptr->elementCount = elementCount;
 
-    // std::cout << "descriptor: " << descriptor << std::endl;
-    // std::cout << "attributeName: " << attributeName << std::endl;
-    // std::cout << "attributeType: " << attributeType << std::endl;
-    // std::cout << "elementCount: " << elementCount << std::endl;
-
     assert(arrayOfElements);
     memcpy(arg_ptr->arrayOfElements, arrayOfElements, type_size * elementCount);
+
+    // print_arrayOfElements(attributeType, elementCount, arrayOfElements);
+
+    if (attributeType == CUDNN_TYPE_VOID_PTR) {
+        auto pointer_arr = (void **) (arg_ptr->arrayOfElements);
+
+        for (int i = 0; i < elementCount; i++) {
+            auto pointer = pointer_arr[i];
+            auto found = dev_addr_map.find(pointer) != dev_addr_map.end();
+            
+            // pointer points to CPU memory
+            if (!found && pointer != NULL) {
+
+                // Get the value from the CPU pointers
+                uint64_t val = *((uint64_t *) pointer);
+
+                // Store the value instead of addr
+                pointer_arr[i] = (void *) val;
+            }
+        }
+    }
 
     CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
@@ -497,13 +542,6 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
     }
 
     assert(arg_ptr->requestedElementCount >= 0);
-
-    // std::cout << "descriptor: " << arg_ptr->descriptor << std::endl;
-    // std::cout << "attributeName: " << arg_ptr->attributeName << std::endl;
-    // std::cout << "attributeType: " << arg_ptr->attributeType << std::endl;
-    // std::cout << "requestedElementCount: " << arg_ptr->requestedElementCount << std::endl;
-    // std::cout << "elementCount: " << arg_ptr->elementCount << std::endl;
-    // std::cout << "arrayOfElements: " << arg_ptr->arrayOfElements << std::endl;
 
     CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
@@ -1224,10 +1262,30 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cud
     return *res;
 }
 
-// cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, cudnnWgradMode_t  addGrad, const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  doDesc, const void * dout, size_t  weightSizeInBytes, const void * weights, void * dweights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
-// {
-// 	TALLY_LOG("cudnnMultiHeadAttnBackwardWeights hooked");
-// 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-// }
+cudnnStatus_t cudnnReorderFilterAndBias(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, cudnnReorderType_t  reorderType, const void * filterData, void * reorderedFilterData, int  reorderBias, const void * biasData, void * reorderedBiasData)
+{
+	TALLY_LOG("cudnnReorderFilterAndBias hooked");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnReorderFilterAndBiasArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNREORDERFILTERANDBIAS;
+    
+    struct cudnnReorderFilterAndBiasArg *arg_ptr = (struct cudnnReorderFilterAndBiasArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->filterDesc = filterDesc;
+	arg_ptr->reorderType = reorderType;
+	arg_ptr->filterData = const_cast<void *>(filterData);
+	arg_ptr->reorderedFilterData = reorderedFilterData;
+	arg_ptr->reorderBias = reorderBias;
+	arg_ptr->biasData = const_cast<void *>(biasData);
+	arg_ptr->reorderedBiasData = reorderedBiasData;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
 
 }

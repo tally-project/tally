@@ -689,16 +689,6 @@ struct cudaEventElapsedTimeResponse {
 	cudaError_t err;
 };
 
-struct cudaMallocArg {
-	void ** devPtr;
-	size_t  size;
-};
-
-struct cudaMallocResponse {
-	void * devPtr;
-	cudaError_t err;
-};
-
 struct cudaFreeArg {
 	void * devPtr;
 };

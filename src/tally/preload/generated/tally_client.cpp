@@ -3963,26 +3963,6 @@ cudaError_t cudaMallocManaged(void ** devPtr, size_t  size, unsigned int  flags)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaMalloc(void ** devPtr, size_t  size)
-{
-	TALLY_LOG("cudaMalloc hooked");
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMallocArg);
-
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAMALLOC;
-    
-    struct cudaMallocArg *arg_ptr = (struct cudaMallocArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->devPtr = devPtr;
-	arg_ptr->size = size;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaMallocResponse *) dat;
-	if (devPtr) { *devPtr = res->devPtr; }
-	return res->err;
-}
-
 cudaError_t cudaMallocHost(void ** ptr, size_t  size)
 {
 	TALLY_LOG("cudaMallocHost hooked");
@@ -7013,12 +6993,6 @@ cudnnStatus_t cudnnFindConvolutionForwardAlgorithmEx(cudnnHandle_t  handle, cons
 cudnnStatus_t cudnnIm2Col(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, void * colBuffer)
 {
 	TALLY_LOG("cudnnIm2Col hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudnnStatus_t cudnnReorderFilterAndBias(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, cudnnReorderType_t  reorderType, const void * filterData, void * reorderedFilterData, int  reorderBias, const void * biasData, void * reorderedBiasData)
-{
-	TALLY_LOG("cudnnReorderFilterAndBias hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 

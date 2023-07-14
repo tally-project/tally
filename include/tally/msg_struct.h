@@ -43,6 +43,16 @@ typedef struct MessageHeader {
     CUDA_API_ENUM api_id;
 } MessageHeader_t;
 
+struct cudaMallocArg {
+	void ** devPtr;
+	size_t  size;
+};
+
+struct cudaMallocResponse {
+	void * devPtr;
+	cudaError_t err;
+};
+
 struct cudaMemcpyArg {
     void *dst;
     void *src;
@@ -513,6 +523,17 @@ struct cudnnMultiHeadAttnBackwardWeightsArg {
 	void * workSpace;
 	size_t  reserveSpaceSizeInBytes;
 	void * reserveSpace;
+};
+
+struct cudnnReorderFilterAndBiasArg {
+	cudnnHandle_t  handle;
+	cudnnFilterDescriptor_t  filterDesc;
+	cudnnReorderType_t  reorderType;
+	void * filterData;
+	void * reorderedFilterData;
+	int  reorderBias;
+	void * biasData;
+	void * reorderedBiasData;
 };
 
 #endif // TALLY_DEF_H

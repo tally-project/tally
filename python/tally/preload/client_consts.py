@@ -191,6 +191,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaMalloc",
     "cudnnMultiHeadAttnBackwardData",
     "cudnnMultiHeadAttnForward",
     "cudnnGetSeqDataDescriptor",
@@ -225,6 +226,7 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "cudnnPoolingForward",
     "cudnnSetSeqDataDescriptor",
     "cudnnMultiHeadAttnBackwardWeights",
+    "cudnnReorderFilterAndBias",
     "__cudaRegisterFunction",
     "__cudaRegisterFatBinary",
     "__cudaRegisterFatBinaryEnd"
@@ -385,7 +387,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cudnnCreate",
     "cudnnCreateTensorDescriptor",
     "cudnnCreateTensorTransformDescriptor",
-    "cudaMalloc",
     "cudnnCreateActivationDescriptor",
     "cudnnCreateFilterDescriptor",
     "cudnnCreateConvolutionDescriptor",

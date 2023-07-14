@@ -1,6 +1,7 @@
 #include <cstring>
 #include <dlfcn.h>
 #include <cassert>
+#include <unordered_set>
 
 #include "spdlog/spdlog.h"
 
@@ -16,6 +17,9 @@
 #include <tally/generated/server.h>
 
 std::unique_ptr<TallyServer> TallyServer::server = std::make_unique<TallyServer>();
+
+// Used to check whether an address points to device memory
+std::unordered_set<void *> dev_addr_map;
 
 TallyServer::TallyServer()
 {
@@ -46,8 +50,8 @@ void TallyServer::start(uint32_t interval) {
     auto time_ckpt = std::chrono::steady_clock::now();
     double req_count = 0.; 
 
-    send_ipc = new ipc::channel("server-to-client-310000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-310000", ipc::receiver);
+    send_ipc = new ipc::channel("server-to-client-340000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-340000", ipc::receiver);
 
     load_cache();
 
@@ -224,6 +228,29 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args)
     int *arr;
     cudaMalloc((void**)&arr, sizeof(int));
     cudaFree(arr);
+}
+
+void TallyServer::handle_cudaMalloc(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudaMalloc");
+
+	auto args = (struct cudaMallocArg *) __args;
+	void *devPtr;
+
+	cudaError_t err = cudaMalloc((args->devPtr ? &(devPtr) : NULL), args->size);
+	struct cudaMallocResponse res {
+		devPtr,
+		err
+    };
+
+    // Keep track that this addr is device memory
+    if (err == cudaSuccess) {
+        dev_addr_map.insert(devPtr);
+    }
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaMallocResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
 }
 
 void TallyServer::handle_cudaMemcpy(void *__args)
@@ -488,61 +515,30 @@ void TallyServer::handle_cudnnBackendSetAttribute(void *__args)
 
     auto args = (struct cudnnBackendSetAttributeArg *) __args;
 
-    // std::cout << "descriptor: " << args->descriptor << std::endl;
-    // std::cout << "attributeName: " << args->attributeName << std::endl;
-    // std::cout << "attributeType: " << args->attributeType << std::endl;
-    // std::cout << "elementCount: " << args->elementCount << std::endl;
+    void *arrayOfElements =  args->arrayOfElements;
 
-    int32_t type_size = get_cudnn_attribute_size(args->attributeType);
-    // std::cout << "type_size is " << type_size << std::endl;
+    // In case the values contain CPU pointers
+    // Then we will allocate again
+    std::vector <void *> allocated_mem;
 
-    // if (args->attributeType == CUDNN_TYPE_BACKEND_DESCRIPTOR) {
-    //     cudnnBackendDescriptor_t *arr = (cudnnBackendDescriptor_t *) args->arrayOfElements;
-    //     for (int i = 0; i < args->elementCount; i++) {
-    //         std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
-    //     }
-    // } else if (args->attributeType == CUDNN_TYPE_DATA_TYPE) {
-    //     cudnnDataType_t *arr = (cudnnDataType_t *) args->arrayOfElements;
-    //     for (int i = 0; i < args->elementCount; i++) {
-    //         std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
-    //     }
-    // } else if (args->attributeType == CUDNN_TYPE_CONVOLUTION_MODE) {
-    //     cudnnConvolutionMode_t *arr = (cudnnConvolutionMode_t *) args->arrayOfElements;
-    //     for (int i = 0; i < args->elementCount; i++) {
-    //         std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
-    //     }
-    // } else if (args->attributeType == CUDNN_TYPE_INT64) {
-    //     int64_t *arr = (int64_t *) args->arrayOfElements;
-    //     for (int i = 0; i < args->elementCount; i++) {
-    //         std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
-    //     }
-    // } else if (args->attributeType == CUDNN_TYPE_FLOAT) {
-    //     float *arr = (float *) args->arrayOfElements;
-    //     for (int i = 0; i < args->elementCount; i++) {
-    //         std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
-    //     }
-    // } else if (args->attributeType == CUDNN_TYPE_HANDLE) {
-    //     cudnnHandle_t *arr = (cudnnHandle_t *) args->arrayOfElements;
-    //     for (int i = 0; i < args->elementCount; i++) {
-    //         std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
-    //     }
-    // } else if (args->attributeType == CUDNN_TYPE_VOID_PTR) {
-    //     void **arr = (void **) args->arrayOfElements;
-    //     for (int i = 0; i < args->elementCount; i++) {
-    //         std::cout << "arrayOfElements[" << i << "]: " << arr[i] << std::endl;
-    //     }
-    // } else {
-    //     throw std::runtime_error("unhandled attributeType");
-    // }
+    if (args->attributeType == CUDNN_TYPE_VOID_PTR) {
+        auto pointer_arr = (void **) (args->arrayOfElements);
 
-    void *arrayOfElements = malloc(type_size * args->elementCount);
-    memcpy(arrayOfElements, args->arrayOfElements, type_size * args->elementCount);
+        for (int i = 0; i < args->elementCount; i++) {
+            auto pointer = pointer_arr[i];
+            auto found = dev_addr_map.find(pointer) != dev_addr_map.end();
+            
+            // pointer points to CPU memory
+            if (!found) {
+                uint64_t val = (uint64_t) pointer;
 
-    // std::cout << "descriptor: " << args->descriptor << std::endl;
-    // std::cout << "attributeName: " << args->attributeName << std::endl;
-    // std::cout << "attributeType: " << args->attributeType << std::endl;
-    // std::cout << "elementCount: " << args->elementCount << std::endl;
-    // std::cout << "arrayOfElements: " << arrayOfElements << std::endl;
+                // Store the value instead of addr
+                pointer_arr[i] = std::malloc(sizeof(uint64_t));
+                *((uint64_t *) (pointer_arr[i])) = val;
+                allocated_mem.push_back(pointer_arr[i]);
+            }
+        }
+    }
 
     cudnnStatus_t err = cudnnBackendSetAttribute(
 		args->descriptor,
@@ -551,6 +547,11 @@ void TallyServer::handle_cudnnBackendSetAttribute(void *__args)
         args->elementCount,
         arrayOfElements
     );
+
+    // These memory can be free once cudnnBackendSetAttribute returns
+    for (auto &addr : allocated_mem) {
+        std::free(addr);
+    }
 
     while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
         send_ipc->wait_for_recv(1);
@@ -565,14 +566,8 @@ void TallyServer::handle_cudnnBackendGetAttribute(void *__args)
 
     auto args = (struct cudnnBackendGetAttributeArg *) __args;
 
-    // std::cout << "descriptor: " << args->descriptor << std::endl;
-    // std::cout << "attributeName: " << args->attributeName << std::endl;
-    // std::cout << "attributeType: " << args->attributeType << std::endl;
-    // std::cout << "requestedElementCount: " << args->requestedElementCount << std::endl;
 
     int32_t type_size = get_cudnn_attribute_size(args->attributeType);
-    // std::cout << "type_size is " << type_size << std::endl;
-
     int32_t buf_size = type_size * args->requestedElementCount;
     assert(buf_size >= 0);
 
@@ -581,19 +576,10 @@ void TallyServer::handle_cudnnBackendGetAttribute(void *__args)
     if (buf_size == 0) {
         arrayOfElements = NULL;
     } else {
-        // arrayOfElements = malloc(buf_size);
-        // std::cout << "arrayOfElements has size " << buf_size << std::endl;
         arrayOfElements = args->arrayOfElementsData;
     }
 
     int64_t elementCount = 0;
-
-    // std::cout << "descriptor: " << args->descriptor << std::endl;
-    // std::cout << "attributeName: " << args->attributeName << std::endl;
-    // std::cout << "attributeType: " << args->attributeType << std::endl;
-    // std::cout << "requestedElementCount: " << args->requestedElementCount << std::endl;
-    // std::cout << "elementCount: " << (args->elementCount ? (&elementCount) : NULL) << std::endl;
-    // std::cout << "arrayOfElements: " << (args->arrayOfElements ? (arrayOfElements) : NULL) << std::endl;
 
     cudnnStatus_t err = cudnnBackendGetAttribute(
         args->descriptor,
@@ -603,12 +589,6 @@ void TallyServer::handle_cudnnBackendGetAttribute(void *__args)
         args->elementCount ? (&elementCount) : NULL,
         args->arrayOfElements ? (arrayOfElements) : NULL
     );
-
-    // std::cout << "return from cudnnBackendGetAttribute " << std::endl;
-
-    // std::cout << "returned elementCount: " << elementCount << std::endl;
-    
-    // assert(err == CUDNN_STATUS_SUCCESS);
 
     int64_t arrayOfElementsSize;
     if (args->elementCount) {
@@ -1247,6 +1227,28 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardWeights(void *__args)
 		args->workSpace,
 		args->reserveSpaceSizeInBytes,
 		args->reserveSpace
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnReorderFilterAndBias(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnReorderFilterAndBias");
+
+    auto args = (struct cudnnReorderFilterAndBiasArg *) __args;
+    cudnnStatus_t err = cudnnReorderFilterAndBias(
+		args->handle,
+		args->filterDesc,
+		args->reorderType,
+		args->filterData,
+		args->reorderedFilterData,
+		args->reorderBias,
+		args->biasData,
+		args->reorderedBiasData
+
     );
 
     while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
