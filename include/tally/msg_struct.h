@@ -600,4 +600,51 @@ struct cudnnRNNForwardTrainingArg {
     cudnnTensorDescriptor_t xDesc_yDesc[];
 };
 
+struct cudnnRNNBackwardDataArg {
+    cudnnHandle_t  handle;
+    cudnnRNNDescriptor_t  rnnDesc;
+    int  seqLength;
+    void * y;
+    void * dy;
+    cudnnTensorDescriptor_t  dhyDesc;
+    void * dhy;
+    cudnnTensorDescriptor_t  dcyDesc;
+    void * dcy;
+    cudnnFilterDescriptor_t  wDesc;
+    void * w;
+    cudnnTensorDescriptor_t  hxDesc;
+    void * hx;
+    cudnnTensorDescriptor_t  cxDesc;
+    void * cx;
+    void * dx;
+    cudnnTensorDescriptor_t  dhxDesc;
+    void * dhx;
+    cudnnTensorDescriptor_t  dcxDesc;
+    void * dcx;
+    void * workSpace;
+    size_t  workSpaceSizeInBytes;
+    void * reserveSpace;
+    size_t  reserveSpaceSizeInBytes;
+
+    cudnnTensorDescriptor_t yDesc_dyDesc_dxDesc[];
+};
+
+struct cudnnRNNBackwardWeightsArg {
+    cudnnHandle_t  handle;
+    cudnnRNNDescriptor_t  rnnDesc;
+    int  seqLength;
+    void * x;
+    cudnnTensorDescriptor_t  hxDesc;
+    void * hx;
+    void * y;
+    void * workSpace;
+    size_t  workSpaceSizeInBytes;
+    cudnnFilterDescriptor_t  dwDesc;
+    void * dw;
+    void * reserveSpace;
+    size_t  reserveSpaceSizeInBytes;
+
+    cudnnTensorDescriptor_t xDesc_yDesc[];
+};
+
 #endif // TALLY_DEF_H

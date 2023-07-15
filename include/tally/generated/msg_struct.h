@@ -361,11 +361,31 @@ struct cuModuleUnloadArg {
 	CUmodule  hmod;
 };
 
+struct cuMemFree_v2Arg {
+	CUdeviceptr  dptr;
+};
+
 struct cuMemcpyAsyncArg {
 	CUdeviceptr  dst;
 	CUdeviceptr  src;
 	size_t  ByteCount;
 	CUstream  hStream;
+};
+
+struct cuMemAllocFromPoolAsyncArg {
+	CUdeviceptr * dptr;
+	size_t  bytesize;
+	CUmemoryPool  pool;
+	CUstream  hStream;
+};
+
+struct cuMemAllocFromPoolAsyncResponse {
+	CUdeviceptr  dptr;
+	CUresult err;
+};
+
+struct cuDestroyExternalMemoryArg {
+	CUexternalMemory  extMem;
 };
 
 struct cudaDeviceResetArg {
@@ -417,6 +437,27 @@ struct cudaDeviceSetSharedMemConfigArg {
 	enum cudaSharedMemConfig  config;
 };
 
+struct cudaDeviceGetPCIBusIdArg {
+	char * pciBusId;
+	int  len;
+	int  device;
+};
+
+struct cudaDeviceGetPCIBusIdResponse {
+	char  pciBusId;
+	cudaError_t err;
+};
+
+struct cudaIpcGetEventHandleArg {
+	cudaIpcEventHandle_t * handle;
+	cudaEvent_t  event;
+};
+
+struct cudaIpcGetEventHandleResponse {
+	cudaIpcEventHandle_t  handle;
+	cudaError_t err;
+};
+
 struct cudaIpcOpenEventHandleArg {
 	cudaEvent_t * event;
 	cudaIpcEventHandle_t  handle;
@@ -425,6 +466,36 @@ struct cudaIpcOpenEventHandleArg {
 struct cudaIpcOpenEventHandleResponse {
 	cudaEvent_t  event;
 	cudaError_t err;
+};
+
+struct cudaIpcGetMemHandleArg {
+	cudaIpcMemHandle_t * handle;
+	void * devPtr;
+};
+
+struct cudaIpcGetMemHandleResponse {
+	cudaIpcMemHandle_t  handle;
+	cudaError_t err;
+};
+
+struct cudaIpcOpenMemHandleArg {
+	void ** devPtr;
+	cudaIpcMemHandle_t  handle;
+	unsigned int  flags;
+};
+
+struct cudaIpcOpenMemHandleResponse {
+	void * devPtr;
+	cudaError_t err;
+};
+
+struct cudaIpcCloseMemHandleArg {
+	void * devPtr;
+};
+
+struct cudaDeviceFlushGPUDirectRDMAWritesArg {
+	enum cudaFlushGPUDirectRDMAWritesTarget  target;
+	enum cudaFlushGPUDirectRDMAWritesScope  scope;
 };
 
 struct cudaThreadExitArg {
@@ -587,6 +658,26 @@ struct cudaStreamCreateWithPriorityArg {
 
 struct cudaStreamCreateWithPriorityResponse {
 	cudaStream_t  pStream;
+	cudaError_t err;
+};
+
+struct cudaStreamGetPriorityArg {
+	cudaStream_t  hStream;
+	int * priority;
+};
+
+struct cudaStreamGetPriorityResponse {
+	int  priority;
+	cudaError_t err;
+};
+
+struct cudaStreamGetFlagsArg {
+	cudaStream_t  hStream;
+	unsigned int * flags;
+};
+
+struct cudaStreamGetFlagsResponse {
+	unsigned int  flags;
 	cudaError_t err;
 };
 
@@ -860,6 +951,36 @@ struct cudnnDestroyTensorTransformDescriptorArg {
 	cudnnTensorTransformDescriptor_t  transformDesc;
 };
 
+struct cudnnCreateOpTensorDescriptorArg {
+	cudnnOpTensorDescriptor_t * opTensorDesc;
+};
+
+struct cudnnCreateOpTensorDescriptorResponse {
+	cudnnOpTensorDescriptor_t  opTensorDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnSetOpTensorDescriptorArg {
+	cudnnOpTensorDescriptor_t  opTensorDesc;
+	cudnnOpTensorOp_t  opTensorOp;
+	cudnnDataType_t  opTensorCompType;
+	cudnnNanPropagation_t  opTensorNanOpt;
+};
+
+struct cudnnGetOpTensorDescriptorArg {
+	cudnnOpTensorDescriptor_t  opTensorDesc;
+	cudnnOpTensorOp_t * opTensorOp;
+	cudnnDataType_t * opTensorCompType;
+	cudnnNanPropagation_t * opTensorNanOpt;
+};
+
+struct cudnnGetOpTensorDescriptorResponse {
+	cudnnOpTensorOp_t  opTensorOp;
+	cudnnDataType_t  opTensorCompType;
+	cudnnNanPropagation_t  opTensorNanOpt;
+	cudnnStatus_t err;
+};
+
 struct cudnnCreateFilterDescriptorArg {
 	cudnnFilterDescriptor_t * filterDesc;
 };
@@ -977,6 +1098,12 @@ struct cudnnSetDropoutDescriptorArg {
 	void * states;
 	size_t  stateSizeInBytes;
 	unsigned long long  seed;
+};
+
+struct cudnnOpsInferVersionCheckArg {
+};
+
+struct cudnnOpsTrainVersionCheckArg {
 };
 
 struct cudnnCreateRNNDescriptorArg {
@@ -1135,6 +1262,12 @@ struct cudnnGetMultiHeadAttnBuffersResponse {
 	cudnnStatus_t err;
 };
 
+struct cudnnAdvInferVersionCheckArg {
+};
+
+struct cudnnAdvTrainVersionCheckArg {
+};
+
 struct cudnnCreateConvolutionDescriptorArg {
 	cudnnConvolutionDescriptor_t * convDesc;
 };
@@ -1161,6 +1294,9 @@ struct cudnnGetConvolutionForwardWorkspaceSizeArg {
 struct cudnnGetConvolutionForwardWorkspaceSizeResponse {
 	size_t  sizeInBytes;
 	cudnnStatus_t err;
+};
+
+struct cudnnCnnInferVersionCheckArg {
 };
 
 struct cudnnCnnTrainVersionCheckArg {
@@ -1280,6 +1416,12 @@ struct cublasLtDestroyArg {
 	cublasLtHandle_t  lightHandle;
 };
 
+struct cublasLtGetVersionArg {
+};
+
+struct cublasLtGetCudartVersionArg {
+};
+
 struct cublasLtMatrixLayoutCreateArg {
 	cublasLtMatrixLayout_t*  matLayout;
 	cudaDataType  type;
@@ -1323,6 +1465,9 @@ struct cublasLtMatmulPreferenceCreateResponse {
 
 struct cublasLtMatmulPreferenceDestroyArg {
 	cublasLtMatmulPreference_t  pref;
+};
+
+struct cublasLtLoggerForceDisableArg {
 };
 
 

@@ -187,10 +187,14 @@ DIRECT_CALLS = [
     "cuGetErrorString",
     "cuGetErrorName",
     "cudnnGetErrorString",
+    "cudaMallocHost",
+    "cudaFreeHost"
 ]
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudnnRNNBackwardWeights",
+    "cudnnRNNBackwardData",
     "cudnnRNNForwardTraining",
     "cudnnGetFilterNdDescriptor",
     "cudnnGetRNNTrainingReserveSize",
@@ -240,6 +244,17 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cublasLtLoggerForceDisable",
+    "cublasLtGetCudartVersion",
+    "cublasLtGetVersion",
+    "cudnnCnnInferVersionCheck",
+    "cudnnAdvTrainVersionCheck",
+    "cudnnAdvInferVersionCheck",
+    "cudnnOpsTrainVersionCheck",
+    "cudnnOpsInferVersionCheck",
+    "cudaMemPoolTrimTo"
+    "cudaFreeArray",
+    "cuMemFree_v2",
     "cudaMemset",
     "cudnnSetAttnDescriptor",
     "cudnnSetDropoutDescriptor",
@@ -329,12 +344,22 @@ FORWARD_API_CALLS = [
     "cudnnDestroyRNNDataDescriptor",
     "cudnnDestroyRNNDescriptor",
     "cudnnSetRNNDescriptor_v6",
-    "cudnnBuildRNNDynamic"
+    "cudnnBuildRNNDynamic",
+    "cuDestroyExternalMemory",
+    "cudaIpcCloseMemHandle",
+    "cudaDeviceFlushGPUDirectRDMAWrites",
+    "cudnnSetOpTensorDescriptor"
 ]
 
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cudnnCreateOpTensorDescriptor",
+    "cudaIpcGetMemHandle",
+    "cudaIpcOpenMemHandle",
+    "cudaIpcGetEventHandle",
+    "cudaDeviceGetPCIBusId",
+    "cuMemAllocFromPoolAsync",
     "cudnnCreateRNNDescriptor",
     "cudnnCreateRNNDataDescriptor",
     "cudnnCreateDropoutDescriptor",
@@ -406,6 +431,8 @@ UNSUPPORTED_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
+    "cudaStreamGetFlags",
+    "cudaStreamGetPriority",
     "cudnnDropoutGetStatesSize",
     "cudnnGetFilterSizeInBytes",
     "cudaStreamIsCapturing",
@@ -453,6 +480,10 @@ CUDA_GET_9_PARAM_FUNCS = [
     "cudnnGetRNNLinLayerBiasParams"    
 ]
 
+CUDA_GET_2_3_4_PARAM_FUNCS = [
+    "cudnnGetOpTensorDescriptor"
+]
+
 CUDA_GET_1_PARAM_FUNC_KEY = 1
 CUDA_GET_2_3_PARAM_FUNC_KEY = 2
 CUDA_GET_1_2_PARAM_FUNC_KEY = 3
@@ -462,6 +493,7 @@ CUDA_GET_4_PARAM_FUNC_KEY = 6
 CUDA_GET_7_PARAM_FUNC_KEY = 7
 CUDA_GET_3_4_5_PARAM_FUNC_KEY = 8
 CUDA_GET_9_PARAM_FUNC_KEY = 9
+CUDA_GET_2_3_4_PARAM_FUNC_KEY = 10
 
 PARAM_INDICES = {
     CUDA_GET_1_PARAM_FUNC_KEY: [0],
@@ -472,7 +504,8 @@ PARAM_INDICES = {
     CUDA_GET_4_PARAM_FUNC_KEY: [3],
     CUDA_GET_7_PARAM_FUNC_KEY: [6],
     CUDA_GET_3_4_5_PARAM_FUNC_KEY: [2, 3, 4],
-    CUDA_GET_9_PARAM_FUNC_KEY: [8]
+    CUDA_GET_9_PARAM_FUNC_KEY: [8],
+    CUDA_GET_2_3_4_PARAM_FUNC_KEY: [1, 2, 3]
 }
 
 def is_get_param_func(func_name):
@@ -488,7 +521,8 @@ def is_get_param_func(func_name):
         CUDA_GET_4_PARAM_FUNCS,
         CUDA_GET_7_PARAM_FUNCS,
         CUDA_GET_3_4_5_PARAM_FUNCS,
-        CUDA_GET_9_PARAM_FUNCS
+        CUDA_GET_9_PARAM_FUNCS,
+        CUDA_GET_2_3_4_PARAM_FUNCS
     ]:
         if func_name in funcs:
             return True
@@ -513,6 +547,8 @@ def get_param_group(func_name):
         return CUDA_GET_3_4_5_PARAM_FUNC_KEY
     elif func_name in CUDA_GET_9_PARAM_FUNCS:
         return CUDA_GET_9_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_2_3_4_PARAM_FUNCS:
+        return CUDA_GET_2_3_4_PARAM_FUNC_KEY
     else:
         assert(False)
 

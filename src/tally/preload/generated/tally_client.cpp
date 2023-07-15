@@ -1030,7 +1030,20 @@ CUresult cuMemAllocPitch_v2(CUdeviceptr * dptr, size_t * pPitch, size_t  WidthIn
 CUresult cuMemFree_v2(CUdeviceptr  dptr)
 {
 	TALLY_LOG("cuMemFree_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemFree_v2Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUMEMFREE_V2;
+    
+    struct cuMemFree_v2Arg *arg_ptr = (struct cuMemFree_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dptr = dptr;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (CUresult *) dat;
+    return *res;
 }
 
 CUresult cuMemGetAddressRange_v2(CUdeviceptr * pbase, size_t * psize, CUdeviceptr  dptr)
@@ -1568,7 +1581,23 @@ CUresult cuMemPoolDestroy(CUmemoryPool  pool)
 CUresult cuMemAllocFromPoolAsync(CUdeviceptr * dptr, size_t  bytesize, CUmemoryPool  pool, CUstream  hStream)
 {
 	TALLY_LOG("cuMemAllocFromPoolAsync hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemAllocFromPoolAsyncArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUMEMALLOCFROMPOOLASYNC;
+    
+    struct cuMemAllocFromPoolAsyncArg *arg_ptr = (struct cuMemAllocFromPoolAsyncArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dptr = dptr;
+	arg_ptr->bytesize = bytesize;
+	arg_ptr->pool = pool;
+	arg_ptr->hStream = hStream;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cuMemAllocFromPoolAsyncResponse *) dat;
+	if (dptr) { *dptr = res->dptr; }
+	return res->err;
 }
 
 CUresult cuMemPoolExportToShareableHandle(void * handle_out, CUmemoryPool  pool, CUmemAllocationHandleType  handleType, unsigned long long  flags)
@@ -1826,7 +1855,20 @@ CUresult cuExternalMemoryGetMappedMipmappedArray(CUmipmappedArray * mipmap, CUex
 CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
 {
 	TALLY_LOG("cuDestroyExternalMemory hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDestroyExternalMemoryArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDESTROYEXTERNALMEMORY;
+    
+    struct cuDestroyExternalMemoryArg *arg_ptr = (struct cuDestroyExternalMemoryArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->extMem = extMem;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (CUresult *) dat;
+    return *res;
 }
 
 CUresult cuImportExternalSemaphore(CUexternalSemaphore * extSem_out, const CUDA_EXTERNAL_SEMAPHORE_HANDLE_DESC * semHandleDesc)
@@ -2930,13 +2972,42 @@ cudaError_t cudaDeviceGetByPCIBusId(int * device, const char * pciBusId)
 cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
 {
 	TALLY_LOG("cudaDeviceGetPCIBusId hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetPCIBusIdArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETPCIBUSID;
+    
+    struct cudaDeviceGetPCIBusIdArg *arg_ptr = (struct cudaDeviceGetPCIBusIdArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->pciBusId = pciBusId;
+	arg_ptr->len = len;
+	arg_ptr->device = device;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudaDeviceGetPCIBusIdResponse *) dat;
+	if (pciBusId) { *pciBusId = res->pciBusId; }
+	return res->err;
 }
 
 cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  event)
 {
 	TALLY_LOG("cudaIpcGetEventHandle hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcGetEventHandleArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAIPCGETEVENTHANDLE;
+    
+    struct cudaIpcGetEventHandleArg *arg_ptr = (struct cudaIpcGetEventHandleArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->event = event;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudaIpcGetEventHandleResponse *) dat;
+	if (handle) { *handle = res->handle; }
+	return res->err;
 }
 
 cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  handle)
@@ -2962,25 +3033,81 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
 cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
 {
 	TALLY_LOG("cudaIpcGetMemHandle hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcGetMemHandleArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAIPCGETMEMHANDLE;
+    
+    struct cudaIpcGetMemHandleArg *arg_ptr = (struct cudaIpcGetMemHandleArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->devPtr = devPtr;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudaIpcGetMemHandleResponse *) dat;
+	if (handle) { *handle = res->handle; }
+	return res->err;
 }
 
 cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, unsigned int  flags)
 {
 	TALLY_LOG("cudaIpcOpenMemHandle hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenMemHandleArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAIPCOPENMEMHANDLE;
+    
+    struct cudaIpcOpenMemHandleArg *arg_ptr = (struct cudaIpcOpenMemHandleArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->devPtr = devPtr;
+	arg_ptr->handle = handle;
+	arg_ptr->flags = flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudaIpcOpenMemHandleResponse *) dat;
+	if (devPtr) { *devPtr = res->devPtr; }
+	return res->err;
 }
 
 cudaError_t cudaIpcCloseMemHandle(void * devPtr)
 {
 	TALLY_LOG("cudaIpcCloseMemHandle hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcCloseMemHandleArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAIPCCLOSEMEMHANDLE;
+    
+    struct cudaIpcCloseMemHandleArg *arg_ptr = (struct cudaIpcCloseMemHandleArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->devPtr = devPtr;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaError_t *) dat;
+    return *res;
 }
 
 cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWritesTarget  target, enum cudaFlushGPUDirectRDMAWritesScope  scope)
 {
 	TALLY_LOG("cudaDeviceFlushGPUDirectRDMAWrites hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceFlushGPUDirectRDMAWritesArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEFLUSHGPUDIRECTRDMAWRITES;
+    
+    struct cudaDeviceFlushGPUDirectRDMAWritesArg *arg_ptr = (struct cudaDeviceFlushGPUDirectRDMAWritesArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->target = target;
+	arg_ptr->scope = scope;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudaError_t *) dat;
+    return *res;
 }
 
 cudaError_t cudaThreadExit()
@@ -3446,13 +3573,41 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
 cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
 {
 	TALLY_LOG("cudaStreamGetPriority hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetPriorityArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMGETPRIORITY;
+    
+    struct cudaStreamGetPriorityArg *arg_ptr = (struct cudaStreamGetPriorityArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->hStream = hStream;
+	arg_ptr->priority = priority;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudaStreamGetPriorityResponse *) dat;
+	if (priority) { *priority = res->priority; }
+	return res->err;
 }
 
 cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 {
 	TALLY_LOG("cudaStreamGetFlags hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetFlagsArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMGETFLAGS;
+    
+    struct cudaStreamGetFlagsArg *arg_ptr = (struct cudaStreamGetFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->hStream = hStream;
+	arg_ptr->flags = flags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudaStreamGetFlagsResponse *) dat;
+	if (flags) { *flags = res->flags; }
+	return res->err;
 }
 
 cudaError_t cudaCtxResetPersistingL2Cache()
@@ -3966,7 +4121,9 @@ cudaError_t cudaMallocManaged(void ** devPtr, size_t  size, unsigned int  flags)
 cudaError_t cudaMallocHost(void ** ptr, size_t  size)
 {
 	TALLY_LOG("cudaMallocHost hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudaError_t res = 
+		lcudaMallocHost(ptr, size);
+	return res;
 }
 
 cudaError_t cudaMallocPitch(void ** devPtr, size_t * pitch, size_t  width, size_t  height)
@@ -3984,7 +4141,9 @@ cudaError_t cudaMallocArray(cudaArray_t * array, const struct cudaChannelFormatD
 cudaError_t cudaFreeHost(void * ptr)
 {
 	TALLY_LOG("cudaFreeHost hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudaError_t res = 
+		lcudaFreeHost(ptr);
+	return res;
 }
 
 cudaError_t cudaFreeArray(cudaArray_t  array)
@@ -5511,19 +5670,66 @@ cudnnStatus_t cudnnTransformTensorEx(cudnnHandle_t  handle, const cudnnTensorTra
 cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t * opTensorDesc)
 {
 	TALLY_LOG("cudnnCreateOpTensorDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateOpTensorDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEOPTENSORDESCRIPTOR;
+    
+    struct cudnnCreateOpTensorDescriptorArg *arg_ptr = (struct cudnnCreateOpTensorDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->opTensorDesc = opTensorDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnCreateOpTensorDescriptorResponse *) dat;
+	if (opTensorDesc) { *opTensorDesc = res->opTensorDesc; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc, cudnnOpTensorOp_t  opTensorOp, cudnnDataType_t  opTensorCompType, cudnnNanPropagation_t  opTensorNanOpt)
 {
 	TALLY_LOG("cudnnSetOpTensorDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetOpTensorDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETOPTENSORDESCRIPTOR;
+    
+    struct cudnnSetOpTensorDescriptorArg *arg_ptr = (struct cudnnSetOpTensorDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->opTensorDesc = opTensorDesc;
+	arg_ptr->opTensorOp = opTensorOp;
+	arg_ptr->opTensorCompType = opTensorCompType;
+	arg_ptr->opTensorNanOpt = opTensorNanOpt;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t  opTensorDesc, cudnnOpTensorOp_t * opTensorOp, cudnnDataType_t * opTensorCompType, cudnnNanPropagation_t * opTensorNanOpt)
 {
 	TALLY_LOG("cudnnGetOpTensorDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetOpTensorDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETOPTENSORDESCRIPTOR;
+    
+    struct cudnnGetOpTensorDescriptorArg *arg_ptr = (struct cudnnGetOpTensorDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->opTensorDesc = opTensorDesc;
+	arg_ptr->opTensorOp = opTensorOp;
+	arg_ptr->opTensorCompType = opTensorCompType;
+	arg_ptr->opTensorNanOpt = opTensorNanOpt;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnGetOpTensorDescriptorResponse *) dat;
+	if (opTensorOp) { *opTensorOp = res->opTensorOp; }
+	if (opTensorCompType) { *opTensorCompType = res->opTensorCompType; }
+	if (opTensorNanOpt) { *opTensorNanOpt = res->opTensorNanOpt; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnDestroyOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc)
@@ -6141,7 +6347,19 @@ cudnnStatus_t cudnnGetCallback(unsigned * mask, void ** udata, cudnnCallback_t *
 cudnnStatus_t cudnnOpsInferVersionCheck()
 {
 	TALLY_LOG("cudnnOpsInferVersionCheck hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnOpsInferVersionCheckArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNOPSINFERVERSIONCHECK;
+    
+    struct cudnnOpsInferVersionCheckArg *arg_ptr = (struct cudnnOpsInferVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnSoftmaxBackward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t  algo, cudnnSoftmaxMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)
@@ -6267,7 +6485,19 @@ cudnnStatus_t cudnnDropoutBackward(cudnnHandle_t  handle, const cudnnDropoutDesc
 cudnnStatus_t cudnnOpsTrainVersionCheck()
 {
 	TALLY_LOG("cudnnOpsTrainVersionCheck hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnOpsTrainVersionCheckArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNOPSTRAINVERSIONCHECK;
+    
+    struct cudnnOpsTrainVersionCheckArg *arg_ptr = (struct cudnnOpsTrainVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t * rnnDesc)
@@ -6800,24 +7030,24 @@ cudnnStatus_t cudnnGetMultiHeadAttnWeights(cudnnHandle_t  handle, const cudnnAtt
 cudnnStatus_t cudnnAdvInferVersionCheck()
 {
 	TALLY_LOG("cudnnAdvInferVersionCheck hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
 
-cudnnStatus_t cudnnRNNBackwardData(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * yDesc, const void * y, const cudnnTensorDescriptor_t * dyDesc, const void * dy, const cudnnTensorDescriptor_t  dhyDesc, const void * dhy, const cudnnTensorDescriptor_t  dcyDesc, const void * dcy, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnTensorDescriptor_t * dxDesc, void * dx, const cudnnTensorDescriptor_t  dhxDesc, void * dhx, const cudnnTensorDescriptor_t  dcxDesc, void * dcx, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
-{
-	TALLY_LOG("cudnnRNNBackwardData hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAdvInferVersionCheckArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNADVINFERVERSIONCHECK;
+    
+    struct cudnnAdvInferVersionCheckArg *arg_ptr = (struct cudnnAdvInferVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, const int32_t  devSeqLengths[], cudnnRNNDataDescriptor_t  yDesc, const void * y, const void * dy, cudnnRNNDataDescriptor_t  xDesc, void * dx, cudnnTensorDescriptor_t  hDesc, const void * hx, const void * dhy, void * dhx, cudnnTensorDescriptor_t  cDesc, const void * cx, const void * dcy, void * dcx, size_t  weightSpaceSize, const void * weightSpace, size_t  workSpaceSize, void * workSpace, size_t  reserveSpaceSize, void * reserveSpace)
 {
 	TALLY_LOG("cudnnRNNBackwardData_v8 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudnnStatus_t cudnnRNNBackwardWeights(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t * yDesc, const void * y, const void * workSpace, size_t  workSpaceSizeInBytes, const cudnnFilterDescriptor_t  dwDesc, void * dw, const void * reserveSpace, size_t  reserveSpaceSizeInBytes)
-{
-	TALLY_LOG("cudnnRNNBackwardWeights hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -6956,7 +7186,19 @@ cudnnStatus_t cudnnGetCTCLossWorkspaceSize_v8(cudnnHandle_t  handle, cudnnCTCLos
 cudnnStatus_t cudnnAdvTrainVersionCheck()
 {
 	TALLY_LOG("cudnnAdvTrainVersionCheck hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAdvTrainVersionCheckArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNADVTRAINVERSIONCHECK;
+    
+    struct cudnnAdvTrainVersionCheckArg *arg_ptr = (struct cudnnAdvTrainVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * convDesc)
@@ -7151,7 +7393,19 @@ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  han
 cudnnStatus_t cudnnCnnInferVersionCheck()
 {
 	TALLY_LOG("cudnnCnnInferVersionCheck hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCnnInferVersionCheckArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNCNNINFERVERSIONCHECK;
+    
+    struct cudnnCnnInferVersionCheckArg *arg_ptr = (struct cudnnCnnInferVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  handle, int * count)
@@ -9266,13 +9520,37 @@ const char* cublasLtGetStatusString(cublasStatus_t  status)
 size_t cublasLtGetVersion()
 {
 	TALLY_LOG("cublasLtGetVersion hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtGetVersionArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTGETVERSION;
+    
+    struct cublasLtGetVersionArg *arg_ptr = (struct cublasLtGetVersionArg *)(msg + sizeof(CUDA_API_ENUM));
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (size_t *) dat;
+    return *res;
 }
 
 size_t cublasLtGetCudartVersion()
 {
 	TALLY_LOG("cublasLtGetCudartVersion hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtGetCudartVersionArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTGETCUDARTVERSION;
+    
+    struct cublasLtGetCudartVersionArg *arg_ptr = (struct cublasLtGetCudartVersionArg *)(msg + sizeof(CUDA_API_ENUM));
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (size_t *) dat;
+    return *res;
 }
 
 cublasStatus_t cublasLtGetProperty(libraryPropertyType  type, int*  value)
@@ -9542,7 +9820,19 @@ cublasStatus_t cublasLtLoggerSetMask(int  mask)
 cublasStatus_t cublasLtLoggerForceDisable()
 {
 	TALLY_LOG("cublasLtLoggerForceDisable hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtLoggerForceDisableArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASLTLOGGERFORCEDISABLE;
+    
+    struct cublasLtLoggerForceDisableArg *arg_ptr = (struct cublasLtLoggerForceDisableArg *)(msg + sizeof(CUDA_API_ENUM));
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cublasStatus_t *) dat;
+    return *res;
 }
 
 

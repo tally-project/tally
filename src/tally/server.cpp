@@ -1390,3 +1390,73 @@ void TallyServer::handle_cudnnRNNForwardTraining(void *__args)
         send_ipc->wait_for_recv(1);
     }
 }
+
+void TallyServer::handle_cudnnRNNBackwardData(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnRNNBackwardData");
+
+    auto args = (struct cudnnRNNBackwardDataArg *) __args;
+
+    cudnnStatus_t err = cudnnRNNBackwardData(
+        args->handle,
+        args->rnnDesc,
+        args->seqLength,
+        args->yDesc_dyDesc_dxDesc,
+        args->y,
+        args->yDesc_dyDesc_dxDesc + args->seqLength,
+        args->dy,
+        args->dhyDesc,
+        args->dhy, 
+        args->dcyDesc, 
+        args->dcy, 
+        args->wDesc, 
+        args->w, 
+        args->hxDesc, 
+        args->hx, 
+        args->cxDesc, 
+        args->cx, 
+        args->yDesc_dyDesc_dxDesc + args->seqLength * 2, 
+        args->dx, 
+        args->dhxDesc, 
+        args->dhx, 
+        args->dcxDesc, 
+        args->dcx, 
+        args->workSpace, 
+        args->workSpaceSizeInBytes, 
+        args->reserveSpace, 
+        args->reserveSpaceSizeInBytes
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnRNNBackwardWeights(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnRNNBackwardWeights");
+
+    auto args = (struct cudnnRNNBackwardWeightsArg *) __args;
+
+    cudnnStatus_t err = cudnnRNNBackwardWeights(
+        args->handle,
+        args->rnnDesc,
+        args->seqLength,
+        args->xDesc_yDesc,
+        args->x,
+        args->hxDesc,
+        args->hx,
+        args->xDesc_yDesc + args->seqLength,
+        args->y,
+        args->workSpace,
+        args->workSpaceSizeInBytes,
+        args->dwDesc,
+        args->dw,
+        args->reserveSpace,
+        args->reserveSpaceSizeInBytes
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
