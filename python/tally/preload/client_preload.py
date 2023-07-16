@@ -11,6 +11,7 @@ from tally.preload.client_consts import (
     MSG_STRUCT_TEMPLATE_BUTTOM,
     TALLY_SERVER_HEADER_TEMPLATE_TOP,
     TALLY_SERVER_HEADER_TEMPLATE_BUTTOM,
+    TALLY_CLIENT_SRC_TEMPLATE_TOP,
     SPECIAL_CLIENT_PRELOAD_FUNCS,
     PARAM_INDICES,
     CLIENT_PRELOAD_TEMPLATE,
@@ -205,6 +206,11 @@ def gen_func_client_preload(func_sig):
     func_preload_builder += f"\tTALLY_LOG(\"{func_name} hooked\");\n"
 
     if is_get_param_func(func_name):
+        func_preload_builder += "TALLY_CLIENT_PROFILE_START;\n"
+        func_preload_builder += "#ifdef RUN_LOCALLY\n"
+        func_preload_builder += f"\tauto err = l{func_name}({arg_names_str});\n"
+        func_preload_builder += "#else\n"
+
         group = get_param_group(func_name)
         indices = PARAM_INDICES[group]
         res_struct = f"{func_name}Response"
@@ -213,15 +219,30 @@ def gen_func_client_preload(func_sig):
         func_preload_builder += f"\tauto res = ({res_struct} *) dat;\n"
         for idx in indices:
             func_preload_builder += f"\tif ({arg_names[idx]}) {{ *{arg_names[idx]} = res->{arg_names[idx]}; }}\n"
-        func_preload_builder += f"\treturn res->err;\n"
+        
+        func_preload_builder += f"\tauto err = res->err;\n"
+        func_preload_builder += f"#endif\n"
+
+        func_preload_builder += f"\tTALLY_CLIENT_PROFILE_END;\n"
+        func_preload_builder += f"\tTALLY_CLIENT_TRACE_API_CALL({func_name});\n"
+
+        func_preload_builder += "\treturn err;"
     
     elif func_name in FORWARD_API_CALLS:
+        func_preload_builder += "\tTALLY_CLIENT_PROFILE_START;\n"
+        func_preload_builder += "#ifdef RUN_LOCALLY\n"
+        func_preload_builder += f"\tauto err = l{func_name}({arg_names_str});\n"
+        func_preload_builder += "#else\n"
         func_preload_builder += get_preload_func_template(func_name, arg_names, arg_types)
 
-        func_preload_builder += f"""
-    auto res = ({ret_type} *) dat;
-    return *res;
-"""
+        func_preload_builder += f"\tauto res = ({ret_type} *) dat;\n"
+        func_preload_builder += f"\tauto err = *res;\n"
+        func_preload_builder += f"#endif\n"
+
+        func_preload_builder += f"\tTALLY_CLIENT_PROFILE_END;\n"
+        func_preload_builder += f"\tTALLY_CLIENT_TRACE_API_CALL({func_name});\n"
+
+        func_preload_builder += "\treturn err;\n"
     elif func_name in DIRECT_CALLS:
         # call original
         if ret_type != "void":
@@ -270,7 +291,8 @@ def gen_client_code_from_file(file):
 def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_file="tally_client.cpp",
                     decl_output_file="cuda_api.h", def_output_file="cuda_api.cpp",
                     enum_output_file="cuda_api_enum.h", msg_struct_output_file="msg_struct.h",
-                    server_header_output_file="server.h", server_cpp_output_file="server.cpp"):
+                    server_header_output_file="server.h", server_cpp_output_file="server.cpp",
+                    client_cpp_output_file="client.cpp"):
     client_code_dict = {}
 
     for header_file in header_files:
@@ -363,3 +385,15 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
         for func_name in client_code_dict:
             if func_name not in SPECIAL_CLIENT_PRELOAD_FUNCS:
                 f.write(client_code_dict[func_name]["handler"])
+
+    with open(client_cpp_output_file, 'w') as f:
+        f.write(TALLY_CLIENT_SRC_TEMPLATE_TOP)
+
+        f.write("void TallyClient::register_profile_kernel_map()\n")
+        f.write("{\n")
+
+        for func_name in client_code_dict:
+            f.write(f"\t_profile_kernel_map[(void *) l{func_name}] = \"{func_name}\";\n")
+        
+        f.write("}\n")
+        

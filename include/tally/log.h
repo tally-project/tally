@@ -4,8 +4,6 @@
 #include <string>
 #include <iostream>
 
-// #undef ENABLE_LOGGING
-
 #ifdef ENABLE_LOGGING
     #define TALLY_LOG(msg) \
         std::cout << msg << std::endl

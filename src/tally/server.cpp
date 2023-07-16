@@ -1523,3 +1523,85 @@ void TallyServer::handle_cudnnGetTensorNdDescriptor(void *__args)
     free(strideA);
     free(res);
 }
+
+void TallyServer::handle_cudnnBatchNormalizationForwardTrainingEx(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnBatchNormalizationForwardTrainingEx");
+
+    auto args = (struct cudnnBatchNormalizationForwardTrainingExArg *) __args;
+    cudnnStatus_t err = cudnnBatchNormalizationForwardTrainingEx(
+		args->handle,
+		args->mode,
+		args->bnOps,
+		(void *) &(args->alpha),
+		(void *) &(args->beta),
+		args->xDesc,
+		args->xData,
+		args->zDesc,
+		args->zData,
+		args->yDesc,
+		args->yData,
+		args->bnScaleBiasMeanVarDesc,
+		args->bnScale,
+		args->bnBias,
+		args->exponentialAverageFactor,
+		args->resultRunningMean,
+		args->resultRunningVariance,
+		args->epsilon,
+		args->resultSaveMean,
+		args->resultSaveInvVariance,
+		args->activationDesc,
+		args->workspace,
+		args->workSpaceSizeInBytes,
+		args->reserveSpace,
+		args->reserveSpaceSizeInBytes
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnBatchNormalizationBackwardEx");
+
+    auto args = (struct cudnnBatchNormalizationBackwardExArg *) __args;
+    cudnnStatus_t err = cudnnBatchNormalizationBackwardEx(
+		args->handle,
+		args->mode,
+		args->bnOps,
+        (void *) &(args->alphaDataDiff),
+        (void *) &(args->betaDataDiff),
+        (void *) &(args->alphaParamDiff),
+        (void *) &(args->betaParamDiff),
+		args->xDesc,
+		args->xData,
+		args->yDesc,
+		args->yData,
+		args->dyDesc,
+		args->dyData,
+		args->dzDesc,
+		args->dzData,
+		args->dxDesc,
+		args->dxData,
+		args->dBnScaleBiasDesc,
+		args->bnScaleData,
+		args->bnBiasData,
+		args->dBnScaleData,
+		args->dBnBiasData,
+		args->epsilon,
+		args->savedMean,
+		args->savedInvVariance,
+		args->activationDesc,
+		args->workSpace,
+		args->workSpaceSizeInBytes,
+		args->reserveSpace,
+		args->reserveSpaceSizeInBytes
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}

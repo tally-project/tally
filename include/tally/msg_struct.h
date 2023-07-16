@@ -671,4 +671,65 @@ struct cudnnGetTensorNdDescriptorResponse {
     int dimA_strideA[];
 };
 
+struct cudnnBatchNormalizationForwardTrainingExArg {
+	cudnnHandle_t  handle;
+	cudnnBatchNormMode_t  mode;
+	cudnnBatchNormOps_t  bnOps;
+	uint64_t alpha;
+	uint64_t beta;
+	cudnnTensorDescriptor_t  xDesc;
+	void * xData;
+	cudnnTensorDescriptor_t  zDesc;
+	void * zData;
+	cudnnTensorDescriptor_t  yDesc;
+	void * yData;
+	cudnnTensorDescriptor_t  bnScaleBiasMeanVarDesc;
+	void * bnScale;
+	void * bnBias;
+	double  exponentialAverageFactor;
+	void * resultRunningMean;
+	void * resultRunningVariance;
+	double  epsilon;
+	void * resultSaveMean;
+	void * resultSaveInvVariance;
+	cudnnActivationDescriptor_t  activationDesc;
+	void * workspace;
+	size_t  workSpaceSizeInBytes;
+	void * reserveSpace;
+	size_t  reserveSpaceSizeInBytes;
+};
+
+struct cudnnBatchNormalizationBackwardExArg {
+	cudnnHandle_t  handle;
+	cudnnBatchNormMode_t  mode;
+	cudnnBatchNormOps_t  bnOps;
+	uint64_t alphaDataDiff;
+	uint64_t betaDataDiff;
+	uint64_t alphaParamDiff;
+	uint64_t betaParamDiff;
+	cudnnTensorDescriptor_t  xDesc;
+	void * xData;
+	cudnnTensorDescriptor_t  yDesc;
+	void * yData;
+	cudnnTensorDescriptor_t  dyDesc;
+	void * dyData;
+	cudnnTensorDescriptor_t  dzDesc;
+	void * dzData;
+	cudnnTensorDescriptor_t  dxDesc;
+	void * dxData;
+	cudnnTensorDescriptor_t  dBnScaleBiasDesc;
+	void * bnScaleData;
+	void * bnBiasData;
+	void * dBnScaleData;
+	void * dBnBiasData;
+	double  epsilon;
+	void * savedMean;
+	void * savedInvVariance;
+	cudnnActivationDescriptor_t  activationDesc;
+	void * workSpace;
+	size_t  workSpaceSizeInBytes;
+	void * reserveSpace;
+	size_t  reserveSpaceSizeInBytes;
+};
+
 #endif // TALLY_DEF_H

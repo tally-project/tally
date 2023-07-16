@@ -1,0 +1,24 @@
+1. Add gridDim as parameter
+    .param .align 4 .b8 _Z22elementwiseAdditionPTBPfS_S_i4dim3_param_4[12]          // Add gridDim as parameter
+2. Move all blockIdx on top
+3. Add
+    ld.param.u32 %r12, [_Z22elementwiseAdditionPTBPfS_S_i4dim3_param_4+8];         // %r12  : original_gridSize.z
+    ld.param.u32 %r1, [_Z22elementwiseAdditionPTBPfS_S_i4dim3_param_4];            // %r1   : original_gridSize.x
+    ld.param.u32 %r13, [_Z22elementwiseAdditionPTBPfS_S_i4dim3_param_4+4];         // %r13  : original_gridSize.y
+    mul.lo.s32 %r2, %r1, %r13;                                                     // %r2   : xy_tbs
+    mul.lo.s32 %r3, %r2, %r12;                                                     // %r3   : num_thread_blocks
+    mov.u32 %r16, %ctaid.x;                                                        // %r16  : tb_idx = blockIdx.x
+    setp.ge.u32 %p1, %r16, %r3;                                                    // %p1   : tb_idx >= num_thread_blocks
+    @%p1 bra $L__BB1_5;                                                            // branch to return if tb_idx >= num_thread_blocks
+4. Add this at the top
+    $L__BB1_2:
+    rem.u32 %r14, %r16, %r2;                                                       // %r14  : rem = tb_idx - (tb_idx / xy_tbs) * xy_tbs  i.e. tb_idx - newBlockIdx.z * xy_tbs
+    rem.u32 %r15, %r14, %r1;                                                       // %r15  : rem - (rem / original_gridSize.x) * original_gridSize.x    i.e. newBlockIdx.x
+    mad.lo.s32 %r9, %r15, %r6, %r5;                                                // %r9   : tid = threadIdx.x + newBlockIdx.x * blockDim.x;
+    setp.ge.s32 %p2, %r9, %r11;                                                    // %p2   : tid >= size
+    @%p2 bra $L__BB1_4;
+5. Add this at the bottom before return
+    $L__BB1_4:
+    add.s32 %r16, %r16, %r7;                                                       // tb_idx += gridDim.x
+    setp.lt.u32 %p3, %r16, %r3;                                                    // tb_idx < num_thread_blocks
+    @%p3 bra $L__BB1_2;                                                            // branch to L__BB1_2 if tb_idx < num_thread_blocks

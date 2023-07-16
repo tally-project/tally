@@ -180,6 +180,17 @@ TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
 #endif // TALLY_SERVER_H
 """
 
+TALLY_CLIENT_SRC_TEMPLATE_TOP = f"""
+#include <cstring>
+#include <memory>
+
+#include <tally/client.h>
+#include <tally/generated/cuda_api.h>
+
+std::unique_ptr<TallyClient> TallyClient::client = std::make_unique<TallyClient>();
+
+"""
+
 # let the client call the APIs directly
 DIRECT_CALLS = [
     "cudaGetErrorString",
@@ -238,6 +249,8 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "cudnnSetSeqDataDescriptor",
     "cudnnMultiHeadAttnBackwardWeights",
     "cudnnReorderFilterAndBias",
+    "cudnnBatchNormalizationForwardTrainingEx",
+    "cudnnBatchNormalizationBackwardEx",
     "__cudaRegisterFunction",
     "__cudaRegisterFatBinary",
     "__cudaRegisterFatBinaryEnd"
@@ -246,6 +259,10 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cudaMemsetAsync",
+    "cublasSetSmCountTarget",
+    "cublasSetLoggerCallback",
+    "cudnnGetFoldedConvBackwardDataDescriptors",
     "cudnnSetRNNAlgorithmDescriptor",
     "cudnnRNNBackwardWeights_v8",
     "cudnnRNNBackwardData_v8",
@@ -355,12 +372,14 @@ FORWARD_API_CALLS = [
     "cuDestroyExternalMemory",
     "cudaIpcCloseMemHandle",
     "cudaDeviceFlushGPUDirectRDMAWrites",
-    "cudnnSetOpTensorDescriptor"
+    "cudnnSetOpTensorDescriptor",
+    "cublasSetVector"
 ]
 
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cublasGetLoggerCallback",
     "cudnnCreateOpTensorDescriptor",
     "cudaIpcGetMemHandle",
     "cudaIpcOpenMemHandle",
@@ -438,6 +457,10 @@ UNSUPPORTED_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
+    "cublasGetSmCountTarget",
+    "cublasGetProperty",
+    "cudnnGetConvolutionBackwardFilterAlgorithmMaxCount",
+    "cudnnGetConvolutionBackwardDataAlgorithmMaxCount",
     "cudaStreamGetFlags",
     "cudaStreamGetPriority",
     "cudnnDropoutGetStatesSize",
@@ -475,7 +498,8 @@ CUDA_GET_4_PARAM_FUNCS = [
 ]
 
 CUDA_GET_7_PARAM_FUNCS = [
-    "cudnnGetConvolutionForwardWorkspaceSize"
+    "cudnnGetConvolutionForwardWorkspaceSize",
+    "cudnnGetConvolutionBackwardDataWorkspaceSize"
 ]
 
 CUDA_GET_3_4_5_PARAM_FUNCS = [
@@ -483,6 +507,7 @@ CUDA_GET_3_4_5_PARAM_FUNCS = [
 ]
 
 CUDA_GET_9_PARAM_FUNCS = [
+    "cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize",
     "cudnnGetRNNLinLayerMatrixParams",
     "cudnnGetRNNLinLayerBiasParams"    
 ]
@@ -504,6 +529,14 @@ CUDA_GET_8_10_PARAM_FUNCS = [
     "cudnnGetRNNWeightParams"
 ]
 
+CUDA_GET_6_PARAM_FUNCS = [
+    "cudnnGetBatchNormalizationTrainingExReserveSpaceSize"
+]
+
+CUDA_GET_11_PARAM_FUNCS = [
+    "cudnnGetBatchNormalizationBackwardExWorkspaceSize"
+]
+
 CUDA_GET_1_PARAM_FUNC_KEY = 1
 CUDA_GET_2_3_PARAM_FUNC_KEY = 2
 CUDA_GET_1_2_PARAM_FUNC_KEY = 3
@@ -517,6 +550,8 @@ CUDA_GET_2_3_4_PARAM_FUNC_KEY = 10
 CUDA_GET_3_PARAM_FUNC_KEY = 11
 CUDA_GET_5_6_PARAM_FUNC_KEY = 12
 CUDA_GET_8_10_PARAM_FUNC_KEY = 13
+CUDA_GET_6_PARAM_FUNC_KEY = 14
+CUDA_GET_11_PARAM_FUNC_KEY = 15
 
 PARAM_INDICES = {
     CUDA_GET_1_PARAM_FUNC_KEY: [0],
@@ -531,7 +566,9 @@ PARAM_INDICES = {
     CUDA_GET_2_3_4_PARAM_FUNC_KEY: [1, 2, 3],
     CUDA_GET_3_PARAM_FUNC_KEY: [2],
     CUDA_GET_5_6_PARAM_FUNC_KEY: [4, 5],
-    CUDA_GET_8_10_PARAM_FUNC_KEY: [7, 9]
+    CUDA_GET_8_10_PARAM_FUNC_KEY: [7, 9],
+    CUDA_GET_6_PARAM_FUNC_KEY: [5],
+    CUDA_GET_11_PARAM_FUNC_KEY: [10]
 }
 
 def is_get_param_func(func_name):
@@ -551,7 +588,9 @@ def is_get_param_func(func_name):
         CUDA_GET_2_3_4_PARAM_FUNCS,
         CUDA_GET_3_PARAM_FUNCS,
         CUDA_GET_5_6_PARAM_FUNCS,
-        CUDA_GET_8_10_PARAM_FUNCS
+        CUDA_GET_8_10_PARAM_FUNCS,
+        CUDA_GET_6_PARAM_FUNCS,
+        CUDA_GET_11_PARAM_FUNCS
     ]:
         if func_name in funcs:
             return True
@@ -584,6 +623,10 @@ def get_param_group(func_name):
         return CUDA_GET_5_6_PARAM_FUNC_KEY
     elif func_name in CUDA_GET_8_10_PARAM_FUNCS:
         return CUDA_GET_8_10_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_6_PARAM_FUNCS:
+        return CUDA_GET_6_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_11_PARAM_FUNCS:
+        return CUDA_GET_11_PARAM_FUNC_KEY
     else:
         assert(False)
 
@@ -603,7 +646,7 @@ def get_preload_func_template(func_name, arg_names, arg_types):
 
     for idx, arg_name in enumerate(arg_names):
         arg_type = arg_types[idx]
-        if arg_type.strip() == "const void *":
+        if arg_type.strip() == "const void *" or arg_type.strip() == "const void*":
             preload_body += f"\targ_ptr->{arg_name} = const_cast<void *>({arg_name});\n"
         elif arg_type.strip() == "const int32_t []":
             preload_body += f"\targ_ptr->{arg_name} = const_cast<int32_t *>({arg_name});\n"

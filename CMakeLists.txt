@@ -4,11 +4,13 @@ enable_language(CUDA)
 
 set(CMAKE_CUDA_COMPILER nvcc)
 set(CMAKE_CXX_STANDARD 20)
-# set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
+# set(CMAKE_BUILD_TYPE "Debug")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
 option(ENABLE_LOGGING "Enable logging" OFF)
+option(ENABLE_PROFILING "Enable profiling" OFF)
+option(RUN_LOCALLY "Run client process locally" OFF)
 
 link_directories(/usr/local/cuda/lib64)
 
@@ -36,7 +38,7 @@ set(TALLY_SERVER_SRC_FILES
 )
 
 set(TALLY_CLIENT_SRC_FILES
-    ${PROJECT_SOURCE_DIR}/src/tally/client.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/generated/client.cpp
 )
 
 aux_source_directory(${LIBIPC_PROJECT_DIR}/src/libipc LIBIPC_SRC_FILES)
@@ -62,6 +64,14 @@ add_library(tally_client SHARED
 
 if(ENABLE_LOGGING)
     target_compile_definitions(tally_client PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
+endif()
+
+if(ENABLE_PROFILING)
+    target_compile_definitions(tally_client PRIVATE ENABLE_PROFILING=${ENABLE_PROFILING})
+endif()
+
+if (RUN_LOCALLY)
+    target_compile_definitions(tally_client PRIVATE RUN_LOCALLY=${RUN_LOCALLY})
 endif()
 
 target_include_directories(tally_client

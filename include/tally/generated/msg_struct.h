@@ -797,6 +797,13 @@ struct cudaMemsetArg {
 	size_t  count;
 };
 
+struct cudaMemsetAsyncArg {
+	void * devPtr;
+	int  value;
+	size_t  count;
+	cudaStream_t  stream;
+};
+
 struct cudaGraphCreateArg {
 	cudaGraph_t * pGraph;
 	unsigned int  flags;
@@ -1101,6 +1108,56 @@ struct cudnnSetDropoutDescriptorArg {
 };
 
 struct cudnnOpsInferVersionCheckArg {
+};
+
+struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnBatchNormMode_t  mode;
+	cudnnBatchNormOps_t  bnOps;
+	cudnnTensorDescriptor_t  xDesc;
+	cudnnTensorDescriptor_t  zDesc;
+	cudnnTensorDescriptor_t  yDesc;
+	cudnnTensorDescriptor_t  bnScaleBiasMeanVarDesc;
+	cudnnActivationDescriptor_t  activationDesc;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnBatchNormMode_t  mode;
+	cudnnBatchNormOps_t  bnOps;
+	cudnnTensorDescriptor_t  xDesc;
+	cudnnTensorDescriptor_t  yDesc;
+	cudnnTensorDescriptor_t  dyDesc;
+	cudnnTensorDescriptor_t  dzDesc;
+	cudnnTensorDescriptor_t  dxDesc;
+	cudnnTensorDescriptor_t  dBnScaleBiasDesc;
+	cudnnActivationDescriptor_t  activationDesc;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnBatchNormMode_t  mode;
+	cudnnBatchNormOps_t  bnOps;
+	cudnnActivationDescriptor_t  activationDesc;
+	cudnnTensorDescriptor_t  xDesc;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
 };
 
 struct cudnnOpsTrainVersionCheckArg {
@@ -1443,7 +1500,59 @@ struct cudnnGetConvolutionForwardWorkspaceSizeResponse {
 	cudnnStatus_t err;
 };
 
+struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg {
+	cudnnHandle_t  handle;
+	int * count;
+};
+
+struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountResponse {
+	int  count;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetConvolutionBackwardDataWorkspaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnFilterDescriptor_t  wDesc;
+	cudnnTensorDescriptor_t  dyDesc;
+	cudnnConvolutionDescriptor_t  convDesc;
+	cudnnTensorDescriptor_t  dxDesc;
+	cudnnConvolutionBwdDataAlgo_t  algo;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetConvolutionBackwardDataWorkspaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetFoldedConvBackwardDataDescriptorsArg {
+	cudnnHandle_t  handle;
+	cudnnFilterDescriptor_t  filterDesc;
+	cudnnTensorDescriptor_t  diffDesc;
+	cudnnConvolutionDescriptor_t  convDesc;
+	cudnnTensorDescriptor_t  gradDesc;
+	cudnnTensorFormat_t  transformFormat;
+	cudnnFilterDescriptor_t  foldedFilterDesc;
+	cudnnTensorDescriptor_t  paddedDiffDesc;
+	cudnnConvolutionDescriptor_t  foldedConvDesc;
+	cudnnTensorDescriptor_t  foldedGradDesc;
+	cudnnTensorTransformDescriptor_t  filterFoldTransDesc;
+	cudnnTensorTransformDescriptor_t  diffPadTransDesc;
+	cudnnTensorTransformDescriptor_t  gradFoldTransDesc;
+	cudnnTensorTransformDescriptor_t  gradUnfoldTransDesc;
+};
+
 struct cudnnCnnInferVersionCheckArg {
+};
+
+struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg {
+	cudnnHandle_t  handle;
+	int * count;
+};
+
+struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountResponse {
+	int  count;
+	cudnnStatus_t err;
 };
 
 struct cudnnCnnTrainVersionCheckArg {
@@ -1500,6 +1609,16 @@ struct cublasGetVersion_v2Response {
 	cublasStatus_t err;
 };
 
+struct cublasGetPropertyArg {
+	libraryPropertyType  type;
+	int*  value;
+};
+
+struct cublasGetPropertyResponse {
+	int value;
+	cublasStatus_t err;
+};
+
 struct cublasGetCudartVersionArg {
 };
 
@@ -1542,6 +1661,43 @@ struct cublasSetPointerMode_v2Arg {
 struct cublasSetMathModeArg {
 	cublasHandle_t  handle;
 	cublasMath_t  mode;
+};
+
+struct cublasGetSmCountTargetArg {
+	cublasHandle_t  handle;
+	int*  smCountTarget;
+};
+
+struct cublasGetSmCountTargetResponse {
+	int smCountTarget;
+	cublasStatus_t err;
+};
+
+struct cublasSetSmCountTargetArg {
+	cublasHandle_t  handle;
+	int  smCountTarget;
+};
+
+struct cublasSetLoggerCallbackArg {
+	cublasLogCallback  userCallback;
+};
+
+struct cublasGetLoggerCallbackArg {
+	cublasLogCallback*  userCallback;
+};
+
+struct cublasGetLoggerCallbackResponse {
+	cublasLogCallback userCallback;
+	cublasStatus_t err;
+};
+
+struct cublasSetVectorArg {
+	int  n;
+	int  elemSize;
+	void*  x;
+	int  incx;
+	void*  devicePtr;
+	int  incy;
 };
 
 struct cudaProfilerStartArg {
