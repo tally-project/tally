@@ -5,7 +5,9 @@
     while (!TallyClient::client->send_ipc->send(msg, msg_len, 60000)) { \
         TallyClient::client->send_ipc->wait_for_recv(1); \
     } \
-    std::free(msg);
+    if (msg != TallyClient::client->msg) { \
+        std::free(msg); \
+    }
 
 #define CLIENT_RECV_MSG \
     ipc::buff_t ipc_buf; \

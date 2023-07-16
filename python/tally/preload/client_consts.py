@@ -163,7 +163,11 @@ public:
     std::vector<std::pair<void *, std::string>> register_queue;
     std::unordered_map<CUDA_API_ENUM, std::function<void(void *)>> cuda_api_handler_map;
 
+    const static size_t msg_size = 1024 * 1024 * 1024;
+    uint8_t *msg;
+
     TallyServer();
+    ~TallyServer();
 
     void start(uint32_t interval);
     void register_api_handler();
@@ -637,7 +641,7 @@ def get_preload_func_template(func_name, arg_names, arg_types):
     preload_body += f"""
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct {arg_struct});
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::{func_name.upper()};
     

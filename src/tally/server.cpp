@@ -23,6 +23,8 @@ std::vector<DeviceMemoryKey> dev_addr_map;
 
 TallyServer::TallyServer()
 {
+    // Allocate 1GB memory for message passing 
+    msg = (uint8_t *) malloc(msg_size);
     register_api_handler();
 
     __exit = [&](int sig_num) {
@@ -43,6 +45,11 @@ TallyServer::TallyServer()
     signal(SIGSEGV , __exit_wrapper);
     signal(SIGTERM , __exit_wrapper);
     signal(SIGHUP  , __exit_wrapper);
+}
+
+TallyServer::~TallyServer()
+{
+    std::free(msg);
 }
 
 void TallyServer::start(uint32_t interval) {
@@ -282,30 +289,30 @@ void TallyServer::handle_cudaMemcpy(void *__args)
 
         // Only care about dst (pointer to device memory) from the client call
         cudaError_t err = cudaMemcpy(args->dst, args->data, args->count, args->kind);
+        while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+            send_ipc->wait_for_recv(1);
+        }
 
-        res_size = sizeof(cudaError_t);
-        res = (struct cudaMemcpyResponse *) malloc(res_size);
-        res->err = err;
     } else if (args->kind == cudaMemcpyDeviceToHost){
         res_size = sizeof(cudaError_t) + args->count;
-        res = (struct cudaMemcpyResponse *) malloc(res_size);
+        res = (res_size <= TallyServer::msg_size) ? (struct cudaMemcpyResponse *) TallyServer::server->msg : (struct cudaMemcpyResponse *) malloc(res_size);
 
         // Only care about src (pointer to device memory) from the client call
         cudaError_t err = cudaMemcpy(res->data, args->src, args->count, args->kind);
-
         res->err = err;
+        while(!send_ipc->send((void *) res, res_size)) {
+            send_ipc->wait_for_recv(1);
+        }
+        if ((uint8_t *)res != TallyServer::server->msg) {
+            std::free(res);
+        }
     } else if (args->kind == cudaMemcpyDeviceToDevice) {
-        res_size = sizeof(cudaError_t);
-        res = (struct cudaMemcpyResponse *) malloc(res_size);
         cudaError_t err = cudaMemcpy(args->dst, args->src, args->count, args->kind);
-        res->err = err;
-
+        while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+            send_ipc->wait_for_recv(1);
+        }
     } else {
         throw std::runtime_error("Unknown memcpy kind!");
-    }
-
-    while(!send_ipc->send((void *) res, res_size)) {
-        send_ipc->wait_for_recv(1);
     }
 }
 
@@ -322,32 +329,33 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args)
         // Only care about dst (pointer to device memory) from the client call
         err = cudaMemcpyAsync(args->dst, args->data, args->count, args->kind, args->stream);
 
-        res_size = sizeof(cudaError_t);
-        res = (struct cudaMemcpyAsyncResponse *) malloc(res_size);
-        res->err = err;
+        while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+            send_ipc->wait_for_recv(1);
+        }
     } else if (args->kind == cudaMemcpyDeviceToHost){
         res_size = sizeof(cudaError_t) + args->count;
-        res = (struct cudaMemcpyAsyncResponse *) malloc(res_size);
+        res = res = (res_size <= TallyServer::msg_size) ? (struct cudaMemcpyAsyncResponse *) TallyServer::server->msg : (struct cudaMemcpyAsyncResponse *) malloc(res_size);
 
         // Only care about src (pointer to device memory) from the client call
         err = cudaMemcpyAsync(res->data, args->src, args->count, args->kind, args->stream);
+        res->err = err;
+        while(!send_ipc->send((void *) res, res_size)) {
+            send_ipc->wait_for_recv(1);
+        }
+        if ((uint8_t *)res != TallyServer::server->msg) {
+            std::free(res);
+        }
 
-        res->err = err;
     } else if (args->kind == cudaMemcpyDeviceToDevice) {
-        res_size = sizeof(cudaError_t);
-        res = (struct cudaMemcpyAsyncResponse *) malloc(res_size);
+
         err = cudaMemcpyAsync(args->dst, args->src, args->count, args->kind, args->stream);
-        res->err = err;
+        while(!send_ipc->send((void *) &err, sizeof(cudaError_t))) {
+            send_ipc->wait_for_recv(1);
+        }  
 
     } else {
         throw std::runtime_error("Unknown memcpy kind!");
     }
-
-    while(!send_ipc->send((void *) res, res_size)) {
-        send_ipc->wait_for_recv(1);
-    }
-
-    free(res);
 }
 
 void TallyServer::handle_cudaLaunchKernel(void *__args)
@@ -497,7 +505,7 @@ void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args)
     auto args = (struct cublasLtMatmulAlgoGetHeuristicArg *) __args;
 
     int requestedAlgoCount = args->requestedAlgoCount;
-    cublasLtMatmulHeuristicResult_t *heuristicResultsArray = (cublasLtMatmulHeuristicResult_t *) malloc(sizeof(cublasLtMatmulHeuristicResult_t) * requestedAlgoCount);
+    auto heuristicResultsArray = (cublasLtMatmulHeuristicResult_t *) malloc(sizeof(cublasLtMatmulHeuristicResult_t) * requestedAlgoCount);
     int returnAlgoCount;
 
     cublasStatus_t err = cublasLtMatmulAlgoGetHeuristic(

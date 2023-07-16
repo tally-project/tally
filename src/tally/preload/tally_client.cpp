@@ -84,7 +84,7 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
         msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct __cudaRegisterFatBinaryArg);
     }
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARY;
 
@@ -135,7 +135,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 
     uint32_t msg_len = sizeof(CUDA_API_ENUM) + sizeof(struct registerKernelArg) + kernel_func_len * sizeof(char);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFUNCTION;
 
@@ -161,7 +161,7 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
     lcudaFree(arr);
 #else
     uint32_t msg_len = sizeof(CUDA_API_ENUM);
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::__CUDAREGISTERFATBINARYEND;
 
@@ -178,16 +178,18 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
     auto err = lcudaMalloc(devPtr, size);
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMallocArg);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAMALLOC;
     
     struct cudaMallocArg *arg_ptr = (struct cudaMallocArg *)(msg + sizeof(CUDA_API_ENUM));
 	arg_ptr->devPtr = devPtr;
 	arg_ptr->size = size;
+
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
+
 	auto res = (cudaMallocResponse *) dat;
 	if (devPtr) { *devPtr = res->devPtr; }
 
@@ -214,13 +216,14 @@ cudaError_t cudaFree(void * devPtr)
     auto err = lcudaFree(devPtr);
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaFreeArg);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAFREE;
     
     struct cudaFreeArg *arg_ptr = (struct cudaFreeArg *)(msg + sizeof(CUDA_API_ENUM));
 	arg_ptr->devPtr = devPtr;
+
 	CLIENT_SEND_MSG_AND_FREE;
 	CLIENT_RECV_MSG;
 
@@ -403,7 +406,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSgemm_v2Arg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSGEMM_V2;
     
@@ -448,7 +451,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMUL;
     
@@ -493,7 +496,7 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescSetAttributeArg) + sizeInBytes;
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCSETATTRIBUTE;
 
@@ -526,7 +529,7 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutSetAttributeArg) + sizeInBytes;
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTSETATTRIBUTE;
 
@@ -558,7 +561,7 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceSetAttributeArg) + sizeInBytes;
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCESETATTRIBUTE;
 
@@ -590,7 +593,7 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulAlgoGetHeuristicArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULALGOGETHEURISTIC;
 
@@ -630,7 +633,7 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
     int32_t type_size = get_cudnn_attribute_size(attributeType);
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendSetAttributeArg) + elementCount * type_size;
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDSETATTRIBUTE;
 
@@ -692,7 +695,7 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
     int32_t type_size = get_cudnn_attribute_size(attributeType);
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendGetAttributeArg) + requestedElementCount * type_size;
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDGETATTRIBUTE;
 
@@ -738,7 +741,7 @@ cudnnStatus_t cudnnActivationForward(cudnnHandle_t  handle, cudnnActivationDescr
 #else 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnActivationForwardArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNACTIVATIONFORWARD;
     
@@ -775,7 +778,7 @@ cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetTensorNdDescriptorArg) + 2 * nbDims * sizeof(int);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETTENSORNDDESCRIPTOR;
     
@@ -809,7 +812,7 @@ cudnnStatus_t cudnnSetConvolutionNdDescriptor(cudnnConvolutionDescriptor_t  conv
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetConvolutionNdDescriptorArg) + 3 * arrayLength * sizeof(int);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETCONVOLUTIONNDDESCRIPTOR;
     
@@ -845,7 +848,7 @@ cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetFilterNdDescriptorArg) + nbDims * sizeof(int);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETFILTERNDDESCRIPTOR;
     
@@ -879,7 +882,7 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t  handle, const void * alpha,
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnConvolutionForwardArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCONVOLUTIONFORWARD;
     
@@ -921,7 +924,7 @@ cudnnStatus_t cudnnGetConvolutionNdForwardOutputDim(const cudnnConvolutionDescri
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionNdForwardOutputDimArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONNDFORWARDOUTPUTDIM;
     
@@ -955,7 +958,7 @@ cudnnStatus_t cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle_t  handle, cons
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionForwardAlgorithm_v7Arg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONFORWARDALGORITHM_V7;
     
@@ -992,7 +995,7 @@ cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(cudnnHandle_t  handle, const 
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnFindConvolutionForwardAlgorithmArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNFINDCONVOLUTIONFORWARDALGORITHM;
     
@@ -1029,7 +1032,7 @@ cudnnStatus_t cudnnAddTensor(cudnnHandle_t  handle, const void * alpha, const cu
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAddTensorArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNADDTENSOR;
     
@@ -1065,7 +1068,7 @@ cudnnStatus_t cudnnSetPoolingNdDescriptor(cudnnPoolingDescriptor_t  poolingDesc,
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetPoolingNdDescriptorArg) + 3 * nbDims * sizeof(int);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETPOOLINGNDDESCRIPTOR;
     
@@ -1102,7 +1105,7 @@ cudnnStatus_t cudnnGetPoolingNdDescriptor(const cudnnPoolingDescriptor_t  poolin
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetPoolingNdDescriptorArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETPOOLINGNDDESCRIPTOR;
     
@@ -1140,7 +1143,7 @@ cudnnStatus_t cudnnGetPoolingNdForwardOutputDim(const cudnnPoolingDescriptor_t  
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetPoolingNdForwardOutputDimArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETPOOLINGNDFORWARDOUTPUTDIM;
     
@@ -1173,7 +1176,7 @@ cudnnStatus_t cudnnPoolingForward(cudnnHandle_t  handle, const cudnnPoolingDescr
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnPoolingForwardArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNPOOLINGFORWARD;
     
@@ -1210,7 +1213,7 @@ cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSgemv_v2Arg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSGEMV_V2;
     
@@ -1251,7 +1254,7 @@ cudnnStatus_t cudnnLRNCrossChannelForward(cudnnHandle_t  handle, cudnnLRNDescrip
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnLRNCrossChannelForwardArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNLRNCROSSCHANNELFORWARD;
     
@@ -1289,7 +1292,7 @@ cudnnStatus_t cudnnSoftmaxForward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSoftmaxForwardArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSOFTMAXFORWARD;
     
@@ -1327,7 +1330,7 @@ cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, co
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnTransformTensorArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNTRANSFORMTENSOR;
     
@@ -1363,7 +1366,7 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSgemmExArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSGEMMEX;
     
@@ -1409,7 +1412,7 @@ cudnnStatus_t cudnnSetSeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc, c
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetSeqDataDescriptorArg) + seqLengthArraySize * sizeof(int);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETSEQDATADESCRIPTOR;
     
@@ -1453,7 +1456,7 @@ cudnnStatus_t cudnnGetSeqDataDescriptor(const cudnnSeqDataDescriptor_t  seqDataD
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetSeqDataDescriptorArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETSEQDATADESCRIPTOR;
     
@@ -1501,7 +1504,7 @@ cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDe
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnMultiHeadAttnForwardArg) + sizeof(int) * winIdxLen * 2;
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNMULTIHEADATTNFORWARD;
     
@@ -1557,7 +1560,7 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnA
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnMultiHeadAttnBackwardDataArg) + sizeof(int) * winIdxLen * 2;
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNMULTIHEADATTNBACKWARDDATA;
     
@@ -1944,7 +1947,7 @@ cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, c
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDataDescriptorArg) + batchSize * sizeof(int);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNDATADESCRIPTOR;
     
@@ -1982,7 +1985,7 @@ cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t  tensorDe
 #else
 	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetTensorNdDescriptorArg);
 
-    auto msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     auto msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETTENSORNDDESCRIPTOR;
     

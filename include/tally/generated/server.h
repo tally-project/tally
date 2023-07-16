@@ -49,7 +49,11 @@ public:
     std::vector<std::pair<void *, std::string>> register_queue;
     std::unordered_map<CUDA_API_ENUM, std::function<void(void *)>> cuda_api_handler_map;
 
+    const static size_t msg_size = 1024 * 1024 * 1024;
+    uint8_t *msg;
+
     TallyServer();
+    ~TallyServer();
 
     void start(uint32_t interval);
     void register_api_handler();

@@ -379,7 +379,6 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
         for func_name in set(list(client_code_dict.keys()) + SPECIAL_CLIENT_PRELOAD_FUNCS):
             f.write(f"\tcuda_api_handler_map[CUDA_API_ENUM::{func_name.upper()}] = std::bind(&TallyServer::handle_{func_name}, this, std::placeholders::_1);\n")
         
-
         f.write("}\n")
 
         for func_name in client_code_dict:

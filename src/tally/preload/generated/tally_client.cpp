@@ -53,7 +53,7 @@ CUresult cuInit(unsigned int  Flags)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuInitArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUINIT;
     
@@ -79,7 +79,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDriverGetVersionArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDRIVERGETVERSION;
     
@@ -105,7 +105,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGET;
     
@@ -132,7 +132,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetCountArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETCOUNT;
     
@@ -164,7 +164,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuidArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETUUID;
     
@@ -191,7 +191,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuid_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETUUID_V2;
     
@@ -218,7 +218,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetLuidArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETLUID;
     
@@ -247,7 +247,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceTotalMem_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICETOTALMEM_V2;
     
@@ -274,7 +274,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetTexture1DLinearMaxWidthArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETTEXTURE1DLINEARMAXWIDTH;
     
@@ -303,7 +303,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetAttributeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETATTRIBUTE;
     
@@ -337,7 +337,7 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceSetMemPoolArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICESETMEMPOOL;
     
@@ -364,7 +364,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetMemPoolArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETMEMPOOL;
     
@@ -391,7 +391,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetDefaultMemPoolArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETDEFAULTMEMPOOL;
     
@@ -418,7 +418,7 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuFlushGPUDirectRDMAWritesArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUFLUSHGPUDIRECTRDMAWRITES;
     
@@ -445,7 +445,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetPropertiesArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETPROPERTIES;
     
@@ -472,7 +472,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceComputeCapabilityArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICECOMPUTECAPABILITY;
     
@@ -501,7 +501,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRetainArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRETAIN;
     
@@ -528,7 +528,7 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRelease_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRELEASE_V2;
     
@@ -554,7 +554,7 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxSetFlags_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXSETFLAGS_V2;
     
@@ -581,7 +581,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxGetStateArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXGETSTATE;
     
@@ -610,7 +610,7 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxReset_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRESET_V2;
     
@@ -636,7 +636,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetExecAffinitySupportArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETEXECAFFINITYSUPPORT;
     
@@ -664,7 +664,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxCreate_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXCREATE_V2;
     
@@ -698,7 +698,7 @@ CUresult cuCtxDestroy_v2(CUcontext  ctx)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxDestroy_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXDESTROY_V2;
     
@@ -724,7 +724,7 @@ CUresult cuCtxPushCurrent_v2(CUcontext  ctx)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxPushCurrent_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXPUSHCURRENT_V2;
     
@@ -750,7 +750,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxPopCurrent_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXPOPCURRENT_V2;
     
@@ -776,7 +776,7 @@ CUresult cuCtxSetCurrent(CUcontext  ctx)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetCurrentArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXSETCURRENT;
     
@@ -802,7 +802,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetCurrentArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXGETCURRENT;
     
@@ -828,7 +828,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetDeviceArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXGETDEVICE;
     
@@ -854,7 +854,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetFlagsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXGETFLAGS;
     
@@ -880,7 +880,7 @@ CUresult cuCtxSynchronize()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSynchronizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXSYNCHRONIZE;
     
@@ -905,7 +905,7 @@ CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetLimitArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXSETLIMIT;
     
@@ -932,7 +932,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetLimitArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXGETLIMIT;
     
@@ -959,7 +959,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetCacheConfigArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXGETCACHECONFIG;
     
@@ -985,7 +985,7 @@ CUresult cuCtxSetCacheConfig(CUfunc_cache  config)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetCacheConfigArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXSETCACHECONFIG;
     
@@ -1011,7 +1011,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetSharedMemConfigArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXGETSHAREDMEMCONFIG;
     
@@ -1037,7 +1037,7 @@ CUresult cuCtxSetSharedMemConfig(CUsharedconfig  config)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetSharedMemConfigArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXSETSHAREDMEMCONFIG;
     
@@ -1063,7 +1063,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetApiVersionArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXGETAPIVERSION;
     
@@ -1090,7 +1090,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetStreamPriorityRangeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXGETSTREAMPRIORITYRANGE;
     
@@ -1118,7 +1118,7 @@ CUresult cuCtxResetPersistingL2Cache()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxResetPersistingL2CacheArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXRESETPERSISTINGL2CACHE;
     
@@ -1143,7 +1143,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetExecAffinityArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXGETEXECAFFINITY;
     
@@ -1170,7 +1170,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxAttachArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXATTACH;
     
@@ -1197,7 +1197,7 @@ CUresult cuCtxDetach(CUcontext  ctx)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxDetachArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUCTXDETACH;
     
@@ -1247,7 +1247,7 @@ CUresult cuModuleUnload(CUmodule  hmod)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuModuleUnloadArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUMODULEUNLOAD;
     
@@ -1345,7 +1345,7 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemFree_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUMEMFREE_V2;
     
@@ -1551,7 +1551,7 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemcpyAsyncArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUMEMCPYASYNC;
     
@@ -1910,7 +1910,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemAllocFromPoolAsyncArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUMEMALLOCFROMPOOLASYNC;
     
@@ -2191,7 +2191,7 @@ CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDestroyExternalMemoryArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDESTROYEXTERNALMEMORY;
     
@@ -3143,7 +3143,7 @@ cudaError_t cudaDeviceReset()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceResetArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICERESET;
     
@@ -3168,7 +3168,7 @@ cudaError_t cudaDeviceSynchronize()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSynchronizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICESYNCHRONIZE;
     
@@ -3193,7 +3193,7 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetLimitArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETLIMIT;
     
@@ -3220,7 +3220,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetLimitArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETLIMIT;
     
@@ -3253,7 +3253,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetCacheConfigArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETCACHECONFIG;
     
@@ -3279,7 +3279,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetStreamPriorityRangeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETSTREAMPRIORITYRANGE;
     
@@ -3307,7 +3307,7 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetCacheConfigArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETCACHECONFIG;
     
@@ -3339,7 +3339,7 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetSharedMemConfigArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETSHAREDMEMCONFIG;
     
@@ -3371,7 +3371,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetPCIBusIdArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETPCIBUSID;
     
@@ -3399,7 +3399,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcGetEventHandleArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAIPCGETEVENTHANDLE;
     
@@ -3426,7 +3426,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenEventHandleArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAIPCOPENEVENTHANDLE;
     
@@ -3453,7 +3453,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcGetMemHandleArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAIPCGETMEMHANDLE;
     
@@ -3480,7 +3480,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenMemHandleArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAIPCOPENMEMHANDLE;
     
@@ -3508,7 +3508,7 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcCloseMemHandleArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAIPCCLOSEMEMHANDLE;
     
@@ -3534,7 +3534,7 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceFlushGPUDirectRDMAWritesArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICEFLUSHGPUDIRECTRDMAWRITES;
     
@@ -3561,7 +3561,7 @@ cudaError_t cudaThreadExit()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadExitArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDATHREADEXIT;
     
@@ -3586,7 +3586,7 @@ cudaError_t cudaThreadSynchronize()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSynchronizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDATHREADSYNCHRONIZE;
     
@@ -3611,7 +3611,7 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSetLimitArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDATHREADSETLIMIT;
     
@@ -3638,7 +3638,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetLimitArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDATHREADGETLIMIT;
     
@@ -3665,7 +3665,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetCacheConfigArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDATHREADGETCACHECONFIG;
     
@@ -3691,7 +3691,7 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSetCacheConfigArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDATHREADSETCACHECONFIG;
     
@@ -3717,7 +3717,7 @@ cudaError_t cudaGetLastError()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetLastErrorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAGETLASTERROR;
     
@@ -3742,7 +3742,7 @@ cudaError_t cudaPeekAtLastError()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaPeekAtLastErrorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAPEEKATLASTERROR;
     
@@ -3781,7 +3781,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceCountArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICECOUNT;
     
@@ -3807,7 +3807,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDevicePropertiesArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICEPROPERTIES;
     
@@ -3834,7 +3834,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetAttributeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETATTRIBUTE;
     
@@ -3862,7 +3862,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetDefaultMemPoolArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETDEFAULTMEMPOOL;
     
@@ -3889,7 +3889,7 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetMemPoolArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETMEMPOOL;
     
@@ -3916,7 +3916,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetMemPoolArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETMEMPOOL;
     
@@ -3949,7 +3949,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetP2PAttributeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETP2PATTRIBUTE;
     
@@ -3984,7 +3984,7 @@ cudaError_t cudaSetDevice(int  device)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaSetDeviceArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASETDEVICE;
     
@@ -4010,7 +4010,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICE;
     
@@ -4042,7 +4042,7 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaSetDeviceFlagsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASETDEVICEFLAGS;
     
@@ -4068,7 +4068,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceFlagsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICEFLAGS;
     
@@ -4094,7 +4094,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCREATE;
     
@@ -4120,7 +4120,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithFlagsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCREATEWITHFLAGS;
     
@@ -4147,7 +4147,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithPriorityArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCREATEWITHPRIORITY;
     
@@ -4175,7 +4175,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetPriorityArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMGETPRIORITY;
     
@@ -4202,7 +4202,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetFlagsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMGETFLAGS;
     
@@ -4229,7 +4229,7 @@ cudaError_t cudaCtxResetPersistingL2Cache()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaCtxResetPersistingL2CacheArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDACTXRESETPERSISTINGL2CACHE;
     
@@ -4254,7 +4254,7 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCopyAttributesArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCOPYATTRIBUTES;
     
@@ -4293,7 +4293,7 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamDestroyArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMDESTROY;
     
@@ -4319,7 +4319,7 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamWaitEventArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMWAITEVENT;
     
@@ -4353,7 +4353,7 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamSynchronizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMSYNCHRONIZE;
     
@@ -4379,7 +4379,7 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamQueryArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMQUERY;
     
@@ -4411,7 +4411,7 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamBeginCaptureArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMBEGINCAPTURE;
     
@@ -4444,7 +4444,7 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamEndCaptureArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMENDCAPTURE;
     
@@ -4471,7 +4471,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamIsCapturingArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDASTREAMISCAPTURING;
     
@@ -4516,7 +4516,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAEVENTCREATE;
     
@@ -4542,7 +4542,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateWithFlagsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAEVENTCREATEWITHFLAGS;
     
@@ -4569,7 +4569,7 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAEVENTRECORD;
     
@@ -4596,7 +4596,7 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordWithFlagsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAEVENTRECORDWITHFLAGS;
     
@@ -4624,7 +4624,7 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventQueryArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAEVENTQUERY;
     
@@ -4650,7 +4650,7 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventSynchronizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAEVENTSYNCHRONIZE;
     
@@ -4676,7 +4676,7 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventDestroyArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAEVENTDESTROY;
     
@@ -4702,7 +4702,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventElapsedTimeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAEVENTELAPSEDTIME;
     
@@ -4974,7 +4974,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemGetInfoArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAMEMGETINFO;
     
@@ -5104,7 +5104,7 @@ cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemsetArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAMEMSET;
     
@@ -5144,7 +5144,7 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemsetAsyncArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAMEMSETASYNC;
     
@@ -5527,7 +5527,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGraphCreateArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAGRAPHCREATE;
     
@@ -6046,7 +6046,7 @@ size_t cudnnGetVersion()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetVersionArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETVERSION;
     
@@ -6071,7 +6071,7 @@ size_t cudnnGetMaxDeviceVersion()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetMaxDeviceVersionArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETMAXDEVICEVERSION;
     
@@ -6096,7 +6096,7 @@ size_t cudnnGetCudartVersion()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetCudartVersionArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETCUDARTVERSION;
     
@@ -6135,7 +6135,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetPropertyArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETPROPERTY;
     
@@ -6162,7 +6162,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATE;
     
@@ -6188,7 +6188,7 @@ cudnnStatus_t cudnnDestroy(cudnnHandle_t  handle)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROY;
     
@@ -6214,7 +6214,7 @@ cudnnStatus_t cudnnSetStream(cudnnHandle_t  handle, cudaStream_t  streamId)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetStreamArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETSTREAM;
     
@@ -6241,7 +6241,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetStreamArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETSTREAM;
     
@@ -6268,7 +6268,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateTensorDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATETENSORDESCRIPTOR;
     
@@ -6294,7 +6294,7 @@ cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetTensor4dDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETTENSOR4DDESCRIPTOR;
     
@@ -6326,7 +6326,7 @@ cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetTensor4dDescriptorExArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETTENSOR4DDESCRIPTOREX;
     
@@ -6361,7 +6361,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetTensor4dDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETTENSOR4DDESCRIPTOR;
     
@@ -6410,7 +6410,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetTensorSizeInBytesArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETTENSORSIZEINBYTES;
     
@@ -6437,7 +6437,7 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyTensorDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYTENSORDESCRIPTOR;
     
@@ -6463,7 +6463,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnInitTransformDestArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNINITTRANSFORMDEST;
     
@@ -6492,7 +6492,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateTensorTransformDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATETENSORTRANSFORMDESCRIPTOR;
     
@@ -6530,7 +6530,7 @@ cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescript
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyTensorTransformDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYTENSORTRANSFORMDESCRIPTOR;
     
@@ -6562,7 +6562,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateOpTensorDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEOPTENSORDESCRIPTOR;
     
@@ -6588,7 +6588,7 @@ cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetOpTensorDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETOPTENSORDESCRIPTOR;
     
@@ -6617,7 +6617,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetOpTensorDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETOPTENSORDESCRIPTOR;
     
@@ -6714,7 +6714,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateFilterDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEFILTERDESCRIPTOR;
     
@@ -6740,7 +6740,7 @@ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetFilter4dDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETFILTER4DDESCRIPTOR;
     
@@ -6778,7 +6778,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetFilterSizeInBytesArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETFILTERSIZEINBYTES;
     
@@ -6811,7 +6811,7 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t  filterDesc)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyFilterDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYFILTERDESCRIPTOR;
     
@@ -6837,7 +6837,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreatePoolingDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEPOOLINGDESCRIPTOR;
     
@@ -6881,7 +6881,7 @@ cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t  poolingDes
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyPoolingDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYPOOLINGDESCRIPTOR;
     
@@ -6907,7 +6907,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateActivationDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEACTIVATIONDESCRIPTOR;
     
@@ -6933,7 +6933,7 @@ cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t  activati
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetActivationDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETACTIVATIONDESCRIPTOR;
     
@@ -6980,7 +6980,7 @@ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t  acti
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyActivationDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYACTIVATIONDESCRIPTOR;
     
@@ -7006,7 +7006,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateLRNDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATELRNDESCRIPTOR;
     
@@ -7032,7 +7032,7 @@ cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned  lr
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetLRNDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETLRNDESCRIPTOR;
     
@@ -7068,7 +7068,7 @@ cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t  lrnDesc)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyLRNDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYLRNDESCRIPTOR;
     
@@ -7154,7 +7154,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateDropoutDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEDROPOUTDESCRIPTOR;
     
@@ -7180,7 +7180,7 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyDropoutDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYDROPOUTDESCRIPTOR;
     
@@ -7206,7 +7206,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDropoutGetStatesSizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDROPOUTGETSTATESSIZE;
     
@@ -7239,7 +7239,7 @@ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetDropoutDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETDROPOUTDESCRIPTOR;
     
@@ -7372,7 +7372,7 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnOpsInferVersionCheckArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNOPSINFERVERSIONCHECK;
     
@@ -7427,7 +7427,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETBATCHNORMALIZATIONFORWARDTRAININGEXWORKSPACESIZE;
     
@@ -7461,7 +7461,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETBATCHNORMALIZATIONBACKWARDEXWORKSPACESIZE;
     
@@ -7497,7 +7497,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETBATCHNORMALIZATIONTRAININGEXRESERVESPACESIZE;
     
@@ -7588,7 +7588,7 @@ cudnnStatus_t cudnnOpsTrainVersionCheck()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnOpsTrainVersionCheckArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNOPSTRAINVERSIONCHECK;
     
@@ -7613,7 +7613,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateRNNDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATERNNDESCRIPTOR;
     
@@ -7639,7 +7639,7 @@ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyRNNDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYRNNDESCRIPTOR;
     
@@ -7665,7 +7665,7 @@ cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAl
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDescriptor_v8Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNDESCRIPTOR_V8;
     
@@ -7711,7 +7711,7 @@ cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDescriptor_v6Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNDESCRIPTOR_V6;
     
@@ -7830,7 +7830,7 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBuildRNNDynamicArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNBUILDRNNDYNAMIC;
     
@@ -7858,7 +7858,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNTempSpaceSizesArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNTEMPSPACESIZES;
     
@@ -7890,7 +7890,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNParamsSizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNPARAMSSIZE;
     
@@ -7920,7 +7920,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWeightSpaceSizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNWEIGHTSPACESIZE;
     
@@ -7948,7 +7948,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNLinLayerMatrixParamsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNLINLAYERMATRIXPARAMS;
     
@@ -7982,7 +7982,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNLinLayerBiasParamsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNLINLAYERBIASPARAMS;
     
@@ -8016,7 +8016,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWeightParamsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNWEIGHTPARAMS;
     
@@ -8070,7 +8070,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateRNNDataDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATERNNDATADESCRIPTOR;
     
@@ -8096,7 +8096,7 @@ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDes
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyRNNDataDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYRNNDATADESCRIPTOR;
     
@@ -8134,7 +8134,7 @@ cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNForwardArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNRNNFORWARD;
     
@@ -8179,7 +8179,7 @@ cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDesc
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNAlgorithmDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNALGORITHMDESCRIPTOR;
     
@@ -8207,7 +8207,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNFORWARDINFERENCEALGORITHMMAXCOUNT;
     
@@ -8241,7 +8241,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateSeqDataDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATESEQDATADESCRIPTOR;
     
@@ -8267,7 +8267,7 @@ cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDes
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroySeqDataDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYSEQDATADESCRIPTOR;
     
@@ -8293,7 +8293,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateAttnDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEATTNDESCRIPTOR;
     
@@ -8319,7 +8319,7 @@ cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyAttnDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYATTNDESCRIPTOR;
     
@@ -8345,7 +8345,7 @@ cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetAttnDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNSETATTNDESCRIPTOR;
     
@@ -8396,7 +8396,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetMultiHeadAttnBuffersArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETMULTIHEADATTNBUFFERS;
     
@@ -8434,7 +8434,7 @@ cudnnStatus_t cudnnAdvInferVersionCheck()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAdvInferVersionCheckArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNADVINFERVERSIONCHECK;
     
@@ -8459,7 +8459,7 @@ cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNBackwardData_v8Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNRNNBACKWARDDATA_V8;
     
@@ -8506,7 +8506,7 @@ cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescript
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNBackwardWeights_v8Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNRNNBACKWARDWEIGHTS_V8;
     
@@ -8673,7 +8673,7 @@ cudnnStatus_t cudnnAdvTrainVersionCheck()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAdvTrainVersionCheckArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNADVTRAINVERSIONCHECK;
     
@@ -8698,7 +8698,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateConvolutionDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCREATECONVOLUTIONDESCRIPTOR;
     
@@ -8724,7 +8724,7 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t  co
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyConvolutionDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYCONVOLUTIONDESCRIPTOR;
     
@@ -8828,7 +8828,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionForwardWorkspaceSizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONFORWARDWORKSPACESIZE;
     
@@ -8866,7 +8866,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDDATAALGORITHMMAXCOUNT;
     
@@ -8911,7 +8911,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardDataWorkspaceSizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDDATAWORKSPACESIZE;
     
@@ -8949,7 +8949,7 @@ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  han
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetFoldedConvBackwardDataDescriptorsArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETFOLDEDCONVBACKWARDDATADESCRIPTORS;
     
@@ -8988,7 +8988,7 @@ cudnnStatus_t cudnnCnnInferVersionCheck()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCnnInferVersionCheckArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCNNINFERVERSIONCHECK;
     
@@ -9013,7 +9013,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDFILTERALGORITHMMAXCOUNT;
     
@@ -9148,7 +9148,7 @@ cudnnStatus_t cudnnCnnTrainVersionCheck()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCnnTrainVersionCheckArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNCNNTRAINVERSIONCHECK;
     
@@ -9173,7 +9173,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendCreateDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDCREATEDESCRIPTOR;
     
@@ -9200,7 +9200,7 @@ cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t  descriptor
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendDestroyDescriptorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDDESTROYDESCRIPTOR;
     
@@ -9226,7 +9226,7 @@ cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t  descriptor)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendInitializeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDINITIALIZE;
     
@@ -9252,7 +9252,7 @@ cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t  descriptor)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendFinalizeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDFINALIZE;
     
@@ -9278,7 +9278,7 @@ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendExecuteArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDEXECUTE;
     
@@ -9306,7 +9306,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasCreate_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASCREATE_V2;
     
@@ -9332,7 +9332,7 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasDestroy_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASDESTROY_V2;
     
@@ -9358,7 +9358,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetVersion_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASGETVERSION_V2;
     
@@ -9385,7 +9385,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetPropertyArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASGETPROPERTY;
     
@@ -9412,7 +9412,7 @@ size_t cublasGetCudartVersion()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetCudartVersionArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASGETCUDARTVERSION;
     
@@ -9437,7 +9437,7 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetWorkspace_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSETWORKSPACE_V2;
     
@@ -9465,7 +9465,7 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetStream_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSETSTREAM_V2;
     
@@ -9492,7 +9492,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetStream_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASGETSTREAM_V2;
     
@@ -9519,7 +9519,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetPointerMode_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASGETPOINTERMODE_V2;
     
@@ -9546,7 +9546,7 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetPointerMode_v2Arg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSETPOINTERMODE_V2;
     
@@ -9591,7 +9591,7 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetMathModeArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSETMATHMODE;
     
@@ -9618,7 +9618,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetSmCountTargetArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASGETSMCOUNTTARGET;
     
@@ -9645,7 +9645,7 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetSmCountTargetArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSETSMCOUNTTARGET;
     
@@ -9690,7 +9690,7 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetLoggerCallbackArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSETLOGGERCALLBACK;
     
@@ -9716,7 +9716,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetLoggerCallbackArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASGETLOGGERCALLBACK;
     
@@ -9742,7 +9742,7 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetVectorArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASSETVECTOR;
     
@@ -11285,7 +11285,7 @@ cudaError_t cudaProfilerStart()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaProfilerStartArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAPROFILERSTART;
     
@@ -11310,7 +11310,7 @@ cudaError_t cudaProfilerStop()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaProfilerStopArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUDAPROFILERSTOP;
     
@@ -11347,7 +11347,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtCreateArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTCREATE;
     
@@ -11373,7 +11373,7 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtDestroyArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTDESTROY;
     
@@ -11411,7 +11411,7 @@ size_t cublasLtGetVersion()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtGetVersionArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTGETVERSION;
     
@@ -11436,7 +11436,7 @@ size_t cublasLtGetCudartVersion()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtGetCudartVersionArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTGETCUDARTVERSION;
     
@@ -11479,7 +11479,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutCreateArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTCREATE;
     
@@ -11509,7 +11509,7 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutDestroyArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTDESTROY;
     
@@ -11547,7 +11547,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescCreateArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCCREATE;
     
@@ -11575,7 +11575,7 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescDestroyArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCDESTROY;
     
@@ -11643,7 +11643,7 @@ TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceCreateArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCECREATE;
     
@@ -11669,7 +11669,7 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceDestroyArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEDESTROY;
     
@@ -11767,7 +11767,7 @@ cublasStatus_t cublasLtLoggerForceDisable()
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtLoggerForceDisableArg);
 
-    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
     MessageHeader_t *msg_header = (MessageHeader_t *) msg;
     msg_header->api_id = CUDA_API_ENUM::CUBLASLTLOGGERFORCEDISABLE;
     

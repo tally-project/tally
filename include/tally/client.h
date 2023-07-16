@@ -59,6 +59,9 @@ public:
     ipc::channel *send_ipc;
     ipc::channel *recv_ipc;
 
+    const static size_t msg_size = 1024 * 1024 * 1024;
+    uint8_t *msg;
+
     void register_profile_kernel_map();
     void print_profile_trace()
     {
@@ -91,6 +94,8 @@ public:
 
     TallyClient()
     {
+        // Allocate 1GB memory for message passing 
+        msg = (uint8_t *) malloc(msg_size);
         register_profile_kernel_map();
 
         __exit = [&](int sig_num) {
@@ -115,6 +120,7 @@ public:
     }
 
     ~TallyClient(){
+        free(msg);
         print_profile_trace();
     }
 };
