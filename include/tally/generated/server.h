@@ -32,7 +32,7 @@ class TallyServer {
 
 public:
 
-    static std::unique_ptr<TallyServer> server;
+    static TallyServer *server;
 
     int magic;
     int version;

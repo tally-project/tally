@@ -16,7 +16,7 @@
 #include <tally/generated/msg_struct.h>
 #include <tally/generated/server.h>
 
-std::unique_ptr<TallyServer> TallyServer::server = std::make_unique<TallyServer>();
+TallyServer *TallyServer::server = new TallyServer();
 
 // Used to check whether an address points to device memory
 std::vector<DeviceMemoryKey> dev_addr_map;

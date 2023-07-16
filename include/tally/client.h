@@ -46,7 +46,7 @@ typedef std::chrono::time_point<std::chrono::system_clock> time_point_t;
 
 public:
 
-    static std::unique_ptr<TallyClient> client;
+    static TallyClient *client;
 
     // For performance measurements
     std::vector<const void *> _profile_kernel_seq;
@@ -120,6 +120,7 @@ public:
     }
 
     ~TallyClient(){
+        std::cout << "tally client is being freed" << std::endl;
         free(msg);
         print_profile_trace();
     }

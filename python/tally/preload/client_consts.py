@@ -146,7 +146,7 @@ class TallyServer {
 
 public:
 
-    static std::unique_ptr<TallyServer> server;
+    static TallyServer *server;
 
     int magic;
     int version;
@@ -191,7 +191,7 @@ TALLY_CLIENT_SRC_TEMPLATE_TOP = f"""
 #include <tally/client.h>
 #include <tally/generated/cuda_api.h>
 
-std::unique_ptr<TallyClient> TallyClient::client = std::make_unique<TallyClient>();
+TallyClient *TallyClient::client = new TallyClient;
 
 """
 

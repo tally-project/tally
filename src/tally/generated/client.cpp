@@ -5,7 +5,7 @@
 #include <tally/client.h>
 #include <tally/generated/cuda_api.h>
 
-std::unique_ptr<TallyClient> TallyClient::client = std::make_unique<TallyClient>();
+TallyClient *TallyClient::client = new TallyClient;
 
 void TallyClient::register_profile_kernel_map()
 {
