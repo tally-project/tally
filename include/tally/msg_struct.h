@@ -647,4 +647,28 @@ struct cudnnRNNBackwardWeightsArg {
     cudnnTensorDescriptor_t xDesc_yDesc[];
 };
 
+struct cudnnSetRNNDataDescriptorArg {
+    cudnnRNNDataDescriptor_t  rnnDataDesc;
+    cudnnDataType_t  dataType;
+    cudnnRNNDataLayout_t  layout;
+    int  maxSeqLength;
+    int  batchSize;
+    int  vectorSize;
+    void * paddingFill;
+    uint64_t paddingFillVal;
+    int  seqLengthArray[];
+};
+
+struct cudnnGetTensorNdDescriptorArg {
+    cudnnTensorDescriptor_t  tensorDesc;
+    int  nbDimsRequested;
+};
+
+struct cudnnGetTensorNdDescriptorResponse {
+    cudnnStatus_t err;
+    cudnnDataType_t dataType;
+    int nbDims;
+    int dimA_strideA[];
+};
+
 #endif // TALLY_DEF_H

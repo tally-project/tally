@@ -1119,6 +1119,24 @@ struct cudnnDestroyRNNDescriptorArg {
 	cudnnRNNDescriptor_t  rnnDesc;
 };
 
+struct cudnnSetRNNDescriptor_v8Arg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnRNNAlgo_t  algo;
+	cudnnRNNMode_t  cellMode;
+	cudnnRNNBiasMode_t  biasMode;
+	cudnnDirectionMode_t  dirMode;
+	cudnnRNNInputMode_t  inputMode;
+	cudnnDataType_t  dataType;
+	cudnnDataType_t  mathPrec;
+	cudnnMathType_t  mathType;
+	int32_t  inputSize;
+	int32_t  hiddenSize;
+	int32_t  projSize;
+	int32_t  numLayers;
+	cudnnDropoutDescriptor_t  dropoutDesc;
+	uint32_t  auxFlags;
+};
+
 struct cudnnSetRNNDescriptor_v6Arg {
 	cudnnHandle_t  handle;
 	cudnnRNNDescriptor_t  rnnDesc;
@@ -1138,6 +1156,21 @@ struct cudnnBuildRNNDynamicArg {
 	int  miniBatch;
 };
 
+struct cudnnGetRNNTempSpaceSizesArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnForwardMode_t  fMode;
+	cudnnRNNDataDescriptor_t  xDesc;
+	size_t * workSpaceSize;
+	size_t * reserveSpaceSize;
+};
+
+struct cudnnGetRNNTempSpaceSizesResponse {
+	size_t  workSpaceSize;
+	size_t  reserveSpaceSize;
+	cudnnStatus_t err;
+};
+
 struct cudnnGetRNNParamsSizeArg {
 	cudnnHandle_t  handle;
 	cudnnRNNDescriptor_t  rnnDesc;
@@ -1148,6 +1181,17 @@ struct cudnnGetRNNParamsSizeArg {
 
 struct cudnnGetRNNParamsSizeResponse {
 	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNWeightSpaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	size_t * weightSpaceSize;
+};
+
+struct cudnnGetRNNWeightSpaceSizeResponse {
+	size_t  weightSpaceSize;
 	cudnnStatus_t err;
 };
 
@@ -1185,6 +1229,25 @@ struct cudnnGetRNNLinLayerBiasParamsResponse {
 	cudnnStatus_t err;
 };
 
+struct cudnnGetRNNWeightParamsArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int32_t  pseudoLayer;
+	size_t  weightSpaceSize;
+	void * weightSpace;
+	int32_t  linLayerID;
+	cudnnTensorDescriptor_t  mDesc;
+	void ** mAddr;
+	cudnnTensorDescriptor_t  bDesc;
+	void ** bAddr;
+};
+
+struct cudnnGetRNNWeightParamsResponse {
+	void * mAddr;
+	void * bAddr;
+	cudnnStatus_t err;
+};
+
 struct cudnnCreateRNNDataDescriptorArg {
 	cudnnRNNDataDescriptor_t * rnnDataDesc;
 };
@@ -1196,6 +1259,46 @@ struct cudnnCreateRNNDataDescriptorResponse {
 
 struct cudnnDestroyRNNDataDescriptorArg {
 	cudnnRNNDataDescriptor_t  rnnDataDesc;
+};
+
+struct cudnnRNNForwardArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnForwardMode_t  fwdMode;
+	int32_t * devSeqLengths;
+	cudnnRNNDataDescriptor_t  xDesc;
+	void * x;
+	cudnnRNNDataDescriptor_t  yDesc;
+	void * y;
+	cudnnTensorDescriptor_t  hDesc;
+	void * hx;
+	void * hy;
+	cudnnTensorDescriptor_t  cDesc;
+	void * cx;
+	void * cy;
+	size_t  weightSpaceSize;
+	void * weightSpace;
+	size_t  workSpaceSize;
+	void * workSpace;
+	size_t  reserveSpaceSize;
+	void * reserveSpace;
+};
+
+struct cudnnSetRNNAlgorithmDescriptorArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnAlgorithmDescriptor_t  algoDesc;
+};
+
+struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int * count;
+};
+
+struct cudnnGetRNNForwardInferenceAlgorithmMaxCountResponse {
+	int  count;
+	cudnnStatus_t err;
 };
 
 struct cudnnCreateSeqDataDescriptorArg {
@@ -1263,6 +1366,50 @@ struct cudnnGetMultiHeadAttnBuffersResponse {
 };
 
 struct cudnnAdvInferVersionCheckArg {
+};
+
+struct cudnnRNNBackwardData_v8Arg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int32_t * devSeqLengths;
+	cudnnRNNDataDescriptor_t  yDesc;
+	void * y;
+	void * dy;
+	cudnnRNNDataDescriptor_t  xDesc;
+	void * dx;
+	cudnnTensorDescriptor_t  hDesc;
+	void * hx;
+	void * dhy;
+	void * dhx;
+	cudnnTensorDescriptor_t  cDesc;
+	void * cx;
+	void * dcy;
+	void * dcx;
+	size_t  weightSpaceSize;
+	void * weightSpace;
+	size_t  workSpaceSize;
+	void * workSpace;
+	size_t  reserveSpaceSize;
+	void * reserveSpace;
+};
+
+struct cudnnRNNBackwardWeights_v8Arg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnWgradMode_t  addGrad;
+	int32_t * devSeqLengths;
+	cudnnRNNDataDescriptor_t  xDesc;
+	void * x;
+	cudnnTensorDescriptor_t  hDesc;
+	void * hx;
+	cudnnRNNDataDescriptor_t  yDesc;
+	void * y;
+	size_t  weightSpaceSize;
+	void * dweightSpace;
+	size_t  workSpaceSize;
+	void * workSpace;
+	size_t  reserveSpaceSize;
+	void * reserveSpace;
 };
 
 struct cudnnAdvTrainVersionCheckArg {

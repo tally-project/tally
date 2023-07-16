@@ -50,8 +50,8 @@ void TallyServer::start(uint32_t interval) {
     auto time_ckpt = std::chrono::steady_clock::now();
     double req_count = 0.; 
 
-    send_ipc = new ipc::channel("server-to-client-340000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-340000", ipc::receiver);
+    send_ipc = new ipc::channel("server-to-client-350000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-350000", ipc::receiver);
 
     load_cache();
 
@@ -497,7 +497,7 @@ void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args)
     auto args = (struct cublasLtMatmulAlgoGetHeuristicArg *) __args;
 
     int requestedAlgoCount = args->requestedAlgoCount;
-    cublasLtMatmulHeuristicResult_t heuristicResultsArray[requestedAlgoCount];
+    cublasLtMatmulHeuristicResult_t *heuristicResultsArray = (cublasLtMatmulHeuristicResult_t *) malloc(sizeof(cublasLtMatmulHeuristicResult_t) * requestedAlgoCount);
     int returnAlgoCount;
 
     cublasStatus_t err = cublasLtMatmulAlgoGetHeuristic(
@@ -524,6 +524,7 @@ void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args)
         send_ipc->wait_for_recv(1);
     }
 
+    free(heuristicResultsArray);
     free(res);
 }
 
@@ -1459,4 +1460,66 @@ void TallyServer::handle_cudnnRNNBackwardWeights(void *__args)
     while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
         send_ipc->wait_for_recv(1);
     }
+}
+
+void TallyServer::handle_cudnnSetRNNDataDescriptor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnSetRNNDataDescriptor");
+
+    auto args = (struct cudnnSetRNNDataDescriptorArg *) __args;
+
+    void *paddingFill = NULL;
+    uint64_t paddingFillVal = args->paddingFillVal;
+    if (args->paddingFill) {
+        paddingFill = (void *) &paddingFillVal;
+    }
+
+    cudnnStatus_t err = cudnnSetRNNDataDescriptor(
+        args->rnnDataDesc,
+        args->dataType,
+        args->layout,
+        args->maxSeqLength,
+        args->batchSize,
+        args->vectorSize,
+        args->seqLengthArray,
+        paddingFill
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cudnnStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudnnGetTensorNdDescriptor(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudnnGetTensorNdDescriptor");
+
+    auto args = (struct cudnnGetTensorNdDescriptorArg *) __args;
+
+    int nbDimsRequested = args->nbDimsRequested;
+    int nbDims;
+    cudnnDataType_t dataType;
+    int *dimA = (int *) malloc(sizeof(int) * args->nbDimsRequested);
+    int *strideA = (int *) malloc(sizeof(int) * args->nbDimsRequested);
+
+    cudnnStatus_t err = cudnnGetTensorNdDescriptor(
+		args->tensorDesc, args->nbDimsRequested, &dataType, &nbDims, dimA, strideA
+    );
+
+    uint32_t res_len =  sizeof(cudnnGetTensorNdDescriptorResponse) + sizeof(int) * nbDims * 2;
+    auto res = (struct cudnnGetTensorNdDescriptorResponse *) std::malloc(res_len);
+
+    res->nbDims = nbDims;
+    res->dataType = dataType;
+    res->err = err;
+    memcpy(res->dimA_strideA, dimA, sizeof(int) * nbDims);
+    memcpy(res->dimA_strideA + nbDims, strideA, sizeof(int) * nbDims);
+
+    while(!send_ipc->send((void *) res, res_len)) {
+        send_ipc->wait_for_recv(1);
+    }
+
+    free(dimA);
+    free(strideA);
+    free(res);
 }

@@ -73,7 +73,8 @@ def gen_client_msg_struct(func_sig):
         msg_struct += f"struct {func_name}Arg {{\n"
 
         for i in range(len(arg_types)):
-            msg_struct += f"""\t{arg_types[i].replace("const ", "")} {arg_names[i]};\n"""
+            _arg_type = arg_types[i].replace("const ", "").replace("[]", "*")
+            msg_struct += f"""\t{_arg_type} {arg_names[i]};\n"""
         
         msg_struct += "};\n"
 

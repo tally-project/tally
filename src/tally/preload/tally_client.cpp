@@ -1517,4 +1517,57 @@ cudnnStatus_t cudnnRNNBackwardWeights(cudnnHandle_t  handle, const cudnnRNNDescr
     return *res;
 }
 
+cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, cudnnDataType_t  dataType, cudnnRNNDataLayout_t  layout, int  maxSeqLength, int  batchSize, int  vectorSize, const int  seqLengthArray[], void * paddingFill)
+{
+	TALLY_LOG("cudnnSetRNNDataDescriptor hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDataDescriptorArg) + batchSize * sizeof(int);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNDATADESCRIPTOR;
+    
+    auto arg_ptr = (struct cudnnSetRNNDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->rnnDataDesc = rnnDataDesc;
+    arg_ptr->dataType = dataType;
+    arg_ptr->layout = layout;
+    arg_ptr->maxSeqLength = maxSeqLength;
+    arg_ptr->batchSize = batchSize;
+    arg_ptr->vectorSize = vectorSize;
+    arg_ptr->paddingFill = paddingFill;
+    arg_ptr->paddingFillVal = paddingFill ? *((uint64_t *) paddingFill) : 0; // copy 64 bits if not NULL
+    memcpy(arg_ptr->seqLengthArray, seqLengthArray, sizeof(int) * batchSize);
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
+}
+
+cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t  tensorDesc, int  nbDimsRequested, cudnnDataType_t * dataType, int * nbDims, int  dimA[], int  strideA[])
+{
+	TALLY_LOG("cudnnGetTensorNdDescriptor hooked");
+	uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetTensorNdDescriptorArg);
+
+    auto msg = (uint8_t *) std::malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETTENSORNDDESCRIPTOR;
+    
+    auto arg_ptr = (struct cudnnGetTensorNdDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+
+    arg_ptr->tensorDesc = tensorDesc;
+    arg_ptr->nbDimsRequested = nbDimsRequested;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnGetTensorNdDescriptorResponse *) dat;
+    *dataType = res->dataType;
+    *nbDims = res->nbDims;
+    memcpy(dimA, res->dimA_strideA, sizeof(int) * res->nbDims);
+    memcpy(strideA, res->dimA_strideA + res->nbDims, sizeof(int) * res->nbDims);
+    return res->err;
+}
+
 }

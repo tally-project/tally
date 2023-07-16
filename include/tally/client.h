@@ -48,8 +48,8 @@ public:
         signal(SIGTERM , __exit_wrapper);
         signal(SIGHUP  , __exit_wrapper);
 
-        send_ipc = new ipc::channel("client-to-server-340000", ipc::sender);
-        recv_ipc = new ipc::channel("server-to-client-340000", ipc::receiver);
+        send_ipc = new ipc::channel("client-to-server-350000", ipc::sender);
+        recv_ipc = new ipc::channel("server-to-client-350000", ipc::receiver);
     }
 
     ~TallyClient(){}

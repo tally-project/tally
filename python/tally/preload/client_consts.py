@@ -193,6 +193,8 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudnnGetTensorNdDescriptor",
+    "cudnnSetRNNDataDescriptor",
     "cudnnRNNBackwardWeights",
     "cudnnRNNBackwardData",
     "cudnnRNNForwardTraining",
@@ -244,6 +246,11 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cudnnSetRNNAlgorithmDescriptor",
+    "cudnnRNNBackwardWeights_v8",
+    "cudnnRNNBackwardData_v8",
+    "cudnnRNNForward",
+    "cudnnSetRNNDescriptor_v8",
     "cublasLtLoggerForceDisable",
     "cublasLtGetCudartVersion",
     "cublasLtGetVersion",
@@ -484,6 +491,19 @@ CUDA_GET_2_3_4_PARAM_FUNCS = [
     "cudnnGetOpTensorDescriptor"
 ]
 
+CUDA_GET_3_PARAM_FUNCS = [
+    "cudnnGetRNNWeightSpaceSize",
+    "cudnnGetRNNForwardInferenceAlgorithmMaxCount"
+]
+
+CUDA_GET_5_6_PARAM_FUNCS = [
+    "cudnnGetRNNTempSpaceSizes"
+]
+
+CUDA_GET_8_10_PARAM_FUNCS = [
+    "cudnnGetRNNWeightParams"
+]
+
 CUDA_GET_1_PARAM_FUNC_KEY = 1
 CUDA_GET_2_3_PARAM_FUNC_KEY = 2
 CUDA_GET_1_2_PARAM_FUNC_KEY = 3
@@ -494,6 +514,9 @@ CUDA_GET_7_PARAM_FUNC_KEY = 7
 CUDA_GET_3_4_5_PARAM_FUNC_KEY = 8
 CUDA_GET_9_PARAM_FUNC_KEY = 9
 CUDA_GET_2_3_4_PARAM_FUNC_KEY = 10
+CUDA_GET_3_PARAM_FUNC_KEY = 11
+CUDA_GET_5_6_PARAM_FUNC_KEY = 12
+CUDA_GET_8_10_PARAM_FUNC_KEY = 13
 
 PARAM_INDICES = {
     CUDA_GET_1_PARAM_FUNC_KEY: [0],
@@ -505,7 +528,10 @@ PARAM_INDICES = {
     CUDA_GET_7_PARAM_FUNC_KEY: [6],
     CUDA_GET_3_4_5_PARAM_FUNC_KEY: [2, 3, 4],
     CUDA_GET_9_PARAM_FUNC_KEY: [8],
-    CUDA_GET_2_3_4_PARAM_FUNC_KEY: [1, 2, 3]
+    CUDA_GET_2_3_4_PARAM_FUNC_KEY: [1, 2, 3],
+    CUDA_GET_3_PARAM_FUNC_KEY: [2],
+    CUDA_GET_5_6_PARAM_FUNC_KEY: [4, 5],
+    CUDA_GET_8_10_PARAM_FUNC_KEY: [7, 9]
 }
 
 def is_get_param_func(func_name):
@@ -522,7 +548,10 @@ def is_get_param_func(func_name):
         CUDA_GET_7_PARAM_FUNCS,
         CUDA_GET_3_4_5_PARAM_FUNCS,
         CUDA_GET_9_PARAM_FUNCS,
-        CUDA_GET_2_3_4_PARAM_FUNCS
+        CUDA_GET_2_3_4_PARAM_FUNCS,
+        CUDA_GET_3_PARAM_FUNCS,
+        CUDA_GET_5_6_PARAM_FUNCS,
+        CUDA_GET_8_10_PARAM_FUNCS
     ]:
         if func_name in funcs:
             return True
@@ -549,6 +578,12 @@ def get_param_group(func_name):
         return CUDA_GET_9_PARAM_FUNC_KEY
     elif func_name in CUDA_GET_2_3_4_PARAM_FUNCS:
         return CUDA_GET_2_3_4_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_3_PARAM_FUNCS:
+        return CUDA_GET_3_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_5_6_PARAM_FUNCS:
+        return CUDA_GET_5_6_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_8_10_PARAM_FUNCS:
+        return CUDA_GET_8_10_PARAM_FUNC_KEY
     else:
         assert(False)
 
@@ -570,6 +605,8 @@ def get_preload_func_template(func_name, arg_names, arg_types):
         arg_type = arg_types[idx]
         if arg_type.strip() == "const void *":
             preload_body += f"\targ_ptr->{arg_name} = const_cast<void *>({arg_name});\n"
+        elif arg_type.strip() == "const int32_t []":
+            preload_body += f"\targ_ptr->{arg_name} = const_cast<int32_t *>({arg_name});\n"
         else:
             preload_body += f"\targ_ptr->{arg_name} = {arg_name};\n"
     

@@ -5544,12 +5544,6 @@ cudnnStatus_t cudnnSetTensorNdDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t  tensorDesc, int  nbDimsRequested, cudnnDataType_t * dataType, int * nbDims, int  dimA[], int  strideA[])
-{
-	TALLY_LOG("cudnnGetTensorNdDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDesc, size_t * size)
 {
 	TALLY_LOG("cudnnGetTensorSizeInBytes hooked");
@@ -6541,7 +6535,34 @@ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
 cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAlgo_t  algo, cudnnRNNMode_t  cellMode, cudnnRNNBiasMode_t  biasMode, cudnnDirectionMode_t  dirMode, cudnnRNNInputMode_t  inputMode, cudnnDataType_t  dataType, cudnnDataType_t  mathPrec, cudnnMathType_t  mathType, int32_t  inputSize, int32_t  hiddenSize, int32_t  projSize, int32_t  numLayers, cudnnDropoutDescriptor_t  dropoutDesc, uint32_t  auxFlags)
 {
 	TALLY_LOG("cudnnSetRNNDescriptor_v8 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDescriptor_v8Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNDESCRIPTOR_V8;
+    
+    struct cudnnSetRNNDescriptor_v8Arg *arg_ptr = (struct cudnnSetRNNDescriptor_v8Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->algo = algo;
+	arg_ptr->cellMode = cellMode;
+	arg_ptr->biasMode = biasMode;
+	arg_ptr->dirMode = dirMode;
+	arg_ptr->inputMode = inputMode;
+	arg_ptr->dataType = dataType;
+	arg_ptr->mathPrec = mathPrec;
+	arg_ptr->mathType = mathType;
+	arg_ptr->inputSize = inputSize;
+	arg_ptr->hiddenSize = hiddenSize;
+	arg_ptr->projSize = projSize;
+	arg_ptr->numLayers = numLayers;
+	arg_ptr->dropoutDesc = dropoutDesc;
+	arg_ptr->auxFlags = auxFlags;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnGetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAlgo_t * algo, cudnnRNNMode_t * cellMode, cudnnRNNBiasMode_t * biasMode, cudnnDirectionMode_t * dirMode, cudnnRNNInputMode_t * inputMode, cudnnDataType_t * dataType, cudnnDataType_t * mathPrec, cudnnMathType_t * mathType, int32_t * inputSize, int32_t * hiddenSize, int32_t * projSize, int32_t * numLayers, cudnnDropoutDescriptor_t * dropoutDesc, uint32_t * auxFlags)
@@ -6686,7 +6707,26 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
 cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fMode, cudnnRNNDataDescriptor_t  xDesc, size_t * workSpaceSize, size_t * reserveSpaceSize)
 {
 	TALLY_LOG("cudnnGetRNNTempSpaceSizes hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNTempSpaceSizesArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNTEMPSPACESIZES;
+    
+    struct cudnnGetRNNTempSpaceSizesArg *arg_ptr = (struct cudnnGetRNNTempSpaceSizesArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->fMode = fMode;
+	arg_ptr->xDesc = xDesc;
+	arg_ptr->workSpaceSize = workSpaceSize;
+	arg_ptr->reserveSpaceSize = reserveSpaceSize;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnGetRNNTempSpaceSizesResponse *) dat;
+	if (workSpaceSize) { *workSpaceSize = res->workSpaceSize; }
+	if (reserveSpaceSize) { *reserveSpaceSize = res->reserveSpaceSize; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const cudnnTensorDescriptor_t  xDesc, size_t * sizeInBytes, cudnnDataType_t  dataType)
@@ -6715,7 +6755,22 @@ cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescrip
 cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, size_t * weightSpaceSize)
 {
 	TALLY_LOG("cudnnGetRNNWeightSpaceSize hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWeightSpaceSizeArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNWEIGHTSPACESIZE;
+    
+    struct cudnnGetRNNWeightSpaceSizeArg *arg_ptr = (struct cudnnGetRNNWeightSpaceSizeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->weightSpaceSize = weightSpaceSize;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnGetRNNWeightSpaceSizeResponse *) dat;
+	if (weightSpaceSize) { *weightSpaceSize = res->weightSpaceSize; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  pseudoLayer, const cudnnTensorDescriptor_t  xDesc, const cudnnFilterDescriptor_t  wDesc, const void * w, const int  linLayerID, cudnnFilterDescriptor_t  linLayerMatDesc, void ** linLayerMat)
@@ -6775,7 +6830,30 @@ cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnHandle_t  handle, const cudnnRN
 cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, int32_t  pseudoLayer, size_t  weightSpaceSize, const void * weightSpace, int32_t  linLayerID, cudnnTensorDescriptor_t  mDesc, void ** mAddr, cudnnTensorDescriptor_t  bDesc, void ** bAddr)
 {
 	TALLY_LOG("cudnnGetRNNWeightParams hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWeightParamsArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNWEIGHTPARAMS;
+    
+    struct cudnnGetRNNWeightParamsArg *arg_ptr = (struct cudnnGetRNNWeightParamsArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->pseudoLayer = pseudoLayer;
+	arg_ptr->weightSpaceSize = weightSpaceSize;
+	arg_ptr->weightSpace = const_cast<void *>(weightSpace);
+	arg_ptr->linLayerID = linLayerID;
+	arg_ptr->mDesc = mDesc;
+	arg_ptr->mAddr = mAddr;
+	arg_ptr->bDesc = bDesc;
+	arg_ptr->bAddr = bAddr;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnGetRNNWeightParamsResponse *) dat;
+	if (mAddr) { *mAddr = res->mAddr; }
+	if (bAddr) { *bAddr = res->bAddr; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, void * workSpace, size_t  workSpaceSizeInBytes)
@@ -6834,12 +6912,6 @@ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDes
     return *res;
 }
 
-cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, cudnnDataType_t  dataType, cudnnRNNDataLayout_t  layout, int  maxSeqLength, int  batchSize, int  vectorSize, const int  seqLengthArray[], void * paddingFill)
-{
-	TALLY_LOG("cudnnSetRNNDataDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 cudnnStatus_t cudnnGetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, cudnnDataType_t * dataType, cudnnRNNDataLayout_t * layout, int * maxSeqLength, int * batchSize, int * vectorSize, int  arrayLengthRequested, int  seqLengthArray[], void * paddingFill)
 {
 	TALLY_LOG("cudnnGetRNNDataDescriptor hooked");
@@ -6855,19 +6927,81 @@ cudnnStatus_t cudnnRNNForwardInferenceEx(cudnnHandle_t  handle, const cudnnRNNDe
 cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fwdMode, const int32_t  devSeqLengths[], cudnnRNNDataDescriptor_t  xDesc, const void * x, cudnnRNNDataDescriptor_t  yDesc, void * y, cudnnTensorDescriptor_t  hDesc, const void * hx, void * hy, cudnnTensorDescriptor_t  cDesc, const void * cx, void * cy, size_t  weightSpaceSize, const void * weightSpace, size_t  workSpaceSize, void * workSpace, size_t  reserveSpaceSize, void * reserveSpace)
 {
 	TALLY_LOG("cudnnRNNForward hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNForwardArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNFORWARD;
+    
+    struct cudnnRNNForwardArg *arg_ptr = (struct cudnnRNNForwardArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->fwdMode = fwdMode;
+	arg_ptr->devSeqLengths = const_cast<int32_t *>(devSeqLengths);
+	arg_ptr->xDesc = xDesc;
+	arg_ptr->x = const_cast<void *>(x);
+	arg_ptr->yDesc = yDesc;
+	arg_ptr->y = y;
+	arg_ptr->hDesc = hDesc;
+	arg_ptr->hx = const_cast<void *>(hx);
+	arg_ptr->hy = hy;
+	arg_ptr->cDesc = cDesc;
+	arg_ptr->cx = const_cast<void *>(cx);
+	arg_ptr->cy = cy;
+	arg_ptr->weightSpaceSize = weightSpaceSize;
+	arg_ptr->weightSpace = const_cast<void *>(weightSpace);
+	arg_ptr->workSpaceSize = workSpaceSize;
+	arg_ptr->workSpace = workSpace;
+	arg_ptr->reserveSpaceSize = reserveSpaceSize;
+	arg_ptr->reserveSpace = reserveSpace;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnAlgorithmDescriptor_t  algoDesc)
 {
 	TALLY_LOG("cudnnSetRNNAlgorithmDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNAlgorithmDescriptorArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNALGORITHMDESCRIPTOR;
+    
+    struct cudnnSetRNNAlgorithmDescriptorArg *arg_ptr = (struct cudnnSetRNNAlgorithmDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->algoDesc = algoDesc;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)
 {
 	TALLY_LOG("cudnnGetRNNForwardInferenceAlgorithmMaxCount hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNFORWARDINFERENCEALGORITHMMAXCOUNT;
+    
+    struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg *arg_ptr = (struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->count = count;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnGetRNNForwardInferenceAlgorithmMaxCountResponse *) dat;
+	if (count) { *count = res->count; }
+	return res->err;
 }
 
 cudnnStatus_t cudnnFindRNNForwardInferenceAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes)
@@ -7048,13 +7182,75 @@ cudnnStatus_t cudnnAdvInferVersionCheck()
 cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, const int32_t  devSeqLengths[], cudnnRNNDataDescriptor_t  yDesc, const void * y, const void * dy, cudnnRNNDataDescriptor_t  xDesc, void * dx, cudnnTensorDescriptor_t  hDesc, const void * hx, const void * dhy, void * dhx, cudnnTensorDescriptor_t  cDesc, const void * cx, const void * dcy, void * dcx, size_t  weightSpaceSize, const void * weightSpace, size_t  workSpaceSize, void * workSpace, size_t  reserveSpaceSize, void * reserveSpace)
 {
 	TALLY_LOG("cudnnRNNBackwardData_v8 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNBackwardData_v8Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNBACKWARDDATA_V8;
+    
+    struct cudnnRNNBackwardData_v8Arg *arg_ptr = (struct cudnnRNNBackwardData_v8Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->devSeqLengths = const_cast<int32_t *>(devSeqLengths);
+	arg_ptr->yDesc = yDesc;
+	arg_ptr->y = const_cast<void *>(y);
+	arg_ptr->dy = const_cast<void *>(dy);
+	arg_ptr->xDesc = xDesc;
+	arg_ptr->dx = dx;
+	arg_ptr->hDesc = hDesc;
+	arg_ptr->hx = const_cast<void *>(hx);
+	arg_ptr->dhy = const_cast<void *>(dhy);
+	arg_ptr->dhx = dhx;
+	arg_ptr->cDesc = cDesc;
+	arg_ptr->cx = const_cast<void *>(cx);
+	arg_ptr->dcy = const_cast<void *>(dcy);
+	arg_ptr->dcx = dcx;
+	arg_ptr->weightSpaceSize = weightSpaceSize;
+	arg_ptr->weightSpace = const_cast<void *>(weightSpace);
+	arg_ptr->workSpaceSize = workSpaceSize;
+	arg_ptr->workSpace = workSpace;
+	arg_ptr->reserveSpaceSize = reserveSpaceSize;
+	arg_ptr->reserveSpace = reserveSpace;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnWgradMode_t  addGrad, const int32_t  devSeqLengths[], cudnnRNNDataDescriptor_t  xDesc, const void * x, cudnnTensorDescriptor_t  hDesc, const void * hx, cudnnRNNDataDescriptor_t  yDesc, const void * y, size_t  weightSpaceSize, void * dweightSpace, size_t  workSpaceSize, void * workSpace, size_t  reserveSpaceSize, void * reserveSpace)
 {
 	TALLY_LOG("cudnnRNNBackwardWeights_v8 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNBackwardWeights_v8Arg);
+
+    uint8_t *msg = (uint8_t *) std::malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNBACKWARDWEIGHTS_V8;
+    
+    struct cudnnRNNBackwardWeights_v8Arg *arg_ptr = (struct cudnnRNNBackwardWeights_v8Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->addGrad = addGrad;
+	arg_ptr->devSeqLengths = const_cast<int32_t *>(devSeqLengths);
+	arg_ptr->xDesc = xDesc;
+	arg_ptr->x = const_cast<void *>(x);
+	arg_ptr->hDesc = hDesc;
+	arg_ptr->hx = const_cast<void *>(hx);
+	arg_ptr->yDesc = yDesc;
+	arg_ptr->y = const_cast<void *>(y);
+	arg_ptr->weightSpaceSize = weightSpaceSize;
+	arg_ptr->dweightSpace = dweightSpace;
+	arg_ptr->workSpaceSize = workSpaceSize;
+	arg_ptr->workSpace = workSpace;
+	arg_ptr->reserveSpaceSize = reserveSpaceSize;
+	arg_ptr->reserveSpace = reserveSpace;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+    auto res = (cudnnStatus_t *) dat;
+    return *res;
 }
 
 cudnnStatus_t cudnnRNNForwardTrainingEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const cudnnRNNDataDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnRNNDataDescriptor_t  yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const cudnnRNNDataDescriptor_t  kDesc, const void * keys, const cudnnRNNDataDescriptor_t  cDesc, void * cAttn, const cudnnRNNDataDescriptor_t  iDesc, void * iAttn, const cudnnRNNDataDescriptor_t  qDesc, void * queries, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
