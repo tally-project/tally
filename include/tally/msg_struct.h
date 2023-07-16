@@ -732,4 +732,25 @@ struct cudnnBatchNormalizationBackwardExArg {
 	size_t  reserveSpaceSizeInBytes;
 };
 
+struct cublasSgemmStridedBatchedArg {
+	cublasHandle_t  handle;
+	cublasOperation_t  transa;
+	cublasOperation_t  transb;
+	int  m;
+	int  n;
+	int  k;
+	float  alpha;
+	float*  A;
+	int  lda;
+	long long int  strideA;
+	float*  B;
+	int  ldb;
+	long long int  strideB;
+	float  beta;
+	float*  C;
+	int  ldc;
+	long long int  strideC;
+	int  batchCount;
+};
+
 #endif // TALLY_DEF_H

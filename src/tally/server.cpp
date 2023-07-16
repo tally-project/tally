@@ -1613,3 +1613,35 @@ void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args)
         send_ipc->wait_for_recv(1);
     }
 }
+
+void TallyServer::handle_cublasSgemmStridedBatched(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cublasSgemmStridedBatched");
+
+    auto args = (struct cublasSgemmStridedBatchedArg *) __args;
+    cublasStatus_t err = cublasSgemmStridedBatched(
+		args->handle,
+		args->transa,
+		args->transb,
+		args->m,
+		args->n,
+		args->k,
+		&(args->alpha),
+		args->A,
+		args->lda,
+		args->strideA,
+		args->B,
+		args->ldb,
+		args->strideB,
+		&(args->beta),
+		args->C,
+		args->ldc,
+		args->strideC,
+		args->batchCount
+
+    );
+
+    while(!send_ipc->send((void *) &err, sizeof(cublasStatus_t))) {
+        send_ipc->wait_for_recv(1);
+    }
+}

@@ -4491,8 +4491,31 @@ TALLY_CLIENT_PROFILE_START;
 cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus, unsigned long long * pId)
 {
 	TALLY_LOG("cudaStreamGetCaptureInfo hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
+TALLY_CLIENT_PROFILE_START;
+#ifdef RUN_LOCALLY
+	auto err = lcudaStreamGetCaptureInfo(stream, pCaptureStatus, pId);
+#else
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetCaptureInfoArg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMGETCAPTUREINFO;
+    
+    struct cudaStreamGetCaptureInfoArg *arg_ptr = (struct cudaStreamGetCaptureInfoArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->stream = stream;
+	arg_ptr->pCaptureStatus = pCaptureStatus;
+	arg_ptr->pId = pId;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudaStreamGetCaptureInfoResponse *) dat;
+	if (pCaptureStatus) { *pCaptureStatus = res->pCaptureStatus; }
+	if (pId) { *pId = res->pId; }
+	auto err = res->err;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetCaptureInfo);
+	return err;}
 
 cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCaptureStatus * captureStatus_out, unsigned long long * id_out, cudaGraph_t * graph_out, const cudaGraphNode_t ** dependencies_out, size_t * numDependencies_out)
 {
@@ -7263,7 +7286,32 @@ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
 cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, cudnnHandle_t  handle, float  dropout, void * states, size_t  stateSizeInBytes, unsigned long long  seed)
 {
 	TALLY_LOG("cudnnRestoreDropoutDescriptor hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#ifdef RUN_LOCALLY
+	auto err = lcudnnRestoreDropoutDescriptor(dropoutDesc, handle, dropout, states, stateSizeInBytes, seed);
+#else
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRestoreDropoutDescriptorArg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNRESTOREDROPOUTDESCRIPTOR;
+    
+    struct cudnnRestoreDropoutDescriptorArg *arg_ptr = (struct cudnnRestoreDropoutDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->dropoutDesc = dropoutDesc;
+	arg_ptr->handle = handle;
+	arg_ptr->dropout = dropout;
+	arg_ptr->states = states;
+	arg_ptr->stateSizeInBytes = stateSizeInBytes;
+	arg_ptr->seed = seed;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnStatus_t *) dat;
+	auto err = *res;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnRestoreDropoutDescriptor);
+	return err;
 }
 
 cudnnStatus_t cudnnGetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, cudnnHandle_t  handle, float * dropout, void ** states, unsigned long long * seed)
@@ -7745,31 +7793,139 @@ cudnnStatus_t cudnnGetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
 cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMathType_t  mType)
 {
 	TALLY_LOG("cudnnSetRNNMatrixMathType hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#ifdef RUN_LOCALLY
+	auto err = lcudnnSetRNNMatrixMathType(rnnDesc, mType);
+#else
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNMatrixMathTypeArg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNMATRIXMATHTYPE;
+    
+    struct cudnnSetRNNMatrixMathTypeArg *arg_ptr = (struct cudnnSetRNNMatrixMathTypeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->mType = mType;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnStatus_t *) dat;
+	auto err = *res;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNMatrixMathType);
+	return err;
 }
 
 cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMathType_t * mType)
 {
 	TALLY_LOG("cudnnGetRNNMatrixMathType hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
+TALLY_CLIENT_PROFILE_START;
+#ifdef RUN_LOCALLY
+	auto err = lcudnnGetRNNMatrixMathType(rnnDesc, mType);
+#else
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNMatrixMathTypeArg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNMATRIXMATHTYPE;
+    
+    struct cudnnGetRNNMatrixMathTypeArg *arg_ptr = (struct cudnnGetRNNMatrixMathTypeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->mType = mType;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnGetRNNMatrixMathTypeResponse *) dat;
+	if (mType) { *mType = res->mType; }
+	auto err = res->err;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNMatrixMathType);
+	return err;}
 
 cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMode_t  biasMode)
 {
 	TALLY_LOG("cudnnSetRNNBiasMode hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#ifdef RUN_LOCALLY
+	auto err = lcudnnSetRNNBiasMode(rnnDesc, biasMode);
+#else
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNBiasModeArg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNBIASMODE;
+    
+    struct cudnnSetRNNBiasModeArg *arg_ptr = (struct cudnnSetRNNBiasModeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->biasMode = biasMode;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnStatus_t *) dat;
+	auto err = *res;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNBiasMode);
+	return err;
 }
 
 cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMode_t * biasMode)
 {
 	TALLY_LOG("cudnnGetRNNBiasMode hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
+TALLY_CLIENT_PROFILE_START;
+#ifdef RUN_LOCALLY
+	auto err = lcudnnGetRNNBiasMode(rnnDesc, biasMode);
+#else
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNBiasModeArg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNBIASMODE;
+    
+    struct cudnnGetRNNBiasModeArg *arg_ptr = (struct cudnnGetRNNBiasModeArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->biasMode = biasMode;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnGetRNNBiasModeResponse *) dat;
+	if (biasMode) { *biasMode = res->biasMode; }
+	auto err = res->err;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNBiasMode);
+	return err;}
 
 cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode_t  clipMode, cudnnNanPropagation_t  clipNanOpt, double  lclip, double  rclip)
 {
 	TALLY_LOG("cudnnRNNSetClip_v8 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#ifdef RUN_LOCALLY
+	auto err = lcudnnRNNSetClip_v8(rnnDesc, clipMode, clipNanOpt, lclip, rclip);
+#else
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNSetClip_v8Arg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNSETCLIP_V8;
+    
+    struct cudnnRNNSetClip_v8Arg *arg_ptr = (struct cudnnRNNSetClip_v8Arg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->clipMode = clipMode;
+	arg_ptr->clipNanOpt = clipNanOpt;
+	arg_ptr->lclip = lclip;
+	arg_ptr->rclip = rclip;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnStatus_t *) dat;
+	auto err = *res;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNSetClip_v8);
+	return err;
 }
 
 cudnnStatus_t cudnnRNNGetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode_t * clipMode, cudnnNanPropagation_t * clipNanOpt, double * lclip, double * rclip)
@@ -7781,7 +7937,32 @@ cudnnStatus_t cudnnRNNGetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode
 cudnnStatus_t cudnnRNNSetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode_t  clipMode, cudnnNanPropagation_t  clipNanOpt, double  lclip, double  rclip)
 {
 	TALLY_LOG("cudnnRNNSetClip hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#ifdef RUN_LOCALLY
+	auto err = lcudnnRNNSetClip(handle, rnnDesc, clipMode, clipNanOpt, lclip, rclip);
+#else
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNSetClipArg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNSETCLIP;
+    
+    struct cudnnRNNSetClipArg *arg_ptr = (struct cudnnRNNSetClipArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->rnnDesc = rnnDesc;
+	arg_ptr->clipMode = clipMode;
+	arg_ptr->clipNanOpt = clipNanOpt;
+	arg_ptr->lclip = lclip;
+	arg_ptr->rclip = rclip;
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+	auto res = (cudnnStatus_t *) dat;
+	auto err = *res;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNSetClip);
+	return err;
 }
 
 cudnnStatus_t cudnnRNNGetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode_t * clipMode, cudnnNanPropagation_t * clipNanOpt, double * lclip, double * rclip)
@@ -10966,12 +11147,6 @@ cublasStatus_t cublasGemmBatchedEx(cublasHandle_t  handle, cublasOperation_t  tr
 cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, long long int  strideC, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
 {
 	TALLY_LOG("cublasGemmStridedBatchedEx hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  B, int  ldb, long long int  strideB, const float*  beta, float*  C, int  ldc, long long int  strideC, int  batchCount)
-{
-	TALLY_LOG("cublasSgemmStridedBatched hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 

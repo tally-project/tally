@@ -727,6 +727,18 @@ struct cudaStreamIsCapturingResponse {
 	cudaError_t err;
 };
 
+struct cudaStreamGetCaptureInfoArg {
+	cudaStream_t  stream;
+	enum cudaStreamCaptureStatus * pCaptureStatus;
+	unsigned long long * pId;
+};
+
+struct cudaStreamGetCaptureInfoResponse {
+	enum cudaStreamCaptureStatus  pCaptureStatus;
+	unsigned long long  pId;
+	cudaError_t err;
+};
+
 struct cudaEventCreateArg {
 	cudaEvent_t * event;
 };
@@ -1107,6 +1119,15 @@ struct cudnnSetDropoutDescriptorArg {
 	unsigned long long  seed;
 };
 
+struct cudnnRestoreDropoutDescriptorArg {
+	cudnnDropoutDescriptor_t  dropoutDesc;
+	cudnnHandle_t  handle;
+	float  dropout;
+	void * states;
+	size_t  stateSizeInBytes;
+	unsigned long long  seed;
+};
+
 struct cudnnOpsInferVersionCheckArg {
 };
 
@@ -1205,6 +1226,53 @@ struct cudnnSetRNNDescriptor_v6Arg {
 	cudnnRNNMode_t  cellMode;
 	cudnnRNNAlgo_t  algo;
 	cudnnDataType_t  mathPrec;
+};
+
+struct cudnnSetRNNMatrixMathTypeArg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnMathType_t  mType;
+};
+
+struct cudnnGetRNNMatrixMathTypeArg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnMathType_t * mType;
+};
+
+struct cudnnGetRNNMatrixMathTypeResponse {
+	cudnnMathType_t  mType;
+	cudnnStatus_t err;
+};
+
+struct cudnnSetRNNBiasModeArg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnRNNBiasMode_t  biasMode;
+};
+
+struct cudnnGetRNNBiasModeArg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnRNNBiasMode_t * biasMode;
+};
+
+struct cudnnGetRNNBiasModeResponse {
+	cudnnRNNBiasMode_t  biasMode;
+	cudnnStatus_t err;
+};
+
+struct cudnnRNNSetClip_v8Arg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnRNNClipMode_t  clipMode;
+	cudnnNanPropagation_t  clipNanOpt;
+	double  lclip;
+	double  rclip;
+};
+
+struct cudnnRNNSetClipArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnRNNClipMode_t  clipMode;
+	cudnnNanPropagation_t  clipNanOpt;
+	double  lclip;
+	double  rclip;
 };
 
 struct cudnnBuildRNNDynamicArg {

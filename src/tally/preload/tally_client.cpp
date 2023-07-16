@@ -2119,4 +2119,49 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx(cudnnHandle_t  handle, cudnnBatc
     return err;
 }
 
+cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  B, int  ldb, long long int  strideB, const float*  beta, float*  C, int  ldc, long long int  strideC, int  batchCount)
+{
+	TALLY_LOG("cublasSgemmStridedBatched hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#ifdef RUN_LOCALLY
+	auto err = lcublasSgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+#else
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSgemmStridedBatchedArg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUBLASSGEMMSTRIDEDBATCHED;
+    
+    struct cublasSgemmStridedBatchedArg *arg_ptr = (struct cublasSgemmStridedBatchedArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->handle = handle;
+	arg_ptr->transa = transa;
+	arg_ptr->transb = transb;
+	arg_ptr->m = m;
+	arg_ptr->n = n;
+	arg_ptr->k = k;
+	arg_ptr->alpha = *alpha;
+	arg_ptr->A = const_cast<float *>(A);
+	arg_ptr->lda = lda;
+	arg_ptr->strideA = strideA;
+	arg_ptr->B = const_cast<float *>(B);
+	arg_ptr->ldb = ldb;
+	arg_ptr->strideB = strideB;
+	arg_ptr->beta = *beta;
+	arg_ptr->C = C;
+	arg_ptr->ldc = ldc;
+	arg_ptr->strideC = strideC;
+	arg_ptr->batchCount = batchCount;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+	auto res = (cublasStatus_t *) dat;
+	auto err = *res;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasSgemmStridedBatched);
+	return err;
+}
+
 }

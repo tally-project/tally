@@ -208,6 +208,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasSgemmStridedBatched",
     "cudnnGetTensorNdDescriptor",
     "cudnnSetRNNDataDescriptor",
     "cudnnRNNBackwardWeights",
@@ -263,6 +264,10 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cudnnRestoreDropoutDescriptor",
+    "cudnnRNNSetClip",
+    "cudnnRNNSetClip_v8",
+    "cudnnSetRNNMatrixMathType",
     "cudaMemsetAsync",
     "cublasSetSmCountTarget",
     "cublasSetLoggerCallback",
@@ -377,7 +382,8 @@ FORWARD_API_CALLS = [
     "cudaIpcCloseMemHandle",
     "cudaDeviceFlushGPUDirectRDMAWrites",
     "cudnnSetOpTensorDescriptor",
-    "cublasSetVector"
+    "cublasSetVector",
+    "cudnnSetRNNBiasMode"
 ]
 
 # API calls that has the first argument set
@@ -461,6 +467,8 @@ UNSUPPORTED_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
+    "cudnnGetRNNBiasMode",
+    "cudnnGetRNNMatrixMathType",
     "cublasGetSmCountTarget",
     "cublasGetProperty",
     "cudnnGetConvolutionBackwardFilterAlgorithmMaxCount",
@@ -481,6 +489,7 @@ CUDA_GET_2_PARAM_FUNCS = [
 ]
 
 CUDA_GET_2_3_PARAM_FUNCS = [
+    "cudaStreamGetCaptureInfo",
     "cuDevicePrimaryCtxGetState"
 ]
 
