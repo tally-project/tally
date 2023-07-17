@@ -1,0 +1,50 @@
+#!/bin/bash
+
+kill_tally_server() {
+    # stop server
+    pid=$(ps -ef | grep tally_server | grep -v grep | awk '{print $2}')
+    kill -15 $pid > /dev/null 2>&1
+}
+
+run_tally_test() {
+    # Launch tally server in the background
+    ./start_server.sh &
+
+    # Launch client process
+    echo $@
+    ./start_client.sh $@
+
+    kill_tally_server
+}
+
+test_list=(
+    "./build/tests/elementwise"
+    "./build/tests/matmul"
+    "./build/tests/max_pool"
+    "./build/tests/cudnn_test"
+    "./build/tests/cublas_test"
+    "./build/tests/cublasLt_test"
+    "./build/tests/cudnn-samples/samples"
+    "./tests/cudnn_samples_v8/conv_sample/conv_sample"
+    "./tests/cudnn_samples_v8/mnistCUDNN/mnistCUDNN"
+    "./tests/cudnn_samples_v8/multiHeadAttention/multiHeadAttention -attnTrain1 -attnDataType0 -attnNumHeads3 -attnBatchSize6 -attnBeamSize1 -attnQsize8 -attnKsize8 -attnVsize8 -attnProjQsize2 -attnProjKsize2 -attnProjVsize2 -attnProjOsize8 -attnResLink0 -attnSeqLenQ3 -attnSeqLenK10"
+    "./tests/cudnn_samples_v8/RNN/RNN"
+    "./tests/cudnn_samples_v8/RNN_v8.0/RNN"
+)
+
+# Set up
+trap kill_tally_server ERR
+set -e
+
+# Build tally and tests
+make
+cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
+
+# Run tests
+for item in "${test_list[@]}"; do
+    run_tally_test $item
+done
+
+sleep 1
+
+echo All tests passed!

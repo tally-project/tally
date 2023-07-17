@@ -57,8 +57,8 @@ void TallyServer::start(uint32_t interval) {
     auto time_ckpt = std::chrono::steady_clock::now();
     double req_count = 0.; 
 
-    send_ipc = new ipc::channel("server-to-client-350000", ipc::sender);
-    recv_ipc = new ipc::channel("client-to-server-350000", ipc::receiver);
+    send_ipc = new ipc::channel("server-to-client-380000", ipc::sender);
+    recv_ipc = new ipc::channel("client-to-server-380000", ipc::receiver);
 
     load_cache();
 

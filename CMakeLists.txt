@@ -135,23 +135,23 @@ if (LIBIPC_BUILD_DEMOS)
     add_subdirectory(${LIBIPC_PROJECT_DIR}/demo/send_recv)
 endif()
 
-add_executable(server ${PROJECT_SOURCE_DIR}/src/tally/server.cu ${TALLY_SERVER_SRC_FILES})
+add_executable(tally_server ${PROJECT_SOURCE_DIR}/src/tally/server.cu ${TALLY_SERVER_SRC_FILES})
 
-set_target_properties(server PROPERTIES
+set_target_properties(tally_server PROPERTIES
     CUDA_ARCHITECTURES "86"
     CUDA_RUNTIME_LIBRARY Shared
 )
 
 if(ENABLE_LOGGING)
-    target_compile_definitions(server PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
+    target_compile_definitions(tally_server PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
 endif()
 
-target_include_directories(server
+target_include_directories(tally_server
     PUBLIC  ${PROJECT_SOURCE_DIR}/include
     PUBLIC  ${LIBIPC_PROJECT_DIR}/include
 )
 
-target_link_libraries(server PUBLIC
+target_link_libraries(tally_server PUBLIC
     cuda
     cublas
     ipc

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./build/server
+./build/tally_server
