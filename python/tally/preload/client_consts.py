@@ -208,6 +208,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaFuncGetAttributes",
     "cublasSgemmStridedBatched",
     "cudnnGetTensorNdDescriptor",
     "cudnnSetRNNDataDescriptor",
@@ -256,6 +257,7 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "cudnnReorderFilterAndBias",
     "cudnnBatchNormalizationForwardTrainingEx",
     "cudnnBatchNormalizationBackwardEx",
+    "cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags",
     "__cudaRegisterFunction",
     "__cudaRegisterFatBinary",
     "__cudaRegisterFatBinaryEnd"

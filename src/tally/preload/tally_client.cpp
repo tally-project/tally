@@ -2164,4 +2164,71 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 	return err;
 }
 
+cudaError_t cudaFuncGetAttributes(struct cudaFuncAttributes * attr, const void * func)
+{
+	TALLY_LOG("cudaFuncGetAttributes hooked");
+    TALLY_CLIENT_PROFILE_START;
+
+#ifdef RUN_LOCALLY
+	auto err = lcudaFuncGetAttributes(attr, func);
+#else
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaFuncGetAttributesArg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    auto msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAFUNCGETATTRIBUTES;
+    
+    auto arg_ptr = (struct cudaFuncGetAttributesArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->attr = attr;
+	arg_ptr->func = const_cast<void *>(func);
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+	auto res = (cudaFuncGetAttributesResponse *) dat;
+	if (attr) { *attr = res->attr; }
+	auto err = res->err;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaFuncGetAttributes);
+	return err;
+}
+
+cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBlocks, const void * func, int  blockSize, size_t  dynamicSMemSize, unsigned int  flags)
+{
+	TALLY_LOG("cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags hooked");
+    TALLY_CLIENT_PROFILE_START;
+
+#ifdef RUN_LOCALLY
+	auto err = lcudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(numBlocks, func, blockSize, dynamicSMemSize, flags);
+#else
+
+    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsArg);
+
+    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
+    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
+    msg_header->api_id = CUDA_API_ENUM::CUDAOCCUPANCYMAXACTIVEBLOCKSPERMULTIPROCESSORWITHFLAGS;
+    
+    auto arg_ptr = (struct cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
+	arg_ptr->numBlocks = numBlocks;
+	arg_ptr->func = const_cast<void *>(func);
+	arg_ptr->blockSize = blockSize;
+	arg_ptr->dynamicSMemSize = dynamicSMemSize;
+	arg_ptr->flags = flags;
+
+	CLIENT_SEND_MSG_AND_FREE;
+	CLIENT_RECV_MSG;
+
+	auto res = (cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse *) dat;
+	*numBlocks = res->numBlocks;
+	auto err = res->err;
+#endif
+
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags);
+
+	return err;
+}
+
 }

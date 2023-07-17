@@ -753,4 +753,28 @@ struct cublasSgemmStridedBatchedArg {
 	int  batchCount;
 };
 
+struct cudaFuncGetAttributesArg {
+	struct cudaFuncAttributes * attr;
+	void * func;
+};
+
+struct cudaFuncGetAttributesResponse {
+	struct cudaFuncAttributes  attr;
+	cudaError_t err;
+};
+
+struct cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsArg {
+	int * numBlocks;
+	void * func;
+	int  blockSize;
+	size_t  dynamicSMemSize;
+	unsigned int  flags;
+};
+
+struct cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse {
+	int  numBlocks;
+	cudaError_t err;
+};
+
+
 #endif // TALLY_DEF_H

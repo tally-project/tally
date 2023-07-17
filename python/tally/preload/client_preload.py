@@ -206,7 +206,7 @@ def gen_func_client_preload(func_sig):
     func_preload_builder += f"\tTALLY_LOG(\"{func_name} hooked\");\n"
 
     if is_get_param_func(func_name):
-        func_preload_builder += "TALLY_CLIENT_PROFILE_START;\n"
+        func_preload_builder += "\tTALLY_CLIENT_PROFILE_START;\n"
         func_preload_builder += "#ifdef RUN_LOCALLY\n"
         func_preload_builder += f"\tauto err = l{func_name}({arg_names_str});\n"
         func_preload_builder += "#else\n"
@@ -226,7 +226,7 @@ def gen_func_client_preload(func_sig):
         func_preload_builder += f"\tTALLY_CLIENT_PROFILE_END;\n"
         func_preload_builder += f"\tTALLY_CLIENT_TRACE_API_CALL({func_name});\n"
 
-        func_preload_builder += "\treturn err;"
+        func_preload_builder += "\treturn err;\n"
     
     elif func_name in FORWARD_API_CALLS:
         func_preload_builder += "\tTALLY_CLIENT_PROFILE_START;\n"

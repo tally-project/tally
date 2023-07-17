@@ -1645,3 +1645,49 @@ void TallyServer::handle_cublasSgemmStridedBatched(void *__args)
         send_ipc->wait_for_recv(1);
     }
 }
+
+void TallyServer::handle_cudaFuncGetAttributes(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudaFuncGetAttributes");
+	auto args = (struct cudaFuncGetAttributesArg *) __args;
+
+    assert(_kernel_client_addr_mapping.find(args->func) != _kernel_client_addr_mapping.end());
+
+	struct cudaFuncAttributes  attr;
+	cudaError_t err = cudaFuncGetAttributes(&attr, _kernel_client_addr_mapping[args->func]);
+	struct cudaFuncGetAttributesResponse res {
+		attr,
+		err
+    };
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaFuncGetAttributesResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
+
+void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(void *__args)
+{
+	TALLY_SPD_LOG("Received request: cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags");
+	
+    auto args = (struct cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsArg *) __args;
+
+    assert(_kernel_client_addr_mapping.find(args->func) != _kernel_client_addr_mapping.end());
+
+	int  numBlocks;
+	cudaError_t err = cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
+        &numBlocks,
+        _kernel_client_addr_mapping[args->func],
+        args->blockSize,
+        args->dynamicSMemSize,
+        args->flags
+    );
+
+	struct cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse res {
+		numBlocks,
+		err
+    };
+
+    while(!send_ipc->send((void *) &res, sizeof(struct cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse))) {
+        send_ipc->wait_for_recv(1);
+    }
+}
