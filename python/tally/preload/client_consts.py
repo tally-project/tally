@@ -133,6 +133,10 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 
 #include "libipc/ipc.h"
 
+#include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
+#include "iceoryx_posh/popo/untyped_server.hpp"
+#include "iceoryx_posh/runtime/posh_runtime.hpp"
+
 #include <tally/log.h>
 #include <tally/msg_struct.h>
 
@@ -155,16 +159,24 @@ public:
     bool cubin_registered = false;
 
     std::atomic<bool> is_quit__ {false};
-    ipc::channel *send_ipc = nullptr;
-    ipc::channel *recv_ipc = nullptr;
-    std::map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
     std::map<std::string, void *> _kernel_name_to_addr;
-    std::map<void *, void *> _kernel_client_addr_mapping;
     std::vector<std::pair<void *, std::string>> register_queue;
-    std::unordered_map<CUDA_API_ENUM, std::function<void(void *)>> cuda_api_handler_map;
 
     const static size_t msg_size = 1024 * 1024 * 1024;
     uint8_t *msg;
+
+    std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
+    std::unordered_map<void *, void *> _kernel_client_addr_mapping;
+
+#ifdef USE_IOX_IPC
+    std::unordered_map<CUDA_API_ENUM, std::function<void(void *, const void* const)>> cuda_api_handler_map;
+    static constexpr char APP_NAME[] = "iox-cpp-request-response-server-untyped";
+	iox::popo::UntypedServer *iox_server;
+#else
+    std::unordered_map<CUDA_API_ENUM, std::function<void(void *)>> cuda_api_handler_map;
+    ipc::channel *send_ipc = nullptr;
+    ipc::channel *recv_ipc = nullptr;
+#endif
 
     TallyServer();
     ~TallyServer();
@@ -176,9 +188,6 @@ public:
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
-    void handle___cudaRegisterFatBinary(void *args);
-    void handle___cudaRegisterFunction(void *args);
-    void handle___cudaRegisterFatBinaryEnd(void *args);
 };
 
 #endif // TALLY_SERVER_H
@@ -194,6 +203,13 @@ TALLY_CLIENT_SRC_TEMPLATE_TOP = f"""
 TallyClient *TallyClient::client = new TallyClient;
 
 """
+
+REGISTER_FUNCS = [
+    "__cudaRegisterFatBinary",
+    "__cudaRegisterFunction",
+    "__cudaRegisterFatBinaryEnd"
+]
+
 
 # let the client call the APIs directly
 DIRECT_CALLS = [
@@ -672,3 +688,33 @@ def get_preload_func_template(func_name, arg_names, arg_types):
     preload_body += "\tCLIENT_RECV_MSG;\n"
 
     return preload_body
+
+
+def get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type):
+    func_preload_builder = f"""
+    {ret_type} err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof({func_name}Arg), alignof({func_name}Arg))
+        .and_then([&](auto& requestPayload) {{
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::{func_name.upper()};
+            
+            auto request = ({func_name}Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+"""
+    for idx, arg_name in enumerate(arg_names):
+        arg_type = arg_types[idx]
+        if arg_type.strip() == "const void *" or arg_type.strip() == "const void*":
+            func_preload_builder += f"\t\t\trequest->{arg_name} = const_cast<void *>({arg_name});\n"
+        elif arg_type.strip() == "const int32_t []":
+            func_preload_builder += f"\t\t\trequest->{arg_name} = const_cast<int32_t *>({arg_name});\n"
+        else:
+            func_preload_builder += f"\t\t\trequest->{arg_name} = {arg_name};\n"
+
+    func_preload_builder += f"""
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) {{ LOG_ERR_AND_EXIT("Could not send Request: ", error); }});
+        }})
+        .or_else([](auto& error) {{ LOG_ERR_AND_EXIT("Could not allocate Request: ", error); }});
+"""
+    return func_preload_builder

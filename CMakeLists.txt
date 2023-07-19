@@ -6,17 +6,29 @@ set(CMAKE_CUDA_COMPILER nvcc)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE "Release")
 # set(CMAKE_BUILD_TYPE "Debug")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-comment")
 
 option(ENABLE_LOGGING "Enable logging" OFF)
 option(ENABLE_PROFILING "Enable profiling" OFF)
 option(RUN_LOCALLY "Run client process locally" OFF)
+option(USE_IOX_IPC "use iceoryx" ON)
 
 link_directories(/usr/local/cuda/lib64)
 
 FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
 
 add_subdirectory(third_party/spdlog)
+add_subdirectory(third_party/iceoryx/iceoryx_meta)
+
+include(GNUInstallDirs)
+
+find_package(iceoryx_platform REQUIRED)
+find_package(iceoryx_posh REQUIRED)
+find_package(iceoryx_hoofs REQUIRED)
+
+include(IceoryxPackageHelper)
+include(IceoryxPlatform)
+include(IceoryxPlatformSettings)
 
 set (LIBIPC_PROJECT_DIR ${PROJECT_SOURCE_DIR}/third_party/cpp-ipc)
 
@@ -70,8 +82,12 @@ if(ENABLE_PROFILING)
     target_compile_definitions(tally_client PRIVATE ENABLE_PROFILING=${ENABLE_PROFILING})
 endif()
 
-if (RUN_LOCALLY)
+if(RUN_LOCALLY)
     target_compile_definitions(tally_client PRIVATE RUN_LOCALLY=${RUN_LOCALLY})
+endif()
+
+if(USE_IOX_IPC)
+    target_compile_definitions(tally_client PRIVATE USE_IOX_IPC=${USE_IOX_IPC})
 endif()
 
 target_include_directories(tally_client
@@ -85,7 +101,9 @@ target_link_libraries(tally_client PUBLIC
     PUBLIC Boost::serialization 
     PUBLIC Boost::regex
     $<$<NOT:$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>:pthread>
-    $<$<NOT:$<OR:$<STREQUAL:${CMAKE_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>>:rt>)
+    $<$<NOT:$<OR:$<STREQUAL:${CMAKE_SYSTEM_NAME},Windows>,$<STREQUAL:${CMAKE_SYSTEM_NAME},QNX>>>:rt>
+    iceoryx_posh::iceoryx_posh
+)
 
 target_compile_definitions(tally_client PRIVATE IS_CLIENT="TRUE")
 
@@ -135,24 +153,25 @@ if (LIBIPC_BUILD_DEMOS)
     add_subdirectory(${LIBIPC_PROJECT_DIR}/demo/send_recv)
 endif()
 
-add_executable(tally_server ${PROJECT_SOURCE_DIR}/src/tally/server.cu ${TALLY_SERVER_SRC_FILES})
-
-set_target_properties(tally_server PROPERTIES
-    CUDA_ARCHITECTURES "86"
-    CUDA_RUNTIME_LIBRARY Shared
-)
+add_executable(tally_server ${PROJECT_SOURCE_DIR}/src/tally/tally_server.cpp ${TALLY_SERVER_SRC_FILES})
 
 if(ENABLE_LOGGING)
     target_compile_definitions(tally_server PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
 endif()
 
+if(USE_IOX_IPC)
+    target_compile_definitions(tally_server PRIVATE USE_IOX_IPC=${USE_IOX_IPC})
+endif()
+
 target_include_directories(tally_server
+    PUBLIC  /usr/local/cuda/include
     PUBLIC  ${PROJECT_SOURCE_DIR}/include
     PUBLIC  ${LIBIPC_PROJECT_DIR}/include
 )
 
 target_link_libraries(tally_server PUBLIC
     cuda
+    cudart
     cublas
     ipc
     dl
@@ -162,6 +181,7 @@ target_link_libraries(tally_server PUBLIC
     PUBLIC Boost::serialization
     PUBLIC Boost::regex
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
+    iceoryx_posh::iceoryx_posh
 )
 
 add_subdirectory(tests)

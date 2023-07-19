@@ -48,3 +48,13 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+.tally_cache
+.tally_cache_client
+data/
+
+tests/cudnn_samples_v8/RNN/RNN
+tests/cudnn_samples_v8/RNN_v8.0/RNN
+tests/cudnn_samples_v8/conv_sample/conv_sample
+tests/cudnn_samples_v8/mnistCUDNN/mnistCUDNN
+tests/cudnn_samples_v8/multiHeadAttention/multiHeadAttention

@@ -11,6 +11,7 @@ from tally.preload.client_consts import (
     MSG_STRUCT_TEMPLATE_BUTTOM,
     TALLY_SERVER_HEADER_TEMPLATE_TOP,
     TALLY_SERVER_HEADER_TEMPLATE_BUTTOM,
+    REGISTER_FUNCS,
     TALLY_CLIENT_SRC_TEMPLATE_TOP,
     SPECIAL_CLIENT_PRELOAD_FUNCS,
     PARAM_INDICES,
@@ -18,6 +19,7 @@ from tally.preload.client_consts import (
     FORWARD_API_CALLS,
     DIRECT_CALLS,
     get_preload_func_template,
+    get_preload_func_template_iox,
     is_get_param_func,
     get_param_group
 )
@@ -109,8 +111,76 @@ def gen_server_handler(func_sig):
         return None
 
     handler = ""
-    handler += f"""
-void TallyServer::handle_{func_name}(void *__args)
+
+    handler += "#ifdef USE_IOX_IPC\n"
+
+    handler += f"""void TallyServer::handle_{func_name}(void *__args, const void* const requestPayload)
+{{
+"""
+    handler += f"\tTALLY_SPD_LOG(\"Received request: {func_name}\");\n"
+
+    if is_get_param_func(func_name):
+        group = get_param_group(func_name)
+        indices = PARAM_INDICES[group]
+
+        handler += f"\tauto args = (struct {func_name}Arg *) __args;\n"
+
+        handler += f"""
+    auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    iox_server->loan(requestHeader, sizeof({func_name}Response), alignof({func_name}Response))
+        .and_then([&](auto& responsePayload) {{
+            auto response = static_cast<{func_name}Response*>(responsePayload);
+            response->err = {func_name}(
+"""
+
+        for idx in range(len(arg_names)):
+            if idx in indices:
+                handler += f"\t\t\t\t(args->{arg_names[idx]} ? &(response->{arg_names[idx]}) : NULL)"
+            else:
+                handler += f"\t\t\t\targs->{arg_names[idx]}"
+            if idx != len(arg_names) - 1:
+                handler += ",\n"
+            else:
+                handler += "\n\t\t\t);\n"
+
+        handler += f"""
+            iox_server->send(response).or_else(
+                [&](auto& error) {{ LOG_ERR_AND_EXIT("Could not send Response: ", error); }});
+        }})
+        .or_else(
+            [&](auto& error) {{ LOG_ERR_AND_EXIT("Could not allocate Response: ", error); }});
+"""
+    elif func_name in FORWARD_API_CALLS:
+        handler += f"\tauto args = (struct {func_name}Arg *) __args;\n"
+
+        handler += f"""
+    auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    iox_server->loan(requestHeader, sizeof({ret_type}), alignof({ret_type}))
+        .and_then([&](auto& responsePayload) {{
+            auto response = static_cast<{ret_type}*>(responsePayload);
+            *response = {func_name}(
+"""
+        for idx, arg_name in enumerate(arg_names):
+            handler += f"\t\t\t\targs->{arg_name}"
+            if idx != len(arg_names) - 1:
+                handler += ",\n"
+
+        handler += f"""
+            );
+            iox_server->send(response).or_else(
+                [&](auto& error) {{ LOG_ERR_AND_EXIT("Could not send Response: ", error); }});
+        }})
+        .or_else(
+            [&](auto& error) {{ LOG_ERR_AND_EXIT("Could not allocate Response: ", error); }});
+"""
+    else:
+        handler += f"\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": Unimplemented.\");\n"
+
+    handler += "}\n"
+
+    handler += "#else\n"
+
+    handler += f"""void TallyServer::handle_{func_name}(void *__args)
 {{
 """
 
@@ -142,8 +212,8 @@ void TallyServer::handle_{func_name}(void *__args)
         for idx in indices:
             handler += f"\t\t{arg_names[idx]},\n"
         
-        handler += f"\t\terr"
-        handler += "};\n"
+        handler += f"\t\terr\n"
+        handler += "\t};\n"
 
         handler += f"""
     while(!send_ipc->send((void *) &res, sizeof(struct {func_name}Response))) {{
@@ -151,16 +221,14 @@ void TallyServer::handle_{func_name}(void *__args)
     }}
 """
     elif func_name in FORWARD_API_CALLS:
-        handler += f"""
-    auto args = (struct {func_name}Arg *) __args;
-    {ret_type} err = {func_name}(
-"""
+
+        handler += f"\tauto args = (struct {func_name}Arg *) __args;\n"
+        handler += f"\t{ret_type} err = {func_name}(\n"
 
         for idx, arg_name in enumerate(arg_names):
             handler += f"\t\targs->{arg_name}"
             if idx != len(arg_names) - 1:
-                handler += ","
-            handler += "\n"
+                handler += ",\n"
 
         handler += f"""
     );
@@ -169,15 +237,12 @@ void TallyServer::handle_{func_name}(void *__args)
         send_ipc->wait_for_recv(1);
     }}
 """
-        # if ret_type == "cudnnStatus_t":
-        #     handler += """if (err != CUDNN_STATUS_SUCCESS) std::cerr << "cudnnStatus_t not success" << std::endl; """
-
-    elif func_name in DIRECT_CALLS:
-        pass
     else:
         handler += f"\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": Unimplemented.\");\n"
 
     handler += "}\n"
+
+    handler += "#endif\n\n"
 
     return handler
 
@@ -206,21 +271,41 @@ def gen_func_client_preload(func_sig):
     func_preload_builder += f"\tTALLY_LOG(\"{func_name} hooked\");\n"
 
     if is_get_param_func(func_name):
-        func_preload_builder += "\tTALLY_CLIENT_PROFILE_START;\n"
-        func_preload_builder += "#ifdef RUN_LOCALLY\n"
-        func_preload_builder += f"\tauto err = l{func_name}({arg_names_str});\n"
-        func_preload_builder += "#else\n"
-
         group = get_param_group(func_name)
         indices = PARAM_INDICES[group]
         res_struct = f"{func_name}Response"
+
+        func_preload_builder += "\tTALLY_CLIENT_PROFILE_START;\n"
+        func_preload_builder += "#if defined(RUN_LOCALLY)\n"
+        func_preload_builder += f"\tauto err = l{func_name}({arg_names_str});\n"
+        func_preload_builder += "#elif defined(USE_IOX_IPC)\n"
+        func_preload_builder += get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type)
+        func_preload_builder += f"""
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {{
+            auto response = static_cast<const {func_name}Response*>(responsePayload);
+"""
+
+        for idx in indices:
+            func_preload_builder += f"\t\t\tif ({arg_names[idx]}) {{ *{arg_names[idx]} = response->{arg_names[idx]}; }}\n"
+
+        func_preload_builder += """
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+"""
+        func_preload_builder += "#else"
 
         func_preload_builder += get_preload_func_template(func_name, arg_names, arg_types)
         func_preload_builder += f"\tauto res = ({res_struct} *) dat;\n"
         for idx in indices:
             func_preload_builder += f"\tif ({arg_names[idx]}) {{ *{arg_names[idx]} = res->{arg_names[idx]}; }}\n"
         
-        func_preload_builder += f"\tauto err = res->err;\n"
+        func_preload_builder += f"\tauto err = res->err;\n\n"
         func_preload_builder += f"#endif\n"
 
         func_preload_builder += f"\tTALLY_CLIENT_PROFILE_END;\n"
@@ -230,23 +315,41 @@ def gen_func_client_preload(func_sig):
     
     elif func_name in FORWARD_API_CALLS:
         func_preload_builder += "\tTALLY_CLIENT_PROFILE_START;\n"
-        func_preload_builder += "#ifdef RUN_LOCALLY\n"
+        func_preload_builder += "#if defined(RUN_LOCALLY)\n"
         func_preload_builder += f"\tauto err = l{func_name}({arg_names_str});\n"
+        func_preload_builder += "#elif defined(USE_IOX_IPC)\n"
+
+        func_preload_builder += get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type)
+
+        func_preload_builder += f"""
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {{
+            
+            auto response = static_cast<const {ret_type}*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }}))
+    {{}};
+
+    return err;     
+"""
         func_preload_builder += "#else\n"
+
         func_preload_builder += get_preload_func_template(func_name, arg_names, arg_types)
 
         func_preload_builder += f"\tauto res = ({ret_type} *) dat;\n"
-        func_preload_builder += f"\tauto err = *res;\n"
+        func_preload_builder += f"\tauto err = *res;\n\n"
         func_preload_builder += f"#endif\n"
 
         func_preload_builder += f"\tTALLY_CLIENT_PROFILE_END;\n"
         func_preload_builder += f"\tTALLY_CLIENT_TRACE_API_CALL({func_name});\n"
 
         func_preload_builder += "\treturn err;\n"
+
     elif func_name in DIRECT_CALLS:
         # call original
         if ret_type != "void":
-            func_preload_builder += f"\t{ret_type} res = \n"
+            func_preload_builder += f"\t{ret_type} res = "
             
         func_preload_builder += f"\t\t{preload_func_name}({arg_names_str});\n"
 
@@ -354,8 +457,13 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
     with open(server_header_output_file, 'w') as f:
         f.write(TALLY_SERVER_HEADER_TEMPLATE_TOP)
 
-        for func_name in client_code_dict:
+        f.write("#ifdef USE_IOX_IPC\n")
+        for func_name in set(list(client_code_dict.keys()) + REGISTER_FUNCS):
+            f.write(f"\tvoid handle_{func_name}(void *args, const void* const requestPayload);\n")
+        f.write("#else\n")
+        for func_name in set(list(client_code_dict.keys()) + REGISTER_FUNCS):
             f.write(f"\tvoid handle_{func_name}(void *args);\n")
+        f.write("#endif\n\n")
 
         f.write(TALLY_SERVER_HEADER_TEMPLATE_BUTTOM)
 
@@ -365,8 +473,8 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
                 
 #include "spdlog/spdlog.h"
 
-#include <tally/transform.h>
 #include <tally/util.h>
+#include <tally/ipc_util.h>
 #include <tally/msg_struct.h>
 #include <tally/generated/cuda_api.h>
 #include <tally/generated/msg_struct.h>
@@ -376,9 +484,18 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
 
         f.write("void TallyServer::register_api_handler() {\n")
 
+        f.write("#ifdef USE_IOX_IPC\n")
+
+        for func_name in set(list(client_code_dict.keys()) + SPECIAL_CLIENT_PRELOAD_FUNCS):
+            f.write(f"\tcuda_api_handler_map[CUDA_API_ENUM::{func_name.upper()}] = std::bind(&TallyServer::handle_{func_name}, this, std::placeholders::_1, std::placeholders::_2);\n")
+
+        f.write("#else\n")
+
         for func_name in set(list(client_code_dict.keys()) + SPECIAL_CLIENT_PRELOAD_FUNCS):
             f.write(f"\tcuda_api_handler_map[CUDA_API_ENUM::{func_name.upper()}] = std::bind(&TallyServer::handle_{func_name}, this, std::placeholders::_1);\n")
         
+        f.write("#endif\n")
+
         f.write("}\n")
 
         for func_name in client_code_dict:

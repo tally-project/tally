@@ -27,6 +27,31 @@ inline bool is_dev_addr(const std::vector<DeviceMemoryKey> &dev_addr_map, const 
     return false;
 }
 
+inline void convert_stack_void_ptr_to_value(void *arrayOfElements, size_t elementCount, std::vector<DeviceMemoryKey> &dev_addr_map)
+{
+    auto pointer_arr = (void **) (arrayOfElements);
+
+    for (int i = 0; i < elementCount; i++) {
+        auto pointer = pointer_arr[i];
+
+        if (pointer == nullptr) {
+            continue;
+        }
+
+        auto found = is_dev_addr(dev_addr_map, pointer);
+
+        // pointer points to CPU memory
+        if (!found) {
+
+            // Get the value from the CPU pointers
+            uint64_t val = *((uint64_t *) pointer);
+
+            // Store the value instead of addr
+            pointer_arr[i] = (void *) val;
+        }
+    }
+}
+
 inline void free_dev_addr(std::vector<DeviceMemoryKey> &dev_addr_map, void *addr)
 {   
     for (auto it = dev_addr_map.begin(); it != dev_addr_map.end(); it++) {

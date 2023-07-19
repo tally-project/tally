@@ -30,16 +30,14 @@ extern "C" {
 CUresult cuGetErrorString(CUresult  error, const char ** pStr)
 {
 	TALLY_LOG("cuGetErrorString hooked");
-	CUresult res = 
-		lcuGetErrorString(error, pStr);
+	CUresult res = 		lcuGetErrorString(error, pStr);
 	return res;
 }
 
 CUresult cuGetErrorName(CUresult  error, const char ** pStr)
 {
 	TALLY_LOG("cuGetErrorName hooked");
-	CUresult res = 
-		lcuGetErrorName(error, pStr);
+	CUresult res = 		lcuGetErrorName(error, pStr);
 	return res;
 }
 
@@ -47,8 +45,36 @@ CUresult cuInit(unsigned int  Flags)
 {
 	TALLY_LOG("cuInit hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuInit(Flags);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuInitArg), alignof(cuInitArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUINIT;
+            
+            auto request = (cuInitArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->Flags = Flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuInitArg);
@@ -63,6 +89,7 @@ CUresult cuInit(unsigned int  Flags)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuInit);
@@ -73,10 +100,39 @@ CUresult cuDriverGetVersion(int * driverVersion)
 {
 	TALLY_LOG("cuDriverGetVersion hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDriverGetVersion(driverVersion);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDriverGetVersionArg), alignof(cuDriverGetVersionArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDRIVERGETVERSION;
+            
+            auto request = (cuDriverGetVersionArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->driverVersion = driverVersion;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDriverGetVersionResponse*>(responsePayload);
+			if (driverVersion) { *driverVersion = response->driverVersion; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDriverGetVersionArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -90,6 +146,7 @@ CUresult cuDriverGetVersion(int * driverVersion)
 	auto res = (cuDriverGetVersionResponse *) dat;
 	if (driverVersion) { *driverVersion = res->driverVersion; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDriverGetVersion);
@@ -100,10 +157,40 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 {
 	TALLY_LOG("cuDeviceGet hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGet(device, ordinal);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetArg), alignof(cuDeviceGetArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGET;
+            
+            auto request = (cuDeviceGetArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->device = device;
+			request->ordinal = ordinal;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetResponse*>(responsePayload);
+			if (device) { *device = response->device; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -118,6 +205,7 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 	auto res = (cuDeviceGetResponse *) dat;
 	if (device) { *device = res->device; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGet);
@@ -128,10 +216,39 @@ CUresult cuDeviceGetCount(int * count)
 {
 	TALLY_LOG("cuDeviceGetCount hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetCount(count);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetCountArg), alignof(cuDeviceGetCountArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETCOUNT;
+            
+            auto request = (cuDeviceGetCountArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->count = count;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetCountResponse*>(responsePayload);
+			if (count) { *count = response->count; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetCountArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -145,6 +262,7 @@ CUresult cuDeviceGetCount(int * count)
 	auto res = (cuDeviceGetCountResponse *) dat;
 	if (count) { *count = res->count; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetCount);
@@ -161,10 +279,40 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 {
 	TALLY_LOG("cuDeviceGetUuid hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetUuid(uuid, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetUuidArg), alignof(cuDeviceGetUuidArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETUUID;
+            
+            auto request = (cuDeviceGetUuidArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->uuid = uuid;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetUuidResponse*>(responsePayload);
+			if (uuid) { *uuid = response->uuid; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuidArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -179,6 +327,7 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 	auto res = (cuDeviceGetUuidResponse *) dat;
 	if (uuid) { *uuid = res->uuid; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetUuid);
@@ -189,10 +338,40 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 {
 	TALLY_LOG("cuDeviceGetUuid_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetUuid_v2(uuid, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetUuid_v2Arg), alignof(cuDeviceGetUuid_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETUUID_V2;
+            
+            auto request = (cuDeviceGetUuid_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->uuid = uuid;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetUuid_v2Response*>(responsePayload);
+			if (uuid) { *uuid = response->uuid; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuid_v2Arg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -207,6 +386,7 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 	auto res = (cuDeviceGetUuid_v2Response *) dat;
 	if (uuid) { *uuid = res->uuid; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetUuid_v2);
@@ -217,10 +397,42 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
 {
 	TALLY_LOG("cuDeviceGetLuid hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetLuid(luid, deviceNodeMask, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetLuidArg), alignof(cuDeviceGetLuidArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETLUID;
+            
+            auto request = (cuDeviceGetLuidArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->luid = luid;
+			request->deviceNodeMask = deviceNodeMask;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetLuidResponse*>(responsePayload);
+			if (luid) { *luid = response->luid; }
+			if (deviceNodeMask) { *deviceNodeMask = response->deviceNodeMask; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetLuidArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -237,6 +449,7 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
 	if (luid) { *luid = res->luid; }
 	if (deviceNodeMask) { *deviceNodeMask = res->deviceNodeMask; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetLuid);
@@ -247,10 +460,40 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 {
 	TALLY_LOG("cuDeviceTotalMem_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceTotalMem_v2(bytes, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceTotalMem_v2Arg), alignof(cuDeviceTotalMem_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICETOTALMEM_V2;
+            
+            auto request = (cuDeviceTotalMem_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->bytes = bytes;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceTotalMem_v2Response*>(responsePayload);
+			if (bytes) { *bytes = response->bytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceTotalMem_v2Arg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -265,6 +508,7 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 	auto res = (cuDeviceTotalMem_v2Response *) dat;
 	if (bytes) { *bytes = res->bytes; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceTotalMem_v2);
@@ -275,10 +519,42 @@ CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray
 {
 	TALLY_LOG("cuDeviceGetTexture1DLinearMaxWidth hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetTexture1DLinearMaxWidth(maxWidthInElements, format, numChannels, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetTexture1DLinearMaxWidthArg), alignof(cuDeviceGetTexture1DLinearMaxWidthArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETTEXTURE1DLINEARMAXWIDTH;
+            
+            auto request = (cuDeviceGetTexture1DLinearMaxWidthArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->maxWidthInElements = maxWidthInElements;
+			request->format = format;
+			request->numChannels = numChannels;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetTexture1DLinearMaxWidthResponse*>(responsePayload);
+			if (maxWidthInElements) { *maxWidthInElements = response->maxWidthInElements; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetTexture1DLinearMaxWidthArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -295,6 +571,7 @@ CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray
 	auto res = (cuDeviceGetTexture1DLinearMaxWidthResponse *) dat;
 	if (maxWidthInElements) { *maxWidthInElements = res->maxWidthInElements; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetTexture1DLinearMaxWidth);
@@ -305,10 +582,41 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
 {
 	TALLY_LOG("cuDeviceGetAttribute hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetAttribute(pi, attrib, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetAttributeArg), alignof(cuDeviceGetAttributeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETATTRIBUTE;
+            
+            auto request = (cuDeviceGetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pi = pi;
+			request->attrib = attrib;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetAttributeResponse*>(responsePayload);
+			if (pi) { *pi = response->pi; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetAttributeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -324,6 +632,7 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
 	auto res = (cuDeviceGetAttributeResponse *) dat;
 	if (pi) { *pi = res->pi; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetAttribute);
@@ -340,8 +649,37 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 {
 	TALLY_LOG("cuDeviceSetMemPool hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceSetMemPool(dev, pool);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceSetMemPoolArg), alignof(cuDeviceSetMemPoolArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICESETMEMPOOL;
+            
+            auto request = (cuDeviceSetMemPoolArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dev = dev;
+			request->pool = pool;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceSetMemPoolArg);
@@ -357,6 +695,7 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceSetMemPool);
@@ -367,10 +706,40 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 {
 	TALLY_LOG("cuDeviceGetMemPool hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetMemPool(pool, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetMemPoolArg), alignof(cuDeviceGetMemPoolArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETMEMPOOL;
+            
+            auto request = (cuDeviceGetMemPoolArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pool = pool;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetMemPoolResponse*>(responsePayload);
+			if (pool) { *pool = response->pool; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetMemPoolArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -385,6 +754,7 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 	auto res = (cuDeviceGetMemPoolResponse *) dat;
 	if (pool) { *pool = res->pool; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetMemPool);
@@ -395,10 +765,40 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 {
 	TALLY_LOG("cuDeviceGetDefaultMemPool hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetDefaultMemPool(pool_out, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetDefaultMemPoolArg), alignof(cuDeviceGetDefaultMemPoolArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETDEFAULTMEMPOOL;
+            
+            auto request = (cuDeviceGetDefaultMemPoolArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pool_out = pool_out;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetDefaultMemPoolResponse*>(responsePayload);
+			if (pool_out) { *pool_out = response->pool_out; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetDefaultMemPoolArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -413,6 +813,7 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 	auto res = (cuDeviceGetDefaultMemPoolResponse *) dat;
 	if (pool_out) { *pool_out = res->pool_out; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetDefaultMemPool);
@@ -423,8 +824,37 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
 {
 	TALLY_LOG("cuFlushGPUDirectRDMAWrites hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuFlushGPUDirectRDMAWrites(target, scope);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuFlushGPUDirectRDMAWritesArg), alignof(cuFlushGPUDirectRDMAWritesArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUFLUSHGPUDIRECTRDMAWRITES;
+            
+            auto request = (cuFlushGPUDirectRDMAWritesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->target = target;
+			request->scope = scope;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuFlushGPUDirectRDMAWritesArg);
@@ -440,6 +870,7 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuFlushGPUDirectRDMAWrites);
@@ -450,10 +881,40 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 {
 	TALLY_LOG("cuDeviceGetProperties hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetProperties(prop, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetPropertiesArg), alignof(cuDeviceGetPropertiesArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETPROPERTIES;
+            
+            auto request = (cuDeviceGetPropertiesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->prop = prop;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetPropertiesResponse*>(responsePayload);
+			if (prop) { *prop = response->prop; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetPropertiesArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -468,6 +929,7 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 	auto res = (cuDeviceGetPropertiesResponse *) dat;
 	if (prop) { *prop = res->prop; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetProperties);
@@ -478,10 +940,42 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
 {
 	TALLY_LOG("cuDeviceComputeCapability hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceComputeCapability(major, minor, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceComputeCapabilityArg), alignof(cuDeviceComputeCapabilityArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICECOMPUTECAPABILITY;
+            
+            auto request = (cuDeviceComputeCapabilityArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->major = major;
+			request->minor = minor;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceComputeCapabilityResponse*>(responsePayload);
+			if (major) { *major = response->major; }
+			if (minor) { *minor = response->minor; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceComputeCapabilityArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -498,6 +992,7 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
 	if (major) { *major = res->major; }
 	if (minor) { *minor = res->minor; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceComputeCapability);
@@ -508,10 +1003,40 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 {
 	TALLY_LOG("cuDevicePrimaryCtxRetain hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxRetain(pctx, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDevicePrimaryCtxRetainArg), alignof(cuDevicePrimaryCtxRetainArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRETAIN;
+            
+            auto request = (cuDevicePrimaryCtxRetainArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pctx = pctx;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDevicePrimaryCtxRetainResponse*>(responsePayload);
+			if (pctx) { *pctx = response->pctx; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRetainArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -526,6 +1051,7 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 	auto res = (cuDevicePrimaryCtxRetainResponse *) dat;
 	if (pctx) { *pctx = res->pctx; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxRetain);
@@ -536,8 +1062,36 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 {
 	TALLY_LOG("cuDevicePrimaryCtxRelease_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxRelease_v2(dev);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDevicePrimaryCtxRelease_v2Arg), alignof(cuDevicePrimaryCtxRelease_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRELEASE_V2;
+            
+            auto request = (cuDevicePrimaryCtxRelease_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRelease_v2Arg);
@@ -552,6 +1106,7 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxRelease_v2);
@@ -562,8 +1117,37 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 {
 	TALLY_LOG("cuDevicePrimaryCtxSetFlags_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxSetFlags_v2(dev, flags);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDevicePrimaryCtxSetFlags_v2Arg), alignof(cuDevicePrimaryCtxSetFlags_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXSETFLAGS_V2;
+            
+            auto request = (cuDevicePrimaryCtxSetFlags_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dev = dev;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxSetFlags_v2Arg);
@@ -579,6 +1163,7 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxSetFlags_v2);
@@ -589,10 +1174,42 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
 {
 	TALLY_LOG("cuDevicePrimaryCtxGetState hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxGetState(dev, flags, active);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDevicePrimaryCtxGetStateArg), alignof(cuDevicePrimaryCtxGetStateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXGETSTATE;
+            
+            auto request = (cuDevicePrimaryCtxGetStateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dev = dev;
+			request->flags = flags;
+			request->active = active;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDevicePrimaryCtxGetStateResponse*>(responsePayload);
+			if (flags) { *flags = response->flags; }
+			if (active) { *active = response->active; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxGetStateArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -609,6 +1226,7 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
 	if (flags) { *flags = res->flags; }
 	if (active) { *active = res->active; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxGetState);
@@ -619,8 +1237,36 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 {
 	TALLY_LOG("cuDevicePrimaryCtxReset_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxReset_v2(dev);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDevicePrimaryCtxReset_v2Arg), alignof(cuDevicePrimaryCtxReset_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRESET_V2;
+            
+            auto request = (cuDevicePrimaryCtxReset_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxReset_v2Arg);
@@ -635,6 +1281,7 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxReset_v2);
@@ -645,10 +1292,41 @@ CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUde
 {
 	TALLY_LOG("cuDeviceGetExecAffinitySupport hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetExecAffinitySupport(pi, type, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDeviceGetExecAffinitySupportArg), alignof(cuDeviceGetExecAffinitySupportArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETEXECAFFINITYSUPPORT;
+            
+            auto request = (cuDeviceGetExecAffinitySupportArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pi = pi;
+			request->type = type;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetExecAffinitySupportResponse*>(responsePayload);
+			if (pi) { *pi = response->pi; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetExecAffinitySupportArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -664,6 +1342,7 @@ CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUde
 	auto res = (cuDeviceGetExecAffinitySupportResponse *) dat;
 	if (pi) { *pi = res->pi; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetExecAffinitySupport);
@@ -674,10 +1353,41 @@ CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
 {
 	TALLY_LOG("cuCtxCreate_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxCreate_v2(pctx, flags, dev);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxCreate_v2Arg), alignof(cuCtxCreate_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXCREATE_V2;
+            
+            auto request = (cuCtxCreate_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pctx = pctx;
+			request->flags = flags;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxCreate_v2Response*>(responsePayload);
+			if (pctx) { *pctx = response->pctx; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxCreate_v2Arg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -693,6 +1403,7 @@ CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
 	auto res = (cuCtxCreate_v2Response *) dat;
 	if (pctx) { *pctx = res->pctx; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxCreate_v2);
@@ -709,8 +1420,36 @@ CUresult cuCtxDestroy_v2(CUcontext  ctx)
 {
 	TALLY_LOG("cuCtxDestroy_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxDestroy_v2(ctx);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxDestroy_v2Arg), alignof(cuCtxDestroy_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXDESTROY_V2;
+            
+            auto request = (cuCtxDestroy_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->ctx = ctx;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxDestroy_v2Arg);
@@ -725,6 +1464,7 @@ CUresult cuCtxDestroy_v2(CUcontext  ctx)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxDestroy_v2);
@@ -735,8 +1475,36 @@ CUresult cuCtxPushCurrent_v2(CUcontext  ctx)
 {
 	TALLY_LOG("cuCtxPushCurrent_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxPushCurrent_v2(ctx);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxPushCurrent_v2Arg), alignof(cuCtxPushCurrent_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXPUSHCURRENT_V2;
+            
+            auto request = (cuCtxPushCurrent_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->ctx = ctx;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxPushCurrent_v2Arg);
@@ -751,6 +1519,7 @@ CUresult cuCtxPushCurrent_v2(CUcontext  ctx)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxPushCurrent_v2);
@@ -761,10 +1530,39 @@ CUresult cuCtxPopCurrent_v2(CUcontext * pctx)
 {
 	TALLY_LOG("cuCtxPopCurrent_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxPopCurrent_v2(pctx);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxPopCurrent_v2Arg), alignof(cuCtxPopCurrent_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXPOPCURRENT_V2;
+            
+            auto request = (cuCtxPopCurrent_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pctx = pctx;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxPopCurrent_v2Response*>(responsePayload);
+			if (pctx) { *pctx = response->pctx; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxPopCurrent_v2Arg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -778,6 +1576,7 @@ CUresult cuCtxPopCurrent_v2(CUcontext * pctx)
 	auto res = (cuCtxPopCurrent_v2Response *) dat;
 	if (pctx) { *pctx = res->pctx; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxPopCurrent_v2);
@@ -788,8 +1587,36 @@ CUresult cuCtxSetCurrent(CUcontext  ctx)
 {
 	TALLY_LOG("cuCtxSetCurrent hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetCurrent(ctx);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxSetCurrentArg), alignof(cuCtxSetCurrentArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXSETCURRENT;
+            
+            auto request = (cuCtxSetCurrentArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->ctx = ctx;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetCurrentArg);
@@ -804,6 +1631,7 @@ CUresult cuCtxSetCurrent(CUcontext  ctx)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetCurrent);
@@ -814,10 +1642,39 @@ CUresult cuCtxGetCurrent(CUcontext * pctx)
 {
 	TALLY_LOG("cuCtxGetCurrent hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetCurrent(pctx);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxGetCurrentArg), alignof(cuCtxGetCurrentArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXGETCURRENT;
+            
+            auto request = (cuCtxGetCurrentArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pctx = pctx;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxGetCurrentResponse*>(responsePayload);
+			if (pctx) { *pctx = response->pctx; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetCurrentArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -831,6 +1688,7 @@ CUresult cuCtxGetCurrent(CUcontext * pctx)
 	auto res = (cuCtxGetCurrentResponse *) dat;
 	if (pctx) { *pctx = res->pctx; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetCurrent);
@@ -841,10 +1699,39 @@ CUresult cuCtxGetDevice(CUdevice * device)
 {
 	TALLY_LOG("cuCtxGetDevice hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetDevice(device);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxGetDeviceArg), alignof(cuCtxGetDeviceArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXGETDEVICE;
+            
+            auto request = (cuCtxGetDeviceArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->device = device;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxGetDeviceResponse*>(responsePayload);
+			if (device) { *device = response->device; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetDeviceArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -858,6 +1745,7 @@ CUresult cuCtxGetDevice(CUdevice * device)
 	auto res = (cuCtxGetDeviceResponse *) dat;
 	if (device) { *device = res->device; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetDevice);
@@ -868,10 +1756,39 @@ CUresult cuCtxGetFlags(unsigned int * flags)
 {
 	TALLY_LOG("cuCtxGetFlags hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetFlags(flags);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxGetFlagsArg), alignof(cuCtxGetFlagsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXGETFLAGS;
+            
+            auto request = (cuCtxGetFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxGetFlagsResponse*>(responsePayload);
+			if (flags) { *flags = response->flags; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetFlagsArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -885,6 +1802,7 @@ CUresult cuCtxGetFlags(unsigned int * flags)
 	auto res = (cuCtxGetFlagsResponse *) dat;
 	if (flags) { *flags = res->flags; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetFlags);
@@ -895,8 +1813,35 @@ CUresult cuCtxSynchronize()
 {
 	TALLY_LOG("cuCtxSynchronize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxSynchronize();
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxSynchronizeArg), alignof(cuCtxSynchronizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXSYNCHRONIZE;
+            
+            auto request = (cuCtxSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSynchronizeArg);
@@ -910,6 +1855,7 @@ CUresult cuCtxSynchronize()
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSynchronize);
@@ -920,8 +1866,37 @@ CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
 {
 	TALLY_LOG("cuCtxSetLimit hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetLimit(limit, value);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxSetLimitArg), alignof(cuCtxSetLimitArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXSETLIMIT;
+            
+            auto request = (cuCtxSetLimitArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->limit = limit;
+			request->value = value;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetLimitArg);
@@ -937,6 +1912,7 @@ CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetLimit);
@@ -947,10 +1923,40 @@ CUresult cuCtxGetLimit(size_t * pvalue, CUlimit  limit)
 {
 	TALLY_LOG("cuCtxGetLimit hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetLimit(pvalue, limit);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxGetLimitArg), alignof(cuCtxGetLimitArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXGETLIMIT;
+            
+            auto request = (cuCtxGetLimitArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pvalue = pvalue;
+			request->limit = limit;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxGetLimitResponse*>(responsePayload);
+			if (pvalue) { *pvalue = response->pvalue; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetLimitArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -965,6 +1971,7 @@ CUresult cuCtxGetLimit(size_t * pvalue, CUlimit  limit)
 	auto res = (cuCtxGetLimitResponse *) dat;
 	if (pvalue) { *pvalue = res->pvalue; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetLimit);
@@ -975,10 +1982,39 @@ CUresult cuCtxGetCacheConfig(CUfunc_cache * pconfig)
 {
 	TALLY_LOG("cuCtxGetCacheConfig hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetCacheConfig(pconfig);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxGetCacheConfigArg), alignof(cuCtxGetCacheConfigArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXGETCACHECONFIG;
+            
+            auto request = (cuCtxGetCacheConfigArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pconfig = pconfig;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxGetCacheConfigResponse*>(responsePayload);
+			if (pconfig) { *pconfig = response->pconfig; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetCacheConfigArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -992,6 +2028,7 @@ CUresult cuCtxGetCacheConfig(CUfunc_cache * pconfig)
 	auto res = (cuCtxGetCacheConfigResponse *) dat;
 	if (pconfig) { *pconfig = res->pconfig; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetCacheConfig);
@@ -1002,8 +2039,36 @@ CUresult cuCtxSetCacheConfig(CUfunc_cache  config)
 {
 	TALLY_LOG("cuCtxSetCacheConfig hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetCacheConfig(config);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxSetCacheConfigArg), alignof(cuCtxSetCacheConfigArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXSETCACHECONFIG;
+            
+            auto request = (cuCtxSetCacheConfigArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->config = config;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetCacheConfigArg);
@@ -1018,6 +2083,7 @@ CUresult cuCtxSetCacheConfig(CUfunc_cache  config)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetCacheConfig);
@@ -1028,10 +2094,39 @@ CUresult cuCtxGetSharedMemConfig(CUsharedconfig * pConfig)
 {
 	TALLY_LOG("cuCtxGetSharedMemConfig hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetSharedMemConfig(pConfig);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxGetSharedMemConfigArg), alignof(cuCtxGetSharedMemConfigArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXGETSHAREDMEMCONFIG;
+            
+            auto request = (cuCtxGetSharedMemConfigArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pConfig = pConfig;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxGetSharedMemConfigResponse*>(responsePayload);
+			if (pConfig) { *pConfig = response->pConfig; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetSharedMemConfigArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1045,6 +2140,7 @@ CUresult cuCtxGetSharedMemConfig(CUsharedconfig * pConfig)
 	auto res = (cuCtxGetSharedMemConfigResponse *) dat;
 	if (pConfig) { *pConfig = res->pConfig; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetSharedMemConfig);
@@ -1055,8 +2151,36 @@ CUresult cuCtxSetSharedMemConfig(CUsharedconfig  config)
 {
 	TALLY_LOG("cuCtxSetSharedMemConfig hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetSharedMemConfig(config);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxSetSharedMemConfigArg), alignof(cuCtxSetSharedMemConfigArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXSETSHAREDMEMCONFIG;
+            
+            auto request = (cuCtxSetSharedMemConfigArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->config = config;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetSharedMemConfigArg);
@@ -1071,6 +2195,7 @@ CUresult cuCtxSetSharedMemConfig(CUsharedconfig  config)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetSharedMemConfig);
@@ -1081,10 +2206,40 @@ CUresult cuCtxGetApiVersion(CUcontext  ctx, unsigned int * version)
 {
 	TALLY_LOG("cuCtxGetApiVersion hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetApiVersion(ctx, version);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxGetApiVersionArg), alignof(cuCtxGetApiVersionArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXGETAPIVERSION;
+            
+            auto request = (cuCtxGetApiVersionArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->ctx = ctx;
+			request->version = version;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxGetApiVersionResponse*>(responsePayload);
+			if (version) { *version = response->version; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetApiVersionArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1099,6 +2254,7 @@ CUresult cuCtxGetApiVersion(CUcontext  ctx, unsigned int * version)
 	auto res = (cuCtxGetApiVersionResponse *) dat;
 	if (version) { *version = res->version; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetApiVersion);
@@ -1109,10 +2265,41 @@ CUresult cuCtxGetStreamPriorityRange(int * leastPriority, int * greatestPriority
 {
 	TALLY_LOG("cuCtxGetStreamPriorityRange hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetStreamPriorityRange(leastPriority, greatestPriority);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxGetStreamPriorityRangeArg), alignof(cuCtxGetStreamPriorityRangeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXGETSTREAMPRIORITYRANGE;
+            
+            auto request = (cuCtxGetStreamPriorityRangeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->leastPriority = leastPriority;
+			request->greatestPriority = greatestPriority;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxGetStreamPriorityRangeResponse*>(responsePayload);
+			if (leastPriority) { *leastPriority = response->leastPriority; }
+			if (greatestPriority) { *greatestPriority = response->greatestPriority; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetStreamPriorityRangeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1128,6 +2315,7 @@ CUresult cuCtxGetStreamPriorityRange(int * leastPriority, int * greatestPriority
 	if (leastPriority) { *leastPriority = res->leastPriority; }
 	if (greatestPriority) { *greatestPriority = res->greatestPriority; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetStreamPriorityRange);
@@ -1138,8 +2326,35 @@ CUresult cuCtxResetPersistingL2Cache()
 {
 	TALLY_LOG("cuCtxResetPersistingL2Cache hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxResetPersistingL2Cache();
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxResetPersistingL2CacheArg), alignof(cuCtxResetPersistingL2CacheArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXRESETPERSISTINGL2CACHE;
+            
+            auto request = (cuCtxResetPersistingL2CacheArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxResetPersistingL2CacheArg);
@@ -1153,6 +2368,7 @@ CUresult cuCtxResetPersistingL2Cache()
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxResetPersistingL2Cache);
@@ -1163,10 +2379,40 @@ CUresult cuCtxGetExecAffinity(CUexecAffinityParam * pExecAffinity, CUexecAffinit
 {
 	TALLY_LOG("cuCtxGetExecAffinity hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetExecAffinity(pExecAffinity, type);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxGetExecAffinityArg), alignof(cuCtxGetExecAffinityArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXGETEXECAFFINITY;
+            
+            auto request = (cuCtxGetExecAffinityArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pExecAffinity = pExecAffinity;
+			request->type = type;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxGetExecAffinityResponse*>(responsePayload);
+			if (pExecAffinity) { *pExecAffinity = response->pExecAffinity; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetExecAffinityArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1181,6 +2427,7 @@ CUresult cuCtxGetExecAffinity(CUexecAffinityParam * pExecAffinity, CUexecAffinit
 	auto res = (cuCtxGetExecAffinityResponse *) dat;
 	if (pExecAffinity) { *pExecAffinity = res->pExecAffinity; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetExecAffinity);
@@ -1191,10 +2438,40 @@ CUresult cuCtxAttach(CUcontext * pctx, unsigned int  flags)
 {
 	TALLY_LOG("cuCtxAttach hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxAttach(pctx, flags);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxAttachArg), alignof(cuCtxAttachArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXATTACH;
+            
+            auto request = (cuCtxAttachArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pctx = pctx;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuCtxAttachResponse*>(responsePayload);
+			if (pctx) { *pctx = response->pctx; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxAttachArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1209,6 +2486,7 @@ CUresult cuCtxAttach(CUcontext * pctx, unsigned int  flags)
 	auto res = (cuCtxAttachResponse *) dat;
 	if (pctx) { *pctx = res->pctx; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxAttach);
@@ -1219,8 +2497,36 @@ CUresult cuCtxDetach(CUcontext  ctx)
 {
 	TALLY_LOG("cuCtxDetach hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuCtxDetach(ctx);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuCtxDetachArg), alignof(cuCtxDetachArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXDETACH;
+            
+            auto request = (cuCtxDetachArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->ctx = ctx;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxDetachArg);
@@ -1235,6 +2541,7 @@ CUresult cuCtxDetach(CUcontext  ctx)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxDetach);
@@ -1269,8 +2576,36 @@ CUresult cuModuleUnload(CUmodule  hmod)
 {
 	TALLY_LOG("cuModuleUnload hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuModuleUnload(hmod);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuModuleUnloadArg), alignof(cuModuleUnloadArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMODULEUNLOAD;
+            
+            auto request = (cuModuleUnloadArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->hmod = hmod;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuModuleUnloadArg);
@@ -1285,6 +2620,7 @@ CUresult cuModuleUnload(CUmodule  hmod)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuModuleUnload);
@@ -1367,8 +2703,36 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
 {
 	TALLY_LOG("cuMemFree_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuMemFree_v2(dptr);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuMemFree_v2Arg), alignof(cuMemFree_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMFREE_V2;
+            
+            auto request = (cuMemFree_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dptr = dptr;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemFree_v2Arg);
@@ -1383,6 +2747,7 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuMemFree_v2);
@@ -1573,8 +2938,39 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
 {
 	TALLY_LOG("cuMemcpyAsync hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuMemcpyAsync(dst, src, ByteCount, hStream);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuMemcpyAsyncArg), alignof(cuMemcpyAsyncArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMCPYASYNC;
+            
+            auto request = (cuMemcpyAsyncArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dst = dst;
+			request->src = src;
+			request->ByteCount = ByteCount;
+			request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemcpyAsyncArg);
@@ -1592,6 +2988,7 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuMemcpyAsync);
@@ -1932,10 +3329,42 @@ CUresult cuMemAllocFromPoolAsync(CUdeviceptr * dptr, size_t  bytesize, CUmemoryP
 {
 	TALLY_LOG("cuMemAllocFromPoolAsync hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuMemAllocFromPoolAsync(dptr, bytesize, pool, hStream);
-#else
+#elif defined(USE_IOX_IPC)
 
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuMemAllocFromPoolAsyncArg), alignof(cuMemAllocFromPoolAsyncArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMALLOCFROMPOOLASYNC;
+            
+            auto request = (cuMemAllocFromPoolAsyncArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dptr = dptr;
+			request->bytesize = bytesize;
+			request->pool = pool;
+			request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuMemAllocFromPoolAsyncResponse*>(responsePayload);
+			if (dptr) { *dptr = response->dptr; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemAllocFromPoolAsyncArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1952,6 +3381,7 @@ CUresult cuMemAllocFromPoolAsync(CUdeviceptr * dptr, size_t  bytesize, CUmemoryP
 	auto res = (cuMemAllocFromPoolAsyncResponse *) dat;
 	if (dptr) { *dptr = res->dptr; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuMemAllocFromPoolAsync);
@@ -2214,8 +3644,36 @@ CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
 {
 	TALLY_LOG("cuDestroyExternalMemory hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcuDestroyExternalMemory(extMem);
+#elif defined(USE_IOX_IPC)
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cuDestroyExternalMemoryArg), alignof(cuDestroyExternalMemoryArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDESTROYEXTERNALMEMORY;
+            
+            auto request = (cuDestroyExternalMemoryArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->extMem = extMem;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDestroyExternalMemoryArg);
@@ -2230,6 +3688,7 @@ CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
 	CLIENT_RECV_MSG;
 	auto res = (CUresult *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDestroyExternalMemory);
@@ -3151,8 +4610,7 @@ CUresult cuGraphicsUnmapResources(unsigned int  count, CUgraphicsResource * reso
 CUresult cuGetProcAddress(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags)
 {
 	TALLY_LOG("cuGetProcAddress hooked");
-	CUresult res = 
-		lcuGetProcAddress(symbol, pfn, cudaVersion, flags);
+	CUresult res = 		lcuGetProcAddress(symbol, pfn, cudaVersion, flags);
 	return res;
 }
 
@@ -3166,8 +4624,35 @@ cudaError_t cudaDeviceReset()
 {
 	TALLY_LOG("cudaDeviceReset hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceReset();
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceResetArg), alignof(cudaDeviceResetArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICERESET;
+            
+            auto request = (cudaDeviceResetArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceResetArg);
@@ -3181,6 +4666,7 @@ cudaError_t cudaDeviceReset()
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceReset);
@@ -3191,8 +4677,35 @@ cudaError_t cudaDeviceSynchronize()
 {
 	TALLY_LOG("cudaDeviceSynchronize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSynchronize();
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceSynchronizeArg), alignof(cudaDeviceSynchronizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICESYNCHRONIZE;
+            
+            auto request = (cudaDeviceSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSynchronizeArg);
@@ -3206,6 +4719,7 @@ cudaError_t cudaDeviceSynchronize()
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSynchronize);
@@ -3216,8 +4730,37 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 {
 	TALLY_LOG("cudaDeviceSetLimit hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetLimit(limit, value);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceSetLimitArg), alignof(cudaDeviceSetLimitArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICESETLIMIT;
+            
+            auto request = (cudaDeviceSetLimitArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->limit = limit;
+			request->value = value;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetLimitArg);
@@ -3233,6 +4776,7 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetLimit);
@@ -3243,10 +4787,40 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 {
 	TALLY_LOG("cudaDeviceGetLimit hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetLimit(pValue, limit);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceGetLimitArg), alignof(cudaDeviceGetLimitArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICEGETLIMIT;
+            
+            auto request = (cudaDeviceGetLimitArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pValue = pValue;
+			request->limit = limit;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaDeviceGetLimitResponse*>(responsePayload);
+			if (pValue) { *pValue = response->pValue; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetLimitArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3261,6 +4835,7 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 	auto res = (cudaDeviceGetLimitResponse *) dat;
 	if (pValue) { *pValue = res->pValue; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetLimit);
@@ -3277,10 +4852,39 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 {
 	TALLY_LOG("cudaDeviceGetCacheConfig hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetCacheConfig(pCacheConfig);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceGetCacheConfigArg), alignof(cudaDeviceGetCacheConfigArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICEGETCACHECONFIG;
+            
+            auto request = (cudaDeviceGetCacheConfigArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pCacheConfig = pCacheConfig;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaDeviceGetCacheConfigResponse*>(responsePayload);
+			if (pCacheConfig) { *pCacheConfig = response->pCacheConfig; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetCacheConfigArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3294,6 +4898,7 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 	auto res = (cudaDeviceGetCacheConfigResponse *) dat;
 	if (pCacheConfig) { *pCacheConfig = res->pCacheConfig; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetCacheConfig);
@@ -3304,10 +4909,41 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
 {
 	TALLY_LOG("cudaDeviceGetStreamPriorityRange hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetStreamPriorityRange(leastPriority, greatestPriority);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceGetStreamPriorityRangeArg), alignof(cudaDeviceGetStreamPriorityRangeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICEGETSTREAMPRIORITYRANGE;
+            
+            auto request = (cudaDeviceGetStreamPriorityRangeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->leastPriority = leastPriority;
+			request->greatestPriority = greatestPriority;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaDeviceGetStreamPriorityRangeResponse*>(responsePayload);
+			if (leastPriority) { *leastPriority = response->leastPriority; }
+			if (greatestPriority) { *greatestPriority = response->greatestPriority; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetStreamPriorityRangeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3323,6 +4959,7 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
 	if (leastPriority) { *leastPriority = res->leastPriority; }
 	if (greatestPriority) { *greatestPriority = res->greatestPriority; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetStreamPriorityRange);
@@ -3333,8 +4970,36 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
 {
 	TALLY_LOG("cudaDeviceSetCacheConfig hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetCacheConfig(cacheConfig);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceSetCacheConfigArg), alignof(cudaDeviceSetCacheConfigArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICESETCACHECONFIG;
+            
+            auto request = (cudaDeviceSetCacheConfigArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->cacheConfig = cacheConfig;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetCacheConfigArg);
@@ -3349,6 +5014,7 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetCacheConfig);
@@ -3365,8 +5031,36 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
 {
 	TALLY_LOG("cudaDeviceSetSharedMemConfig hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetSharedMemConfig(config);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceSetSharedMemConfigArg), alignof(cudaDeviceSetSharedMemConfigArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICESETSHAREDMEMCONFIG;
+            
+            auto request = (cudaDeviceSetSharedMemConfigArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->config = config;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetSharedMemConfigArg);
@@ -3381,6 +5075,7 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetSharedMemConfig);
@@ -3397,10 +5092,41 @@ cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
 {
 	TALLY_LOG("cudaDeviceGetPCIBusId hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetPCIBusId(pciBusId, len, device);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceGetPCIBusIdArg), alignof(cudaDeviceGetPCIBusIdArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICEGETPCIBUSID;
+            
+            auto request = (cudaDeviceGetPCIBusIdArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pciBusId = pciBusId;
+			request->len = len;
+			request->device = device;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaDeviceGetPCIBusIdResponse*>(responsePayload);
+			if (pciBusId) { *pciBusId = response->pciBusId; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetPCIBusIdArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3416,6 +5142,7 @@ cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
 	auto res = (cudaDeviceGetPCIBusIdResponse *) dat;
 	if (pciBusId) { *pciBusId = res->pciBusId; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetPCIBusId);
@@ -3426,10 +5153,40 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
 {
 	TALLY_LOG("cudaIpcGetEventHandle hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaIpcGetEventHandle(handle, event);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaIpcGetEventHandleArg), alignof(cudaIpcGetEventHandleArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAIPCGETEVENTHANDLE;
+            
+            auto request = (cudaIpcGetEventHandleArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->event = event;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaIpcGetEventHandleResponse*>(responsePayload);
+			if (handle) { *handle = response->handle; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcGetEventHandleArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3444,6 +5201,7 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
 	auto res = (cudaIpcGetEventHandleResponse *) dat;
 	if (handle) { *handle = res->handle; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcGetEventHandle);
@@ -3454,10 +5212,40 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
 {
 	TALLY_LOG("cudaIpcOpenEventHandle hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaIpcOpenEventHandle(event, handle);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaIpcOpenEventHandleArg), alignof(cudaIpcOpenEventHandleArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAIPCOPENEVENTHANDLE;
+            
+            auto request = (cudaIpcOpenEventHandleArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->event = event;
+			request->handle = handle;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaIpcOpenEventHandleResponse*>(responsePayload);
+			if (event) { *event = response->event; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenEventHandleArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3472,6 +5260,7 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
 	auto res = (cudaIpcOpenEventHandleResponse *) dat;
 	if (event) { *event = res->event; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcOpenEventHandle);
@@ -3482,10 +5271,40 @@ cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
 {
 	TALLY_LOG("cudaIpcGetMemHandle hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaIpcGetMemHandle(handle, devPtr);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaIpcGetMemHandleArg), alignof(cudaIpcGetMemHandleArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAIPCGETMEMHANDLE;
+            
+            auto request = (cudaIpcGetMemHandleArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->devPtr = devPtr;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaIpcGetMemHandleResponse*>(responsePayload);
+			if (handle) { *handle = response->handle; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcGetMemHandleArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3500,6 +5319,7 @@ cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
 	auto res = (cudaIpcGetMemHandleResponse *) dat;
 	if (handle) { *handle = res->handle; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcGetMemHandle);
@@ -3510,10 +5330,41 @@ cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, uns
 {
 	TALLY_LOG("cudaIpcOpenMemHandle hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaIpcOpenMemHandle(devPtr, handle, flags);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaIpcOpenMemHandleArg), alignof(cudaIpcOpenMemHandleArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAIPCOPENMEMHANDLE;
+            
+            auto request = (cudaIpcOpenMemHandleArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->devPtr = devPtr;
+			request->handle = handle;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaIpcOpenMemHandleResponse*>(responsePayload);
+			if (devPtr) { *devPtr = response->devPtr; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenMemHandleArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3529,6 +5380,7 @@ cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, uns
 	auto res = (cudaIpcOpenMemHandleResponse *) dat;
 	if (devPtr) { *devPtr = res->devPtr; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcOpenMemHandle);
@@ -3539,8 +5391,36 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
 {
 	TALLY_LOG("cudaIpcCloseMemHandle hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaIpcCloseMemHandle(devPtr);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaIpcCloseMemHandleArg), alignof(cudaIpcCloseMemHandleArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAIPCCLOSEMEMHANDLE;
+            
+            auto request = (cudaIpcCloseMemHandleArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->devPtr = devPtr;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcCloseMemHandleArg);
@@ -3555,6 +5435,7 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcCloseMemHandle);
@@ -3565,8 +5446,37 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
 {
 	TALLY_LOG("cudaDeviceFlushGPUDirectRDMAWrites hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceFlushGPUDirectRDMAWrites(target, scope);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceFlushGPUDirectRDMAWritesArg), alignof(cudaDeviceFlushGPUDirectRDMAWritesArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICEFLUSHGPUDIRECTRDMAWRITES;
+            
+            auto request = (cudaDeviceFlushGPUDirectRDMAWritesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->target = target;
+			request->scope = scope;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceFlushGPUDirectRDMAWritesArg);
@@ -3582,6 +5492,7 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceFlushGPUDirectRDMAWrites);
@@ -3592,8 +5503,35 @@ cudaError_t cudaThreadExit()
 {
 	TALLY_LOG("cudaThreadExit hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaThreadExit();
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaThreadExitArg), alignof(cudaThreadExitArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDATHREADEXIT;
+            
+            auto request = (cudaThreadExitArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadExitArg);
@@ -3607,6 +5545,7 @@ cudaError_t cudaThreadExit()
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadExit);
@@ -3617,8 +5556,35 @@ cudaError_t cudaThreadSynchronize()
 {
 	TALLY_LOG("cudaThreadSynchronize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaThreadSynchronize();
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaThreadSynchronizeArg), alignof(cudaThreadSynchronizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDATHREADSYNCHRONIZE;
+            
+            auto request = (cudaThreadSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSynchronizeArg);
@@ -3632,6 +5598,7 @@ cudaError_t cudaThreadSynchronize()
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSynchronize);
@@ -3642,8 +5609,37 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 {
 	TALLY_LOG("cudaThreadSetLimit hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaThreadSetLimit(limit, value);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaThreadSetLimitArg), alignof(cudaThreadSetLimitArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDATHREADSETLIMIT;
+            
+            auto request = (cudaThreadSetLimitArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->limit = limit;
+			request->value = value;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSetLimitArg);
@@ -3659,6 +5655,7 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSetLimit);
@@ -3669,10 +5666,40 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 {
 	TALLY_LOG("cudaThreadGetLimit hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaThreadGetLimit(pValue, limit);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaThreadGetLimitArg), alignof(cudaThreadGetLimitArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDATHREADGETLIMIT;
+            
+            auto request = (cudaThreadGetLimitArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pValue = pValue;
+			request->limit = limit;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaThreadGetLimitResponse*>(responsePayload);
+			if (pValue) { *pValue = response->pValue; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetLimitArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3687,6 +5714,7 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 	auto res = (cudaThreadGetLimitResponse *) dat;
 	if (pValue) { *pValue = res->pValue; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadGetLimit);
@@ -3697,10 +5725,39 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 {
 	TALLY_LOG("cudaThreadGetCacheConfig hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaThreadGetCacheConfig(pCacheConfig);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaThreadGetCacheConfigArg), alignof(cudaThreadGetCacheConfigArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDATHREADGETCACHECONFIG;
+            
+            auto request = (cudaThreadGetCacheConfigArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pCacheConfig = pCacheConfig;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaThreadGetCacheConfigResponse*>(responsePayload);
+			if (pCacheConfig) { *pCacheConfig = response->pCacheConfig; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetCacheConfigArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3714,6 +5771,7 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 	auto res = (cudaThreadGetCacheConfigResponse *) dat;
 	if (pCacheConfig) { *pCacheConfig = res->pCacheConfig; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadGetCacheConfig);
@@ -3724,8 +5782,36 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
 {
 	TALLY_LOG("cudaThreadSetCacheConfig hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaThreadSetCacheConfig(cacheConfig);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaThreadSetCacheConfigArg), alignof(cudaThreadSetCacheConfigArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDATHREADSETCACHECONFIG;
+            
+            auto request = (cudaThreadSetCacheConfigArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->cacheConfig = cacheConfig;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSetCacheConfigArg);
@@ -3740,6 +5826,7 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSetCacheConfig);
@@ -3750,8 +5837,35 @@ cudaError_t cudaGetLastError()
 {
 	TALLY_LOG("cudaGetLastError hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaGetLastError();
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaGetLastErrorArg), alignof(cudaGetLastErrorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGETLASTERROR;
+            
+            auto request = (cudaGetLastErrorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetLastErrorArg);
@@ -3765,6 +5879,7 @@ cudaError_t cudaGetLastError()
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetLastError);
@@ -3775,8 +5890,35 @@ cudaError_t cudaPeekAtLastError()
 {
 	TALLY_LOG("cudaPeekAtLastError hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaPeekAtLastError();
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaPeekAtLastErrorArg), alignof(cudaPeekAtLastErrorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAPEEKATLASTERROR;
+            
+            auto request = (cudaPeekAtLastErrorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaPeekAtLastErrorArg);
@@ -3790,6 +5932,7 @@ cudaError_t cudaPeekAtLastError()
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaPeekAtLastError);
@@ -3805,8 +5948,7 @@ const char* cudaGetErrorName(cudaError_t  error)
 const char* cudaGetErrorString(cudaError_t  error)
 {
 	TALLY_LOG("cudaGetErrorString hooked");
-	const char* res = 
-		lcudaGetErrorString(error);
+	const char* res = 		lcudaGetErrorString(error);
 	return res;
 }
 
@@ -3814,10 +5956,39 @@ cudaError_t cudaGetDeviceCount(int * count)
 {
 	TALLY_LOG("cudaGetDeviceCount hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaGetDeviceCount(count);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaGetDeviceCountArg), alignof(cudaGetDeviceCountArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGETDEVICECOUNT;
+            
+            auto request = (cudaGetDeviceCountArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->count = count;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaGetDeviceCountResponse*>(responsePayload);
+			if (count) { *count = response->count; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceCountArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3831,6 +6002,7 @@ cudaError_t cudaGetDeviceCount(int * count)
 	auto res = (cudaGetDeviceCountResponse *) dat;
 	if (count) { *count = res->count; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceCount);
@@ -3841,10 +6013,40 @@ cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
 {
 	TALLY_LOG("cudaGetDeviceProperties hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaGetDeviceProperties(prop, device);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaGetDevicePropertiesArg), alignof(cudaGetDevicePropertiesArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGETDEVICEPROPERTIES;
+            
+            auto request = (cudaGetDevicePropertiesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->prop = prop;
+			request->device = device;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaGetDevicePropertiesResponse*>(responsePayload);
+			if (prop) { *prop = response->prop; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDevicePropertiesArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3859,6 +6061,7 @@ cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
 	auto res = (cudaGetDevicePropertiesResponse *) dat;
 	if (prop) { *prop = res->prop; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceProperties);
@@ -3869,10 +6072,41 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
 {
 	TALLY_LOG("cudaDeviceGetAttribute hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetAttribute(value, attr, device);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceGetAttributeArg), alignof(cudaDeviceGetAttributeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICEGETATTRIBUTE;
+            
+            auto request = (cudaDeviceGetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->value = value;
+			request->attr = attr;
+			request->device = device;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaDeviceGetAttributeResponse*>(responsePayload);
+			if (value) { *value = response->value; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetAttributeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3888,6 +6122,7 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
 	auto res = (cudaDeviceGetAttributeResponse *) dat;
 	if (value) { *value = res->value; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetAttribute);
@@ -3898,10 +6133,40 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 {
 	TALLY_LOG("cudaDeviceGetDefaultMemPool hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetDefaultMemPool(memPool, device);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceGetDefaultMemPoolArg), alignof(cudaDeviceGetDefaultMemPoolArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICEGETDEFAULTMEMPOOL;
+            
+            auto request = (cudaDeviceGetDefaultMemPoolArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->memPool = memPool;
+			request->device = device;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaDeviceGetDefaultMemPoolResponse*>(responsePayload);
+			if (memPool) { *memPool = response->memPool; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetDefaultMemPoolArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3916,6 +6181,7 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 	auto res = (cudaDeviceGetDefaultMemPoolResponse *) dat;
 	if (memPool) { *memPool = res->memPool; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetDefaultMemPool);
@@ -3926,8 +6192,37 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 {
 	TALLY_LOG("cudaDeviceSetMemPool hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetMemPool(device, memPool);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceSetMemPoolArg), alignof(cudaDeviceSetMemPoolArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICESETMEMPOOL;
+            
+            auto request = (cudaDeviceSetMemPoolArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->device = device;
+			request->memPool = memPool;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetMemPoolArg);
@@ -3943,6 +6238,7 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetMemPool);
@@ -3953,10 +6249,40 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 {
 	TALLY_LOG("cudaDeviceGetMemPool hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetMemPool(memPool, device);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceGetMemPoolArg), alignof(cudaDeviceGetMemPoolArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICEGETMEMPOOL;
+            
+            auto request = (cudaDeviceGetMemPoolArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->memPool = memPool;
+			request->device = device;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaDeviceGetMemPoolResponse*>(responsePayload);
+			if (memPool) { *memPool = response->memPool; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetMemPoolArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3971,6 +6297,7 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 	auto res = (cudaDeviceGetMemPoolResponse *) dat;
 	if (memPool) { *memPool = res->memPool; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetMemPool);
@@ -3987,10 +6314,42 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
 {
 	TALLY_LOG("cudaDeviceGetP2PAttribute hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetP2PAttribute(value, attr, srcDevice, dstDevice);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaDeviceGetP2PAttributeArg), alignof(cudaDeviceGetP2PAttributeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDADEVICEGETP2PATTRIBUTE;
+            
+            auto request = (cudaDeviceGetP2PAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->value = value;
+			request->attr = attr;
+			request->srcDevice = srcDevice;
+			request->dstDevice = dstDevice;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaDeviceGetP2PAttributeResponse*>(responsePayload);
+			if (value) { *value = response->value; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetP2PAttributeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4007,6 +6366,7 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
 	auto res = (cudaDeviceGetP2PAttributeResponse *) dat;
 	if (value) { *value = res->value; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetP2PAttribute);
@@ -4023,8 +6383,36 @@ cudaError_t cudaSetDevice(int  device)
 {
 	TALLY_LOG("cudaSetDevice hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaSetDevice(device);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaSetDeviceArg), alignof(cudaSetDeviceArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASETDEVICE;
+            
+            auto request = (cudaSetDeviceArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->device = device;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaSetDeviceArg);
@@ -4039,6 +6427,7 @@ cudaError_t cudaSetDevice(int  device)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaSetDevice);
@@ -4049,10 +6438,39 @@ cudaError_t cudaGetDevice(int * device)
 {
 	TALLY_LOG("cudaGetDevice hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaGetDevice(device);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaGetDeviceArg), alignof(cudaGetDeviceArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGETDEVICE;
+            
+            auto request = (cudaGetDeviceArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->device = device;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaGetDeviceResponse*>(responsePayload);
+			if (device) { *device = response->device; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4066,6 +6484,7 @@ cudaError_t cudaGetDevice(int * device)
 	auto res = (cudaGetDeviceResponse *) dat;
 	if (device) { *device = res->device; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetDevice);
@@ -4082,8 +6501,36 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 {
 	TALLY_LOG("cudaSetDeviceFlags hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaSetDeviceFlags(flags);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaSetDeviceFlagsArg), alignof(cudaSetDeviceFlagsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASETDEVICEFLAGS;
+            
+            auto request = (cudaSetDeviceFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaSetDeviceFlagsArg);
@@ -4098,6 +6545,7 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaSetDeviceFlags);
@@ -4108,10 +6556,39 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 {
 	TALLY_LOG("cudaGetDeviceFlags hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaGetDeviceFlags(flags);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaGetDeviceFlagsArg), alignof(cudaGetDeviceFlagsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGETDEVICEFLAGS;
+            
+            auto request = (cudaGetDeviceFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaGetDeviceFlagsResponse*>(responsePayload);
+			if (flags) { *flags = response->flags; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceFlagsArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4125,6 +6602,7 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 	auto res = (cudaGetDeviceFlagsResponse *) dat;
 	if (flags) { *flags = res->flags; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceFlags);
@@ -4135,10 +6613,39 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 {
 	TALLY_LOG("cudaStreamCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCreate(pStream);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamCreateArg), alignof(cudaStreamCreateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMCREATE;
+            
+            auto request = (cudaStreamCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pStream = pStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaStreamCreateResponse*>(responsePayload);
+			if (pStream) { *pStream = response->pStream; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4152,6 +6659,7 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 	auto res = (cudaStreamCreateResponse *) dat;
 	if (pStream) { *pStream = res->pStream; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCreate);
@@ -4162,10 +6670,40 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
 {
 	TALLY_LOG("cudaStreamCreateWithFlags hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCreateWithFlags(pStream, flags);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamCreateWithFlagsArg), alignof(cudaStreamCreateWithFlagsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMCREATEWITHFLAGS;
+            
+            auto request = (cudaStreamCreateWithFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pStream = pStream;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaStreamCreateWithFlagsResponse*>(responsePayload);
+			if (pStream) { *pStream = response->pStream; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithFlagsArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4180,6 +6718,7 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
 	auto res = (cudaStreamCreateWithFlagsResponse *) dat;
 	if (pStream) { *pStream = res->pStream; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCreateWithFlags);
@@ -4190,10 +6729,41 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
 {
 	TALLY_LOG("cudaStreamCreateWithPriority hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCreateWithPriority(pStream, flags, priority);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamCreateWithPriorityArg), alignof(cudaStreamCreateWithPriorityArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMCREATEWITHPRIORITY;
+            
+            auto request = (cudaStreamCreateWithPriorityArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pStream = pStream;
+			request->flags = flags;
+			request->priority = priority;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaStreamCreateWithPriorityResponse*>(responsePayload);
+			if (pStream) { *pStream = response->pStream; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithPriorityArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4209,6 +6779,7 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
 	auto res = (cudaStreamCreateWithPriorityResponse *) dat;
 	if (pStream) { *pStream = res->pStream; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCreateWithPriority);
@@ -4219,10 +6790,40 @@ cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
 {
 	TALLY_LOG("cudaStreamGetPriority hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamGetPriority(hStream, priority);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamGetPriorityArg), alignof(cudaStreamGetPriorityArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMGETPRIORITY;
+            
+            auto request = (cudaStreamGetPriorityArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->hStream = hStream;
+			request->priority = priority;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaStreamGetPriorityResponse*>(responsePayload);
+			if (priority) { *priority = response->priority; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetPriorityArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4237,6 +6838,7 @@ cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
 	auto res = (cudaStreamGetPriorityResponse *) dat;
 	if (priority) { *priority = res->priority; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetPriority);
@@ -4247,10 +6849,40 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 {
 	TALLY_LOG("cudaStreamGetFlags hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamGetFlags(hStream, flags);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamGetFlagsArg), alignof(cudaStreamGetFlagsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMGETFLAGS;
+            
+            auto request = (cudaStreamGetFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->hStream = hStream;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaStreamGetFlagsResponse*>(responsePayload);
+			if (flags) { *flags = response->flags; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetFlagsArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4265,6 +6897,7 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 	auto res = (cudaStreamGetFlagsResponse *) dat;
 	if (flags) { *flags = res->flags; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetFlags);
@@ -4275,8 +6908,35 @@ cudaError_t cudaCtxResetPersistingL2Cache()
 {
 	TALLY_LOG("cudaCtxResetPersistingL2Cache hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaCtxResetPersistingL2Cache();
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaCtxResetPersistingL2CacheArg), alignof(cudaCtxResetPersistingL2CacheArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDACTXRESETPERSISTINGL2CACHE;
+            
+            auto request = (cudaCtxResetPersistingL2CacheArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaCtxResetPersistingL2CacheArg);
@@ -4290,6 +6950,7 @@ cudaError_t cudaCtxResetPersistingL2Cache()
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaCtxResetPersistingL2Cache);
@@ -4300,8 +6961,37 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 {
 	TALLY_LOG("cudaStreamCopyAttributes hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCopyAttributes(dst, src);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamCopyAttributesArg), alignof(cudaStreamCopyAttributesArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMCOPYATTRIBUTES;
+            
+            auto request = (cudaStreamCopyAttributesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dst = dst;
+			request->src = src;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCopyAttributesArg);
@@ -4317,6 +7007,7 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCopyAttributes);
@@ -4339,8 +7030,36 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 {
 	TALLY_LOG("cudaStreamDestroy hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamDestroy(stream);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamDestroyArg), alignof(cudaStreamDestroyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMDESTROY;
+            
+            auto request = (cudaStreamDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->stream = stream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamDestroyArg);
@@ -4355,6 +7074,7 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamDestroy);
@@ -4365,8 +7085,38 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
 {
 	TALLY_LOG("cudaStreamWaitEvent hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamWaitEvent(stream, event, flags);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamWaitEventArg), alignof(cudaStreamWaitEventArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMWAITEVENT;
+            
+            auto request = (cudaStreamWaitEventArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->stream = stream;
+			request->event = event;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamWaitEventArg);
@@ -4383,6 +7133,7 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamWaitEvent);
@@ -4399,8 +7150,36 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 {
 	TALLY_LOG("cudaStreamSynchronize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamSynchronize(stream);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamSynchronizeArg), alignof(cudaStreamSynchronizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMSYNCHRONIZE;
+            
+            auto request = (cudaStreamSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->stream = stream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamSynchronizeArg);
@@ -4415,6 +7194,7 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamSynchronize);
@@ -4425,8 +7205,36 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
 {
 	TALLY_LOG("cudaStreamQuery hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamQuery(stream);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamQueryArg), alignof(cudaStreamQueryArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMQUERY;
+            
+            auto request = (cudaStreamQueryArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->stream = stream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamQueryArg);
@@ -4441,6 +7249,7 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamQuery);
@@ -4457,8 +7266,37 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
 {
 	TALLY_LOG("cudaStreamBeginCapture hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamBeginCapture(stream, mode);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamBeginCaptureArg), alignof(cudaStreamBeginCaptureArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMBEGINCAPTURE;
+            
+            auto request = (cudaStreamBeginCaptureArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->stream = stream;
+			request->mode = mode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamBeginCaptureArg);
@@ -4474,6 +7312,7 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamBeginCapture);
@@ -4490,8 +7329,37 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 {
 	TALLY_LOG("cudaStreamEndCapture hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamEndCapture(stream, pGraph);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamEndCaptureArg), alignof(cudaStreamEndCaptureArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMENDCAPTURE;
+            
+            auto request = (cudaStreamEndCaptureArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->stream = stream;
+			request->pGraph = pGraph;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamEndCaptureArg);
@@ -4507,6 +7375,7 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamEndCapture);
@@ -4517,10 +7386,40 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
 {
 	TALLY_LOG("cudaStreamIsCapturing hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamIsCapturing(stream, pCaptureStatus);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamIsCapturingArg), alignof(cudaStreamIsCapturingArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMISCAPTURING;
+            
+            auto request = (cudaStreamIsCapturingArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->stream = stream;
+			request->pCaptureStatus = pCaptureStatus;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaStreamIsCapturingResponse*>(responsePayload);
+			if (pCaptureStatus) { *pCaptureStatus = response->pCaptureStatus; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamIsCapturingArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4535,6 +7434,7 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
 	auto res = (cudaStreamIsCapturingResponse *) dat;
 	if (pCaptureStatus) { *pCaptureStatus = res->pCaptureStatus; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamIsCapturing);
@@ -4545,10 +7445,42 @@ cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptur
 {
 	TALLY_LOG("cudaStreamGetCaptureInfo hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaStreamGetCaptureInfo(stream, pCaptureStatus, pId);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaStreamGetCaptureInfoArg), alignof(cudaStreamGetCaptureInfoArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMGETCAPTUREINFO;
+            
+            auto request = (cudaStreamGetCaptureInfoArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->stream = stream;
+			request->pCaptureStatus = pCaptureStatus;
+			request->pId = pId;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaStreamGetCaptureInfoResponse*>(responsePayload);
+			if (pCaptureStatus) { *pCaptureStatus = response->pCaptureStatus; }
+			if (pId) { *pId = response->pId; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetCaptureInfoArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4565,6 +7497,7 @@ cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptur
 	if (pCaptureStatus) { *pCaptureStatus = res->pCaptureStatus; }
 	if (pId) { *pId = res->pId; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetCaptureInfo);
@@ -4587,10 +7520,39 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
 {
 	TALLY_LOG("cudaEventCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaEventCreate(event);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaEventCreateArg), alignof(cudaEventCreateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAEVENTCREATE;
+            
+            auto request = (cudaEventCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->event = event;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaEventCreateResponse*>(responsePayload);
+			if (event) { *event = response->event; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4604,6 +7566,7 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
 	auto res = (cudaEventCreateResponse *) dat;
 	if (event) { *event = res->event; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventCreate);
@@ -4614,10 +7577,40 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 {
 	TALLY_LOG("cudaEventCreateWithFlags hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaEventCreateWithFlags(event, flags);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaEventCreateWithFlagsArg), alignof(cudaEventCreateWithFlagsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAEVENTCREATEWITHFLAGS;
+            
+            auto request = (cudaEventCreateWithFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->event = event;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaEventCreateWithFlagsResponse*>(responsePayload);
+			if (event) { *event = response->event; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateWithFlagsArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4632,6 +7625,7 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 	auto res = (cudaEventCreateWithFlagsResponse *) dat;
 	if (event) { *event = res->event; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventCreateWithFlags);
@@ -4642,8 +7636,37 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 {
 	TALLY_LOG("cudaEventRecord hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaEventRecord(event, stream);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaEventRecordArg), alignof(cudaEventRecordArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAEVENTRECORD;
+            
+            auto request = (cudaEventRecordArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->event = event;
+			request->stream = stream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordArg);
@@ -4659,6 +7682,7 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventRecord);
@@ -4669,8 +7693,38 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
 {
 	TALLY_LOG("cudaEventRecordWithFlags hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaEventRecordWithFlags(event, stream, flags);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaEventRecordWithFlagsArg), alignof(cudaEventRecordWithFlagsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAEVENTRECORDWITHFLAGS;
+            
+            auto request = (cudaEventRecordWithFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->event = event;
+			request->stream = stream;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordWithFlagsArg);
@@ -4687,6 +7741,7 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventRecordWithFlags);
@@ -4697,8 +7752,36 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
 {
 	TALLY_LOG("cudaEventQuery hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaEventQuery(event);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaEventQueryArg), alignof(cudaEventQueryArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAEVENTQUERY;
+            
+            auto request = (cudaEventQueryArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->event = event;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventQueryArg);
@@ -4713,6 +7796,7 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventQuery);
@@ -4723,8 +7807,36 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 {
 	TALLY_LOG("cudaEventSynchronize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaEventSynchronize(event);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaEventSynchronizeArg), alignof(cudaEventSynchronizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAEVENTSYNCHRONIZE;
+            
+            auto request = (cudaEventSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->event = event;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventSynchronizeArg);
@@ -4739,6 +7851,7 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventSynchronize);
@@ -4749,8 +7862,36 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
 {
 	TALLY_LOG("cudaEventDestroy hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaEventDestroy(event);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaEventDestroyArg), alignof(cudaEventDestroyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAEVENTDESTROY;
+            
+            auto request = (cudaEventDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->event = event;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventDestroyArg);
@@ -4765,6 +7906,7 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventDestroy);
@@ -4775,10 +7917,41 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
 {
 	TALLY_LOG("cudaEventElapsedTime hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaEventElapsedTime(ms, start, end);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaEventElapsedTimeArg), alignof(cudaEventElapsedTimeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAEVENTELAPSEDTIME;
+            
+            auto request = (cudaEventElapsedTimeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->ms = ms;
+			request->start = start;
+			request->end = end;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaEventElapsedTimeResponse*>(responsePayload);
+			if (ms) { *ms = response->ms; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventElapsedTimeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -4794,6 +7967,7 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
 	auto res = (cudaEventElapsedTimeResponse *) dat;
 	if (ms) { *ms = res->ms; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventElapsedTime);
@@ -4917,8 +8091,7 @@ cudaError_t cudaMallocManaged(void ** devPtr, size_t  size, unsigned int  flags)
 cudaError_t cudaMallocHost(void ** ptr, size_t  size)
 {
 	TALLY_LOG("cudaMallocHost hooked");
-	cudaError_t res = 
-		lcudaMallocHost(ptr, size);
+	cudaError_t res = 		lcudaMallocHost(ptr, size);
 	return res;
 }
 
@@ -4937,8 +8110,7 @@ cudaError_t cudaMallocArray(cudaArray_t * array, const struct cudaChannelFormatD
 cudaError_t cudaFreeHost(void * ptr)
 {
 	TALLY_LOG("cudaFreeHost hooked");
-	cudaError_t res = 
-		lcudaFreeHost(ptr);
+	cudaError_t res = 		lcudaFreeHost(ptr);
 	return res;
 }
 
@@ -5036,10 +8208,41 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
 {
 	TALLY_LOG("cudaMemGetInfo hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaMemGetInfo(free, total);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaMemGetInfoArg), alignof(cudaMemGetInfoArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAMEMGETINFO;
+            
+            auto request = (cudaMemGetInfoArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->free = free;
+			request->total = total;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaMemGetInfoResponse*>(responsePayload);
+			if (free) { *free = response->free; }
+			if (total) { *total = response->total; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemGetInfoArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -5055,6 +8258,7 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
 	if (free) { *free = res->free; }
 	if (total) { *total = res->total; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaMemGetInfo);
@@ -5167,8 +8371,38 @@ cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
 {
 	TALLY_LOG("cudaMemset hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaMemset(devPtr, value, count);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaMemsetArg), alignof(cudaMemsetArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAMEMSET;
+            
+            auto request = (cudaMemsetArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->devPtr = devPtr;
+			request->value = value;
+			request->count = count;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemsetArg);
@@ -5185,6 +8419,7 @@ cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaMemset);
@@ -5207,8 +8442,39 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
 {
 	TALLY_LOG("cudaMemsetAsync hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaMemsetAsync(devPtr, value, count, stream);
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaMemsetAsyncArg), alignof(cudaMemsetAsyncArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAMEMSETASYNC;
+            
+            auto request = (cudaMemsetAsyncArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->devPtr = devPtr;
+			request->value = value;
+			request->count = count;
+			request->stream = stream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemsetAsyncArg);
@@ -5226,6 +8492,7 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaMemsetAsync);
@@ -5590,10 +8857,40 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 {
 	TALLY_LOG("cudaGraphCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaGraphCreate(pGraph, flags);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaGraphCreateArg), alignof(cudaGraphCreateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGRAPHCREATE;
+            
+            auto request = (cudaGraphCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pGraph = pGraph;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaGraphCreateResponse*>(responsePayload);
+			if (pGraph) { *pGraph = response->pGraph; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGraphCreateArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -5608,6 +8905,7 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 	auto res = (cudaGraphCreateResponse *) dat;
 	if (pGraph) { *pGraph = res->pGraph; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGraphCreate);
@@ -6110,8 +9408,35 @@ size_t cudnnGetVersion()
 {
 	TALLY_LOG("cudnnGetVersion hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetVersion();
+#elif defined(USE_IOX_IPC)
+
+    size_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetVersionArg), alignof(cudnnGetVersionArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETVERSION;
+            
+            auto request = (cudnnGetVersionArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const size_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetVersionArg);
@@ -6125,6 +9450,7 @@ size_t cudnnGetVersion()
 	CLIENT_RECV_MSG;
 	auto res = (size_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetVersion);
@@ -6135,8 +9461,35 @@ size_t cudnnGetMaxDeviceVersion()
 {
 	TALLY_LOG("cudnnGetMaxDeviceVersion hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetMaxDeviceVersion();
+#elif defined(USE_IOX_IPC)
+
+    size_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetMaxDeviceVersionArg), alignof(cudnnGetMaxDeviceVersionArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETMAXDEVICEVERSION;
+            
+            auto request = (cudnnGetMaxDeviceVersionArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const size_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetMaxDeviceVersionArg);
@@ -6150,6 +9503,7 @@ size_t cudnnGetMaxDeviceVersion()
 	CLIENT_RECV_MSG;
 	auto res = (size_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetMaxDeviceVersion);
@@ -6160,8 +9514,35 @@ size_t cudnnGetCudartVersion()
 {
 	TALLY_LOG("cudnnGetCudartVersion hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetCudartVersion();
+#elif defined(USE_IOX_IPC)
+
+    size_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetCudartVersionArg), alignof(cudnnGetCudartVersionArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETCUDARTVERSION;
+            
+            auto request = (cudnnGetCudartVersionArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const size_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetCudartVersionArg);
@@ -6175,6 +9556,7 @@ size_t cudnnGetCudartVersion()
 	CLIENT_RECV_MSG;
 	auto res = (size_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetCudartVersion);
@@ -6184,8 +9566,7 @@ size_t cudnnGetCudartVersion()
 const char * cudnnGetErrorString(cudnnStatus_t  status)
 {
 	TALLY_LOG("cudnnGetErrorString hooked");
-	const char * res = 
-		lcudnnGetErrorString(status);
+	const char * res = 		lcudnnGetErrorString(status);
 	return res;
 }
 
@@ -6199,10 +9580,40 @@ cudnnStatus_t cudnnGetProperty(libraryPropertyType  type, int * value)
 {
 	TALLY_LOG("cudnnGetProperty hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetProperty(type, value);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetPropertyArg), alignof(cudnnGetPropertyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETPROPERTY;
+            
+            auto request = (cudnnGetPropertyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->type = type;
+			request->value = value;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetPropertyResponse*>(responsePayload);
+			if (value) { *value = response->value; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetPropertyArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6217,6 +9628,7 @@ cudnnStatus_t cudnnGetProperty(libraryPropertyType  type, int * value)
 	auto res = (cudnnGetPropertyResponse *) dat;
 	if (value) { *value = res->value; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetProperty);
@@ -6227,10 +9639,39 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
 {
 	TALLY_LOG("cudnnCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreate(handle);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateArg), alignof(cudnnCreateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATE;
+            
+            auto request = (cudnnCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateResponse*>(responsePayload);
+			if (handle) { *handle = response->handle; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6244,6 +9685,7 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
 	auto res = (cudnnCreateResponse *) dat;
 	if (handle) { *handle = res->handle; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreate);
@@ -6254,8 +9696,36 @@ cudnnStatus_t cudnnDestroy(cudnnHandle_t  handle)
 {
 	TALLY_LOG("cudnnDestroy hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroy(handle);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyArg), alignof(cudnnDestroyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROY;
+            
+            auto request = (cudnnDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyArg);
@@ -6270,6 +9740,7 @@ cudnnStatus_t cudnnDestroy(cudnnHandle_t  handle)
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroy);
@@ -6280,8 +9751,37 @@ cudnnStatus_t cudnnSetStream(cudnnHandle_t  handle, cudaStream_t  streamId)
 {
 	TALLY_LOG("cudnnSetStream hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetStream(handle, streamId);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetStreamArg), alignof(cudnnSetStreamArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETSTREAM;
+            
+            auto request = (cudnnSetStreamArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->streamId = streamId;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetStreamArg);
@@ -6297,6 +9797,7 @@ cudnnStatus_t cudnnSetStream(cudnnHandle_t  handle, cudaStream_t  streamId)
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetStream);
@@ -6307,10 +9808,40 @@ cudnnStatus_t cudnnGetStream(cudnnHandle_t  handle, cudaStream_t * streamId)
 {
 	TALLY_LOG("cudnnGetStream hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetStream(handle, streamId);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetStreamArg), alignof(cudnnGetStreamArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETSTREAM;
+            
+            auto request = (cudnnGetStreamArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->streamId = streamId;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetStreamResponse*>(responsePayload);
+			if (streamId) { *streamId = response->streamId; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetStreamArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6325,6 +9856,7 @@ cudnnStatus_t cudnnGetStream(cudnnHandle_t  handle, cudaStream_t * streamId)
 	auto res = (cudnnGetStreamResponse *) dat;
 	if (streamId) { *streamId = res->streamId; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetStream);
@@ -6335,10 +9867,39 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
 {
 	TALLY_LOG("cudnnCreateTensorDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateTensorDescriptor(tensorDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateTensorDescriptorArg), alignof(cudnnCreateTensorDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATETENSORDESCRIPTOR;
+            
+            auto request = (cudnnCreateTensorDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->tensorDesc = tensorDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateTensorDescriptorResponse*>(responsePayload);
+			if (tensorDesc) { *tensorDesc = response->tensorDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateTensorDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6352,6 +9913,7 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
 	auto res = (cudnnCreateTensorDescriptorResponse *) dat;
 	if (tensorDesc) { *tensorDesc = res->tensorDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateTensorDescriptor);
@@ -6362,8 +9924,42 @@ cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 {
 	TALLY_LOG("cudnnSetTensor4dDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetTensor4dDescriptor(tensorDesc, format, dataType, n, c, h, w);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetTensor4dDescriptorArg), alignof(cudnnSetTensor4dDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETTENSOR4DDESCRIPTOR;
+            
+            auto request = (cudnnSetTensor4dDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->tensorDesc = tensorDesc;
+			request->format = format;
+			request->dataType = dataType;
+			request->n = n;
+			request->c = c;
+			request->h = h;
+			request->w = w;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetTensor4dDescriptorArg);
@@ -6384,6 +9980,7 @@ cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetTensor4dDescriptor);
@@ -6394,8 +9991,45 @@ cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
 {
 	TALLY_LOG("cudnnSetTensor4dDescriptorEx hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetTensor4dDescriptorEx(tensorDesc, dataType, n, c, h, w, nStride, cStride, hStride, wStride);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetTensor4dDescriptorExArg), alignof(cudnnSetTensor4dDescriptorExArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETTENSOR4DDESCRIPTOREX;
+            
+            auto request = (cudnnSetTensor4dDescriptorExArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->tensorDesc = tensorDesc;
+			request->dataType = dataType;
+			request->n = n;
+			request->c = c;
+			request->h = h;
+			request->w = w;
+			request->nStride = nStride;
+			request->cStride = cStride;
+			request->hStride = hStride;
+			request->wStride = wStride;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetTensor4dDescriptorExArg);
@@ -6419,6 +10053,7 @@ cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetTensor4dDescriptorEx);
@@ -6429,10 +10064,56 @@ cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t  tensorDe
 {
 	TALLY_LOG("cudnnGetTensor4dDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetTensor4dDescriptor(tensorDesc, dataType, n, c, h, w, nStride, cStride, hStride, wStride);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetTensor4dDescriptorArg), alignof(cudnnGetTensor4dDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETTENSOR4DDESCRIPTOR;
+            
+            auto request = (cudnnGetTensor4dDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->tensorDesc = tensorDesc;
+			request->dataType = dataType;
+			request->n = n;
+			request->c = c;
+			request->h = h;
+			request->w = w;
+			request->nStride = nStride;
+			request->cStride = cStride;
+			request->hStride = hStride;
+			request->wStride = wStride;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetTensor4dDescriptorResponse*>(responsePayload);
+			if (dataType) { *dataType = response->dataType; }
+			if (n) { *n = response->n; }
+			if (c) { *c = response->c; }
+			if (h) { *h = response->h; }
+			if (w) { *w = response->w; }
+			if (nStride) { *nStride = response->nStride; }
+			if (cStride) { *cStride = response->cStride; }
+			if (hStride) { *hStride = response->hStride; }
+			if (wStride) { *wStride = response->wStride; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetTensor4dDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6463,6 +10144,7 @@ cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t  tensorDe
 	if (hStride) { *hStride = res->hStride; }
 	if (wStride) { *wStride = res->wStride; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetTensor4dDescriptor);
@@ -6479,10 +10161,40 @@ cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDes
 {
 	TALLY_LOG("cudnnGetTensorSizeInBytes hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetTensorSizeInBytes(tensorDesc, size);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetTensorSizeInBytesArg), alignof(cudnnGetTensorSizeInBytesArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETTENSORSIZEINBYTES;
+            
+            auto request = (cudnnGetTensorSizeInBytesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->tensorDesc = tensorDesc;
+			request->size = size;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetTensorSizeInBytesResponse*>(responsePayload);
+			if (size) { *size = response->size; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetTensorSizeInBytesArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6497,6 +10209,7 @@ cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDes
 	auto res = (cudnnGetTensorSizeInBytesResponse *) dat;
 	if (size) { *size = res->size; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetTensorSizeInBytes);
@@ -6507,8 +10220,36 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
 {
 	TALLY_LOG("cudnnDestroyTensorDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyTensorDescriptor(tensorDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyTensorDescriptorArg), alignof(cudnnDestroyTensorDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYTENSORDESCRIPTOR;
+            
+            auto request = (cudnnDestroyTensorDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->tensorDesc = tensorDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyTensorDescriptorArg);
@@ -6523,6 +10264,7 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyTensorDescriptor);
@@ -6533,10 +10275,42 @@ cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  tra
 {
 	TALLY_LOG("cudnnInitTransformDest hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnInitTransformDest(transformDesc, srcDesc, destDesc, destSizeInBytes);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnInitTransformDestArg), alignof(cudnnInitTransformDestArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNINITTRANSFORMDEST;
+            
+            auto request = (cudnnInitTransformDestArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->transformDesc = transformDesc;
+			request->srcDesc = srcDesc;
+			request->destDesc = destDesc;
+			request->destSizeInBytes = destSizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnInitTransformDestResponse*>(responsePayload);
+			if (destSizeInBytes) { *destSizeInBytes = response->destSizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnInitTransformDestArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6553,6 +10327,7 @@ cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  tra
 	auto res = (cudnnInitTransformDestResponse *) dat;
 	if (destSizeInBytes) { *destSizeInBytes = res->destSizeInBytes; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnInitTransformDest);
@@ -6563,10 +10338,39 @@ cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescripto
 {
 	TALLY_LOG("cudnnCreateTensorTransformDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateTensorTransformDescriptor(transformDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateTensorTransformDescriptorArg), alignof(cudnnCreateTensorTransformDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATETENSORTRANSFORMDESCRIPTOR;
+            
+            auto request = (cudnnCreateTensorTransformDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->transformDesc = transformDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateTensorTransformDescriptorResponse*>(responsePayload);
+			if (transformDesc) { *transformDesc = response->transformDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateTensorTransformDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6580,6 +10384,7 @@ cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescripto
 	auto res = (cudnnCreateTensorTransformDescriptorResponse *) dat;
 	if (transformDesc) { *transformDesc = res->transformDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateTensorTransformDescriptor);
@@ -6602,8 +10407,36 @@ cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescript
 {
 	TALLY_LOG("cudnnDestroyTensorTransformDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyTensorTransformDescriptor(transformDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyTensorTransformDescriptorArg), alignof(cudnnDestroyTensorTransformDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYTENSORTRANSFORMDESCRIPTOR;
+            
+            auto request = (cudnnDestroyTensorTransformDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->transformDesc = transformDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyTensorTransformDescriptorArg);
@@ -6618,6 +10451,7 @@ cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescript
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyTensorTransformDescriptor);
@@ -6634,10 +10468,39 @@ cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t * opTensor
 {
 	TALLY_LOG("cudnnCreateOpTensorDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateOpTensorDescriptor(opTensorDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateOpTensorDescriptorArg), alignof(cudnnCreateOpTensorDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATEOPTENSORDESCRIPTOR;
+            
+            auto request = (cudnnCreateOpTensorDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->opTensorDesc = opTensorDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateOpTensorDescriptorResponse*>(responsePayload);
+			if (opTensorDesc) { *opTensorDesc = response->opTensorDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateOpTensorDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6651,6 +10514,7 @@ cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t * opTensor
 	auto res = (cudnnCreateOpTensorDescriptorResponse *) dat;
 	if (opTensorDesc) { *opTensorDesc = res->opTensorDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateOpTensorDescriptor);
@@ -6661,8 +10525,39 @@ cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc
 {
 	TALLY_LOG("cudnnSetOpTensorDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetOpTensorDescriptor(opTensorDesc, opTensorOp, opTensorCompType, opTensorNanOpt);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetOpTensorDescriptorArg), alignof(cudnnSetOpTensorDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETOPTENSORDESCRIPTOR;
+            
+            auto request = (cudnnSetOpTensorDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->opTensorDesc = opTensorDesc;
+			request->opTensorOp = opTensorOp;
+			request->opTensorCompType = opTensorCompType;
+			request->opTensorNanOpt = opTensorNanOpt;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetOpTensorDescriptorArg);
@@ -6680,6 +10575,7 @@ cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetOpTensorDescriptor);
@@ -6690,10 +10586,44 @@ cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t  opTens
 {
 	TALLY_LOG("cudnnGetOpTensorDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetOpTensorDescriptor(opTensorDesc, opTensorOp, opTensorCompType, opTensorNanOpt);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetOpTensorDescriptorArg), alignof(cudnnGetOpTensorDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETOPTENSORDESCRIPTOR;
+            
+            auto request = (cudnnGetOpTensorDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->opTensorDesc = opTensorDesc;
+			request->opTensorOp = opTensorOp;
+			request->opTensorCompType = opTensorCompType;
+			request->opTensorNanOpt = opTensorNanOpt;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetOpTensorDescriptorResponse*>(responsePayload);
+			if (opTensorOp) { *opTensorOp = response->opTensorOp; }
+			if (opTensorCompType) { *opTensorCompType = response->opTensorCompType; }
+			if (opTensorNanOpt) { *opTensorNanOpt = response->opTensorNanOpt; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetOpTensorDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6712,6 +10642,7 @@ cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t  opTens
 	if (opTensorCompType) { *opTensorCompType = res->opTensorCompType; }
 	if (opTensorNanOpt) { *opTensorNanOpt = res->opTensorNanOpt; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetOpTensorDescriptor);
@@ -6788,10 +10719,39 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
 {
 	TALLY_LOG("cudnnCreateFilterDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateFilterDescriptor(filterDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateFilterDescriptorArg), alignof(cudnnCreateFilterDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATEFILTERDESCRIPTOR;
+            
+            auto request = (cudnnCreateFilterDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->filterDesc = filterDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateFilterDescriptorResponse*>(responsePayload);
+			if (filterDesc) { *filterDesc = response->filterDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateFilterDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6805,6 +10765,7 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
 	auto res = (cudnnCreateFilterDescriptorResponse *) dat;
 	if (filterDesc) { *filterDesc = res->filterDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateFilterDescriptor);
@@ -6815,8 +10776,42 @@ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 {
 	TALLY_LOG("cudnnSetFilter4dDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetFilter4dDescriptor(filterDesc, dataType, format, k, c, h, w);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetFilter4dDescriptorArg), alignof(cudnnSetFilter4dDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETFILTER4DDESCRIPTOR;
+            
+            auto request = (cudnnSetFilter4dDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->filterDesc = filterDesc;
+			request->dataType = dataType;
+			request->format = format;
+			request->k = k;
+			request->c = c;
+			request->h = h;
+			request->w = w;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetFilter4dDescriptorArg);
@@ -6837,6 +10832,7 @@ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetFilter4dDescriptor);
@@ -6853,10 +10849,40 @@ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDes
 {
 	TALLY_LOG("cudnnGetFilterSizeInBytes hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetFilterSizeInBytes(filterDesc, size);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetFilterSizeInBytesArg), alignof(cudnnGetFilterSizeInBytesArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETFILTERSIZEINBYTES;
+            
+            auto request = (cudnnGetFilterSizeInBytesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->filterDesc = filterDesc;
+			request->size = size;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetFilterSizeInBytesResponse*>(responsePayload);
+			if (size) { *size = response->size; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetFilterSizeInBytesArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6871,6 +10897,7 @@ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDes
 	auto res = (cudnnGetFilterSizeInBytesResponse *) dat;
 	if (size) { *size = res->size; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetFilterSizeInBytes);
@@ -6887,8 +10914,36 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t  filterDesc)
 {
 	TALLY_LOG("cudnnDestroyFilterDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyFilterDescriptor(filterDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyFilterDescriptorArg), alignof(cudnnDestroyFilterDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYFILTERDESCRIPTOR;
+            
+            auto request = (cudnnDestroyFilterDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->filterDesc = filterDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyFilterDescriptorArg);
@@ -6903,6 +10958,7 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t  filterDesc)
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyFilterDescriptor);
@@ -6913,10 +10969,39 @@ cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t * poolingDes
 {
 	TALLY_LOG("cudnnCreatePoolingDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreatePoolingDescriptor(poolingDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreatePoolingDescriptorArg), alignof(cudnnCreatePoolingDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATEPOOLINGDESCRIPTOR;
+            
+            auto request = (cudnnCreatePoolingDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->poolingDesc = poolingDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreatePoolingDescriptorResponse*>(responsePayload);
+			if (poolingDesc) { *poolingDesc = response->poolingDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreatePoolingDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -6930,6 +11015,7 @@ cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t * poolingDes
 	auto res = (cudnnCreatePoolingDescriptorResponse *) dat;
 	if (poolingDesc) { *poolingDesc = res->poolingDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreatePoolingDescriptor);
@@ -6958,8 +11044,36 @@ cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t  poolingDes
 {
 	TALLY_LOG("cudnnDestroyPoolingDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyPoolingDescriptor(poolingDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyPoolingDescriptorArg), alignof(cudnnDestroyPoolingDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYPOOLINGDESCRIPTOR;
+            
+            auto request = (cudnnDestroyPoolingDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->poolingDesc = poolingDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyPoolingDescriptorArg);
@@ -6974,6 +11088,7 @@ cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t  poolingDes
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyPoolingDescriptor);
@@ -6984,10 +11099,39 @@ cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t * acti
 {
 	TALLY_LOG("cudnnCreateActivationDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateActivationDescriptor(activationDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateActivationDescriptorArg), alignof(cudnnCreateActivationDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATEACTIVATIONDESCRIPTOR;
+            
+            auto request = (cudnnCreateActivationDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->activationDesc = activationDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateActivationDescriptorResponse*>(responsePayload);
+			if (activationDesc) { *activationDesc = response->activationDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateActivationDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -7001,6 +11145,7 @@ cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t * acti
 	auto res = (cudnnCreateActivationDescriptorResponse *) dat;
 	if (activationDesc) { *activationDesc = res->activationDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateActivationDescriptor);
@@ -7011,8 +11156,39 @@ cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t  activati
 {
 	TALLY_LOG("cudnnSetActivationDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetActivationDescriptor(activationDesc, mode, reluNanOpt, coef);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetActivationDescriptorArg), alignof(cudnnSetActivationDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETACTIVATIONDESCRIPTOR;
+            
+            auto request = (cudnnSetActivationDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->activationDesc = activationDesc;
+			request->mode = mode;
+			request->reluNanOpt = reluNanOpt;
+			request->coef = coef;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetActivationDescriptorArg);
@@ -7030,6 +11206,7 @@ cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t  activati
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetActivationDescriptor);
@@ -7058,8 +11235,36 @@ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t  acti
 {
 	TALLY_LOG("cudnnDestroyActivationDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyActivationDescriptor(activationDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyActivationDescriptorArg), alignof(cudnnDestroyActivationDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYACTIVATIONDESCRIPTOR;
+            
+            auto request = (cudnnDestroyActivationDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->activationDesc = activationDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyActivationDescriptorArg);
@@ -7074,6 +11279,7 @@ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t  acti
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyActivationDescriptor);
@@ -7084,10 +11290,39 @@ cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t * normDesc)
 {
 	TALLY_LOG("cudnnCreateLRNDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateLRNDescriptor(normDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateLRNDescriptorArg), alignof(cudnnCreateLRNDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATELRNDESCRIPTOR;
+            
+            auto request = (cudnnCreateLRNDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->normDesc = normDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateLRNDescriptorResponse*>(responsePayload);
+			if (normDesc) { *normDesc = response->normDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateLRNDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -7101,6 +11336,7 @@ cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t * normDesc)
 	auto res = (cudnnCreateLRNDescriptorResponse *) dat;
 	if (normDesc) { *normDesc = res->normDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateLRNDescriptor);
@@ -7111,8 +11347,40 @@ cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned  lr
 {
 	TALLY_LOG("cudnnSetLRNDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetLRNDescriptor(normDesc, lrnN, lrnAlpha, lrnBeta, lrnK);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetLRNDescriptorArg), alignof(cudnnSetLRNDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETLRNDESCRIPTOR;
+            
+            auto request = (cudnnSetLRNDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->normDesc = normDesc;
+			request->lrnN = lrnN;
+			request->lrnAlpha = lrnAlpha;
+			request->lrnBeta = lrnBeta;
+			request->lrnK = lrnK;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetLRNDescriptorArg);
@@ -7131,6 +11399,7 @@ cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned  lr
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetLRNDescriptor);
@@ -7147,8 +11416,36 @@ cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t  lrnDesc)
 {
 	TALLY_LOG("cudnnDestroyLRNDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyLRNDescriptor(lrnDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyLRNDescriptorArg), alignof(cudnnDestroyLRNDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYLRNDESCRIPTOR;
+            
+            auto request = (cudnnDestroyLRNDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->lrnDesc = lrnDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyLRNDescriptorArg);
@@ -7163,6 +11460,7 @@ cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t  lrnDesc)
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyLRNDescriptor);
@@ -7233,10 +11531,39 @@ cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDes
 {
 	TALLY_LOG("cudnnCreateDropoutDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateDropoutDescriptor(dropoutDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateDropoutDescriptorArg), alignof(cudnnCreateDropoutDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATEDROPOUTDESCRIPTOR;
+            
+            auto request = (cudnnCreateDropoutDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dropoutDesc = dropoutDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateDropoutDescriptorResponse*>(responsePayload);
+			if (dropoutDesc) { *dropoutDesc = response->dropoutDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateDropoutDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -7250,6 +11577,7 @@ cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDes
 	auto res = (cudnnCreateDropoutDescriptorResponse *) dat;
 	if (dropoutDesc) { *dropoutDesc = res->dropoutDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateDropoutDescriptor);
@@ -7260,8 +11588,36 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 {
 	TALLY_LOG("cudnnDestroyDropoutDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyDropoutDescriptor(dropoutDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyDropoutDescriptorArg), alignof(cudnnDestroyDropoutDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYDROPOUTDESCRIPTOR;
+            
+            auto request = (cudnnDestroyDropoutDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dropoutDesc = dropoutDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyDropoutDescriptorArg);
@@ -7276,6 +11632,7 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyDropoutDescriptor);
@@ -7286,10 +11643,40 @@ cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t  handle, size_t * sizeInBy
 {
 	TALLY_LOG("cudnnDropoutGetStatesSize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDropoutGetStatesSize(handle, sizeInBytes);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDropoutGetStatesSizeArg), alignof(cudnnDropoutGetStatesSizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDROPOUTGETSTATESSIZE;
+            
+            auto request = (cudnnDropoutGetStatesSizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->sizeInBytes = sizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnDropoutGetStatesSizeResponse*>(responsePayload);
+			if (sizeInBytes) { *sizeInBytes = response->sizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDropoutGetStatesSizeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -7304,6 +11691,7 @@ cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t  handle, size_t * sizeInBy
 	auto res = (cudnnDropoutGetStatesSizeResponse *) dat;
 	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDropoutGetStatesSize);
@@ -7320,8 +11708,41 @@ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
 {
 	TALLY_LOG("cudnnSetDropoutDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetDropoutDescriptor(dropoutDesc, handle, dropout, states, stateSizeInBytes, seed);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetDropoutDescriptorArg), alignof(cudnnSetDropoutDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETDROPOUTDESCRIPTOR;
+            
+            auto request = (cudnnSetDropoutDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dropoutDesc = dropoutDesc;
+			request->handle = handle;
+			request->dropout = dropout;
+			request->states = states;
+			request->stateSizeInBytes = stateSizeInBytes;
+			request->seed = seed;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetDropoutDescriptorArg);
@@ -7341,6 +11762,7 @@ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetDropoutDescriptor);
@@ -7351,8 +11773,41 @@ cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 {
 	TALLY_LOG("cudnnRestoreDropoutDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnRestoreDropoutDescriptor(dropoutDesc, handle, dropout, states, stateSizeInBytes, seed);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnRestoreDropoutDescriptorArg), alignof(cudnnRestoreDropoutDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNRESTOREDROPOUTDESCRIPTOR;
+            
+            auto request = (cudnnRestoreDropoutDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->dropoutDesc = dropoutDesc;
+			request->handle = handle;
+			request->dropout = dropout;
+			request->states = states;
+			request->stateSizeInBytes = stateSizeInBytes;
+			request->seed = seed;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRestoreDropoutDescriptorArg);
@@ -7372,6 +11827,7 @@ cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRestoreDropoutDescriptor);
@@ -7478,8 +11934,35 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
 {
 	TALLY_LOG("cudnnOpsInferVersionCheck hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnOpsInferVersionCheck();
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnOpsInferVersionCheckArg), alignof(cudnnOpsInferVersionCheckArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNOPSINFERVERSIONCHECK;
+            
+            auto request = (cudnnOpsInferVersionCheckArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnOpsInferVersionCheckArg);
@@ -7493,6 +11976,7 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnOpsInferVersionCheck);
@@ -7533,10 +12017,47 @@ cudnnStatus_t cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(cudnnHand
 {
 	TALLY_LOG("cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(handle, mode, bnOps, xDesc, zDesc, yDesc, bnScaleBiasMeanVarDesc, activationDesc, sizeInBytes);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg), alignof(cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETBATCHNORMALIZATIONFORWARDTRAININGEXWORKSPACESIZE;
+            
+            auto request = (cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->mode = mode;
+			request->bnOps = bnOps;
+			request->xDesc = xDesc;
+			request->zDesc = zDesc;
+			request->yDesc = yDesc;
+			request->bnScaleBiasMeanVarDesc = bnScaleBiasMeanVarDesc;
+			request->activationDesc = activationDesc;
+			request->sizeInBytes = sizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeResponse*>(responsePayload);
+			if (sizeInBytes) { *sizeInBytes = response->sizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -7558,6 +12079,7 @@ cudnnStatus_t cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(cudnnHand
 	auto res = (cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeResponse *) dat;
 	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize);
@@ -7568,10 +12090,49 @@ cudnnStatus_t cudnnGetBatchNormalizationBackwardExWorkspaceSize(cudnnHandle_t  h
 {
 	TALLY_LOG("cudnnGetBatchNormalizationBackwardExWorkspaceSize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetBatchNormalizationBackwardExWorkspaceSize(handle, mode, bnOps, xDesc, yDesc, dyDesc, dzDesc, dxDesc, dBnScaleBiasDesc, activationDesc, sizeInBytes);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg), alignof(cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETBATCHNORMALIZATIONBACKWARDEXWORKSPACESIZE;
+            
+            auto request = (cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->mode = mode;
+			request->bnOps = bnOps;
+			request->xDesc = xDesc;
+			request->yDesc = yDesc;
+			request->dyDesc = dyDesc;
+			request->dzDesc = dzDesc;
+			request->dxDesc = dxDesc;
+			request->dBnScaleBiasDesc = dBnScaleBiasDesc;
+			request->activationDesc = activationDesc;
+			request->sizeInBytes = sizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetBatchNormalizationBackwardExWorkspaceSizeResponse*>(responsePayload);
+			if (sizeInBytes) { *sizeInBytes = response->sizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -7595,6 +12156,7 @@ cudnnStatus_t cudnnGetBatchNormalizationBackwardExWorkspaceSize(cudnnHandle_t  h
 	auto res = (cudnnGetBatchNormalizationBackwardExWorkspaceSizeResponse *) dat;
 	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetBatchNormalizationBackwardExWorkspaceSize);
@@ -7605,10 +12167,44 @@ cudnnStatus_t cudnnGetBatchNormalizationTrainingExReserveSpaceSize(cudnnHandle_t
 {
 	TALLY_LOG("cudnnGetBatchNormalizationTrainingExReserveSpaceSize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetBatchNormalizationTrainingExReserveSpaceSize(handle, mode, bnOps, activationDesc, xDesc, sizeInBytes);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg), alignof(cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETBATCHNORMALIZATIONTRAININGEXRESERVESPACESIZE;
+            
+            auto request = (cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->mode = mode;
+			request->bnOps = bnOps;
+			request->activationDesc = activationDesc;
+			request->xDesc = xDesc;
+			request->sizeInBytes = sizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetBatchNormalizationTrainingExReserveSpaceSizeResponse*>(responsePayload);
+			if (sizeInBytes) { *sizeInBytes = response->sizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -7627,6 +12223,7 @@ cudnnStatus_t cudnnGetBatchNormalizationTrainingExReserveSpaceSize(cudnnHandle_t
 	auto res = (cudnnGetBatchNormalizationTrainingExReserveSpaceSizeResponse *) dat;
 	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetBatchNormalizationTrainingExReserveSpaceSize);
@@ -7697,8 +12294,35 @@ cudnnStatus_t cudnnOpsTrainVersionCheck()
 {
 	TALLY_LOG("cudnnOpsTrainVersionCheck hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnOpsTrainVersionCheck();
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnOpsTrainVersionCheckArg), alignof(cudnnOpsTrainVersionCheckArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNOPSTRAINVERSIONCHECK;
+            
+            auto request = (cudnnOpsTrainVersionCheckArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnOpsTrainVersionCheckArg);
@@ -7712,6 +12336,7 @@ cudnnStatus_t cudnnOpsTrainVersionCheck()
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnOpsTrainVersionCheck);
@@ -7722,10 +12347,39 @@ cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t * rnnDesc)
 {
 	TALLY_LOG("cudnnCreateRNNDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateRNNDescriptor(rnnDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateRNNDescriptorArg), alignof(cudnnCreateRNNDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATERNNDESCRIPTOR;
+            
+            auto request = (cudnnCreateRNNDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->rnnDesc = rnnDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateRNNDescriptorResponse*>(responsePayload);
+			if (rnnDesc) { *rnnDesc = response->rnnDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateRNNDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -7739,6 +12393,7 @@ cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t * rnnDesc)
 	auto res = (cudnnCreateRNNDescriptorResponse *) dat;
 	if (rnnDesc) { *rnnDesc = res->rnnDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateRNNDescriptor);
@@ -7749,8 +12404,36 @@ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
 {
 	TALLY_LOG("cudnnDestroyRNNDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyRNNDescriptor(rnnDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyRNNDescriptorArg), alignof(cudnnDestroyRNNDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYRNNDESCRIPTOR;
+            
+            auto request = (cudnnDestroyRNNDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->rnnDesc = rnnDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyRNNDescriptorArg);
@@ -7765,6 +12448,7 @@ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyRNNDescriptor);
@@ -7775,8 +12459,50 @@ cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAl
 {
 	TALLY_LOG("cudnnSetRNNDescriptor_v8 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNDescriptor_v8(rnnDesc, algo, cellMode, biasMode, dirMode, inputMode, dataType, mathPrec, mathType, inputSize, hiddenSize, projSize, numLayers, dropoutDesc, auxFlags);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetRNNDescriptor_v8Arg), alignof(cudnnSetRNNDescriptor_v8Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETRNNDESCRIPTOR_V8;
+            
+            auto request = (cudnnSetRNNDescriptor_v8Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->rnnDesc = rnnDesc;
+			request->algo = algo;
+			request->cellMode = cellMode;
+			request->biasMode = biasMode;
+			request->dirMode = dirMode;
+			request->inputMode = inputMode;
+			request->dataType = dataType;
+			request->mathPrec = mathPrec;
+			request->mathType = mathType;
+			request->inputSize = inputSize;
+			request->hiddenSize = hiddenSize;
+			request->projSize = projSize;
+			request->numLayers = numLayers;
+			request->dropoutDesc = dropoutDesc;
+			request->auxFlags = auxFlags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDescriptor_v8Arg);
@@ -7805,6 +12531,7 @@ cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAl
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNDescriptor_v8);
@@ -7821,8 +12548,45 @@ cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
 {
 	TALLY_LOG("cudnnSetRNNDescriptor_v6 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNDescriptor_v6(handle, rnnDesc, hiddenSize, numLayers, dropoutDesc, inputMode, direction, cellMode, algo, mathPrec);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetRNNDescriptor_v6Arg), alignof(cudnnSetRNNDescriptor_v6Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETRNNDESCRIPTOR_V6;
+            
+            auto request = (cudnnSetRNNDescriptor_v6Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->hiddenSize = hiddenSize;
+			request->numLayers = numLayers;
+			request->dropoutDesc = dropoutDesc;
+			request->inputMode = inputMode;
+			request->direction = direction;
+			request->cellMode = cellMode;
+			request->algo = algo;
+			request->mathPrec = mathPrec;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDescriptor_v6Arg);
@@ -7846,6 +12610,7 @@ cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNDescriptor_v6);
@@ -7862,8 +12627,37 @@ cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
 {
 	TALLY_LOG("cudnnSetRNNMatrixMathType hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNMatrixMathType(rnnDesc, mType);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetRNNMatrixMathTypeArg), alignof(cudnnSetRNNMatrixMathTypeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETRNNMATRIXMATHTYPE;
+            
+            auto request = (cudnnSetRNNMatrixMathTypeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->rnnDesc = rnnDesc;
+			request->mType = mType;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNMatrixMathTypeArg);
@@ -7879,6 +12673,7 @@ cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNMatrixMathType);
@@ -7889,10 +12684,40 @@ cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
 {
 	TALLY_LOG("cudnnGetRNNMatrixMathType hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNMatrixMathType(rnnDesc, mType);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetRNNMatrixMathTypeArg), alignof(cudnnGetRNNMatrixMathTypeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETRNNMATRIXMATHTYPE;
+            
+            auto request = (cudnnGetRNNMatrixMathTypeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->rnnDesc = rnnDesc;
+			request->mType = mType;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetRNNMatrixMathTypeResponse*>(responsePayload);
+			if (mType) { *mType = response->mType; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNMatrixMathTypeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -7907,6 +12732,7 @@ cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
 	auto res = (cudnnGetRNNMatrixMathTypeResponse *) dat;
 	if (mType) { *mType = res->mType; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNMatrixMathType);
@@ -7917,8 +12743,37 @@ cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
 {
 	TALLY_LOG("cudnnSetRNNBiasMode hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNBiasMode(rnnDesc, biasMode);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetRNNBiasModeArg), alignof(cudnnSetRNNBiasModeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETRNNBIASMODE;
+            
+            auto request = (cudnnSetRNNBiasModeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->rnnDesc = rnnDesc;
+			request->biasMode = biasMode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNBiasModeArg);
@@ -7934,6 +12789,7 @@ cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNBiasMode);
@@ -7944,10 +12800,40 @@ cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
 {
 	TALLY_LOG("cudnnGetRNNBiasMode hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNBiasMode(rnnDesc, biasMode);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetRNNBiasModeArg), alignof(cudnnGetRNNBiasModeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETRNNBIASMODE;
+            
+            auto request = (cudnnGetRNNBiasModeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->rnnDesc = rnnDesc;
+			request->biasMode = biasMode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetRNNBiasModeResponse*>(responsePayload);
+			if (biasMode) { *biasMode = response->biasMode; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNBiasModeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -7962,6 +12848,7 @@ cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
 	auto res = (cudnnGetRNNBiasModeResponse *) dat;
 	if (biasMode) { *biasMode = res->biasMode; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNBiasMode);
@@ -7972,8 +12859,40 @@ cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode
 {
 	TALLY_LOG("cudnnRNNSetClip_v8 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNSetClip_v8(rnnDesc, clipMode, clipNanOpt, lclip, rclip);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnRNNSetClip_v8Arg), alignof(cudnnRNNSetClip_v8Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNRNNSETCLIP_V8;
+            
+            auto request = (cudnnRNNSetClip_v8Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->rnnDesc = rnnDesc;
+			request->clipMode = clipMode;
+			request->clipNanOpt = clipNanOpt;
+			request->lclip = lclip;
+			request->rclip = rclip;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNSetClip_v8Arg);
@@ -7992,6 +12911,7 @@ cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNSetClip_v8);
@@ -8008,8 +12928,41 @@ cudnnStatus_t cudnnRNNSetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 {
 	TALLY_LOG("cudnnRNNSetClip hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNSetClip(handle, rnnDesc, clipMode, clipNanOpt, lclip, rclip);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnRNNSetClipArg), alignof(cudnnRNNSetClipArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNRNNSETCLIP;
+            
+            auto request = (cudnnRNNSetClipArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->clipMode = clipMode;
+			request->clipNanOpt = clipNanOpt;
+			request->lclip = lclip;
+			request->rclip = rclip;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNSetClipArg);
@@ -8029,6 +12982,7 @@ cudnnStatus_t cudnnRNNSetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNSetClip);
@@ -8075,8 +13029,38 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
 {
 	TALLY_LOG("cudnnBuildRNNDynamic hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnBuildRNNDynamic(handle, rnnDesc, miniBatch);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnBuildRNNDynamicArg), alignof(cudnnBuildRNNDynamicArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNBUILDRNNDYNAMIC;
+            
+            auto request = (cudnnBuildRNNDynamicArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->miniBatch = miniBatch;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBuildRNNDynamicArg);
@@ -8093,6 +13077,7 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBuildRNNDynamic);
@@ -8103,10 +13088,45 @@ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescripto
 {
 	TALLY_LOG("cudnnGetRNNTempSpaceSizes hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNTempSpaceSizes(handle, rnnDesc, fMode, xDesc, workSpaceSize, reserveSpaceSize);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetRNNTempSpaceSizesArg), alignof(cudnnGetRNNTempSpaceSizesArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETRNNTEMPSPACESIZES;
+            
+            auto request = (cudnnGetRNNTempSpaceSizesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->fMode = fMode;
+			request->xDesc = xDesc;
+			request->workSpaceSize = workSpaceSize;
+			request->reserveSpaceSize = reserveSpaceSize;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetRNNTempSpaceSizesResponse*>(responsePayload);
+			if (workSpaceSize) { *workSpaceSize = response->workSpaceSize; }
+			if (reserveSpaceSize) { *reserveSpaceSize = response->reserveSpaceSize; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNTempSpaceSizesArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8126,6 +13146,7 @@ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescripto
 	if (workSpaceSize) { *workSpaceSize = res->workSpaceSize; }
 	if (reserveSpaceSize) { *reserveSpaceSize = res->reserveSpaceSize; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNTempSpaceSizes);
@@ -8136,10 +13157,43 @@ cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescrip
 {
 	TALLY_LOG("cudnnGetRNNParamsSize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNParamsSize(handle, rnnDesc, xDesc, sizeInBytes, dataType);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetRNNParamsSizeArg), alignof(cudnnGetRNNParamsSizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETRNNPARAMSSIZE;
+            
+            auto request = (cudnnGetRNNParamsSizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->xDesc = xDesc;
+			request->sizeInBytes = sizeInBytes;
+			request->dataType = dataType;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetRNNParamsSizeResponse*>(responsePayload);
+			if (sizeInBytes) { *sizeInBytes = response->sizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNParamsSizeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8157,6 +13211,7 @@ cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescrip
 	auto res = (cudnnGetRNNParamsSizeResponse *) dat;
 	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNParamsSize);
@@ -8167,10 +13222,41 @@ cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t  handle, cudnnRNNDescript
 {
 	TALLY_LOG("cudnnGetRNNWeightSpaceSize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNWeightSpaceSize(handle, rnnDesc, weightSpaceSize);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetRNNWeightSpaceSizeArg), alignof(cudnnGetRNNWeightSpaceSizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETRNNWEIGHTSPACESIZE;
+            
+            auto request = (cudnnGetRNNWeightSpaceSizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->weightSpaceSize = weightSpaceSize;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetRNNWeightSpaceSizeResponse*>(responsePayload);
+			if (weightSpaceSize) { *weightSpaceSize = response->weightSpaceSize; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWeightSpaceSizeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8186,6 +13272,7 @@ cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t  handle, cudnnRNNDescript
 	auto res = (cudnnGetRNNWeightSpaceSizeResponse *) dat;
 	if (weightSpaceSize) { *weightSpaceSize = res->weightSpaceSize; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNWeightSpaceSize);
@@ -8196,10 +13283,47 @@ cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnHandle_t  handle, const cudnn
 {
 	TALLY_LOG("cudnnGetRNNLinLayerMatrixParams hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNLinLayerMatrixParams(handle, rnnDesc, pseudoLayer, xDesc, wDesc, w, linLayerID, linLayerMatDesc, linLayerMat);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetRNNLinLayerMatrixParamsArg), alignof(cudnnGetRNNLinLayerMatrixParamsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETRNNLINLAYERMATRIXPARAMS;
+            
+            auto request = (cudnnGetRNNLinLayerMatrixParamsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->pseudoLayer = pseudoLayer;
+			request->xDesc = xDesc;
+			request->wDesc = wDesc;
+			request->w = const_cast<void *>(w);
+			request->linLayerID = linLayerID;
+			request->linLayerMatDesc = linLayerMatDesc;
+			request->linLayerMat = linLayerMat;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetRNNLinLayerMatrixParamsResponse*>(responsePayload);
+			if (linLayerMat) { *linLayerMat = response->linLayerMat; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNLinLayerMatrixParamsArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8221,6 +13345,7 @@ cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnHandle_t  handle, const cudnn
 	auto res = (cudnnGetRNNLinLayerMatrixParamsResponse *) dat;
 	if (linLayerMat) { *linLayerMat = res->linLayerMat; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNLinLayerMatrixParams);
@@ -8231,10 +13356,47 @@ cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnHandle_t  handle, const cudnnRN
 {
 	TALLY_LOG("cudnnGetRNNLinLayerBiasParams hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNLinLayerBiasParams(handle, rnnDesc, pseudoLayer, xDesc, wDesc, w, linLayerID, linLayerBiasDesc, linLayerBias);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetRNNLinLayerBiasParamsArg), alignof(cudnnGetRNNLinLayerBiasParamsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETRNNLINLAYERBIASPARAMS;
+            
+            auto request = (cudnnGetRNNLinLayerBiasParamsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->pseudoLayer = pseudoLayer;
+			request->xDesc = xDesc;
+			request->wDesc = wDesc;
+			request->w = const_cast<void *>(w);
+			request->linLayerID = linLayerID;
+			request->linLayerBiasDesc = linLayerBiasDesc;
+			request->linLayerBias = linLayerBias;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetRNNLinLayerBiasParamsResponse*>(responsePayload);
+			if (linLayerBias) { *linLayerBias = response->linLayerBias; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNLinLayerBiasParamsArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8256,6 +13418,7 @@ cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnHandle_t  handle, const cudnnRN
 	auto res = (cudnnGetRNNLinLayerBiasParamsResponse *) dat;
 	if (linLayerBias) { *linLayerBias = res->linLayerBias; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNLinLayerBiasParams);
@@ -8266,10 +13429,49 @@ cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t  handle, cudnnRNNDescriptor_
 {
 	TALLY_LOG("cudnnGetRNNWeightParams hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNWeightParams(handle, rnnDesc, pseudoLayer, weightSpaceSize, weightSpace, linLayerID, mDesc, mAddr, bDesc, bAddr);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetRNNWeightParamsArg), alignof(cudnnGetRNNWeightParamsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETRNNWEIGHTPARAMS;
+            
+            auto request = (cudnnGetRNNWeightParamsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->pseudoLayer = pseudoLayer;
+			request->weightSpaceSize = weightSpaceSize;
+			request->weightSpace = const_cast<void *>(weightSpace);
+			request->linLayerID = linLayerID;
+			request->mDesc = mDesc;
+			request->mAddr = mAddr;
+			request->bDesc = bDesc;
+			request->bAddr = bAddr;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetRNNWeightParamsResponse*>(responsePayload);
+			if (mAddr) { *mAddr = response->mAddr; }
+			if (bAddr) { *bAddr = response->bAddr; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWeightParamsArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8293,6 +13495,7 @@ cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t  handle, cudnnRNNDescriptor_
 	if (mAddr) { *mAddr = res->mAddr; }
 	if (bAddr) { *bAddr = res->bAddr; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNWeightParams);
@@ -8321,10 +13524,39 @@ cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t * rnnDataDes
 {
 	TALLY_LOG("cudnnCreateRNNDataDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateRNNDataDescriptor(rnnDataDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateRNNDataDescriptorArg), alignof(cudnnCreateRNNDataDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATERNNDATADESCRIPTOR;
+            
+            auto request = (cudnnCreateRNNDataDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->rnnDataDesc = rnnDataDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateRNNDataDescriptorResponse*>(responsePayload);
+			if (rnnDataDesc) { *rnnDataDesc = response->rnnDataDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateRNNDataDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8338,6 +13570,7 @@ cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t * rnnDataDes
 	auto res = (cudnnCreateRNNDataDescriptorResponse *) dat;
 	if (rnnDataDesc) { *rnnDataDesc = res->rnnDataDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateRNNDataDescriptor);
@@ -8348,8 +13581,36 @@ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDes
 {
 	TALLY_LOG("cudnnDestroyRNNDataDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyRNNDataDescriptor(rnnDataDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyRNNDataDescriptorArg), alignof(cudnnDestroyRNNDataDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYRNNDATADESCRIPTOR;
+            
+            auto request = (cudnnDestroyRNNDataDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->rnnDataDesc = rnnDataDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyRNNDataDescriptorArg);
@@ -8364,6 +13625,7 @@ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDes
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyRNNDataDescriptor);
@@ -8386,8 +13648,55 @@ cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 {
 	TALLY_LOG("cudnnRNNForward hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNForward(handle, rnnDesc, fwdMode, devSeqLengths, xDesc, x, yDesc, y, hDesc, hx, hy, cDesc, cx, cy, weightSpaceSize, weightSpace, workSpaceSize, workSpace, reserveSpaceSize, reserveSpace);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnRNNForwardArg), alignof(cudnnRNNForwardArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNRNNFORWARD;
+            
+            auto request = (cudnnRNNForwardArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->fwdMode = fwdMode;
+			request->devSeqLengths = const_cast<int32_t *>(devSeqLengths);
+			request->xDesc = xDesc;
+			request->x = const_cast<void *>(x);
+			request->yDesc = yDesc;
+			request->y = y;
+			request->hDesc = hDesc;
+			request->hx = const_cast<void *>(hx);
+			request->hy = hy;
+			request->cDesc = cDesc;
+			request->cx = const_cast<void *>(cx);
+			request->cy = cy;
+			request->weightSpaceSize = weightSpaceSize;
+			request->weightSpace = const_cast<void *>(weightSpace);
+			request->workSpaceSize = workSpaceSize;
+			request->workSpace = workSpace;
+			request->reserveSpaceSize = reserveSpaceSize;
+			request->reserveSpace = reserveSpace;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNForwardArg);
@@ -8421,6 +13730,7 @@ cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNForward);
@@ -8431,8 +13741,38 @@ cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDesc
 {
 	TALLY_LOG("cudnnSetRNNAlgorithmDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNAlgorithmDescriptor(handle, rnnDesc, algoDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetRNNAlgorithmDescriptorArg), alignof(cudnnSetRNNAlgorithmDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETRNNALGORITHMDESCRIPTOR;
+            
+            auto request = (cudnnSetRNNAlgorithmDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->algoDesc = algoDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNAlgorithmDescriptorArg);
@@ -8449,6 +13789,7 @@ cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDesc
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNAlgorithmDescriptor);
@@ -8459,10 +13800,41 @@ cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle
 {
 	TALLY_LOG("cudnnGetRNNForwardInferenceAlgorithmMaxCount hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNForwardInferenceAlgorithmMaxCount(handle, rnnDesc, count);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetRNNForwardInferenceAlgorithmMaxCountArg), alignof(cudnnGetRNNForwardInferenceAlgorithmMaxCountArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETRNNFORWARDINFERENCEALGORITHMMAXCOUNT;
+            
+            auto request = (cudnnGetRNNForwardInferenceAlgorithmMaxCountArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->count = count;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetRNNForwardInferenceAlgorithmMaxCountResponse*>(responsePayload);
+			if (count) { *count = response->count; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8478,6 +13850,7 @@ cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle
 	auto res = (cudnnGetRNNForwardInferenceAlgorithmMaxCountResponse *) dat;
 	if (count) { *count = res->count; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNForwardInferenceAlgorithmMaxCount);
@@ -8494,10 +13867,39 @@ cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDes
 {
 	TALLY_LOG("cudnnCreateSeqDataDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateSeqDataDescriptor(seqDataDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateSeqDataDescriptorArg), alignof(cudnnCreateSeqDataDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATESEQDATADESCRIPTOR;
+            
+            auto request = (cudnnCreateSeqDataDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->seqDataDesc = seqDataDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateSeqDataDescriptorResponse*>(responsePayload);
+			if (seqDataDesc) { *seqDataDesc = response->seqDataDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateSeqDataDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8511,6 +13913,7 @@ cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDes
 	auto res = (cudnnCreateSeqDataDescriptorResponse *) dat;
 	if (seqDataDesc) { *seqDataDesc = res->seqDataDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateSeqDataDescriptor);
@@ -8521,8 +13924,36 @@ cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDes
 {
 	TALLY_LOG("cudnnDestroySeqDataDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroySeqDataDescriptor(seqDataDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroySeqDataDescriptorArg), alignof(cudnnDestroySeqDataDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYSEQDATADESCRIPTOR;
+            
+            auto request = (cudnnDestroySeqDataDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->seqDataDesc = seqDataDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroySeqDataDescriptorArg);
@@ -8537,6 +13968,7 @@ cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDes
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroySeqDataDescriptor);
@@ -8547,10 +13979,39 @@ cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t * attnDesc)
 {
 	TALLY_LOG("cudnnCreateAttnDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateAttnDescriptor(attnDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateAttnDescriptorArg), alignof(cudnnCreateAttnDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATEATTNDESCRIPTOR;
+            
+            auto request = (cudnnCreateAttnDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->attnDesc = attnDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateAttnDescriptorResponse*>(responsePayload);
+			if (attnDesc) { *attnDesc = response->attnDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateAttnDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8564,6 +14025,7 @@ cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t * attnDesc)
 	auto res = (cudnnCreateAttnDescriptorResponse *) dat;
 	if (attnDesc) { *attnDesc = res->attnDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateAttnDescriptor);
@@ -8574,8 +14036,36 @@ cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
 {
 	TALLY_LOG("cudnnDestroyAttnDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyAttnDescriptor(attnDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyAttnDescriptorArg), alignof(cudnnDestroyAttnDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYATTNDESCRIPTOR;
+            
+            auto request = (cudnnDestroyAttnDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->attnDesc = attnDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyAttnDescriptorArg);
@@ -8590,6 +14080,7 @@ cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyAttnDescriptor);
@@ -8600,8 +14091,55 @@ cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  
 {
 	TALLY_LOG("cudnnSetAttnDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnSetAttnDescriptor(attnDesc, attnMode, nHeads, smScaler, dataType, computePrec, mathType, attnDropoutDesc, postDropoutDesc, qSize, kSize, vSize, qProjSize, kProjSize, vProjSize, oProjSize, qoMaxSeqLength, kvMaxSeqLength, maxBatchSize, maxBeamSize);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnSetAttnDescriptorArg), alignof(cudnnSetAttnDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETATTNDESCRIPTOR;
+            
+            auto request = (cudnnSetAttnDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->attnDesc = attnDesc;
+			request->attnMode = attnMode;
+			request->nHeads = nHeads;
+			request->smScaler = smScaler;
+			request->dataType = dataType;
+			request->computePrec = computePrec;
+			request->mathType = mathType;
+			request->attnDropoutDesc = attnDropoutDesc;
+			request->postDropoutDesc = postDropoutDesc;
+			request->qSize = qSize;
+			request->kSize = kSize;
+			request->vSize = vSize;
+			request->qProjSize = qProjSize;
+			request->kProjSize = kProjSize;
+			request->vProjSize = vProjSize;
+			request->oProjSize = oProjSize;
+			request->qoMaxSeqLength = qoMaxSeqLength;
+			request->kvMaxSeqLength = kvMaxSeqLength;
+			request->maxBatchSize = maxBatchSize;
+			request->maxBeamSize = maxBeamSize;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetAttnDescriptorArg);
@@ -8635,6 +14173,7 @@ cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetAttnDescriptor);
@@ -8651,10 +14190,45 @@ cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t  handle, const cudnnAtt
 {
 	TALLY_LOG("cudnnGetMultiHeadAttnBuffers hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetMultiHeadAttnBuffers(handle, attnDesc, weightSizeInBytes, workSpaceSizeInBytes, reserveSpaceSizeInBytes);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetMultiHeadAttnBuffersArg), alignof(cudnnGetMultiHeadAttnBuffersArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETMULTIHEADATTNBUFFERS;
+            
+            auto request = (cudnnGetMultiHeadAttnBuffersArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->attnDesc = attnDesc;
+			request->weightSizeInBytes = weightSizeInBytes;
+			request->workSpaceSizeInBytes = workSpaceSizeInBytes;
+			request->reserveSpaceSizeInBytes = reserveSpaceSizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetMultiHeadAttnBuffersResponse*>(responsePayload);
+			if (weightSizeInBytes) { *weightSizeInBytes = response->weightSizeInBytes; }
+			if (workSpaceSizeInBytes) { *workSpaceSizeInBytes = response->workSpaceSizeInBytes; }
+			if (reserveSpaceSizeInBytes) { *reserveSpaceSizeInBytes = response->reserveSpaceSizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetMultiHeadAttnBuffersArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8674,6 +14248,7 @@ cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t  handle, const cudnnAtt
 	if (workSpaceSizeInBytes) { *workSpaceSizeInBytes = res->workSpaceSizeInBytes; }
 	if (reserveSpaceSizeInBytes) { *reserveSpaceSizeInBytes = res->reserveSpaceSizeInBytes; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetMultiHeadAttnBuffers);
@@ -8690,8 +14265,35 @@ cudnnStatus_t cudnnAdvInferVersionCheck()
 {
 	TALLY_LOG("cudnnAdvInferVersionCheck hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnAdvInferVersionCheck();
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnAdvInferVersionCheckArg), alignof(cudnnAdvInferVersionCheckArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNADVINFERVERSIONCHECK;
+            
+            auto request = (cudnnAdvInferVersionCheckArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAdvInferVersionCheckArg);
@@ -8705,6 +14307,7 @@ cudnnStatus_t cudnnAdvInferVersionCheck()
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnAdvInferVersionCheck);
@@ -8715,8 +14318,57 @@ cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_
 {
 	TALLY_LOG("cudnnRNNBackwardData_v8 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNBackwardData_v8(handle, rnnDesc, devSeqLengths, yDesc, y, dy, xDesc, dx, hDesc, hx, dhy, dhx, cDesc, cx, dcy, dcx, weightSpaceSize, weightSpace, workSpaceSize, workSpace, reserveSpaceSize, reserveSpace);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnRNNBackwardData_v8Arg), alignof(cudnnRNNBackwardData_v8Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNRNNBACKWARDDATA_V8;
+            
+            auto request = (cudnnRNNBackwardData_v8Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->devSeqLengths = const_cast<int32_t *>(devSeqLengths);
+			request->yDesc = yDesc;
+			request->y = const_cast<void *>(y);
+			request->dy = const_cast<void *>(dy);
+			request->xDesc = xDesc;
+			request->dx = dx;
+			request->hDesc = hDesc;
+			request->hx = const_cast<void *>(hx);
+			request->dhy = const_cast<void *>(dhy);
+			request->dhx = dhx;
+			request->cDesc = cDesc;
+			request->cx = const_cast<void *>(cx);
+			request->dcy = const_cast<void *>(dcy);
+			request->dcx = dcx;
+			request->weightSpaceSize = weightSpaceSize;
+			request->weightSpace = const_cast<void *>(weightSpace);
+			request->workSpaceSize = workSpaceSize;
+			request->workSpace = workSpace;
+			request->reserveSpaceSize = reserveSpaceSize;
+			request->reserveSpace = reserveSpace;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNBackwardData_v8Arg);
@@ -8752,6 +14404,7 @@ cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNBackwardData_v8);
@@ -8762,8 +14415,51 @@ cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescript
 {
 	TALLY_LOG("cudnnRNNBackwardWeights_v8 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNBackwardWeights_v8(handle, rnnDesc, addGrad, devSeqLengths, xDesc, x, hDesc, hx, yDesc, y, weightSpaceSize, dweightSpace, workSpaceSize, workSpace, reserveSpaceSize, reserveSpace);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnRNNBackwardWeights_v8Arg), alignof(cudnnRNNBackwardWeights_v8Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNRNNBACKWARDWEIGHTS_V8;
+            
+            auto request = (cudnnRNNBackwardWeights_v8Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->rnnDesc = rnnDesc;
+			request->addGrad = addGrad;
+			request->devSeqLengths = const_cast<int32_t *>(devSeqLengths);
+			request->xDesc = xDesc;
+			request->x = const_cast<void *>(x);
+			request->hDesc = hDesc;
+			request->hx = const_cast<void *>(hx);
+			request->yDesc = yDesc;
+			request->y = const_cast<void *>(y);
+			request->weightSpaceSize = weightSpaceSize;
+			request->dweightSpace = dweightSpace;
+			request->workSpaceSize = workSpaceSize;
+			request->workSpace = workSpace;
+			request->reserveSpaceSize = reserveSpaceSize;
+			request->reserveSpace = reserveSpace;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNBackwardWeights_v8Arg);
@@ -8793,6 +14489,7 @@ cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescript
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNBackwardWeights_v8);
@@ -8929,8 +14626,35 @@ cudnnStatus_t cudnnAdvTrainVersionCheck()
 {
 	TALLY_LOG("cudnnAdvTrainVersionCheck hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnAdvTrainVersionCheck();
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnAdvTrainVersionCheckArg), alignof(cudnnAdvTrainVersionCheckArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNADVTRAINVERSIONCHECK;
+            
+            auto request = (cudnnAdvTrainVersionCheckArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAdvTrainVersionCheckArg);
@@ -8944,6 +14668,7 @@ cudnnStatus_t cudnnAdvTrainVersionCheck()
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnAdvTrainVersionCheck);
@@ -8954,10 +14679,39 @@ cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * co
 {
 	TALLY_LOG("cudnnCreateConvolutionDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateConvolutionDescriptor(convDesc);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCreateConvolutionDescriptorArg), alignof(cudnnCreateConvolutionDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATECONVOLUTIONDESCRIPTOR;
+            
+            auto request = (cudnnCreateConvolutionDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->convDesc = convDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateConvolutionDescriptorResponse*>(responsePayload);
+			if (convDesc) { *convDesc = response->convDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateConvolutionDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -8971,6 +14725,7 @@ cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * co
 	auto res = (cudnnCreateConvolutionDescriptorResponse *) dat;
 	if (convDesc) { *convDesc = res->convDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateConvolutionDescriptor);
@@ -8981,8 +14736,36 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t  co
 {
 	TALLY_LOG("cudnnDestroyConvolutionDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyConvolutionDescriptor(convDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnDestroyConvolutionDescriptorArg), alignof(cudnnDestroyConvolutionDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYCONVOLUTIONDESCRIPTOR;
+            
+            auto request = (cudnnDestroyConvolutionDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->convDesc = convDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyConvolutionDescriptorArg);
@@ -8997,6 +14780,7 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t  co
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyConvolutionDescriptor);
@@ -9085,10 +14869,45 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t  handle, con
 {
 	TALLY_LOG("cudnnGetConvolutionForwardWorkspaceSize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionForwardWorkspaceSize(handle, xDesc, wDesc, convDesc, yDesc, algo, sizeInBytes);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetConvolutionForwardWorkspaceSizeArg), alignof(cudnnGetConvolutionForwardWorkspaceSizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONFORWARDWORKSPACESIZE;
+            
+            auto request = (cudnnGetConvolutionForwardWorkspaceSizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->xDesc = xDesc;
+			request->wDesc = wDesc;
+			request->convDesc = convDesc;
+			request->yDesc = yDesc;
+			request->algo = algo;
+			request->sizeInBytes = sizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetConvolutionForwardWorkspaceSizeResponse*>(responsePayload);
+			if (sizeInBytes) { *sizeInBytes = response->sizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionForwardWorkspaceSizeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9108,6 +14927,7 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t  handle, con
 	auto res = (cudnnGetConvolutionForwardWorkspaceSizeResponse *) dat;
 	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionForwardWorkspaceSize);
@@ -9124,10 +14944,40 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  ha
 {
 	TALLY_LOG("cudnnGetConvolutionBackwardDataAlgorithmMaxCount hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionBackwardDataAlgorithmMaxCount(handle, count);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg), alignof(cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDDATAALGORITHMMAXCOUNT;
+            
+            auto request = (cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->count = count;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetConvolutionBackwardDataAlgorithmMaxCountResponse*>(responsePayload);
+			if (count) { *count = response->count; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9142,6 +14992,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  ha
 	auto res = (cudnnGetConvolutionBackwardDataAlgorithmMaxCountResponse *) dat;
 	if (count) { *count = res->count; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionBackwardDataAlgorithmMaxCount);
@@ -9170,10 +15021,45 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle
 {
 	TALLY_LOG("cudnnGetConvolutionBackwardDataWorkspaceSize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionBackwardDataWorkspaceSize(handle, wDesc, dyDesc, convDesc, dxDesc, algo, sizeInBytes);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetConvolutionBackwardDataWorkspaceSizeArg), alignof(cudnnGetConvolutionBackwardDataWorkspaceSizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDDATAWORKSPACESIZE;
+            
+            auto request = (cudnnGetConvolutionBackwardDataWorkspaceSizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->wDesc = wDesc;
+			request->dyDesc = dyDesc;
+			request->convDesc = convDesc;
+			request->dxDesc = dxDesc;
+			request->algo = algo;
+			request->sizeInBytes = sizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetConvolutionBackwardDataWorkspaceSizeResponse*>(responsePayload);
+			if (sizeInBytes) { *sizeInBytes = response->sizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardDataWorkspaceSizeArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9193,6 +15079,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle
 	auto res = (cudnnGetConvolutionBackwardDataWorkspaceSizeResponse *) dat;
 	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionBackwardDataWorkspaceSize);
@@ -9209,8 +15096,49 @@ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  han
 {
 	TALLY_LOG("cudnnGetFoldedConvBackwardDataDescriptors hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetFoldedConvBackwardDataDescriptors(handle, filterDesc, diffDesc, convDesc, gradDesc, transformFormat, foldedFilterDesc, paddedDiffDesc, foldedConvDesc, foldedGradDesc, filterFoldTransDesc, diffPadTransDesc, gradFoldTransDesc, gradUnfoldTransDesc);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetFoldedConvBackwardDataDescriptorsArg), alignof(cudnnGetFoldedConvBackwardDataDescriptorsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETFOLDEDCONVBACKWARDDATADESCRIPTORS;
+            
+            auto request = (cudnnGetFoldedConvBackwardDataDescriptorsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->filterDesc = filterDesc;
+			request->diffDesc = diffDesc;
+			request->convDesc = convDesc;
+			request->gradDesc = gradDesc;
+			request->transformFormat = transformFormat;
+			request->foldedFilterDesc = foldedFilterDesc;
+			request->paddedDiffDesc = paddedDiffDesc;
+			request->foldedConvDesc = foldedConvDesc;
+			request->foldedGradDesc = foldedGradDesc;
+			request->filterFoldTransDesc = filterFoldTransDesc;
+			request->diffPadTransDesc = diffPadTransDesc;
+			request->gradFoldTransDesc = gradFoldTransDesc;
+			request->gradUnfoldTransDesc = gradUnfoldTransDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetFoldedConvBackwardDataDescriptorsArg);
@@ -9238,6 +15166,7 @@ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  han
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetFoldedConvBackwardDataDescriptors);
@@ -9248,8 +15177,35 @@ cudnnStatus_t cudnnCnnInferVersionCheck()
 {
 	TALLY_LOG("cudnnCnnInferVersionCheck hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCnnInferVersionCheck();
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCnnInferVersionCheckArg), alignof(cudnnCnnInferVersionCheckArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCNNINFERVERSIONCHECK;
+            
+            auto request = (cudnnCnnInferVersionCheckArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCnnInferVersionCheckArg);
@@ -9263,6 +15219,7 @@ cudnnStatus_t cudnnCnnInferVersionCheck()
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCnnInferVersionCheck);
@@ -9273,10 +15230,40 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  
 {
 	TALLY_LOG("cudnnGetConvolutionBackwardFilterAlgorithmMaxCount hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionBackwardFilterAlgorithmMaxCount(handle, count);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg), alignof(cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDFILTERALGORITHMMAXCOUNT;
+            
+            auto request = (cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->count = count;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetConvolutionBackwardFilterAlgorithmMaxCountResponse*>(responsePayload);
+			if (count) { *count = response->count; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9291,6 +15278,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  
 	auto res = (cudnnGetConvolutionBackwardFilterAlgorithmMaxCountResponse *) dat;
 	if (count) { *count = res->count; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionBackwardFilterAlgorithmMaxCount);
@@ -9409,8 +15397,35 @@ cudnnStatus_t cudnnCnnTrainVersionCheck()
 {
 	TALLY_LOG("cudnnCnnTrainVersionCheck hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnCnnTrainVersionCheck();
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnCnnTrainVersionCheckArg), alignof(cudnnCnnTrainVersionCheckArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCNNTRAINVERSIONCHECK;
+            
+            auto request = (cudnnCnnTrainVersionCheckArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCnnTrainVersionCheckArg);
@@ -9424,6 +15439,7 @@ cudnnStatus_t cudnnCnnTrainVersionCheck()
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCnnTrainVersionCheck);
@@ -9434,10 +15450,40 @@ cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t  descrip
 {
 	TALLY_LOG("cudnnBackendCreateDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendCreateDescriptor(descriptorType, descriptor);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnBackendCreateDescriptorArg), alignof(cudnnBackendCreateDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNBACKENDCREATEDESCRIPTOR;
+            
+            auto request = (cudnnBackendCreateDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->descriptorType = descriptorType;
+			request->descriptor = descriptor;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnBackendCreateDescriptorResponse*>(responsePayload);
+			if (descriptor) { *descriptor = response->descriptor; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendCreateDescriptorArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9452,6 +15498,7 @@ cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t  descrip
 	auto res = (cudnnBackendCreateDescriptorResponse *) dat;
 	if (descriptor) { *descriptor = res->descriptor; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendCreateDescriptor);
@@ -9462,8 +15509,36 @@ cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t  descriptor
 {
 	TALLY_LOG("cudnnBackendDestroyDescriptor hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendDestroyDescriptor(descriptor);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnBackendDestroyDescriptorArg), alignof(cudnnBackendDestroyDescriptorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNBACKENDDESTROYDESCRIPTOR;
+            
+            auto request = (cudnnBackendDestroyDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->descriptor = descriptor;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendDestroyDescriptorArg);
@@ -9478,6 +15553,7 @@ cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t  descriptor
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendDestroyDescriptor);
@@ -9488,8 +15564,36 @@ cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t  descriptor)
 {
 	TALLY_LOG("cudnnBackendInitialize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendInitialize(descriptor);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnBackendInitializeArg), alignof(cudnnBackendInitializeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNBACKENDINITIALIZE;
+            
+            auto request = (cudnnBackendInitializeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->descriptor = descriptor;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendInitializeArg);
@@ -9504,6 +15608,7 @@ cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t  descriptor)
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendInitialize);
@@ -9514,8 +15619,36 @@ cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t  descriptor)
 {
 	TALLY_LOG("cudnnBackendFinalize hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendFinalize(descriptor);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnBackendFinalizeArg), alignof(cudnnBackendFinalizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNBACKENDFINALIZE;
+            
+            auto request = (cudnnBackendFinalizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->descriptor = descriptor;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendFinalizeArg);
@@ -9530,6 +15663,7 @@ cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t  descriptor)
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendFinalize);
@@ -9540,8 +15674,38 @@ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_
 {
 	TALLY_LOG("cudnnBackendExecute hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendExecute(handle, executionPlan, variantPack);
+#elif defined(USE_IOX_IPC)
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudnnBackendExecuteArg), alignof(cudnnBackendExecuteArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNBACKENDEXECUTE;
+            
+            auto request = (cudnnBackendExecuteArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->executionPlan = executionPlan;
+			request->variantPack = variantPack;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendExecuteArg);
@@ -9558,6 +15722,7 @@ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_
 	CLIENT_RECV_MSG;
 	auto res = (cudnnStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendExecute);
@@ -9568,10 +15733,39 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 {
 	TALLY_LOG("cublasCreate_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasCreate_v2(handle);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasCreate_v2Arg), alignof(cublasCreate_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASCREATE_V2;
+            
+            auto request = (cublasCreate_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasCreate_v2Response*>(responsePayload);
+			if (handle) { *handle = response->handle; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasCreate_v2Arg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9585,6 +15779,7 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 	auto res = (cublasCreate_v2Response *) dat;
 	if (handle) { *handle = res->handle; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasCreate_v2);
@@ -9595,8 +15790,36 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 {
 	TALLY_LOG("cublasDestroy_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasDestroy_v2(handle);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasDestroy_v2Arg), alignof(cublasDestroy_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASDESTROY_V2;
+            
+            auto request = (cublasDestroy_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasDestroy_v2Arg);
@@ -9611,6 +15834,7 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasDestroy_v2);
@@ -9621,10 +15845,40 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 {
 	TALLY_LOG("cublasGetVersion_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasGetVersion_v2(handle, version);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasGetVersion_v2Arg), alignof(cublasGetVersion_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASGETVERSION_V2;
+            
+            auto request = (cublasGetVersion_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->version = version;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasGetVersion_v2Response*>(responsePayload);
+			if (version) { *version = response->version; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetVersion_v2Arg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9639,6 +15893,7 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 	auto res = (cublasGetVersion_v2Response *) dat;
 	if (version) { *version = res->version; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetVersion_v2);
@@ -9649,10 +15904,40 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 {
 	TALLY_LOG("cublasGetProperty hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasGetProperty(type, value);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasGetPropertyArg), alignof(cublasGetPropertyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASGETPROPERTY;
+            
+            auto request = (cublasGetPropertyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->type = type;
+			request->value = value;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasGetPropertyResponse*>(responsePayload);
+			if (value) { *value = response->value; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetPropertyArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9667,6 +15952,7 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 	auto res = (cublasGetPropertyResponse *) dat;
 	if (value) { *value = res->value; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetProperty);
@@ -9677,8 +15963,35 @@ size_t cublasGetCudartVersion()
 {
 	TALLY_LOG("cublasGetCudartVersion hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasGetCudartVersion();
+#elif defined(USE_IOX_IPC)
+
+    size_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasGetCudartVersionArg), alignof(cublasGetCudartVersionArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASGETCUDARTVERSION;
+            
+            auto request = (cublasGetCudartVersionArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const size_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetCudartVersionArg);
@@ -9692,6 +16005,7 @@ size_t cublasGetCudartVersion()
 	CLIENT_RECV_MSG;
 	auto res = (size_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetCudartVersion);
@@ -9702,8 +16016,38 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
 {
 	TALLY_LOG("cublasSetWorkspace_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasSetWorkspace_v2Arg), alignof(cublasSetWorkspace_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSETWORKSPACE_V2;
+            
+            auto request = (cublasSetWorkspace_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->workspace = workspace;
+			request->workspaceSizeInBytes = workspaceSizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetWorkspace_v2Arg);
@@ -9720,6 +16064,7 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetWorkspace_v2);
@@ -9730,8 +16075,37 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
 {
 	TALLY_LOG("cublasSetStream_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasSetStream_v2(handle, streamId);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasSetStream_v2Arg), alignof(cublasSetStream_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSETSTREAM_V2;
+            
+            auto request = (cublasSetStream_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->streamId = streamId;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetStream_v2Arg);
@@ -9747,6 +16121,7 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetStream_v2);
@@ -9757,10 +16132,40 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 {
 	TALLY_LOG("cublasGetStream_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasGetStream_v2(handle, streamId);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasGetStream_v2Arg), alignof(cublasGetStream_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASGETSTREAM_V2;
+            
+            auto request = (cublasGetStream_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->streamId = streamId;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasGetStream_v2Response*>(responsePayload);
+			if (streamId) { *streamId = response->streamId; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetStream_v2Arg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9775,6 +16180,7 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 	auto res = (cublasGetStream_v2Response *) dat;
 	if (streamId) { *streamId = res->streamId; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetStream_v2);
@@ -9785,10 +16191,40 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 {
 	TALLY_LOG("cublasGetPointerMode_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasGetPointerMode_v2(handle, mode);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasGetPointerMode_v2Arg), alignof(cublasGetPointerMode_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASGETPOINTERMODE_V2;
+            
+            auto request = (cublasGetPointerMode_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->mode = mode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasGetPointerMode_v2Response*>(responsePayload);
+			if (mode) { *mode = response->mode; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetPointerMode_v2Arg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9803,6 +16239,7 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	auto res = (cublasGetPointerMode_v2Response *) dat;
 	if (mode) { *mode = res->mode; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetPointerMode_v2);
@@ -9813,8 +16250,37 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 {
 	TALLY_LOG("cublasSetPointerMode_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasSetPointerMode_v2(handle, mode);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasSetPointerMode_v2Arg), alignof(cublasSetPointerMode_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSETPOINTERMODE_V2;
+            
+            auto request = (cublasSetPointerMode_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->mode = mode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetPointerMode_v2Arg);
@@ -9830,6 +16296,7 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetPointerMode_v2);
@@ -9858,8 +16325,37 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 {
 	TALLY_LOG("cublasSetMathMode hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasSetMathMode(handle, mode);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasSetMathModeArg), alignof(cublasSetMathModeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSETMATHMODE;
+            
+            auto request = (cublasSetMathModeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->mode = mode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetMathModeArg);
@@ -9875,6 +16371,7 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetMathMode);
@@ -9885,10 +16382,40 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
 {
 	TALLY_LOG("cublasGetSmCountTarget hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasGetSmCountTarget(handle, smCountTarget);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasGetSmCountTargetArg), alignof(cublasGetSmCountTargetArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASGETSMCOUNTTARGET;
+            
+            auto request = (cublasGetSmCountTargetArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->smCountTarget = smCountTarget;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasGetSmCountTargetResponse*>(responsePayload);
+			if (smCountTarget) { *smCountTarget = response->smCountTarget; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetSmCountTargetArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -9903,6 +16430,7 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
 	auto res = (cublasGetSmCountTargetResponse *) dat;
 	if (smCountTarget) { *smCountTarget = res->smCountTarget; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetSmCountTarget);
@@ -9913,8 +16441,37 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 {
 	TALLY_LOG("cublasSetSmCountTarget hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasSetSmCountTarget(handle, smCountTarget);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasSetSmCountTargetArg), alignof(cublasSetSmCountTargetArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSETSMCOUNTTARGET;
+            
+            auto request = (cublasSetSmCountTargetArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->handle = handle;
+			request->smCountTarget = smCountTarget;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetSmCountTargetArg);
@@ -9930,6 +16487,7 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetSmCountTarget);
@@ -9958,8 +16516,36 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 {
 	TALLY_LOG("cublasSetLoggerCallback hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasSetLoggerCallback(userCallback);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasSetLoggerCallbackArg), alignof(cublasSetLoggerCallbackArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSETLOGGERCALLBACK;
+            
+            auto request = (cublasSetLoggerCallbackArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->userCallback = userCallback;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetLoggerCallbackArg);
@@ -9974,6 +16560,7 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetLoggerCallback);
@@ -9984,10 +16571,39 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 {
 	TALLY_LOG("cublasGetLoggerCallback hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasGetLoggerCallback(userCallback);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasGetLoggerCallbackArg), alignof(cublasGetLoggerCallbackArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASGETLOGGERCALLBACK;
+            
+            auto request = (cublasGetLoggerCallbackArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->userCallback = userCallback;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasGetLoggerCallbackResponse*>(responsePayload);
+			if (userCallback) { *userCallback = response->userCallback; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetLoggerCallbackArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -10001,6 +16617,7 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 	auto res = (cublasGetLoggerCallbackResponse *) dat;
 	if (userCallback) { *userCallback = res->userCallback; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetLoggerCallback);
@@ -10011,8 +16628,41 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 {
 	TALLY_LOG("cublasSetVector hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasSetVector(n, elemSize, x, incx, devicePtr, incy);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasSetVectorArg), alignof(cublasSetVectorArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSETVECTOR;
+            
+            auto request = (cublasSetVectorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->n = n;
+			request->elemSize = elemSize;
+			request->x = const_cast<void *>(x);
+			request->incx = incx;
+			request->devicePtr = devicePtr;
+			request->incy = incy;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetVectorArg);
@@ -10032,6 +16682,7 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetVector);
@@ -11548,8 +18199,35 @@ cudaError_t cudaProfilerStart()
 {
 	TALLY_LOG("cudaProfilerStart hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaProfilerStart();
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaProfilerStartArg), alignof(cudaProfilerStartArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAPROFILERSTART;
+            
+            auto request = (cudaProfilerStartArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaProfilerStartArg);
@@ -11563,6 +18241,7 @@ cudaError_t cudaProfilerStart()
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaProfilerStart);
@@ -11573,8 +18252,35 @@ cudaError_t cudaProfilerStop()
 {
 	TALLY_LOG("cudaProfilerStop hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcudaProfilerStop();
+#elif defined(USE_IOX_IPC)
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaProfilerStopArg), alignof(cudaProfilerStopArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAPROFILERSTOP;
+            
+            auto request = (cudaProfilerStopArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaProfilerStopArg);
@@ -11588,6 +18294,7 @@ cudaError_t cudaProfilerStop()
 	CLIENT_RECV_MSG;
 	auto res = (cudaError_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaProfilerStop);
@@ -11610,10 +18317,39 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 {
 	TALLY_LOG("cublasLtCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtCreate(lightHandle);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtCreateArg), alignof(cublasLtCreateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTCREATE;
+            
+            auto request = (cublasLtCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->lightHandle = lightHandle;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasLtCreateResponse*>(responsePayload);
+			if (lightHandle) { *lightHandle = response->lightHandle; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtCreateArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -11627,6 +18363,7 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 	auto res = (cublasLtCreateResponse *) dat;
 	if (lightHandle) { *lightHandle = res->lightHandle; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtCreate);
@@ -11637,8 +18374,36 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 {
 	TALLY_LOG("cublasLtDestroy hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtDestroy(lightHandle);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtDestroyArg), alignof(cublasLtDestroyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTDESTROY;
+            
+            auto request = (cublasLtDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->lightHandle = lightHandle;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtDestroyArg);
@@ -11653,6 +18418,7 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtDestroy);
@@ -11675,8 +18441,35 @@ size_t cublasLtGetVersion()
 {
 	TALLY_LOG("cublasLtGetVersion hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtGetVersion();
+#elif defined(USE_IOX_IPC)
+
+    size_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtGetVersionArg), alignof(cublasLtGetVersionArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTGETVERSION;
+            
+            auto request = (cublasLtGetVersionArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const size_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtGetVersionArg);
@@ -11690,6 +18483,7 @@ size_t cublasLtGetVersion()
 	CLIENT_RECV_MSG;
 	auto res = (size_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtGetVersion);
@@ -11700,8 +18494,35 @@ size_t cublasLtGetCudartVersion()
 {
 	TALLY_LOG("cublasLtGetCudartVersion hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtGetCudartVersion();
+#elif defined(USE_IOX_IPC)
+
+    size_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtGetCudartVersionArg), alignof(cublasLtGetCudartVersionArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTGETCUDARTVERSION;
+            
+            auto request = (cublasLtGetCudartVersionArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const size_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtGetCudartVersionArg);
@@ -11715,6 +18536,7 @@ size_t cublasLtGetCudartVersion()
 	CLIENT_RECV_MSG;
 	auto res = (size_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtGetCudartVersion);
@@ -11743,10 +18565,43 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
 {
 	TALLY_LOG("cublasLtMatrixLayoutCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtMatrixLayoutCreateArg), alignof(cublasLtMatrixLayoutCreateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTCREATE;
+            
+            auto request = (cublasLtMatrixLayoutCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->matLayout = matLayout;
+			request->type = type;
+			request->rows = rows;
+			request->cols = cols;
+			request->ld = ld;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasLtMatrixLayoutCreateResponse*>(responsePayload);
+			if (matLayout) { *matLayout = response->matLayout; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutCreateArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -11764,6 +18619,7 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
 	auto res = (cublasLtMatrixLayoutCreateResponse *) dat;
 	if (matLayout) { *matLayout = res->matLayout; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutCreate);
@@ -11774,8 +18630,36 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
 {
 	TALLY_LOG("cublasLtMatrixLayoutDestroy hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixLayoutDestroy(matLayout);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtMatrixLayoutDestroyArg), alignof(cublasLtMatrixLayoutDestroyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTDESTROY;
+            
+            auto request = (cublasLtMatrixLayoutDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->matLayout = matLayout;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutDestroyArg);
@@ -11790,6 +18674,7 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutDestroy);
@@ -11812,10 +18697,41 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
 {
 	TALLY_LOG("cublasLtMatmulDescCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtMatmulDescCreateArg), alignof(cublasLtMatmulDescCreateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCCREATE;
+            
+            auto request = (cublasLtMatmulDescCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->matmulDesc = matmulDesc;
+			request->computeType = computeType;
+			request->scaleType = scaleType;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasLtMatmulDescCreateResponse*>(responsePayload);
+			if (matmulDesc) { *matmulDesc = response->matmulDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescCreateArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -11831,6 +18747,7 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
 	auto res = (cublasLtMatmulDescCreateResponse *) dat;
 	if (matmulDesc) { *matmulDesc = res->matmulDesc; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescCreate);
@@ -11841,8 +18758,36 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
 {
 	TALLY_LOG("cublasLtMatmulDescDestroy hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulDescDestroy(matmulDesc);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtMatmulDescDestroyArg), alignof(cublasLtMatmulDescDestroyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCDESTROY;
+            
+            auto request = (cublasLtMatmulDescDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->matmulDesc = matmulDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescDestroyArg);
@@ -11857,6 +18802,7 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescDestroy);
@@ -11909,10 +18855,39 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 {
 	TALLY_LOG("cublasLtMatmulPreferenceCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulPreferenceCreate(pref);
-#else
+#elif defined(USE_IOX_IPC)
 
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtMatmulPreferenceCreateArg), alignof(cublasLtMatmulPreferenceCreateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCECREATE;
+            
+            auto request = (cublasLtMatmulPreferenceCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pref = pref;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasLtMatmulPreferenceCreateResponse*>(responsePayload);
+			if (pref) { *pref = response->pref; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
+
+#else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceCreateArg);
 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -11926,6 +18901,7 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 	auto res = (cublasLtMatmulPreferenceCreateResponse *) dat;
 	if (pref) { *pref = res->pref; }
 	auto err = res->err;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceCreate);
@@ -11936,8 +18912,36 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 {
 	TALLY_LOG("cublasLtMatmulPreferenceDestroy hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulPreferenceDestroy(pref);
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtMatmulPreferenceDestroyArg), alignof(cublasLtMatmulPreferenceDestroyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEDESTROY;
+            
+            auto request = (cublasLtMatmulPreferenceDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+			request->pref = pref;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceDestroyArg);
@@ -11952,6 +18956,7 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceDestroy);
@@ -12034,8 +19039,35 @@ cublasStatus_t cublasLtLoggerForceDisable()
 {
 	TALLY_LOG("cublasLtLoggerForceDisable hooked");
 	TALLY_CLIENT_PROFILE_START;
-#ifdef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
 	auto err = lcublasLtLoggerForceDisable();
+#elif defined(USE_IOX_IPC)
+
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cublasLtLoggerForceDisableArg), alignof(cublasLtLoggerForceDisableArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTLOGGERFORCEDISABLE;
+            
+            auto request = (cublasLtLoggerForceDisableArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtLoggerForceDisableArg);
@@ -12049,6 +19081,7 @@ cublasStatus_t cublasLtLoggerForceDisable()
 	CLIENT_RECV_MSG;
 	auto res = (cublasStatus_t *) dat;
 	auto err = *res;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtLoggerForceDisable);

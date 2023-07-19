@@ -14,6 +14,10 @@
 
 #include "libipc/ipc.h"
 
+#include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
+#include "iceoryx_posh/popo/untyped_client.hpp"
+#include "iceoryx_posh/runtime/posh_runtime.hpp"
+
 #ifdef ENABLE_PROFILING
     #define TALLY_CLIENT_PROFILE_START \
         auto __tally_call_start = std::chrono::high_resolution_clock::now();
@@ -55,9 +59,16 @@ public:
 
     std::map<const void *, std::string> host_func_to_demangled_kernel_name_map;
     std::map<std::string, std::vector<uint32_t>> _kernel_name_to_args;
-    std::map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
+
+    std::unordered_map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
+
+#ifdef USE_IOX_IPC
+    static constexpr char APP_NAME[] = "iox-cpp-request-response-client-untyped";
+    iox::popo::UntypedClient *iox_client;
+#else
     ipc::channel *send_ipc;
     ipc::channel *recv_ipc;
+#endif
 
     const static size_t msg_size = 1024 * 1024 * 1024;
     uint8_t *msg;
@@ -98,6 +109,10 @@ public:
         msg = (uint8_t *) malloc(msg_size);
         register_profile_kernel_map();
 
+#ifdef USE_IOX_IPC
+        iox::runtime::PoshRuntime::initRuntime(APP_NAME);
+        iox_client = new iox::popo::UntypedClient({"Example", "Request-Response", "Add"});
+#else
         __exit = [&](int sig_num) {
 
             if (sig_num == SIGSEGV) {
@@ -117,10 +132,10 @@ public:
 
         send_ipc = new ipc::channel("client-to-server-380000", ipc::sender);
         recv_ipc = new ipc::channel("server-to-client-380000", ipc::receiver);
+#endif
     }
 
     ~TallyClient(){
-        std::cout << "tally client is being freed" << std::endl;
         free(msg);
         print_profile_trace();
     }

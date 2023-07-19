@@ -187,10 +187,6 @@ struct cudnnBackendSetAttributeArg {
     char arrayOfElements[];
 };
 
-struct cudnnBackendSetAttributeResponse {
-    cudnnStatus_t err;
-};
-
 struct cudnnBackendGetAttributeArg {
     cudnnBackendDescriptor_t descriptor;
     cudnnBackendAttributeName_t  attributeName;
