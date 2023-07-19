@@ -140,7 +140,7 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
         TallyClient::client->_kernel_name_to_args[kernel_name] = param_sizes;
     }
 
-    return nullptr;
+    return l__cudaRegisterFatBinary(fatCubin);
 }
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
@@ -183,12 +183,13 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 #endif
 
     TallyClient::client->_kernel_addr_to_args[hostFun] = TallyClient::client->_kernel_name_to_args[deviceFunName];
+    return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
 }
 
 void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 {
 #if defined(RUN_LOCALLY)
-    l__cudaRegisterFatBinaryEnd(fatCubinHandle);
+    return l__cudaRegisterFatBinaryEnd(fatCubinHandle);
 
 #elif defined(USE_IOX_IPC)
     TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM), alignof(CUDA_API_ENUM))
@@ -210,6 +211,8 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 
     CLIENT_SEND_MSG_AND_FREE;
 #endif
+
+    return l__cudaRegisterFatBinaryEnd(fatCubinHandle);
 }
 
 cudaError_t cudaMalloc(void ** devPtr, size_t  size)
@@ -278,6 +281,7 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudaMalloc);
 
+    
     return err;
 }
 
@@ -332,6 +336,7 @@ cudaError_t cudaFree(void * devPtr)
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudaFree);
 
+    
     return err;
 }
 
@@ -419,6 +424,7 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudaMemcpy);
 
+    
     return err;
 }
 
@@ -509,6 +515,7 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudaMemcpyAsync);
 
+    
     return err;
 }
 
@@ -516,6 +523,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 {
     TALLY_LOG("cudaLaunchKernel hooked");
     TALLY_CLIENT_PROFILE_START;
+
+    assert(TallyClient::client->_kernel_addr_to_args.find(func) != TallyClient::client->_kernel_addr_to_args.end());
 
     auto &params_info = TallyClient::client->_kernel_addr_to_args[func];
     uint32_t params_size =  std::accumulate(params_info.begin(), params_info.end(), 0);
@@ -580,6 +589,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_KERNEL_CALL(func);
 
+    
     return err;
 }
 
@@ -654,6 +664,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasSgemm_v2);
+    
     return err;
 }
 
@@ -736,6 +747,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmul);
 
+    
     return err;
 }
 
@@ -791,6 +803,7 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescSetAttribute);
 
+    
     return err;
 }
 
@@ -845,6 +858,7 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutSetAttribute);
+    
     return err;
 }
 
@@ -899,6 +913,7 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceSetAttribute);
+    
     return err;
 }
 
@@ -973,6 +988,7 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulAlgoGetHeuristic);
+    
     return err;
 }
 
@@ -1014,6 +1030,7 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1042,6 +1059,7 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnBackendSetAttribute);
+    
     return err;
 }
 
@@ -1131,6 +1149,7 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnBackendGetAttribute);
+    // 
     return err;
 }
 
@@ -1168,6 +1187,7 @@ cudnnStatus_t cudnnActivationForward(cudnnHandle_t  handle, cudnnActivationDescr
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else 
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1194,6 +1214,7 @@ cudnnStatus_t cudnnActivationForward(cudnnHandle_t  handle, cudnnActivationDescr
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnActivationForward);
+    
     return err;
 }
 
@@ -1228,6 +1249,7 @@ cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1251,6 +1273,7 @@ cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnSetTensorNdDescriptor);
+    
     return err;
 }
 
@@ -1287,6 +1310,7 @@ cudnnStatus_t cudnnSetConvolutionNdDescriptor(cudnnConvolutionDescriptor_t  conv
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1312,6 +1336,7 @@ cudnnStatus_t cudnnSetConvolutionNdDescriptor(cudnnConvolutionDescriptor_t  conv
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnSetConvolutionNdDescriptor);
+    
     return err;
 }
 
@@ -1346,6 +1371,7 @@ cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1369,6 +1395,7 @@ cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnSetFilterNdDescriptor);
+    
     return err;
 }
 
@@ -1411,6 +1438,7 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t  handle, const void * alpha,
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1442,6 +1470,7 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t  handle, const void * alpha,
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnConvolutionForward);
+    
     return err;
 }
 
@@ -1505,6 +1534,7 @@ cudnnStatus_t cudnnGetConvolutionNdForwardOutputDim(const cudnnConvolutionDescri
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionNdForwardOutputDim);
+    
     return err;
 }
 
@@ -1574,6 +1604,7 @@ cudnnStatus_t cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle_t  handle, cons
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionForwardAlgorithm_v7);
+    
     return err;
 }
 
@@ -1643,6 +1674,7 @@ cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(cudnnHandle_t  handle, const 
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnFindConvolutionForwardAlgorithm);
+    
     return err;
 }
 
@@ -1679,6 +1711,7 @@ cudnnStatus_t cudnnAddTensor(cudnnHandle_t  handle, const void * alpha, const cu
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
 
@@ -1705,6 +1738,7 @@ cudnnStatus_t cudnnAddTensor(cudnnHandle_t  handle, const void * alpha, const cu
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnAddTensor);
+    
     return err;	
 }
 
@@ -1742,6 +1776,7 @@ cudnnStatus_t cudnnSetPoolingNdDescriptor(cudnnPoolingDescriptor_t  poolingDesc,
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1768,6 +1803,7 @@ cudnnStatus_t cudnnSetPoolingNdDescriptor(cudnnPoolingDescriptor_t  poolingDesc,
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnSetPoolingNdDescriptor);
+    
     return err;	
 }
 
@@ -1838,6 +1874,7 @@ cudnnStatus_t cudnnGetPoolingNdDescriptor(const cudnnPoolingDescriptor_t  poolin
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnGetPoolingNdDescriptor);
+    
     return err;	
 }
 
@@ -1899,6 +1936,7 @@ cudnnStatus_t cudnnGetPoolingNdForwardOutputDim(const cudnnPoolingDescriptor_t  
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnGetPoolingNdForwardOutputDim);
+    
     return err;	
 }
 
@@ -1936,6 +1974,7 @@ cudnnStatus_t cudnnPoolingForward(cudnnHandle_t  handle, const cudnnPoolingDescr
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -1962,6 +2001,7 @@ cudnnStatus_t cudnnPoolingForward(cudnnHandle_t  handle, const cudnnPoolingDescr
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnPoolingForward);
+    
     return err;
 }
 
@@ -2033,6 +2073,7 @@ cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasSgemv_v2);
+    
     return err;
 }
 
@@ -2071,6 +2112,7 @@ cudnnStatus_t cudnnLRNCrossChannelForward(cudnnHandle_t  handle, cudnnLRNDescrip
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -2098,6 +2140,7 @@ cudnnStatus_t cudnnLRNCrossChannelForward(cudnnHandle_t  handle, cudnnLRNDescrip
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnLRNCrossChannelForward);
+    
     return err;
 }
 
@@ -2136,6 +2179,7 @@ cudnnStatus_t cudnnSoftmaxForward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -2163,6 +2207,7 @@ cudnnStatus_t cudnnSoftmaxForward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnSoftmaxForward);
+    
     return err;
 }
 
@@ -2199,6 +2244,7 @@ cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, co
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -2224,6 +2270,7 @@ cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, co
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnTransformTensor);
+    
     return err;
 }
 
@@ -2305,6 +2352,7 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasSgemmEx);
+    
     return err;
 }
 
@@ -2349,6 +2397,7 @@ cudnnStatus_t cudnnSetSeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc, c
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -2375,6 +2424,7 @@ cudnnStatus_t cudnnSetSeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc, c
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnSetSeqDataDescriptor);
+    
     return err;
 }
 
@@ -2448,6 +2498,7 @@ cudnnStatus_t cudnnGetSeqDataDescriptor(const cudnnSeqDataDescriptor_t  seqDataD
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnGetSeqDataDescriptor);
+    
     return err;
 }
 
@@ -2510,6 +2561,7 @@ cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDe
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -2552,6 +2604,7 @@ cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDe
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnMultiHeadAttnForward);
+    
     return err;
 }
 
@@ -2609,6 +2662,7 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnA
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -2652,6 +2706,7 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnA
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnMultiHeadAttnBackwardData);
+    
     return err;
 }
 
@@ -2699,6 +2754,7 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cud
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
@@ -2734,6 +2790,7 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cud
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnMultiHeadAttnBackwardWeights);
+    
     return err;
 }
 
@@ -2771,6 +2828,7 @@ cudnnStatus_t cudnnReorderFilterAndBias(cudnnHandle_t  handle, const cudnnFilter
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
@@ -2796,6 +2854,7 @@ cudnnStatus_t cudnnReorderFilterAndBias(cudnnHandle_t  handle, const cudnnFilter
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnReorderFilterAndBias);
+    
     return err;
 }
 
@@ -2858,6 +2917,7 @@ cudnnStatus_t cudnnGetRNNWorkspaceSize(cudnnHandle_t  handle, const cudnnRNNDesc
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNWorkspaceSize);
+    
     return err;
 }
 
@@ -2920,6 +2980,7 @@ cudnnStatus_t cudnnGetRNNTrainingReserveSize(cudnnHandle_t  handle, const cudnnR
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNTrainingReserveSize);
+    
     return err;
 }
 
@@ -2984,6 +3045,7 @@ cudnnStatus_t cudnnGetFilterNdDescriptor(const cudnnFilterDescriptor_t  filterDe
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnGetFilterNdDescriptor);
+    
     return err;
 }
 
@@ -3035,6 +3097,7 @@ cudnnStatus_t cudnnRNNForwardTraining(cudnnHandle_t  handle, const cudnnRNNDescr
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+// if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
@@ -3075,6 +3138,7 @@ cudnnStatus_t cudnnRNNForwardTraining(cudnnHandle_t  handle, const cudnnRNNDescr
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnRNNForwardTraining);
+    // 
     return err;
 }
 
@@ -3132,6 +3196,7 @@ cudnnStatus_t cudnnRNNBackwardData(cudnnHandle_t  handle, const cudnnRNNDescript
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
@@ -3178,6 +3243,7 @@ cudnnStatus_t cudnnRNNBackwardData(cudnnHandle_t  handle, const cudnnRNNDescript
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnRNNBackwardData);
+    
     return err;
 }
 
@@ -3223,6 +3289,7 @@ cudnnStatus_t cudnnRNNBackwardWeights(cudnnHandle_t  handle, const cudnnRNNDescr
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
         IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
@@ -3257,6 +3324,7 @@ cudnnStatus_t cudnnRNNBackwardWeights(cudnnHandle_t  handle, const cudnnRNNDescr
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnRNNBackwardWeights);
+    
     return err;
 }
 
@@ -3295,6 +3363,7 @@ cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, c
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
         IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
@@ -3322,6 +3391,7 @@ cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, c
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNDataDescriptor);
+    
     return err;
 }
 
@@ -3387,6 +3457,7 @@ cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t  tensorDe
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnGetTensorNdDescriptor);
+    
     return err;
 }
 
@@ -3441,6 +3512,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t  handle, cu
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
         IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
@@ -3483,6 +3555,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t  handle, cu
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnBatchNormalizationForwardTrainingEx);
+    
     return err;
 }
 
@@ -3542,6 +3615,7 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx(cudnnHandle_t  handle, cudnnBatc
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
         IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+if (err != CUDNN_STATUS_SUCCESS) {assert(false);}
 
 #else
     uint8_t *msg = (uint8_t *) std::malloc(msg_len);
@@ -3589,6 +3663,7 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx(cudnnHandle_t  handle, cudnnBatc
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnBatchNormalizationBackwardEx);
+    
     return err;
 }
 
@@ -3608,7 +3683,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
-        header->api_id = CUDA_API_ENUM::CUDNNBATCHNORMALIZATIONBACKWARDEX;
+        header->api_id = CUDA_API_ENUM::CUBLASSGEMMSTRIDEDBATCHED;
         
         auto request = (cublasSgemmStridedBatchedArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
         request->handle = handle;
@@ -3670,7 +3745,8 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSgemmStridedBatched);
-	return err;
+	
+    return err;
 }
 
 cudaError_t cudaFuncGetAttributes(struct cudaFuncAttributes * attr, const void * func)
@@ -3727,7 +3803,8 @@ cudaError_t cudaFuncGetAttributes(struct cudaFuncAttributes * attr, const void *
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaFuncGetAttributes);
-	return err;
+	
+    return err;
 }
 
 cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBlocks, const void * func, int  blockSize, size_t  dynamicSMemSize, unsigned int  flags)
@@ -3792,7 +3869,8 @@ cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBloc
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags);
 
-	return err;
+	
+    return err;
 }
 
 }

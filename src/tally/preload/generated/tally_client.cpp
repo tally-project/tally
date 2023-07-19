@@ -73,8 +73,6 @@ CUresult cuInit(unsigned int  Flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuInitArg);
@@ -129,9 +127,6 @@ CUresult cuDriverGetVersion(int * driverVersion)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDriverGetVersionArg);
 
@@ -187,9 +182,6 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetArg);
 
@@ -245,9 +237,6 @@ CUresult cuDeviceGetCount(int * count)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetCountArg);
 
@@ -309,9 +298,6 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuidArg);
 
@@ -368,9 +354,6 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuid_v2Arg);
 
@@ -429,9 +412,6 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetLuidArg);
 
@@ -490,9 +470,6 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceTotalMem_v2Arg);
 
@@ -551,9 +528,6 @@ CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetTexture1DLinearMaxWidthArg);
 
@@ -613,9 +587,6 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetAttributeArg);
 
@@ -678,8 +649,6 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceSetMemPoolArg);
@@ -736,9 +705,6 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetMemPoolArg);
 
@@ -795,9 +761,6 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetDefaultMemPoolArg);
 
@@ -853,8 +816,6 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuFlushGPUDirectRDMAWritesArg);
@@ -911,9 +872,6 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetPropertiesArg);
 
@@ -972,9 +930,6 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceComputeCapabilityArg);
 
@@ -1033,9 +988,6 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRetainArg);
 
@@ -1090,8 +1042,6 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRelease_v2Arg);
@@ -1146,8 +1096,6 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxSetFlags_v2Arg);
@@ -1206,9 +1154,6 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxGetStateArg);
 
@@ -1265,8 +1210,6 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxReset_v2Arg);
@@ -1323,9 +1266,6 @@ CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUde
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetExecAffinitySupportArg);
 
@@ -1384,9 +1324,6 @@ CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxCreate_v2Arg);
 
@@ -1448,8 +1385,6 @@ CUresult cuCtxDestroy_v2(CUcontext  ctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxDestroy_v2Arg);
@@ -1503,8 +1438,6 @@ CUresult cuCtxPushCurrent_v2(CUcontext  ctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxPushCurrent_v2Arg);
@@ -1559,9 +1492,6 @@ CUresult cuCtxPopCurrent_v2(CUcontext * pctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxPopCurrent_v2Arg);
 
@@ -1615,8 +1545,6 @@ CUresult cuCtxSetCurrent(CUcontext  ctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetCurrentArg);
@@ -1671,9 +1599,6 @@ CUresult cuCtxGetCurrent(CUcontext * pctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetCurrentArg);
 
@@ -1728,9 +1653,6 @@ CUresult cuCtxGetDevice(CUdevice * device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetDeviceArg);
 
@@ -1785,9 +1707,6 @@ CUresult cuCtxGetFlags(unsigned int * flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetFlagsArg);
 
@@ -1840,8 +1759,6 @@ CUresult cuCtxSynchronize()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSynchronizeArg);
@@ -1895,8 +1812,6 @@ CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetLimitArg);
@@ -1953,9 +1868,6 @@ CUresult cuCtxGetLimit(size_t * pvalue, CUlimit  limit)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetLimitArg);
 
@@ -2011,9 +1923,6 @@ CUresult cuCtxGetCacheConfig(CUfunc_cache * pconfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetCacheConfigArg);
 
@@ -2067,8 +1976,6 @@ CUresult cuCtxSetCacheConfig(CUfunc_cache  config)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetCacheConfigArg);
@@ -2123,9 +2030,6 @@ CUresult cuCtxGetSharedMemConfig(CUsharedconfig * pConfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetSharedMemConfigArg);
 
@@ -2179,8 +2083,6 @@ CUresult cuCtxSetSharedMemConfig(CUsharedconfig  config)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetSharedMemConfigArg);
@@ -2236,9 +2138,6 @@ CUresult cuCtxGetApiVersion(CUcontext  ctx, unsigned int * version)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetApiVersionArg);
 
@@ -2296,9 +2195,6 @@ CUresult cuCtxGetStreamPriorityRange(int * leastPriority, int * greatestPriority
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetStreamPriorityRangeArg);
 
@@ -2353,8 +2249,6 @@ CUresult cuCtxResetPersistingL2Cache()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxResetPersistingL2CacheArg);
@@ -2409,9 +2303,6 @@ CUresult cuCtxGetExecAffinity(CUexecAffinityParam * pExecAffinity, CUexecAffinit
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetExecAffinityArg);
 
@@ -2468,9 +2359,6 @@ CUresult cuCtxAttach(CUcontext * pctx, unsigned int  flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxAttachArg);
 
@@ -2525,8 +2413,6 @@ CUresult cuCtxDetach(CUcontext  ctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxDetachArg);
@@ -2604,8 +2490,6 @@ CUresult cuModuleUnload(CUmodule  hmod)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuModuleUnloadArg);
@@ -2731,8 +2615,6 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemFree_v2Arg);
@@ -2969,8 +2851,6 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemcpyAsyncArg);
@@ -3361,9 +3241,6 @@ CUresult cuMemAllocFromPoolAsync(CUdeviceptr * dptr, size_t  bytesize, CUmemoryP
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemAllocFromPoolAsyncArg);
 
@@ -3672,8 +3549,6 @@ CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDestroyExternalMemoryArg);
@@ -4651,8 +4526,6 @@ cudaError_t cudaDeviceReset()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceResetArg);
@@ -4704,8 +4577,6 @@ cudaError_t cudaDeviceSynchronize()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSynchronizeArg);
@@ -4759,8 +4630,6 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetLimitArg);
@@ -4817,9 +4686,6 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetLimitArg);
 
@@ -4881,9 +4747,6 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetCacheConfigArg);
 
@@ -4940,9 +4803,6 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetStreamPriorityRangeArg);
 
@@ -4998,8 +4858,6 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetCacheConfigArg);
@@ -5059,8 +4917,6 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetSharedMemConfigArg);
@@ -5123,9 +4979,6 @@ cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetPCIBusIdArg);
 
@@ -5183,9 +5036,6 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcGetEventHandleArg);
 
@@ -5242,9 +5092,6 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenEventHandleArg);
 
@@ -5301,9 +5148,6 @@ cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcGetMemHandleArg);
 
@@ -5361,9 +5205,6 @@ cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, uns
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenMemHandleArg);
 
@@ -5419,8 +5260,6 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcCloseMemHandleArg);
@@ -5475,8 +5314,6 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceFlushGPUDirectRDMAWritesArg);
@@ -5530,8 +5367,6 @@ cudaError_t cudaThreadExit()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadExitArg);
@@ -5583,8 +5418,6 @@ cudaError_t cudaThreadSynchronize()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSynchronizeArg);
@@ -5638,8 +5471,6 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSetLimitArg);
@@ -5696,9 +5527,6 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetLimitArg);
 
@@ -5754,9 +5582,6 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetCacheConfigArg);
 
@@ -5810,8 +5635,6 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSetCacheConfigArg);
@@ -5864,8 +5687,6 @@ cudaError_t cudaGetLastError()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetLastErrorArg);
@@ -5917,8 +5738,6 @@ cudaError_t cudaPeekAtLastError()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaPeekAtLastErrorArg);
@@ -5985,9 +5804,6 @@ cudaError_t cudaGetDeviceCount(int * count)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceCountArg);
 
@@ -6043,9 +5859,6 @@ cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDevicePropertiesArg);
 
@@ -6103,9 +5916,6 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetAttributeArg);
 
@@ -6163,9 +5973,6 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetDefaultMemPoolArg);
 
@@ -6221,8 +6028,6 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetMemPoolArg);
@@ -6279,9 +6084,6 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetMemPoolArg);
 
@@ -6346,9 +6148,6 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetP2PAttributeArg);
 
@@ -6411,8 +6210,6 @@ cudaError_t cudaSetDevice(int  device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaSetDeviceArg);
@@ -6467,9 +6264,6 @@ cudaError_t cudaGetDevice(int * device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceArg);
 
@@ -6529,8 +6323,6 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaSetDeviceFlagsArg);
@@ -6585,9 +6377,6 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceFlagsArg);
 
@@ -6642,9 +6431,6 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateArg);
 
@@ -6700,9 +6486,6 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithFlagsArg);
 
@@ -6760,9 +6543,6 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithPriorityArg);
 
@@ -6820,9 +6600,6 @@ cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetPriorityArg);
 
@@ -6879,9 +6656,6 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetFlagsArg);
 
@@ -6935,8 +6709,6 @@ cudaError_t cudaCtxResetPersistingL2Cache()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaCtxResetPersistingL2CacheArg);
@@ -6990,8 +6762,6 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCopyAttributesArg);
@@ -7058,8 +6828,6 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamDestroyArg);
@@ -7115,8 +6883,6 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamWaitEventArg);
@@ -7178,8 +6944,6 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamSynchronizeArg);
@@ -7233,8 +6997,6 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamQueryArg);
@@ -7295,8 +7057,6 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamBeginCaptureArg);
@@ -7358,8 +7118,6 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamEndCaptureArg);
@@ -7416,9 +7174,6 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamIsCapturingArg);
 
@@ -7477,9 +7232,6 @@ cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptur
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetCaptureInfoArg);
 
@@ -7549,9 +7301,6 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateArg);
 
@@ -7607,9 +7356,6 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateWithFlagsArg);
 
@@ -7665,8 +7411,6 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordArg);
@@ -7723,8 +7467,6 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordWithFlagsArg);
@@ -7780,8 +7522,6 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventQueryArg);
@@ -7835,8 +7575,6 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventSynchronizeArg);
@@ -7890,8 +7628,6 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventDestroyArg);
@@ -7948,9 +7684,6 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventElapsedTimeArg);
 
@@ -8239,9 +7972,6 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemGetInfoArg);
 
@@ -8401,8 +8131,6 @@ cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemsetArg);
@@ -8473,8 +8201,6 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemsetAsyncArg);
@@ -8887,9 +8613,6 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGraphCreateArg);
 
@@ -9435,8 +9158,6 @@ size_t cudnnGetVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetVersionArg);
@@ -9488,8 +9209,6 @@ size_t cudnnGetMaxDeviceVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetMaxDeviceVersionArg);
@@ -9541,8 +9260,6 @@ size_t cudnnGetCudartVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetCudartVersionArg);
@@ -9610,9 +9327,6 @@ cudnnStatus_t cudnnGetProperty(libraryPropertyType  type, int * value)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetPropertyArg);
 
@@ -9668,9 +9382,6 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateArg);
 
@@ -9724,8 +9435,6 @@ cudnnStatus_t cudnnDestroy(cudnnHandle_t  handle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyArg);
@@ -9780,8 +9489,6 @@ cudnnStatus_t cudnnSetStream(cudnnHandle_t  handle, cudaStream_t  streamId)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetStreamArg);
@@ -9838,9 +9545,6 @@ cudnnStatus_t cudnnGetStream(cudnnHandle_t  handle, cudaStream_t * streamId)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetStreamArg);
 
@@ -9896,9 +9600,6 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateTensorDescriptorArg);
 
@@ -9958,8 +9659,6 @@ cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetTensor4dDescriptorArg);
@@ -10028,8 +9727,6 @@ cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetTensor4dDescriptorExArg);
@@ -10110,9 +9807,6 @@ cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t  tensorDe
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetTensor4dDescriptorArg);
 
@@ -10191,9 +9885,6 @@ cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetTensorSizeInBytesArg);
 
@@ -10248,8 +9939,6 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyTensorDescriptorArg);
@@ -10307,9 +9996,6 @@ cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  tra
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnInitTransformDestArg);
 
@@ -10367,9 +10053,6 @@ cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescripto
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateTensorTransformDescriptorArg);
 
@@ -10435,8 +10118,6 @@ cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescript
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyTensorTransformDescriptorArg);
@@ -10497,9 +10178,6 @@ cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t * opTensor
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateOpTensorDescriptorArg);
 
@@ -10556,8 +10234,6 @@ cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetOpTensorDescriptorArg);
@@ -10620,9 +10296,6 @@ cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t  opTens
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetOpTensorDescriptorArg);
 
@@ -10748,9 +10421,6 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateFilterDescriptorArg);
 
@@ -10810,8 +10480,6 @@ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetFilter4dDescriptorArg);
@@ -10879,9 +10547,6 @@ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetFilterSizeInBytesArg);
 
@@ -10942,8 +10607,6 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t  filterDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyFilterDescriptorArg);
@@ -10998,9 +10661,6 @@ cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t * poolingDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreatePoolingDescriptorArg);
 
@@ -11072,8 +10732,6 @@ cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t  poolingDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyPoolingDescriptorArg);
@@ -11128,9 +10786,6 @@ cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t * acti
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateActivationDescriptorArg);
 
@@ -11187,8 +10842,6 @@ cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t  activati
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetActivationDescriptorArg);
@@ -11263,8 +10916,6 @@ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t  acti
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyActivationDescriptorArg);
@@ -11319,9 +10970,6 @@ cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t * normDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateLRNDescriptorArg);
 
@@ -11379,8 +11027,6 @@ cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned  lr
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetLRNDescriptorArg);
@@ -11444,8 +11090,6 @@ cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t  lrnDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyLRNDescriptorArg);
@@ -11560,9 +11204,6 @@ cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateDropoutDescriptorArg);
 
@@ -11616,8 +11257,6 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyDropoutDescriptorArg);
@@ -11673,9 +11312,6 @@ cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t  handle, size_t * sizeInBy
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDropoutGetStatesSizeArg);
 
@@ -11741,8 +11377,6 @@ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetDropoutDescriptorArg);
@@ -11806,8 +11440,6 @@ cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRestoreDropoutDescriptorArg);
@@ -11961,8 +11593,6 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnOpsInferVersionCheckArg);
@@ -12054,9 +11684,6 @@ cudnnStatus_t cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(cudnnHand
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg);
 
@@ -12129,9 +11756,6 @@ cudnnStatus_t cudnnGetBatchNormalizationBackwardExWorkspaceSize(cudnnHandle_t  h
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg);
 
@@ -12201,9 +11825,6 @@ cudnnStatus_t cudnnGetBatchNormalizationTrainingExReserveSpaceSize(cudnnHandle_t
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg);
 
@@ -12321,8 +11942,6 @@ cudnnStatus_t cudnnOpsTrainVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnOpsTrainVersionCheckArg);
@@ -12376,9 +11995,6 @@ cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t * rnnDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateRNNDescriptorArg);
 
@@ -12432,8 +12048,6 @@ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyRNNDescriptorArg);
@@ -12501,8 +12115,6 @@ cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAl
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDescriptor_v8Arg);
@@ -12585,8 +12197,6 @@ cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDescriptor_v6Arg);
@@ -12656,8 +12266,6 @@ cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNMatrixMathTypeArg);
@@ -12714,9 +12322,6 @@ cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNMatrixMathTypeArg);
 
@@ -12772,8 +12377,6 @@ cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNBiasModeArg);
@@ -12830,9 +12433,6 @@ cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNBiasModeArg);
 
@@ -12891,8 +12491,6 @@ cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNSetClip_v8Arg);
@@ -12961,8 +12559,6 @@ cudnnStatus_t cudnnRNNSetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNSetClipArg);
@@ -13059,8 +12655,6 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBuildRNNDynamicArg);
@@ -13123,9 +12717,6 @@ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescripto
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNTempSpaceSizesArg);
 
@@ -13190,9 +12781,6 @@ cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescrip
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNParamsSizeArg);
 
@@ -13253,9 +12841,6 @@ cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t  handle, cudnnRNNDescript
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWeightSpaceSizeArg);
 
@@ -13320,9 +12905,6 @@ cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnHandle_t  handle, const cudnn
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNLinLayerMatrixParamsArg);
 
@@ -13393,9 +12975,6 @@ cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnHandle_t  handle, const cudnnRN
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNLinLayerBiasParamsArg);
 
@@ -13468,9 +13047,6 @@ cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t  handle, cudnnRNNDescriptor_
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWeightParamsArg);
 
@@ -13553,9 +13129,6 @@ cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t * rnnDataDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateRNNDataDescriptorArg);
 
@@ -13609,8 +13182,6 @@ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyRNNDataDescriptorArg);
@@ -13695,8 +13266,6 @@ cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNForwardArg);
@@ -13771,8 +13340,6 @@ cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDesc
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNAlgorithmDescriptorArg);
@@ -13831,9 +13398,6 @@ cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg);
 
@@ -13896,9 +13460,6 @@ cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateSeqDataDescriptorArg);
 
@@ -13952,8 +13513,6 @@ cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroySeqDataDescriptorArg);
@@ -14008,9 +13567,6 @@ cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t * attnDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateAttnDescriptorArg);
 
@@ -14064,8 +13620,6 @@ cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyAttnDescriptorArg);
@@ -14138,8 +13692,6 @@ cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetAttnDescriptorArg);
@@ -14225,9 +13777,6 @@ cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t  handle, const cudnnAtt
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetMultiHeadAttnBuffersArg);
 
@@ -14292,8 +13841,6 @@ cudnnStatus_t cudnnAdvInferVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAdvInferVersionCheckArg);
@@ -14367,8 +13914,6 @@ cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNBackwardData_v8Arg);
@@ -14458,8 +14003,6 @@ cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescript
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNBackwardWeights_v8Arg);
@@ -14653,8 +14196,6 @@ cudnnStatus_t cudnnAdvTrainVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAdvTrainVersionCheckArg);
@@ -14708,9 +14249,6 @@ cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * co
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateConvolutionDescriptorArg);
 
@@ -14764,8 +14302,6 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t  co
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyConvolutionDescriptorArg);
@@ -14904,9 +14440,6 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t  handle, con
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionForwardWorkspaceSizeArg);
 
@@ -14974,9 +14507,6 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  ha
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg);
 
@@ -15056,9 +14586,6 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardDataWorkspaceSizeArg);
 
@@ -15137,8 +14664,6 @@ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  han
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetFoldedConvBackwardDataDescriptorsArg);
@@ -15204,8 +14729,6 @@ cudnnStatus_t cudnnCnnInferVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCnnInferVersionCheckArg);
@@ -15260,9 +14783,6 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg);
 
@@ -15424,8 +14944,6 @@ cudnnStatus_t cudnnCnnTrainVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCnnTrainVersionCheckArg);
@@ -15480,9 +14998,6 @@ cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t  descrip
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendCreateDescriptorArg);
 
@@ -15537,8 +15052,6 @@ cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t  descriptor
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendDestroyDescriptorArg);
@@ -15592,8 +15105,6 @@ cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t  descriptor)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendInitializeArg);
@@ -15647,8 +15158,6 @@ cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t  descriptor)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendFinalizeArg);
@@ -15704,8 +15213,6 @@ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendExecuteArg);
@@ -15762,9 +15269,6 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasCreate_v2Arg);
 
@@ -15818,8 +15322,6 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasDestroy_v2Arg);
@@ -15875,9 +15377,6 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetVersion_v2Arg);
 
@@ -15934,9 +15433,6 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetPropertyArg);
 
@@ -15990,8 +15486,6 @@ size_t cublasGetCudartVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetCudartVersionArg);
@@ -16046,8 +15540,6 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetWorkspace_v2Arg);
@@ -16104,8 +15596,6 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetStream_v2Arg);
@@ -16162,9 +15652,6 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetStream_v2Arg);
 
@@ -16221,9 +15708,6 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetPointerMode_v2Arg);
 
@@ -16279,8 +15763,6 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetPointerMode_v2Arg);
@@ -16354,8 +15836,6 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetMathModeArg);
@@ -16412,9 +15892,6 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetSmCountTargetArg);
 
@@ -16470,8 +15947,6 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetSmCountTargetArg);
@@ -16544,8 +16019,6 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetLoggerCallbackArg);
@@ -16600,9 +16073,6 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetLoggerCallbackArg);
 
@@ -16661,8 +16131,6 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetVectorArg);
@@ -18226,8 +17694,6 @@ cudaError_t cudaProfilerStart()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaProfilerStartArg);
@@ -18279,8 +17745,6 @@ cudaError_t cudaProfilerStop()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaProfilerStopArg);
@@ -18346,9 +17810,6 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtCreateArg);
 
@@ -18402,8 +17863,6 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtDestroyArg);
@@ -18468,8 +17927,6 @@ size_t cublasLtGetVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtGetVersionArg);
@@ -18521,8 +17978,6 @@ size_t cublasLtGetCudartVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtGetCudartVersionArg);
@@ -18598,9 +18053,6 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutCreateArg);
 
@@ -18658,8 +18110,6 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutDestroyArg);
@@ -18728,9 +18178,6 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescCreateArg);
 
@@ -18786,8 +18233,6 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescDestroyArg);
@@ -18884,9 +18329,6 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 #else
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceCreateArg);
 
@@ -18940,8 +18382,6 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceDestroyArg);
@@ -19066,8 +18506,6 @@ cublasStatus_t cublasLtLoggerForceDisable()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;     
 #else
 
     uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtLoggerForceDisableArg);

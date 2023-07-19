@@ -294,9 +294,6 @@ def gen_func_client_preload(func_sig):
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-
-    return err;
-
 """
         func_preload_builder += "#else"
 
@@ -330,8 +327,6 @@ def gen_func_client_preload(func_sig):
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }}))
     {{}};
-
-    return err;     
 """
         func_preload_builder += "#else\n"
 

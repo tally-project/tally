@@ -109,18 +109,15 @@ public:
         msg = (uint8_t *) malloc(msg_size);
         register_profile_kernel_map();
 
-#ifdef USE_IOX_IPC
-        iox::runtime::PoshRuntime::initRuntime(APP_NAME);
-        iox_client = new iox::popo::UntypedClient({"Example", "Request-Response", "Add"});
-#else
         __exit = [&](int sig_num) {
 
             if (sig_num == SIGSEGV) {
                 std::cout << "Encountered segfault. Shutting down... " << std::endl;
             }
-
+#ifndef USE_IOX_IPC
             if (send_ipc != nullptr) send_ipc->disconnect();
             if (recv_ipc != nullptr) recv_ipc->disconnect();
+#endif
             exit(0);
         };
 
@@ -130,6 +127,10 @@ public:
         signal(SIGTERM , __exit_wrapper);
         signal(SIGHUP  , __exit_wrapper);
 
+#ifdef USE_IOX_IPC
+        iox::runtime::PoshRuntime::initRuntime(APP_NAME);
+        iox_client = new iox::popo::UntypedClient({"Example", "Request-Response", "Add"});
+#else
         send_ipc = new ipc::channel("client-to-server-380000", ipc::sender);
         recv_ipc = new ipc::channel("server-to-client-380000", ipc::receiver);
 #endif

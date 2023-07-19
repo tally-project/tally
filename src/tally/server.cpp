@@ -30,12 +30,13 @@ TallyServer::TallyServer()
     msg = (uint8_t *) malloc(msg_size);
     register_api_handler();
 
-#ifndef USE_IOX_IPC
-
     __exit = [&](int sig_num) {
         is_quit__.store(true, std::memory_order_release);
+
+#ifndef USE_IOX_IPC
         if (send_ipc != nullptr) send_ipc->disconnect();
         if (recv_ipc != nullptr) recv_ipc->disconnect();
+#endif
 
         if (sig_num == SIGSEGV) {
             spdlog::info("Tally server received segfault signal.");
@@ -50,7 +51,6 @@ TallyServer::TallyServer()
     signal(SIGSEGV , __exit_wrapper);
     signal(SIGTERM , __exit_wrapper);
     signal(SIGHUP  , __exit_wrapper);
-#endif
 }
 
 TallyServer::~TallyServer()
@@ -344,10 +344,10 @@ void TallyServer::handle_cudaMemcpy(void *__args, const void* const requestPaylo
             }
 
             iox_server->send(res).or_else(
-                [&](auto& error) { std::cout << "Could not send Response! Error: " << error << std::endl; });
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
         .or_else(
-            [&](auto& error) { std::cout << "Could not allocate Response! Error: " << error << std::endl; });
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::handle_cudaMemcpyAsync(void *__args, const void* const requestPayload)
@@ -383,16 +383,18 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args, const void* const request
             }
 
             iox_server->send(res).or_else(
-                [&](auto& error) { std::cout << "Could not send Response! Error: " << error << std::endl; });
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
         .or_else(
-            [&](auto& error) { std::cout << "Could not allocate Response! Error: " << error << std::endl; });
+            [&](auto& error) {LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::handle_cudaLaunchKernel(void *__args, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudaLaunchKernel");
     auto args = (cudaLaunchKernelArg *) __args;
+
+    assert(_kernel_client_addr_mapping.find((void *) args->host_func) != _kernel_client_addr_mapping.end());
     void *kernel_server_addr = _kernel_client_addr_mapping[(void *) args->host_func];
     auto &arg_sizes = _kernel_addr_to_args[kernel_server_addr];
     auto argc = arg_sizes.size();
@@ -758,6 +760,8 @@ void TallyServer::handle_cudnnSetTensorNdDescriptor(void *__args, const void* co
                 args->dimA_and_strideA + args->nbDims
             );
 
+            assert(*response == CUDNN_STATUS_SUCCESS);
+
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
@@ -809,6 +813,8 @@ void TallyServer::handle_cudnnSetFilterNdDescriptor(void *__args, const void* co
                 args->nbDims,
                 args->filterDimA
             );
+
+            assert(*response == CUDNN_STATUS_SUCCESS);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -1474,7 +1480,8 @@ void TallyServer::handle_cudnnGetRNNTrainingReserveSize(void *__args, const void
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnGetRNNTrainingReserveSizeResponse*>(responsePayload);
-            response->err = cudnnGetRNNWorkspaceSize(
+
+            response->err = cudnnGetRNNTrainingReserveSize(
                 args->handle,
                 args->rnnDesc,
                 args->seqLength,
