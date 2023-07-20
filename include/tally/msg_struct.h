@@ -772,5 +772,17 @@ struct cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse {
 	cudaError_t err;
 };
 
+struct cudaChooseDeviceArg {
+    struct cudaDeviceProp prop;
+};
+
+struct cudaChooseDeviceResponse {
+    cudaError_t err;
+    int device;
+};
+
+struct cudaSetDeviceArg {
+	int  device;
+};
 
 #endif // TALLY_DEF_H

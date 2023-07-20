@@ -538,15 +538,6 @@ struct cudaGetLastErrorArg {
 struct cudaPeekAtLastErrorArg {
 };
 
-struct cudaGetDeviceCountArg {
-	int * count;
-};
-
-struct cudaGetDeviceCountResponse {
-	int  count;
-	cudaError_t err;
-};
-
 struct cudaGetDevicePropertiesArg {
 	struct cudaDeviceProp * prop;
 	int  device;
@@ -602,19 +593,6 @@ struct cudaDeviceGetP2PAttributeArg {
 
 struct cudaDeviceGetP2PAttributeResponse {
 	int  value;
-	cudaError_t err;
-};
-
-struct cudaSetDeviceArg {
-	int  device;
-};
-
-struct cudaGetDeviceArg {
-	int * device;
-};
-
-struct cudaGetDeviceResponse {
-	int  device;
 	cudaError_t err;
 };
 

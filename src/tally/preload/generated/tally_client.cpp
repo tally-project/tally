@@ -47,7 +47,7 @@ CUresult cuInit(unsigned int  Flags)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuInit(Flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -73,21 +73,6 @@ CUresult cuInit(unsigned int  Flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuInitArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUINIT;
-    
-    struct cuInitArg *arg_ptr = (struct cuInitArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->Flags = Flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuInit);
@@ -100,7 +85,7 @@ CUresult cuDriverGetVersion(int * driverVersion)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDriverGetVersion(driverVersion);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -127,21 +112,6 @@ CUresult cuDriverGetVersion(int * driverVersion)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDriverGetVersionArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDRIVERGETVERSION;
-    
-    struct cuDriverGetVersionArg *arg_ptr = (struct cuDriverGetVersionArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->driverVersion = driverVersion;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDriverGetVersionResponse *) dat;
-	if (driverVersion) { *driverVersion = res->driverVersion; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDriverGetVersion);
@@ -154,7 +124,7 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGet(device, ordinal);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -182,22 +152,6 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGET;
-    
-    struct cuDeviceGetArg *arg_ptr = (struct cuDeviceGetArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->device = device;
-	arg_ptr->ordinal = ordinal;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetResponse *) dat;
-	if (device) { *device = res->device; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGet);
@@ -210,7 +164,7 @@ CUresult cuDeviceGetCount(int * count)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetCount(count);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -237,21 +191,6 @@ CUresult cuDeviceGetCount(int * count)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetCountArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETCOUNT;
-    
-    struct cuDeviceGetCountArg *arg_ptr = (struct cuDeviceGetCountArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->count = count;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetCountResponse *) dat;
-	if (count) { *count = res->count; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetCount);
@@ -270,7 +209,7 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetUuid(uuid, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -298,22 +237,6 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuidArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETUUID;
-    
-    struct cuDeviceGetUuidArg *arg_ptr = (struct cuDeviceGetUuidArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->uuid = uuid;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetUuidResponse *) dat;
-	if (uuid) { *uuid = res->uuid; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetUuid);
@@ -326,7 +249,7 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetUuid_v2(uuid, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -354,22 +277,6 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetUuid_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETUUID_V2;
-    
-    struct cuDeviceGetUuid_v2Arg *arg_ptr = (struct cuDeviceGetUuid_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->uuid = uuid;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetUuid_v2Response *) dat;
-	if (uuid) { *uuid = res->uuid; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetUuid_v2);
@@ -382,7 +289,7 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetLuid(luid, deviceNodeMask, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -412,24 +319,6 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetLuidArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETLUID;
-    
-    struct cuDeviceGetLuidArg *arg_ptr = (struct cuDeviceGetLuidArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->luid = luid;
-	arg_ptr->deviceNodeMask = deviceNodeMask;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetLuidResponse *) dat;
-	if (luid) { *luid = res->luid; }
-	if (deviceNodeMask) { *deviceNodeMask = res->deviceNodeMask; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetLuid);
@@ -442,7 +331,7 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceTotalMem_v2(bytes, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -470,22 +359,6 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceTotalMem_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICETOTALMEM_V2;
-    
-    struct cuDeviceTotalMem_v2Arg *arg_ptr = (struct cuDeviceTotalMem_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->bytes = bytes;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceTotalMem_v2Response *) dat;
-	if (bytes) { *bytes = res->bytes; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceTotalMem_v2);
@@ -498,7 +371,7 @@ CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetTexture1DLinearMaxWidth(maxWidthInElements, format, numChannels, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -528,24 +401,6 @@ CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetTexture1DLinearMaxWidthArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETTEXTURE1DLINEARMAXWIDTH;
-    
-    struct cuDeviceGetTexture1DLinearMaxWidthArg *arg_ptr = (struct cuDeviceGetTexture1DLinearMaxWidthArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->maxWidthInElements = maxWidthInElements;
-	arg_ptr->format = format;
-	arg_ptr->numChannels = numChannels;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetTexture1DLinearMaxWidthResponse *) dat;
-	if (maxWidthInElements) { *maxWidthInElements = res->maxWidthInElements; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetTexture1DLinearMaxWidth);
@@ -558,7 +413,7 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetAttribute(pi, attrib, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -587,23 +442,6 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetAttributeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETATTRIBUTE;
-    
-    struct cuDeviceGetAttributeArg *arg_ptr = (struct cuDeviceGetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pi = pi;
-	arg_ptr->attrib = attrib;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetAttributeResponse *) dat;
-	if (pi) { *pi = res->pi; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetAttribute);
@@ -622,7 +460,7 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceSetMemPool(dev, pool);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -649,22 +487,6 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceSetMemPoolArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICESETMEMPOOL;
-    
-    struct cuDeviceSetMemPoolArg *arg_ptr = (struct cuDeviceSetMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dev = dev;
-	arg_ptr->pool = pool;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceSetMemPool);
@@ -677,7 +499,7 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetMemPool(pool, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -705,22 +527,6 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetMemPoolArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETMEMPOOL;
-    
-    struct cuDeviceGetMemPoolArg *arg_ptr = (struct cuDeviceGetMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pool = pool;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetMemPoolResponse *) dat;
-	if (pool) { *pool = res->pool; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetMemPool);
@@ -733,7 +539,7 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetDefaultMemPool(pool_out, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -761,22 +567,6 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetDefaultMemPoolArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETDEFAULTMEMPOOL;
-    
-    struct cuDeviceGetDefaultMemPoolArg *arg_ptr = (struct cuDeviceGetDefaultMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pool_out = pool_out;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetDefaultMemPoolResponse *) dat;
-	if (pool_out) { *pool_out = res->pool_out; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetDefaultMemPool);
@@ -789,7 +579,7 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuFlushGPUDirectRDMAWrites(target, scope);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -816,22 +606,6 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuFlushGPUDirectRDMAWritesArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUFLUSHGPUDIRECTRDMAWRITES;
-    
-    struct cuFlushGPUDirectRDMAWritesArg *arg_ptr = (struct cuFlushGPUDirectRDMAWritesArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->target = target;
-	arg_ptr->scope = scope;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuFlushGPUDirectRDMAWrites);
@@ -844,7 +618,7 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetProperties(prop, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -872,22 +646,6 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetPropertiesArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETPROPERTIES;
-    
-    struct cuDeviceGetPropertiesArg *arg_ptr = (struct cuDeviceGetPropertiesArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->prop = prop;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetPropertiesResponse *) dat;
-	if (prop) { *prop = res->prop; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetProperties);
@@ -900,7 +658,7 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceComputeCapability(major, minor, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -930,24 +688,6 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceComputeCapabilityArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICECOMPUTECAPABILITY;
-    
-    struct cuDeviceComputeCapabilityArg *arg_ptr = (struct cuDeviceComputeCapabilityArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->major = major;
-	arg_ptr->minor = minor;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceComputeCapabilityResponse *) dat;
-	if (major) { *major = res->major; }
-	if (minor) { *minor = res->minor; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceComputeCapability);
@@ -960,7 +700,7 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxRetain(pctx, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -988,22 +728,6 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRetainArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRETAIN;
-    
-    struct cuDevicePrimaryCtxRetainArg *arg_ptr = (struct cuDevicePrimaryCtxRetainArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pctx = pctx;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDevicePrimaryCtxRetainResponse *) dat;
-	if (pctx) { *pctx = res->pctx; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxRetain);
@@ -1016,7 +740,7 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxRelease_v2(dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1042,21 +766,6 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxRelease_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRELEASE_V2;
-    
-    struct cuDevicePrimaryCtxRelease_v2Arg *arg_ptr = (struct cuDevicePrimaryCtxRelease_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxRelease_v2);
@@ -1069,7 +778,7 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxSetFlags_v2(dev, flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1096,22 +805,6 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxSetFlags_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXSETFLAGS_V2;
-    
-    struct cuDevicePrimaryCtxSetFlags_v2Arg *arg_ptr = (struct cuDevicePrimaryCtxSetFlags_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dev = dev;
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxSetFlags_v2);
@@ -1124,7 +817,7 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxGetState(dev, flags, active);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1154,24 +847,6 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxGetStateArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXGETSTATE;
-    
-    struct cuDevicePrimaryCtxGetStateArg *arg_ptr = (struct cuDevicePrimaryCtxGetStateArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dev = dev;
-	arg_ptr->flags = flags;
-	arg_ptr->active = active;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDevicePrimaryCtxGetStateResponse *) dat;
-	if (flags) { *flags = res->flags; }
-	if (active) { *active = res->active; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxGetState);
@@ -1184,7 +859,7 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxReset_v2(dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1210,21 +885,6 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDevicePrimaryCtxReset_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRESET_V2;
-    
-    struct cuDevicePrimaryCtxReset_v2Arg *arg_ptr = (struct cuDevicePrimaryCtxReset_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxReset_v2);
@@ -1237,7 +897,7 @@ CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUde
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetExecAffinitySupport(pi, type, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1266,23 +926,6 @@ CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUde
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDeviceGetExecAffinitySupportArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDEVICEGETEXECAFFINITYSUPPORT;
-    
-    struct cuDeviceGetExecAffinitySupportArg *arg_ptr = (struct cuDeviceGetExecAffinitySupportArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pi = pi;
-	arg_ptr->type = type;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuDeviceGetExecAffinitySupportResponse *) dat;
-	if (pi) { *pi = res->pi; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetExecAffinitySupport);
@@ -1295,7 +938,7 @@ CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxCreate_v2(pctx, flags, dev);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1324,23 +967,6 @@ CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxCreate_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXCREATE_V2;
-    
-    struct cuCtxCreate_v2Arg *arg_ptr = (struct cuCtxCreate_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pctx = pctx;
-	arg_ptr->flags = flags;
-	arg_ptr->dev = dev;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxCreate_v2Response *) dat;
-	if (pctx) { *pctx = res->pctx; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxCreate_v2);
@@ -1359,7 +985,7 @@ CUresult cuCtxDestroy_v2(CUcontext  ctx)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxDestroy_v2(ctx);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1385,21 +1011,6 @@ CUresult cuCtxDestroy_v2(CUcontext  ctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxDestroy_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXDESTROY_V2;
-    
-    struct cuCtxDestroy_v2Arg *arg_ptr = (struct cuCtxDestroy_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->ctx = ctx;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxDestroy_v2);
@@ -1412,7 +1023,7 @@ CUresult cuCtxPushCurrent_v2(CUcontext  ctx)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxPushCurrent_v2(ctx);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1438,21 +1049,6 @@ CUresult cuCtxPushCurrent_v2(CUcontext  ctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxPushCurrent_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXPUSHCURRENT_V2;
-    
-    struct cuCtxPushCurrent_v2Arg *arg_ptr = (struct cuCtxPushCurrent_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->ctx = ctx;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxPushCurrent_v2);
@@ -1465,7 +1061,7 @@ CUresult cuCtxPopCurrent_v2(CUcontext * pctx)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxPopCurrent_v2(pctx);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1492,21 +1088,6 @@ CUresult cuCtxPopCurrent_v2(CUcontext * pctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxPopCurrent_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXPOPCURRENT_V2;
-    
-    struct cuCtxPopCurrent_v2Arg *arg_ptr = (struct cuCtxPopCurrent_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pctx = pctx;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxPopCurrent_v2Response *) dat;
-	if (pctx) { *pctx = res->pctx; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxPopCurrent_v2);
@@ -1519,7 +1100,7 @@ CUresult cuCtxSetCurrent(CUcontext  ctx)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetCurrent(ctx);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1545,21 +1126,6 @@ CUresult cuCtxSetCurrent(CUcontext  ctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetCurrentArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXSETCURRENT;
-    
-    struct cuCtxSetCurrentArg *arg_ptr = (struct cuCtxSetCurrentArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->ctx = ctx;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetCurrent);
@@ -1572,7 +1138,7 @@ CUresult cuCtxGetCurrent(CUcontext * pctx)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetCurrent(pctx);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1599,21 +1165,6 @@ CUresult cuCtxGetCurrent(CUcontext * pctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetCurrentArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXGETCURRENT;
-    
-    struct cuCtxGetCurrentArg *arg_ptr = (struct cuCtxGetCurrentArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pctx = pctx;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxGetCurrentResponse *) dat;
-	if (pctx) { *pctx = res->pctx; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetCurrent);
@@ -1626,7 +1177,7 @@ CUresult cuCtxGetDevice(CUdevice * device)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetDevice(device);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1653,21 +1204,6 @@ CUresult cuCtxGetDevice(CUdevice * device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetDeviceArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXGETDEVICE;
-    
-    struct cuCtxGetDeviceArg *arg_ptr = (struct cuCtxGetDeviceArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->device = device;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxGetDeviceResponse *) dat;
-	if (device) { *device = res->device; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetDevice);
@@ -1680,7 +1216,7 @@ CUresult cuCtxGetFlags(unsigned int * flags)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetFlags(flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1707,21 +1243,6 @@ CUresult cuCtxGetFlags(unsigned int * flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetFlagsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXGETFLAGS;
-    
-    struct cuCtxGetFlagsArg *arg_ptr = (struct cuCtxGetFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxGetFlagsResponse *) dat;
-	if (flags) { *flags = res->flags; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetFlags);
@@ -1734,7 +1255,7 @@ CUresult cuCtxSynchronize()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxSynchronize();
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1759,20 +1280,6 @@ CUresult cuCtxSynchronize()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSynchronizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXSYNCHRONIZE;
-    
-    struct cuCtxSynchronizeArg *arg_ptr = (struct cuCtxSynchronizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSynchronize);
@@ -1785,7 +1292,7 @@ CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetLimit(limit, value);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1812,22 +1319,6 @@ CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetLimitArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXSETLIMIT;
-    
-    struct cuCtxSetLimitArg *arg_ptr = (struct cuCtxSetLimitArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->limit = limit;
-	arg_ptr->value = value;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetLimit);
@@ -1840,7 +1331,7 @@ CUresult cuCtxGetLimit(size_t * pvalue, CUlimit  limit)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetLimit(pvalue, limit);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1868,22 +1359,6 @@ CUresult cuCtxGetLimit(size_t * pvalue, CUlimit  limit)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetLimitArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXGETLIMIT;
-    
-    struct cuCtxGetLimitArg *arg_ptr = (struct cuCtxGetLimitArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pvalue = pvalue;
-	arg_ptr->limit = limit;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxGetLimitResponse *) dat;
-	if (pvalue) { *pvalue = res->pvalue; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetLimit);
@@ -1896,7 +1371,7 @@ CUresult cuCtxGetCacheConfig(CUfunc_cache * pconfig)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetCacheConfig(pconfig);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1923,21 +1398,6 @@ CUresult cuCtxGetCacheConfig(CUfunc_cache * pconfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetCacheConfigArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXGETCACHECONFIG;
-    
-    struct cuCtxGetCacheConfigArg *arg_ptr = (struct cuCtxGetCacheConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pconfig = pconfig;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxGetCacheConfigResponse *) dat;
-	if (pconfig) { *pconfig = res->pconfig; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetCacheConfig);
@@ -1950,7 +1410,7 @@ CUresult cuCtxSetCacheConfig(CUfunc_cache  config)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetCacheConfig(config);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -1976,21 +1436,6 @@ CUresult cuCtxSetCacheConfig(CUfunc_cache  config)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetCacheConfigArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXSETCACHECONFIG;
-    
-    struct cuCtxSetCacheConfigArg *arg_ptr = (struct cuCtxSetCacheConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->config = config;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetCacheConfig);
@@ -2003,7 +1448,7 @@ CUresult cuCtxGetSharedMemConfig(CUsharedconfig * pConfig)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetSharedMemConfig(pConfig);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2030,21 +1475,6 @@ CUresult cuCtxGetSharedMemConfig(CUsharedconfig * pConfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetSharedMemConfigArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXGETSHAREDMEMCONFIG;
-    
-    struct cuCtxGetSharedMemConfigArg *arg_ptr = (struct cuCtxGetSharedMemConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pConfig = pConfig;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxGetSharedMemConfigResponse *) dat;
-	if (pConfig) { *pConfig = res->pConfig; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetSharedMemConfig);
@@ -2057,7 +1487,7 @@ CUresult cuCtxSetSharedMemConfig(CUsharedconfig  config)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetSharedMemConfig(config);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2083,21 +1513,6 @@ CUresult cuCtxSetSharedMemConfig(CUsharedconfig  config)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxSetSharedMemConfigArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXSETSHAREDMEMCONFIG;
-    
-    struct cuCtxSetSharedMemConfigArg *arg_ptr = (struct cuCtxSetSharedMemConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->config = config;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetSharedMemConfig);
@@ -2110,7 +1525,7 @@ CUresult cuCtxGetApiVersion(CUcontext  ctx, unsigned int * version)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetApiVersion(ctx, version);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2138,22 +1553,6 @@ CUresult cuCtxGetApiVersion(CUcontext  ctx, unsigned int * version)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetApiVersionArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXGETAPIVERSION;
-    
-    struct cuCtxGetApiVersionArg *arg_ptr = (struct cuCtxGetApiVersionArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->ctx = ctx;
-	arg_ptr->version = version;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxGetApiVersionResponse *) dat;
-	if (version) { *version = res->version; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetApiVersion);
@@ -2166,7 +1565,7 @@ CUresult cuCtxGetStreamPriorityRange(int * leastPriority, int * greatestPriority
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetStreamPriorityRange(leastPriority, greatestPriority);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2195,23 +1594,6 @@ CUresult cuCtxGetStreamPriorityRange(int * leastPriority, int * greatestPriority
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetStreamPriorityRangeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXGETSTREAMPRIORITYRANGE;
-    
-    struct cuCtxGetStreamPriorityRangeArg *arg_ptr = (struct cuCtxGetStreamPriorityRangeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->leastPriority = leastPriority;
-	arg_ptr->greatestPriority = greatestPriority;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxGetStreamPriorityRangeResponse *) dat;
-	if (leastPriority) { *leastPriority = res->leastPriority; }
-	if (greatestPriority) { *greatestPriority = res->greatestPriority; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetStreamPriorityRange);
@@ -2224,7 +1606,7 @@ CUresult cuCtxResetPersistingL2Cache()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxResetPersistingL2Cache();
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2249,20 +1631,6 @@ CUresult cuCtxResetPersistingL2Cache()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxResetPersistingL2CacheArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXRESETPERSISTINGL2CACHE;
-    
-    struct cuCtxResetPersistingL2CacheArg *arg_ptr = (struct cuCtxResetPersistingL2CacheArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxResetPersistingL2Cache);
@@ -2275,7 +1643,7 @@ CUresult cuCtxGetExecAffinity(CUexecAffinityParam * pExecAffinity, CUexecAffinit
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetExecAffinity(pExecAffinity, type);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2303,22 +1671,6 @@ CUresult cuCtxGetExecAffinity(CUexecAffinityParam * pExecAffinity, CUexecAffinit
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxGetExecAffinityArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXGETEXECAFFINITY;
-    
-    struct cuCtxGetExecAffinityArg *arg_ptr = (struct cuCtxGetExecAffinityArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pExecAffinity = pExecAffinity;
-	arg_ptr->type = type;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxGetExecAffinityResponse *) dat;
-	if (pExecAffinity) { *pExecAffinity = res->pExecAffinity; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetExecAffinity);
@@ -2331,7 +1683,7 @@ CUresult cuCtxAttach(CUcontext * pctx, unsigned int  flags)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxAttach(pctx, flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2359,22 +1711,6 @@ CUresult cuCtxAttach(CUcontext * pctx, unsigned int  flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxAttachArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXATTACH;
-    
-    struct cuCtxAttachArg *arg_ptr = (struct cuCtxAttachArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pctx = pctx;
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuCtxAttachResponse *) dat;
-	if (pctx) { *pctx = res->pctx; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxAttach);
@@ -2387,7 +1723,7 @@ CUresult cuCtxDetach(CUcontext  ctx)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxDetach(ctx);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2413,21 +1749,6 @@ CUresult cuCtxDetach(CUcontext  ctx)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuCtxDetachArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUCTXDETACH;
-    
-    struct cuCtxDetachArg *arg_ptr = (struct cuCtxDetachArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->ctx = ctx;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxDetach);
@@ -2464,7 +1785,7 @@ CUresult cuModuleUnload(CUmodule  hmod)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuModuleUnload(hmod);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2490,21 +1811,6 @@ CUresult cuModuleUnload(CUmodule  hmod)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuModuleUnloadArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUMODULEUNLOAD;
-    
-    struct cuModuleUnloadArg *arg_ptr = (struct cuModuleUnloadArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->hmod = hmod;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuModuleUnload);
@@ -2589,7 +1895,7 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemFree_v2(dptr);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2615,21 +1921,6 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemFree_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUMEMFREE_V2;
-    
-    struct cuMemFree_v2Arg *arg_ptr = (struct cuMemFree_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dptr = dptr;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuMemFree_v2);
@@ -2822,7 +2113,7 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemcpyAsync(dst, src, ByteCount, hStream);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -2851,24 +2142,6 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemcpyAsyncArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUMEMCPYASYNC;
-    
-    struct cuMemcpyAsyncArg *arg_ptr = (struct cuMemcpyAsyncArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dst = dst;
-	arg_ptr->src = src;
-	arg_ptr->ByteCount = ByteCount;
-	arg_ptr->hStream = hStream;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuMemcpyAsync);
@@ -3211,7 +2484,7 @@ CUresult cuMemAllocFromPoolAsync(CUdeviceptr * dptr, size_t  bytesize, CUmemoryP
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemAllocFromPoolAsync(dptr, bytesize, pool, hStream);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -3241,24 +2514,6 @@ CUresult cuMemAllocFromPoolAsync(CUdeviceptr * dptr, size_t  bytesize, CUmemoryP
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuMemAllocFromPoolAsyncArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUMEMALLOCFROMPOOLASYNC;
-    
-    struct cuMemAllocFromPoolAsyncArg *arg_ptr = (struct cuMemAllocFromPoolAsyncArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dptr = dptr;
-	arg_ptr->bytesize = bytesize;
-	arg_ptr->pool = pool;
-	arg_ptr->hStream = hStream;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cuMemAllocFromPoolAsyncResponse *) dat;
-	if (dptr) { *dptr = res->dptr; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuMemAllocFromPoolAsync);
@@ -3523,7 +2778,7 @@ CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDestroyExternalMemory(extMem);
-#elif defined(USE_IOX_IPC)
+#else
 
     CUresult err;
 
@@ -3549,21 +2804,6 @@ CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cuDestroyExternalMemoryArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDESTROYEXTERNALMEMORY;
-    
-    struct cuDestroyExternalMemoryArg *arg_ptr = (struct cuDestroyExternalMemoryArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->extMem = extMem;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (CUresult *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDestroyExternalMemory);
@@ -4501,7 +3741,7 @@ cudaError_t cudaDeviceReset()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceReset();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -4526,20 +3766,6 @@ cudaError_t cudaDeviceReset()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceResetArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICERESET;
-    
-    struct cudaDeviceResetArg *arg_ptr = (struct cudaDeviceResetArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceReset);
@@ -4552,7 +3778,7 @@ cudaError_t cudaDeviceSynchronize()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSynchronize();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -4577,20 +3803,6 @@ cudaError_t cudaDeviceSynchronize()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSynchronizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICESYNCHRONIZE;
-    
-    struct cudaDeviceSynchronizeArg *arg_ptr = (struct cudaDeviceSynchronizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSynchronize);
@@ -4603,7 +3815,7 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetLimit(limit, value);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -4630,22 +3842,6 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetLimitArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETLIMIT;
-    
-    struct cudaDeviceSetLimitArg *arg_ptr = (struct cudaDeviceSetLimitArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->limit = limit;
-	arg_ptr->value = value;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetLimit);
@@ -4658,7 +3854,7 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetLimit(pValue, limit);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -4686,22 +3882,6 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetLimitArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETLIMIT;
-    
-    struct cudaDeviceGetLimitArg *arg_ptr = (struct cudaDeviceGetLimitArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pValue = pValue;
-	arg_ptr->limit = limit;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaDeviceGetLimitResponse *) dat;
-	if (pValue) { *pValue = res->pValue; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetLimit);
@@ -4720,7 +3900,7 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetCacheConfig(pCacheConfig);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -4747,21 +3927,6 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetCacheConfigArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETCACHECONFIG;
-    
-    struct cudaDeviceGetCacheConfigArg *arg_ptr = (struct cudaDeviceGetCacheConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pCacheConfig = pCacheConfig;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaDeviceGetCacheConfigResponse *) dat;
-	if (pCacheConfig) { *pCacheConfig = res->pCacheConfig; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetCacheConfig);
@@ -4774,7 +3939,7 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetStreamPriorityRange(leastPriority, greatestPriority);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -4803,23 +3968,6 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetStreamPriorityRangeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETSTREAMPRIORITYRANGE;
-    
-    struct cudaDeviceGetStreamPriorityRangeArg *arg_ptr = (struct cudaDeviceGetStreamPriorityRangeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->leastPriority = leastPriority;
-	arg_ptr->greatestPriority = greatestPriority;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaDeviceGetStreamPriorityRangeResponse *) dat;
-	if (leastPriority) { *leastPriority = res->leastPriority; }
-	if (greatestPriority) { *greatestPriority = res->greatestPriority; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetStreamPriorityRange);
@@ -4832,7 +3980,7 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetCacheConfig(cacheConfig);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -4858,21 +4006,6 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetCacheConfigArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETCACHECONFIG;
-    
-    struct cudaDeviceSetCacheConfigArg *arg_ptr = (struct cudaDeviceSetCacheConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->cacheConfig = cacheConfig;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetCacheConfig);
@@ -4891,7 +4024,7 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetSharedMemConfig(config);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -4917,21 +4050,6 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetSharedMemConfigArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETSHAREDMEMCONFIG;
-    
-    struct cudaDeviceSetSharedMemConfigArg *arg_ptr = (struct cudaDeviceSetSharedMemConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->config = config;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetSharedMemConfig);
@@ -4950,7 +4068,7 @@ cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetPCIBusId(pciBusId, len, device);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -4979,23 +4097,6 @@ cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetPCIBusIdArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETPCIBUSID;
-    
-    struct cudaDeviceGetPCIBusIdArg *arg_ptr = (struct cudaDeviceGetPCIBusIdArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pciBusId = pciBusId;
-	arg_ptr->len = len;
-	arg_ptr->device = device;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaDeviceGetPCIBusIdResponse *) dat;
-	if (pciBusId) { *pciBusId = res->pciBusId; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetPCIBusId);
@@ -5008,7 +4109,7 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaIpcGetEventHandle(handle, event);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5036,22 +4137,6 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcGetEventHandleArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAIPCGETEVENTHANDLE;
-    
-    struct cudaIpcGetEventHandleArg *arg_ptr = (struct cudaIpcGetEventHandleArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->event = event;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaIpcGetEventHandleResponse *) dat;
-	if (handle) { *handle = res->handle; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcGetEventHandle);
@@ -5064,7 +4149,7 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaIpcOpenEventHandle(event, handle);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5092,22 +4177,6 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenEventHandleArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAIPCOPENEVENTHANDLE;
-    
-    struct cudaIpcOpenEventHandleArg *arg_ptr = (struct cudaIpcOpenEventHandleArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->event = event;
-	arg_ptr->handle = handle;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaIpcOpenEventHandleResponse *) dat;
-	if (event) { *event = res->event; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcOpenEventHandle);
@@ -5120,7 +4189,7 @@ cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaIpcGetMemHandle(handle, devPtr);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5148,22 +4217,6 @@ cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcGetMemHandleArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAIPCGETMEMHANDLE;
-    
-    struct cudaIpcGetMemHandleArg *arg_ptr = (struct cudaIpcGetMemHandleArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->devPtr = devPtr;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaIpcGetMemHandleResponse *) dat;
-	if (handle) { *handle = res->handle; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcGetMemHandle);
@@ -5176,7 +4229,7 @@ cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, uns
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaIpcOpenMemHandle(devPtr, handle, flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5205,23 +4258,6 @@ cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, uns
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcOpenMemHandleArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAIPCOPENMEMHANDLE;
-    
-    struct cudaIpcOpenMemHandleArg *arg_ptr = (struct cudaIpcOpenMemHandleArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->devPtr = devPtr;
-	arg_ptr->handle = handle;
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaIpcOpenMemHandleResponse *) dat;
-	if (devPtr) { *devPtr = res->devPtr; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcOpenMemHandle);
@@ -5234,7 +4270,7 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaIpcCloseMemHandle(devPtr);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5260,21 +4296,6 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaIpcCloseMemHandleArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAIPCCLOSEMEMHANDLE;
-    
-    struct cudaIpcCloseMemHandleArg *arg_ptr = (struct cudaIpcCloseMemHandleArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->devPtr = devPtr;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcCloseMemHandle);
@@ -5287,7 +4308,7 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceFlushGPUDirectRDMAWrites(target, scope);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5314,22 +4335,6 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceFlushGPUDirectRDMAWritesArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEFLUSHGPUDIRECTRDMAWRITES;
-    
-    struct cudaDeviceFlushGPUDirectRDMAWritesArg *arg_ptr = (struct cudaDeviceFlushGPUDirectRDMAWritesArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->target = target;
-	arg_ptr->scope = scope;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceFlushGPUDirectRDMAWrites);
@@ -5342,7 +4347,7 @@ cudaError_t cudaThreadExit()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadExit();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5367,20 +4372,6 @@ cudaError_t cudaThreadExit()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadExitArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDATHREADEXIT;
-    
-    struct cudaThreadExitArg *arg_ptr = (struct cudaThreadExitArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadExit);
@@ -5393,7 +4384,7 @@ cudaError_t cudaThreadSynchronize()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadSynchronize();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5418,20 +4409,6 @@ cudaError_t cudaThreadSynchronize()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSynchronizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDATHREADSYNCHRONIZE;
-    
-    struct cudaThreadSynchronizeArg *arg_ptr = (struct cudaThreadSynchronizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSynchronize);
@@ -5444,7 +4421,7 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadSetLimit(limit, value);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5471,22 +4448,6 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSetLimitArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDATHREADSETLIMIT;
-    
-    struct cudaThreadSetLimitArg *arg_ptr = (struct cudaThreadSetLimitArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->limit = limit;
-	arg_ptr->value = value;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSetLimit);
@@ -5499,7 +4460,7 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadGetLimit(pValue, limit);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5527,22 +4488,6 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetLimitArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDATHREADGETLIMIT;
-    
-    struct cudaThreadGetLimitArg *arg_ptr = (struct cudaThreadGetLimitArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pValue = pValue;
-	arg_ptr->limit = limit;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaThreadGetLimitResponse *) dat;
-	if (pValue) { *pValue = res->pValue; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadGetLimit);
@@ -5555,7 +4500,7 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadGetCacheConfig(pCacheConfig);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5582,21 +4527,6 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadGetCacheConfigArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDATHREADGETCACHECONFIG;
-    
-    struct cudaThreadGetCacheConfigArg *arg_ptr = (struct cudaThreadGetCacheConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pCacheConfig = pCacheConfig;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaThreadGetCacheConfigResponse *) dat;
-	if (pCacheConfig) { *pCacheConfig = res->pCacheConfig; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadGetCacheConfig);
@@ -5609,7 +4539,7 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadSetCacheConfig(cacheConfig);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5635,21 +4565,6 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaThreadSetCacheConfigArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDATHREADSETCACHECONFIG;
-    
-    struct cudaThreadSetCacheConfigArg *arg_ptr = (struct cudaThreadSetCacheConfigArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->cacheConfig = cacheConfig;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSetCacheConfig);
@@ -5662,7 +4577,7 @@ cudaError_t cudaGetLastError()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGetLastError();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5687,20 +4602,6 @@ cudaError_t cudaGetLastError()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetLastErrorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAGETLASTERROR;
-    
-    struct cudaGetLastErrorArg *arg_ptr = (struct cudaGetLastErrorArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetLastError);
@@ -5713,7 +4614,7 @@ cudaError_t cudaPeekAtLastError()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaPeekAtLastError();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5738,20 +4639,6 @@ cudaError_t cudaPeekAtLastError()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaPeekAtLastErrorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAPEEKATLASTERROR;
-    
-    struct cudaPeekAtLastErrorArg *arg_ptr = (struct cudaPeekAtLastErrorArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaPeekAtLastError);
@@ -5774,55 +4661,8 @@ const char* cudaGetErrorString(cudaError_t  error)
 cudaError_t cudaGetDeviceCount(int * count)
 {
 	TALLY_LOG("cudaGetDeviceCount hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcudaGetDeviceCount(count);
-#elif defined(USE_IOX_IPC)
-
-    cudaError_t err;
-
-    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaGetDeviceCountArg), alignof(cudaGetDeviceCountArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDAGETDEVICECOUNT;
-            
-            auto request = (cudaGetDeviceCountArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
-			request->count = count;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cudaGetDeviceCountResponse*>(responsePayload);
-			if (count) { *count = response->count; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceCountArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICECOUNT;
-    
-    struct cudaGetDeviceCountArg *arg_ptr = (struct cudaGetDeviceCountArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->count = count;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaGetDeviceCountResponse *) dat;
-	if (count) { *count = res->count; }
-	auto err = res->err;
-
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceCount);
-	return err;
+	cudaError_t res = 		lcudaGetDeviceCount(count);
+	return res;
 }
 
 cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
@@ -5831,7 +4671,7 @@ cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGetDeviceProperties(prop, device);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5859,22 +4699,6 @@ cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDevicePropertiesArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICEPROPERTIES;
-    
-    struct cudaGetDevicePropertiesArg *arg_ptr = (struct cudaGetDevicePropertiesArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->prop = prop;
-	arg_ptr->device = device;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaGetDevicePropertiesResponse *) dat;
-	if (prop) { *prop = res->prop; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceProperties);
@@ -5887,7 +4711,7 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetAttribute(value, attr, device);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5916,23 +4740,6 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetAttributeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETATTRIBUTE;
-    
-    struct cudaDeviceGetAttributeArg *arg_ptr = (struct cudaDeviceGetAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->value = value;
-	arg_ptr->attr = attr;
-	arg_ptr->device = device;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaDeviceGetAttributeResponse *) dat;
-	if (value) { *value = res->value; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetAttribute);
@@ -5945,7 +4752,7 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetDefaultMemPool(memPool, device);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -5973,22 +4780,6 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetDefaultMemPoolArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETDEFAULTMEMPOOL;
-    
-    struct cudaDeviceGetDefaultMemPoolArg *arg_ptr = (struct cudaDeviceGetDefaultMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->memPool = memPool;
-	arg_ptr->device = device;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaDeviceGetDefaultMemPoolResponse *) dat;
-	if (memPool) { *memPool = res->memPool; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetDefaultMemPool);
@@ -6001,7 +4792,7 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetMemPool(device, memPool);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6028,22 +4819,6 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceSetMemPoolArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICESETMEMPOOL;
-    
-    struct cudaDeviceSetMemPoolArg *arg_ptr = (struct cudaDeviceSetMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->device = device;
-	arg_ptr->memPool = memPool;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetMemPool);
@@ -6056,7 +4831,7 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetMemPool(memPool, device);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6084,22 +4859,6 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetMemPoolArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETMEMPOOL;
-    
-    struct cudaDeviceGetMemPoolArg *arg_ptr = (struct cudaDeviceGetMemPoolArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->memPool = memPool;
-	arg_ptr->device = device;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaDeviceGetMemPoolResponse *) dat;
-	if (memPool) { *memPool = res->memPool; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetMemPool);
@@ -6118,7 +4877,7 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetP2PAttribute(value, attr, srcDevice, dstDevice);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6148,141 +4907,17 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaDeviceGetP2PAttributeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDADEVICEGETP2PATTRIBUTE;
-    
-    struct cudaDeviceGetP2PAttributeArg *arg_ptr = (struct cudaDeviceGetP2PAttributeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->value = value;
-	arg_ptr->attr = attr;
-	arg_ptr->srcDevice = srcDevice;
-	arg_ptr->dstDevice = dstDevice;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaDeviceGetP2PAttributeResponse *) dat;
-	if (value) { *value = res->value; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetP2PAttribute);
 	return err;
 }
 
-cudaError_t cudaChooseDevice(int * device, const struct cudaDeviceProp * prop)
-{
-	TALLY_LOG("cudaChooseDevice hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudaError_t cudaSetDevice(int  device)
-{
-	TALLY_LOG("cudaSetDevice hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcudaSetDevice(device);
-#elif defined(USE_IOX_IPC)
-
-    cudaError_t err;
-
-    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaSetDeviceArg), alignof(cudaSetDeviceArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDASETDEVICE;
-            
-            auto request = (cudaSetDeviceArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
-			request->device = device;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const cudaError_t*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaSetDeviceArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASETDEVICE;
-    
-    struct cudaSetDeviceArg *arg_ptr = (struct cudaSetDeviceArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->device = device;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaSetDevice);
-	return err;
-}
-
 cudaError_t cudaGetDevice(int * device)
 {
 	TALLY_LOG("cudaGetDevice hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcudaGetDevice(device);
-#elif defined(USE_IOX_IPC)
-
-    cudaError_t err;
-
-    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof(cudaGetDeviceArg), alignof(cudaGetDeviceArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDAGETDEVICE;
-            
-            auto request = (cudaGetDeviceArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
-			request->device = device;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cudaGetDeviceResponse*>(responsePayload);
-			if (device) { *device = response->device; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICE;
-    
-    struct cudaGetDeviceArg *arg_ptr = (struct cudaGetDeviceArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->device = device;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaGetDeviceResponse *) dat;
-	if (device) { *device = res->device; }
-	auto err = res->err;
-
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGetDevice);
-	return err;
+	cudaError_t res = 		lcudaGetDevice(device);
+	return res;
 }
 
 cudaError_t cudaSetValidDevices(int * device_arr, int  len)
@@ -6297,7 +4932,7 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaSetDeviceFlags(flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6323,21 +4958,6 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaSetDeviceFlagsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASETDEVICEFLAGS;
-    
-    struct cudaSetDeviceFlagsArg *arg_ptr = (struct cudaSetDeviceFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaSetDeviceFlags);
@@ -6350,7 +4970,7 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGetDeviceFlags(flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6377,21 +4997,6 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGetDeviceFlagsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAGETDEVICEFLAGS;
-    
-    struct cudaGetDeviceFlagsArg *arg_ptr = (struct cudaGetDeviceFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaGetDeviceFlagsResponse *) dat;
-	if (flags) { *flags = res->flags; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceFlags);
@@ -6404,7 +5009,7 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCreate(pStream);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6431,21 +5036,6 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCREATE;
-    
-    struct cudaStreamCreateArg *arg_ptr = (struct cudaStreamCreateArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pStream = pStream;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaStreamCreateResponse *) dat;
-	if (pStream) { *pStream = res->pStream; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCreate);
@@ -6458,7 +5048,7 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCreateWithFlags(pStream, flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6486,22 +5076,6 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithFlagsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCREATEWITHFLAGS;
-    
-    struct cudaStreamCreateWithFlagsArg *arg_ptr = (struct cudaStreamCreateWithFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pStream = pStream;
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaStreamCreateWithFlagsResponse *) dat;
-	if (pStream) { *pStream = res->pStream; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCreateWithFlags);
@@ -6514,7 +5088,7 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCreateWithPriority(pStream, flags, priority);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6543,23 +5117,6 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCreateWithPriorityArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCREATEWITHPRIORITY;
-    
-    struct cudaStreamCreateWithPriorityArg *arg_ptr = (struct cudaStreamCreateWithPriorityArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pStream = pStream;
-	arg_ptr->flags = flags;
-	arg_ptr->priority = priority;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaStreamCreateWithPriorityResponse *) dat;
-	if (pStream) { *pStream = res->pStream; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCreateWithPriority);
@@ -6572,7 +5129,7 @@ cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamGetPriority(hStream, priority);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6600,22 +5157,6 @@ cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetPriorityArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMGETPRIORITY;
-    
-    struct cudaStreamGetPriorityArg *arg_ptr = (struct cudaStreamGetPriorityArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->hStream = hStream;
-	arg_ptr->priority = priority;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaStreamGetPriorityResponse *) dat;
-	if (priority) { *priority = res->priority; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetPriority);
@@ -6628,7 +5169,7 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamGetFlags(hStream, flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6656,22 +5197,6 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetFlagsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMGETFLAGS;
-    
-    struct cudaStreamGetFlagsArg *arg_ptr = (struct cudaStreamGetFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->hStream = hStream;
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaStreamGetFlagsResponse *) dat;
-	if (flags) { *flags = res->flags; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetFlags);
@@ -6684,7 +5209,7 @@ cudaError_t cudaCtxResetPersistingL2Cache()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaCtxResetPersistingL2Cache();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6709,20 +5234,6 @@ cudaError_t cudaCtxResetPersistingL2Cache()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaCtxResetPersistingL2CacheArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDACTXRESETPERSISTINGL2CACHE;
-    
-    struct cudaCtxResetPersistingL2CacheArg *arg_ptr = (struct cudaCtxResetPersistingL2CacheArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaCtxResetPersistingL2Cache);
@@ -6735,7 +5246,7 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCopyAttributes(dst, src);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6762,22 +5273,6 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamCopyAttributesArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMCOPYATTRIBUTES;
-    
-    struct cudaStreamCopyAttributesArg *arg_ptr = (struct cudaStreamCopyAttributesArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dst = dst;
-	arg_ptr->src = src;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCopyAttributes);
@@ -6802,7 +5297,7 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamDestroy(stream);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6828,21 +5323,6 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamDestroyArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMDESTROY;
-    
-    struct cudaStreamDestroyArg *arg_ptr = (struct cudaStreamDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->stream = stream;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamDestroy);
@@ -6855,7 +5335,7 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamWaitEvent(stream, event, flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6883,23 +5363,6 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamWaitEventArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMWAITEVENT;
-    
-    struct cudaStreamWaitEventArg *arg_ptr = (struct cudaStreamWaitEventArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->stream = stream;
-	arg_ptr->event = event;
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamWaitEvent);
@@ -6918,7 +5381,7 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamSynchronize(stream);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6944,21 +5407,6 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamSynchronizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMSYNCHRONIZE;
-    
-    struct cudaStreamSynchronizeArg *arg_ptr = (struct cudaStreamSynchronizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->stream = stream;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamSynchronize);
@@ -6971,7 +5419,7 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamQuery(stream);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -6997,21 +5445,6 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamQueryArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMQUERY;
-    
-    struct cudaStreamQueryArg *arg_ptr = (struct cudaStreamQueryArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->stream = stream;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamQuery);
@@ -7030,7 +5463,7 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamBeginCapture(stream, mode);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7057,22 +5490,6 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamBeginCaptureArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMBEGINCAPTURE;
-    
-    struct cudaStreamBeginCaptureArg *arg_ptr = (struct cudaStreamBeginCaptureArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->stream = stream;
-	arg_ptr->mode = mode;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamBeginCapture);
@@ -7091,7 +5508,7 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamEndCapture(stream, pGraph);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7118,22 +5535,6 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamEndCaptureArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMENDCAPTURE;
-    
-    struct cudaStreamEndCaptureArg *arg_ptr = (struct cudaStreamEndCaptureArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->stream = stream;
-	arg_ptr->pGraph = pGraph;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamEndCapture);
@@ -7146,7 +5547,7 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamIsCapturing(stream, pCaptureStatus);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7174,22 +5575,6 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamIsCapturingArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMISCAPTURING;
-    
-    struct cudaStreamIsCapturingArg *arg_ptr = (struct cudaStreamIsCapturingArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->stream = stream;
-	arg_ptr->pCaptureStatus = pCaptureStatus;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaStreamIsCapturingResponse *) dat;
-	if (pCaptureStatus) { *pCaptureStatus = res->pCaptureStatus; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamIsCapturing);
@@ -7202,7 +5587,7 @@ cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptur
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamGetCaptureInfo(stream, pCaptureStatus, pId);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7232,24 +5617,6 @@ cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptur
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaStreamGetCaptureInfoArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDASTREAMGETCAPTUREINFO;
-    
-    struct cudaStreamGetCaptureInfoArg *arg_ptr = (struct cudaStreamGetCaptureInfoArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->stream = stream;
-	arg_ptr->pCaptureStatus = pCaptureStatus;
-	arg_ptr->pId = pId;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaStreamGetCaptureInfoResponse *) dat;
-	if (pCaptureStatus) { *pCaptureStatus = res->pCaptureStatus; }
-	if (pId) { *pId = res->pId; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetCaptureInfo);
@@ -7274,7 +5641,7 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventCreate(event);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7301,21 +5668,6 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTCREATE;
-    
-    struct cudaEventCreateArg *arg_ptr = (struct cudaEventCreateArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->event = event;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaEventCreateResponse *) dat;
-	if (event) { *event = res->event; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventCreate);
@@ -7328,7 +5680,7 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventCreateWithFlags(event, flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7356,22 +5708,6 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventCreateWithFlagsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTCREATEWITHFLAGS;
-    
-    struct cudaEventCreateWithFlagsArg *arg_ptr = (struct cudaEventCreateWithFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->event = event;
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaEventCreateWithFlagsResponse *) dat;
-	if (event) { *event = res->event; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventCreateWithFlags);
@@ -7384,7 +5720,7 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventRecord(event, stream);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7411,22 +5747,6 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTRECORD;
-    
-    struct cudaEventRecordArg *arg_ptr = (struct cudaEventRecordArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->event = event;
-	arg_ptr->stream = stream;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventRecord);
@@ -7439,7 +5759,7 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventRecordWithFlags(event, stream, flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7467,23 +5787,6 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventRecordWithFlagsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTRECORDWITHFLAGS;
-    
-    struct cudaEventRecordWithFlagsArg *arg_ptr = (struct cudaEventRecordWithFlagsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->event = event;
-	arg_ptr->stream = stream;
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventRecordWithFlags);
@@ -7496,7 +5799,7 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventQuery(event);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7522,21 +5825,6 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventQueryArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTQUERY;
-    
-    struct cudaEventQueryArg *arg_ptr = (struct cudaEventQueryArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->event = event;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventQuery);
@@ -7549,7 +5837,7 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventSynchronize(event);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7575,21 +5863,6 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventSynchronizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTSYNCHRONIZE;
-    
-    struct cudaEventSynchronizeArg *arg_ptr = (struct cudaEventSynchronizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->event = event;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventSynchronize);
@@ -7602,7 +5875,7 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventDestroy(event);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7628,21 +5901,6 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventDestroyArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTDESTROY;
-    
-    struct cudaEventDestroyArg *arg_ptr = (struct cudaEventDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->event = event;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventDestroy);
@@ -7655,7 +5913,7 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventElapsedTime(ms, start, end);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7684,23 +5942,6 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaEventElapsedTimeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAEVENTELAPSEDTIME;
-    
-    struct cudaEventElapsedTimeArg *arg_ptr = (struct cudaEventElapsedTimeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->ms = ms;
-	arg_ptr->start = start;
-	arg_ptr->end = end;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaEventElapsedTimeResponse *) dat;
-	if (ms) { *ms = res->ms; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventElapsedTime);
@@ -7943,7 +6184,7 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaMemGetInfo(free, total);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -7972,23 +6213,6 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemGetInfoArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAMEMGETINFO;
-    
-    struct cudaMemGetInfoArg *arg_ptr = (struct cudaMemGetInfoArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->free = free;
-	arg_ptr->total = total;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaMemGetInfoResponse *) dat;
-	if (free) { *free = res->free; }
-	if (total) { *total = res->total; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaMemGetInfo);
@@ -8103,7 +6327,7 @@ cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaMemset(devPtr, value, count);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -8131,23 +6355,6 @@ cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemsetArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAMEMSET;
-    
-    struct cudaMemsetArg *arg_ptr = (struct cudaMemsetArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->devPtr = devPtr;
-	arg_ptr->value = value;
-	arg_ptr->count = count;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaMemset);
@@ -8172,7 +6379,7 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaMemsetAsync(devPtr, value, count, stream);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -8201,24 +6408,6 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaMemsetAsyncArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAMEMSETASYNC;
-    
-    struct cudaMemsetAsyncArg *arg_ptr = (struct cudaMemsetAsyncArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->devPtr = devPtr;
-	arg_ptr->value = value;
-	arg_ptr->count = count;
-	arg_ptr->stream = stream;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaMemsetAsync);
@@ -8585,7 +6774,7 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGraphCreate(pGraph, flags);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -8613,22 +6802,6 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaGraphCreateArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAGRAPHCREATE;
-    
-    struct cudaGraphCreateArg *arg_ptr = (struct cudaGraphCreateArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pGraph = pGraph;
-	arg_ptr->flags = flags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaGraphCreateResponse *) dat;
-	if (pGraph) { *pGraph = res->pGraph; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGraphCreate);
@@ -9133,7 +7306,7 @@ size_t cudnnGetVersion()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetVersion();
-#elif defined(USE_IOX_IPC)
+#else
 
     size_t err;
 
@@ -9158,20 +7331,6 @@ size_t cudnnGetVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetVersionArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETVERSION;
-    
-    struct cudnnGetVersionArg *arg_ptr = (struct cudnnGetVersionArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (size_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetVersion);
@@ -9184,7 +7343,7 @@ size_t cudnnGetMaxDeviceVersion()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetMaxDeviceVersion();
-#elif defined(USE_IOX_IPC)
+#else
 
     size_t err;
 
@@ -9209,20 +7368,6 @@ size_t cudnnGetMaxDeviceVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetMaxDeviceVersionArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETMAXDEVICEVERSION;
-    
-    struct cudnnGetMaxDeviceVersionArg *arg_ptr = (struct cudnnGetMaxDeviceVersionArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (size_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetMaxDeviceVersion);
@@ -9235,7 +7380,7 @@ size_t cudnnGetCudartVersion()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetCudartVersion();
-#elif defined(USE_IOX_IPC)
+#else
 
     size_t err;
 
@@ -9260,20 +7405,6 @@ size_t cudnnGetCudartVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetCudartVersionArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETCUDARTVERSION;
-    
-    struct cudnnGetCudartVersionArg *arg_ptr = (struct cudnnGetCudartVersionArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (size_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetCudartVersion);
@@ -9299,7 +7430,7 @@ cudnnStatus_t cudnnGetProperty(libraryPropertyType  type, int * value)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetProperty(type, value);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9327,22 +7458,6 @@ cudnnStatus_t cudnnGetProperty(libraryPropertyType  type, int * value)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetPropertyArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETPROPERTY;
-    
-    struct cudnnGetPropertyArg *arg_ptr = (struct cudnnGetPropertyArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->type = type;
-	arg_ptr->value = value;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetPropertyResponse *) dat;
-	if (value) { *value = res->value; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetProperty);
@@ -9355,7 +7470,7 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreate(handle);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9382,21 +7497,6 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATE;
-    
-    struct cudnnCreateArg *arg_ptr = (struct cudnnCreateArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateResponse *) dat;
-	if (handle) { *handle = res->handle; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreate);
@@ -9409,7 +7509,7 @@ cudnnStatus_t cudnnDestroy(cudnnHandle_t  handle)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroy(handle);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9435,21 +7535,6 @@ cudnnStatus_t cudnnDestroy(cudnnHandle_t  handle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROY;
-    
-    struct cudnnDestroyArg *arg_ptr = (struct cudnnDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroy);
@@ -9462,7 +7547,7 @@ cudnnStatus_t cudnnSetStream(cudnnHandle_t  handle, cudaStream_t  streamId)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetStream(handle, streamId);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9489,22 +7574,6 @@ cudnnStatus_t cudnnSetStream(cudnnHandle_t  handle, cudaStream_t  streamId)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetStreamArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETSTREAM;
-    
-    struct cudnnSetStreamArg *arg_ptr = (struct cudnnSetStreamArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->streamId = streamId;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetStream);
@@ -9517,7 +7586,7 @@ cudnnStatus_t cudnnGetStream(cudnnHandle_t  handle, cudaStream_t * streamId)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetStream(handle, streamId);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9545,22 +7614,6 @@ cudnnStatus_t cudnnGetStream(cudnnHandle_t  handle, cudaStream_t * streamId)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetStreamArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETSTREAM;
-    
-    struct cudnnGetStreamArg *arg_ptr = (struct cudnnGetStreamArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->streamId = streamId;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetStreamResponse *) dat;
-	if (streamId) { *streamId = res->streamId; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetStream);
@@ -9573,7 +7626,7 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateTensorDescriptor(tensorDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9600,21 +7653,6 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateTensorDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATETENSORDESCRIPTOR;
-    
-    struct cudnnCreateTensorDescriptorArg *arg_ptr = (struct cudnnCreateTensorDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->tensorDesc = tensorDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateTensorDescriptorResponse *) dat;
-	if (tensorDesc) { *tensorDesc = res->tensorDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateTensorDescriptor);
@@ -9627,7 +7665,7 @@ cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetTensor4dDescriptor(tensorDesc, format, dataType, n, c, h, w);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9659,27 +7697,6 @@ cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetTensor4dDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETTENSOR4DDESCRIPTOR;
-    
-    struct cudnnSetTensor4dDescriptorArg *arg_ptr = (struct cudnnSetTensor4dDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->tensorDesc = tensorDesc;
-	arg_ptr->format = format;
-	arg_ptr->dataType = dataType;
-	arg_ptr->n = n;
-	arg_ptr->c = c;
-	arg_ptr->h = h;
-	arg_ptr->w = w;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetTensor4dDescriptor);
@@ -9692,7 +7709,7 @@ cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetTensor4dDescriptorEx(tensorDesc, dataType, n, c, h, w, nStride, cStride, hStride, wStride);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9727,30 +7744,6 @@ cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetTensor4dDescriptorExArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETTENSOR4DDESCRIPTOREX;
-    
-    struct cudnnSetTensor4dDescriptorExArg *arg_ptr = (struct cudnnSetTensor4dDescriptorExArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->tensorDesc = tensorDesc;
-	arg_ptr->dataType = dataType;
-	arg_ptr->n = n;
-	arg_ptr->c = c;
-	arg_ptr->h = h;
-	arg_ptr->w = w;
-	arg_ptr->nStride = nStride;
-	arg_ptr->cStride = cStride;
-	arg_ptr->hStride = hStride;
-	arg_ptr->wStride = wStride;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetTensor4dDescriptorEx);
@@ -9763,7 +7756,7 @@ cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t  tensorDe
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetTensor4dDescriptor(tensorDesc, dataType, n, c, h, w, nStride, cStride, hStride, wStride);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9807,38 +7800,6 @@ cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t  tensorDe
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetTensor4dDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETTENSOR4DDESCRIPTOR;
-    
-    struct cudnnGetTensor4dDescriptorArg *arg_ptr = (struct cudnnGetTensor4dDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->tensorDesc = tensorDesc;
-	arg_ptr->dataType = dataType;
-	arg_ptr->n = n;
-	arg_ptr->c = c;
-	arg_ptr->h = h;
-	arg_ptr->w = w;
-	arg_ptr->nStride = nStride;
-	arg_ptr->cStride = cStride;
-	arg_ptr->hStride = hStride;
-	arg_ptr->wStride = wStride;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetTensor4dDescriptorResponse *) dat;
-	if (dataType) { *dataType = res->dataType; }
-	if (n) { *n = res->n; }
-	if (c) { *c = res->c; }
-	if (h) { *h = res->h; }
-	if (w) { *w = res->w; }
-	if (nStride) { *nStride = res->nStride; }
-	if (cStride) { *cStride = res->cStride; }
-	if (hStride) { *hStride = res->hStride; }
-	if (wStride) { *wStride = res->wStride; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetTensor4dDescriptor);
@@ -9857,7 +7818,7 @@ cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetTensorSizeInBytes(tensorDesc, size);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9885,22 +7846,6 @@ cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetTensorSizeInBytesArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETTENSORSIZEINBYTES;
-    
-    struct cudnnGetTensorSizeInBytesArg *arg_ptr = (struct cudnnGetTensorSizeInBytesArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->tensorDesc = tensorDesc;
-	arg_ptr->size = size;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetTensorSizeInBytesResponse *) dat;
-	if (size) { *size = res->size; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetTensorSizeInBytes);
@@ -9913,7 +7858,7 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyTensorDescriptor(tensorDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9939,21 +7884,6 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyTensorDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYTENSORDESCRIPTOR;
-    
-    struct cudnnDestroyTensorDescriptorArg *arg_ptr = (struct cudnnDestroyTensorDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->tensorDesc = tensorDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyTensorDescriptor);
@@ -9966,7 +7896,7 @@ cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  tra
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnInitTransformDest(transformDesc, srcDesc, destDesc, destSizeInBytes);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -9996,24 +7926,6 @@ cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  tra
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnInitTransformDestArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNINITTRANSFORMDEST;
-    
-    struct cudnnInitTransformDestArg *arg_ptr = (struct cudnnInitTransformDestArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->transformDesc = transformDesc;
-	arg_ptr->srcDesc = srcDesc;
-	arg_ptr->destDesc = destDesc;
-	arg_ptr->destSizeInBytes = destSizeInBytes;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnInitTransformDestResponse *) dat;
-	if (destSizeInBytes) { *destSizeInBytes = res->destSizeInBytes; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnInitTransformDest);
@@ -10026,7 +7938,7 @@ cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescripto
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateTensorTransformDescriptor(transformDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10053,21 +7965,6 @@ cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescripto
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateTensorTransformDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATETENSORTRANSFORMDESCRIPTOR;
-    
-    struct cudnnCreateTensorTransformDescriptorArg *arg_ptr = (struct cudnnCreateTensorTransformDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->transformDesc = transformDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateTensorTransformDescriptorResponse *) dat;
-	if (transformDesc) { *transformDesc = res->transformDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateTensorTransformDescriptor);
@@ -10092,7 +7989,7 @@ cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescript
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyTensorTransformDescriptor(transformDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10118,21 +8015,6 @@ cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescript
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyTensorTransformDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYTENSORTRANSFORMDESCRIPTOR;
-    
-    struct cudnnDestroyTensorTransformDescriptorArg *arg_ptr = (struct cudnnDestroyTensorTransformDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->transformDesc = transformDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyTensorTransformDescriptor);
@@ -10151,7 +8033,7 @@ cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t * opTensor
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateOpTensorDescriptor(opTensorDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10178,21 +8060,6 @@ cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t * opTensor
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateOpTensorDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEOPTENSORDESCRIPTOR;
-    
-    struct cudnnCreateOpTensorDescriptorArg *arg_ptr = (struct cudnnCreateOpTensorDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->opTensorDesc = opTensorDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateOpTensorDescriptorResponse *) dat;
-	if (opTensorDesc) { *opTensorDesc = res->opTensorDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateOpTensorDescriptor);
@@ -10205,7 +8072,7 @@ cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetOpTensorDescriptor(opTensorDesc, opTensorOp, opTensorCompType, opTensorNanOpt);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10234,24 +8101,6 @@ cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetOpTensorDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETOPTENSORDESCRIPTOR;
-    
-    struct cudnnSetOpTensorDescriptorArg *arg_ptr = (struct cudnnSetOpTensorDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->opTensorDesc = opTensorDesc;
-	arg_ptr->opTensorOp = opTensorOp;
-	arg_ptr->opTensorCompType = opTensorCompType;
-	arg_ptr->opTensorNanOpt = opTensorNanOpt;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetOpTensorDescriptor);
@@ -10264,7 +8113,7 @@ cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t  opTens
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetOpTensorDescriptor(opTensorDesc, opTensorOp, opTensorCompType, opTensorNanOpt);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10296,26 +8145,6 @@ cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t  opTens
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetOpTensorDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETOPTENSORDESCRIPTOR;
-    
-    struct cudnnGetOpTensorDescriptorArg *arg_ptr = (struct cudnnGetOpTensorDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->opTensorDesc = opTensorDesc;
-	arg_ptr->opTensorOp = opTensorOp;
-	arg_ptr->opTensorCompType = opTensorCompType;
-	arg_ptr->opTensorNanOpt = opTensorNanOpt;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetOpTensorDescriptorResponse *) dat;
-	if (opTensorOp) { *opTensorOp = res->opTensorOp; }
-	if (opTensorCompType) { *opTensorCompType = res->opTensorCompType; }
-	if (opTensorNanOpt) { *opTensorNanOpt = res->opTensorNanOpt; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetOpTensorDescriptor);
@@ -10394,7 +8223,7 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateFilterDescriptor(filterDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10421,21 +8250,6 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateFilterDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEFILTERDESCRIPTOR;
-    
-    struct cudnnCreateFilterDescriptorArg *arg_ptr = (struct cudnnCreateFilterDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->filterDesc = filterDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateFilterDescriptorResponse *) dat;
-	if (filterDesc) { *filterDesc = res->filterDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateFilterDescriptor);
@@ -10448,7 +8262,7 @@ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetFilter4dDescriptor(filterDesc, dataType, format, k, c, h, w);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10480,27 +8294,6 @@ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetFilter4dDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETFILTER4DDESCRIPTOR;
-    
-    struct cudnnSetFilter4dDescriptorArg *arg_ptr = (struct cudnnSetFilter4dDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->filterDesc = filterDesc;
-	arg_ptr->dataType = dataType;
-	arg_ptr->format = format;
-	arg_ptr->k = k;
-	arg_ptr->c = c;
-	arg_ptr->h = h;
-	arg_ptr->w = w;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetFilter4dDescriptor);
@@ -10519,7 +8312,7 @@ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetFilterSizeInBytes(filterDesc, size);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10547,22 +8340,6 @@ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetFilterSizeInBytesArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETFILTERSIZEINBYTES;
-    
-    struct cudnnGetFilterSizeInBytesArg *arg_ptr = (struct cudnnGetFilterSizeInBytesArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->filterDesc = filterDesc;
-	arg_ptr->size = size;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetFilterSizeInBytesResponse *) dat;
-	if (size) { *size = res->size; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetFilterSizeInBytes);
@@ -10581,7 +8358,7 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t  filterDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyFilterDescriptor(filterDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10607,21 +8384,6 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t  filterDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyFilterDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYFILTERDESCRIPTOR;
-    
-    struct cudnnDestroyFilterDescriptorArg *arg_ptr = (struct cudnnDestroyFilterDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->filterDesc = filterDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyFilterDescriptor);
@@ -10634,7 +8396,7 @@ cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t * poolingDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreatePoolingDescriptor(poolingDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10661,21 +8423,6 @@ cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t * poolingDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreatePoolingDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEPOOLINGDESCRIPTOR;
-    
-    struct cudnnCreatePoolingDescriptorArg *arg_ptr = (struct cudnnCreatePoolingDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->poolingDesc = poolingDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreatePoolingDescriptorResponse *) dat;
-	if (poolingDesc) { *poolingDesc = res->poolingDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreatePoolingDescriptor);
@@ -10706,7 +8453,7 @@ cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t  poolingDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyPoolingDescriptor(poolingDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10732,21 +8479,6 @@ cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t  poolingDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyPoolingDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYPOOLINGDESCRIPTOR;
-    
-    struct cudnnDestroyPoolingDescriptorArg *arg_ptr = (struct cudnnDestroyPoolingDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->poolingDesc = poolingDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyPoolingDescriptor);
@@ -10759,7 +8491,7 @@ cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t * acti
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateActivationDescriptor(activationDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10786,21 +8518,6 @@ cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t * acti
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateActivationDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEACTIVATIONDESCRIPTOR;
-    
-    struct cudnnCreateActivationDescriptorArg *arg_ptr = (struct cudnnCreateActivationDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->activationDesc = activationDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateActivationDescriptorResponse *) dat;
-	if (activationDesc) { *activationDesc = res->activationDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateActivationDescriptor);
@@ -10813,7 +8530,7 @@ cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t  activati
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetActivationDescriptor(activationDesc, mode, reluNanOpt, coef);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10842,24 +8559,6 @@ cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t  activati
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetActivationDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETACTIVATIONDESCRIPTOR;
-    
-    struct cudnnSetActivationDescriptorArg *arg_ptr = (struct cudnnSetActivationDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->activationDesc = activationDesc;
-	arg_ptr->mode = mode;
-	arg_ptr->reluNanOpt = reluNanOpt;
-	arg_ptr->coef = coef;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetActivationDescriptor);
@@ -10890,7 +8589,7 @@ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t  acti
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyActivationDescriptor(activationDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10916,21 +8615,6 @@ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t  acti
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyActivationDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYACTIVATIONDESCRIPTOR;
-    
-    struct cudnnDestroyActivationDescriptorArg *arg_ptr = (struct cudnnDestroyActivationDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->activationDesc = activationDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyActivationDescriptor);
@@ -10943,7 +8627,7 @@ cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t * normDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateLRNDescriptor(normDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -10970,21 +8654,6 @@ cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t * normDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateLRNDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATELRNDESCRIPTOR;
-    
-    struct cudnnCreateLRNDescriptorArg *arg_ptr = (struct cudnnCreateLRNDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->normDesc = normDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateLRNDescriptorResponse *) dat;
-	if (normDesc) { *normDesc = res->normDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateLRNDescriptor);
@@ -10997,7 +8666,7 @@ cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned  lr
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetLRNDescriptor(normDesc, lrnN, lrnAlpha, lrnBeta, lrnK);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11027,25 +8696,6 @@ cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned  lr
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetLRNDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETLRNDESCRIPTOR;
-    
-    struct cudnnSetLRNDescriptorArg *arg_ptr = (struct cudnnSetLRNDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->normDesc = normDesc;
-	arg_ptr->lrnN = lrnN;
-	arg_ptr->lrnAlpha = lrnAlpha;
-	arg_ptr->lrnBeta = lrnBeta;
-	arg_ptr->lrnK = lrnK;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetLRNDescriptor);
@@ -11064,7 +8714,7 @@ cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t  lrnDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyLRNDescriptor(lrnDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11090,21 +8740,6 @@ cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t  lrnDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyLRNDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYLRNDESCRIPTOR;
-    
-    struct cudnnDestroyLRNDescriptorArg *arg_ptr = (struct cudnnDestroyLRNDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->lrnDesc = lrnDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyLRNDescriptor);
@@ -11177,7 +8812,7 @@ cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateDropoutDescriptor(dropoutDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11204,21 +8839,6 @@ cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateDropoutDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEDROPOUTDESCRIPTOR;
-    
-    struct cudnnCreateDropoutDescriptorArg *arg_ptr = (struct cudnnCreateDropoutDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dropoutDesc = dropoutDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateDropoutDescriptorResponse *) dat;
-	if (dropoutDesc) { *dropoutDesc = res->dropoutDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateDropoutDescriptor);
@@ -11231,7 +8851,7 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyDropoutDescriptor(dropoutDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11257,21 +8877,6 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyDropoutDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYDROPOUTDESCRIPTOR;
-    
-    struct cudnnDestroyDropoutDescriptorArg *arg_ptr = (struct cudnnDestroyDropoutDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dropoutDesc = dropoutDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyDropoutDescriptor);
@@ -11284,7 +8889,7 @@ cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t  handle, size_t * sizeInBy
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDropoutGetStatesSize(handle, sizeInBytes);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11312,22 +8917,6 @@ cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t  handle, size_t * sizeInBy
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDropoutGetStatesSizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDROPOUTGETSTATESSIZE;
-    
-    struct cudnnDropoutGetStatesSizeArg *arg_ptr = (struct cudnnDropoutGetStatesSizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->sizeInBytes = sizeInBytes;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnDropoutGetStatesSizeResponse *) dat;
-	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDropoutGetStatesSize);
@@ -11346,7 +8935,7 @@ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetDropoutDescriptor(dropoutDesc, handle, dropout, states, stateSizeInBytes, seed);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11377,26 +8966,6 @@ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetDropoutDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETDROPOUTDESCRIPTOR;
-    
-    struct cudnnSetDropoutDescriptorArg *arg_ptr = (struct cudnnSetDropoutDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dropoutDesc = dropoutDesc;
-	arg_ptr->handle = handle;
-	arg_ptr->dropout = dropout;
-	arg_ptr->states = states;
-	arg_ptr->stateSizeInBytes = stateSizeInBytes;
-	arg_ptr->seed = seed;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetDropoutDescriptor);
@@ -11409,7 +8978,7 @@ cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnRestoreDropoutDescriptor(dropoutDesc, handle, dropout, states, stateSizeInBytes, seed);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11440,26 +9009,6 @@ cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRestoreDropoutDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNRESTOREDROPOUTDESCRIPTOR;
-    
-    struct cudnnRestoreDropoutDescriptorArg *arg_ptr = (struct cudnnRestoreDropoutDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->dropoutDesc = dropoutDesc;
-	arg_ptr->handle = handle;
-	arg_ptr->dropout = dropout;
-	arg_ptr->states = states;
-	arg_ptr->stateSizeInBytes = stateSizeInBytes;
-	arg_ptr->seed = seed;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRestoreDropoutDescriptor);
@@ -11568,7 +9117,7 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnOpsInferVersionCheck();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11593,20 +9142,6 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnOpsInferVersionCheckArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNOPSINFERVERSIONCHECK;
-    
-    struct cudnnOpsInferVersionCheckArg *arg_ptr = (struct cudnnOpsInferVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnOpsInferVersionCheck);
@@ -11649,7 +9184,7 @@ cudnnStatus_t cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(cudnnHand
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(handle, mode, bnOps, xDesc, zDesc, yDesc, bnScaleBiasMeanVarDesc, activationDesc, sizeInBytes);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11684,29 +9219,6 @@ cudnnStatus_t cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(cudnnHand
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETBATCHNORMALIZATIONFORWARDTRAININGEXWORKSPACESIZE;
-    
-    struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg *arg_ptr = (struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->mode = mode;
-	arg_ptr->bnOps = bnOps;
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->zDesc = zDesc;
-	arg_ptr->yDesc = yDesc;
-	arg_ptr->bnScaleBiasMeanVarDesc = bnScaleBiasMeanVarDesc;
-	arg_ptr->activationDesc = activationDesc;
-	arg_ptr->sizeInBytes = sizeInBytes;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeResponse *) dat;
-	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize);
@@ -11719,7 +9231,7 @@ cudnnStatus_t cudnnGetBatchNormalizationBackwardExWorkspaceSize(cudnnHandle_t  h
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetBatchNormalizationBackwardExWorkspaceSize(handle, mode, bnOps, xDesc, yDesc, dyDesc, dzDesc, dxDesc, dBnScaleBiasDesc, activationDesc, sizeInBytes);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11756,31 +9268,6 @@ cudnnStatus_t cudnnGetBatchNormalizationBackwardExWorkspaceSize(cudnnHandle_t  h
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETBATCHNORMALIZATIONBACKWARDEXWORKSPACESIZE;
-    
-    struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg *arg_ptr = (struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->mode = mode;
-	arg_ptr->bnOps = bnOps;
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->yDesc = yDesc;
-	arg_ptr->dyDesc = dyDesc;
-	arg_ptr->dzDesc = dzDesc;
-	arg_ptr->dxDesc = dxDesc;
-	arg_ptr->dBnScaleBiasDesc = dBnScaleBiasDesc;
-	arg_ptr->activationDesc = activationDesc;
-	arg_ptr->sizeInBytes = sizeInBytes;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetBatchNormalizationBackwardExWorkspaceSizeResponse *) dat;
-	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetBatchNormalizationBackwardExWorkspaceSize);
@@ -11793,7 +9280,7 @@ cudnnStatus_t cudnnGetBatchNormalizationTrainingExReserveSpaceSize(cudnnHandle_t
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetBatchNormalizationTrainingExReserveSpaceSize(handle, mode, bnOps, activationDesc, xDesc, sizeInBytes);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11825,26 +9312,6 @@ cudnnStatus_t cudnnGetBatchNormalizationTrainingExReserveSpaceSize(cudnnHandle_t
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETBATCHNORMALIZATIONTRAININGEXRESERVESPACESIZE;
-    
-    struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg *arg_ptr = (struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->mode = mode;
-	arg_ptr->bnOps = bnOps;
-	arg_ptr->activationDesc = activationDesc;
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->sizeInBytes = sizeInBytes;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetBatchNormalizationTrainingExReserveSpaceSizeResponse *) dat;
-	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetBatchNormalizationTrainingExReserveSpaceSize);
@@ -11917,7 +9384,7 @@ cudnnStatus_t cudnnOpsTrainVersionCheck()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnOpsTrainVersionCheck();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11942,20 +9409,6 @@ cudnnStatus_t cudnnOpsTrainVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnOpsTrainVersionCheckArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNOPSTRAINVERSIONCHECK;
-    
-    struct cudnnOpsTrainVersionCheckArg *arg_ptr = (struct cudnnOpsTrainVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnOpsTrainVersionCheck);
@@ -11968,7 +9421,7 @@ cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t * rnnDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateRNNDescriptor(rnnDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -11995,21 +9448,6 @@ cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t * rnnDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateRNNDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATERNNDESCRIPTOR;
-    
-    struct cudnnCreateRNNDescriptorArg *arg_ptr = (struct cudnnCreateRNNDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->rnnDesc = rnnDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateRNNDescriptorResponse *) dat;
-	if (rnnDesc) { *rnnDesc = res->rnnDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateRNNDescriptor);
@@ -12022,7 +9460,7 @@ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyRNNDescriptor(rnnDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12048,21 +9486,6 @@ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyRNNDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYRNNDESCRIPTOR;
-    
-    struct cudnnDestroyRNNDescriptorArg *arg_ptr = (struct cudnnDestroyRNNDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->rnnDesc = rnnDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyRNNDescriptor);
@@ -12075,7 +9498,7 @@ cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAl
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNDescriptor_v8(rnnDesc, algo, cellMode, biasMode, dirMode, inputMode, dataType, mathPrec, mathType, inputSize, hiddenSize, projSize, numLayers, dropoutDesc, auxFlags);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12115,35 +9538,6 @@ cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAl
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDescriptor_v8Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNDESCRIPTOR_V8;
-    
-    struct cudnnSetRNNDescriptor_v8Arg *arg_ptr = (struct cudnnSetRNNDescriptor_v8Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->algo = algo;
-	arg_ptr->cellMode = cellMode;
-	arg_ptr->biasMode = biasMode;
-	arg_ptr->dirMode = dirMode;
-	arg_ptr->inputMode = inputMode;
-	arg_ptr->dataType = dataType;
-	arg_ptr->mathPrec = mathPrec;
-	arg_ptr->mathType = mathType;
-	arg_ptr->inputSize = inputSize;
-	arg_ptr->hiddenSize = hiddenSize;
-	arg_ptr->projSize = projSize;
-	arg_ptr->numLayers = numLayers;
-	arg_ptr->dropoutDesc = dropoutDesc;
-	arg_ptr->auxFlags = auxFlags;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNDescriptor_v8);
@@ -12162,7 +9556,7 @@ cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNDescriptor_v6(handle, rnnDesc, hiddenSize, numLayers, dropoutDesc, inputMode, direction, cellMode, algo, mathPrec);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12197,30 +9591,6 @@ cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNDescriptor_v6Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNDESCRIPTOR_V6;
-    
-    struct cudnnSetRNNDescriptor_v6Arg *arg_ptr = (struct cudnnSetRNNDescriptor_v6Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->hiddenSize = hiddenSize;
-	arg_ptr->numLayers = numLayers;
-	arg_ptr->dropoutDesc = dropoutDesc;
-	arg_ptr->inputMode = inputMode;
-	arg_ptr->direction = direction;
-	arg_ptr->cellMode = cellMode;
-	arg_ptr->algo = algo;
-	arg_ptr->mathPrec = mathPrec;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNDescriptor_v6);
@@ -12239,7 +9609,7 @@ cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNMatrixMathType(rnnDesc, mType);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12266,22 +9636,6 @@ cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNMatrixMathTypeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNMATRIXMATHTYPE;
-    
-    struct cudnnSetRNNMatrixMathTypeArg *arg_ptr = (struct cudnnSetRNNMatrixMathTypeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->mType = mType;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNMatrixMathType);
@@ -12294,7 +9648,7 @@ cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNMatrixMathType(rnnDesc, mType);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12322,22 +9676,6 @@ cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNMatrixMathTypeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNMATRIXMATHTYPE;
-    
-    struct cudnnGetRNNMatrixMathTypeArg *arg_ptr = (struct cudnnGetRNNMatrixMathTypeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->mType = mType;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetRNNMatrixMathTypeResponse *) dat;
-	if (mType) { *mType = res->mType; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNMatrixMathType);
@@ -12350,7 +9688,7 @@ cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNBiasMode(rnnDesc, biasMode);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12377,22 +9715,6 @@ cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNBiasModeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNBIASMODE;
-    
-    struct cudnnSetRNNBiasModeArg *arg_ptr = (struct cudnnSetRNNBiasModeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->biasMode = biasMode;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNBiasMode);
@@ -12405,7 +9727,7 @@ cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNBiasMode(rnnDesc, biasMode);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12433,22 +9755,6 @@ cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNBiasModeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNBIASMODE;
-    
-    struct cudnnGetRNNBiasModeArg *arg_ptr = (struct cudnnGetRNNBiasModeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->biasMode = biasMode;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetRNNBiasModeResponse *) dat;
-	if (biasMode) { *biasMode = res->biasMode; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNBiasMode);
@@ -12461,7 +9767,7 @@ cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNSetClip_v8(rnnDesc, clipMode, clipNanOpt, lclip, rclip);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12491,25 +9797,6 @@ cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNSetClip_v8Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNSETCLIP_V8;
-    
-    struct cudnnRNNSetClip_v8Arg *arg_ptr = (struct cudnnRNNSetClip_v8Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->clipMode = clipMode;
-	arg_ptr->clipNanOpt = clipNanOpt;
-	arg_ptr->lclip = lclip;
-	arg_ptr->rclip = rclip;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNSetClip_v8);
@@ -12528,7 +9815,7 @@ cudnnStatus_t cudnnRNNSetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNSetClip(handle, rnnDesc, clipMode, clipNanOpt, lclip, rclip);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12559,26 +9846,6 @@ cudnnStatus_t cudnnRNNSetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNSetClipArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNSETCLIP;
-    
-    struct cudnnRNNSetClipArg *arg_ptr = (struct cudnnRNNSetClipArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->clipMode = clipMode;
-	arg_ptr->clipNanOpt = clipNanOpt;
-	arg_ptr->lclip = lclip;
-	arg_ptr->rclip = rclip;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNSetClip);
@@ -12627,7 +9894,7 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBuildRNNDynamic(handle, rnnDesc, miniBatch);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12655,23 +9922,6 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBuildRNNDynamicArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNBUILDRNNDYNAMIC;
-    
-    struct cudnnBuildRNNDynamicArg *arg_ptr = (struct cudnnBuildRNNDynamicArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->miniBatch = miniBatch;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBuildRNNDynamic);
@@ -12684,7 +9934,7 @@ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescripto
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNTempSpaceSizes(handle, rnnDesc, fMode, xDesc, workSpaceSize, reserveSpaceSize);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12717,27 +9967,6 @@ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescripto
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNTempSpaceSizesArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNTEMPSPACESIZES;
-    
-    struct cudnnGetRNNTempSpaceSizesArg *arg_ptr = (struct cudnnGetRNNTempSpaceSizesArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->fMode = fMode;
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->workSpaceSize = workSpaceSize;
-	arg_ptr->reserveSpaceSize = reserveSpaceSize;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetRNNTempSpaceSizesResponse *) dat;
-	if (workSpaceSize) { *workSpaceSize = res->workSpaceSize; }
-	if (reserveSpaceSize) { *reserveSpaceSize = res->reserveSpaceSize; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNTempSpaceSizes);
@@ -12750,7 +9979,7 @@ cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescrip
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNParamsSize(handle, rnnDesc, xDesc, sizeInBytes, dataType);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12781,25 +10010,6 @@ cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescrip
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNParamsSizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNPARAMSSIZE;
-    
-    struct cudnnGetRNNParamsSizeArg *arg_ptr = (struct cudnnGetRNNParamsSizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->sizeInBytes = sizeInBytes;
-	arg_ptr->dataType = dataType;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetRNNParamsSizeResponse *) dat;
-	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNParamsSize);
@@ -12812,7 +10022,7 @@ cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t  handle, cudnnRNNDescript
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNWeightSpaceSize(handle, rnnDesc, weightSpaceSize);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12841,23 +10051,6 @@ cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t  handle, cudnnRNNDescript
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWeightSpaceSizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNWEIGHTSPACESIZE;
-    
-    struct cudnnGetRNNWeightSpaceSizeArg *arg_ptr = (struct cudnnGetRNNWeightSpaceSizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->weightSpaceSize = weightSpaceSize;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetRNNWeightSpaceSizeResponse *) dat;
-	if (weightSpaceSize) { *weightSpaceSize = res->weightSpaceSize; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNWeightSpaceSize);
@@ -12870,7 +10063,7 @@ cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnHandle_t  handle, const cudnn
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNLinLayerMatrixParams(handle, rnnDesc, pseudoLayer, xDesc, wDesc, w, linLayerID, linLayerMatDesc, linLayerMat);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12905,29 +10098,6 @@ cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnHandle_t  handle, const cudnn
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNLinLayerMatrixParamsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNLINLAYERMATRIXPARAMS;
-    
-    struct cudnnGetRNNLinLayerMatrixParamsArg *arg_ptr = (struct cudnnGetRNNLinLayerMatrixParamsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->pseudoLayer = pseudoLayer;
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->wDesc = wDesc;
-	arg_ptr->w = const_cast<void *>(w);
-	arg_ptr->linLayerID = linLayerID;
-	arg_ptr->linLayerMatDesc = linLayerMatDesc;
-	arg_ptr->linLayerMat = linLayerMat;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetRNNLinLayerMatrixParamsResponse *) dat;
-	if (linLayerMat) { *linLayerMat = res->linLayerMat; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNLinLayerMatrixParams);
@@ -12940,7 +10110,7 @@ cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnHandle_t  handle, const cudnnRN
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNLinLayerBiasParams(handle, rnnDesc, pseudoLayer, xDesc, wDesc, w, linLayerID, linLayerBiasDesc, linLayerBias);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -12975,29 +10145,6 @@ cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnHandle_t  handle, const cudnnRN
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNLinLayerBiasParamsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNLINLAYERBIASPARAMS;
-    
-    struct cudnnGetRNNLinLayerBiasParamsArg *arg_ptr = (struct cudnnGetRNNLinLayerBiasParamsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->pseudoLayer = pseudoLayer;
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->wDesc = wDesc;
-	arg_ptr->w = const_cast<void *>(w);
-	arg_ptr->linLayerID = linLayerID;
-	arg_ptr->linLayerBiasDesc = linLayerBiasDesc;
-	arg_ptr->linLayerBias = linLayerBias;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetRNNLinLayerBiasParamsResponse *) dat;
-	if (linLayerBias) { *linLayerBias = res->linLayerBias; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNLinLayerBiasParams);
@@ -13010,7 +10157,7 @@ cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t  handle, cudnnRNNDescriptor_
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNWeightParams(handle, rnnDesc, pseudoLayer, weightSpaceSize, weightSpace, linLayerID, mDesc, mAddr, bDesc, bAddr);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13047,31 +10194,6 @@ cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t  handle, cudnnRNNDescriptor_
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNWeightParamsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNWEIGHTPARAMS;
-    
-    struct cudnnGetRNNWeightParamsArg *arg_ptr = (struct cudnnGetRNNWeightParamsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->pseudoLayer = pseudoLayer;
-	arg_ptr->weightSpaceSize = weightSpaceSize;
-	arg_ptr->weightSpace = const_cast<void *>(weightSpace);
-	arg_ptr->linLayerID = linLayerID;
-	arg_ptr->mDesc = mDesc;
-	arg_ptr->mAddr = mAddr;
-	arg_ptr->bDesc = bDesc;
-	arg_ptr->bAddr = bAddr;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetRNNWeightParamsResponse *) dat;
-	if (mAddr) { *mAddr = res->mAddr; }
-	if (bAddr) { *bAddr = res->bAddr; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNWeightParams);
@@ -13102,7 +10224,7 @@ cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t * rnnDataDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateRNNDataDescriptor(rnnDataDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13129,21 +10251,6 @@ cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t * rnnDataDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateRNNDataDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATERNNDATADESCRIPTOR;
-    
-    struct cudnnCreateRNNDataDescriptorArg *arg_ptr = (struct cudnnCreateRNNDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->rnnDataDesc = rnnDataDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateRNNDataDescriptorResponse *) dat;
-	if (rnnDataDesc) { *rnnDataDesc = res->rnnDataDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateRNNDataDescriptor);
@@ -13156,7 +10263,7 @@ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyRNNDataDescriptor(rnnDataDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13182,21 +10289,6 @@ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyRNNDataDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYRNNDATADESCRIPTOR;
-    
-    struct cudnnDestroyRNNDataDescriptorArg *arg_ptr = (struct cudnnDestroyRNNDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->rnnDataDesc = rnnDataDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyRNNDataDescriptor);
@@ -13221,7 +10313,7 @@ cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNForward(handle, rnnDesc, fwdMode, devSeqLengths, xDesc, x, yDesc, y, hDesc, hx, hy, cDesc, cx, cy, weightSpaceSize, weightSpace, workSpaceSize, workSpace, reserveSpaceSize, reserveSpace);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13266,40 +10358,6 @@ cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNForwardArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNFORWARD;
-    
-    struct cudnnRNNForwardArg *arg_ptr = (struct cudnnRNNForwardArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->fwdMode = fwdMode;
-	arg_ptr->devSeqLengths = const_cast<int32_t *>(devSeqLengths);
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->x = const_cast<void *>(x);
-	arg_ptr->yDesc = yDesc;
-	arg_ptr->y = y;
-	arg_ptr->hDesc = hDesc;
-	arg_ptr->hx = const_cast<void *>(hx);
-	arg_ptr->hy = hy;
-	arg_ptr->cDesc = cDesc;
-	arg_ptr->cx = const_cast<void *>(cx);
-	arg_ptr->cy = cy;
-	arg_ptr->weightSpaceSize = weightSpaceSize;
-	arg_ptr->weightSpace = const_cast<void *>(weightSpace);
-	arg_ptr->workSpaceSize = workSpaceSize;
-	arg_ptr->workSpace = workSpace;
-	arg_ptr->reserveSpaceSize = reserveSpaceSize;
-	arg_ptr->reserveSpace = reserveSpace;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNForward);
@@ -13312,7 +10370,7 @@ cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDesc
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNAlgorithmDescriptor(handle, rnnDesc, algoDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13340,23 +10398,6 @@ cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDesc
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetRNNAlgorithmDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETRNNALGORITHMDESCRIPTOR;
-    
-    struct cudnnSetRNNAlgorithmDescriptorArg *arg_ptr = (struct cudnnSetRNNAlgorithmDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->algoDesc = algoDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNAlgorithmDescriptor);
@@ -13369,7 +10410,7 @@ cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNForwardInferenceAlgorithmMaxCount(handle, rnnDesc, count);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13398,23 +10439,6 @@ cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETRNNFORWARDINFERENCEALGORITHMMAXCOUNT;
-    
-    struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg *arg_ptr = (struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->count = count;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetRNNForwardInferenceAlgorithmMaxCountResponse *) dat;
-	if (count) { *count = res->count; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNForwardInferenceAlgorithmMaxCount);
@@ -13433,7 +10457,7 @@ cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateSeqDataDescriptor(seqDataDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13460,21 +10484,6 @@ cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateSeqDataDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATESEQDATADESCRIPTOR;
-    
-    struct cudnnCreateSeqDataDescriptorArg *arg_ptr = (struct cudnnCreateSeqDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->seqDataDesc = seqDataDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateSeqDataDescriptorResponse *) dat;
-	if (seqDataDesc) { *seqDataDesc = res->seqDataDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateSeqDataDescriptor);
@@ -13487,7 +10496,7 @@ cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDes
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroySeqDataDescriptor(seqDataDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13513,21 +10522,6 @@ cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDes
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroySeqDataDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYSEQDATADESCRIPTOR;
-    
-    struct cudnnDestroySeqDataDescriptorArg *arg_ptr = (struct cudnnDestroySeqDataDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->seqDataDesc = seqDataDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroySeqDataDescriptor);
@@ -13540,7 +10534,7 @@ cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t * attnDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateAttnDescriptor(attnDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13567,21 +10561,6 @@ cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t * attnDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateAttnDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATEATTNDESCRIPTOR;
-    
-    struct cudnnCreateAttnDescriptorArg *arg_ptr = (struct cudnnCreateAttnDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->attnDesc = attnDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateAttnDescriptorResponse *) dat;
-	if (attnDesc) { *attnDesc = res->attnDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateAttnDescriptor);
@@ -13594,7 +10573,7 @@ cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyAttnDescriptor(attnDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13620,21 +10599,6 @@ cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyAttnDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYATTNDESCRIPTOR;
-    
-    struct cudnnDestroyAttnDescriptorArg *arg_ptr = (struct cudnnDestroyAttnDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->attnDesc = attnDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyAttnDescriptor);
@@ -13647,7 +10611,7 @@ cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetAttnDescriptor(attnDesc, attnMode, nHeads, smScaler, dataType, computePrec, mathType, attnDropoutDesc, postDropoutDesc, qSize, kSize, vSize, qProjSize, kProjSize, vProjSize, oProjSize, qoMaxSeqLength, kvMaxSeqLength, maxBatchSize, maxBeamSize);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13692,40 +10656,6 @@ cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnSetAttnDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNSETATTNDESCRIPTOR;
-    
-    struct cudnnSetAttnDescriptorArg *arg_ptr = (struct cudnnSetAttnDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->attnDesc = attnDesc;
-	arg_ptr->attnMode = attnMode;
-	arg_ptr->nHeads = nHeads;
-	arg_ptr->smScaler = smScaler;
-	arg_ptr->dataType = dataType;
-	arg_ptr->computePrec = computePrec;
-	arg_ptr->mathType = mathType;
-	arg_ptr->attnDropoutDesc = attnDropoutDesc;
-	arg_ptr->postDropoutDesc = postDropoutDesc;
-	arg_ptr->qSize = qSize;
-	arg_ptr->kSize = kSize;
-	arg_ptr->vSize = vSize;
-	arg_ptr->qProjSize = qProjSize;
-	arg_ptr->kProjSize = kProjSize;
-	arg_ptr->vProjSize = vProjSize;
-	arg_ptr->oProjSize = oProjSize;
-	arg_ptr->qoMaxSeqLength = qoMaxSeqLength;
-	arg_ptr->kvMaxSeqLength = kvMaxSeqLength;
-	arg_ptr->maxBatchSize = maxBatchSize;
-	arg_ptr->maxBeamSize = maxBeamSize;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnSetAttnDescriptor);
@@ -13744,7 +10674,7 @@ cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t  handle, const cudnnAtt
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetMultiHeadAttnBuffers(handle, attnDesc, weightSizeInBytes, workSpaceSizeInBytes, reserveSpaceSizeInBytes);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13777,27 +10707,6 @@ cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t  handle, const cudnnAtt
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetMultiHeadAttnBuffersArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETMULTIHEADATTNBUFFERS;
-    
-    struct cudnnGetMultiHeadAttnBuffersArg *arg_ptr = (struct cudnnGetMultiHeadAttnBuffersArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->attnDesc = attnDesc;
-	arg_ptr->weightSizeInBytes = weightSizeInBytes;
-	arg_ptr->workSpaceSizeInBytes = workSpaceSizeInBytes;
-	arg_ptr->reserveSpaceSizeInBytes = reserveSpaceSizeInBytes;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetMultiHeadAttnBuffersResponse *) dat;
-	if (weightSizeInBytes) { *weightSizeInBytes = res->weightSizeInBytes; }
-	if (workSpaceSizeInBytes) { *workSpaceSizeInBytes = res->workSpaceSizeInBytes; }
-	if (reserveSpaceSizeInBytes) { *reserveSpaceSizeInBytes = res->reserveSpaceSizeInBytes; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetMultiHeadAttnBuffers);
@@ -13816,7 +10725,7 @@ cudnnStatus_t cudnnAdvInferVersionCheck()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnAdvInferVersionCheck();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13841,20 +10750,6 @@ cudnnStatus_t cudnnAdvInferVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAdvInferVersionCheckArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNADVINFERVERSIONCHECK;
-    
-    struct cudnnAdvInferVersionCheckArg *arg_ptr = (struct cudnnAdvInferVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnAdvInferVersionCheck);
@@ -13867,7 +10762,7 @@ cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNBackwardData_v8(handle, rnnDesc, devSeqLengths, yDesc, y, dy, xDesc, dx, hDesc, hx, dhy, dhx, cDesc, cx, dcy, dcx, weightSpaceSize, weightSpace, workSpaceSize, workSpace, reserveSpaceSize, reserveSpace);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -13914,42 +10809,6 @@ cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNBackwardData_v8Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNBACKWARDDATA_V8;
-    
-    struct cudnnRNNBackwardData_v8Arg *arg_ptr = (struct cudnnRNNBackwardData_v8Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->devSeqLengths = const_cast<int32_t *>(devSeqLengths);
-	arg_ptr->yDesc = yDesc;
-	arg_ptr->y = const_cast<void *>(y);
-	arg_ptr->dy = const_cast<void *>(dy);
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->dx = dx;
-	arg_ptr->hDesc = hDesc;
-	arg_ptr->hx = const_cast<void *>(hx);
-	arg_ptr->dhy = const_cast<void *>(dhy);
-	arg_ptr->dhx = dhx;
-	arg_ptr->cDesc = cDesc;
-	arg_ptr->cx = const_cast<void *>(cx);
-	arg_ptr->dcy = const_cast<void *>(dcy);
-	arg_ptr->dcx = dcx;
-	arg_ptr->weightSpaceSize = weightSpaceSize;
-	arg_ptr->weightSpace = const_cast<void *>(weightSpace);
-	arg_ptr->workSpaceSize = workSpaceSize;
-	arg_ptr->workSpace = workSpace;
-	arg_ptr->reserveSpaceSize = reserveSpaceSize;
-	arg_ptr->reserveSpace = reserveSpace;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNBackwardData_v8);
@@ -13962,7 +10821,7 @@ cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescript
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNBackwardWeights_v8(handle, rnnDesc, addGrad, devSeqLengths, xDesc, x, hDesc, hx, yDesc, y, weightSpaceSize, dweightSpace, workSpaceSize, workSpace, reserveSpaceSize, reserveSpace);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14003,36 +10862,6 @@ cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescript
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnRNNBackwardWeights_v8Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNRNNBACKWARDWEIGHTS_V8;
-    
-    struct cudnnRNNBackwardWeights_v8Arg *arg_ptr = (struct cudnnRNNBackwardWeights_v8Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->rnnDesc = rnnDesc;
-	arg_ptr->addGrad = addGrad;
-	arg_ptr->devSeqLengths = const_cast<int32_t *>(devSeqLengths);
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->x = const_cast<void *>(x);
-	arg_ptr->hDesc = hDesc;
-	arg_ptr->hx = const_cast<void *>(hx);
-	arg_ptr->yDesc = yDesc;
-	arg_ptr->y = const_cast<void *>(y);
-	arg_ptr->weightSpaceSize = weightSpaceSize;
-	arg_ptr->dweightSpace = dweightSpace;
-	arg_ptr->workSpaceSize = workSpaceSize;
-	arg_ptr->workSpace = workSpace;
-	arg_ptr->reserveSpaceSize = reserveSpaceSize;
-	arg_ptr->reserveSpace = reserveSpace;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNBackwardWeights_v8);
@@ -14171,7 +11000,7 @@ cudnnStatus_t cudnnAdvTrainVersionCheck()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnAdvTrainVersionCheck();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14196,20 +11025,6 @@ cudnnStatus_t cudnnAdvTrainVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnAdvTrainVersionCheckArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNADVTRAINVERSIONCHECK;
-    
-    struct cudnnAdvTrainVersionCheckArg *arg_ptr = (struct cudnnAdvTrainVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnAdvTrainVersionCheck);
@@ -14222,7 +11037,7 @@ cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * co
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateConvolutionDescriptor(convDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14249,21 +11064,6 @@ cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * co
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCreateConvolutionDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCREATECONVOLUTIONDESCRIPTOR;
-    
-    struct cudnnCreateConvolutionDescriptorArg *arg_ptr = (struct cudnnCreateConvolutionDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->convDesc = convDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnCreateConvolutionDescriptorResponse *) dat;
-	if (convDesc) { *convDesc = res->convDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateConvolutionDescriptor);
@@ -14276,7 +11076,7 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t  co
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyConvolutionDescriptor(convDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14302,21 +11102,6 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t  co
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnDestroyConvolutionDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNDESTROYCONVOLUTIONDESCRIPTOR;
-    
-    struct cudnnDestroyConvolutionDescriptorArg *arg_ptr = (struct cudnnDestroyConvolutionDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->convDesc = convDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyConvolutionDescriptor);
@@ -14407,7 +11192,7 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t  handle, con
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionForwardWorkspaceSize(handle, xDesc, wDesc, convDesc, yDesc, algo, sizeInBytes);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14440,27 +11225,6 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t  handle, con
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionForwardWorkspaceSizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONFORWARDWORKSPACESIZE;
-    
-    struct cudnnGetConvolutionForwardWorkspaceSizeArg *arg_ptr = (struct cudnnGetConvolutionForwardWorkspaceSizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->xDesc = xDesc;
-	arg_ptr->wDesc = wDesc;
-	arg_ptr->convDesc = convDesc;
-	arg_ptr->yDesc = yDesc;
-	arg_ptr->algo = algo;
-	arg_ptr->sizeInBytes = sizeInBytes;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetConvolutionForwardWorkspaceSizeResponse *) dat;
-	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionForwardWorkspaceSize);
@@ -14479,7 +11243,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  ha
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionBackwardDataAlgorithmMaxCount(handle, count);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14507,22 +11271,6 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  ha
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDDATAALGORITHMMAXCOUNT;
-    
-    struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg *arg_ptr = (struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->count = count;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetConvolutionBackwardDataAlgorithmMaxCountResponse *) dat;
-	if (count) { *count = res->count; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionBackwardDataAlgorithmMaxCount);
@@ -14553,7 +11301,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionBackwardDataWorkspaceSize(handle, wDesc, dyDesc, convDesc, dxDesc, algo, sizeInBytes);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14586,27 +11334,6 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardDataWorkspaceSizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDDATAWORKSPACESIZE;
-    
-    struct cudnnGetConvolutionBackwardDataWorkspaceSizeArg *arg_ptr = (struct cudnnGetConvolutionBackwardDataWorkspaceSizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->wDesc = wDesc;
-	arg_ptr->dyDesc = dyDesc;
-	arg_ptr->convDesc = convDesc;
-	arg_ptr->dxDesc = dxDesc;
-	arg_ptr->algo = algo;
-	arg_ptr->sizeInBytes = sizeInBytes;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetConvolutionBackwardDataWorkspaceSizeResponse *) dat;
-	if (sizeInBytes) { *sizeInBytes = res->sizeInBytes; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionBackwardDataWorkspaceSize);
@@ -14625,7 +11352,7 @@ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  han
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetFoldedConvBackwardDataDescriptors(handle, filterDesc, diffDesc, convDesc, gradDesc, transformFormat, foldedFilterDesc, paddedDiffDesc, foldedConvDesc, foldedGradDesc, filterFoldTransDesc, diffPadTransDesc, gradFoldTransDesc, gradUnfoldTransDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14664,34 +11391,6 @@ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  han
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetFoldedConvBackwardDataDescriptorsArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETFOLDEDCONVBACKWARDDATADESCRIPTORS;
-    
-    struct cudnnGetFoldedConvBackwardDataDescriptorsArg *arg_ptr = (struct cudnnGetFoldedConvBackwardDataDescriptorsArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->filterDesc = filterDesc;
-	arg_ptr->diffDesc = diffDesc;
-	arg_ptr->convDesc = convDesc;
-	arg_ptr->gradDesc = gradDesc;
-	arg_ptr->transformFormat = transformFormat;
-	arg_ptr->foldedFilterDesc = foldedFilterDesc;
-	arg_ptr->paddedDiffDesc = paddedDiffDesc;
-	arg_ptr->foldedConvDesc = foldedConvDesc;
-	arg_ptr->foldedGradDesc = foldedGradDesc;
-	arg_ptr->filterFoldTransDesc = filterFoldTransDesc;
-	arg_ptr->diffPadTransDesc = diffPadTransDesc;
-	arg_ptr->gradFoldTransDesc = gradFoldTransDesc;
-	arg_ptr->gradUnfoldTransDesc = gradUnfoldTransDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetFoldedConvBackwardDataDescriptors);
@@ -14704,7 +11403,7 @@ cudnnStatus_t cudnnCnnInferVersionCheck()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCnnInferVersionCheck();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14729,20 +11428,6 @@ cudnnStatus_t cudnnCnnInferVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCnnInferVersionCheckArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCNNINFERVERSIONCHECK;
-    
-    struct cudnnCnnInferVersionCheckArg *arg_ptr = (struct cudnnCnnInferVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCnnInferVersionCheck);
@@ -14755,7 +11440,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionBackwardFilterAlgorithmMaxCount(handle, count);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14783,22 +11468,6 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNGETCONVOLUTIONBACKWARDFILTERALGORITHMMAXCOUNT;
-    
-    struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg *arg_ptr = (struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->count = count;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnGetConvolutionBackwardFilterAlgorithmMaxCountResponse *) dat;
-	if (count) { *count = res->count; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionBackwardFilterAlgorithmMaxCount);
@@ -14919,7 +11588,7 @@ cudnnStatus_t cudnnCnnTrainVersionCheck()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCnnTrainVersionCheck();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14944,20 +11613,6 @@ cudnnStatus_t cudnnCnnTrainVersionCheck()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnCnnTrainVersionCheckArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNCNNTRAINVERSIONCHECK;
-    
-    struct cudnnCnnTrainVersionCheckArg *arg_ptr = (struct cudnnCnnTrainVersionCheckArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnCnnTrainVersionCheck);
@@ -14970,7 +11625,7 @@ cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t  descrip
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendCreateDescriptor(descriptorType, descriptor);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -14998,22 +11653,6 @@ cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t  descrip
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendCreateDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDCREATEDESCRIPTOR;
-    
-    struct cudnnBackendCreateDescriptorArg *arg_ptr = (struct cudnnBackendCreateDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->descriptorType = descriptorType;
-	arg_ptr->descriptor = descriptor;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnBackendCreateDescriptorResponse *) dat;
-	if (descriptor) { *descriptor = res->descriptor; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendCreateDescriptor);
@@ -15026,7 +11665,7 @@ cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t  descriptor
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendDestroyDescriptor(descriptor);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -15052,21 +11691,6 @@ cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t  descriptor
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendDestroyDescriptorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDDESTROYDESCRIPTOR;
-    
-    struct cudnnBackendDestroyDescriptorArg *arg_ptr = (struct cudnnBackendDestroyDescriptorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->descriptor = descriptor;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendDestroyDescriptor);
@@ -15079,7 +11703,7 @@ cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t  descriptor)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendInitialize(descriptor);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -15105,21 +11729,6 @@ cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t  descriptor)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendInitializeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDINITIALIZE;
-    
-    struct cudnnBackendInitializeArg *arg_ptr = (struct cudnnBackendInitializeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->descriptor = descriptor;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendInitialize);
@@ -15132,7 +11741,7 @@ cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t  descriptor)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendFinalize(descriptor);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -15158,21 +11767,6 @@ cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t  descriptor)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendFinalizeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDFINALIZE;
-    
-    struct cudnnBackendFinalizeArg *arg_ptr = (struct cudnnBackendFinalizeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->descriptor = descriptor;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendFinalize);
@@ -15185,7 +11779,7 @@ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendExecute(handle, executionPlan, variantPack);
-#elif defined(USE_IOX_IPC)
+#else
 
     cudnnStatus_t err;
 
@@ -15213,23 +11807,6 @@ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudnnBackendExecuteArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDNNBACKENDEXECUTE;
-    
-    struct cudnnBackendExecuteArg *arg_ptr = (struct cudnnBackendExecuteArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->executionPlan = executionPlan;
-	arg_ptr->variantPack = variantPack;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudnnStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendExecute);
@@ -15242,7 +11819,7 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasCreate_v2(handle);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15269,21 +11846,6 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasCreate_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASCREATE_V2;
-    
-    struct cublasCreate_v2Arg *arg_ptr = (struct cublasCreate_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasCreate_v2Response *) dat;
-	if (handle) { *handle = res->handle; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasCreate_v2);
@@ -15296,7 +11858,7 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasDestroy_v2(handle);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15322,21 +11884,6 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasDestroy_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASDESTROY_V2;
-    
-    struct cublasDestroy_v2Arg *arg_ptr = (struct cublasDestroy_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasDestroy_v2);
@@ -15349,7 +11896,7 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetVersion_v2(handle, version);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15377,22 +11924,6 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetVersion_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASGETVERSION_V2;
-    
-    struct cublasGetVersion_v2Arg *arg_ptr = (struct cublasGetVersion_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->version = version;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasGetVersion_v2Response *) dat;
-	if (version) { *version = res->version; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetVersion_v2);
@@ -15405,7 +11936,7 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetProperty(type, value);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15433,22 +11964,6 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetPropertyArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASGETPROPERTY;
-    
-    struct cublasGetPropertyArg *arg_ptr = (struct cublasGetPropertyArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->type = type;
-	arg_ptr->value = value;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasGetPropertyResponse *) dat;
-	if (value) { *value = res->value; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetProperty);
@@ -15461,7 +11976,7 @@ size_t cublasGetCudartVersion()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetCudartVersion();
-#elif defined(USE_IOX_IPC)
+#else
 
     size_t err;
 
@@ -15486,20 +12001,6 @@ size_t cublasGetCudartVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetCudartVersionArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASGETCUDARTVERSION;
-    
-    struct cublasGetCudartVersionArg *arg_ptr = (struct cublasGetCudartVersionArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (size_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetCudartVersion);
@@ -15512,7 +12013,7 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15540,23 +12041,6 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetWorkspace_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASSETWORKSPACE_V2;
-    
-    struct cublasSetWorkspace_v2Arg *arg_ptr = (struct cublasSetWorkspace_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->workspace = workspace;
-	arg_ptr->workspaceSizeInBytes = workspaceSizeInBytes;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetWorkspace_v2);
@@ -15569,7 +12053,7 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetStream_v2(handle, streamId);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15596,22 +12080,6 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetStream_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASSETSTREAM_V2;
-    
-    struct cublasSetStream_v2Arg *arg_ptr = (struct cublasSetStream_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->streamId = streamId;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetStream_v2);
@@ -15624,7 +12092,7 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetStream_v2(handle, streamId);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15652,22 +12120,6 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetStream_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASGETSTREAM_V2;
-    
-    struct cublasGetStream_v2Arg *arg_ptr = (struct cublasGetStream_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->streamId = streamId;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasGetStream_v2Response *) dat;
-	if (streamId) { *streamId = res->streamId; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetStream_v2);
@@ -15680,7 +12132,7 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetPointerMode_v2(handle, mode);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15708,22 +12160,6 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetPointerMode_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASGETPOINTERMODE_V2;
-    
-    struct cublasGetPointerMode_v2Arg *arg_ptr = (struct cublasGetPointerMode_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->mode = mode;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasGetPointerMode_v2Response *) dat;
-	if (mode) { *mode = res->mode; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetPointerMode_v2);
@@ -15736,7 +12172,7 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetPointerMode_v2(handle, mode);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15763,22 +12199,6 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetPointerMode_v2Arg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASSETPOINTERMODE_V2;
-    
-    struct cublasSetPointerMode_v2Arg *arg_ptr = (struct cublasSetPointerMode_v2Arg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->mode = mode;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetPointerMode_v2);
@@ -15809,7 +12229,7 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetMathMode(handle, mode);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15836,22 +12256,6 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetMathModeArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASSETMATHMODE;
-    
-    struct cublasSetMathModeArg *arg_ptr = (struct cublasSetMathModeArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->mode = mode;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetMathMode);
@@ -15864,7 +12268,7 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetSmCountTarget(handle, smCountTarget);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15892,22 +12296,6 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetSmCountTargetArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASGETSMCOUNTTARGET;
-    
-    struct cublasGetSmCountTargetArg *arg_ptr = (struct cublasGetSmCountTargetArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->smCountTarget = smCountTarget;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasGetSmCountTargetResponse *) dat;
-	if (smCountTarget) { *smCountTarget = res->smCountTarget; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetSmCountTarget);
@@ -15920,7 +12308,7 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetSmCountTarget(handle, smCountTarget);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -15947,22 +12335,6 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetSmCountTargetArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASSETSMCOUNTTARGET;
-    
-    struct cublasSetSmCountTargetArg *arg_ptr = (struct cublasSetSmCountTargetArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->handle = handle;
-	arg_ptr->smCountTarget = smCountTarget;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetSmCountTarget);
@@ -15993,7 +12365,7 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetLoggerCallback(userCallback);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -16019,21 +12391,6 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetLoggerCallbackArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASSETLOGGERCALLBACK;
-    
-    struct cublasSetLoggerCallbackArg *arg_ptr = (struct cublasSetLoggerCallbackArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->userCallback = userCallback;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetLoggerCallback);
@@ -16046,7 +12403,7 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetLoggerCallback(userCallback);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -16073,21 +12430,6 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasGetLoggerCallbackArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASGETLOGGERCALLBACK;
-    
-    struct cublasGetLoggerCallbackArg *arg_ptr = (struct cublasGetLoggerCallbackArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->userCallback = userCallback;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasGetLoggerCallbackResponse *) dat;
-	if (userCallback) { *userCallback = res->userCallback; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetLoggerCallback);
@@ -16100,7 +12442,7 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetVector(n, elemSize, x, incx, devicePtr, incy);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -16131,26 +12473,6 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasSetVectorArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASSETVECTOR;
-    
-    struct cublasSetVectorArg *arg_ptr = (struct cublasSetVectorArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->n = n;
-	arg_ptr->elemSize = elemSize;
-	arg_ptr->x = const_cast<void *>(x);
-	arg_ptr->incx = incx;
-	arg_ptr->devicePtr = devicePtr;
-	arg_ptr->incy = incy;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetVector);
@@ -17669,7 +13991,7 @@ cudaError_t cudaProfilerStart()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaProfilerStart();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -17694,20 +14016,6 @@ cudaError_t cudaProfilerStart()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaProfilerStartArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAPROFILERSTART;
-    
-    struct cudaProfilerStartArg *arg_ptr = (struct cudaProfilerStartArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaProfilerStart);
@@ -17720,7 +14028,7 @@ cudaError_t cudaProfilerStop()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaProfilerStop();
-#elif defined(USE_IOX_IPC)
+#else
 
     cudaError_t err;
 
@@ -17745,20 +14053,6 @@ cudaError_t cudaProfilerStop()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cudaProfilerStopArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUDAPROFILERSTOP;
-    
-    struct cudaProfilerStopArg *arg_ptr = (struct cudaProfilerStopArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cudaError_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaProfilerStop);
@@ -17783,7 +14077,7 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtCreate(lightHandle);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -17810,21 +14104,6 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtCreateArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTCREATE;
-    
-    struct cublasLtCreateArg *arg_ptr = (struct cublasLtCreateArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->lightHandle = lightHandle;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasLtCreateResponse *) dat;
-	if (lightHandle) { *lightHandle = res->lightHandle; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtCreate);
@@ -17837,7 +14116,7 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtDestroy(lightHandle);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -17863,21 +14142,6 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtDestroyArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTDESTROY;
-    
-    struct cublasLtDestroyArg *arg_ptr = (struct cublasLtDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->lightHandle = lightHandle;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtDestroy);
@@ -17902,7 +14166,7 @@ size_t cublasLtGetVersion()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtGetVersion();
-#elif defined(USE_IOX_IPC)
+#else
 
     size_t err;
 
@@ -17927,20 +14191,6 @@ size_t cublasLtGetVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtGetVersionArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTGETVERSION;
-    
-    struct cublasLtGetVersionArg *arg_ptr = (struct cublasLtGetVersionArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (size_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtGetVersion);
@@ -17953,7 +14203,7 @@ size_t cublasLtGetCudartVersion()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtGetCudartVersion();
-#elif defined(USE_IOX_IPC)
+#else
 
     size_t err;
 
@@ -17978,20 +14228,6 @@ size_t cublasLtGetCudartVersion()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtGetCudartVersionArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTGETCUDARTVERSION;
-    
-    struct cublasLtGetCudartVersionArg *arg_ptr = (struct cublasLtGetCudartVersionArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (size_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtGetCudartVersion);
@@ -18022,7 +14258,7 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -18053,25 +14289,6 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutCreateArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTCREATE;
-    
-    struct cublasLtMatrixLayoutCreateArg *arg_ptr = (struct cublasLtMatrixLayoutCreateArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->matLayout = matLayout;
-	arg_ptr->type = type;
-	arg_ptr->rows = rows;
-	arg_ptr->cols = cols;
-	arg_ptr->ld = ld;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasLtMatrixLayoutCreateResponse *) dat;
-	if (matLayout) { *matLayout = res->matLayout; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutCreate);
@@ -18084,7 +14301,7 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixLayoutDestroy(matLayout);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -18110,21 +14327,6 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatrixLayoutDestroyArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTDESTROY;
-    
-    struct cublasLtMatrixLayoutDestroyArg *arg_ptr = (struct cublasLtMatrixLayoutDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->matLayout = matLayout;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutDestroy);
@@ -18149,7 +14351,7 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -18178,23 +14380,6 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescCreateArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCCREATE;
-    
-    struct cublasLtMatmulDescCreateArg *arg_ptr = (struct cublasLtMatmulDescCreateArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->matmulDesc = matmulDesc;
-	arg_ptr->computeType = computeType;
-	arg_ptr->scaleType = scaleType;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasLtMatmulDescCreateResponse *) dat;
-	if (matmulDesc) { *matmulDesc = res->matmulDesc; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescCreate);
@@ -18207,7 +14392,7 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulDescDestroy(matmulDesc);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -18233,21 +14418,6 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulDescDestroyArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCDESTROY;
-    
-    struct cublasLtMatmulDescDestroyArg *arg_ptr = (struct cublasLtMatmulDescDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->matmulDesc = matmulDesc;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescDestroy);
@@ -18302,7 +14472,7 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulPreferenceCreate(pref);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -18329,21 +14499,6 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceCreateArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCECREATE;
-    
-    struct cublasLtMatmulPreferenceCreateArg *arg_ptr = (struct cublasLtMatmulPreferenceCreateArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pref = pref;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasLtMatmulPreferenceCreateResponse *) dat;
-	if (pref) { *pref = res->pref; }
-	auto err = res->err;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceCreate);
@@ -18356,7 +14511,7 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulPreferenceDestroy(pref);
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -18382,21 +14537,6 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtMatmulPreferenceDestroyArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEDESTROY;
-    
-    struct cublasLtMatmulPreferenceDestroyArg *arg_ptr = (struct cublasLtMatmulPreferenceDestroyArg *)(msg + sizeof(CUDA_API_ENUM));
-	arg_ptr->pref = pref;
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceDestroy);
@@ -18481,7 +14621,7 @@ cublasStatus_t cublasLtLoggerForceDisable()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtLoggerForceDisable();
-#elif defined(USE_IOX_IPC)
+#else
 
     cublasStatus_t err;
 
@@ -18506,20 +14646,6 @@ cublasStatus_t cublasLtLoggerForceDisable()
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
-#else
-
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct cublasLtLoggerForceDisableArg);
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::CUBLASLTLOGGERFORCEDISABLE;
-    
-    struct cublasLtLoggerForceDisableArg *arg_ptr = (struct cublasLtLoggerForceDisableArg *)(msg + sizeof(CUDA_API_ENUM));
-	CLIENT_SEND_MSG_AND_FREE;
-	CLIENT_RECV_MSG;
-	auto res = (cublasStatus_t *) dat;
-	auto err = *res;
-
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtLoggerForceDisable);

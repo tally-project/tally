@@ -12,8 +12,6 @@
 #include <cassert>
 #include <sstream>
 
-#include "libipc/ipc.h"
-
 #include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
 #include "iceoryx_posh/popo/untyped_client.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
@@ -62,16 +60,10 @@ public:
 
     std::unordered_map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 
-#ifdef USE_IOX_IPC
+#ifndef RUN_LOCALLY
     static constexpr char APP_NAME[] = "iox-cpp-request-response-client-untyped";
     iox::popo::UntypedClient *iox_client;
-#else
-    ipc::channel *send_ipc;
-    ipc::channel *recv_ipc;
 #endif
-
-    const static size_t msg_size = 1024 * 1024 * 1024;
-    uint8_t *msg;
 
     void register_profile_kernel_map();
     void print_profile_trace()
@@ -105,8 +97,6 @@ public:
 
     TallyClient()
     {
-        // Allocate 1GB memory for message passing 
-        msg = (uint8_t *) malloc(msg_size);
         register_profile_kernel_map();
 
         __exit = [&](int sig_num) {
@@ -114,10 +104,6 @@ public:
             if (sig_num == SIGSEGV) {
                 std::cout << "Encountered segfault. Shutting down... " << std::endl;
             }
-#ifndef USE_IOX_IPC
-            if (send_ipc != nullptr) send_ipc->disconnect();
-            if (recv_ipc != nullptr) recv_ipc->disconnect();
-#endif
             exit(0);
         };
 
@@ -127,17 +113,13 @@ public:
         signal(SIGTERM , __exit_wrapper);
         signal(SIGHUP  , __exit_wrapper);
 
-#ifdef USE_IOX_IPC
+#ifndef RUN_LOCALLY
         iox::runtime::PoshRuntime::initRuntime(APP_NAME);
         iox_client = new iox::popo::UntypedClient({"Example", "Request-Response", "Add"});
-#else
-        send_ipc = new ipc::channel("client-to-server-380000", ipc::sender);
-        recv_ipc = new ipc::channel("server-to-client-380000", ipc::receiver);
 #endif
     }
 
     ~TallyClient(){
-        free(msg);
         print_profile_trace();
     }
 };

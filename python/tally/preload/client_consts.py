@@ -49,6 +49,8 @@ API_DEF_TEMPLATE_TOP = """
 void *cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
 void *cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
 void *cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
+void *cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
+void *cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
 
 """
 
@@ -131,8 +133,6 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <nvrtc.h>
 #include <cublasLt.h>
 
-#include "libipc/ipc.h"
-
 #include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
 #include "iceoryx_posh/popo/untyped_server.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
@@ -168,15 +168,9 @@ public:
     std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
     std::unordered_map<void *, void *> _kernel_client_addr_mapping;
 
-#ifdef USE_IOX_IPC
     std::unordered_map<CUDA_API_ENUM, std::function<void(void *, const void* const)>> cuda_api_handler_map;
     static constexpr char APP_NAME[] = "iox-cpp-request-response-server-untyped";
 	iox::popo::UntypedServer *iox_server;
-#else
-    std::unordered_map<CUDA_API_ENUM, std::function<void(void *)>> cuda_api_handler_map;
-    ipc::channel *send_ipc = nullptr;
-    ipc::channel *recv_ipc = nullptr;
-#endif
 
     TallyServer();
     ~TallyServer();
@@ -219,11 +213,15 @@ DIRECT_CALLS = [
     "cuGetErrorName",
     "cudnnGetErrorString",
     "cudaMallocHost",
-    "cudaFreeHost"
+    "cudaFreeHost",
+    "cudaGetDevice",
+    "cudaGetDeviceCount"
 ]
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaSetDevice",
+    "cudaChooseDevice",
     "cudaFuncGetAttributes",
     "cublasSgemmStridedBatched",
     "cudnnGetTensorNdDescriptor",
@@ -329,7 +327,6 @@ FORWARD_API_CALLS = [
     "cudaThreadSetCacheConfig",
     "cudaGetLastError",
     "cudaPeekAtLastError",
-    "cudaSetDevice",
     "cudaSetDeviceFlags",
     "cudaCtxResetPersistingL2Cache",
     "cudaEventRecord",
@@ -338,7 +335,6 @@ FORWARD_API_CALLS = [
     "cudaEventSynchronize",
     "cudaEventDestroy",
     "cudaDeviceSetMemPool",
-    "cudaSetDeviceFlags",
     "cudaStreamCopyAttributes",
     "cudaStreamDestroy",
     "cudaStreamWaitEvent",
@@ -434,13 +430,11 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cudaIpcOpenEventHandle",
     "cudaThreadGetLimit",
     "cudaThreadGetCacheConfig",
-    "cudaGetDeviceCount",
     "cudaGetDeviceProperties",
     "cudaDeviceGetAttribute",
     "cudaDeviceGetDefaultMemPool",
     "cudaDeviceGetMemPool",
     "cudaDeviceGetP2PAttribute",
-    "cudaGetDevice",
     "cudaGetDeviceFlags",
     "cudaGraphCreate",
     "cublasCreate_v2",
