@@ -18,4 +18,11 @@
     #define TALLY_SPD_LOG(msg)
 #endif
 
+#define CHECK_ERR_LOG_AND_EXIT(ERR, MSG) \
+    if (ERR) { \
+        std::cerr << MSG << " " << std::string(__FILE__) + ":" + std::to_string(__LINE__) << std::endl; \
+        exit(1); \
+    }
+
+
 #endif // TALLY_LOG_H

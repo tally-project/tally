@@ -45,6 +45,7 @@ set(TALLY_SRC_FILES
 set(TALLY_SERVER_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/tally/server.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/generated/server.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/partial.cpp
 )
 
 set(TALLY_CLIENT_SRC_FILES

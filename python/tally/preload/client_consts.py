@@ -141,6 +141,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 
 #include <tally/log.h>
 #include <tally/msg_struct.h>
+#include <tally/cuda_util.h>
 
 static std::function<void(int)> __exit;
 
@@ -164,6 +165,9 @@ public:
     std::map<std::string, void *> _kernel_name_to_addr;
     std::vector<std::pair<void *, std::string>> register_queue;
 
+    // Used to check whether an address points to device memory
+	std::vector<DeviceMemoryKey> dev_addr_map;
+
     std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
     std::unordered_map<void *, void *> _kernel_client_addr_mapping;
     std::unordered_map<CUDA_API_ENUM, std::function<void(void *, const void* const)>> cuda_api_handler_map;
@@ -180,8 +184,15 @@ public:
     void register_api_handler();
     void load_cache();
 
-    std::function<void()> launch_kernel_partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
-
+    std::function<void()> cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
+    std::function<void()> cublasSgemm_v2_Partial(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, float alpha, const float *A, int lda, const float *B, int ldb, float beta, float *C, int ldc);
+    std::function<void()> cudnnRNNBackwardWeights_Partial(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, int  seqLength, cudnnTensorDescriptor_t * xDesc, void * x, cudnnTensorDescriptor_t  hxDesc, void * hx, cudnnTensorDescriptor_t * yDesc, void * y, void * workSpace, size_t  workSpaceSizeInBytes, cudnnFilterDescriptor_t  dwDesc, void * dw, void * reserveSpace, size_t  reserveSpaceSizeInBytes);
+    std::function<void()> cudnnRNNBackwardData_Partial(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * yDesc, const void * y, const cudnnTensorDescriptor_t * dyDesc, const void * dy, const cudnnTensorDescriptor_t  dhyDesc, const void * dhy, const cudnnTensorDescriptor_t  dcyDesc, const void * dcy, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnTensorDescriptor_t * dxDesc, void * dx, const cudnnTensorDescriptor_t  dhxDesc, void * dhx, const cudnnTensorDescriptor_t  dcxDesc, void * dcx, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes);
+    std::function<void()> cudnnRNNForwardTraining_Partial(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes);
+    std::function<void()> cudnnMultiHeadAttnBackwardData_Partial (cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsDQDO[], const int  devSeqLengthsDKDV[], const cudnnSeqDataDescriptor_t  doDesc, const void * dout, const cudnnSeqDataDescriptor_t  dqDesc, void * dqueries, const void * queries, const cudnnSeqDataDescriptor_t  dkDesc, void * dkeys, const void * keys, const cudnnSeqDataDescriptor_t  dvDesc, void * dvalues, const void * values, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace, int winIdxLen);
+    std::function<void()> cudnnMultiHeadAttnForward_Partial (cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, int  currIdx, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsQO[], const int  devSeqLengthsKV[], const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const void * residuals, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  oDesc, void * out, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace, int winIdxLen);
+    std::function<void()> cublasSgemmEx_Partial (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const float  beta, void*  C, cudaDataType  Ctype, int  ldc);
+    std::function<void()> cudnnTransformTensor_Partial (cudnnHandle_t  handle, uint64_t alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, uint64_t beta, const cudnnTensorDescriptor_t  yDesc, void * y);
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
@@ -211,7 +222,31 @@ REGISTER_FUNCS = [
 # For these, we will delay the actual dispatch to the hardware
 # as we intend to schedule ourselves.
 KERNEL_LAUNCH_CALLS = [
-    "cudaLaunchKernel"
+    "cudaLaunchKernel",
+    "cudnnRNNBackwardWeights",
+    "cudnnRNNBackwardData",
+    "cudnnRNNForwardTraining",
+    "cudnnMultiHeadAttnBackwardData",
+    "cudnnMultiHeadAttnForward",
+    "cublasSgemmEx",
+    "cudnnTransformTensor",
+    "cublasSgemv_v2",
+    "cudnnLRNCrossChannelForward",
+    "cublasSgemm_v2",
+    "cudnnSoftmaxForward",
+    "cudnnAddTensor",
+    "cublasLtMatmul",
+    "cudnnActivationForward",
+    "cudnnConvolutionForward",
+    "cudnnPoolingForward",
+    "cudnnMultiHeadAttnBackwardWeights",
+    "cudnnReorderFilterAndBias",
+    "cudnnBatchNormalizationForwardTrainingEx",
+    "cudnnBatchNormalizationBackwardEx",
+    "cudnnRNNBackwardWeights_v8",
+    "cudnnRNNBackwardData_v8",
+    "cudnnRNNForward",
+    "cudnnBackendExecute"
 ]
 
 # let the client call the APIs directly

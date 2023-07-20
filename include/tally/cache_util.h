@@ -12,7 +12,7 @@
 #include <tally/cuda_util.h>
 #include <tally/cache.h>
 
-void cache_cubin_data(const char* cubin_data, size_t cubin_size, int magic, int version)
+static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int magic, int version)
 {
     // Not exist in cache
     if (TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size)) {

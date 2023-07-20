@@ -436,13 +436,13 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(cudaError_t);
+    // Assume all cuda launch will succeed
+    err = cudaSuccess;
 #endif
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_KERNEL_CALL(func);
 
-    
     return err;
 }
 
@@ -485,7 +485,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    err = CUBLAS_STATUS_SUCCESS;
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -1549,7 +1549,7 @@ cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, co
     })
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+    err = CUDNN_STATUS_SUCCESS;
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -1600,7 +1600,7 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
     })
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    err = CUBLAS_STATUS_SUCCESS;
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -1766,7 +1766,7 @@ cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDe
     })
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+    err = CUDNN_STATUS_SUCCESS;
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -1828,7 +1828,7 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnA
     })
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+    err = CUDNN_STATUS_SUCCESS;
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -2114,12 +2114,12 @@ cudnnStatus_t cudnnRNNForwardTraining(cudnnHandle_t  handle, const cudnnRNNDescr
     })
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+    err = CUDNN_STATUS_SUCCESS;
 #endif
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnRNNForwardTraining);
-    // 
+
     return err;
 }
 
@@ -2176,7 +2176,7 @@ cudnnStatus_t cudnnRNNBackwardData(cudnnHandle_t  handle, const cudnnRNNDescript
     })
     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+    err = CUDNN_STATUS_SUCCESS;
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -2226,7 +2226,7 @@ cudnnStatus_t cudnnRNNBackwardWeights(cudnnHandle_t  handle, const cudnnRNNDescr
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-        IOX_RECV_RETURN_STATUS(cudnnStatus_t);
+    err = CUDNN_STATUS_SUCCESS;
 #endif
 
     TALLY_CLIENT_PROFILE_END;

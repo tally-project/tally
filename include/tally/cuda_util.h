@@ -6,6 +6,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <cassert>
+#include <map>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
