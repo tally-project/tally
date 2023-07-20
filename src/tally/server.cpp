@@ -26,8 +26,6 @@ std::vector<DeviceMemoryKey> dev_addr_map;
 
 TallyServer::TallyServer()
 {
-    // Allocate 1GB memory for message passing 
-    msg = (uint8_t *) malloc(msg_size);
     register_api_handler();
 
     __exit = [&](int sig_num) {
@@ -344,13 +342,10 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args, const void* const request
             [&](auto& error) {LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaLaunchKernel(void *__args, const void* const requestPayload)
+std::function<void()> TallyServer::launch_kernel_partial(const void * client_func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
 {
-    TALLY_SPD_LOG("Received request: cudaLaunchKernel");
-    auto args = (cudaLaunchKernelArg *) __args;
-
-    assert(_kernel_client_addr_mapping.find((void *) args->host_func) != _kernel_client_addr_mapping.end());
-    void *kernel_server_addr = _kernel_client_addr_mapping[(void *) args->host_func];
+    assert(_kernel_client_addr_mapping.find((void *) client_func) != _kernel_client_addr_mapping.end());
+    void *kernel_server_addr = _kernel_client_addr_mapping[(void *) client_func];
     auto &arg_sizes = _kernel_addr_to_args[kernel_server_addr];
     auto argc = arg_sizes.size();
 
@@ -359,17 +354,36 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, const void* const reques
     int offset = 0;
 
     for (size_t i = 0; i < argc; i++) {
-        __args_arr[__args_idx] = (void *) (args->params + offset);
+        __args_arr[__args_idx] = (void *) (params + offset);
         ++__args_idx;
         offset += arg_sizes[i];
     }
+
+    return [&, kernel_server_addr, gridDim, blockDim, __args_arr, sharedMem, stream]() {
+        cudaError_t err = cudaLaunchKernel((const void *) kernel_server_addr, gridDim, blockDim, (void **) __args_arr, sharedMem, stream);
+        // for now, ignore the return status, assuming kernel launch will be successful
+        (void) err;
+    };
+}
+
+void TallyServer::handle_cudaLaunchKernel(void *__args, const void* const requestPayload)
+{
+    TALLY_SPD_LOG("Received request: cudaLaunchKernel");
+    auto args = (cudaLaunchKernelArg *) __args;
+
+    auto launch_partial = launch_kernel_partial(args->host_func, args->gridDim, args->blockDim, args->sharedMem, args->stream, args->params);
+    launch_queue.enqueue(launch_partial);
 
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudaError_t*>(responsePayload);
-            *response = lcudaLaunchKernel((const void *) kernel_server_addr, args->gridDim, args->blockDim, &__args_arr[0], args->sharedMem, args->stream);
+
+            launch_partial();
+
+            // assume all launch will be successful now
+            *response = cudaSuccess;
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });

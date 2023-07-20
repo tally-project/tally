@@ -1,11 +1,24 @@
 #!/bin/bash
 
+kill_iox_server() {
+    # stop server
+    pid=$(ps -ef | grep iox-roudi | grep -v grep | awk '{print $2}')
+    kill -15 $pid > /dev/null 2>&1
+
+    sleep 1
+}
+
 kill_tally_server() {
     # stop server
     pid=$(ps -ef | grep tally_server | grep -v grep | awk '{print $2}')
     kill -15 $pid > /dev/null 2>&1
 
     sleep 1
+}
+
+cleanup() {
+    kill_tally_server
+    kill_iox_server
 }
 
 run_tally_test() {
@@ -35,12 +48,16 @@ test_list=(
 )
 
 # Set up
-trap kill_tally_server ERR
+trap cleanup ERR
 set -e
 
 # Build tally and tests
 make
 cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
+
+./build/iox-roudi &
+
+sleep 5
 
 # Run tests
 for item in "${test_list[@]}"; do
@@ -50,3 +67,5 @@ done
 sleep 1
 
 echo All tests passed!
+
+kill_iox_server

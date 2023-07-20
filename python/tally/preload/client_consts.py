@@ -137,6 +137,8 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include "iceoryx_posh/popo/untyped_server.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
 
+#include "concurrentqueue.h"
+
 #include <tally/log.h>
 #include <tally/msg_struct.h>
 
@@ -162,13 +164,12 @@ public:
     std::map<std::string, void *> _kernel_name_to_addr;
     std::vector<std::pair<void *, std::string>> register_queue;
 
-    const static size_t msg_size = 1024 * 1024 * 1024;
-    uint8_t *msg;
-
     std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
     std::unordered_map<void *, void *> _kernel_client_addr_mapping;
-
     std::unordered_map<CUDA_API_ENUM, std::function<void(void *, const void* const)>> cuda_api_handler_map;
+
+    moodycamel::ConcurrentQueue<std::function<void()>> launch_queue;
+
     static constexpr char APP_NAME[] = "iox-cpp-request-response-server-untyped";
 	iox::popo::UntypedServer *iox_server;
 
@@ -178,6 +179,8 @@ public:
     void start(uint32_t interval);
     void register_api_handler();
     void load_cache();
+
+    std::function<void()> launch_kernel_partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
 
 """
 
@@ -204,6 +207,12 @@ REGISTER_FUNCS = [
     "__cudaRegisterFatBinaryEnd"
 ]
 
+# API calls that will launch a kernel
+# For these, we will delay the actual dispatch to the hardware
+# as we intend to schedule ourselves.
+KERNEL_LAUNCH_CALLS = [
+    "cudaLaunchKernel"
+]
 
 # let the client call the APIs directly
 DIRECT_CALLS = [

@@ -65,4 +65,17 @@ set_target_properties(cudnn_test PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
 )
 
+add_executable(test-sync test-sync.cu)
+
+target_link_libraries(test-sync
+    cuda
+    cudart
+    cudnn
+)
+
+set_target_properties(test-sync PROPERTIES
+    CUDA_ARCHITECTURES "86"
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
 add_subdirectory(cudnn-samples)
