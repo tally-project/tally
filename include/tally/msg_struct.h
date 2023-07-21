@@ -785,4 +785,86 @@ struct cudaSetDeviceArg {
 	int  device;
 };
 
+struct cudnnRNNBackwardWeights_v8Arg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnWgradMode_t  addGrad;
+	int32_t * devSeqLengths;
+	cudnnRNNDataDescriptor_t  xDesc;
+	void * x;
+	cudnnTensorDescriptor_t  hDesc;
+	void * hx;
+	cudnnRNNDataDescriptor_t  yDesc;
+	void * y;
+	size_t  weightSpaceSize;
+	void * dweightSpace;
+	size_t  workSpaceSize;
+	void * workSpace;
+	size_t  reserveSpaceSize;
+	void * reserveSpace;
+};
+
+struct cudnnRNNBackwardData_v8Arg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int32_t * devSeqLengths;
+	cudnnRNNDataDescriptor_t  yDesc;
+	void * y;
+	void * dy;
+	cudnnRNNDataDescriptor_t  xDesc;
+	void * dx;
+	cudnnTensorDescriptor_t  hDesc;
+	void * hx;
+	void * dhy;
+	void * dhx;
+	cudnnTensorDescriptor_t  cDesc;
+	void * cx;
+	void * dcy;
+	void * dcx;
+	size_t  weightSpaceSize;
+	void * weightSpace;
+	size_t  workSpaceSize;
+	void * workSpace;
+	size_t  reserveSpaceSize;
+	void * reserveSpace;
+};
+
+struct cudnnRNNForwardArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnForwardMode_t  fwdMode;
+	int32_t * devSeqLengths;
+	cudnnRNNDataDescriptor_t  xDesc;
+	void * x;
+	cudnnRNNDataDescriptor_t  yDesc;
+	void * y;
+	cudnnTensorDescriptor_t  hDesc;
+	void * hx;
+	void * hy;
+	cudnnTensorDescriptor_t  cDesc;
+	void * cx;
+	void * cy;
+	size_t  weightSpaceSize;
+	void * weightSpace;
+	size_t  workSpaceSize;
+	void * workSpace;
+	size_t  reserveSpaceSize;
+	void * reserveSpace;
+};
+
+struct cudnnBackendExecuteArg {
+	cudnnHandle_t  handle;
+	cudnnBackendDescriptor_t  executionPlan;
+	cudnnBackendDescriptor_t  variantPack;
+};
+
+struct cudaEventRecordArg {
+	cudaEvent_t  event;
+	cudaStream_t  stream;
+};
+
+struct cudaStreamSynchronizeArg {
+	cudaStream_t  stream;
+};
+
 #endif // TALLY_DEF_H

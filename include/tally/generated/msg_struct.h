@@ -391,9 +391,6 @@ struct cuDestroyExternalMemoryArg {
 struct cudaDeviceResetArg {
 };
 
-struct cudaDeviceSynchronizeArg {
-};
-
 struct cudaDeviceSetLimitArg {
 	enum cudaLimit  limit;
 	size_t  value;
@@ -499,9 +496,6 @@ struct cudaDeviceFlushGPUDirectRDMAWritesArg {
 };
 
 struct cudaThreadExitArg {
-};
-
-struct cudaThreadSynchronizeArg {
 };
 
 struct cudaThreadSetLimitArg {
@@ -677,10 +671,6 @@ struct cudaStreamWaitEventArg {
 	unsigned int  flags;
 };
 
-struct cudaStreamSynchronizeArg {
-	cudaStream_t  stream;
-};
-
 struct cudaStreamQueryArg {
 	cudaStream_t  stream;
 };
@@ -734,11 +724,6 @@ struct cudaEventCreateWithFlagsArg {
 struct cudaEventCreateWithFlagsResponse {
 	cudaEvent_t  event;
 	cudaError_t err;
-};
-
-struct cudaEventRecordArg {
-	cudaEvent_t  event;
-	cudaStream_t  stream;
 };
 
 struct cudaEventRecordWithFlagsArg {
@@ -1364,29 +1349,6 @@ struct cudnnDestroyRNNDataDescriptorArg {
 	cudnnRNNDataDescriptor_t  rnnDataDesc;
 };
 
-struct cudnnRNNForwardArg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnForwardMode_t  fwdMode;
-	int32_t * devSeqLengths;
-	cudnnRNNDataDescriptor_t  xDesc;
-	void * x;
-	cudnnRNNDataDescriptor_t  yDesc;
-	void * y;
-	cudnnTensorDescriptor_t  hDesc;
-	void * hx;
-	void * hy;
-	cudnnTensorDescriptor_t  cDesc;
-	void * cx;
-	void * cy;
-	size_t  weightSpaceSize;
-	void * weightSpace;
-	size_t  workSpaceSize;
-	void * workSpace;
-	size_t  reserveSpaceSize;
-	void * reserveSpace;
-};
-
 struct cudnnSetRNNAlgorithmDescriptorArg {
 	cudnnHandle_t  handle;
 	cudnnRNNDescriptor_t  rnnDesc;
@@ -1469,50 +1431,6 @@ struct cudnnGetMultiHeadAttnBuffersResponse {
 };
 
 struct cudnnAdvInferVersionCheckArg {
-};
-
-struct cudnnRNNBackwardData_v8Arg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	int32_t * devSeqLengths;
-	cudnnRNNDataDescriptor_t  yDesc;
-	void * y;
-	void * dy;
-	cudnnRNNDataDescriptor_t  xDesc;
-	void * dx;
-	cudnnTensorDescriptor_t  hDesc;
-	void * hx;
-	void * dhy;
-	void * dhx;
-	cudnnTensorDescriptor_t  cDesc;
-	void * cx;
-	void * dcy;
-	void * dcx;
-	size_t  weightSpaceSize;
-	void * weightSpace;
-	size_t  workSpaceSize;
-	void * workSpace;
-	size_t  reserveSpaceSize;
-	void * reserveSpace;
-};
-
-struct cudnnRNNBackwardWeights_v8Arg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnWgradMode_t  addGrad;
-	int32_t * devSeqLengths;
-	cudnnRNNDataDescriptor_t  xDesc;
-	void * x;
-	cudnnTensorDescriptor_t  hDesc;
-	void * hx;
-	cudnnRNNDataDescriptor_t  yDesc;
-	void * y;
-	size_t  weightSpaceSize;
-	void * dweightSpace;
-	size_t  workSpaceSize;
-	void * workSpace;
-	size_t  reserveSpaceSize;
-	void * reserveSpace;
 };
 
 struct cudnnAdvTrainVersionCheckArg {
@@ -1624,12 +1542,6 @@ struct cudnnBackendInitializeArg {
 
 struct cudnnBackendFinalizeArg {
 	cudnnBackendDescriptor_t  descriptor;
-};
-
-struct cudnnBackendExecuteArg {
-	cudnnHandle_t  handle;
-	cudnnBackendDescriptor_t  executionPlan;
-	cudnnBackendDescriptor_t  variantPack;
 };
 
 struct cublasCreate_v2Arg {
