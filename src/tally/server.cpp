@@ -363,6 +363,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, const void* const reques
     auto partial = cudaLaunchKernel_Partial(args->host_func, args->gridDim, args->blockDim, args->sharedMem, args->stream, args->params);
     queue_size++;
     launch_queue.enqueue(partial);
+    // partial();
 }
 
 void TallyServer::handle_cublasSgemm_v2(void *__args, const void* const requestPayload)
@@ -2109,7 +2110,7 @@ void TallyServer::handle_cudaEventRecord(void *__args, const void* const request
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaError_t*>(responsePayload);
 
-            // wait_until_launch_queue_empty();
+            wait_until_launch_queue_empty();
 
             *response = cudaEventRecord(
 				args->event,
