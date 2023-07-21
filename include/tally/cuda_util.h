@@ -239,4 +239,6 @@ std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_
 
 std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_from_elf(std::string elf_path);
 
+std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_from_elf_str(std::string elf_str);
+
 #endif // TALLY_CUDA_UTIL_H

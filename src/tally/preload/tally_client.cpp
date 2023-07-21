@@ -83,6 +83,7 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     return l__cudaRegisterFatBinary(fatCubin);
 
 #else
+
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
 
@@ -108,13 +109,17 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     if (cached) {
         kernel_args = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
     } else {
-        auto tmp_cubin_file = get_tmp_file_path(".cubin");
-        write_binary_to_file(tmp_cubin_file, cubin_data, cubin_size);
-        auto tmp_elf_file = get_tmp_file_path(".elf");
+        std::string tmp_elf_file;
 
-        std::string command("cuobjdump " + tmp_cubin_file + " -elf > " + tmp_elf_file);
-        launch_shell(command);
-
+        while(!TallyClient::client->iox_client->take()
+            .and_then([&](const auto& responsePayload) {
+                auto response = static_cast<const char*>(responsePayload);
+                
+                tmp_elf_file = std::string(response);
+        
+                TallyClient::client->iox_client->releaseResponse(responsePayload);
+            }))
+        {}
         kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
     }
 

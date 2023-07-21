@@ -41,8 +41,9 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int magi
 
     // Parse arguments info from elf code
     kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file_name);
+
     // Delete elf
-    std::remove(tmp_elf_file_name.c_str());
+    // std::remove(tmp_elf_file_name.c_str());
 
     // Generate transformed version from the PTX code
     for (const auto& ptx_file_name : ptx_file_names) {

@@ -168,6 +168,21 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, const void* const
         fatBinSize = cubin_size;
         fatbin_data = (unsigned long long *) malloc(cubin_size);
         memcpy(fatbin_data, args->data, cubin_size);
+
+        std::string tmp_elf_file_name = get_tmp_file_path(".elf");
+        auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+        iox_server->loan(requestHeader, tmp_elf_file_name.size() + 1, alignof(char[]))
+            .and_then([&](auto& responsePayload) {
+
+                auto response = static_cast<char *>(responsePayload);
+                memcpy(response, tmp_elf_file_name.c_str(), tmp_elf_file_name.size());
+                response[tmp_elf_file_name.size()] = '\0';
+
+                iox_server->send(response).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+            })
+            .or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
     }
 }
 

@@ -114,15 +114,8 @@ std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_
     return kernel_names_and_nparams;
 }
 
-std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_from_elf(std::string elf_path)
+std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_from_elf_str(std::string elf_code_str)
 {
-    std::ifstream elf_file(elf_path);
-    if (!elf_file.is_open()) {
-        std::cerr << elf_path << " not found." << std::endl;
-        throw std::runtime_error("file not found");
-    }
-    
-    std::string elf_code_str((std::istreambuf_iterator<char>(elf_file)), std::istreambuf_iterator<char>());
     std::stringstream ss(elf_code_str);
 
     // key: func_name, val: [ <ordinal, size> ]
@@ -190,7 +183,19 @@ std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_fr
         }
     }    
 
-    elf_file.close();
-
     return kernel_names_and_param_sizes;
+}
+
+std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_from_elf(std::string elf_path)
+{
+    std::ifstream elf_file(elf_path);
+    if (!elf_file.is_open()) {
+        std::cerr << elf_path << " not found." << std::endl;
+        throw std::runtime_error("file not found");
+    }
+    
+    std::string elf_code_str((std::istreambuf_iterator<char>(elf_file)), std::istreambuf_iterator<char>());
+    elf_file.close();
+    
+    return get_kernel_names_and_param_sizes_from_elf_str(elf_code_str);
 }
