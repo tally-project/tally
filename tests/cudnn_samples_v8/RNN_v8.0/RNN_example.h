@@ -96,6 +96,7 @@ void initGPUData(T_ELEM *data, int numElements, T_ELEM value) {
     gridDim.x  = (numElements + blockDim.x - 1) / blockDim.x;
 
     initGPUData_ker<<<gridDim, blockDim>>>(data, numElements, value);
+    cudaDeviceSynchronize();
 }
 
 struct RNNSampleOptions {

@@ -25,6 +25,9 @@ run_tally_test() {
     # Launch tally server in the background
     ./start_server.sh &
 
+    echo wait for server to start ...
+    sleep 3
+
     # Launch client process
     echo $@
     ./start_client.sh $@
