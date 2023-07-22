@@ -126,6 +126,8 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <functional>
 #include <memory>
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -137,8 +139,6 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
 #include "iceoryx_posh/popo/untyped_server.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
-
-#include "blockingconcurrentqueue.h"
 
 #include <tally/log.h>
 #include <tally/msg_struct.h>
@@ -173,8 +173,8 @@ public:
     std::unordered_map<void *, void *> _kernel_client_addr_mapping;
     std::unordered_map<CUDA_API_ENUM, std::function<void(void *, const void* const)>> cuda_api_handler_map;
 
-    moodycamel::BlockingConcurrentQueue<std::function<void()>> launch_queue;
-    std::atomic_int queue_size = 0;
+	std::function<void()> *kernel_to_dispatch = nullptr;
+	std::atomic<bool> has_kernel = false;
     
     static constexpr char APP_NAME[] = "iox-cpp-request-response-server-untyped";
 	iox::popo::UntypedServer *iox_server;

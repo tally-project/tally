@@ -18,7 +18,6 @@ FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
 
 add_subdirectory(third_party/spdlog)
 add_subdirectory(third_party/iceoryx/iceoryx_meta)
-add_subdirectory(third_party/concurrentqueue)
 
 include(GNUInstallDirs)
 
@@ -126,7 +125,6 @@ endif()
 target_include_directories(tally_server
     PUBLIC  /usr/local/cuda/include
     PUBLIC  ${PROJECT_SOURCE_DIR}/include
-    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/concurrentqueue
 )
 
 target_link_libraries(tally_server PUBLIC

@@ -2,6 +2,7 @@
 #include <dlfcn.h>
 #include <cassert>
 #include <unordered_set>
+#include <atomic>
 
 #include "spdlog/spdlog.h"
 
@@ -72,18 +73,25 @@ void TallyServer::start_launcher()
     std::function<void()> kernel_partial;
 
     while (!iox::posix::hasTerminationRequested()) {
-        if (launch_queue.wait_dequeue_timed(kernel_partial, std::chrono::milliseconds(100))) {
-            kernel_partial();
-            queue_size--;
+        if (has_kernel) {
+            (*kernel_to_dispatch)();
+            has_kernel = false;
         }
     }
 }
 
-void TallyServer::wait_until_launch_queue_empty()
+void TallyServer::handle_cudaLaunchKernel(void *__args, const void* const requestPayload)
 {
-    while(queue_size > 0) {
-        std::this_thread::sleep_for(std::chrono::microseconds(1));
-    }
+    TALLY_SPD_LOG("Received request: cudaLaunchKernel");
+    auto args = (cudaLaunchKernelArg *) __args;
+    auto partial = cudaLaunchKernel_Partial(args->host_func, args->gridDim, args->blockDim, args->sharedMem, args->stream, args->params);
+
+    while (has_kernel) {}
+
+    kernel_to_dispatch = &partial;
+    has_kernel = true;
+
+    while (has_kernel) {}
 }
 
 void TallyServer::load_cache()
@@ -371,16 +379,6 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args, const void* const request
             [&](auto& error) {LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaLaunchKernel(void *__args, const void* const requestPayload)
-{
-    TALLY_SPD_LOG("Received request: cudaLaunchKernel");
-    auto args = (cudaLaunchKernelArg *) __args;
-    auto partial = cudaLaunchKernel_Partial(args->host_func, args->gridDim, args->blockDim, args->sharedMem, args->stream, args->params);
-    queue_size++;
-    launch_queue.enqueue(partial);
-    // partial();
-}
-
 void TallyServer::handle_cublasSgemm_v2(void *__args, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasSgemm_v2");
@@ -394,9 +392,6 @@ void TallyServer::handle_cublasSgemm_v2(void *__args, const void* const requestP
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cublasStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cublasSgemm_v2(
                 args->handle,
                 args->transa,
@@ -431,9 +426,6 @@ void TallyServer::handle_cublasLtMatmul(void *__args, const void* const requestP
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cublasStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cublasLtMatmul(
                 args->lightHandle,
                 args->computeDesc,
@@ -688,9 +680,6 @@ void TallyServer::handle_cudnnActivationForward(void *__args, const void* const 
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnActivationForward(
                 args->handle,
                 args->activationDesc,
@@ -801,9 +790,6 @@ void TallyServer::handle_cudnnConvolutionForward(void *__args, const void* const
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnConvolutionForward(
                 args->handle,
                 (void *) &(args->alpha),
@@ -924,9 +910,6 @@ void TallyServer::handle_cudnnAddTensor(void *__args, const void* const requestP
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnAddTensor(
                 args->handle,
                 (void *) &(args->alpha),
@@ -1037,9 +1020,6 @@ void TallyServer::handle_cudnnPoolingForward(void *__args, const void* const req
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnPoolingForward(
                 args->handle,
                 args->poolingDesc,
@@ -1068,9 +1048,6 @@ void TallyServer::handle_cublasSgemv_v2(void *__args, const void* const requestP
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cublasStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cublasSgemv_v2(
                 args->handle,
                 args->trans,
@@ -1103,9 +1080,6 @@ void TallyServer::handle_cudnnLRNCrossChannelForward(void *__args, const void* c
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnLRNCrossChannelForward(
                 args->handle,
                 args->normDesc,
@@ -1135,9 +1109,6 @@ void TallyServer::handle_cudnnSoftmaxForward(void *__args, const void* const req
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnSoftmaxForward(
                 args->handle,
                 args->algo,
@@ -1167,9 +1138,6 @@ void TallyServer::handle_cudnnTransformTensor(void *__args, const void* const re
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnTransformTensor(
                 args->handle,
                 &(args->alpha),
@@ -1197,9 +1165,6 @@ void TallyServer::handle_cublasSgemmEx(void *__args, const void* const requestPa
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cublasStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cublasSgemmEx(
                 args->handle,
                 args->transa,
@@ -1296,9 +1261,6 @@ void TallyServer::handle_cudnnMultiHeadAttnForward(void *__args, const void* con
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnMultiHeadAttnForward(
                 args->handle,
                 args->attnDesc,
@@ -1341,9 +1303,6 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardData(void *__args, const void
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnMultiHeadAttnBackwardData(
                 args->handle,
                 args->attnDesc,
@@ -1387,9 +1346,6 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardWeights(void *__args, const v
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnMultiHeadAttnBackwardWeights(
                 args->handle,
                 args->attnDesc,
@@ -1428,9 +1384,6 @@ void TallyServer::handle_cudnnReorderFilterAndBias(void *__args, const void* con
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnReorderFilterAndBias(
                 args->handle,
                 args->filterDesc,
@@ -1538,9 +1491,6 @@ void TallyServer::handle_cudnnRNNForwardTraining(void *__args, const void* const
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnRNNForwardTraining(
                 args->handle,
                 args->rnnDesc,
@@ -1582,9 +1532,6 @@ void TallyServer::handle_cudnnRNNBackwardData(void *__args, const void* const re
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnRNNBackwardData(
                 args->handle,
                 args->rnnDesc,
@@ -1632,9 +1579,6 @@ void TallyServer::handle_cudnnRNNBackwardWeights(void *__args, const void* const
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnRNNBackwardWeights(
                 args->handle,
                 args->rnnDesc,
@@ -1732,9 +1676,6 @@ void TallyServer::handle_cudnnBatchNormalizationForwardTrainingEx(void *__args, 
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnBatchNormalizationForwardTrainingEx(
                 args->handle,
                 args->mode,
@@ -1780,9 +1721,6 @@ void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args, const v
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnBatchNormalizationBackwardEx(
                 args->handle,
                 args->mode,
@@ -1960,9 +1898,6 @@ void TallyServer::handle_cudnnRNNBackwardWeights_v8(void *__args, const void* co
     iox_server->loan(requestHeader, sizeof(cudnnStatus_t), alignof(cudnnStatus_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudnnRNNBackwardWeights_v8(
 				args->handle,
 				args->rnnDesc,
@@ -1997,8 +1932,6 @@ void TallyServer::handle_cudnnRNNBackwardData_v8(void *__args, const void* const
     iox_server->loan(requestHeader, sizeof(cudnnStatus_t), alignof(cudnnStatus_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
 
             *response = cudnnRNNBackwardData_v8(
 				args->handle,
@@ -2041,8 +1974,6 @@ void TallyServer::handle_cudnnRNNForward(void *__args, const void* const request
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
 
-            wait_until_launch_queue_empty();
-
             *response = cudnnRNNForward(
 				args->handle,
 				args->rnnDesc,
@@ -2082,8 +2013,6 @@ void TallyServer::handle_cudnnBackendExecute(void *__args, const void* const req
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
 
-            wait_until_launch_queue_empty();
-
             *response = cudnnBackendExecute(
 				args->handle,
 				args->executionPlan,
@@ -2105,7 +2034,6 @@ void TallyServer::handle_cudaThreadSynchronize(void *__args, const void* const r
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudaError_t*>(responsePayload);
-            wait_until_launch_queue_empty();
             *response = cudaThreadSynchronize();
 
             iox_server->send(response).or_else(
@@ -2124,8 +2052,6 @@ void TallyServer::handle_cudaEventRecord(void *__args, const void* const request
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaError_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
 
             *response = cudaEventRecord(
 				args->event,
@@ -2148,9 +2074,6 @@ void TallyServer::handle_cudaDeviceSynchronize(void *__args, const void* const r
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudaError_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
-
             *response = cudaDeviceSynchronize();
 
             if ((*response)) {
@@ -2173,8 +2096,6 @@ void TallyServer::handle_cudaStreamSynchronize(void *__args, const void* const r
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaError_t*>(responsePayload);
-
-            wait_until_launch_queue_empty();
 
             *response = cudaStreamSynchronize(
 				args->stream

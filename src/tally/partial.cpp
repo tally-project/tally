@@ -31,7 +31,7 @@ std::function<void()> TallyServer::cudaLaunchKernel_Partial(const void * client_
         offset += arg_sizes[i];
     }
 
-    return [kernel_server_addr, gridDim, blockDim, __args_arr, sharedMem, stream]() {
+    return [&, kernel_server_addr, gridDim, blockDim, __args_arr, sharedMem, stream]() {
         auto err = cudaLaunchKernel((const void *) kernel_server_addr, gridDim, blockDim, (void **) __args_arr, sharedMem, stream);
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
     };
