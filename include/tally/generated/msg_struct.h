@@ -808,15 +808,6 @@ struct cudnnGetPropertyResponse {
 	cudnnStatus_t err;
 };
 
-struct cudnnCreateArg {
-	cudnnHandle_t * handle;
-};
-
-struct cudnnCreateResponse {
-	cudnnHandle_t  handle;
-	cudnnStatus_t err;
-};
-
 struct cudnnDestroyArg {
 	cudnnHandle_t  handle;
 };
@@ -1542,15 +1533,6 @@ struct cudnnBackendInitializeArg {
 
 struct cudnnBackendFinalizeArg {
 	cudnnBackendDescriptor_t  descriptor;
-};
-
-struct cublasCreate_v2Arg {
-	cublasHandle_t*  handle;
-};
-
-struct cublasCreate_v2Response {
-	cublasHandle_t handle;
-	cublasStatus_t err;
 };
 
 struct cublasDestroy_v2Arg {

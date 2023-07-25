@@ -14,11 +14,9 @@
 
 #define MAXIMUM_ARG_COUNT 50
 
-std::function<void()> TallyServer::cudaLaunchKernel_Partial(const void * client_func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
+std::function<void()> TallyServer::cudaLaunchKernel_Partial(const void * func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
 {
-    assert(_kernel_client_addr_mapping.find((void *) client_func) != _kernel_client_addr_mapping.end());
-    void *kernel_server_addr = _kernel_client_addr_mapping[(void *) client_func];
-    auto &arg_sizes = _kernel_addr_to_args[kernel_server_addr];
+    auto &arg_sizes = _kernel_addr_to_args[(void *)func];
     auto argc = arg_sizes.size();
 
     void *__args_arr[MAXIMUM_ARG_COUNT];
@@ -31,8 +29,8 @@ std::function<void()> TallyServer::cudaLaunchKernel_Partial(const void * client_
         offset += arg_sizes[i];
     }
 
-    return [&, kernel_server_addr, gridDim, blockDim, __args_arr, sharedMem, stream]() {
-        auto err = cudaLaunchKernel((const void *) kernel_server_addr, gridDim, blockDim, (void **) __args_arr, sharedMem, stream);
+    return [&, func, gridDim, blockDim, __args_arr, sharedMem, stream]() {
+        auto err = cudaLaunchKernel((const void *) func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream);
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
     };
 }

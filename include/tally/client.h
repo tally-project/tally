@@ -11,10 +11,12 @@
 #include <iostream>
 #include <cassert>
 #include <sstream>
+#include <unistd.h>
 
 #include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
 #include "iceoryx_posh/popo/untyped_client.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
+#include "iox/detail/unique_id.hpp"
 
 #ifdef ENABLE_PROFILING
     #define TALLY_CLIENT_PROFILE_START \
@@ -50,6 +52,8 @@ public:
 
     static TallyClient *client;
 
+    int32_t client_id;
+
     // For performance measurements
     std::vector<const void *> _profile_kernel_seq;
     std::vector<std::pair<time_point_t, time_point_t>> _profile_cpu_timestamps;
@@ -61,7 +65,6 @@ public:
     std::unordered_map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 
 #ifndef RUN_LOCALLY
-    static constexpr char APP_NAME[] = "iox-cpp-request-response-client-untyped";
     iox::popo::UntypedClient *iox_client;
 #endif
 
@@ -97,6 +100,7 @@ public:
 
     TallyClient()
     {
+        client_id = getpid();
         register_profile_kernel_map();
 
         __exit = [&](int sig_num) {
@@ -114,6 +118,12 @@ public:
         signal(SIGHUP  , __exit_wrapper);
 
 #ifndef RUN_LOCALLY
+        auto app_name_str_base = std::string("iox-cpp-request-response-client-untyped");
+        auto app_name_str = app_name_str_base + std::to_string(client_id);
+
+        char APP_NAME[100];
+        strcpy(APP_NAME, app_name_str.c_str()); 
+
         iox::runtime::PoshRuntime::initRuntime(APP_NAME);
         iox_client = new iox::popo::UntypedClient({"Example", "Request-Response", "Add"});
 #endif

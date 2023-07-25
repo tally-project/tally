@@ -48,6 +48,7 @@ test_list=(
     "./tests/cudnn_samples_v8/multiHeadAttention/multiHeadAttention -attnTrain1 -attnDataType0 -attnNumHeads3 -attnBatchSize6 -attnBeamSize1 -attnQsize8 -attnKsize8 -attnVsize8 -attnProjQsize2 -attnProjKsize2 -attnProjVsize2 -attnProjOsize8 -attnResLink0 -attnSeqLenQ3 -attnSeqLenK10"
     "./tests/cudnn_samples_v8/RNN/RNN"
     "./tests/cudnn_samples_v8/RNN_v8.0/RNN"
+    "python3 ./tests/train.py"
 )
 
 # Set up

@@ -41,6 +41,7 @@ typedef struct {
 
 typedef struct MessageHeader {
     CUDA_API_ENUM api_id;
+    int32_t client_id;
 } MessageHeader_t;
 
 struct cudaMallocArg {
@@ -865,6 +866,24 @@ struct cudaEventRecordArg {
 
 struct cudaStreamSynchronizeArg {
 	cudaStream_t  stream;
+};
+
+struct cublasCreate_v2Arg {
+	cublasHandle_t*  handle;
+};
+
+struct cublasCreate_v2Response {
+	cublasHandle_t handle;
+	cublasStatus_t err;
+};
+
+struct cudnnCreateArg {
+	cudnnHandle_t * handle;
+};
+
+struct cudnnCreateResponse {
+	cudnnHandle_t  handle;
+	cudnnStatus_t err;
 };
 
 #endif // TALLY_DEF_H

@@ -18,7 +18,6 @@ from tally.preload.client_consts import (
     CLIENT_PRELOAD_TEMPLATE,
     FORWARD_API_CALLS,
     DIRECT_CALLS,
-    get_preload_func_template,
     get_preload_func_template_iox,
     is_get_param_func,
     get_param_group
@@ -125,9 +124,24 @@ def gen_server_handler(func_sig):
         indices = PARAM_INDICES[group]
 
         handler += f"\tauto args = (struct {func_name}Arg *) __args;\n"
+        handler += f"\tauto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);\n"
+
+        for idx in range(len(arg_names)):
+            if arg_types[idx].strip() == "cudaStream_t":
+                handler += f"""
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    cudaStream_t stream = args->{arg_names[idx]};
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (stream == nullptr) {{
+        stream = client_data[client_uid].default_stream;
+    }}
+"""
+                break
 
         handler += f"""
-    auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
     iox_server->loan(requestHeader, sizeof({func_name}Response), alignof({func_name}Response))
         .and_then([&](auto& responsePayload) {{
             auto response = static_cast<{func_name}Response*>(responsePayload);
@@ -138,7 +152,10 @@ def gen_server_handler(func_sig):
             if idx in indices:
                 handler += f"\t\t\t\t(args->{arg_names[idx]} ? &(response->{arg_names[idx]}) : NULL)"
             else:
-                handler += f"\t\t\t\targs->{arg_names[idx]}"
+                if arg_types[idx].strip() == "cudaStream_t":
+                    handler += f"\t\t\t\tstream"
+                else:
+                    handler += f"\t\t\t\targs->{arg_names[idx]}"
             if idx != len(arg_names) - 1:
                 handler += ",\n"
             else:
@@ -153,16 +170,35 @@ def gen_server_handler(func_sig):
 """
     elif func_name in FORWARD_API_CALLS:
         handler += f"\tauto args = (struct {func_name}Arg *) __args;\n"
+        handler += f"\tauto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);\n"
+
+        for idx in range(len(arg_names)):
+            if arg_types[idx].strip() == "cudaStream_t":
+                handler += f"""
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    cudaStream_t stream = args->{arg_names[idx]};
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (stream == nullptr) {{
+        stream = client_data[client_uid].default_stream;
+    }}
+"""
+                break
+
 
         handler += f"""
-    auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
     iox_server->loan(requestHeader, sizeof({ret_type}), alignof({ret_type}))
         .and_then([&](auto& responsePayload) {{
             auto response = static_cast<{ret_type}*>(responsePayload);
             *response = {func_name}(
 """
         for idx, arg_name in enumerate(arg_names):
-            handler += f"\t\t\t\targs->{arg_name}"
+            if arg_types[idx].strip() == "cudaStream_t":
+                handler += f"\t\t\t\tstream"
+            else:
+                handler += f"\t\t\t\targs->{arg_name}"
             if idx != len(arg_names) - 1:
                 handler += ",\n"
 

@@ -150,31 +150,45 @@ static void __exit_wrapper(int signal) {
     __exit(signal);
 }
 
+class ClientData {
+
+public:
+
+	// For registering kernels at the start:
+	int magic;
+    int version;
+    unsigned long long* fatbin_data = nullptr;
+    uint32_t fatBinSize;
+    bool cubin_registered = false;
+    std::vector<std::pair<void *, std::string>> register_queue;
+
+	// Following are used at runtime:
+
+	// Used to check whether an address points to device memory
+	std::vector<DeviceMemoryKey> dev_addr_map;
+
+	std::unordered_map<void *, void *> _kernel_client_addr_mapping;
+	std::function<void()> *kernel_to_dispatch = nullptr;
+	std::atomic<bool> has_kernel = false;
+
+    cudaStream_t default_stream = nullptr;
+};
+
 class TallyServer {
 
 public:
 
     static TallyServer *server;
 
-    int magic;
-    int version;
-    unsigned long long* fatbin_data = nullptr;
-    uint32_t fatBinSize;
-    bool cubin_registered = false;
+	std::atomic<bool> is_quit__ {false};
 
-    std::atomic<bool> is_quit__ {false};
-    std::map<std::string, void *> _kernel_name_to_addr;
-    std::vector<std::pair<void *, std::string>> register_queue;
+	// ================== Per-client state ===================
+	std::map<int32_t, ClientData> client_data;
 
-    // Used to check whether an address points to device memory
-	std::vector<DeviceMemoryKey> dev_addr_map;
-
-    std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
-    std::unordered_map<void *, void *> _kernel_client_addr_mapping;
-    std::unordered_map<CUDA_API_ENUM, std::function<void(void *, const void* const)>> cuda_api_handler_map;
-
-	std::function<void()> *kernel_to_dispatch = nullptr;
-	std::atomic<bool> has_kernel = false;
+	// ==================== Global state =====================
+	std::map<std::string, void *> _kernel_name_to_addr;
+	std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
+	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, const void* const)>> cuda_api_handler_map;
     
     static constexpr char APP_NAME[] = "iox-cpp-request-response-server-untyped";
 	iox::popo::UntypedServer *iox_server;
@@ -261,6 +275,8 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasCreate_v2",
+    "cudnnCreate",
     "cudaStreamSynchronize",
     "cudaDeviceSynchronize",
     "cudaEventRecord",
@@ -478,7 +494,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cudaDeviceGetP2PAttribute",
     "cudaGetDeviceFlags",
     "cudaGraphCreate",
-    "cublasCreate_v2",
     "cuDriverGetVersion",
     "cuDeviceGet",
     "cuDeviceGetCount",
@@ -506,7 +521,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cuCtxGetSharedMemConfig",
     "cuCtxGetExecAffinity",
     "cuCtxAttach",
-    "cudnnCreate",
     "cudnnCreateTensorDescriptor",
     "cudnnCreateTensorTransformDescriptor",
     "cudnnCreateActivationDescriptor",
@@ -696,46 +710,19 @@ def get_param_group(func_name):
     else:
         assert(False)
 
-def get_preload_func_template(func_name, arg_names, arg_types):
-    arg_struct = f"{func_name}Arg"
-
-    preload_body = ""
-    preload_body += f"""
-    uint32_t msg_len =  sizeof(CUDA_API_ENUM) + sizeof(struct {arg_struct});
-
-    uint8_t *msg = (msg_len <= TallyClient::msg_size) ? TallyClient::client->msg : (uint8_t *) malloc(msg_len);
-    MessageHeader_t *msg_header = (MessageHeader_t *) msg;
-    msg_header->api_id = CUDA_API_ENUM::{func_name.upper()};
-    
-    struct {arg_struct} *arg_ptr = (struct {arg_struct} *)(msg + sizeof(CUDA_API_ENUM));
-"""
-
-    for idx, arg_name in enumerate(arg_names):
-        arg_type = arg_types[idx]
-        if arg_type.strip() == "const void *" or arg_type.strip() == "const void*":
-            preload_body += f"\targ_ptr->{arg_name} = const_cast<void *>({arg_name});\n"
-        elif arg_type.strip() == "const int32_t []":
-            preload_body += f"\targ_ptr->{arg_name} = const_cast<int32_t *>({arg_name});\n"
-        else:
-            preload_body += f"\targ_ptr->{arg_name} = {arg_name};\n"
-    
-    preload_body += "\tCLIENT_SEND_MSG_AND_FREE;\n"
-    preload_body += "\tCLIENT_RECV_MSG;\n"
-
-    return preload_body
-
 
 def get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type):
     func_preload_builder = f"""
     {ret_type} err;
 
-    TallyClient::client->iox_client->loan(sizeof(CUDA_API_ENUM) + sizeof({func_name}Arg), alignof({func_name}Arg))
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof({func_name}Arg), alignof({func_name}Arg))
         .and_then([&](auto& requestPayload) {{
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
             header->api_id = CUDA_API_ENUM::{func_name.upper()};
+            header->client_id = TallyClient::client->client_id;
             
-            auto request = ({func_name}Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(CUDA_API_ENUM));
+            auto request = ({func_name}Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
 """
     for idx, arg_name in enumerate(arg_names):
         arg_type = arg_types[idx]
