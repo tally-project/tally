@@ -197,8 +197,8 @@ public:
     ~TallyServer();
 
     void wait_until_launch_queue_empty();
-    void start_launcher();
-    void start();
+    void start_scheduler();
+    void start_server();
     void register_api_handler();
     void load_cache();
 

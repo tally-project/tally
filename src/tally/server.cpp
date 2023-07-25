@@ -44,7 +44,7 @@ TallyServer::TallyServer()
 
 TallyServer::~TallyServer(){}
 
-void TallyServer::start() {
+void TallyServer::start_server() {
 
     iox::runtime::PoshRuntime::initRuntime(APP_NAME);
     iox_server = new iox::popo::UntypedServer({"Example", "Request-Response", "Add"});
@@ -65,24 +65,6 @@ void TallyServer::start() {
 
             iox_server->releaseRequest(requestPayload);
         });
-    }
-}
-
-void TallyServer::start_launcher()
-{
-    std::function<void()> kernel_partial;
-
-    while (!iox::posix::hasTerminationRequested()) {
-
-        for (auto &pair : client_data) {
-
-            auto &_client_data = pair.second;
-
-            if (_client_data.has_kernel) {
-                (*_client_data.kernel_to_dispatch)();
-                _client_data.has_kernel = false;
-            }
-        }
     }
 }
 

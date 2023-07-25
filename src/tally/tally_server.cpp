@@ -4,11 +4,14 @@
 
 int main(int argc, char ** argv) {
 
-    std::thread server_t(&TallyServer::start, TallyServer::server);
-    std::thread server_launcher_t(&TallyServer::start_launcher, TallyServer::server);
+    // Server thread, handling CUDA requests
+    std::thread server_t(&TallyServer::start_server, TallyServer::server);
+
+    // Kernel scheduler, scheduling kernel launches
+    std::thread scheduler_t(&TallyServer::start_scheduler, TallyServer::server);
 
     server_t.join();
-    server_launcher_t.join();
+    scheduler_t.join();
 
     return 0;
 }
