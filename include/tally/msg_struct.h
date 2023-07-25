@@ -39,6 +39,14 @@ typedef struct {
                                 * version 2: array of prelinked fatbins */
 } my__fatBinC_Wrapper_t;
 
+struct HandshakeMessgae {
+    int32_t client_id;
+};
+
+struct HandshakeResponse {
+    bool success;
+};
+
 typedef struct MessageHeader {
     CUDA_API_ENUM api_id;
     int32_t client_id;

@@ -44,10 +44,10 @@ TallyServer::TallyServer()
 
 TallyServer::~TallyServer(){}
 
-void TallyServer::start_server() {
+void TallyServer::start_main_server() {
 
     iox::runtime::PoshRuntime::initRuntime(APP_NAME);
-    iox_server = new iox::popo::UntypedServer({"Example", "Request-Response", "Add"});
+    iox::popo::UntypedServer handshake_server({"Tally", "handshake", "event"});
 
     load_cache();
 
@@ -56,19 +56,58 @@ void TallyServer::start_server() {
     while (!iox::posix::hasTerminationRequested())
     {
         //! [take request]
-        iox_server->take().and_then([&](auto& requestPayload) {
-            auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
-            auto handler = cuda_api_handler_map[msg_header->api_id];
+        handshake_server.take().and_then([&](auto& requestPayload) {
+            
+            auto msg = static_cast<const HandshakeMessgae*>(requestPayload);
+            int32_t client_id = msg->client_id;
+            auto channel_desc_str = std::string("Tally-Communication") + std::to_string(client_id);
+            char channel_desc[100];
+            strcpy(channel_desc, channel_desc_str.c_str()); 
 
-            void *args = (void *) (static_cast<const uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-            handler(args, requestPayload);
+            worker_servers[client_id] = new iox::popo::UntypedServer({channel_desc, "tally", "tally"});
+            worker_threads[client_id] = std::thread(&TallyServer::start_worker_server, TallyServer::server, client_id);
 
-            iox_server->releaseRequest(requestPayload);
+            auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+            handshake_server.loan(requestHeader, sizeof(HandshakeResponse), alignof(HandshakeResponse))
+                .and_then([&](auto& responsePayload) {
+
+                    auto response = static_cast<HandshakeResponse*>(responsePayload);
+                    response->success = true;
+
+                    handshake_server.send(response).or_else(
+                        [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+                })
+                .or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+
+            handshake_server.releaseRequest(requestPayload);
         });
     }
 }
 
-void TallyServer::handle_cudaLaunchKernel(void *__args, const void* const requestPayload)
+void TallyServer::start_worker_server(int32_t client_id) {
+
+    spdlog::info("Tally worker server is up ...");
+
+    auto worker_server = worker_servers[client_id];
+
+    while (!iox::posix::hasTerminationRequested())
+    {
+        //! [take request]
+        worker_server->take().and_then([&](auto& requestPayload) {
+
+            auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+            auto handler = cuda_api_handler_map[msg_header->api_id];
+
+            void *args = (void *) (static_cast<const uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+            handler(args, worker_server, requestPayload);
+
+            worker_server->releaseRequest(requestPayload);
+        });
+    }
+}
+
+void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudaLaunchKernel");
     auto args = (cudaLaunchKernelArg *) __args;
@@ -140,7 +179,7 @@ void TallyServer::load_cache()
     }
 }
 
-void TallyServer::handle___cudaRegisterFatBinary(void *__args, const void* const requestPayload)
+void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: __cudaRegisterFatBinary");
     auto args = (__cudaRegisterFatBinaryArg *) __args;
@@ -205,7 +244,7 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, const void* const
     }
 }
 
-void TallyServer::handle___cudaRegisterFunction(void *__args, const void* const requestPayload)
+void TallyServer::handle___cudaRegisterFunction(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: __cudaRegisterFunction");
     auto args = (struct registerKernelArg *) __args;
@@ -220,7 +259,7 @@ void TallyServer::handle___cudaRegisterFunction(void *__args, const void* const 
     client_meta.register_queue.push_back( std::make_pair(args->host_func, kernel_name));
 }
 
-void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, const void* const requestPayload)
+void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: __cudaRegisterFatBinaryEnd");
 
@@ -272,7 +311,7 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, const void* co
     cudaFree(arr);
 }
 
-void TallyServer::handle_cudaMalloc(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudaMalloc");
 	auto args = (struct cudaMallocArg *) __args;
@@ -293,7 +332,7 @@ void TallyServer::handle_cudaMalloc(void *__args, const void* const requestPaylo
             if (response->err == cudaSuccess) {
                 client_data[client_uid].dev_addr_map.push_back( DeviceMemoryKey(response->devPtr, args->size) );
             }
-
+            
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
@@ -301,7 +340,7 @@ void TallyServer::handle_cudaMalloc(void *__args, const void* const requestPaylo
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaFree(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaFree(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudaFree");
     auto args = (struct cudaMallocArg *) __args;
@@ -327,7 +366,7 @@ void TallyServer::handle_cudaFree(void *__args, const void* const requestPayload
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaMemcpy(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaMemcpy(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudaMemcpy");
 
@@ -366,7 +405,7 @@ void TallyServer::handle_cudaMemcpy(void *__args, const void* const requestPaylo
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaMemcpyAsync(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaMemcpyAsync(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudaMemcpyAsync");
     
@@ -415,7 +454,7 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args, const void* const request
             [&](auto& error) {LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cublasSgemm_v2(void *__args, const void* const requestPayload)
+void TallyServer::handle_cublasSgemm_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasSgemm_v2");
     auto args = (struct cublasSgemm_v2Arg *) __args;
@@ -452,7 +491,7 @@ void TallyServer::handle_cublasSgemm_v2(void *__args, const void* const requestP
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cublasLtMatmul(void *__args, const void* const requestPayload)
+void TallyServer::handle_cublasLtMatmul(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasLtMatmul");
     auto args = (struct cublasLtMatmulArg *) __args;
@@ -498,7 +537,7 @@ void TallyServer::handle_cublasLtMatmul(void *__args, const void* const requestP
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cublasLtMatmulDescSetAttribute(void *__args, const void* const requestPayload)
+void TallyServer::handle_cublasLtMatmulDescSetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasLtMatmulDescSetAttribute");
     auto args = (struct cublasLtMatmulDescSetAttributeArg *) __args;
@@ -522,7 +561,7 @@ void TallyServer::handle_cublasLtMatmulDescSetAttribute(void *__args, const void
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cublasLtMatrixLayoutSetAttribute(void *__args, const void* const requestPayload)
+void TallyServer::handle_cublasLtMatrixLayoutSetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasLtMatrixLayoutSetAttribute");
     auto args = (struct cublasLtMatrixLayoutSetAttributeArg *) __args;
@@ -546,7 +585,7 @@ void TallyServer::handle_cublasLtMatrixLayoutSetAttribute(void *__args, const vo
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cublasLtMatmulPreferenceSetAttribute(void *__args, const void* const requestPayload)
+void TallyServer::handle_cublasLtMatmulPreferenceSetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasLtMatmulPreferenceSetAttribute");
     auto args = (struct cublasLtMatmulPreferenceSetAttributeArg *) __args;
@@ -570,7 +609,7 @@ void TallyServer::handle_cublasLtMatmulPreferenceSetAttribute(void *__args, cons
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args, const void* const requestPayload)
+void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasLtMatmulAlgoGetHeuristic");
     auto args = (struct cublasLtMatmulAlgoGetHeuristicArg *) __args;
@@ -602,7 +641,7 @@ void TallyServer::handle_cublasLtMatmulAlgoGetHeuristic(void *__args, const void
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnBackendSetAttribute(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnBackendSetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnBackendSetAttribute");
     auto args = (struct cudnnBackendSetAttributeArg *) __args;
@@ -663,7 +702,7 @@ void TallyServer::handle_cudnnBackendSetAttribute(void *__args, const void* cons
     }
 }
 
-void TallyServer::handle_cudnnBackendGetAttribute(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnBackendGetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnBackendGetAttribute");
     auto args = (struct cudnnBackendGetAttributeArg *) __args;
@@ -719,7 +758,7 @@ void TallyServer::handle_cudnnBackendGetAttribute(void *__args, const void* cons
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnActivationForward(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnActivationForward(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnActivationForward");
     auto args = (struct cudnnActivationForwardArg *) __args;
@@ -748,7 +787,7 @@ void TallyServer::handle_cudnnActivationForward(void *__args, const void* const 
 }
 
 
-void TallyServer::handle_cudnnSetTensorNdDescriptor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnSetTensorNdDescriptor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnSetTensorNdDescriptor");
     auto args = (struct cudnnSetTensorNdDescriptorArg *) __args;
@@ -775,7 +814,7 @@ void TallyServer::handle_cudnnSetTensorNdDescriptor(void *__args, const void* co
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnSetConvolutionNdDescriptor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnSetConvolutionNdDescriptor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnSetConvolutionNdDescriptor");
     auto args = (struct cudnnSetConvolutionNdDescriptorArg *) __args;
@@ -802,7 +841,7 @@ void TallyServer::handle_cudnnSetConvolutionNdDescriptor(void *__args, const voi
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnSetFilterNdDescriptor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnSetFilterNdDescriptor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnSetFilterNdDescriptor");
     auto args = (struct cudnnSetFilterNdDescriptorArg *) __args;
@@ -829,7 +868,7 @@ void TallyServer::handle_cudnnSetFilterNdDescriptor(void *__args, const void* co
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnConvolutionForward(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnConvolutionForward(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnConvolutionForward");
     auto args = (struct cudnnConvolutionForwardArg *) __args;
@@ -862,7 +901,7 @@ void TallyServer::handle_cudnnConvolutionForward(void *__args, const void* const
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnGetConvolutionNdForwardOutputDim(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnGetConvolutionNdForwardOutputDim(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnGetConvolutionNdForwardOutputDim");
     auto args = (struct cudnnGetConvolutionNdForwardOutputDimArg *) __args;
@@ -889,7 +928,7 @@ void TallyServer::handle_cudnnGetConvolutionNdForwardOutputDim(void *__args, con
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnGetConvolutionForwardAlgorithm_v7(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnGetConvolutionForwardAlgorithm_v7(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnGetConvolutionForwardAlgorithm_v7");
     auto args = (struct cudnnGetConvolutionForwardAlgorithm_v7Arg *) __args;
@@ -919,7 +958,7 @@ void TallyServer::handle_cudnnGetConvolutionForwardAlgorithm_v7(void *__args, co
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnFindConvolutionForwardAlgorithm(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnFindConvolutionForwardAlgorithm(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnFindConvolutionForwardAlgorithm");
     auto args = (struct cudnnFindConvolutionForwardAlgorithmArg *) __args;
@@ -949,7 +988,7 @@ void TallyServer::handle_cudnnFindConvolutionForwardAlgorithm(void *__args, cons
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnAddTensor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnAddTensor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnAddTensor");
     auto args = (struct cudnnAddTensorArg *) __args;
@@ -976,7 +1015,7 @@ void TallyServer::handle_cudnnAddTensor(void *__args, const void* const requestP
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnSetPoolingNdDescriptor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnSetPoolingNdDescriptor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnSetPoolingNdDescriptor");
     auto args = (struct cudnnSetPoolingNdDescriptorArg *) __args;
@@ -1003,7 +1042,7 @@ void TallyServer::handle_cudnnSetPoolingNdDescriptor(void *__args, const void* c
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnGetPoolingNdDescriptor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnGetPoolingNdDescriptor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnGetPoolingNdDescriptor");
     auto args = (struct cudnnGetPoolingNdDescriptorArg *) __args;
@@ -1033,7 +1072,7 @@ void TallyServer::handle_cudnnGetPoolingNdDescriptor(void *__args, const void* c
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnGetPoolingNdForwardOutputDim(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnGetPoolingNdForwardOutputDim(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnGetPoolingNdForwardOutputDim");
     auto args = (struct cudnnGetPoolingNdForwardOutputDimArg *) __args;
@@ -1059,7 +1098,7 @@ void TallyServer::handle_cudnnGetPoolingNdForwardOutputDim(void *__args, const v
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnPoolingForward(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnPoolingForward(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnPoolingForward");
     auto args = (struct cudnnPoolingForwardArg *) __args;
@@ -1087,7 +1126,7 @@ void TallyServer::handle_cudnnPoolingForward(void *__args, const void* const req
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cublasSgemv_v2(void *__args, const void* const requestPayload)
+void TallyServer::handle_cublasSgemv_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasSgemv_v2");
     auto args = (struct cublasSgemv_v2Arg *) __args;
@@ -1119,7 +1158,7 @@ void TallyServer::handle_cublasSgemv_v2(void *__args, const void* const requestP
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnLRNCrossChannelForward(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnLRNCrossChannelForward(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnLRNCrossChannelForward");
     auto args = (struct cudnnLRNCrossChannelForwardArg *) __args;
@@ -1148,7 +1187,7 @@ void TallyServer::handle_cudnnLRNCrossChannelForward(void *__args, const void* c
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnSoftmaxForward(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnSoftmaxForward(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnSoftmaxForward");
     auto args = (struct cudnnSoftmaxForwardArg *) __args;
@@ -1177,7 +1216,7 @@ void TallyServer::handle_cudnnSoftmaxForward(void *__args, const void* const req
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnTransformTensor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnTransformTensor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnTransformTensor");
     auto args = (struct cudnnTransformTensorArg *) __args;
@@ -1204,7 +1243,7 @@ void TallyServer::handle_cudnnTransformTensor(void *__args, const void* const re
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cublasSgemmEx(void *__args, const void* const requestPayload)
+void TallyServer::handle_cublasSgemmEx(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasSgemmEx");
     auto args = (struct cublasSgemmExArg *) __args;
@@ -1241,7 +1280,7 @@ void TallyServer::handle_cublasSgemmEx(void *__args, const void* const requestPa
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnSetSeqDataDescriptor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnSetSeqDataDescriptor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnSetSeqDataDescriptor");
     auto args = (struct cudnnSetSeqDataDescriptorArg *) __args;
@@ -1269,7 +1308,7 @@ void TallyServer::handle_cudnnSetSeqDataDescriptor(void *__args, const void* con
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnGetSeqDataDescriptor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnGetSeqDataDescriptor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnGetSeqDataDescriptor");
     auto args = (struct cudnnGetSeqDataDescriptorArg *) __args;
@@ -1300,7 +1339,7 @@ void TallyServer::handle_cudnnGetSeqDataDescriptor(void *__args, const void* con
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnMultiHeadAttnForward(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnMultiHeadAttnForward(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnMultiHeadAttnForward");
     auto args = (struct cudnnMultiHeadAttnForwardArg *) __args;
@@ -1342,7 +1381,7 @@ void TallyServer::handle_cudnnMultiHeadAttnForward(void *__args, const void* con
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnMultiHeadAttnBackwardData(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnMultiHeadAttnBackwardData(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnMultiHeadAttnBackwardData");
     auto args = (struct cudnnMultiHeadAttnBackwardDataArg *) __args;
@@ -1385,7 +1424,7 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardData(void *__args, const void
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); }); 
 }
 
-void TallyServer::handle_cudnnMultiHeadAttnBackwardWeights(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnMultiHeadAttnBackwardWeights(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnMultiHeadAttnBackwardWeights");
     auto args = (struct cudnnMultiHeadAttnBackwardWeightsArg *) __args;
@@ -1423,7 +1462,7 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardWeights(void *__args, const v
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnReorderFilterAndBias(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnReorderFilterAndBias(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnReorderFilterAndBias");
     auto args = (struct cudnnReorderFilterAndBiasArg *) __args;
@@ -1451,7 +1490,7 @@ void TallyServer::handle_cudnnReorderFilterAndBias(void *__args, const void* con
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnGetRNNWorkspaceSize(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnGetRNNWorkspaceSize(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnGetRNNWorkspaceSize");
     auto args = (struct cudnnGetRNNWorkspaceSizeArg *) __args;
@@ -1476,7 +1515,7 @@ void TallyServer::handle_cudnnGetRNNWorkspaceSize(void *__args, const void* cons
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnGetRNNTrainingReserveSize(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnGetRNNTrainingReserveSize(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnGetRNNTrainingReserveSize");
     auto args = (struct cudnnGetRNNTrainingReserveSizeArg *) __args;
@@ -1502,7 +1541,7 @@ void TallyServer::handle_cudnnGetRNNTrainingReserveSize(void *__args, const void
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnGetFilterNdDescriptor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnGetFilterNdDescriptor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnGetFilterNdDescriptor");
     auto args = (struct cudnnGetFilterNdDescriptorArg *) __args;
@@ -1530,7 +1569,7 @@ void TallyServer::handle_cudnnGetFilterNdDescriptor(void *__args, const void* co
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnRNNForwardTraining(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnRNNForwardTraining(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnRNNForwardTraining");
     auto args = (struct cudnnRNNForwardTrainingArg *) __args;
@@ -1571,7 +1610,7 @@ void TallyServer::handle_cudnnRNNForwardTraining(void *__args, const void* const
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnRNNBackwardData(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnRNNBackwardData(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnRNNBackwardData");
     auto args = (struct cudnnRNNBackwardDataArg *) __args;
@@ -1618,7 +1657,7 @@ void TallyServer::handle_cudnnRNNBackwardData(void *__args, const void* const re
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnRNNBackwardWeights(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnRNNBackwardWeights(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnRNNBackwardWeights");
     auto args = (struct cudnnRNNBackwardWeightsArg *) __args;
@@ -1653,7 +1692,7 @@ void TallyServer::handle_cudnnRNNBackwardWeights(void *__args, const void* const
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnSetRNNDataDescriptor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnSetRNNDataDescriptor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudnnSetRNNDataDescriptor");
     auto args = (struct cudnnSetRNNDataDescriptorArg *) __args;
@@ -1687,7 +1726,7 @@ void TallyServer::handle_cudnnSetRNNDataDescriptor(void *__args, const void* con
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnGetTensorNdDescriptor(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnGetTensorNdDescriptor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnGetTensorNdDescriptor");
     auto args = (struct cudnnGetTensorNdDescriptorArg *) __args;
@@ -1715,7 +1754,7 @@ void TallyServer::handle_cudnnGetTensorNdDescriptor(void *__args, const void* co
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnBatchNormalizationForwardTrainingEx(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnBatchNormalizationForwardTrainingEx(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnBatchNormalizationForwardTrainingEx");
     auto args = (struct cudnnBatchNormalizationForwardTrainingExArg *) __args;
@@ -1760,7 +1799,7 @@ void TallyServer::handle_cudnnBatchNormalizationForwardTrainingEx(void *__args, 
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudnnBatchNormalizationBackwardEx");
     auto args = (struct cudnnBatchNormalizationBackwardExArg *) __args;
@@ -1811,7 +1850,7 @@ void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args, const v
 }
 
 
-void TallyServer::handle_cublasSgemmStridedBatched(void *__args, const void* const requestPayload)
+void TallyServer::handle_cublasSgemmStridedBatched(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasSgemmStridedBatched");
     auto args = (struct cublasSgemmStridedBatchedArg *) __args;
@@ -1849,7 +1888,7 @@ void TallyServer::handle_cublasSgemmStridedBatched(void *__args, const void* con
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaFuncGetAttributes(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaFuncGetAttributes(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudaFuncGetAttributes");
 	auto args = (struct cudaFuncGetAttributesArg *) __args;
@@ -1873,7 +1912,7 @@ void TallyServer::handle_cudaFuncGetAttributes(void *__args, const void* const r
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags");
     auto args = (struct cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsArg *) __args;
@@ -1903,7 +1942,7 @@ void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaChooseDevice(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaChooseDevice(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudaChooseDevice");
     auto args = (struct cudaChooseDeviceArg *) __args;
@@ -1925,7 +1964,7 @@ void TallyServer::handle_cudaChooseDevice(void *__args, const void* const reques
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaSetDevice(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaSetDevice(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudaSetDevice");
 	auto args = (struct cudaSetDeviceArg *) __args;
@@ -1944,7 +1983,7 @@ void TallyServer::handle_cudaSetDevice(void *__args, const void* const requestPa
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnRNNBackwardWeights_v8(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnRNNBackwardWeights_v8(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudnnRNNBackwardWeights_v8");
 	auto args = (struct cudnnRNNBackwardWeights_v8Arg *) __args;
@@ -1978,7 +2017,7 @@ void TallyServer::handle_cudnnRNNBackwardWeights_v8(void *__args, const void* co
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnRNNBackwardData_v8(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnRNNBackwardData_v8(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudnnRNNBackwardData_v8");
 	auto args = (struct cudnnRNNBackwardData_v8Arg *) __args;
@@ -2019,7 +2058,7 @@ void TallyServer::handle_cudnnRNNBackwardData_v8(void *__args, const void* const
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnRNNForward(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnRNNForward(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudnnRNNForward");
 	auto args = (struct cudnnRNNForwardArg *) __args;
@@ -2058,7 +2097,7 @@ void TallyServer::handle_cudnnRNNForward(void *__args, const void* const request
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnBackendExecute(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnBackendExecute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudnnBackendExecute");
 	auto args = (struct cudnnBackendExecuteArg *) __args;
@@ -2080,7 +2119,7 @@ void TallyServer::handle_cudnnBackendExecute(void *__args, const void* const req
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaThreadSynchronize(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaThreadSynchronize(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudaThreadSynchronize");
 
@@ -2098,7 +2137,7 @@ void TallyServer::handle_cudaThreadSynchronize(void *__args, const void* const r
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaEventRecord(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaEventRecord(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudaEventRecord");
 	auto args = (struct cudaEventRecordArg *) __args;
@@ -2130,7 +2169,7 @@ void TallyServer::handle_cudaEventRecord(void *__args, const void* const request
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaDeviceSynchronize(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaDeviceSynchronize(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudaDeviceSynchronize");
     
@@ -2152,7 +2191,7 @@ void TallyServer::handle_cudaDeviceSynchronize(void *__args, const void* const r
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudaStreamSynchronize(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudaStreamSynchronize(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudaStreamSynchronize");
 	auto args = (struct cudaStreamSynchronizeArg *) __args;
@@ -2183,7 +2222,7 @@ void TallyServer::handle_cudaStreamSynchronize(void *__args, const void* const r
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cublasCreate_v2(void *__args, const void* const requestPayload)
+void TallyServer::handle_cublasCreate_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cublasCreate_v2");
 	auto args = (struct cublasCreate_v2Arg *) __args;
@@ -2208,7 +2247,7 @@ void TallyServer::handle_cublasCreate_v2(void *__args, const void* const request
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cudnnCreate(void *__args, const void* const requestPayload)
+void TallyServer::handle_cudnnCreate(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudnnCreate");
 	auto args = (struct cudnnCreateArg *) __args;

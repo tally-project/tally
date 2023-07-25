@@ -220,7 +220,7 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
     //! [take response]
     while(!TallyClient::client->iox_client->take()
         .and_then([&](const auto& responsePayload) {
-            
+
             auto response = static_cast<const cudaMallocResponse*>(responsePayload);
 
             *devPtr = response->devPtr;

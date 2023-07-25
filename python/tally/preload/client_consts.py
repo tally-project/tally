@@ -184,23 +184,26 @@ public:
 
 	// ================== Per-client state ===================
 	std::map<int32_t, ClientData> client_data;
-
+    std::map<int32_t, iox::popo::UntypedServer *> worker_servers;
+	std::map<int32_t, std::thread> worker_threads;
+    
 	// ==================== Global state =====================
 	std::map<std::string, void *> _kernel_name_to_addr;
 	std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
-	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, const void* const)>> cuda_api_handler_map;
+	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, iox::popo::UntypedServer *, const void* const)>> cuda_api_handler_map;
     
     static constexpr char APP_NAME[] = "iox-cpp-request-response-server-untyped";
-	iox::popo::UntypedServer *iox_server;
 
     TallyServer();
     ~TallyServer();
 
     void wait_until_launch_queue_empty();
-    void start_scheduler();
-    void start_server();
     void register_api_handler();
     void load_cache();
+
+    void start_scheduler();
+    void start_main_server();
+    void start_worker_server(int32_t client_id);
 
     std::function<void()> cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
 

@@ -11,6 +11,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-commen
 option(ENABLE_LOGGING "Enable logging" OFF)
 option(ENABLE_PROFILING "Enable profiling" OFF)
 option(RUN_LOCALLY "Run client process locally" OFF)
+option(PROFILE_KERNEL_WISE "Profile kernel-to-kernel performance" OFF)
 
 link_directories(/usr/local/cuda/lib64)
 
@@ -121,6 +122,10 @@ add_executable(tally_server ${PROJECT_SOURCE_DIR}/src/tally/tally_server.cpp ${T
 
 if(ENABLE_LOGGING)
     target_compile_definitions(tally_server PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
+endif()
+
+if(PROFILE_KERNEL_WISE)
+    target_compile_definitions(tally_server PRIVATE PROFILE_KERNEL_WISE=${PROFILE_KERNEL_WISE})
 endif()
 
 target_include_directories(tally_server

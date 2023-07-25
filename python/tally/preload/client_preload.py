@@ -114,7 +114,7 @@ def gen_server_handler(func_sig):
         return None
 
     handler = ""
-    handler += f"""void TallyServer::handle_{func_name}(void *__args, const void* const requestPayload)
+    handler += f"""void TallyServer::handle_{func_name}(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {{
 """
     handler += f"\tTALLY_SPD_LOG(\"Received request: {func_name}\");\n"
@@ -407,7 +407,7 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
         f.write(TALLY_SERVER_HEADER_TEMPLATE_TOP)
 
         for func_name in set(list(client_code_dict.keys()) + REGISTER_FUNCS):
-            f.write(f"\tvoid handle_{func_name}(void *args, const void* const requestPayload);\n")
+            f.write(f"\tvoid handle_{func_name}(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);\n")
 
         f.write(TALLY_SERVER_HEADER_TEMPLATE_BUTTOM)
 
@@ -429,7 +429,7 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
         f.write("void TallyServer::register_api_handler() {\n")
 
         for func_name in set(list(client_code_dict.keys()) + SPECIAL_CLIENT_PRELOAD_FUNCS):
-            f.write(f"\tcuda_api_handler_map[CUDA_API_ENUM::{func_name.upper()}] = std::bind(&TallyServer::handle_{func_name}, this, std::placeholders::_1, std::placeholders::_2);\n")
+            f.write(f"\tcuda_api_handler_map[CUDA_API_ENUM::{func_name.upper()}] = std::bind(&TallyServer::handle_{func_name}, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);\n")
 
         f.write("}\n")
 
