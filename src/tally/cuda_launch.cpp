@@ -35,15 +35,17 @@ std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config)
 }
 
 // return (time, iterations)
-std::pair<float, float> CudaLaunchConfig::repeat_launch(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream, float dur_seconds, uint32_t max_count)
+cudaError_t CudaLaunchConfig::repeat_launch(
+    const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
+    float dur_seconds, float *time_ms, float *iters, uint32_t max_count)
 {
-    cudaDeviceSynchronize();
-    float time_ms;
+    float _time_ms;
+    cudaError_t err;
 
     // get a rough estimate of the kernel duration
-    launch(func, gridDim, blockDim, args, sharedMem, stream, true, &time_ms);
+    err = launch(func, gridDim, blockDim, args, sharedMem, stream, true, &_time_ms);
 
-    uint64_t sync_interval = std::max((uint64_t)((dur_seconds * 1000.) / time_ms), 1ul);
+    uint64_t sync_interval = std::max((uint64_t)((dur_seconds * 1000.) / _time_ms), 1ul);
 
     auto startTime = std::chrono::steady_clock::now();
     uint64_t ckpt_count = 0;
@@ -53,20 +55,20 @@ std::pair<float, float> CudaLaunchConfig::repeat_launch(const void * func, dim3 
     while (true) {
 
         // Perform your steps here
-        launch(func, gridDim, blockDim, args, sharedMem, stream);
+        err = launch(func, gridDim, blockDim, args, sharedMem, stream);
         count++;
         ckpt_count++;
 
         // Avoid launching too many kernels
         if (ckpt_count == sync_interval) {
-            cudaDeviceSynchronize();
+            cudaStreamSynchronize(stream);
             ckpt_count = 0;
         }
 
         auto currentTime = std::chrono::steady_clock::now();
         elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
         if ((max_count > 0 && count >= max_count) || ((double) elapsed_ns) / 1e9 >= dur_seconds) {
-            cudaDeviceSynchronize();
+            cudaStreamSynchronize(stream);
             auto currentTime = std::chrono::steady_clock::now();
             elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
             break;
@@ -74,59 +76,62 @@ std::pair<float, float> CudaLaunchConfig::repeat_launch(const void * func, dim3 
 
     }
 
-    return std::make_pair(((double)elapsed_ns / 1e6), (double)count);
+    if (time_ms) *time_ms = (double)elapsed_ns / 1e6;
+    if (iters) *iters = count;
+
+    return err;
 }
 
-void profile_kernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream)
-{
-    CudaLaunchCall launch_call(func, gridDim, blockDim);
-    CudaLaunchCallConfig base_call_config(
-        launch_call,
-        CudaLaunchConfig()
-    );
-    float baseline_time_ms = TallyDaemon::daemon->get_execution_time(base_call_config);
+// void profile_kernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream)
+// {
+//     CudaLaunchCall launch_call(func, gridDim, blockDim);
+//     CudaLaunchCallConfig base_call_config(
+//         launch_call,
+//         CudaLaunchConfig()
+//     );
+//     float baseline_time_ms = TallyDaemon::daemon->get_execution_time(base_call_config);
 
-    // Skip if base performance not exists
-    if (baseline_time_ms > 0) {
+//     // Skip if base performance not exists
+//     if (baseline_time_ms > 0) {
 
-        // Use this to identify the idx of the kernel launch
-        auto curr_kernel_idx = TallyDaemon::daemon->curr_kernel_idx;
+//         // Use this to identify the idx of the kernel launch
+//         auto curr_kernel_idx = TallyDaemon::daemon->curr_kernel_idx;
 
-        if (curr_kernel_idx == PROFILE_KERNEL_IDX) {
+//         if (curr_kernel_idx == PROFILE_KERNEL_IDX) {
 
-            bool use_original = PROFILE_USE_ORIGINAL;
-            bool use_sliced = PROFILE_USE_SLICED;
-            bool use_ptb = PROFILE_USE_PTB;
-            bool use_cuda_graph = PROFILE_USE_CUDA_GRAPH;
-            uint32_t threads_per_slice = PROFILE_THREADS_PER_SLICE;
-            uint32_t num_blocks_per_sm = PROFILE_NUM_BLOCKS_PER_SM;
+//             bool use_original = PROFILE_USE_ORIGINAL;
+//             bool use_sliced = PROFILE_USE_SLICED;
+//             bool use_ptb = PROFILE_USE_PTB;
+//             bool use_cuda_graph = PROFILE_USE_CUDA_GRAPH;
+//             uint32_t threads_per_slice = PROFILE_THREADS_PER_SLICE;
+//             uint32_t num_blocks_per_sm = PROFILE_NUM_BLOCKS_PER_SM;
 
-            CudaLaunchConfig profile_config(use_original, use_sliced, use_ptb, use_cuda_graph, threads_per_slice, num_blocks_per_sm);
-            std::cout << "Profiling config: " << profile_config << std::endl;
-            auto time_iters = profile_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, PROFILE_DURATION_SECONDS);
+//             CudaLaunchConfig profile_config(use_original, use_sliced, use_ptb, use_cuda_graph, threads_per_slice, num_blocks_per_sm);
+//             std::cout << "Profiling config: " << profile_config << std::endl;
+//             auto time_iters = profile_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, PROFILE_DURATION_SECONDS);
 
-            std::cout << "Kernel: " << TallyDaemon::daemon->host_func_to_demangled_kernel_name_map[func] << std::endl;
-            std::cout << "\tblockDim: " << blockDim.x << " " << blockDim.y << " " << blockDim.z << std::endl;
-            std::cout << "\tgridDim: " << gridDim.x << " " << gridDim.y << " " << gridDim.z << std::endl;
-            float baseline_tp = 1 / baseline_time_ms;
-            float new_tp = time_iters.second / time_iters.first;
+//             std::cout << "Kernel: " << TallyDaemon::daemon->host_func_to_demangled_kernel_name_map[func] << std::endl;
+//             std::cout << "\tblockDim: " << blockDim.x << " " << blockDim.y << " " << blockDim.z << std::endl;
+//             std::cout << "\tgridDim: " << gridDim.x << " " << gridDim.y << " " << gridDim.z << std::endl;
+//             float baseline_tp = 1 / baseline_time_ms;
+//             float new_tp = time_iters.second / time_iters.first;
 
-            std::cout << "Time: " << time_iters.first << std::endl;
-            std::cout << "Iters: " << time_iters.second << std::endl;
-            std::cout << "baseline_tp: " << baseline_tp << std::endl;
-            std::cout << "new_tp: " << new_tp << std::endl;
+//             std::cout << "Time: " << time_iters.first << std::endl;
+//             std::cout << "Iters: " << time_iters.second << std::endl;
+//             std::cout << "baseline_tp: " << baseline_tp << std::endl;
+//             std::cout << "new_tp: " << new_tp << std::endl;
 
-            std::cout << "Normalized throughput: " << new_tp / baseline_tp << std::endl;
+//             std::cout << "Normalized throughput: " << new_tp / baseline_tp << std::endl;
 
-            exit(0);
+//             exit(0);
 
-        } else {
-            curr_kernel_idx++;
-        }
-    } else {
-        std::cout << "Baseline performance does not exist, skipping.." << std::endl;
-    }
-}
+//         } else {
+//             curr_kernel_idx++;
+//         }
+//     } else {
+//         std::cout << "Baseline performance does not exist, skipping.." << std::endl;
+//     }
+// }
 
 CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
@@ -150,13 +155,16 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
     CudaLaunchCallConfig base_call_config(launch_call, base_config);
 
     // warmup first
-    base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10000);
+    base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, nullptr, nullptr, 10000);
 
     base_time_ms = TallyDaemon::daemon->get_execution_time(base_call_config);
     if (base_time_ms <= 0) {
 
-        auto res = base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10000);
-        base_time_ms = res.first / res.second;
+        float _time_ms;
+        float iters;
+
+        base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, &_time_ms, &iters, 10000);
+        base_time_ms = _time_ms / iters;
         TallyDaemon::daemon->set_execution_time(base_call_config, base_time_ms);
     }
 
@@ -190,8 +198,10 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
             time_ms = TallyDaemon::daemon->get_execution_time(call_config);
 
             if (time_ms <= 0) {
-                auto res = config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, 10000);
-                time_ms = res.first / res.second;
+                float _time_ms;
+                float iters;
+                config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, &_time_ms, &iters, 10000);
+                time_ms = _time_ms / iters;
 
                 std::cout << "\t" << config << " Time: " << time_ms << std::endl;
                 TallyDaemon::daemon->set_execution_time(call_config, time_ms);

@@ -449,8 +449,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    // Assume all cuda launch will succeed
-    err = cudaSuccess;
+    IOX_RECV_RETURN_STATUS(cudaError_t);
 #endif
 
     TALLY_CLIENT_PROFILE_END;

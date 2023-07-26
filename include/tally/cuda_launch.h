@@ -16,6 +16,8 @@ struct CudaLaunchCall {
     dim3 gridDim;
     dim3 blockDim;
 
+    CudaLaunchCall(){}
+
     CudaLaunchCall(const void *func, dim3 gridDim, dim3 blockDim) :
         func(func),
         gridDim(gridDim),
@@ -127,7 +129,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config);
     cudaError_t launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, bool run_profile=false, float *elapsed_time_ms=nullptr);
-    std::pair<float, float> repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, uint32_t max_count=-1);
+    cudaError_t repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, float *time_ms=nullptr, float *iters=nullptr, uint32_t max_count=-1);
 };
 
 struct CudaLaunchCallConfig {

@@ -129,10 +129,23 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
 
     while (client_data[client_uid].has_kernel) {}
 
+    client_data[client_uid].launch_call = CudaLaunchCall(server_func_addr, args->gridDim, args->blockDim);
     client_data[client_uid].kernel_to_dispatch = &partial;
     client_data[client_uid].has_kernel = true;
 
     while (client_data[client_uid].has_kernel) {}
+    
+    iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
+        .and_then([&](auto& responsePayload) {
+
+            auto response = static_cast<cudaError_t*>(responsePayload);
+            *response = client_data[client_uid].err;
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::load_cache()
@@ -167,6 +180,7 @@ void TallyServer::load_cache()
                 l__cudaRegisterFunction(handle, (const char*) kernel_server_addr, (char *)kernel_name.c_str(), kernel_name.c_str(), -1, (uint3*)0, (uint3*)0, (dim3*)0, (dim3*)0, (int*)0);
             
                 _kernel_addr_to_args[kernel_server_addr] = param_sizes;
+                host_func_to_demangled_kernel_name_map[(const char*) kernel_server_addr] = demangleFunc(kernel_name);
             }
 
             l__cudaRegisterFatBinaryEnd(handle);

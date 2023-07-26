@@ -25,6 +25,7 @@
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
 
 #include <tally/log.h>
+#include <tally/cuda_launch.h>
 #include <tally/msg_struct.h>
 #include <tally/cuda_util.h>
 
@@ -52,8 +53,10 @@ public:
 	std::vector<DeviceMemoryKey> dev_addr_map;
 
 	std::unordered_map<void *, void *> _kernel_client_addr_mapping;
-	std::function<void()> *kernel_to_dispatch = nullptr;
+	std::function<cudaError_t(CudaLaunchConfig, bool, float, float*, float*)> *kernel_to_dispatch = nullptr;
 	std::atomic<bool> has_kernel = false;
+	CudaLaunchCall launch_call;
+	cudaError_t err;
 
     cudaStream_t default_stream = nullptr;
 };
@@ -75,7 +78,8 @@ public:
 	std::map<std::string, void *> _kernel_name_to_addr;
 	std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, iox::popo::UntypedServer *, const void* const)>> cuda_api_handler_map;
-    
+	std::map<const void *, std::string> host_func_to_demangled_kernel_name_map;
+
     static constexpr char APP_NAME[] = "iox-cpp-request-response-server-untyped";
 
     TallyServer();
@@ -89,7 +93,7 @@ public:
     void start_main_server();
     void start_worker_server(int32_t client_id);
 
-    std::function<void()> cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
+    std::function<cudaError_t(CudaLaunchConfig, bool, float, float*, float*)> cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
 
 	void handle_cudaEventQuery(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
 	void handle_cudaHostAlloc(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
