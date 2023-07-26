@@ -13,6 +13,8 @@
 #include <tally/transform.h>
 #include <tally/daemon.h>
 
+const CudaLaunchConfig CudaLaunchConfig::default_config = CudaLaunchConfig();
+
 std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config)
 {
     os << "CudaLaunchConfig: ";

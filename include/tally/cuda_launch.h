@@ -88,6 +88,9 @@ public:
 
 class CudaLaunchConfig {
 public:
+
+    static const CudaLaunchConfig default_config;
+
     // Choose which kernel version to launch
     bool use_original = true;
     bool use_sliced = false;

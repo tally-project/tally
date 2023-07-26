@@ -197,7 +197,6 @@ public:
     TallyServer();
     ~TallyServer();
 
-    void wait_until_launch_queue_empty();
     void register_api_handler();
     void load_cache();
 

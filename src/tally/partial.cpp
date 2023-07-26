@@ -7,6 +7,7 @@
 
 #include <tally/log.h>
 #include <tally/cuda_util.h>
+#include <tally/cuda_launch.h>
 #include <tally/msg_struct.h>
 #include <tally/generated/cuda_api.h>
 #include <tally/generated/msg_struct.h>
@@ -29,8 +30,10 @@ std::function<void()> TallyServer::cudaLaunchKernel_Partial(const void * func, d
         offset += arg_sizes[i];
     }
 
-    return [&, func, gridDim, blockDim, __args_arr, sharedMem, stream]() {
-        auto err = cudaLaunchKernel((const void *) func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream);
+    return [func, gridDim, blockDim, __args_arr, sharedMem, stream]
+            (CudaLaunchConfig config = CudaLaunchConfig::default_config) {
+        
+        auto err = config.launch((const void *) func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream);
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
     };
 }
