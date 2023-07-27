@@ -85,15 +85,15 @@ public:
     cudaStream_t stream;
 
 	// Performance cache to use at runtime
-    std::unordered_map<CudaLaunchCallConfig, float> config_latency_map;
+    std::unordered_map<CudaLaunchCallConfigPair, CudaLaunchCallConfigPairResult> kernel_pair_perf_map;
 
 	// Register transformed kernels here
     std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> sliced_kernel_map;
     std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> ptb_kernel_map;
 
-	// Set and Get kernel execution time
-    float get_execution_time(CudaLaunchCallConfig&);
-    void set_execution_time(CudaLaunchCallConfig&, float time_ms);
+	// Set and Get performance cache
+    CudaLaunchCallConfigPairResult get_kernel_pair_perf(CudaLaunchCallConfig &call_config_1, CudaLaunchCallConfig &call_config_2, bool *found);
+	void set_kernel_pair_perf(CudaLaunchCallConfig &call_config_1, CudaLaunchCallConfig &call_config_2, float norm_speed_1, float norm_speed_2);
 
     void save_performance_cache();
 

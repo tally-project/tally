@@ -154,5 +154,33 @@ struct std::hash<CudaLaunchCallConfig>
     }
 };
 
+struct CudaLaunchCallConfigPair {
+    CudaLaunchCallConfig call_config_1;
+    CudaLaunchCallConfig call_config_2;
+
+    bool operator==(const CudaLaunchCallConfigPair &other) const
+    {
+        return (call_config_1 == other.call_config_1 && call_config_2 == other.call_config_2) ||
+               (call_config_1 == other.call_config_2 && call_config_2 == other.call_config_1);
+    }
+};
+
+// TODO: rewrite this hash function
+template <>
+struct std::hash<CudaLaunchCallConfigPair>
+{
+    std::size_t operator()(const CudaLaunchCallConfigPair& k) const
+    {
+        auto _hash = std::hash<CudaLaunchCallConfig>()(k.call_config_1) |
+                     std::hash<CudaLaunchCallConfig>()(k.call_config_2);
+        return _hash;
+    }
+};
+
+struct CudaLaunchCallConfigPairResult {
+    std::pair<CudaLaunchCallConfig, float> call_config_norm_speed_1;
+    std::pair<CudaLaunchCallConfig, float> call_config_norm_speed_2;
+};
+
 
 #endif // TALLY_CUDA_LAUNCH_H

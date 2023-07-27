@@ -132,7 +132,6 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
     // warmup first
     base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, nullptr, nullptr, 10000);
 
-    base_time_ms = TallyServer::server->get_execution_time(base_call_config);
     if (base_time_ms <= 0) {
 
         float _time_ms;
@@ -140,7 +139,6 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
 
         base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, &_time_ms, &iters, 10000);
         base_time_ms = _time_ms / iters;
-        TallyServer::server->set_execution_time(base_call_config, base_time_ms);
     }
 
     std::cout << "\tBaseline: Time: " << base_time_ms << std::endl;
@@ -153,7 +151,6 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
         for (auto &config : candidates) {
 
             CudaLaunchCallConfig call_config(launch_call, config);
-            time_ms = TallyServer::server->get_execution_time(call_config);
 
             if (time_ms <= 0) {
                 float _time_ms;
@@ -162,7 +159,6 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
                 time_ms = _time_ms / iters;
 
                 std::cout << "\t" << config << " Time: " << time_ms << std::endl;
-                TallyServer::server->set_execution_time(call_config, time_ms);
             }
 
             if (time_ms < best_time_ms) {
@@ -179,8 +175,7 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
     }
 
     std::cout << "Choosen: " << best_config << std::endl;
-    // TallyServer::server->set_launch_config(launch_call, best_config);
-    TallyServer::server->save_performance_cache();
+    // TallyServer::server->save_performance_cache();
 
     return best_config;
 }

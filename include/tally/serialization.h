@@ -49,6 +49,20 @@ void serialize(Archive & ar, CudaLaunchKeyConfig & g, const unsigned int version
 }
 
 template<class Archive>
+void serialize(Archive & ar, CudaLaunchKeyConfigPair & g, const unsigned int version)
+{
+    ar & g.key_config_1;
+    ar & g.key_config_2;
+}
+
+template<class Archive>
+void serialize(Archive & ar, CudaLaunchKeyConfigPairResult & g, const unsigned int version)
+{
+    ar & g.config_key_norm_speed_1;
+    ar & g.config_key_norm_speed_2;
+}
+
+template<class Archive>
 void serialize(Archive & ar, CubinData & g, const unsigned int version)
 {
     ar & g.magic;
@@ -68,8 +82,10 @@ void serialize(Archive & ar, CubinCache & g, const unsigned int version)
 template<class Archive>
 void serialize(Archive & ar, PerformanceCache & g, const unsigned int version)
 {
-    ar & g.kernel_config_map;
-    ar & g.config_latency_map;
+    // ar & g.kernel_config_map;
+    // ar & g.config_latency_map;
+
+    ar & g.kernel_pair_perf_map;
 }
 
 } // namespace serialization

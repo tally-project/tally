@@ -37,6 +37,16 @@ struct std::hash<CudaLaunchKey>
     }
 };
 
+static std::ostream& operator<<(std::ostream& os, const CudaLaunchKey& launch_key)
+{
+    os << "LaunchKey: \n";
+    os << "\tName: " << launch_key.kernel_name << "\n";
+    os << "\tblockDim: " << "(" << launch_key.blockDim.x << ", " << launch_key.blockDim.y << ", " << launch_key.blockDim.z << ")" << "\n";
+    os << "\tgridDim: " << "(" << launch_key.gridDim.x << ", " << launch_key.gridDim.y << ", " << launch_key.gridDim.z << ")";
+    
+    return os;
+}
+
 struct CudaLaunchKeyConfig {
     CudaLaunchKey key;
     CudaLaunchConfig config;
@@ -56,6 +66,64 @@ struct std::hash<CudaLaunchKeyConfig>
         return _hash;
     }
 };
+
+static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfig& key_config)
+{
+    os << "CudaLaunchKeyConfig: \n";
+    os << key_config.key << "\n";
+    os << key_config.config;
+
+    return os;
+}
+
+struct CudaLaunchKeyConfigPair {
+    CudaLaunchKeyConfig key_config_1;
+    CudaLaunchKeyConfig key_config_2;
+
+    bool operator==(const CudaLaunchKeyConfigPair &other) const
+    {
+        return (key_config_1 == other.key_config_1 && key_config_2 == other.key_config_2) ||
+               (key_config_1 == other.key_config_2 && key_config_2 == other.key_config_1);
+    }
+};
+
+template <>
+struct std::hash<CudaLaunchKeyConfigPair>
+{
+    std::size_t operator()(const CudaLaunchKeyConfigPair& k) const
+    {
+        auto _hash = std::hash<CudaLaunchKeyConfig>()(k.key_config_1) |
+                     std::hash<CudaLaunchKeyConfig>()(k.key_config_2);
+        return _hash;
+    }
+};
+
+static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPair& key_config_pair)
+{
+    os << "CudaLaunchKeyConfigPair: \n";
+    os << "First: \n";
+    os << key_config_pair.key_config_1 << "\n";
+    os << "Second: \n";
+    os << key_config_pair.key_config_2;
+
+    return os;
+}
+
+struct CudaLaunchKeyConfigPairResult {
+    std::pair<CudaLaunchKeyConfig, float> config_key_norm_speed_1;
+    std::pair<CudaLaunchKeyConfig, float> config_key_norm_speed_2;
+};
+
+static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPairResult& key_config_pair_result)
+{
+    float norm_speed_1 = key_config_pair_result.config_key_norm_speed_1.second;
+    float norm_speed_2 = key_config_pair_result.config_key_norm_speed_2.second;
+
+    os << "CudaLaunchKeyConfigPairResult: \n";
+    os << "K1 Norm Speed: " << norm_speed_1 << " K2 Norm Speed: " << norm_speed_2 << " Sum: " << norm_speed_1 + norm_speed_2;
+
+    return os;
+}
 
 // For each cubin file
 // Don't forget to modify serialization.h when modifying this struct
@@ -146,20 +214,16 @@ public:
 class PerformanceCache
 {
 public:
-    // Best launch config for each CudaLaunchKey
-    std::unordered_map<CudaLaunchKey, CudaLaunchConfig> kernel_config_map;
+    // Kernel pair and the normalized speed
+    std::unordered_map<CudaLaunchKeyConfigPair, CudaLaunchKeyConfigPairResult> kernel_pair_perf_map;
 
-    // Latency (ms) for kernel and config pair
-    std::unordered_map<CudaLaunchKeyConfig, float> config_latency_map;
-
-    void set_execution_time(CudaLaunchKeyConfig& config, float time_ms)
+    void set_kernel_pair_perf(CudaLaunchKeyConfigPair &key_config_pair, CudaLaunchKeyConfigPairResult &res)
     {
-        config_latency_map[config] = time_ms;
-    }
+        kernel_pair_perf_map[key_config_pair] = res;
 
-    void set_launch_config(CudaLaunchKey& key, CudaLaunchConfig& config)
-    {
-        kernel_config_map[key] = config;
+        std::cout << key_config_pair << std::endl;
+        std::cout << res << std::endl;
+        std::cout << std::endl;
     }
 };
 

@@ -65,31 +65,39 @@ void TallyServer::start_scheduler()
 
         for (auto &k1_config : k1_configs) {
             for (auto &k2_config : k2_configs) {
-                cudaDeviceSynchronize();
 
-                std::thread launch_t_1(launch_kernel_func, 0, k1_config);
-                std::thread launch_t_2(launch_kernel_func, 1, k2_config);
+                CudaLaunchCallConfig call_config_1(launch_calls[0], k1_config);
+                CudaLaunchCallConfig call_config_2(launch_calls[1], k2_config);
 
-                launch_t_1.join();
-                launch_t_2.join();
+                bool found_in_cache = false;
+                auto res = get_kernel_pair_perf(
+                    call_config_1,
+                    call_config_2,
+                    &found_in_cache
+                );
 
-                float k1_thrupt = iters[0] / time_elapsed[0];
-                float k2_thrupt = iters[1] / time_elapsed[1];
+                if (!found_in_cache) {
 
-                std::cout << "=========== Begin Profiling ============" << std::endl;
+                    cudaDeviceSynchronize();
 
-                std::cout << "Kernel 1: " << std::endl;
-                std::cout << "\t" << kernel_names[0] << std::endl;
-                std::cout << "\t" << k1_config << std::endl;
-                std::cout << "\tTime: " << time_elapsed[0] << " Iters: " << iters[0] << std::endl;
+                    std::thread launch_t_1(launch_kernel_func, 0, k1_config);
+                    std::thread launch_t_2(launch_kernel_func, 1, k2_config);
 
-                std::cout << "Kernel 2: " << std::endl;
-                std::cout << "\t" << kernel_names[1] << std::endl;
-                std::cout << "\t" << k2_config << std::endl;
-                std::cout << "\tTime: " << time_elapsed[1] << " Iters: " << iters[1] << std::endl;
+                    launch_t_1.join();
+                    launch_t_2.join();
 
-                std::cout << "Kernel 1 normalized throughput: " << k1_thrupt / baseline[0] << std::endl;
-                std::cout << "Kernel 2 normalized throughput: " << k2_thrupt / baseline[1] << std::endl;
+                    float k1_thrupt = iters[0] / time_elapsed[0];
+                    float k2_thrupt = iters[1] / time_elapsed[1];
+
+                    set_kernel_pair_perf(
+                        call_config_1,
+                        call_config_2,
+                        k1_thrupt / baseline[0],
+                        k2_thrupt / baseline[1]
+                    );
+                } else {
+                    std::cout << "Kernel Pair performance found in cache. Skipping." << std::endl; 
+                }
             }
         }
 
