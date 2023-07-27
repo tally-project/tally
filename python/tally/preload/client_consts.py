@@ -126,8 +126,6 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <functional>
 #include <memory>
 #include <atomic>
-#include <condition_variable>
-#include <mutex>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -141,6 +139,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
 
 #include <tally/log.h>
+#include <tally/cuda_launch.h>
 #include <tally/msg_struct.h>
 #include <tally/cuda_util.h>
 
@@ -167,9 +166,11 @@ public:
 	// Used to check whether an address points to device memory
 	std::vector<DeviceMemoryKey> dev_addr_map;
 
-	std::unordered_map<void *, void *> _kernel_client_addr_mapping;
-	std::function<void()> *kernel_to_dispatch = nullptr;
+	std::unordered_map<const void *, const void *> _kernel_client_addr_mapping;
+	std::function<cudaError_t(CudaLaunchConfig, bool, float, float*, float*)> *kernel_to_dispatch = nullptr;
 	std::atomic<bool> has_kernel = false;
+	CudaLaunchCall launch_call;
+	cudaError_t err;
 
     cudaStream_t default_stream = nullptr;
 };
@@ -188,23 +189,48 @@ public:
 	std::map<int32_t, std::thread> worker_threads;
     
 	// ==================== Global state =====================
-	std::map<std::string, void *> _kernel_name_to_addr;
 	std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, iox::popo::UntypedServer *, const void* const)>> cuda_api_handler_map;
-    
+	std::map<const void *, std::string> host_func_to_demangled_kernel_name_map;
+	std::map<std::string, const void *> demangled_kernel_name_to_host_func_map;
+	std::map<std::string, const void *> mangled_kernel_name_to_host_func_map;
+
+	std::vector<CudaGraphCall*> cuda_graph_vec;
+
+	// Dedicated stream for cuda graph
+    cudaStream_t stream;
+
+	// Performance cache to use at runtime
+    std::unordered_map<CudaLaunchCallConfig, float> config_latency_map;
+
+	// Register transformed kernels here
+    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> sliced_kernel_map;
+    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> ptb_kernel_map;
+
+	// Set and Get kernel execution time
+    float get_execution_time(CudaLaunchCallConfig&);
+    void set_execution_time(CudaLaunchCallConfig&, float time_ms);
+
+    void save_performance_cache();
+
     static constexpr char APP_NAME[] = "iox-cpp-request-response-server-untyped";
 
     TallyServer();
     ~TallyServer();
 
+    void wait_until_launch_queue_empty();
     void register_api_handler();
     void load_cache();
+
+	void register_kernels();
+    void register_measurements();
+    void register_ptx_transform(const char* cubin_data, size_t cubin_size);
 
     void start_scheduler();
     void start_main_server();
     void start_worker_server(int32_t client_id);
 
-    std::function<void()> cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
+    std::function<cudaError_t(CudaLaunchConfig, bool, float, float*, float*)> cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
 
 """
 

@@ -79,6 +79,9 @@ void TallyServer::start_scheduler()
     }
 
 #else
+    // CudaLaunchConfig config = CudaLaunchConfig::default_config;
+    CudaLaunchConfig config(false, false, true, false, 0, 4);
+
     while (!iox::posix::hasTerminationRequested()) {
 
         for (auto &pair : client_data) {
@@ -86,7 +89,7 @@ void TallyServer::start_scheduler()
             auto &info = pair.second;
 
             if (info.has_kernel) {
-                info.err = (*info.kernel_to_dispatch)(CudaLaunchConfig::default_config, false, 0, nullptr, nullptr);
+                info.err = (*info.kernel_to_dispatch)(config, false, 0, nullptr, nullptr);
                 info.has_kernel = false;
             }
 

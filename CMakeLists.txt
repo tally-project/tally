@@ -31,9 +31,8 @@ include(IceoryxPlatform)
 include(IceoryxPlatformSettings)
 
 set(TALLY_SRC_FILES
-    ${PROJECT_SOURCE_DIR}/src/tally/daemon.cpp
+    # ${PROJECT_SOURCE_DIR}/src/tally/daemon.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/cache.cpp
-    ${PROJECT_SOURCE_DIR}/src/tally/cuda_launch.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/cuda_util.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/util.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/signal.cpp
@@ -47,6 +46,7 @@ set(TALLY_SERVER_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/tally/generated/server.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/partial.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/scheduler.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/cuda_launch.cpp
 )
 
 set(TALLY_CLIENT_SRC_FILES
@@ -57,6 +57,10 @@ add_library(tally STATIC ${TALLY_SRC_FILES})
 target_include_directories(tally
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC  /usr/local/cuda/include
+)
+
+target_link_libraries(tally PUBLIC
+    iceoryx_posh::iceoryx_posh
 )
 
 add_library(tally_client SHARED
@@ -91,18 +95,18 @@ target_link_libraries(tally_client PUBLIC
 
 target_compile_definitions(tally_client PRIVATE IS_CLIENT="TRUE")
 
-add_library(tally_transform SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_transform.cpp ${TALLY_SRC_FILES})
+# add_library(tally_transform SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_transform.cpp ${TALLY_SRC_FILES})
 
-target_include_directories(tally_transform
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
-    PUBLIC  /usr/local/cuda/include
-    PUBLIC ${Boost_INCLUDE_DIR}
-)
+# target_include_directories(tally_transform
+#     PUBLIC ${PROJECT_SOURCE_DIR}/include
+#     PUBLIC  /usr/local/cuda/include
+#     PUBLIC ${Boost_INCLUDE_DIR}
+# )
 
-target_link_libraries(tally_transform
-    PUBLIC Boost::serialization
-    PUBLIC Boost::regex
-)
+# target_link_libraries(tally_transform
+#     PUBLIC Boost::serialization
+#     PUBLIC Boost::regex
+# )
 
 add_library(tally_profile_cpu SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_profile_cpu.cpp)
 

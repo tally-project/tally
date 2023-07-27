@@ -107,6 +107,63 @@ void TallyServer::start_worker_server(int32_t client_id) {
     }
 }
 
+void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_size)
+{
+    auto sliced_data = TallyCache::cache->cubin_cache.get_sliced_data(cubin_data, cubin_size);
+    auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
+
+    register_kernels_from_ptx_fatbin(sliced_data, mangled_kernel_name_to_host_func_map, sliced_kernel_map);
+    register_kernels_from_ptx_fatbin(ptb_data, mangled_kernel_name_to_host_func_map, ptb_kernel_map);
+}
+
+void TallyServer::register_measurements()
+{
+    auto &cache_config_latency_map = TallyCache::cache->performance_cache.config_latency_map;
+
+    for (auto &pair : cache_config_latency_map) {
+        auto &key_config = pair.first;
+        auto time_ms = pair.second;
+        auto &kernel_name = key_config.key.kernel_name;
+
+        auto *host_func = demangled_kernel_name_to_host_func_map[kernel_name];
+        CudaLaunchCallConfig call_config(
+            CudaLaunchCall(host_func, key_config.key.gridDim, key_config.key.blockDim),
+            key_config.config
+        );
+
+        config_latency_map[call_config] = time_ms;
+    }
+}
+
+float TallyServer::get_execution_time(CudaLaunchCallConfig &call_config)
+{
+    if (config_latency_map.find(call_config) != config_latency_map.end()) {
+        return config_latency_map[call_config];
+    }
+
+    return -1.;
+}
+
+void TallyServer::set_execution_time(CudaLaunchCallConfig &call_config, float time_ms)
+{
+    config_latency_map[call_config] = time_ms;
+
+    CudaLaunchKey launch_key(
+        host_func_to_demangled_kernel_name_map[call_config.call.func],
+        call_config.call.gridDim,
+        call_config.call.blockDim
+    );
+
+    CudaLaunchKeyConfig key_config(launch_key, call_config.config);
+
+    TallyCache::cache->performance_cache.set_execution_time(key_config, time_ms);
+}
+
+void TallyServer::save_performance_cache()
+{
+    TallyCache::cache->save_performance_cache();
+}
+
 void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cudaLaunchKernel");
@@ -123,7 +180,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
         stream = client_data[client_uid].default_stream;
     }
 
-    void *server_func_addr = client_data[client_uid]._kernel_client_addr_mapping[(void *) args->host_func];
+    const void *server_func_addr = client_data[client_uid]._kernel_client_addr_mapping[args->host_func];
 
     auto partial = cudaLaunchKernel_Partial(server_func_addr, args->gridDim, args->blockDim, args->sharedMem, stream, args->params);
 
@@ -150,6 +207,9 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
 
 void TallyServer::load_cache()
 {
+
+    cudaStreamCreate(&stream);
+
     std::map<size_t, std::vector<CubinData>> cubin_map = TallyCache::cache->cubin_cache.cubin_map;
 
     for (auto &pair : cubin_map) {
@@ -157,12 +217,14 @@ void TallyServer::load_cache()
         auto &cubin_vec = pair.second;
 
         for (auto &cubin_data : cubin_vec) {
+
             const my__fatBinC_Wrapper_t __fatDeviceText __attribute__ ((aligned (8))) = {
                 cubin_data.magic,
                 cubin_data.version,
                 (const long long unsigned int*) cubin_data.cubin_data.c_str(),
                 0
             };
+
             void **handle = l__cudaRegisterFatBinary((void *) &__fatDeviceText);
 
             auto kernel_args = cubin_data.kernel_args;
@@ -171,16 +233,19 @@ void TallyServer::load_cache()
 
                 auto &kernel_name = kernel_args_pair.first;
                 auto &param_sizes = kernel_args_pair.second;
+                auto demangled_kernel_name = demangleFunc(kernel_name);
 
                 // allocate an address for the kernel
                 void *kernel_server_addr = malloc(8);
 
                 // Register the kernel with this address
-                _kernel_name_to_addr[kernel_name] = kernel_server_addr;
                 l__cudaRegisterFunction(handle, (const char*) kernel_server_addr, (char *)kernel_name.c_str(), kernel_name.c_str(), -1, (uint3*)0, (uint3*)0, (dim3*)0, (dim3*)0, (int*)0);
             
+                // Bookkeeping
                 _kernel_addr_to_args[kernel_server_addr] = param_sizes;
-                host_func_to_demangled_kernel_name_map[(const char*) kernel_server_addr] = demangleFunc(kernel_name);
+                mangled_kernel_name_to_host_func_map[kernel_name] = kernel_server_addr;
+                host_func_to_demangled_kernel_name_map[(const char*) kernel_server_addr] = demangled_kernel_name;
+                demangled_kernel_name_to_host_func_map[demangled_kernel_name] = (const char*) kernel_server_addr;
             }
 
             l__cudaRegisterFatBinaryEnd(handle);
@@ -189,8 +254,13 @@ void TallyServer::load_cache()
             int *arr;
             cudaMalloc((void**)&arr, sizeof(int));
             cudaFree(arr);
+
+            // Load the transformed PTX and register them as callable functions
+            register_ptx_transform(cubin_data.cubin_data.c_str(), cubin_size);
         }
     }
+
+    register_measurements();
 }
 
 void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -236,6 +306,9 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
     if (!client_meta.cubin_registered) {
         // Load necessary data into cache if not exists
         cache_cubin_data(cubin_data, cubin_size, client_meta.magic, client_meta.version);
+
+        // Load the transformed PTX and register them as callable functions
+        register_ptx_transform(cubin_data, cubin_size);
 
         client_meta.fatBinSize = cubin_size;
         client_meta.fatbin_data = (unsigned long long *) malloc(cubin_size);
@@ -305,14 +378,14 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
             auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
 
             // Register the kernel with this address
-            _kernel_name_to_addr[kernel_name] = kernel_server_addr;
+            mangled_kernel_name_to_host_func_map[kernel_name] = kernel_server_addr;
             _kernel_addr_to_args[kernel_server_addr] = param_sizes;
             l__cudaRegisterFunction(handle, (const char*) kernel_server_addr, (char *)kernel_name.c_str(), kernel_name.c_str(), -1, (uint3*)0, (uint3*)0, (dim3*)0, (dim3*)0, (int*)0);
         }
 
 
         assert (client_meta._kernel_client_addr_mapping.find(client_addr) == client_meta._kernel_client_addr_mapping.end());
-        client_meta._kernel_client_addr_mapping[client_addr] = _kernel_name_to_addr[kernel_name];
+        client_meta._kernel_client_addr_mapping[client_addr] = mangled_kernel_name_to_host_func_map[kernel_name];
     }
 
     if (!client_meta.cubin_registered) {

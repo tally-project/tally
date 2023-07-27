@@ -48,13 +48,12 @@ std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path)
     return names;
 }
 
-std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> register_kernels_from_ptx_fatbin(
+void register_kernels_from_ptx_fatbin(
     std::vector<std::pair<std::string, std::string>> &ptx_fatbin_strs,
-    std::map<std::string, const void *> &kernel_name_map
+    std::map<std::string, const void *> &kernel_name_map,
+    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> &kernel_map
 )
 {
-    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> kernel_map;
-
     for (auto &ptx_fatbin_pair : ptx_fatbin_strs) {
         
         auto &ptx_str = ptx_fatbin_pair.first;
@@ -77,8 +76,6 @@ std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> register_kerne
             kernel_map[host_func] = std::make_pair(function, num_params);
         }
     }
-
-    return kernel_map;
 }
 
 std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str)

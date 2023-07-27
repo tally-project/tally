@@ -11,7 +11,7 @@
 #include <tally/env.h>
 #include <tally/cuda_launch.h>
 #include <tally/transform.h>
-#include <tally/daemon.h>
+#include <tally/generated/server.h>
 
 const CudaLaunchConfig CudaLaunchConfig::default_config = CudaLaunchConfig();
 
@@ -82,57 +82,6 @@ cudaError_t CudaLaunchConfig::repeat_launch(
     return err;
 }
 
-// void profile_kernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream)
-// {
-//     CudaLaunchCall launch_call(func, gridDim, blockDim);
-//     CudaLaunchCallConfig base_call_config(
-//         launch_call,
-//         CudaLaunchConfig()
-//     );
-//     float baseline_time_ms = TallyDaemon::daemon->get_execution_time(base_call_config);
-
-//     // Skip if base performance not exists
-//     if (baseline_time_ms > 0) {
-
-//         // Use this to identify the idx of the kernel launch
-//         auto curr_kernel_idx = TallyDaemon::daemon->curr_kernel_idx;
-
-//         if (curr_kernel_idx == PROFILE_KERNEL_IDX) {
-
-//             bool use_original = PROFILE_USE_ORIGINAL;
-//             bool use_sliced = PROFILE_USE_SLICED;
-//             bool use_ptb = PROFILE_USE_PTB;
-//             bool use_cuda_graph = PROFILE_USE_CUDA_GRAPH;
-//             uint32_t threads_per_slice = PROFILE_THREADS_PER_SLICE;
-//             uint32_t num_blocks_per_sm = PROFILE_NUM_BLOCKS_PER_SM;
-
-//             CudaLaunchConfig profile_config(use_original, use_sliced, use_ptb, use_cuda_graph, threads_per_slice, num_blocks_per_sm);
-//             std::cout << "Profiling config: " << profile_config << std::endl;
-//             auto time_iters = profile_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, PROFILE_DURATION_SECONDS);
-
-//             std::cout << "Kernel: " << TallyDaemon::daemon->host_func_to_demangled_kernel_name_map[func] << std::endl;
-//             std::cout << "\tblockDim: " << blockDim.x << " " << blockDim.y << " " << blockDim.z << std::endl;
-//             std::cout << "\tgridDim: " << gridDim.x << " " << gridDim.y << " " << gridDim.z << std::endl;
-//             float baseline_tp = 1 / baseline_time_ms;
-//             float new_tp = time_iters.second / time_iters.first;
-
-//             std::cout << "Time: " << time_iters.first << std::endl;
-//             std::cout << "Iters: " << time_iters.second << std::endl;
-//             std::cout << "baseline_tp: " << baseline_tp << std::endl;
-//             std::cout << "new_tp: " << new_tp << std::endl;
-
-//             std::cout << "Normalized throughput: " << new_tp / baseline_tp << std::endl;
-
-//             exit(0);
-
-//         } else {
-//             curr_kernel_idx++;
-//         }
-//     } else {
-//         std::cout << "Baseline performance does not exist, skipping.." << std::endl;
-//     }
-// }
-
 CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
     CudaLaunchCall launch_call(func, gridDim, blockDim);
@@ -143,7 +92,7 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
     float time_ms;
     float base_time_ms;
 
-    auto kernel_name = TallyDaemon::daemon->host_func_to_demangled_kernel_name_map[func];
+    auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[func];
 
     std::cout << "[Profile result]" <<std::endl;
     std::cout << "\tKernel: " << kernel_name << std::endl;
@@ -157,7 +106,7 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
     // warmup first
     base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, nullptr, nullptr, 10000);
 
-    base_time_ms = TallyDaemon::daemon->get_execution_time(base_call_config);
+    base_time_ms = TallyServer::server->get_execution_time(base_call_config);
     if (base_time_ms <= 0) {
 
         float _time_ms;
@@ -165,7 +114,7 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
 
         base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, &_time_ms, &iters, 10000);
         base_time_ms = _time_ms / iters;
-        TallyDaemon::daemon->set_execution_time(base_call_config, base_time_ms);
+        TallyServer::server->set_execution_time(base_call_config, base_time_ms);
     }
 
     std::cout << "\tBaseline: Time: " << base_time_ms << std::endl;
@@ -195,7 +144,7 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
         for (auto &config : candidates) {
 
             CudaLaunchCallConfig call_config(launch_call, config);
-            time_ms = TallyDaemon::daemon->get_execution_time(call_config);
+            time_ms = TallyServer::server->get_execution_time(call_config);
 
             if (time_ms <= 0) {
                 float _time_ms;
@@ -204,7 +153,7 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
                 time_ms = _time_ms / iters;
 
                 std::cout << "\t" << config << " Time: " << time_ms << std::endl;
-                TallyDaemon::daemon->set_execution_time(call_config, time_ms);
+                TallyServer::server->set_execution_time(call_config, time_ms);
             }
 
             if (time_ms < best_time_ms) {
@@ -221,8 +170,8 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
     }
 
     std::cout << "Choosen: " << best_config << std::endl;
-    TallyDaemon::daemon->set_launch_config(launch_call, best_config);
-    TallyDaemon::daemon->save_performance_cache();
+    // TallyServer::server->set_launch_config(launch_call, best_config);
+    TallyServer::server->save_performance_cache();
 
     return best_config;
 }
@@ -258,8 +207,8 @@ cudaError_t CudaLaunchConfig::launch(
 
         uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
 
-        auto cu_func = TallyDaemon::daemon->sliced_kernel_map[func].first;
-        auto num_args = TallyDaemon::daemon->sliced_kernel_map[func].second;
+        auto cu_func = TallyServer::server->sliced_kernel_map[func].first;
+        auto num_args = TallyServer::server->sliced_kernel_map[func].second;
 
         assert(cu_func);
 
@@ -270,7 +219,7 @@ cudaError_t CudaLaunchConfig::launch(
         if (use_cuda_graph) {
 
             // Try to use cuda graph first 
-            for (auto *call : TallyDaemon::daemon->cuda_graph_vec) {
+            for (auto *call : TallyServer::server->cuda_graph_vec) {
                 if (call->equals(func, args, num_args - 1, gridDim, blockDim)) {
                     cuda_graph_call = call;
                     break;
@@ -280,10 +229,10 @@ cudaError_t CudaLaunchConfig::launch(
             if (!cuda_graph_call) {
                 // Otherwise, construct one
                 cuda_graph_call = new CudaGraphCall(func, args, num_args - 1, gridDim, blockDim);
-                TallyDaemon::daemon->cuda_graph_vec.push_back(cuda_graph_call);
+                TallyServer::server->cuda_graph_vec.push_back(cuda_graph_call);
             }
 
-            _stream = TallyDaemon::daemon->stream;
+            _stream = TallyServer::server->stream;
         } else {
             _stream = stream;
         }
@@ -305,7 +254,7 @@ cudaError_t CudaLaunchConfig::launch(
         }
 
         if (use_cuda_graph) {
-            cudaStreamBeginCapture(TallyDaemon::daemon->stream, cudaStreamCaptureModeGlobal);
+            cudaStreamBeginCapture(TallyServer::server->stream, cudaStreamCaptureModeGlobal);
         } else {
 
             if (run_profile) {
@@ -355,7 +304,7 @@ cudaError_t CudaLaunchConfig::launch(
         }
 
         if (use_cuda_graph) {
-            cudaStreamEndCapture(TallyDaemon::daemon->stream, &(cuda_graph_call->graph));
+            cudaStreamEndCapture(TallyServer::server->stream, &(cuda_graph_call->graph));
 
             if (!cuda_graph_call->instantiated) {
                 cudaGraphInstantiate(&(cuda_graph_call->instance), cuda_graph_call->graph, NULL, NULL, 0);
@@ -412,8 +361,8 @@ cudaError_t CudaLaunchConfig::launch(
         }
     } else if (use_ptb) {
 
-        auto cu_func = TallyDaemon::daemon->ptb_kernel_map[func].first;
-        auto num_args = TallyDaemon::daemon->ptb_kernel_map[func].second;
+        auto cu_func = TallyServer::server->ptb_kernel_map[func].first;
+        auto num_args = TallyServer::server->ptb_kernel_map[func].second;
 
         assert(cu_func);
 
