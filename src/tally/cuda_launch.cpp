@@ -34,6 +34,32 @@ std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config)
     return os;
 }
 
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per_block)
+{
+    std::vector<CudaLaunchConfig> configs;
+
+    configs.push_back(CudaLaunchConfig::default_config);
+
+    // some sliced configs
+    for (uint32_t _threads_per_block : { 129560, 161280, 174080, 184320, 196608 }) {
+        // for (bool _use_cuda_graph : { true, false }) {
+        for (bool _use_cuda_graph : { false }) {
+            CudaLaunchConfig config(false, true, false, _use_cuda_graph, _threads_per_block);
+            configs.push_back(config);
+        }
+    }
+
+    // some PTB configs
+    uint32_t _num_blocks_per_sm = 1;
+    while(_num_blocks_per_sm * threads_per_block <= 1024) {
+        CudaLaunchConfig config(false, false, true, false, 0, _num_blocks_per_sm);
+        configs.push_back(config);
+        _num_blocks_per_sm++;
+    }
+    
+    return configs;
+}
+
 // return (time, iterations)
 cudaError_t CudaLaunchConfig::repeat_launch(
     const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
@@ -45,7 +71,7 @@ cudaError_t CudaLaunchConfig::repeat_launch(
     // get a rough estimate of the kernel duration
     err = launch(func, gridDim, blockDim, args, sharedMem, stream, true, &_time_ms);
 
-    uint64_t sync_interval = std::max((uint64_t)((dur_seconds * 1000.) / _time_ms), 1ul);
+    uint64_t sync_interval = std::max((uint64_t)((dur_seconds * 1000.) / _time_ms) / 2, 1ul);
 
     auto startTime = std::chrono::steady_clock::now();
     uint64_t ckpt_count = 0;
@@ -122,24 +148,7 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
     if (USE_TRANSFORM) {
 
         uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
-        uint32_t total_threads = gridDim.x * gridDim.y * gridDim.z * threads_per_block;
-
-        // some sliced configs
-        for (uint32_t _threads_per_block : { 129560, 161280, 174080, 184320, 196608 }) {
-            // for (bool _use_cuda_graph : { true, false }) {
-            for (bool _use_cuda_graph : { false }) {
-                CudaLaunchConfig config(false, true, false, _use_cuda_graph, _threads_per_block);
-                candidates.push_back(config);
-            }
-        }
-
-        // some PTB configs
-        uint32_t _num_blocks_per_sm = 1;
-        while(_num_blocks_per_sm * threads_per_block <= 1024) {
-            CudaLaunchConfig config(false, false, true, false, 0, _num_blocks_per_sm);
-            candidates.push_back(config);
-            _num_blocks_per_sm++;
-        }
+        candidates = get_configs(threads_per_block);
         
         for (auto &config : candidates) {
 
@@ -187,7 +196,7 @@ cudaError_t CudaLaunchConfig::launch(
         if (run_profile) {
             cudaEventCreate(&_start);
             cudaEventCreate(&_stop);
-            cudaDeviceSynchronize();
+            cudaStreamSynchronize(stream);
 
             cudaEventRecord(_start);
         }
@@ -260,7 +269,7 @@ cudaError_t CudaLaunchConfig::launch(
             if (run_profile) {
                 cudaEventCreate(&_start);
                 cudaEventCreate(&_stop);
-                cudaDeviceSynchronize();
+                cudaStreamSynchronize(stream);
 
                 cudaEventRecord(_start);
             }
@@ -331,7 +340,7 @@ cudaError_t CudaLaunchConfig::launch(
             if (run_profile) {
                 cudaEventCreate(&_start);
                 cudaEventCreate(&_stop);
-                cudaDeviceSynchronize();
+                cudaStreamSynchronize(stream);
 
                 cudaEventRecord(_start);
             }
@@ -376,22 +385,22 @@ cudaError_t CudaLaunchConfig::launch(
         KernelParams[num_args - 1] = &gridDim;
 
         if (run_profile) {
-            CHECK_CUDA_ERROR(cudaEventCreate(&_start));
-            CHECK_CUDA_ERROR(cudaEventCreate(&_stop));
-            CHECK_CUDA_ERROR(cudaDeviceSynchronize());
+            cudaEventCreate(&_start);
+            cudaEventCreate(&_stop);
+            cudaStreamSynchronize(stream);
 
-            CHECK_CUDA_ERROR(cudaEventRecord(_start));
+            cudaEventRecord(_start);
         }
 
         auto res = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
                               blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
 
         if (run_profile) {
-            CHECK_CUDA_ERROR(cudaEventRecord(_stop));
-            CHECK_CUDA_ERROR(cudaEventSynchronize(_stop));
-            CHECK_CUDA_ERROR(cudaEventElapsedTime(elapsed_time_ms, _start, _stop));
-            CHECK_CUDA_ERROR(cudaEventDestroy(_start));
-            CHECK_CUDA_ERROR(cudaEventDestroy(_stop));
+            cudaEventRecord(_stop);
+            cudaEventSynchronize(_stop);
+            cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
+            cudaEventDestroy(_start);
+            cudaEventDestroy(_stop);
         }
 
         if (res != CUDA_SUCCESS) {
