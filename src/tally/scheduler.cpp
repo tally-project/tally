@@ -50,12 +50,12 @@ void TallyServer::start_scheduler()
             errs[idx] = (kernel_partials[idx])(config, true, 5, &(time_elapsed[idx]), &(iters[idx]));
         };
 
+        bool has_run_baseline = false;
         float baseline[2];
 
-        launch_kernel_func(0, CudaLaunchConfig::default_config);
-        launch_kernel_func(1, CudaLaunchConfig::default_config);
-        baseline[0] = iters[0] / time_elapsed[0];
-        baseline[1] = iters[1] / time_elapsed[1];
+        // Launch once
+        errs[0] = (kernel_partials[0])(CudaLaunchConfig::default_config, false, 0, nullptr, nullptr);
+        errs[1] = (kernel_partials[1])(CudaLaunchConfig::default_config, false, 0, nullptr, nullptr);
 
         auto k1_blockDim = launch_calls[0].blockDim;
         auto k2_blockDim = launch_calls[1].blockDim;
@@ -63,18 +63,15 @@ void TallyServer::start_scheduler()
         auto k1_configs = CudaLaunchConfig::get_configs(k1_blockDim.x * k1_blockDim.y * k1_blockDim.z);
         auto k2_configs = CudaLaunchConfig::get_configs(k2_blockDim.x * k2_blockDim.y * k2_blockDim.z);
 
+        float best_sum_thrupt = -1.;
+        CudaLaunchCallConfigPairResult best_config;
+        bool has_new_config = false;
+
         for (auto &k1_config : k1_configs) {
             for (auto &k2_config : k2_configs) {
 
-                CudaLaunchCallConfig call_config_1(launch_calls[0], k1_config);
-                CudaLaunchCallConfig call_config_2(launch_calls[1], k2_config);
-
                 bool found_in_cache = false;
-                auto res = get_kernel_pair_perf(
-                    call_config_1,
-                    call_config_2,
-                    &found_in_cache
-                );
+                auto res = get_kernel_pair_perf(launch_calls[0], launch_calls[1], k1_config, k2_config, &found_in_cache);
 
                 if (!found_in_cache) {
 
@@ -89,16 +86,37 @@ void TallyServer::start_scheduler()
                     float k1_thrupt = iters[0] / time_elapsed[0];
                     float k2_thrupt = iters[1] / time_elapsed[1];
 
-                    set_kernel_pair_perf(
-                        call_config_1,
-                        call_config_2,
-                        k1_thrupt / baseline[0],
-                        k2_thrupt / baseline[1]
-                    );
-                } else {
-                    std::cout << "Kernel Pair performance found in cache. Skipping." << std::endl; 
+                    if (!has_run_baseline) {
+
+                        cudaDeviceSynchronize();
+
+                        launch_kernel_func(0, CudaLaunchConfig::default_config);
+                        launch_kernel_func(1, CudaLaunchConfig::default_config);
+
+                        baseline[0] = iters[0] / time_elapsed[0];
+                        baseline[1] = iters[1] / time_elapsed[1];
+
+                        has_run_baseline = true;
+                    }
+
+                    set_kernel_pair_perf(launch_calls[0], launch_calls[1], k1_config, k2_config, k1_thrupt / baseline[0], k2_thrupt / baseline[1]);
+                    
+                    res = get_kernel_pair_perf(launch_calls[0], launch_calls[1], k1_config, k2_config, &found_in_cache);
+                    assert(found_in_cache);
+
+                    has_new_config = true;
+                }
+
+                float sum_norm_thrupt = res.get_sum_norm_speed();
+                if (sum_norm_thrupt > best_sum_thrupt) {
+                    best_sum_thrupt = sum_norm_thrupt;
+                    best_config = res;
                 }
             }
+        }
+
+        if (has_new_config) {
+            set_kernel_pair_best_config(launch_calls[0], launch_calls[1], best_config);
         }
 
         // clear the flags

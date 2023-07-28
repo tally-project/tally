@@ -49,6 +49,28 @@ struct std::hash<CudaLaunchCall>
     }
 };
 
+struct CudaLaunchCallPair {
+    CudaLaunchCall launch_call_1;
+    CudaLaunchCall launch_call_2;
+
+    bool operator==(const CudaLaunchCallPair &other) const
+    {
+        return (launch_call_1 == other.launch_call_1 && launch_call_2 == other.launch_call_2) ||
+               (launch_call_1 == other.launch_call_2 && launch_call_2 == other.launch_call_1);
+    }
+};
+
+template <>
+struct std::hash<CudaLaunchCallPair>
+{
+    std::size_t operator()(const CudaLaunchCallPair& k) const
+    {
+        auto _hash = std::hash<CudaLaunchCall>()(k.launch_call_1) |
+                     std::hash<CudaLaunchCall>()(k.launch_call_2);
+        return _hash;
+    }
+};
+
 class CudaGraphCall {
 
 public:
@@ -180,6 +202,10 @@ struct std::hash<CudaLaunchCallConfigPair>
 struct CudaLaunchCallConfigPairResult {
     std::pair<CudaLaunchCallConfig, float> call_config_norm_speed_1;
     std::pair<CudaLaunchCallConfig, float> call_config_norm_speed_2;
+
+    float get_sum_norm_speed() {
+        return call_config_norm_speed_1.second + call_config_norm_speed_2.second;
+    }
 };
 
 

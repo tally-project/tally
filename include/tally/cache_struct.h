@@ -47,6 +47,28 @@ static std::ostream& operator<<(std::ostream& os, const CudaLaunchKey& launch_ke
     return os;
 }
 
+struct CudaLaunchKeyPair {
+    CudaLaunchKey launch_key_1;
+    CudaLaunchKey launch_key_2;
+
+    bool operator==(const CudaLaunchKeyPair &other) const
+    {
+        return (launch_key_1 == other.launch_key_1 && launch_key_2 == other.launch_key_2) ||
+               (launch_key_1 == other.launch_key_2 && launch_key_2 == other.launch_key_1);
+    }
+};
+
+template <>
+struct std::hash<CudaLaunchKeyPair>
+{
+    std::size_t operator()(const CudaLaunchKeyPair& k) const
+    {
+        auto _hash = std::hash<CudaLaunchKey>()(k.launch_key_1) |
+                     std::hash<CudaLaunchKey>()(k.launch_key_2);
+        return _hash;
+    }
+};
+
 struct CudaLaunchKeyConfig {
     CudaLaunchKey key;
     CudaLaunchConfig config;
@@ -112,15 +134,19 @@ static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPair&
 struct CudaLaunchKeyConfigPairResult {
     std::pair<CudaLaunchKeyConfig, float> config_key_norm_speed_1;
     std::pair<CudaLaunchKeyConfig, float> config_key_norm_speed_2;
+
+    float get_sum_norm_speed() const {
+        return config_key_norm_speed_1.second + config_key_norm_speed_2.second;
+    }
 };
 
-static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPairResult& key_config_pair_result)
+static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPairResult& res)
 {
-    float norm_speed_1 = key_config_pair_result.config_key_norm_speed_1.second;
-    float norm_speed_2 = key_config_pair_result.config_key_norm_speed_2.second;
+    float norm_speed_1 = res.config_key_norm_speed_1.second;
+    float norm_speed_2 = res.config_key_norm_speed_2.second;
 
     os << "CudaLaunchKeyConfigPairResult: \n";
-    os << "K1 Norm Speed: " << norm_speed_1 << " K2 Norm Speed: " << norm_speed_2 << " Sum: " << norm_speed_1 + norm_speed_2;
+    os << "\tK1 Norm Speed: " << norm_speed_1 << " K2 Norm Speed: " << norm_speed_2 << " Sum: " << res.get_sum_norm_speed();
 
     return os;
 }
@@ -215,16 +241,48 @@ class PerformanceCache
 {
 public:
     // Kernel pair and the normalized speed
-    std::unordered_map<CudaLaunchKeyConfigPair, CudaLaunchKeyConfigPairResult> kernel_pair_perf_map;
+    std::unordered_map<CudaLaunchKeyPair, std::unordered_map<CudaLaunchKeyConfigPair, CudaLaunchKeyConfigPairResult>> kernel_pair_perf_map;
+    std::unordered_map<CudaLaunchKeyPair, CudaLaunchKeyConfigPairResult> kernel_pair_best_config_map;
 
-    void set_kernel_pair_perf(CudaLaunchKeyConfigPair &key_config_pair, CudaLaunchKeyConfigPairResult &res)
+    void set_kernel_pair_perf(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, CudaLaunchConfig launch_config_1, CudaLaunchConfig launch_config_2, CudaLaunchKeyConfigPairResult &res)
     {
-        kernel_pair_perf_map[key_config_pair] = res;
+        CudaLaunchKeyPair key_pair(launch_key_1, launch_key_2);
 
-        std::cout << key_config_pair << std::endl;
+        CudaLaunchKeyConfig key_config_1(launch_key_1, launch_config_1);
+        CudaLaunchKeyConfig key_config_2(launch_key_2, launch_config_2);
+
+        CudaLaunchKeyConfigPair key_config_pair(key_config_1, key_config_2);
+
+        kernel_pair_perf_map[key_pair][key_config_pair] = res;
+
+        std::cout << "=============== Kernel Pair Profile Result ===============" << std::endl;
+
+        std::cout << launch_key_1 << std::endl;
+        std::cout << launch_config_1 << std::endl;
+        std::cout << launch_key_2 << std::endl;
+        std::cout << launch_config_2 << std::endl;
         std::cout << res << std::endl;
         std::cout << std::endl;
     }
+
+    void set_kernel_pair_best_config(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, CudaLaunchKeyConfigPairResult &res)
+    {
+        CudaLaunchKeyPair key_pair(launch_key_1, launch_key_2);
+        kernel_pair_best_config_map[key_pair] = res;
+
+        std::cout << "=============== Kernel Pair Best Result ===============" << std::endl;
+
+        auto launch_config_1 = res.config_key_norm_speed_1.first.config;
+        auto launch_config_2 = res.config_key_norm_speed_2.first.config;
+
+        std::cout << launch_key_1 << std::endl;
+        std::cout << launch_config_1 << std::endl;
+        std::cout << launch_key_2 << std::endl;
+        std::cout << launch_config_2 << std::endl;
+        std::cout << res << std::endl;
+        std::cout << std::endl;
+    }
+
 };
 
 #endif // TALLY_CACHE_STRUCT_H

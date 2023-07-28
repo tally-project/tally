@@ -84,16 +84,20 @@ public:
 	// Dedicated stream for cuda graph
     cudaStream_t stream;
 
-	// Performance cache to use at runtime
-    std::unordered_map<CudaLaunchCallConfigPair, CudaLaunchCallConfigPairResult> kernel_pair_perf_map;
-
 	// Register transformed kernels here
     std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> sliced_kernel_map;
     std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> ptb_kernel_map;
 
+	// Performance cache to use at runtime
+    std::unordered_map<CudaLaunchCallPair, std::unordered_map<CudaLaunchCallConfigPair, CudaLaunchCallConfigPairResult>> kernel_pair_perf_map;
+	std::unordered_map<CudaLaunchCallPair, CudaLaunchCallConfigPairResult> kernel_pair_best_config_map;
+
 	// Set and Get performance cache
-    CudaLaunchCallConfigPairResult get_kernel_pair_perf(CudaLaunchCallConfig &call_config_1, CudaLaunchCallConfig &call_config_2, bool *found);
-	void set_kernel_pair_perf(CudaLaunchCallConfig &call_config_1, CudaLaunchCallConfig &call_config_2, float norm_speed_1, float norm_speed_2);
+    CudaLaunchCallConfigPairResult get_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2, bool *found);
+	void set_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2, float norm_speed_1, float norm_speed_2);
+
+	CudaLaunchCallConfigPairResult get_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, bool *found);
+	void set_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchCallConfigPairResult best_config);
 
     void save_performance_cache();
 
