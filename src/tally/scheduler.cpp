@@ -60,8 +60,11 @@ void TallyServer::start_scheduler()
         auto k1_blockDim = launch_calls[0].blockDim;
         auto k2_blockDim = launch_calls[1].blockDim;
 
-        auto k1_configs = CudaLaunchConfig::get_configs(k1_blockDim.x * k1_blockDim.y * k1_blockDim.z);
-        auto k2_configs = CudaLaunchConfig::get_configs(k2_blockDim.x * k2_blockDim.y * k2_blockDim.z);
+        auto k1_gridDim = launch_calls[0].gridDim;
+        auto k2_gridDim = launch_calls[1].gridDim;
+
+        auto k1_configs = CudaLaunchConfig::get_configs(k1_blockDim.x * k1_blockDim.y * k1_blockDim.z, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
+        auto k2_configs = CudaLaunchConfig::get_configs(k2_blockDim.x * k2_blockDim.y * k2_blockDim.z, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
 
         float best_sum_thrupt = -1.;
         CudaLaunchCallConfigPairResult best_config;
@@ -111,6 +114,10 @@ void TallyServer::start_scheduler()
                 if (sum_norm_thrupt > best_sum_thrupt) {
                     best_sum_thrupt = sum_norm_thrupt;
                     best_config = res;
+                }
+
+                if (TallyServer::server->is_quit__) {
+                    exit(0);
                 }
             }
         }

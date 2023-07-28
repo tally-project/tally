@@ -34,28 +34,32 @@ std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config)
     return os;
 }
 
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per_block)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per_block, uint32_t num_blocks)
 {
     std::vector<CudaLaunchConfig> configs;
 
     configs.push_back(CudaLaunchConfig::default_config);
 
-    // some sliced configs
-    for (uint32_t _threads_per_block : { 129560, 161280, 174080, 184320, 196608 }) {
-        // for (bool _use_cuda_graph : { true, false }) {
-        for (bool _use_cuda_graph : { false }) {
-            CudaLaunchConfig config(false, true, false, _use_cuda_graph, _threads_per_block);
-            configs.push_back(config);
-        }
-    }
+    // if (threads_per_block * num_blocks > 129560) {
+
+        // some sliced configs
+        // for (uint32_t _threads_per_block : { 129560, 161280, 174080, 184320, 196608 }) {
+        //     // for (bool _use_cuda_graph : { true, false }) {
+        //     for (bool _use_cuda_graph : { false }) {
+        //         CudaLaunchConfig config(false, true, false, _use_cuda_graph, _threads_per_block);
+        //         configs.push_back(config);
+        //     }
+        // }
 
     // some PTB configs
     uint32_t _num_blocks_per_sm = 1;
-    while(_num_blocks_per_sm * threads_per_block <= 1024) {
+    while(_num_blocks_per_sm * threads_per_block <= 1024 && _num_blocks_per_sm * 82 <= num_blocks) {
         CudaLaunchConfig config(false, false, true, false, 0, _num_blocks_per_sm);
         configs.push_back(config);
         _num_blocks_per_sm++;
     }
+
+    // }
     
     return configs;
 }
@@ -146,7 +150,8 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
     if (USE_TRANSFORM) {
 
         uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
-        candidates = get_configs(threads_per_block);
+        uint32_t num_blocks = gridDim.x * gridDim.y * gridDim.z;
+        candidates = get_configs(threads_per_block, num_blocks);
         
         for (auto &config : candidates) {
 
