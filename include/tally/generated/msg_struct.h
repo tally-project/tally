@@ -532,6 +532,16 @@ struct cudaGetLastErrorArg {
 struct cudaPeekAtLastErrorArg {
 };
 
+struct cudaGetDeviceProperties_v2Arg {
+	struct cudaDeviceProp * prop;
+	int  device;
+};
+
+struct cudaGetDeviceProperties_v2Response {
+	struct cudaDeviceProp  prop;
+	cudaError_t err;
+};
+
 struct cudaDeviceGetAttributeArg {
 	int * value;
 	enum cudaDeviceAttr  attr;

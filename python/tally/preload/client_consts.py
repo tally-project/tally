@@ -297,6 +297,7 @@ KERNEL_LAUNCH_CALLS = [
 DIRECT_CALLS = [
     "cudaGetErrorString",
     "cuGetProcAddress",
+    "cuGetProcAddress_v2",
     "cuGetErrorString",
     "cuGetErrorName",
     "cudnnGetErrorString",
@@ -521,6 +522,7 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cudaThreadGetLimit",
     "cudaThreadGetCacheConfig",
     "cudaGetDeviceProperties",
+    "cudaGetDeviceProperties_v2",
     "cudaDeviceGetAttribute",
     "cudaDeviceGetDefaultMemPool",
     "cudaDeviceGetMemPool",

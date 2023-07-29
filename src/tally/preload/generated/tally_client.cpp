@@ -4025,7 +4025,8 @@ CUresult cuGraphicsUnmapResources(unsigned int  count, CUgraphicsResource * reso
 CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)
 {
 	TALLY_LOG("cuGetProcAddress_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	CUresult res = 		lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
+	return res;
 }
 
 CUresult cuCoredumpGetAttribute(CUcoredumpSettings  attrib, void*  value, size_t * size)
@@ -4938,7 +4939,42 @@ cudaError_t cudaGetDeviceCount(int * count)
 cudaError_t cudaGetDeviceProperties_v2(struct cudaDeviceProp * prop, int  device)
 {
 	TALLY_LOG("cudaGetDeviceProperties_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaGetDeviceProperties_v2(prop, device);
+#else
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetDeviceProperties_v2Arg), alignof(cudaGetDeviceProperties_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGETDEVICEPROPERTIES_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaGetDeviceProperties_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->prop = prop;
+			request->device = device;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaGetDeviceProperties_v2Response*>(responsePayload);
+			if (prop) { *prop = response->prop; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceProperties_v2);
+	return err;
 }
 
 cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  device)
