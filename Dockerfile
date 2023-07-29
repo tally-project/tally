@@ -44,5 +44,5 @@ RUN cd cudnn && \
 RUN cd third_party && \
     cp cudnn-frontend/ /usr/local/cuda/ -r
 
-# RUN cd /home/tally && \
-#     make
+RUN cd /home/tally && \
+    make
