@@ -169,6 +169,9 @@ public:
     std::map<std::string, std::vector<uint32_t>> kernel_args;
 
     // All the sliced PTX files and fatbin
+    std::vector<std::pair<std::string, std::string>> original_data;
+
+    // All the sliced PTX files and fatbin
     std::vector<std::pair<std::string, std::string>> sliced_data;
 
     // All the PTB PTX files and fatbin
@@ -208,6 +211,14 @@ public:
     }
 
     std::vector<std::pair<std::string, std::string>>
+    get_original_data(const char* cubin_data, size_t cubin_size)
+    {
+        auto transform_data = find_transform_data(cubin_data, cubin_size);
+        assert(transform_data);
+        return transform_data->original_data;
+    }
+
+    std::vector<std::pair<std::string, std::string>>
     get_sliced_data(const char* cubin_data, size_t cubin_size)
     {
         auto transform_data = find_transform_data(cubin_data, cubin_size);
@@ -229,11 +240,12 @@ public:
         int version,
         std::string &cubin_str,
         std::map<std::string, std::vector<uint32_t>> &kernel_args,
+        std::vector<std::pair<std::string, std::string>> &original_data,
         std::vector<std::pair<std::string, std::string>> &sliced_data,
         std::vector<std::pair<std::string, std::string>> &ptb_data
     )
     {
-        cubin_map[cubin_size].push_back( CubinData { magic, version, cubin_str, kernel_args, sliced_data, ptb_data } );
+        cubin_map[cubin_size].push_back( CubinData { magic, version, cubin_str, kernel_args, original_data, sliced_data, ptb_data } );
     }
 };
 

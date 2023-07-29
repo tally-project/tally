@@ -137,8 +137,8 @@ void TallyServer::start_scheduler()
     }
 
 #else
-    CudaLaunchConfig config = CudaLaunchConfig::default_config;
-    // CudaLaunchConfig config(false, false, true, false, 0, 4);
+    // CudaLaunchConfig config = CudaLaunchConfig::default_config;
+    CudaLaunchConfig config(false, false, true, false, 0, 4);
 
     while (!iox::posix::hasTerminationRequested()) {
 

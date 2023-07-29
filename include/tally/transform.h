@@ -20,6 +20,9 @@
 #include <tally/cuda_launch.h>
 #include <tally/generated/cuda_api.h>
 
+// Generating original version of a PTX file
+std::string gen_original_ptx(std::string ptx_path);
+
 // Generating sliced version of a PTX file
 std::string gen_sliced_ptx(std::string ptx_path);
 

@@ -62,6 +62,9 @@ CUresult (*lcuDeviceGetMemPool) (CUmemoryPool * pool, CUdevice  dev) =
 CUresult (*lcuDeviceGetDefaultMemPool) (CUmemoryPool * pool_out, CUdevice  dev) =
 	(CUresult (*) (CUmemoryPool * pool_out, CUdevice  dev)) dlsym(cuda_handle, "cuDeviceGetDefaultMemPool");
 
+CUresult (*lcuDeviceGetExecAffinitySupport) (int * pi, CUexecAffinityType  type, CUdevice  dev) =
+	(CUresult (*) (int * pi, CUexecAffinityType  type, CUdevice  dev)) dlsym(cuda_handle, "cuDeviceGetExecAffinitySupport");
+
 CUresult (*lcuFlushGPUDirectRDMAWrites) (CUflushGPUDirectRDMAWritesTarget  target, CUflushGPUDirectRDMAWritesScope  scope) =
 	(CUresult (*) (CUflushGPUDirectRDMAWritesTarget  target, CUflushGPUDirectRDMAWritesScope  scope)) dlsym(cuda_handle, "cuFlushGPUDirectRDMAWrites");
 
@@ -85,9 +88,6 @@ CUresult (*lcuDevicePrimaryCtxGetState) (CUdevice  dev, unsigned int * flags, in
 
 CUresult (*lcuDevicePrimaryCtxReset_v2) (CUdevice  dev) =
 	(CUresult (*) (CUdevice  dev)) dlsym(cuda_handle, "cuDevicePrimaryCtxReset_v2");
-
-CUresult (*lcuDeviceGetExecAffinitySupport) (int * pi, CUexecAffinityType  type, CUdevice  dev) =
-	(CUresult (*) (int * pi, CUexecAffinityType  type, CUdevice  dev)) dlsym(cuda_handle, "cuDeviceGetExecAffinitySupport");
 
 CUresult (*lcuCtxCreate_v2) (CUcontext * pctx, unsigned int  flags, CUdevice  dev) =
 	(CUresult (*) (CUcontext * pctx, unsigned int  flags, CUdevice  dev)) dlsym(cuda_handle, "cuCtxCreate_v2");
@@ -115,6 +115,12 @@ CUresult (*lcuCtxGetDevice) (CUdevice * device) =
 
 CUresult (*lcuCtxGetFlags) (unsigned int * flags) =
 	(CUresult (*) (unsigned int * flags)) dlsym(cuda_handle, "cuCtxGetFlags");
+
+CUresult (*lcuCtxSetFlags) (unsigned int  flags) =
+	(CUresult (*) (unsigned int  flags)) dlsym(cuda_handle, "cuCtxSetFlags");
+
+CUresult (*lcuCtxGetId) (CUcontext  ctx, unsigned long long * ctxId) =
+	(CUresult (*) (CUcontext  ctx, unsigned long long * ctxId)) dlsym(cuda_handle, "cuCtxGetId");
 
 CUresult (*lcuCtxSynchronize) () =
 	(CUresult (*) ()) dlsym(cuda_handle, "cuCtxSynchronize");
@@ -170,17 +176,14 @@ CUresult (*lcuModuleLoadFatBinary) (CUmodule * module, const void * fatCubin) =
 CUresult (*lcuModuleUnload) (CUmodule  hmod) =
 	(CUresult (*) (CUmodule  hmod)) dlsym(cuda_handle, "cuModuleUnload");
 
+CUresult (*lcuModuleGetLoadingMode) (CUmoduleLoadingMode * mode) =
+	(CUresult (*) (CUmoduleLoadingMode * mode)) dlsym(cuda_handle, "cuModuleGetLoadingMode");
+
 CUresult (*lcuModuleGetFunction) (CUfunction * hfunc, CUmodule  hmod, const char * name) =
 	(CUresult (*) (CUfunction * hfunc, CUmodule  hmod, const char * name)) dlsym(cuda_handle, "cuModuleGetFunction");
 
 CUresult (*lcuModuleGetGlobal_v2) (CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod, const char * name) =
 	(CUresult (*) (CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod, const char * name)) dlsym(cuda_handle, "cuModuleGetGlobal_v2");
-
-CUresult (*lcuModuleGetTexRef) (CUtexref * pTexRef, CUmodule  hmod, const char * name) =
-	(CUresult (*) (CUtexref * pTexRef, CUmodule  hmod, const char * name)) dlsym(cuda_handle, "cuModuleGetTexRef");
-
-CUresult (*lcuModuleGetSurfRef) (CUsurfref * pSurfRef, CUmodule  hmod, const char * name) =
-	(CUresult (*) (CUsurfref * pSurfRef, CUmodule  hmod, const char * name)) dlsym(cuda_handle, "cuModuleGetSurfRef");
 
 CUresult (*lcuLinkCreate_v2) (unsigned int  numOptions, CUjit_option * options, void ** optionValues, CUlinkState * stateOut) =
 	(CUresult (*) (unsigned int  numOptions, CUjit_option * options, void ** optionValues, CUlinkState * stateOut)) dlsym(cuda_handle, "cuLinkCreate_v2");
@@ -196,6 +199,48 @@ CUresult (*lcuLinkComplete) (CUlinkState  state, void ** cubinOut, size_t * size
 
 CUresult (*lcuLinkDestroy) (CUlinkState  state) =
 	(CUresult (*) (CUlinkState  state)) dlsym(cuda_handle, "cuLinkDestroy");
+
+CUresult (*lcuModuleGetTexRef) (CUtexref * pTexRef, CUmodule  hmod, const char * name) =
+	(CUresult (*) (CUtexref * pTexRef, CUmodule  hmod, const char * name)) dlsym(cuda_handle, "cuModuleGetTexRef");
+
+CUresult (*lcuModuleGetSurfRef) (CUsurfref * pSurfRef, CUmodule  hmod, const char * name) =
+	(CUresult (*) (CUsurfref * pSurfRef, CUmodule  hmod, const char * name)) dlsym(cuda_handle, "cuModuleGetSurfRef");
+
+CUresult (*lcuLibraryLoadData) (CUlibrary * library, const void * code, CUjit_option * jitOptions, void ** jitOptionsValues, unsigned int  numJitOptions, CUlibraryOption * libraryOptions, void**  libraryOptionValues, unsigned int  numLibraryOptions) =
+	(CUresult (*) (CUlibrary * library, const void * code, CUjit_option * jitOptions, void ** jitOptionsValues, unsigned int  numJitOptions, CUlibraryOption * libraryOptions, void**  libraryOptionValues, unsigned int  numLibraryOptions)) dlsym(cuda_handle, "cuLibraryLoadData");
+
+CUresult (*lcuLibraryLoadFromFile) (CUlibrary * library, const char * fileName, CUjit_option * jitOptions, void ** jitOptionsValues, unsigned int  numJitOptions, CUlibraryOption * libraryOptions, void ** libraryOptionValues, unsigned int  numLibraryOptions) =
+	(CUresult (*) (CUlibrary * library, const char * fileName, CUjit_option * jitOptions, void ** jitOptionsValues, unsigned int  numJitOptions, CUlibraryOption * libraryOptions, void ** libraryOptionValues, unsigned int  numLibraryOptions)) dlsym(cuda_handle, "cuLibraryLoadFromFile");
+
+CUresult (*lcuLibraryUnload) (CUlibrary  library) =
+	(CUresult (*) (CUlibrary  library)) dlsym(cuda_handle, "cuLibraryUnload");
+
+CUresult (*lcuLibraryGetKernel) (CUkernel * pKernel, CUlibrary  library, const char * name) =
+	(CUresult (*) (CUkernel * pKernel, CUlibrary  library, const char * name)) dlsym(cuda_handle, "cuLibraryGetKernel");
+
+CUresult (*lcuLibraryGetModule) (CUmodule * pMod, CUlibrary  library) =
+	(CUresult (*) (CUmodule * pMod, CUlibrary  library)) dlsym(cuda_handle, "cuLibraryGetModule");
+
+CUresult (*lcuKernelGetFunction) (CUfunction * pFunc, CUkernel  kernel) =
+	(CUresult (*) (CUfunction * pFunc, CUkernel  kernel)) dlsym(cuda_handle, "cuKernelGetFunction");
+
+CUresult (*lcuLibraryGetGlobal) (CUdeviceptr * dptr, size_t * bytes, CUlibrary  library, const char * name) =
+	(CUresult (*) (CUdeviceptr * dptr, size_t * bytes, CUlibrary  library, const char * name)) dlsym(cuda_handle, "cuLibraryGetGlobal");
+
+CUresult (*lcuLibraryGetManaged) (CUdeviceptr * dptr, size_t * bytes, CUlibrary  library, const char * name) =
+	(CUresult (*) (CUdeviceptr * dptr, size_t * bytes, CUlibrary  library, const char * name)) dlsym(cuda_handle, "cuLibraryGetManaged");
+
+CUresult (*lcuLibraryGetUnifiedFunction) (void ** fptr, CUlibrary  library, const char * symbol) =
+	(CUresult (*) (void ** fptr, CUlibrary  library, const char * symbol)) dlsym(cuda_handle, "cuLibraryGetUnifiedFunction");
+
+CUresult (*lcuKernelGetAttribute) (int * pi, CUfunction_attribute  attrib, CUkernel  kernel, CUdevice  dev) =
+	(CUresult (*) (int * pi, CUfunction_attribute  attrib, CUkernel  kernel, CUdevice  dev)) dlsym(cuda_handle, "cuKernelGetAttribute");
+
+CUresult (*lcuKernelSetAttribute) (CUfunction_attribute  attrib, int  val, CUkernel  kernel, CUdevice  dev) =
+	(CUresult (*) (CUfunction_attribute  attrib, int  val, CUkernel  kernel, CUdevice  dev)) dlsym(cuda_handle, "cuKernelSetAttribute");
+
+CUresult (*lcuKernelSetCacheConfig) (CUkernel  kernel, CUfunc_cache  config, CUdevice  dev) =
+	(CUresult (*) (CUkernel  kernel, CUfunc_cache  config, CUdevice  dev)) dlsym(cuda_handle, "cuKernelSetCacheConfig");
 
 CUresult (*lcuMemGetInfo_v2) (size_t * free, size_t * total) =
 	(CUresult (*) (size_t * free, size_t * total)) dlsym(cuda_handle, "cuMemGetInfo_v2");
@@ -377,6 +422,12 @@ CUresult (*lcuArrayGetSparseProperties) (CUDA_ARRAY_SPARSE_PROPERTIES * sparsePr
 CUresult (*lcuMipmappedArrayGetSparseProperties) (CUDA_ARRAY_SPARSE_PROPERTIES * sparseProperties, CUmipmappedArray  mipmap) =
 	(CUresult (*) (CUDA_ARRAY_SPARSE_PROPERTIES * sparseProperties, CUmipmappedArray  mipmap)) dlsym(cuda_handle, "cuMipmappedArrayGetSparseProperties");
 
+CUresult (*lcuArrayGetMemoryRequirements) (CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryRequirements, CUarray  array, CUdevice  device) =
+	(CUresult (*) (CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryRequirements, CUarray  array, CUdevice  device)) dlsym(cuda_handle, "cuArrayGetMemoryRequirements");
+
+CUresult (*lcuMipmappedArrayGetMemoryRequirements) (CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryRequirements, CUmipmappedArray  mipmap, CUdevice  device) =
+	(CUresult (*) (CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryRequirements, CUmipmappedArray  mipmap, CUdevice  device)) dlsym(cuda_handle, "cuMipmappedArrayGetMemoryRequirements");
+
 CUresult (*lcuArrayGetPlane) (CUarray * pPlaneArray, CUarray  hArray, unsigned int  planeIdx) =
 	(CUresult (*) (CUarray * pPlaneArray, CUarray  hArray, unsigned int  planeIdx)) dlsym(cuda_handle, "cuArrayGetPlane");
 
@@ -397,6 +448,9 @@ CUresult (*lcuMipmappedArrayGetLevel) (CUarray * pLevelArray, CUmipmappedArray  
 
 CUresult (*lcuMipmappedArrayDestroy) (CUmipmappedArray  hMipmappedArray) =
 	(CUresult (*) (CUmipmappedArray  hMipmappedArray)) dlsym(cuda_handle, "cuMipmappedArrayDestroy");
+
+CUresult (*lcuMemGetHandleForAddressRange) (void * handle, CUdeviceptr  dptr, size_t  size, CUmemRangeHandleType  handleType, unsigned long long  flags) =
+	(CUresult (*) (void * handle, CUdeviceptr  dptr, size_t  size, CUmemRangeHandleType  handleType, unsigned long long  flags)) dlsym(cuda_handle, "cuMemGetHandleForAddressRange");
 
 CUresult (*lcuMemAddressReserve) (CUdeviceptr * ptr, size_t  size, size_t  alignment, CUdeviceptr  addr, unsigned long long  flags) =
 	(CUresult (*) (CUdeviceptr * ptr, size_t  size, size_t  alignment, CUdeviceptr  addr, unsigned long long  flags)) dlsym(cuda_handle, "cuMemAddressReserve");
@@ -482,14 +536,38 @@ CUresult (*lcuMemPoolExportPointer) (CUmemPoolPtrExportData * shareData_out, CUd
 CUresult (*lcuMemPoolImportPointer) (CUdeviceptr * ptr_out, CUmemoryPool  pool, CUmemPoolPtrExportData * shareData) =
 	(CUresult (*) (CUdeviceptr * ptr_out, CUmemoryPool  pool, CUmemPoolPtrExportData * shareData)) dlsym(cuda_handle, "cuMemPoolImportPointer");
 
+CUresult (*lcuMulticastCreate) (CUmemGenericAllocationHandle * mcHandle, const CUmulticastObjectProp * prop) =
+	(CUresult (*) (CUmemGenericAllocationHandle * mcHandle, const CUmulticastObjectProp * prop)) dlsym(cuda_handle, "cuMulticastCreate");
+
+CUresult (*lcuMulticastAddDevice) (CUmemGenericAllocationHandle  mcHandle, CUdevice  dev) =
+	(CUresult (*) (CUmemGenericAllocationHandle  mcHandle, CUdevice  dev)) dlsym(cuda_handle, "cuMulticastAddDevice");
+
+CUresult (*lcuMulticastBindMem) (CUmemGenericAllocationHandle  mcHandle, size_t  mcOffset, CUmemGenericAllocationHandle  memHandle, size_t  memOffset, size_t  size, unsigned long long  flags) =
+	(CUresult (*) (CUmemGenericAllocationHandle  mcHandle, size_t  mcOffset, CUmemGenericAllocationHandle  memHandle, size_t  memOffset, size_t  size, unsigned long long  flags)) dlsym(cuda_handle, "cuMulticastBindMem");
+
+CUresult (*lcuMulticastBindAddr) (CUmemGenericAllocationHandle  mcHandle, size_t  mcOffset, CUdeviceptr  memptr, size_t  size, unsigned long long  flags) =
+	(CUresult (*) (CUmemGenericAllocationHandle  mcHandle, size_t  mcOffset, CUdeviceptr  memptr, size_t  size, unsigned long long  flags)) dlsym(cuda_handle, "cuMulticastBindAddr");
+
+CUresult (*lcuMulticastUnbind) (CUmemGenericAllocationHandle  mcHandle, CUdevice  dev, size_t  mcOffset, size_t  size) =
+	(CUresult (*) (CUmemGenericAllocationHandle  mcHandle, CUdevice  dev, size_t  mcOffset, size_t  size)) dlsym(cuda_handle, "cuMulticastUnbind");
+
+CUresult (*lcuMulticastGetGranularity) (size_t * granularity, const CUmulticastObjectProp * prop, CUmulticastGranularity_flags  option) =
+	(CUresult (*) (size_t * granularity, const CUmulticastObjectProp * prop, CUmulticastGranularity_flags  option)) dlsym(cuda_handle, "cuMulticastGetGranularity");
+
 CUresult (*lcuPointerGetAttribute) (void * data, CUpointer_attribute  attribute, CUdeviceptr  ptr) =
 	(CUresult (*) (void * data, CUpointer_attribute  attribute, CUdeviceptr  ptr)) dlsym(cuda_handle, "cuPointerGetAttribute");
 
 CUresult (*lcuMemPrefetchAsync) (CUdeviceptr  devPtr, size_t  count, CUdevice  dstDevice, CUstream  hStream) =
 	(CUresult (*) (CUdeviceptr  devPtr, size_t  count, CUdevice  dstDevice, CUstream  hStream)) dlsym(cuda_handle, "cuMemPrefetchAsync");
 
+CUresult (*lcuMemPrefetchAsync_v2) (CUdeviceptr  devPtr, size_t  count, CUmemLocation  location, unsigned int  flags, CUstream  hStream) =
+	(CUresult (*) (CUdeviceptr  devPtr, size_t  count, CUmemLocation  location, unsigned int  flags, CUstream  hStream)) dlsym(cuda_handle, "cuMemPrefetchAsync_v2");
+
 CUresult (*lcuMemAdvise) (CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, CUdevice  device) =
 	(CUresult (*) (CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, CUdevice  device)) dlsym(cuda_handle, "cuMemAdvise");
+
+CUresult (*lcuMemAdvise_v2) (CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, CUmemLocation  location) =
+	(CUresult (*) (CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, CUmemLocation  location)) dlsym(cuda_handle, "cuMemAdvise_v2");
 
 CUresult (*lcuMemRangeGetAttribute) (void * data, size_t  dataSize, CUmem_range_attribute  attribute, CUdeviceptr  devPtr, size_t  count) =
 	(CUresult (*) (void * data, size_t  dataSize, CUmem_range_attribute  attribute, CUdeviceptr  devPtr, size_t  count)) dlsym(cuda_handle, "cuMemRangeGetAttribute");
@@ -515,6 +593,9 @@ CUresult (*lcuStreamGetPriority) (CUstream  hStream, int * priority) =
 CUresult (*lcuStreamGetFlags) (CUstream  hStream, unsigned int * flags) =
 	(CUresult (*) (CUstream  hStream, unsigned int * flags)) dlsym(cuda_handle, "cuStreamGetFlags");
 
+CUresult (*lcuStreamGetId) (CUstream  hStream, unsigned long long * streamId) =
+	(CUresult (*) (CUstream  hStream, unsigned long long * streamId)) dlsym(cuda_handle, "cuStreamGetId");
+
 CUresult (*lcuStreamGetCtx) (CUstream  hStream, CUcontext * pctx) =
 	(CUresult (*) (CUstream  hStream, CUcontext * pctx)) dlsym(cuda_handle, "cuStreamGetCtx");
 
@@ -535,9 +616,6 @@ CUresult (*lcuStreamEndCapture) (CUstream  hStream, CUgraph * phGraph) =
 
 CUresult (*lcuStreamIsCapturing) (CUstream  hStream, CUstreamCaptureStatus * captureStatus) =
 	(CUresult (*) (CUstream  hStream, CUstreamCaptureStatus * captureStatus)) dlsym(cuda_handle, "cuStreamIsCapturing");
-
-CUresult (*lcuStreamGetCaptureInfo) (CUstream  hStream, CUstreamCaptureStatus * captureStatus_out, cuuint64_t * id_out) =
-	(CUresult (*) (CUstream  hStream, CUstreamCaptureStatus * captureStatus_out, cuuint64_t * id_out)) dlsym(cuda_handle, "cuStreamGetCaptureInfo");
 
 CUresult (*lcuStreamGetCaptureInfo_v2) (CUstream  hStream, CUstreamCaptureStatus * captureStatus_out, cuuint64_t * id_out, CUgraph * graph_out, const CUgraphNode ** dependencies_out, size_t * numDependencies_out) =
 	(CUresult (*) (CUstream  hStream, CUstreamCaptureStatus * captureStatus_out, cuuint64_t * id_out, CUgraph * graph_out, const CUgraphNode ** dependencies_out, size_t * numDependencies_out)) dlsym(cuda_handle, "cuStreamGetCaptureInfo_v2");
@@ -611,20 +689,20 @@ CUresult (*lcuWaitExternalSemaphoresAsync) (const CUexternalSemaphore * extSemAr
 CUresult (*lcuDestroyExternalSemaphore) (CUexternalSemaphore  extSem) =
 	(CUresult (*) (CUexternalSemaphore  extSem)) dlsym(cuda_handle, "cuDestroyExternalSemaphore");
 
-CUresult (*lcuStreamWaitValue32) (CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags) =
-	(CUresult (*) (CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)) dlsym(cuda_handle, "cuStreamWaitValue32");
+CUresult (*lcuStreamWaitValue32_v2) (CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags) =
+	(CUresult (*) (CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)) dlsym(cuda_handle, "cuStreamWaitValue32_v2");
 
-CUresult (*lcuStreamWaitValue64) (CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags) =
-	(CUresult (*) (CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)) dlsym(cuda_handle, "cuStreamWaitValue64");
+CUresult (*lcuStreamWaitValue64_v2) (CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags) =
+	(CUresult (*) (CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)) dlsym(cuda_handle, "cuStreamWaitValue64_v2");
 
-CUresult (*lcuStreamWriteValue32) (CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags) =
-	(CUresult (*) (CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)) dlsym(cuda_handle, "cuStreamWriteValue32");
+CUresult (*lcuStreamWriteValue32_v2) (CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags) =
+	(CUresult (*) (CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)) dlsym(cuda_handle, "cuStreamWriteValue32_v2");
 
-CUresult (*lcuStreamWriteValue64) (CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags) =
-	(CUresult (*) (CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)) dlsym(cuda_handle, "cuStreamWriteValue64");
+CUresult (*lcuStreamWriteValue64_v2) (CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags) =
+	(CUresult (*) (CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)) dlsym(cuda_handle, "cuStreamWriteValue64_v2");
 
-CUresult (*lcuStreamBatchMemOp) (CUstream  stream, unsigned int  count, CUstreamBatchMemOpParams * paramArray, unsigned int  flags) =
-	(CUresult (*) (CUstream  stream, unsigned int  count, CUstreamBatchMemOpParams * paramArray, unsigned int  flags)) dlsym(cuda_handle, "cuStreamBatchMemOp");
+CUresult (*lcuStreamBatchMemOp_v2) (CUstream  stream, unsigned int  count, CUstreamBatchMemOpParams * paramArray, unsigned int  flags) =
+	(CUresult (*) (CUstream  stream, unsigned int  count, CUstreamBatchMemOpParams * paramArray, unsigned int  flags)) dlsym(cuda_handle, "cuStreamBatchMemOp_v2");
 
 CUresult (*lcuFuncGetAttribute) (int * pi, CUfunction_attribute  attrib, CUfunction  hfunc) =
 	(CUresult (*) (int * pi, CUfunction_attribute  attrib, CUfunction  hfunc)) dlsym(cuda_handle, "cuFuncGetAttribute");
@@ -643,6 +721,9 @@ CUresult (*lcuFuncGetModule) (CUmodule * hmod, CUfunction  hfunc) =
 
 CUresult (*lcuLaunchKernel) (CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams, void ** extra) =
 	(CUresult (*) (CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams, void ** extra)) dlsym(cuda_handle, "cuLaunchKernel");
+
+CUresult (*lcuLaunchKernelEx) (const CUlaunchConfig * config, CUfunction  f, void ** kernelParams, void ** extra) =
+	(CUresult (*) (const CUlaunchConfig * config, CUfunction  f, void ** kernelParams, void ** extra)) dlsym(cuda_handle, "cuLaunchKernelEx");
 
 CUresult (*lcuLaunchCooperativeKernel) (CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams) =
 	(CUresult (*) (CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams)) dlsym(cuda_handle, "cuLaunchCooperativeKernel");
@@ -686,14 +767,14 @@ CUresult (*lcuParamSetTexRef) (CUfunction  hfunc, int  texunit, CUtexref  hTexRe
 CUresult (*lcuGraphCreate) (CUgraph * phGraph, unsigned int  flags) =
 	(CUresult (*) (CUgraph * phGraph, unsigned int  flags)) dlsym(cuda_handle, "cuGraphCreate");
 
-CUresult (*lcuGraphAddKernelNode) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_KERNEL_NODE_PARAMS * nodeParams) =
-	(CUresult (*) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_KERNEL_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphAddKernelNode");
+CUresult (*lcuGraphAddKernelNode_v2) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_KERNEL_NODE_PARAMS * nodeParams) =
+	(CUresult (*) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_KERNEL_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphAddKernelNode_v2");
 
-CUresult (*lcuGraphKernelNodeGetParams) (CUgraphNode  hNode, CUDA_KERNEL_NODE_PARAMS * nodeParams) =
-	(CUresult (*) (CUgraphNode  hNode, CUDA_KERNEL_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphKernelNodeGetParams");
+CUresult (*lcuGraphKernelNodeGetParams_v2) (CUgraphNode  hNode, CUDA_KERNEL_NODE_PARAMS * nodeParams) =
+	(CUresult (*) (CUgraphNode  hNode, CUDA_KERNEL_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphKernelNodeGetParams_v2");
 
-CUresult (*lcuGraphKernelNodeSetParams) (CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams) =
-	(CUresult (*) (CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphKernelNodeSetParams");
+CUresult (*lcuGraphKernelNodeSetParams_v2) (CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams) =
+	(CUresult (*) (CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphKernelNodeSetParams_v2");
 
 CUresult (*lcuGraphAddMemcpyNode) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_MEMCPY3D * copyParams, CUcontext  ctx) =
 	(CUresult (*) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_MEMCPY3D * copyParams, CUcontext  ctx)) dlsym(cuda_handle, "cuGraphAddMemcpyNode");
@@ -767,6 +848,18 @@ CUresult (*lcuGraphExternalSemaphoresWaitNodeGetParams) (CUgraphNode  hNode, CUD
 CUresult (*lcuGraphExternalSemaphoresWaitNodeSetParams) (CUgraphNode  hNode, const CUDA_EXT_SEM_WAIT_NODE_PARAMS * nodeParams) =
 	(CUresult (*) (CUgraphNode  hNode, const CUDA_EXT_SEM_WAIT_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphExternalSemaphoresWaitNodeSetParams");
 
+CUresult (*lcuGraphAddBatchMemOpNode) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams) =
+	(CUresult (*) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphAddBatchMemOpNode");
+
+CUresult (*lcuGraphBatchMemOpNodeGetParams) (CUgraphNode  hNode, CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams_out) =
+	(CUresult (*) (CUgraphNode  hNode, CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams_out)) dlsym(cuda_handle, "cuGraphBatchMemOpNodeGetParams");
+
+CUresult (*lcuGraphBatchMemOpNodeSetParams) (CUgraphNode  hNode, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams) =
+	(CUresult (*) (CUgraphNode  hNode, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphBatchMemOpNodeSetParams");
+
+CUresult (*lcuGraphExecBatchMemOpNodeSetParams) (CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams) =
+	(CUresult (*) (CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphExecBatchMemOpNodeSetParams");
+
 CUresult (*lcuGraphAddMemAllocNode) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUDA_MEM_ALLOC_NODE_PARAMS * nodeParams) =
 	(CUresult (*) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUDA_MEM_ALLOC_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphAddMemAllocNode");
 
@@ -821,14 +914,17 @@ CUresult (*lcuGraphRemoveDependencies) (CUgraph  hGraph, const CUgraphNode * fro
 CUresult (*lcuGraphDestroyNode) (CUgraphNode  hNode) =
 	(CUresult (*) (CUgraphNode  hNode)) dlsym(cuda_handle, "cuGraphDestroyNode");
 
-CUresult (*lcuGraphInstantiate_v2) (CUgraphExec * phGraphExec, CUgraph  hGraph, CUgraphNode * phErrorNode, char * logBuffer, size_t  bufferSize) =
-	(CUresult (*) (CUgraphExec * phGraphExec, CUgraph  hGraph, CUgraphNode * phErrorNode, char * logBuffer, size_t  bufferSize)) dlsym(cuda_handle, "cuGraphInstantiate_v2");
-
 CUresult (*lcuGraphInstantiateWithFlags) (CUgraphExec * phGraphExec, CUgraph  hGraph, unsigned long long  flags) =
 	(CUresult (*) (CUgraphExec * phGraphExec, CUgraph  hGraph, unsigned long long  flags)) dlsym(cuda_handle, "cuGraphInstantiateWithFlags");
 
-CUresult (*lcuGraphExecKernelNodeSetParams) (CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams) =
-	(CUresult (*) (CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphExecKernelNodeSetParams");
+CUresult (*lcuGraphInstantiateWithParams) (CUgraphExec * phGraphExec, CUgraph  hGraph, CUDA_GRAPH_INSTANTIATE_PARAMS * instantiateParams) =
+	(CUresult (*) (CUgraphExec * phGraphExec, CUgraph  hGraph, CUDA_GRAPH_INSTANTIATE_PARAMS * instantiateParams)) dlsym(cuda_handle, "cuGraphInstantiateWithParams");
+
+CUresult (*lcuGraphExecGetFlags) (CUgraphExec  hGraphExec, cuuint64_t * flags) =
+	(CUresult (*) (CUgraphExec  hGraphExec, cuuint64_t * flags)) dlsym(cuda_handle, "cuGraphExecGetFlags");
+
+CUresult (*lcuGraphExecKernelNodeSetParams_v2) (CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams) =
+	(CUresult (*) (CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphExecKernelNodeSetParams_v2");
 
 CUresult (*lcuGraphExecMemcpyNodeSetParams) (CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_MEMCPY3D * copyParams, CUcontext  ctx) =
 	(CUresult (*) (CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_MEMCPY3D * copyParams, CUcontext  ctx)) dlsym(cuda_handle, "cuGraphExecMemcpyNodeSetParams");
@@ -854,6 +950,12 @@ CUresult (*lcuGraphExecExternalSemaphoresSignalNodeSetParams) (CUgraphExec  hGra
 CUresult (*lcuGraphExecExternalSemaphoresWaitNodeSetParams) (CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_EXT_SEM_WAIT_NODE_PARAMS * nodeParams) =
 	(CUresult (*) (CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_EXT_SEM_WAIT_NODE_PARAMS * nodeParams)) dlsym(cuda_handle, "cuGraphExecExternalSemaphoresWaitNodeSetParams");
 
+CUresult (*lcuGraphNodeSetEnabled) (CUgraphExec  hGraphExec, CUgraphNode  hNode, unsigned int  isEnabled) =
+	(CUresult (*) (CUgraphExec  hGraphExec, CUgraphNode  hNode, unsigned int  isEnabled)) dlsym(cuda_handle, "cuGraphNodeSetEnabled");
+
+CUresult (*lcuGraphNodeGetEnabled) (CUgraphExec  hGraphExec, CUgraphNode  hNode, unsigned int * isEnabled) =
+	(CUresult (*) (CUgraphExec  hGraphExec, CUgraphNode  hNode, unsigned int * isEnabled)) dlsym(cuda_handle, "cuGraphNodeGetEnabled");
+
 CUresult (*lcuGraphUpload) (CUgraphExec  hGraphExec, CUstream  hStream) =
 	(CUresult (*) (CUgraphExec  hGraphExec, CUstream  hStream)) dlsym(cuda_handle, "cuGraphUpload");
 
@@ -866,8 +968,8 @@ CUresult (*lcuGraphExecDestroy) (CUgraphExec  hGraphExec) =
 CUresult (*lcuGraphDestroy) (CUgraph  hGraph) =
 	(CUresult (*) (CUgraph  hGraph)) dlsym(cuda_handle, "cuGraphDestroy");
 
-CUresult (*lcuGraphExecUpdate) (CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphNode * hErrorNode_out, CUgraphExecUpdateResult * updateResult_out) =
-	(CUresult (*) (CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphNode * hErrorNode_out, CUgraphExecUpdateResult * updateResult_out)) dlsym(cuda_handle, "cuGraphExecUpdate");
+CUresult (*lcuGraphExecUpdate_v2) (CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphExecUpdateResultInfo * resultInfo) =
+	(CUresult (*) (CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphExecUpdateResultInfo * resultInfo)) dlsym(cuda_handle, "cuGraphExecUpdate_v2");
 
 CUresult (*lcuGraphKernelNodeCopyAttributes) (CUgraphNode  dst, CUgraphNode  src) =
 	(CUresult (*) (CUgraphNode  dst, CUgraphNode  src)) dlsym(cuda_handle, "cuGraphKernelNodeCopyAttributes");
@@ -896,6 +998,15 @@ CUresult (*lcuGraphRetainUserObject) (CUgraph  graph, CUuserObject  object, unsi
 CUresult (*lcuGraphReleaseUserObject) (CUgraph  graph, CUuserObject  object, unsigned int  count) =
 	(CUresult (*) (CUgraph  graph, CUuserObject  object, unsigned int  count)) dlsym(cuda_handle, "cuGraphReleaseUserObject");
 
+CUresult (*lcuGraphAddNode) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUgraphNodeParams * nodeParams) =
+	(CUresult (*) (CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUgraphNodeParams * nodeParams)) dlsym(cuda_handle, "cuGraphAddNode");
+
+CUresult (*lcuGraphNodeSetParams) (CUgraphNode  hNode, CUgraphNodeParams * nodeParams) =
+	(CUresult (*) (CUgraphNode  hNode, CUgraphNodeParams * nodeParams)) dlsym(cuda_handle, "cuGraphNodeSetParams");
+
+CUresult (*lcuGraphExecNodeSetParams) (CUgraphExec  hGraphExec, CUgraphNode  hNode, CUgraphNodeParams * nodeParams) =
+	(CUresult (*) (CUgraphExec  hGraphExec, CUgraphNode  hNode, CUgraphNodeParams * nodeParams)) dlsym(cuda_handle, "cuGraphExecNodeSetParams");
+
 CUresult (*lcuOccupancyMaxActiveBlocksPerMultiprocessor) (int * numBlocks, CUfunction  func, int  blockSize, size_t  dynamicSMemSize) =
 	(CUresult (*) (int * numBlocks, CUfunction  func, int  blockSize, size_t  dynamicSMemSize)) dlsym(cuda_handle, "cuOccupancyMaxActiveBlocksPerMultiprocessor");
 
@@ -910,6 +1021,12 @@ CUresult (*lcuOccupancyMaxPotentialBlockSizeWithFlags) (int * minGridSize, int *
 
 CUresult (*lcuOccupancyAvailableDynamicSMemPerBlock) (size_t * dynamicSmemSize, CUfunction  func, int  numBlocks, int  blockSize) =
 	(CUresult (*) (size_t * dynamicSmemSize, CUfunction  func, int  numBlocks, int  blockSize)) dlsym(cuda_handle, "cuOccupancyAvailableDynamicSMemPerBlock");
+
+CUresult (*lcuOccupancyMaxPotentialClusterSize) (int * clusterSize, CUfunction  func, const CUlaunchConfig * config) =
+	(CUresult (*) (int * clusterSize, CUfunction  func, const CUlaunchConfig * config)) dlsym(cuda_handle, "cuOccupancyMaxPotentialClusterSize");
+
+CUresult (*lcuOccupancyMaxActiveClusters) (int * numClusters, CUfunction  func, const CUlaunchConfig * config) =
+	(CUresult (*) (int * numClusters, CUfunction  func, const CUlaunchConfig * config)) dlsym(cuda_handle, "cuOccupancyMaxActiveClusters");
 
 CUresult (*lcuTexRefSetArray) (CUtexref  hTexRef, CUarray  hArray, unsigned int  Flags) =
 	(CUresult (*) (CUtexref  hTexRef, CUarray  hArray, unsigned int  Flags)) dlsym(cuda_handle, "cuTexRefSetArray");
@@ -1022,6 +1139,15 @@ CUresult (*lcuSurfObjectDestroy) (CUsurfObject  surfObject) =
 CUresult (*lcuSurfObjectGetResourceDesc) (CUDA_RESOURCE_DESC * pResDesc, CUsurfObject  surfObject) =
 	(CUresult (*) (CUDA_RESOURCE_DESC * pResDesc, CUsurfObject  surfObject)) dlsym(cuda_handle, "cuSurfObjectGetResourceDesc");
 
+CUresult (*lcuTensorMapEncodeTiled) (CUtensorMap * tensorMap, CUtensorMapDataType  tensorDataType, cuuint32_t  tensorRank, void * globalAddress, const cuuint64_t * globalDim, const cuuint64_t * globalStrides, const cuuint32_t * boxDim, const cuuint32_t * elementStrides, CUtensorMapInterleave  interleave, CUtensorMapSwizzle  swizzle, CUtensorMapL2promotion  l2Promotion, CUtensorMapFloatOOBfill  oobFill) =
+	(CUresult (*) (CUtensorMap * tensorMap, CUtensorMapDataType  tensorDataType, cuuint32_t  tensorRank, void * globalAddress, const cuuint64_t * globalDim, const cuuint64_t * globalStrides, const cuuint32_t * boxDim, const cuuint32_t * elementStrides, CUtensorMapInterleave  interleave, CUtensorMapSwizzle  swizzle, CUtensorMapL2promotion  l2Promotion, CUtensorMapFloatOOBfill  oobFill)) dlsym(cuda_handle, "cuTensorMapEncodeTiled");
+
+CUresult (*lcuTensorMapEncodeIm2col) (CUtensorMap * tensorMap, CUtensorMapDataType  tensorDataType, cuuint32_t  tensorRank, void * globalAddress, const cuuint64_t * globalDim, const cuuint64_t * globalStrides, const int * pixelBoxLowerCorner, const int * pixelBoxUpperCorner, cuuint32_t  channelsPerPixel, cuuint32_t  pixelsPerColumn, const cuuint32_t * elementStrides, CUtensorMapInterleave  interleave, CUtensorMapSwizzle  swizzle, CUtensorMapL2promotion  l2Promotion, CUtensorMapFloatOOBfill  oobFill) =
+	(CUresult (*) (CUtensorMap * tensorMap, CUtensorMapDataType  tensorDataType, cuuint32_t  tensorRank, void * globalAddress, const cuuint64_t * globalDim, const cuuint64_t * globalStrides, const int * pixelBoxLowerCorner, const int * pixelBoxUpperCorner, cuuint32_t  channelsPerPixel, cuuint32_t  pixelsPerColumn, const cuuint32_t * elementStrides, CUtensorMapInterleave  interleave, CUtensorMapSwizzle  swizzle, CUtensorMapL2promotion  l2Promotion, CUtensorMapFloatOOBfill  oobFill)) dlsym(cuda_handle, "cuTensorMapEncodeIm2col");
+
+CUresult (*lcuTensorMapReplaceAddress) (CUtensorMap * tensorMap, void * globalAddress) =
+	(CUresult (*) (CUtensorMap * tensorMap, void * globalAddress)) dlsym(cuda_handle, "cuTensorMapReplaceAddress");
+
 CUresult (*lcuDeviceCanAccessPeer) (int * canAccessPeer, CUdevice  dev, CUdevice  peerDev) =
 	(CUresult (*) (int * canAccessPeer, CUdevice  dev, CUdevice  peerDev)) dlsym(cuda_handle, "cuDeviceCanAccessPeer");
 
@@ -1055,8 +1181,20 @@ CUresult (*lcuGraphicsMapResources) (unsigned int  count, CUgraphicsResource * r
 CUresult (*lcuGraphicsUnmapResources) (unsigned int  count, CUgraphicsResource * resources, CUstream  hStream) =
 	(CUresult (*) (unsigned int  count, CUgraphicsResource * resources, CUstream  hStream)) dlsym(cuda_handle, "cuGraphicsUnmapResources");
 
-CUresult (*lcuGetProcAddress) (const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags) =
-	(CUresult (*) (const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags)) dlsym(cuda_handle, "cuGetProcAddress");
+CUresult (*lcuGetProcAddress_v2) (const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus) =
+	(CUresult (*) (const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)) dlsym(cuda_handle, "cuGetProcAddress_v2");
+
+CUresult (*lcuCoredumpGetAttribute) (CUcoredumpSettings  attrib, void*  value, size_t * size) =
+	(CUresult (*) (CUcoredumpSettings  attrib, void*  value, size_t * size)) dlsym(cuda_handle, "cuCoredumpGetAttribute");
+
+CUresult (*lcuCoredumpGetAttributeGlobal) (CUcoredumpSettings  attrib, void * value, size_t * size) =
+	(CUresult (*) (CUcoredumpSettings  attrib, void * value, size_t * size)) dlsym(cuda_handle, "cuCoredumpGetAttributeGlobal");
+
+CUresult (*lcuCoredumpSetAttribute) (CUcoredumpSettings  attrib, void*  value, size_t * size) =
+	(CUresult (*) (CUcoredumpSettings  attrib, void*  value, size_t * size)) dlsym(cuda_handle, "cuCoredumpSetAttribute");
+
+CUresult (*lcuCoredumpSetAttributeGlobal) (CUcoredumpSettings  attrib, void * value, size_t * size) =
+	(CUresult (*) (CUcoredumpSettings  attrib, void * value, size_t * size)) dlsym(cuda_handle, "cuCoredumpSetAttributeGlobal");
 
 CUresult (*lcuGetExportTable) (const void ** ppExportTable, const CUuuid * pExportTableId) =
 	(CUresult (*) (const void ** ppExportTable, const CUuuid * pExportTableId)) dlsym(cuda_handle, "cuGetExportTable");
@@ -1148,8 +1286,8 @@ const char* (*lcudaGetErrorString) (cudaError_t  error) =
 cudaError_t (*lcudaGetDeviceCount) (int * count) =
 	(cudaError_t (*) (int * count)) dlsym(cudart_handle, "cudaGetDeviceCount");
 
-cudaError_t (*lcudaGetDeviceProperties) (struct cudaDeviceProp * prop, int  device) =
-	(cudaError_t (*) (struct cudaDeviceProp * prop, int  device)) dlsym(cudart_handle, "cudaGetDeviceProperties");
+cudaError_t (*lcudaGetDeviceProperties_v2) (struct cudaDeviceProp * prop, int  device) =
+	(cudaError_t (*) (struct cudaDeviceProp * prop, int  device)) dlsym(cudart_handle, "cudaGetDeviceProperties_v2");
 
 cudaError_t (*lcudaDeviceGetAttribute) (int * value, enum cudaDeviceAttr  attr, int  device) =
 	(cudaError_t (*) (int * value, enum cudaDeviceAttr  attr, int  device)) dlsym(cudart_handle, "cudaDeviceGetAttribute");
@@ -1171,6 +1309,9 @@ cudaError_t (*lcudaDeviceGetP2PAttribute) (int * value, enum cudaDeviceP2PAttr  
 
 cudaError_t (*lcudaChooseDevice) (int * device, const struct cudaDeviceProp * prop) =
 	(cudaError_t (*) (int * device, const struct cudaDeviceProp * prop)) dlsym(cudart_handle, "cudaChooseDevice");
+
+cudaError_t (*lcudaInitDevice) (int  device, unsigned int  deviceFlags, unsigned int  flags) =
+	(cudaError_t (*) (int  device, unsigned int  deviceFlags, unsigned int  flags)) dlsym(cudart_handle, "cudaInitDevice");
 
 cudaError_t (*lcudaSetDevice) (int  device) =
 	(cudaError_t (*) (int  device)) dlsym(cudart_handle, "cudaSetDevice");
@@ -1202,17 +1343,20 @@ cudaError_t (*lcudaStreamGetPriority) (cudaStream_t  hStream, int * priority) =
 cudaError_t (*lcudaStreamGetFlags) (cudaStream_t  hStream, unsigned int * flags) =
 	(cudaError_t (*) (cudaStream_t  hStream, unsigned int * flags)) dlsym(cudart_handle, "cudaStreamGetFlags");
 
+cudaError_t (*lcudaStreamGetId) (cudaStream_t  hStream, unsigned long long * streamId) =
+	(cudaError_t (*) (cudaStream_t  hStream, unsigned long long * streamId)) dlsym(cudart_handle, "cudaStreamGetId");
+
 cudaError_t (*lcudaCtxResetPersistingL2Cache) () =
 	(cudaError_t (*) ()) dlsym(cudart_handle, "cudaCtxResetPersistingL2Cache");
 
 cudaError_t (*lcudaStreamCopyAttributes) (cudaStream_t  dst, cudaStream_t  src) =
 	(cudaError_t (*) (cudaStream_t  dst, cudaStream_t  src)) dlsym(cudart_handle, "cudaStreamCopyAttributes");
 
-cudaError_t (*lcudaStreamGetAttribute) (cudaStream_t  hStream, enum cudaStreamAttrID  attr, union cudaStreamAttrValue * value_out) =
-	(cudaError_t (*) (cudaStream_t  hStream, enum cudaStreamAttrID  attr, union cudaStreamAttrValue * value_out)) dlsym(cudart_handle, "cudaStreamGetAttribute");
+cudaError_t (*lcudaStreamGetAttribute) (cudaStream_t  hStream, cudaLaunchAttributeID  attr, cudaLaunchAttributeValue * value_out) =
+	(cudaError_t (*) (cudaStream_t  hStream, cudaLaunchAttributeID  attr, cudaLaunchAttributeValue * value_out)) dlsym(cudart_handle, "cudaStreamGetAttribute");
 
-cudaError_t (*lcudaStreamSetAttribute) (cudaStream_t  hStream, enum cudaStreamAttrID  attr, const union cudaStreamAttrValue * value) =
-	(cudaError_t (*) (cudaStream_t  hStream, enum cudaStreamAttrID  attr, const union cudaStreamAttrValue * value)) dlsym(cudart_handle, "cudaStreamSetAttribute");
+cudaError_t (*lcudaStreamSetAttribute) (cudaStream_t  hStream, cudaLaunchAttributeID  attr, const cudaLaunchAttributeValue * value) =
+	(cudaError_t (*) (cudaStream_t  hStream, cudaLaunchAttributeID  attr, const cudaLaunchAttributeValue * value)) dlsym(cudart_handle, "cudaStreamSetAttribute");
 
 cudaError_t (*lcudaStreamDestroy) (cudaStream_t  stream) =
 	(cudaError_t (*) (cudaStream_t  stream)) dlsym(cudart_handle, "cudaStreamDestroy");
@@ -1243,9 +1387,6 @@ cudaError_t (*lcudaStreamEndCapture) (cudaStream_t  stream, cudaGraph_t * pGraph
 
 cudaError_t (*lcudaStreamIsCapturing) (cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus) =
 	(cudaError_t (*) (cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus)) dlsym(cudart_handle, "cudaStreamIsCapturing");
-
-cudaError_t (*lcudaStreamGetCaptureInfo) (cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus, unsigned long long * pId) =
-	(cudaError_t (*) (cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus, unsigned long long * pId)) dlsym(cudart_handle, "cudaStreamGetCaptureInfo");
 
 cudaError_t (*lcudaStreamGetCaptureInfo_v2) (cudaStream_t  stream, enum cudaStreamCaptureStatus * captureStatus_out, unsigned long long * id_out, cudaGraph_t * graph_out, const cudaGraphNode_t ** dependencies_out, size_t * numDependencies_out) =
 	(cudaError_t (*) (cudaStream_t  stream, enum cudaStreamCaptureStatus * captureStatus_out, unsigned long long * id_out, cudaGraph_t * graph_out, const cudaGraphNode_t ** dependencies_out, size_t * numDependencies_out)) dlsym(cudart_handle, "cudaStreamGetCaptureInfo_v2");
@@ -1304,6 +1445,9 @@ cudaError_t (*lcudaDestroyExternalSemaphore) (cudaExternalSemaphore_t  extSem) =
 cudaError_t (*lcudaLaunchKernel) (const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream) =
 	(cudaError_t (*) (const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)) dlsym(cudart_handle, "cudaLaunchKernel");
 
+cudaError_t (*lcudaLaunchKernelExC) (const cudaLaunchConfig_t * config, const void * func, void ** args) =
+	(cudaError_t (*) (const cudaLaunchConfig_t * config, const void * func, void ** args)) dlsym(cudart_handle, "cudaLaunchKernelExC");
+
 cudaError_t (*lcudaLaunchCooperativeKernel) (const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream) =
 	(cudaError_t (*) (const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)) dlsym(cudart_handle, "cudaLaunchCooperativeKernel");
 
@@ -1339,6 +1483,12 @@ cudaError_t (*lcudaOccupancyAvailableDynamicSMemPerBlock) (size_t * dynamicSmemS
 
 cudaError_t (*lcudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags) (int * numBlocks, const void * func, int  blockSize, size_t  dynamicSMemSize, unsigned int  flags) =
 	(cudaError_t (*) (int * numBlocks, const void * func, int  blockSize, size_t  dynamicSMemSize, unsigned int  flags)) dlsym(cudart_handle, "cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags");
+
+cudaError_t (*lcudaOccupancyMaxPotentialClusterSize) (int * clusterSize, const void * func, const cudaLaunchConfig_t * launchConfig) =
+	(cudaError_t (*) (int * clusterSize, const void * func, const cudaLaunchConfig_t * launchConfig)) dlsym(cudart_handle, "cudaOccupancyMaxPotentialClusterSize");
+
+cudaError_t (*lcudaOccupancyMaxActiveClusters) (int * numClusters, const void * func, const cudaLaunchConfig_t * launchConfig) =
+	(cudaError_t (*) (int * numClusters, const void * func, const cudaLaunchConfig_t * launchConfig)) dlsym(cudart_handle, "cudaOccupancyMaxActiveClusters");
 
 cudaError_t (*lcudaMallocManaged) (void ** devPtr, size_t  size, unsigned int  flags) =
 	(cudaError_t (*) (void ** devPtr, size_t  size, unsigned int  flags)) dlsym(cudart_handle, "cudaMallocManaged");
@@ -1414,6 +1564,12 @@ cudaError_t (*lcudaArrayGetInfo) (struct cudaChannelFormatDesc * desc, struct cu
 
 cudaError_t (*lcudaArrayGetPlane) (cudaArray_t * pPlaneArray, cudaArray_t  hArray, unsigned int  planeIdx) =
 	(cudaError_t (*) (cudaArray_t * pPlaneArray, cudaArray_t  hArray, unsigned int  planeIdx)) dlsym(cudart_handle, "cudaArrayGetPlane");
+
+cudaError_t (*lcudaArrayGetMemoryRequirements) (struct cudaArrayMemoryRequirements * memoryRequirements, cudaArray_t  array, int  device) =
+	(cudaError_t (*) (struct cudaArrayMemoryRequirements * memoryRequirements, cudaArray_t  array, int  device)) dlsym(cudart_handle, "cudaArrayGetMemoryRequirements");
+
+cudaError_t (*lcudaMipmappedArrayGetMemoryRequirements) (struct cudaArrayMemoryRequirements * memoryRequirements, cudaMipmappedArray_t  mipmap, int  device) =
+	(cudaError_t (*) (struct cudaArrayMemoryRequirements * memoryRequirements, cudaMipmappedArray_t  mipmap, int  device)) dlsym(cudart_handle, "cudaMipmappedArrayGetMemoryRequirements");
 
 cudaError_t (*lcudaArrayGetSparseProperties) (struct cudaArraySparseProperties * sparseProperties, cudaArray_t  array) =
 	(cudaError_t (*) (struct cudaArraySparseProperties * sparseProperties, cudaArray_t  array)) dlsym(cudart_handle, "cudaArrayGetSparseProperties");
@@ -1493,8 +1649,14 @@ cudaError_t (*lcudaGetSymbolSize) (size_t * size, const void * symbol) =
 cudaError_t (*lcudaMemPrefetchAsync) (const void * devPtr, size_t  count, int  dstDevice, cudaStream_t  stream) =
 	(cudaError_t (*) (const void * devPtr, size_t  count, int  dstDevice, cudaStream_t  stream)) dlsym(cudart_handle, "cudaMemPrefetchAsync");
 
+cudaError_t (*lcudaMemPrefetchAsync_v2) (const void * devPtr, size_t  count, struct cudaMemLocation  location, unsigned int  flags, cudaStream_t  stream) =
+	(cudaError_t (*) (const void * devPtr, size_t  count, struct cudaMemLocation  location, unsigned int  flags, cudaStream_t  stream)) dlsym(cudart_handle, "cudaMemPrefetchAsync_v2");
+
 cudaError_t (*lcudaMemAdvise) (const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, int  device) =
 	(cudaError_t (*) (const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, int  device)) dlsym(cudart_handle, "cudaMemAdvise");
+
+cudaError_t (*lcudaMemAdvise_v2) (const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, struct cudaMemLocation  location) =
+	(cudaError_t (*) (const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, struct cudaMemLocation  location)) dlsym(cudart_handle, "cudaMemAdvise_v2");
 
 cudaError_t (*lcudaMemRangeGetAttribute) (void * data, size_t  dataSize, enum cudaMemRangeAttribute  attribute, const void * devPtr, size_t  count) =
 	(cudaError_t (*) (void * data, size_t  dataSize, enum cudaMemRangeAttribute  attribute, const void * devPtr, size_t  count)) dlsym(cudart_handle, "cudaMemRangeGetAttribute");
@@ -1592,33 +1754,6 @@ cudaError_t (*lcudaGraphicsSubResourceGetMappedArray) (cudaArray_t * array, cuda
 cudaError_t (*lcudaGraphicsResourceGetMappedMipmappedArray) (cudaMipmappedArray_t * mipmappedArray, cudaGraphicsResource_t  resource) =
 	(cudaError_t (*) (cudaMipmappedArray_t * mipmappedArray, cudaGraphicsResource_t  resource)) dlsym(cudart_handle, "cudaGraphicsResourceGetMappedMipmappedArray");
 
-cudaError_t (*lcudaBindTexture) (size_t * offset, const struct textureReference * texref, const void * devPtr, const struct cudaChannelFormatDesc * desc, size_t  size) =
-	(cudaError_t (*) (size_t * offset, const struct textureReference * texref, const void * devPtr, const struct cudaChannelFormatDesc * desc, size_t  size)) dlsym(cudart_handle, "cudaBindTexture");
-
-cudaError_t (*lcudaBindTexture2D) (size_t * offset, const struct textureReference * texref, const void * devPtr, const struct cudaChannelFormatDesc * desc, size_t  width, size_t  height, size_t  pitch) =
-	(cudaError_t (*) (size_t * offset, const struct textureReference * texref, const void * devPtr, const struct cudaChannelFormatDesc * desc, size_t  width, size_t  height, size_t  pitch)) dlsym(cudart_handle, "cudaBindTexture2D");
-
-cudaError_t (*lcudaBindTextureToArray) (const struct textureReference * texref, cudaArray_const_t  array, const struct cudaChannelFormatDesc * desc) =
-	(cudaError_t (*) (const struct textureReference * texref, cudaArray_const_t  array, const struct cudaChannelFormatDesc * desc)) dlsym(cudart_handle, "cudaBindTextureToArray");
-
-cudaError_t (*lcudaBindTextureToMipmappedArray) (const struct textureReference * texref, cudaMipmappedArray_const_t  mipmappedArray, const struct cudaChannelFormatDesc * desc) =
-	(cudaError_t (*) (const struct textureReference * texref, cudaMipmappedArray_const_t  mipmappedArray, const struct cudaChannelFormatDesc * desc)) dlsym(cudart_handle, "cudaBindTextureToMipmappedArray");
-
-cudaError_t (*lcudaUnbindTexture) (const struct textureReference * texref) =
-	(cudaError_t (*) (const struct textureReference * texref)) dlsym(cudart_handle, "cudaUnbindTexture");
-
-cudaError_t (*lcudaGetTextureAlignmentOffset) (size_t * offset, const struct textureReference * texref) =
-	(cudaError_t (*) (size_t * offset, const struct textureReference * texref)) dlsym(cudart_handle, "cudaGetTextureAlignmentOffset");
-
-cudaError_t (*lcudaGetTextureReference) (const struct textureReference ** texref, const void * symbol) =
-	(cudaError_t (*) (const struct textureReference ** texref, const void * symbol)) dlsym(cudart_handle, "cudaGetTextureReference");
-
-cudaError_t (*lcudaBindSurfaceToArray) (const struct surfaceReference * surfref, cudaArray_const_t  array, const struct cudaChannelFormatDesc * desc) =
-	(cudaError_t (*) (const struct surfaceReference * surfref, cudaArray_const_t  array, const struct cudaChannelFormatDesc * desc)) dlsym(cudart_handle, "cudaBindSurfaceToArray");
-
-cudaError_t (*lcudaGetSurfaceReference) (const struct surfaceReference ** surfref, const void * symbol) =
-	(cudaError_t (*) (const struct surfaceReference ** surfref, const void * symbol)) dlsym(cudart_handle, "cudaGetSurfaceReference");
-
 cudaError_t (*lcudaGetChannelDesc) (struct cudaChannelFormatDesc * desc, cudaArray_const_t  array) =
 	(cudaError_t (*) (struct cudaChannelFormatDesc * desc, cudaArray_const_t  array)) dlsym(cudart_handle, "cudaGetChannelDesc");
 
@@ -1670,11 +1805,11 @@ cudaError_t (*lcudaGraphKernelNodeSetParams) (cudaGraphNode_t  node, const struc
 cudaError_t (*lcudaGraphKernelNodeCopyAttributes) (cudaGraphNode_t  hSrc, cudaGraphNode_t  hDst) =
 	(cudaError_t (*) (cudaGraphNode_t  hSrc, cudaGraphNode_t  hDst)) dlsym(cudart_handle, "cudaGraphKernelNodeCopyAttributes");
 
-cudaError_t (*lcudaGraphKernelNodeGetAttribute) (cudaGraphNode_t  hNode, enum cudaKernelNodeAttrID  attr, union cudaKernelNodeAttrValue * value_out) =
-	(cudaError_t (*) (cudaGraphNode_t  hNode, enum cudaKernelNodeAttrID  attr, union cudaKernelNodeAttrValue * value_out)) dlsym(cudart_handle, "cudaGraphKernelNodeGetAttribute");
+cudaError_t (*lcudaGraphKernelNodeGetAttribute) (cudaGraphNode_t  hNode, cudaLaunchAttributeID  attr, cudaLaunchAttributeValue * value_out) =
+	(cudaError_t (*) (cudaGraphNode_t  hNode, cudaLaunchAttributeID  attr, cudaLaunchAttributeValue * value_out)) dlsym(cudart_handle, "cudaGraphKernelNodeGetAttribute");
 
-cudaError_t (*lcudaGraphKernelNodeSetAttribute) (cudaGraphNode_t  hNode, enum cudaKernelNodeAttrID  attr, const union cudaKernelNodeAttrValue * value) =
-	(cudaError_t (*) (cudaGraphNode_t  hNode, enum cudaKernelNodeAttrID  attr, const union cudaKernelNodeAttrValue * value)) dlsym(cudart_handle, "cudaGraphKernelNodeSetAttribute");
+cudaError_t (*lcudaGraphKernelNodeSetAttribute) (cudaGraphNode_t  hNode, cudaLaunchAttributeID  attr, const cudaLaunchAttributeValue * value) =
+	(cudaError_t (*) (cudaGraphNode_t  hNode, cudaLaunchAttributeID  attr, const cudaLaunchAttributeValue * value)) dlsym(cudart_handle, "cudaGraphKernelNodeSetAttribute");
 
 cudaError_t (*lcudaGraphAddMemcpyNode) (cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaMemcpy3DParms * pCopyParams) =
 	(cudaError_t (*) (cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaMemcpy3DParms * pCopyParams)) dlsym(cudart_handle, "cudaGraphAddMemcpyNode");
@@ -1820,11 +1955,17 @@ cudaError_t (*lcudaGraphRemoveDependencies) (cudaGraph_t  graph, const cudaGraph
 cudaError_t (*lcudaGraphDestroyNode) (cudaGraphNode_t  node) =
 	(cudaError_t (*) (cudaGraphNode_t  node)) dlsym(cudart_handle, "cudaGraphDestroyNode");
 
-cudaError_t (*lcudaGraphInstantiate) (cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphNode_t * pErrorNode, char * pLogBuffer, size_t  bufferSize) =
-	(cudaError_t (*) (cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphNode_t * pErrorNode, char * pLogBuffer, size_t  bufferSize)) dlsym(cudart_handle, "cudaGraphInstantiate");
+cudaError_t (*lcudaGraphInstantiate) (cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags) =
+	(cudaError_t (*) (cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags)) dlsym(cudart_handle, "cudaGraphInstantiate");
 
 cudaError_t (*lcudaGraphInstantiateWithFlags) (cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags) =
 	(cudaError_t (*) (cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags)) dlsym(cudart_handle, "cudaGraphInstantiateWithFlags");
+
+cudaError_t (*lcudaGraphInstantiateWithParams) (cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphInstantiateParams * instantiateParams) =
+	(cudaError_t (*) (cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphInstantiateParams * instantiateParams)) dlsym(cudart_handle, "cudaGraphInstantiateWithParams");
+
+cudaError_t (*lcudaGraphExecGetFlags) (cudaGraphExec_t  graphExec, unsigned long long * flags) =
+	(cudaError_t (*) (cudaGraphExec_t  graphExec, unsigned long long * flags)) dlsym(cudart_handle, "cudaGraphExecGetFlags");
 
 cudaError_t (*lcudaGraphExecKernelNodeSetParams) (cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const struct cudaKernelNodeParams * pNodeParams) =
 	(cudaError_t (*) (cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const struct cudaKernelNodeParams * pNodeParams)) dlsym(cudart_handle, "cudaGraphExecKernelNodeSetParams");
@@ -1862,8 +2003,14 @@ cudaError_t (*lcudaGraphExecExternalSemaphoresSignalNodeSetParams) (cudaGraphExe
 cudaError_t (*lcudaGraphExecExternalSemaphoresWaitNodeSetParams) (cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, const struct cudaExternalSemaphoreWaitNodeParams * nodeParams) =
 	(cudaError_t (*) (cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, const struct cudaExternalSemaphoreWaitNodeParams * nodeParams)) dlsym(cudart_handle, "cudaGraphExecExternalSemaphoresWaitNodeSetParams");
 
-cudaError_t (*lcudaGraphExecUpdate) (cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph, cudaGraphNode_t * hErrorNode_out, enum cudaGraphExecUpdateResult * updateResult_out) =
-	(cudaError_t (*) (cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph, cudaGraphNode_t * hErrorNode_out, enum cudaGraphExecUpdateResult * updateResult_out)) dlsym(cudart_handle, "cudaGraphExecUpdate");
+cudaError_t (*lcudaGraphNodeSetEnabled) (cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, unsigned int  isEnabled) =
+	(cudaError_t (*) (cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, unsigned int  isEnabled)) dlsym(cudart_handle, "cudaGraphNodeSetEnabled");
+
+cudaError_t (*lcudaGraphNodeGetEnabled) (cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, unsigned int * isEnabled) =
+	(cudaError_t (*) (cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, unsigned int * isEnabled)) dlsym(cudart_handle, "cudaGraphNodeGetEnabled");
+
+cudaError_t (*lcudaGraphExecUpdate) (cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph, cudaGraphExecUpdateResultInfo * resultInfo) =
+	(cudaError_t (*) (cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph, cudaGraphExecUpdateResultInfo * resultInfo)) dlsym(cudart_handle, "cudaGraphExecUpdate");
 
 cudaError_t (*lcudaGraphUpload) (cudaGraphExec_t  graphExec, cudaStream_t  stream) =
 	(cudaError_t (*) (cudaGraphExec_t  graphExec, cudaStream_t  stream)) dlsym(cudart_handle, "cudaGraphUpload");
@@ -1895,14 +2042,26 @@ cudaError_t (*lcudaGraphRetainUserObject) (cudaGraph_t  graph, cudaUserObject_t 
 cudaError_t (*lcudaGraphReleaseUserObject) (cudaGraph_t  graph, cudaUserObject_t  object, unsigned int  count) =
 	(cudaError_t (*) (cudaGraph_t  graph, cudaUserObject_t  object, unsigned int  count)) dlsym(cudart_handle, "cudaGraphReleaseUserObject");
 
-cudaError_t (*lcudaGetDriverEntryPoint) (const char * symbol, void ** funcPtr, unsigned long long  flags) =
-	(cudaError_t (*) (const char * symbol, void ** funcPtr, unsigned long long  flags)) dlsym(cudart_handle, "cudaGetDriverEntryPoint");
+cudaError_t (*lcudaGraphAddNode) (cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, struct cudaGraphNodeParams * nodeParams) =
+	(cudaError_t (*) (cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, struct cudaGraphNodeParams * nodeParams)) dlsym(cudart_handle, "cudaGraphAddNode");
+
+cudaError_t (*lcudaGraphNodeSetParams) (cudaGraphNode_t  node, struct cudaGraphNodeParams * nodeParams) =
+	(cudaError_t (*) (cudaGraphNode_t  node, struct cudaGraphNodeParams * nodeParams)) dlsym(cudart_handle, "cudaGraphNodeSetParams");
+
+cudaError_t (*lcudaGraphExecNodeSetParams) (cudaGraphExec_t  graphExec, cudaGraphNode_t  node, struct cudaGraphNodeParams * nodeParams) =
+	(cudaError_t (*) (cudaGraphExec_t  graphExec, cudaGraphNode_t  node, struct cudaGraphNodeParams * nodeParams)) dlsym(cudart_handle, "cudaGraphExecNodeSetParams");
+
+cudaError_t (*lcudaGetDriverEntryPoint) (const char * symbol, void ** funcPtr, unsigned long long  flags, enum cudaDriverEntryPointQueryResult * driverStatus) =
+	(cudaError_t (*) (const char * symbol, void ** funcPtr, unsigned long long  flags, enum cudaDriverEntryPointQueryResult * driverStatus)) dlsym(cudart_handle, "cudaGetDriverEntryPoint");
 
 cudaError_t (*lcudaGetExportTable) (const void ** ppExportTable, const cudaUUID_t * pExportTableId) =
 	(cudaError_t (*) (const void ** ppExportTable, const cudaUUID_t * pExportTableId)) dlsym(cudart_handle, "cudaGetExportTable");
 
 cudaError_t (*lcudaGetFuncBySymbol) (cudaFunction_t*  functionPtr, const void*  symbolPtr) =
 	(cudaError_t (*) (cudaFunction_t*  functionPtr, const void*  symbolPtr)) dlsym(cudart_handle, "cudaGetFuncBySymbol");
+
+cudaError_t (*lcudaGetKernel) (cudaKernel_t * kernelPtr, const void * entryFuncAddr) =
+	(cudaError_t (*) (cudaKernel_t * kernelPtr, const void * entryFuncAddr)) dlsym(cudart_handle, "cudaGetKernel");
 
 size_t (*lcudnnGetVersion) () =
 	(size_t (*) ()) dlsym(cudnn_handle, "cudnnGetVersion");
@@ -2345,8 +2504,8 @@ cudnnStatus_t (*lcudnnGetRNNWorkspaceSize) (cudnnHandle_t  handle, const cudnnRN
 cudnnStatus_t (*lcudnnGetRNNTrainingReserveSize) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, size_t * sizeInBytes) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, size_t * sizeInBytes)) dlsym(cudnn_handle, "cudnnGetRNNTrainingReserveSize");
 
-cudnnStatus_t (*lcudnnGetRNNTempSpaceSizes) (cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fMode, cudnnRNNDataDescriptor_t  xDesc, size_t * workSpaceSize, size_t * reserveSpaceSize) =
-	(cudnnStatus_t (*) (cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fMode, cudnnRNNDataDescriptor_t  xDesc, size_t * workSpaceSize, size_t * reserveSpaceSize)) dlsym(cudnn_handle, "cudnnGetRNNTempSpaceSizes");
+cudnnStatus_t (*lcudnnGetRNNTempSpaceSizes) (cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fwdMode, cudnnRNNDataDescriptor_t  xDesc, size_t * workSpaceSize, size_t * reserveSpaceSize) =
+	(cudnnStatus_t (*) (cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fwdMode, cudnnRNNDataDescriptor_t  xDesc, size_t * workSpaceSize, size_t * reserveSpaceSize)) dlsym(cudnn_handle, "cudnnGetRNNTempSpaceSizes");
 
 cudnnStatus_t (*lcudnnGetRNNParamsSize) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const cudnnTensorDescriptor_t  xDesc, size_t * sizeInBytes, cudnnDataType_t  dataType) =
 	(cudnnStatus_t (*) (cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const cudnnTensorDescriptor_t  xDesc, size_t * sizeInBytes, cudnnDataType_t  dataType)) dlsym(cudnn_handle, "cudnnGetRNNParamsSize");
@@ -2762,26 +2921,50 @@ cublasStatus_t (*lcublasGetLoggerCallback) (cublasLogCallback*  userCallback) =
 cublasStatus_t (*lcublasSetVector) (int  n, int  elemSize, const void*  x, int  incx, void*  devicePtr, int  incy) =
 	(cublasStatus_t (*) (int  n, int  elemSize, const void*  x, int  incx, void*  devicePtr, int  incy)) dlsym(cublas_handle, "cublasSetVector");
 
+cublasStatus_t (*lcublasSetVector_64) (int64_t  n, int64_t  elemSize, const void*  x, int64_t  incx, void*  devicePtr, int64_t  incy) =
+	(cublasStatus_t (*) (int64_t  n, int64_t  elemSize, const void*  x, int64_t  incx, void*  devicePtr, int64_t  incy)) dlsym(cublas_handle, "cublasSetVector_64");
+
 cublasStatus_t (*lcublasGetVector) (int  n, int  elemSize, const void*  x, int  incx, void*  y, int  incy) =
 	(cublasStatus_t (*) (int  n, int  elemSize, const void*  x, int  incx, void*  y, int  incy)) dlsym(cublas_handle, "cublasGetVector");
+
+cublasStatus_t (*lcublasGetVector_64) (int64_t  n, int64_t  elemSize, const void*  x, int64_t  incx, void*  y, int64_t  incy) =
+	(cublasStatus_t (*) (int64_t  n, int64_t  elemSize, const void*  x, int64_t  incx, void*  y, int64_t  incy)) dlsym(cublas_handle, "cublasGetVector_64");
 
 cublasStatus_t (*lcublasSetMatrix) (int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb) =
 	(cublasStatus_t (*) (int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb)) dlsym(cublas_handle, "cublasSetMatrix");
 
+cublasStatus_t (*lcublasSetMatrix_64) (int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb) =
+	(cublasStatus_t (*) (int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb)) dlsym(cublas_handle, "cublasSetMatrix_64");
+
 cublasStatus_t (*lcublasGetMatrix) (int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb) =
 	(cublasStatus_t (*) (int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb)) dlsym(cublas_handle, "cublasGetMatrix");
+
+cublasStatus_t (*lcublasGetMatrix_64) (int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb) =
+	(cublasStatus_t (*) (int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb)) dlsym(cublas_handle, "cublasGetMatrix_64");
 
 cublasStatus_t (*lcublasSetVectorAsync) (int  n, int  elemSize, const void*  hostPtr, int  incx, void*  devicePtr, int  incy, cudaStream_t  stream) =
 	(cublasStatus_t (*) (int  n, int  elemSize, const void*  hostPtr, int  incx, void*  devicePtr, int  incy, cudaStream_t  stream)) dlsym(cublas_handle, "cublasSetVectorAsync");
 
+cublasStatus_t (*lcublasSetVectorAsync_64) (int64_t  n, int64_t  elemSize, const void*  hostPtr, int64_t  incx, void*  devicePtr, int64_t  incy, cudaStream_t  stream) =
+	(cublasStatus_t (*) (int64_t  n, int64_t  elemSize, const void*  hostPtr, int64_t  incx, void*  devicePtr, int64_t  incy, cudaStream_t  stream)) dlsym(cublas_handle, "cublasSetVectorAsync_64");
+
 cublasStatus_t (*lcublasGetVectorAsync) (int  n, int  elemSize, const void*  devicePtr, int  incx, void*  hostPtr, int  incy, cudaStream_t  stream) =
 	(cublasStatus_t (*) (int  n, int  elemSize, const void*  devicePtr, int  incx, void*  hostPtr, int  incy, cudaStream_t  stream)) dlsym(cublas_handle, "cublasGetVectorAsync");
+
+cublasStatus_t (*lcublasGetVectorAsync_64) (int64_t  n, int64_t  elemSize, const void*  devicePtr, int64_t  incx, void*  hostPtr, int64_t  incy, cudaStream_t  stream) =
+	(cublasStatus_t (*) (int64_t  n, int64_t  elemSize, const void*  devicePtr, int64_t  incx, void*  hostPtr, int64_t  incy, cudaStream_t  stream)) dlsym(cublas_handle, "cublasGetVectorAsync_64");
 
 cublasStatus_t (*lcublasSetMatrixAsync) (int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb, cudaStream_t  stream) =
 	(cublasStatus_t (*) (int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb, cudaStream_t  stream)) dlsym(cublas_handle, "cublasSetMatrixAsync");
 
+cublasStatus_t (*lcublasSetMatrixAsync_64) (int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb, cudaStream_t  stream) =
+	(cublasStatus_t (*) (int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb, cudaStream_t  stream)) dlsym(cublas_handle, "cublasSetMatrixAsync_64");
+
 cublasStatus_t (*lcublasGetMatrixAsync) (int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb, cudaStream_t  stream) =
 	(cublasStatus_t (*) (int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb, cudaStream_t  stream)) dlsym(cublas_handle, "cublasGetMatrixAsync");
+
+cublasStatus_t (*lcublasGetMatrixAsync_64) (int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb, cudaStream_t  stream) =
+	(cublasStatus_t (*) (int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb, cudaStream_t  stream)) dlsym(cublas_handle, "cublasGetMatrixAsync_64");
 
 void (*lcublasXerbla) (const char*  srName, int  info) =
 	(void (*) (const char*  srName, int  info)) dlsym(cublas_handle, "cublasXerbla");
@@ -2789,173 +2972,344 @@ void (*lcublasXerbla) (const char*  srName, int  info) =
 cublasStatus_t (*lcublasNrm2Ex) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  result, cudaDataType  resultType, cudaDataType  executionType) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  result, cudaDataType  resultType, cudaDataType  executionType)) dlsym(cublas_handle, "cublasNrm2Ex");
 
+cublasStatus_t (*lcublasNrm2Ex_64) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  result, cudaDataType  resultType, cudaDataType  executionType) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  result, cudaDataType  resultType, cudaDataType  executionType)) dlsym(cublas_handle, "cublasNrm2Ex_64");
+
 cublasStatus_t (*lcublasSnrm2_v2) (cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  result)) dlsym(cublas_handle, "cublasSnrm2_v2");
+
+cublasStatus_t (*lcublasSnrm2_v2_64) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  result)) dlsym(cublas_handle, "cublasSnrm2_v2_64");
 
 cublasStatus_t (*lcublasDnrm2_v2) (cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  result)) dlsym(cublas_handle, "cublasDnrm2_v2");
 
+cublasStatus_t (*lcublasDnrm2_v2_64) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  result)) dlsym(cublas_handle, "cublasDnrm2_v2_64");
+
 cublasStatus_t (*lcublasScnrm2_v2) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, float*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, float*  result)) dlsym(cublas_handle, "cublasScnrm2_v2");
+
+cublasStatus_t (*lcublasScnrm2_v2_64) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, float*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, float*  result)) dlsym(cublas_handle, "cublasScnrm2_v2_64");
 
 cublasStatus_t (*lcublasDznrm2_v2) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, double*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, double*  result)) dlsym(cublas_handle, "cublasDznrm2_v2");
 
+cublasStatus_t (*lcublasDznrm2_v2_64) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, double*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, double*  result)) dlsym(cublas_handle, "cublasDznrm2_v2_64");
+
 cublasStatus_t (*lcublasDotEx) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, const void*  y, cudaDataType  yType, int  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, const void*  y, cudaDataType  yType, int  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)) dlsym(cublas_handle, "cublasDotEx");
+
+cublasStatus_t (*lcublasDotEx_64) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, const void*  y, cudaDataType  yType, int64_t  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, const void*  y, cudaDataType  yType, int64_t  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)) dlsym(cublas_handle, "cublasDotEx_64");
 
 cublasStatus_t (*lcublasDotcEx) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, const void*  y, cudaDataType  yType, int  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, const void*  y, cudaDataType  yType, int  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)) dlsym(cublas_handle, "cublasDotcEx");
 
+cublasStatus_t (*lcublasDotcEx_64) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, const void*  y, cudaDataType  yType, int64_t  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, const void*  y, cudaDataType  yType, int64_t  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)) dlsym(cublas_handle, "cublasDotcEx_64");
+
 cublasStatus_t (*lcublasSdot_v2) (cublasHandle_t  handle, int  n, const float*  x, int  incx, const float*  y, int  incy, float*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float*  x, int  incx, const float*  y, int  incy, float*  result)) dlsym(cublas_handle, "cublasSdot_v2");
+
+cublasStatus_t (*lcublasSdot_v2_64) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  result)) dlsym(cublas_handle, "cublasSdot_v2_64");
 
 cublasStatus_t (*lcublasDdot_v2) (cublasHandle_t  handle, int  n, const double*  x, int  incx, const double*  y, int  incy, double*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double*  x, int  incx, const double*  y, int  incy, double*  result)) dlsym(cublas_handle, "cublasDdot_v2");
 
+cublasStatus_t (*lcublasDdot_v2_64) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  result)) dlsym(cublas_handle, "cublasDdot_v2_64");
+
 cublasStatus_t (*lcublasCdotu_v2) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  result)) dlsym(cublas_handle, "cublasCdotu_v2");
+
+cublasStatus_t (*lcublasCdotu_v2_64) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  result)) dlsym(cublas_handle, "cublasCdotu_v2_64");
 
 cublasStatus_t (*lcublasCdotc_v2) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  result)) dlsym(cublas_handle, "cublasCdotc_v2");
 
+cublasStatus_t (*lcublasCdotc_v2_64) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  result)) dlsym(cublas_handle, "cublasCdotc_v2_64");
+
 cublasStatus_t (*lcublasZdotu_v2) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  result)) dlsym(cublas_handle, "cublasZdotu_v2");
+
+cublasStatus_t (*lcublasZdotu_v2_64) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  result)) dlsym(cublas_handle, "cublasZdotu_v2_64");
 
 cublasStatus_t (*lcublasZdotc_v2) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  result)) dlsym(cublas_handle, "cublasZdotc_v2");
 
+cublasStatus_t (*lcublasZdotc_v2_64) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  result)) dlsym(cublas_handle, "cublasZdotc_v2_64");
+
 cublasStatus_t (*lcublasScalEx) (cublasHandle_t  handle, int  n, const void*  alpha, cudaDataType  alphaType, void*  x, cudaDataType  xType, int  incx, cudaDataType  executionType) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const void*  alpha, cudaDataType  alphaType, void*  x, cudaDataType  xType, int  incx, cudaDataType  executionType)) dlsym(cublas_handle, "cublasScalEx");
+
+cublasStatus_t (*lcublasScalEx_64) (cublasHandle_t  handle, int64_t  n, const void*  alpha, cudaDataType  alphaType, void*  x, cudaDataType  xType, int64_t  incx, cudaDataType  executionType) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const void*  alpha, cudaDataType  alphaType, void*  x, cudaDataType  xType, int64_t  incx, cudaDataType  executionType)) dlsym(cublas_handle, "cublasScalEx_64");
 
 cublasStatus_t (*lcublasSscal_v2) (cublasHandle_t  handle, int  n, const float*  alpha, float*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float*  alpha, float*  x, int  incx)) dlsym(cublas_handle, "cublasSscal_v2");
 
+cublasStatus_t (*lcublasSscal_v2_64) (cublasHandle_t  handle, int64_t  n, const float*  alpha, float*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const float*  alpha, float*  x, int64_t  incx)) dlsym(cublas_handle, "cublasSscal_v2_64");
+
 cublasStatus_t (*lcublasDscal_v2) (cublasHandle_t  handle, int  n, const double*  alpha, double*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double*  alpha, double*  x, int  incx)) dlsym(cublas_handle, "cublasDscal_v2");
+
+cublasStatus_t (*lcublasDscal_v2_64) (cublasHandle_t  handle, int64_t  n, const double*  alpha, double*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const double*  alpha, double*  x, int64_t  incx)) dlsym(cublas_handle, "cublasDscal_v2_64");
 
 cublasStatus_t (*lcublasCscal_v2) (cublasHandle_t  handle, int  n, const cuComplex*  alpha, cuComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex*  alpha, cuComplex*  x, int  incx)) dlsym(cublas_handle, "cublasCscal_v2");
 
+cublasStatus_t (*lcublasCscal_v2_64) (cublasHandle_t  handle, int64_t  n, const cuComplex*  alpha, cuComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuComplex*  alpha, cuComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasCscal_v2_64");
+
 cublasStatus_t (*lcublasCsscal_v2) (cublasHandle_t  handle, int  n, const float*  alpha, cuComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float*  alpha, cuComplex*  x, int  incx)) dlsym(cublas_handle, "cublasCsscal_v2");
+
+cublasStatus_t (*lcublasCsscal_v2_64) (cublasHandle_t  handle, int64_t  n, const float*  alpha, cuComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const float*  alpha, cuComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasCsscal_v2_64");
 
 cublasStatus_t (*lcublasZscal_v2) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  alpha, cuDoubleComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  alpha, cuDoubleComplex*  x, int  incx)) dlsym(cublas_handle, "cublasZscal_v2");
 
+cublasStatus_t (*lcublasZscal_v2_64) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  alpha, cuDoubleComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  alpha, cuDoubleComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasZscal_v2_64");
+
 cublasStatus_t (*lcublasZdscal_v2) (cublasHandle_t  handle, int  n, const double*  alpha, cuDoubleComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double*  alpha, cuDoubleComplex*  x, int  incx)) dlsym(cublas_handle, "cublasZdscal_v2");
+
+cublasStatus_t (*lcublasZdscal_v2_64) (cublasHandle_t  handle, int64_t  n, const double*  alpha, cuDoubleComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const double*  alpha, cuDoubleComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasZdscal_v2_64");
 
 cublasStatus_t (*lcublasAxpyEx) (cublasHandle_t  handle, int  n, const void*  alpha, cudaDataType  alphaType, const void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, cudaDataType  executiontype) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const void*  alpha, cudaDataType  alphaType, const void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, cudaDataType  executiontype)) dlsym(cublas_handle, "cublasAxpyEx");
 
+cublasStatus_t (*lcublasAxpyEx_64) (cublasHandle_t  handle, int64_t  n, const void*  alpha, cudaDataType  alphaType, const void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, cudaDataType  executiontype) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const void*  alpha, cudaDataType  alphaType, const void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, cudaDataType  executiontype)) dlsym(cublas_handle, "cublasAxpyEx_64");
+
 cublasStatus_t (*lcublasSaxpy_v2) (cublasHandle_t  handle, int  n, const float*  alpha, const float*  x, int  incx, float*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float*  alpha, const float*  x, int  incx, float*  y, int  incy)) dlsym(cublas_handle, "cublasSaxpy_v2");
+
+cublasStatus_t (*lcublasSaxpy_v2_64) (cublasHandle_t  handle, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  y, int64_t  incy)) dlsym(cublas_handle, "cublasSaxpy_v2_64");
 
 cublasStatus_t (*lcublasDaxpy_v2) (cublasHandle_t  handle, int  n, const double*  alpha, const double*  x, int  incx, double*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double*  alpha, const double*  x, int  incx, double*  y, int  incy)) dlsym(cublas_handle, "cublasDaxpy_v2");
 
+cublasStatus_t (*lcublasDaxpy_v2_64) (cublasHandle_t  handle, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  y, int64_t  incy)) dlsym(cublas_handle, "cublasDaxpy_v2_64");
+
 cublasStatus_t (*lcublasCaxpy_v2) (cublasHandle_t  handle, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, cuComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, cuComplex*  y, int  incy)) dlsym(cublas_handle, "cublasCaxpy_v2");
+
+cublasStatus_t (*lcublasCaxpy_v2_64) (cublasHandle_t  handle, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasCaxpy_v2_64");
 
 cublasStatus_t (*lcublasZaxpy_v2) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy)) dlsym(cublas_handle, "cublasZaxpy_v2");
 
+cublasStatus_t (*lcublasZaxpy_v2_64) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasZaxpy_v2_64");
+
 cublasStatus_t (*lcublasCopyEx) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy)) dlsym(cublas_handle, "cublasCopyEx");
+
+cublasStatus_t (*lcublasCopyEx_64) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy)) dlsym(cublas_handle, "cublasCopyEx_64");
 
 cublasStatus_t (*lcublasScopy_v2) (cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  y, int  incy)) dlsym(cublas_handle, "cublasScopy_v2");
 
+cublasStatus_t (*lcublasScopy_v2_64) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  y, int64_t  incy)) dlsym(cublas_handle, "cublasScopy_v2_64");
+
 cublasStatus_t (*lcublasDcopy_v2) (cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  y, int  incy)) dlsym(cublas_handle, "cublasDcopy_v2");
+
+cublasStatus_t (*lcublasDcopy_v2_64) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  y, int64_t  incy)) dlsym(cublas_handle, "cublasDcopy_v2_64");
 
 cublasStatus_t (*lcublasCcopy_v2) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, cuComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, cuComplex*  y, int  incy)) dlsym(cublas_handle, "cublasCcopy_v2");
 
+cublasStatus_t (*lcublasCcopy_v2_64) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasCcopy_v2_64");
+
 cublasStatus_t (*lcublasZcopy_v2) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy)) dlsym(cublas_handle, "cublasZcopy_v2");
+
+cublasStatus_t (*lcublasZcopy_v2_64) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasZcopy_v2_64");
 
 cublasStatus_t (*lcublasSswap_v2) (cublasHandle_t  handle, int  n, float*  x, int  incx, float*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, float*  x, int  incx, float*  y, int  incy)) dlsym(cublas_handle, "cublasSswap_v2");
 
+cublasStatus_t (*lcublasSswap_v2_64) (cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy)) dlsym(cublas_handle, "cublasSswap_v2_64");
+
 cublasStatus_t (*lcublasDswap_v2) (cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy)) dlsym(cublas_handle, "cublasDswap_v2");
+
+cublasStatus_t (*lcublasDswap_v2_64) (cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy)) dlsym(cublas_handle, "cublasDswap_v2_64");
 
 cublasStatus_t (*lcublasCswap_v2) (cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy)) dlsym(cublas_handle, "cublasCswap_v2");
 
+cublasStatus_t (*lcublasCswap_v2_64) (cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasCswap_v2_64");
+
 cublasStatus_t (*lcublasZswap_v2) (cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy)) dlsym(cublas_handle, "cublasZswap_v2");
+
+cublasStatus_t (*lcublasZswap_v2_64) (cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasZswap_v2_64");
 
 cublasStatus_t (*lcublasSwapEx) (cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy)) dlsym(cublas_handle, "cublasSwapEx");
 
+cublasStatus_t (*lcublasSwapEx_64) (cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy)) dlsym(cublas_handle, "cublasSwapEx_64");
+
 cublasStatus_t (*lcublasIsamax_v2) (cublasHandle_t  handle, int  n, const float*  x, int  incx, int*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float*  x, int  incx, int*  result)) dlsym(cublas_handle, "cublasIsamax_v2");
+
+cublasStatus_t (*lcublasIsamax_v2_64) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, int64_t*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, int64_t*  result)) dlsym(cublas_handle, "cublasIsamax_v2_64");
 
 cublasStatus_t (*lcublasIdamax_v2) (cublasHandle_t  handle, int  n, const double*  x, int  incx, int*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double*  x, int  incx, int*  result)) dlsym(cublas_handle, "cublasIdamax_v2");
 
+cublasStatus_t (*lcublasIdamax_v2_64) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, int64_t*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, int64_t*  result)) dlsym(cublas_handle, "cublasIdamax_v2_64");
+
 cublasStatus_t (*lcublasIcamax_v2) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, int*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, int*  result)) dlsym(cublas_handle, "cublasIcamax_v2");
+
+cublasStatus_t (*lcublasIcamax_v2_64) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, int64_t*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, int64_t*  result)) dlsym(cublas_handle, "cublasIcamax_v2_64");
 
 cublasStatus_t (*lcublasIzamax_v2) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, int*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, int*  result)) dlsym(cublas_handle, "cublasIzamax_v2");
 
+cublasStatus_t (*lcublasIzamax_v2_64) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, int64_t*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, int64_t*  result)) dlsym(cublas_handle, "cublasIzamax_v2_64");
+
 cublasStatus_t (*lcublasIamaxEx) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, int*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, int*  result)) dlsym(cublas_handle, "cublasIamaxEx");
+
+cublasStatus_t (*lcublasIamaxEx_64) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, int64_t*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, int64_t*  result)) dlsym(cublas_handle, "cublasIamaxEx_64");
 
 cublasStatus_t (*lcublasIsamin_v2) (cublasHandle_t  handle, int  n, const float*  x, int  incx, int*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float*  x, int  incx, int*  result)) dlsym(cublas_handle, "cublasIsamin_v2");
 
+cublasStatus_t (*lcublasIsamin_v2_64) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, int64_t*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, int64_t*  result)) dlsym(cublas_handle, "cublasIsamin_v2_64");
+
 cublasStatus_t (*lcublasIdamin_v2) (cublasHandle_t  handle, int  n, const double*  x, int  incx, int*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double*  x, int  incx, int*  result)) dlsym(cublas_handle, "cublasIdamin_v2");
+
+cublasStatus_t (*lcublasIdamin_v2_64) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, int64_t*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, int64_t*  result)) dlsym(cublas_handle, "cublasIdamin_v2_64");
 
 cublasStatus_t (*lcublasIcamin_v2) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, int*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, int*  result)) dlsym(cublas_handle, "cublasIcamin_v2");
 
+cublasStatus_t (*lcublasIcamin_v2_64) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, int64_t*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, int64_t*  result)) dlsym(cublas_handle, "cublasIcamin_v2_64");
+
 cublasStatus_t (*lcublasIzamin_v2) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, int*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, int*  result)) dlsym(cublas_handle, "cublasIzamin_v2");
+
+cublasStatus_t (*lcublasIzamin_v2_64) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, int64_t*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, int64_t*  result)) dlsym(cublas_handle, "cublasIzamin_v2_64");
 
 cublasStatus_t (*lcublasIaminEx) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, int*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, int*  result)) dlsym(cublas_handle, "cublasIaminEx");
 
+cublasStatus_t (*lcublasIaminEx_64) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, int64_t*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, int64_t*  result)) dlsym(cublas_handle, "cublasIaminEx_64");
+
 cublasStatus_t (*lcublasAsumEx) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  result, cudaDataType  resultType, cudaDataType  executiontype) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  result, cudaDataType  resultType, cudaDataType  executiontype)) dlsym(cublas_handle, "cublasAsumEx");
+
+cublasStatus_t (*lcublasAsumEx_64) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  result, cudaDataType  resultType, cudaDataType  executiontype) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  result, cudaDataType  resultType, cudaDataType  executiontype)) dlsym(cublas_handle, "cublasAsumEx_64");
 
 cublasStatus_t (*lcublasSasum_v2) (cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  result)) dlsym(cublas_handle, "cublasSasum_v2");
 
+cublasStatus_t (*lcublasSasum_v2_64) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  result)) dlsym(cublas_handle, "cublasSasum_v2_64");
+
 cublasStatus_t (*lcublasDasum_v2) (cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  result)) dlsym(cublas_handle, "cublasDasum_v2");
+
+cublasStatus_t (*lcublasDasum_v2_64) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  result)) dlsym(cublas_handle, "cublasDasum_v2_64");
 
 cublasStatus_t (*lcublasScasum_v2) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, float*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, float*  result)) dlsym(cublas_handle, "cublasScasum_v2");
 
+cublasStatus_t (*lcublasScasum_v2_64) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, float*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, float*  result)) dlsym(cublas_handle, "cublasScasum_v2_64");
+
 cublasStatus_t (*lcublasDzasum_v2) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, double*  result) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, double*  result)) dlsym(cublas_handle, "cublasDzasum_v2");
+
+cublasStatus_t (*lcublasDzasum_v2_64) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, double*  result) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, double*  result)) dlsym(cublas_handle, "cublasDzasum_v2_64");
 
 cublasStatus_t (*lcublasSrot_v2) (cublasHandle_t  handle, int  n, float*  x, int  incx, float*  y, int  incy, const float*  c, const float*  s) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, float*  x, int  incx, float*  y, int  incy, const float*  c, const float*  s)) dlsym(cublas_handle, "cublasSrot_v2");
 
+cublasStatus_t (*lcublasSrot_v2_64) (cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy, const float*  c, const float*  s) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy, const float*  c, const float*  s)) dlsym(cublas_handle, "cublasSrot_v2_64");
+
 cublasStatus_t (*lcublasDrot_v2) (cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy, const double*  c, const double*  s) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy, const double*  c, const double*  s)) dlsym(cublas_handle, "cublasDrot_v2");
+
+cublasStatus_t (*lcublasDrot_v2_64) (cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy, const double*  c, const double*  s) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy, const double*  c, const double*  s)) dlsym(cublas_handle, "cublasDrot_v2_64");
 
 cublasStatus_t (*lcublasCrot_v2) (cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy, const float*  c, const cuComplex*  s) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy, const float*  c, const cuComplex*  s)) dlsym(cublas_handle, "cublasCrot_v2");
 
+cublasStatus_t (*lcublasCrot_v2_64) (cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy, const float*  c, const cuComplex*  s) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy, const float*  c, const cuComplex*  s)) dlsym(cublas_handle, "cublasCrot_v2_64");
+
 cublasStatus_t (*lcublasCsrot_v2) (cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy, const float*  c, const float*  s) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy, const float*  c, const float*  s)) dlsym(cublas_handle, "cublasCsrot_v2");
+
+cublasStatus_t (*lcublasCsrot_v2_64) (cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy, const float*  c, const float*  s) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy, const float*  c, const float*  s)) dlsym(cublas_handle, "cublasCsrot_v2_64");
 
 cublasStatus_t (*lcublasZrot_v2) (cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy, const double*  c, const cuDoubleComplex*  s) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy, const double*  c, const cuDoubleComplex*  s)) dlsym(cublas_handle, "cublasZrot_v2");
 
+cublasStatus_t (*lcublasZrot_v2_64) (cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy, const double*  c, const cuDoubleComplex*  s) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy, const double*  c, const cuDoubleComplex*  s)) dlsym(cublas_handle, "cublasZrot_v2_64");
+
 cublasStatus_t (*lcublasZdrot_v2) (cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy, const double*  c, const double*  s) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy, const double*  c, const double*  s)) dlsym(cublas_handle, "cublasZdrot_v2");
 
+cublasStatus_t (*lcublasZdrot_v2_64) (cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy, const double*  c, const double*  s) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy, const double*  c, const double*  s)) dlsym(cublas_handle, "cublasZdrot_v2_64");
+
 cublasStatus_t (*lcublasRotEx) (cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, const void*  c, const void*  s, cudaDataType  csType, cudaDataType  executiontype) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, const void*  c, const void*  s, cudaDataType  csType, cudaDataType  executiontype)) dlsym(cublas_handle, "cublasRotEx");
+
+cublasStatus_t (*lcublasRotEx_64) (cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, const void*  c, const void*  s, cudaDataType  csType, cudaDataType  executiontype) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, const void*  c, const void*  s, cudaDataType  csType, cudaDataType  executiontype)) dlsym(cublas_handle, "cublasRotEx_64");
 
 cublasStatus_t (*lcublasSrotg_v2) (cublasHandle_t  handle, float*  a, float*  b, float*  c, float*  s) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, float*  a, float*  b, float*  c, float*  s)) dlsym(cublas_handle, "cublasSrotg_v2");
@@ -2975,11 +3329,20 @@ cublasStatus_t (*lcublasRotgEx) (cublasHandle_t  handle, void*  a, void*  b, cud
 cublasStatus_t (*lcublasSrotm_v2) (cublasHandle_t  handle, int  n, float*  x, int  incx, float*  y, int  incy, const float*  param) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, float*  x, int  incx, float*  y, int  incy, const float*  param)) dlsym(cublas_handle, "cublasSrotm_v2");
 
+cublasStatus_t (*lcublasSrotm_v2_64) (cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy, const float*  param) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy, const float*  param)) dlsym(cublas_handle, "cublasSrotm_v2_64");
+
 cublasStatus_t (*lcublasDrotm_v2) (cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy, const double*  param) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy, const double*  param)) dlsym(cublas_handle, "cublasDrotm_v2");
 
+cublasStatus_t (*lcublasDrotm_v2_64) (cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy, const double*  param) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy, const double*  param)) dlsym(cublas_handle, "cublasDrotm_v2_64");
+
 cublasStatus_t (*lcublasRotmEx) (cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, const void*  param, cudaDataType  paramType, cudaDataType  executiontype) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, const void*  param, cudaDataType  paramType, cudaDataType  executiontype)) dlsym(cublas_handle, "cublasRotmEx");
+
+cublasStatus_t (*lcublasRotmEx_64) (cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, const void*  param, cudaDataType  paramType, cudaDataType  executiontype) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, const void*  param, cudaDataType  paramType, cudaDataType  executiontype)) dlsym(cublas_handle, "cublasRotmEx_64");
 
 cublasStatus_t (*lcublasSrotmg_v2) (cublasHandle_t  handle, float*  d1, float*  d2, float*  x1, const float*  y1, float*  param) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, float*  d1, float*  d2, float*  x1, const float*  y1, float*  param)) dlsym(cublas_handle, "cublasSrotmg_v2");
@@ -2993,464 +3356,968 @@ cublasStatus_t (*lcublasRotmgEx) (cublasHandle_t  handle, void*  d1, cudaDataTyp
 cublasStatus_t (*lcublasSgemv_v2) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy)) dlsym(cublas_handle, "cublasSgemv_v2");
 
+cublasStatus_t (*lcublasSgemv_v2_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)) dlsym(cublas_handle, "cublasSgemv_v2_64");
+
 cublasStatus_t (*lcublasDgemv_v2) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)) dlsym(cublas_handle, "cublasDgemv_v2");
+
+cublasStatus_t (*lcublasDgemv_v2_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)) dlsym(cublas_handle, "cublasDgemv_v2_64");
 
 cublasStatus_t (*lcublasCgemv_v2) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)) dlsym(cublas_handle, "cublasCgemv_v2");
 
+cublasStatus_t (*lcublasCgemv_v2_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasCgemv_v2_64");
+
 cublasStatus_t (*lcublasZgemv_v2) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)) dlsym(cublas_handle, "cublasZgemv_v2");
+
+cublasStatus_t (*lcublasZgemv_v2_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasZgemv_v2_64");
 
 cublasStatus_t (*lcublasSgbmv_v2) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy)) dlsym(cublas_handle, "cublasSgbmv_v2");
 
+cublasStatus_t (*lcublasSgbmv_v2_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)) dlsym(cublas_handle, "cublasSgbmv_v2_64");
+
 cublasStatus_t (*lcublasDgbmv_v2) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)) dlsym(cublas_handle, "cublasDgbmv_v2");
+
+cublasStatus_t (*lcublasDgbmv_v2_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)) dlsym(cublas_handle, "cublasDgbmv_v2_64");
 
 cublasStatus_t (*lcublasCgbmv_v2) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)) dlsym(cublas_handle, "cublasCgbmv_v2");
 
+cublasStatus_t (*lcublasCgbmv_v2_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasCgbmv_v2_64");
+
 cublasStatus_t (*lcublasZgbmv_v2) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)) dlsym(cublas_handle, "cublasZgbmv_v2");
+
+cublasStatus_t (*lcublasZgbmv_v2_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasZgbmv_v2_64");
 
 cublasStatus_t (*lcublasStrmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  A, int  lda, float*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  A, int  lda, float*  x, int  incx)) dlsym(cublas_handle, "cublasStrmv_v2");
 
+cublasStatus_t (*lcublasStrmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  A, int64_t  lda, float*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  A, int64_t  lda, float*  x, int64_t  incx)) dlsym(cublas_handle, "cublasStrmv_v2_64");
+
 cublasStatus_t (*lcublasDtrmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  A, int  lda, double*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  A, int  lda, double*  x, int  incx)) dlsym(cublas_handle, "cublasDtrmv_v2");
+
+cublasStatus_t (*lcublasDtrmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  A, int64_t  lda, double*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  A, int64_t  lda, double*  x, int64_t  incx)) dlsym(cublas_handle, "cublasDtrmv_v2_64");
 
 cublasStatus_t (*lcublasCtrmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  A, int  lda, cuComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  A, int  lda, cuComplex*  x, int  incx)) dlsym(cublas_handle, "cublasCtrmv_v2");
 
+cublasStatus_t (*lcublasCtrmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasCtrmv_v2_64");
+
 cublasStatus_t (*lcublasZtrmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)) dlsym(cublas_handle, "cublasZtrmv_v2");
+
+cublasStatus_t (*lcublasZtrmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasZtrmv_v2_64");
 
 cublasStatus_t (*lcublasStbmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const float*  A, int  lda, float*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const float*  A, int  lda, float*  x, int  incx)) dlsym(cublas_handle, "cublasStbmv_v2");
 
+cublasStatus_t (*lcublasStbmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const float*  A, int64_t  lda, float*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const float*  A, int64_t  lda, float*  x, int64_t  incx)) dlsym(cublas_handle, "cublasStbmv_v2_64");
+
 cublasStatus_t (*lcublasDtbmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const double*  A, int  lda, double*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const double*  A, int  lda, double*  x, int  incx)) dlsym(cublas_handle, "cublasDtbmv_v2");
+
+cublasStatus_t (*lcublasDtbmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const double*  A, int64_t  lda, double*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const double*  A, int64_t  lda, double*  x, int64_t  incx)) dlsym(cublas_handle, "cublasDtbmv_v2_64");
 
 cublasStatus_t (*lcublasCtbmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuComplex*  A, int  lda, cuComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuComplex*  A, int  lda, cuComplex*  x, int  incx)) dlsym(cublas_handle, "cublasCtbmv_v2");
 
+cublasStatus_t (*lcublasCtbmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasCtbmv_v2_64");
+
 cublasStatus_t (*lcublasZtbmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)) dlsym(cublas_handle, "cublasZtbmv_v2");
+
+cublasStatus_t (*lcublasZtbmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasZtbmv_v2_64");
 
 cublasStatus_t (*lcublasStpmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  AP, float*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  AP, float*  x, int  incx)) dlsym(cublas_handle, "cublasStpmv_v2");
 
+cublasStatus_t (*lcublasStpmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  AP, float*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  AP, float*  x, int64_t  incx)) dlsym(cublas_handle, "cublasStpmv_v2_64");
+
 cublasStatus_t (*lcublasDtpmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  AP, double*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  AP, double*  x, int  incx)) dlsym(cublas_handle, "cublasDtpmv_v2");
+
+cublasStatus_t (*lcublasDtpmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  AP, double*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  AP, double*  x, int64_t  incx)) dlsym(cublas_handle, "cublasDtpmv_v2_64");
 
 cublasStatus_t (*lcublasCtpmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  AP, cuComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  AP, cuComplex*  x, int  incx)) dlsym(cublas_handle, "cublasCtpmv_v2");
 
+cublasStatus_t (*lcublasCtpmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  AP, cuComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  AP, cuComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasCtpmv_v2_64");
+
 cublasStatus_t (*lcublasZtpmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int  incx)) dlsym(cublas_handle, "cublasZtpmv_v2");
+
+cublasStatus_t (*lcublasZtpmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasZtpmv_v2_64");
 
 cublasStatus_t (*lcublasStrsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  A, int  lda, float*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  A, int  lda, float*  x, int  incx)) dlsym(cublas_handle, "cublasStrsv_v2");
 
+cublasStatus_t (*lcublasStrsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  A, int64_t  lda, float*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  A, int64_t  lda, float*  x, int64_t  incx)) dlsym(cublas_handle, "cublasStrsv_v2_64");
+
 cublasStatus_t (*lcublasDtrsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  A, int  lda, double*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  A, int  lda, double*  x, int  incx)) dlsym(cublas_handle, "cublasDtrsv_v2");
+
+cublasStatus_t (*lcublasDtrsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  A, int64_t  lda, double*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  A, int64_t  lda, double*  x, int64_t  incx)) dlsym(cublas_handle, "cublasDtrsv_v2_64");
 
 cublasStatus_t (*lcublasCtrsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  A, int  lda, cuComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  A, int  lda, cuComplex*  x, int  incx)) dlsym(cublas_handle, "cublasCtrsv_v2");
 
+cublasStatus_t (*lcublasCtrsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasCtrsv_v2_64");
+
 cublasStatus_t (*lcublasZtrsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)) dlsym(cublas_handle, "cublasZtrsv_v2");
+
+cublasStatus_t (*lcublasZtrsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasZtrsv_v2_64");
 
 cublasStatus_t (*lcublasStpsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  AP, float*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  AP, float*  x, int  incx)) dlsym(cublas_handle, "cublasStpsv_v2");
 
+cublasStatus_t (*lcublasStpsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  AP, float*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  AP, float*  x, int64_t  incx)) dlsym(cublas_handle, "cublasStpsv_v2_64");
+
 cublasStatus_t (*lcublasDtpsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  AP, double*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  AP, double*  x, int  incx)) dlsym(cublas_handle, "cublasDtpsv_v2");
+
+cublasStatus_t (*lcublasDtpsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  AP, double*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  AP, double*  x, int64_t  incx)) dlsym(cublas_handle, "cublasDtpsv_v2_64");
 
 cublasStatus_t (*lcublasCtpsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  AP, cuComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  AP, cuComplex*  x, int  incx)) dlsym(cublas_handle, "cublasCtpsv_v2");
 
+cublasStatus_t (*lcublasCtpsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  AP, cuComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  AP, cuComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasCtpsv_v2_64");
+
 cublasStatus_t (*lcublasZtpsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int  incx)) dlsym(cublas_handle, "cublasZtpsv_v2");
+
+cublasStatus_t (*lcublasZtpsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasZtpsv_v2_64");
 
 cublasStatus_t (*lcublasStbsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const float*  A, int  lda, float*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const float*  A, int  lda, float*  x, int  incx)) dlsym(cublas_handle, "cublasStbsv_v2");
 
+cublasStatus_t (*lcublasStbsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const float*  A, int64_t  lda, float*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const float*  A, int64_t  lda, float*  x, int64_t  incx)) dlsym(cublas_handle, "cublasStbsv_v2_64");
+
 cublasStatus_t (*lcublasDtbsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const double*  A, int  lda, double*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const double*  A, int  lda, double*  x, int  incx)) dlsym(cublas_handle, "cublasDtbsv_v2");
+
+cublasStatus_t (*lcublasDtbsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const double*  A, int64_t  lda, double*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const double*  A, int64_t  lda, double*  x, int64_t  incx)) dlsym(cublas_handle, "cublasDtbsv_v2_64");
 
 cublasStatus_t (*lcublasCtbsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuComplex*  A, int  lda, cuComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuComplex*  A, int  lda, cuComplex*  x, int  incx)) dlsym(cublas_handle, "cublasCtbsv_v2");
 
+cublasStatus_t (*lcublasCtbsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasCtbsv_v2_64");
+
 cublasStatus_t (*lcublasZtbsv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)) dlsym(cublas_handle, "cublasZtbsv_v2");
+
+cublasStatus_t (*lcublasZtbsv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)) dlsym(cublas_handle, "cublasZtbsv_v2_64");
 
 cublasStatus_t (*lcublasSsymv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy)) dlsym(cublas_handle, "cublasSsymv_v2");
 
+cublasStatus_t (*lcublasSsymv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)) dlsym(cublas_handle, "cublasSsymv_v2_64");
+
 cublasStatus_t (*lcublasDsymv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)) dlsym(cublas_handle, "cublasDsymv_v2");
+
+cublasStatus_t (*lcublasDsymv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)) dlsym(cublas_handle, "cublasDsymv_v2_64");
 
 cublasStatus_t (*lcublasCsymv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)) dlsym(cublas_handle, "cublasCsymv_v2");
 
+cublasStatus_t (*lcublasCsymv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasCsymv_v2_64");
+
 cublasStatus_t (*lcublasZsymv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)) dlsym(cublas_handle, "cublasZsymv_v2");
+
+cublasStatus_t (*lcublasZsymv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasZsymv_v2_64");
 
 cublasStatus_t (*lcublasChemv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)) dlsym(cublas_handle, "cublasChemv_v2");
 
+cublasStatus_t (*lcublasChemv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasChemv_v2_64");
+
 cublasStatus_t (*lcublasZhemv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)) dlsym(cublas_handle, "cublasZhemv_v2");
+
+cublasStatus_t (*lcublasZhemv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasZhemv_v2_64");
 
 cublasStatus_t (*lcublasSsbmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy)) dlsym(cublas_handle, "cublasSsbmv_v2");
 
+cublasStatus_t (*lcublasSsbmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)) dlsym(cublas_handle, "cublasSsbmv_v2_64");
+
 cublasStatus_t (*lcublasDsbmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)) dlsym(cublas_handle, "cublasDsbmv_v2");
+
+cublasStatus_t (*lcublasDsbmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)) dlsym(cublas_handle, "cublasDsbmv_v2_64");
 
 cublasStatus_t (*lcublasChbmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)) dlsym(cublas_handle, "cublasChbmv_v2");
 
+cublasStatus_t (*lcublasChbmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasChbmv_v2_64");
+
 cublasStatus_t (*lcublasZhbmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)) dlsym(cublas_handle, "cublasZhbmv_v2");
+
+cublasStatus_t (*lcublasZhbmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasZhbmv_v2_64");
 
 cublasStatus_t (*lcublasSspmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  AP, const float*  x, int  incx, const float*  beta, float*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  AP, const float*  x, int  incx, const float*  beta, float*  y, int  incy)) dlsym(cublas_handle, "cublasSspmv_v2");
 
+cublasStatus_t (*lcublasSspmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  AP, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  AP, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)) dlsym(cublas_handle, "cublasSspmv_v2_64");
+
 cublasStatus_t (*lcublasDspmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  AP, const double*  x, int  incx, const double*  beta, double*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  AP, const double*  x, int  incx, const double*  beta, double*  y, int  incy)) dlsym(cublas_handle, "cublasDspmv_v2");
+
+cublasStatus_t (*lcublasDspmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  AP, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  AP, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)) dlsym(cublas_handle, "cublasDspmv_v2_64");
 
 cublasStatus_t (*lcublasChpmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  AP, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  AP, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)) dlsym(cublas_handle, "cublasChpmv_v2");
 
+cublasStatus_t (*lcublasChpmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  AP, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  AP, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasChpmv_v2_64");
+
 cublasStatus_t (*lcublasZhpmv_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  AP, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  AP, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)) dlsym(cublas_handle, "cublasZhpmv_v2");
+
+cublasStatus_t (*lcublasZhpmv_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  AP, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  AP, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)) dlsym(cublas_handle, "cublasZhpmv_v2_64");
 
 cublasStatus_t (*lcublasSger_v2) (cublasHandle_t  handle, int  m, int  n, const float*  alpha, const float*  x, int  incx, const float*  y, int  incy, float*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  m, int  n, const float*  alpha, const float*  x, int  incx, const float*  y, int  incy, float*  A, int  lda)) dlsym(cublas_handle, "cublasSger_v2");
 
+cublasStatus_t (*lcublasSger_v2_64) (cublasHandle_t  handle, int64_t  m, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  m, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  A, int64_t  lda)) dlsym(cublas_handle, "cublasSger_v2_64");
+
 cublasStatus_t (*lcublasDger_v2) (cublasHandle_t  handle, int  m, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  m, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  A, int  lda)) dlsym(cublas_handle, "cublasDger_v2");
+
+cublasStatus_t (*lcublasDger_v2_64) (cublasHandle_t  handle, int64_t  m, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  m, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  A, int64_t  lda)) dlsym(cublas_handle, "cublasDger_v2_64");
 
 cublasStatus_t (*lcublasCgeru_v2) (cublasHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda)) dlsym(cublas_handle, "cublasCgeru_v2");
 
+cublasStatus_t (*lcublasCgeru_v2_64) (cublasHandle_t  handle, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasCgeru_v2_64");
+
 cublasStatus_t (*lcublasCgerc_v2) (cublasHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda)) dlsym(cublas_handle, "cublasCgerc_v2");
+
+cublasStatus_t (*lcublasCgerc_v2_64) (cublasHandle_t  handle, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasCgerc_v2_64");
 
 cublasStatus_t (*lcublasZgeru_v2) (cublasHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)) dlsym(cublas_handle, "cublasZgeru_v2");
 
+cublasStatus_t (*lcublasZgeru_v2_64) (cublasHandle_t  handle, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasZgeru_v2_64");
+
 cublasStatus_t (*lcublasZgerc_v2) (cublasHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)) dlsym(cublas_handle, "cublasZgerc_v2");
+
+cublasStatus_t (*lcublasZgerc_v2_64) (cublasHandle_t  handle, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasZgerc_v2_64");
 
 cublasStatus_t (*lcublasSsyr_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, float*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, float*  A, int  lda)) dlsym(cublas_handle, "cublasSsyr_v2");
 
+cublasStatus_t (*lcublasSsyr_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  A, int64_t  lda)) dlsym(cublas_handle, "cublasSsyr_v2_64");
+
 cublasStatus_t (*lcublasDsyr_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, double*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, double*  A, int  lda)) dlsym(cublas_handle, "cublasDsyr_v2");
+
+cublasStatus_t (*lcublasDsyr_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  A, int64_t  lda)) dlsym(cublas_handle, "cublasDsyr_v2_64");
 
 cublasStatus_t (*lcublasCsyr_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, cuComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, cuComplex*  A, int  lda)) dlsym(cublas_handle, "cublasCsyr_v2");
 
+cublasStatus_t (*lcublasCsyr_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasCsyr_v2_64");
+
 cublasStatus_t (*lcublasZsyr_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  A, int  lda)) dlsym(cublas_handle, "cublasZsyr_v2");
+
+cublasStatus_t (*lcublasZsyr_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasZsyr_v2_64");
 
 cublasStatus_t (*lcublasCher_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const cuComplex*  x, int  incx, cuComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const cuComplex*  x, int  incx, cuComplex*  A, int  lda)) dlsym(cublas_handle, "cublasCher_v2");
 
+cublasStatus_t (*lcublasCher_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasCher_v2_64");
+
 cublasStatus_t (*lcublasZher_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  A, int  lda)) dlsym(cublas_handle, "cublasZher_v2");
+
+cublasStatus_t (*lcublasZher_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasZher_v2_64");
 
 cublasStatus_t (*lcublasSspr_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, float*  AP) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, float*  AP)) dlsym(cublas_handle, "cublasSspr_v2");
 
+cublasStatus_t (*lcublasSspr_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  AP) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  AP)) dlsym(cublas_handle, "cublasSspr_v2_64");
+
 cublasStatus_t (*lcublasDspr_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, double*  AP) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, double*  AP)) dlsym(cublas_handle, "cublasDspr_v2");
+
+cublasStatus_t (*lcublasDspr_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  AP) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  AP)) dlsym(cublas_handle, "cublasDspr_v2_64");
 
 cublasStatus_t (*lcublasChpr_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const cuComplex*  x, int  incx, cuComplex*  AP) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const cuComplex*  x, int  incx, cuComplex*  AP)) dlsym(cublas_handle, "cublasChpr_v2");
 
+cublasStatus_t (*lcublasChpr_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  AP) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  AP)) dlsym(cublas_handle, "cublasChpr_v2_64");
+
 cublasStatus_t (*lcublasZhpr_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  AP) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  AP)) dlsym(cublas_handle, "cublasZhpr_v2");
+
+cublasStatus_t (*lcublasZhpr_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  AP) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  AP)) dlsym(cublas_handle, "cublasZhpr_v2_64");
 
 cublasStatus_t (*lcublasSsyr2_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, const float*  y, int  incy, float*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, const float*  y, int  incy, float*  A, int  lda)) dlsym(cublas_handle, "cublasSsyr2_v2");
 
+cublasStatus_t (*lcublasSsyr2_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  A, int64_t  lda)) dlsym(cublas_handle, "cublasSsyr2_v2_64");
+
 cublasStatus_t (*lcublasDsyr2_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  A, int  lda)) dlsym(cublas_handle, "cublasDsyr2_v2");
+
+cublasStatus_t (*lcublasDsyr2_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  A, int64_t  lda)) dlsym(cublas_handle, "cublasDsyr2_v2_64");
 
 cublasStatus_t (*lcublasCsyr2_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda)) dlsym(cublas_handle, "cublasCsyr2_v2");
 
+cublasStatus_t (*lcublasCsyr2_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasCsyr2_v2_64");
+
 cublasStatus_t (*lcublasZsyr2_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)) dlsym(cublas_handle, "cublasZsyr2_v2");
+
+cublasStatus_t (*lcublasZsyr2_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasZsyr2_v2_64");
 
 cublasStatus_t (*lcublasCher2_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda)) dlsym(cublas_handle, "cublasCher2_v2");
 
+cublasStatus_t (*lcublasCher2_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasCher2_v2_64");
+
 cublasStatus_t (*lcublasZher2_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)) dlsym(cublas_handle, "cublasZher2_v2");
+
+cublasStatus_t (*lcublasZher2_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)) dlsym(cublas_handle, "cublasZher2_v2_64");
 
 cublasStatus_t (*lcublasSspr2_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, const float*  y, int  incy, float*  AP) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, const float*  y, int  incy, float*  AP)) dlsym(cublas_handle, "cublasSspr2_v2");
 
+cublasStatus_t (*lcublasSspr2_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  AP) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  AP)) dlsym(cublas_handle, "cublasSspr2_v2_64");
+
 cublasStatus_t (*lcublasDspr2_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  AP) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  AP)) dlsym(cublas_handle, "cublasDspr2_v2");
+
+cublasStatus_t (*lcublasDspr2_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  AP) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  AP)) dlsym(cublas_handle, "cublasDspr2_v2_64");
 
 cublasStatus_t (*lcublasChpr2_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  AP) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  AP)) dlsym(cublas_handle, "cublasChpr2_v2");
 
+cublasStatus_t (*lcublasChpr2_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  AP) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  AP)) dlsym(cublas_handle, "cublasChpr2_v2_64");
+
 cublasStatus_t (*lcublasZhpr2_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  AP) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  AP)) dlsym(cublas_handle, "cublasZhpr2_v2");
+
+cublasStatus_t (*lcublasZhpr2_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  AP) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  AP)) dlsym(cublas_handle, "cublasZhpr2_v2_64");
+
+cublasStatus_t (*lcublasSgemvBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float* const  Aarray[], int  lda, const float* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float* const  Aarray[], int  lda, const float* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)) dlsym(cublas_handle, "cublasSgemvBatched");
+
+cublasStatus_t (*lcublasSgemvBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float* const  Aarray[], int64_t  lda, const float* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float* const  Aarray[], int64_t  lda, const float* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)) dlsym(cublas_handle, "cublasSgemvBatched_64");
+
+cublasStatus_t (*lcublasDgemvBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double* const  Aarray[], int  lda, const double* const  xarray[], int  incx, const double*  beta, double* const  yarray[], int  incy, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double* const  Aarray[], int  lda, const double* const  xarray[], int  incx, const double*  beta, double* const  yarray[], int  incy, int  batchCount)) dlsym(cublas_handle, "cublasDgemvBatched");
+
+cublasStatus_t (*lcublasDgemvBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double* const  Aarray[], int64_t  lda, const double* const  xarray[], int64_t  incx, const double*  beta, double* const  yarray[], int64_t  incy, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double* const  Aarray[], int64_t  lda, const double* const  xarray[], int64_t  incx, const double*  beta, double* const  yarray[], int64_t  incy, int64_t  batchCount)) dlsym(cublas_handle, "cublasDgemvBatched_64");
+
+cublasStatus_t (*lcublasCgemvBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  xarray[], int  incx, const cuComplex*  beta, cuComplex* const  yarray[], int  incy, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  xarray[], int  incx, const cuComplex*  beta, cuComplex* const  yarray[], int  incy, int  batchCount)) dlsym(cublas_handle, "cublasCgemvBatched");
+
+cublasStatus_t (*lcublasCgemvBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  xarray[], int64_t  incx, const cuComplex*  beta, cuComplex* const  yarray[], int64_t  incy, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  xarray[], int64_t  incx, const cuComplex*  beta, cuComplex* const  yarray[], int64_t  incy, int64_t  batchCount)) dlsym(cublas_handle, "cublasCgemvBatched_64");
+
+cublasStatus_t (*lcublasZgemvBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int  lda, const cuDoubleComplex* const  xarray[], int  incx, const cuDoubleComplex*  beta, cuDoubleComplex* const  yarray[], int  incy, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int  lda, const cuDoubleComplex* const  xarray[], int  incx, const cuDoubleComplex*  beta, cuDoubleComplex* const  yarray[], int  incy, int  batchCount)) dlsym(cublas_handle, "cublasZgemvBatched");
+
+cublasStatus_t (*lcublasZgemvBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int64_t  lda, const cuDoubleComplex* const  xarray[], int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex* const  yarray[], int64_t  incy, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int64_t  lda, const cuDoubleComplex* const  xarray[], int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex* const  yarray[], int64_t  incy, int64_t  batchCount)) dlsym(cublas_handle, "cublasZgemvBatched_64");
+
+cublasStatus_t (*lcublasHSHgemvBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half* const  Aarray[], int  lda, const __half* const  xarray[], int  incx, const float*  beta, __half* const  yarray[], int  incy, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half* const  Aarray[], int  lda, const __half* const  xarray[], int  incx, const float*  beta, __half* const  yarray[], int  incy, int  batchCount)) dlsym(cublas_handle, "cublasHSHgemvBatched");
+
+cublasStatus_t (*lcublasHSHgemvBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  xarray[], int64_t  incx, const float*  beta, __half* const  yarray[], int64_t  incy, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  xarray[], int64_t  incx, const float*  beta, __half* const  yarray[], int64_t  incy, int64_t  batchCount)) dlsym(cublas_handle, "cublasHSHgemvBatched_64");
+
+cublasStatus_t (*lcublasHSSgemvBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half* const  Aarray[], int  lda, const __half* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half* const  Aarray[], int  lda, const __half* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)) dlsym(cublas_handle, "cublasHSSgemvBatched");
+
+cublasStatus_t (*lcublasHSSgemvBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)) dlsym(cublas_handle, "cublasHSSgemvBatched_64");
+
+cublasStatus_t (*lcublasTSTgemvBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int  lda, const __nv_bfloat16* const  xarray[], int  incx, const float*  beta, __nv_bfloat16* const  yarray[], int  incy, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int  lda, const __nv_bfloat16* const  xarray[], int  incx, const float*  beta, __nv_bfloat16* const  yarray[], int  incy, int  batchCount)) dlsym(cublas_handle, "cublasTSTgemvBatched");
+
+cublasStatus_t (*lcublasTSTgemvBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int64_t  lda, const __nv_bfloat16* const  xarray[], int64_t  incx, const float*  beta, __nv_bfloat16* const  yarray[], int64_t  incy, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int64_t  lda, const __nv_bfloat16* const  xarray[], int64_t  incx, const float*  beta, __nv_bfloat16* const  yarray[], int64_t  incy, int64_t  batchCount)) dlsym(cublas_handle, "cublasTSTgemvBatched_64");
+
+cublasStatus_t (*lcublasTSSgemvBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int  lda, const __nv_bfloat16* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int  lda, const __nv_bfloat16* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)) dlsym(cublas_handle, "cublasTSSgemvBatched");
+
+cublasStatus_t (*lcublasTSSgemvBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int64_t  lda, const __nv_bfloat16* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int64_t  lda, const __nv_bfloat16* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)) dlsym(cublas_handle, "cublasTSSgemvBatched_64");
+
+cublasStatus_t (*lcublasSgemvStridedBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)) dlsym(cublas_handle, "cublasSgemvStridedBatched");
+
+cublasStatus_t (*lcublasSgemvStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, long long int  strideA, const float*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, long long int  strideA, const float*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)) dlsym(cublas_handle, "cublasSgemvStridedBatched_64");
+
+cublasStatus_t (*lcublasDgemvStridedBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  x, int  incx, long long int  stridex, const double*  beta, double*  y, int  incy, long long int  stridey, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  x, int  incx, long long int  stridex, const double*  beta, double*  y, int  incy, long long int  stridey, int  batchCount)) dlsym(cublas_handle, "cublasDgemvStridedBatched");
+
+cublasStatus_t (*lcublasDgemvStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, long long int  strideA, const double*  x, int64_t  incx, long long int  stridex, const double*  beta, double*  y, int64_t  incy, long long int  stridey, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, long long int  strideA, const double*  x, int64_t  incx, long long int  stridex, const double*  beta, double*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)) dlsym(cublas_handle, "cublasDgemvStridedBatched_64");
+
+cublasStatus_t (*lcublasCgemvStridedBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  x, int  incx, long long int  stridex, const cuComplex*  beta, cuComplex*  y, int  incy, long long int  stridey, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  x, int  incx, long long int  stridex, const cuComplex*  beta, cuComplex*  y, int  incy, long long int  stridey, int  batchCount)) dlsym(cublas_handle, "cublasCgemvStridedBatched");
+
+cublasStatus_t (*lcublasCgemvStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  x, int64_t  incx, long long int  stridex, const cuComplex*  beta, cuComplex*  y, int64_t  incy, long long int  stridey, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  x, int64_t  incx, long long int  stridex, const cuComplex*  beta, cuComplex*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)) dlsym(cublas_handle, "cublasCgemvStridedBatched_64");
+
+cublasStatus_t (*lcublasZgemvStridedBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  x, int  incx, long long int  stridex, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy, long long int  stridey, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  x, int  incx, long long int  stridex, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy, long long int  stridey, int  batchCount)) dlsym(cublas_handle, "cublasZgemvStridedBatched");
+
+cublasStatus_t (*lcublasZgemvStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, long long int  strideA, const cuDoubleComplex*  x, int64_t  incx, long long int  stridex, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy, long long int  stridey, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, long long int  strideA, const cuDoubleComplex*  x, int64_t  incx, long long int  stridex, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)) dlsym(cublas_handle, "cublasZgemvStridedBatched_64");
+
+cublasStatus_t (*lcublasHSHgemvStridedBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  x, int  incx, long long int  stridex, const float*  beta, __half*  y, int  incy, long long int  stridey, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  x, int  incx, long long int  stridex, const float*  beta, __half*  y, int  incy, long long int  stridey, int  batchCount)) dlsym(cublas_handle, "cublasHSHgemvStridedBatched");
+
+cublasStatus_t (*lcublasHSHgemvStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  x, int64_t  incx, long long int  stridex, const float*  beta, __half*  y, int64_t  incy, long long int  stridey, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  x, int64_t  incx, long long int  stridex, const float*  beta, __half*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)) dlsym(cublas_handle, "cublasHSHgemvStridedBatched_64");
+
+cublasStatus_t (*lcublasHSSgemvStridedBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)) dlsym(cublas_handle, "cublasHSSgemvStridedBatched");
+
+cublasStatus_t (*lcublasHSSgemvStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)) dlsym(cublas_handle, "cublasHSSgemvStridedBatched_64");
+
+cublasStatus_t (*lcublasTSTgemvStridedBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16*  A, int  lda, long long int  strideA, const __nv_bfloat16*  x, int  incx, long long int  stridex, const float*  beta, __nv_bfloat16*  y, int  incy, long long int  stridey, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16*  A, int  lda, long long int  strideA, const __nv_bfloat16*  x, int  incx, long long int  stridex, const float*  beta, __nv_bfloat16*  y, int  incy, long long int  stridey, int  batchCount)) dlsym(cublas_handle, "cublasTSTgemvStridedBatched");
+
+cublasStatus_t (*lcublasTSTgemvStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16*  A, int64_t  lda, long long int  strideA, const __nv_bfloat16*  x, int64_t  incx, long long int  stridex, const float*  beta, __nv_bfloat16*  y, int64_t  incy, long long int  stridey, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16*  A, int64_t  lda, long long int  strideA, const __nv_bfloat16*  x, int64_t  incx, long long int  stridex, const float*  beta, __nv_bfloat16*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)) dlsym(cublas_handle, "cublasTSTgemvStridedBatched_64");
+
+cublasStatus_t (*lcublasTSSgemvStridedBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16*  A, int  lda, long long int  strideA, const __nv_bfloat16*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16*  A, int  lda, long long int  strideA, const __nv_bfloat16*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)) dlsym(cublas_handle, "cublasTSSgemvStridedBatched");
+
+cublasStatus_t (*lcublasTSSgemvStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16*  A, int64_t  lda, long long int  strideA, const __nv_bfloat16*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16*  A, int64_t  lda, long long int  strideA, const __nv_bfloat16*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)) dlsym(cublas_handle, "cublasTSSgemvStridedBatched_64");
 
 cublasStatus_t (*lcublasSgemm_v2) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)) dlsym(cublas_handle, "cublasSgemm_v2");
 
+cublasStatus_t (*lcublasSgemm_v2_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasSgemm_v2_64");
+
 cublasStatus_t (*lcublasDgemm_v2) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)) dlsym(cublas_handle, "cublasDgemm_v2");
+
+cublasStatus_t (*lcublasDgemm_v2_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasDgemm_v2_64");
 
 cublasStatus_t (*lcublasCgemm_v2) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCgemm_v2");
 
+cublasStatus_t (*lcublasCgemm_v2_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCgemm_v2_64");
+
 cublasStatus_t (*lcublasCgemm3m) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCgemm3m");
+
+cublasStatus_t (*lcublasCgemm3m_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCgemm3m_64");
 
 cublasStatus_t (*lcublasCgemm3mEx) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)) dlsym(cublas_handle, "cublasCgemm3mEx");
 
+cublasStatus_t (*lcublasCgemm3mEx_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)) dlsym(cublas_handle, "cublasCgemm3mEx_64");
+
 cublasStatus_t (*lcublasZgemm_v2) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZgemm_v2");
+
+cublasStatus_t (*lcublasZgemm_v2_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZgemm_v2_64");
 
 cublasStatus_t (*lcublasZgemm3m) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZgemm3m");
 
+cublasStatus_t (*lcublasZgemm3m_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZgemm3m_64");
+
 cublasStatus_t (*lcublasHgemm) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const __half*  alpha, const __half*  A, int  lda, const __half*  B, int  ldb, const __half*  beta, __half*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const __half*  alpha, const __half*  A, int  lda, const __half*  B, int  ldb, const __half*  beta, __half*  C, int  ldc)) dlsym(cublas_handle, "cublasHgemm");
+
+cublasStatus_t (*lcublasHgemm_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half*  A, int64_t  lda, const __half*  B, int64_t  ldb, const __half*  beta, __half*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half*  A, int64_t  lda, const __half*  B, int64_t  ldb, const __half*  beta, __half*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasHgemm_64");
 
 cublasStatus_t (*lcublasSgemmEx) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc)) dlsym(cublas_handle, "cublasSgemmEx");
 
+cublasStatus_t (*lcublasSgemmEx_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)) dlsym(cublas_handle, "cublasSgemmEx_64");
+
 cublasStatus_t (*lcublasGemmEx) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)) dlsym(cublas_handle, "cublasGemmEx");
+
+cublasStatus_t (*lcublasGemmEx_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)) dlsym(cublas_handle, "cublasGemmEx_64");
 
 cublasStatus_t (*lcublasCgemmEx) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)) dlsym(cublas_handle, "cublasCgemmEx");
 
-cublasStatus_t (*lcublasUint8gemmBias) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, cublasOperation_t  transc, int  m, int  n, int  k, const unsigned char*  A, int  A_bias, int  lda, const unsigned char*  B, int  B_bias, int  ldb, unsigned char*  C, int  C_bias, int  ldc, int  C_mult, int  C_shift) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, cublasOperation_t  transc, int  m, int  n, int  k, const unsigned char*  A, int  A_bias, int  lda, const unsigned char*  B, int  B_bias, int  ldb, unsigned char*  C, int  C_bias, int  ldc, int  C_mult, int  C_shift)) dlsym(cublas_handle, "cublasUint8gemmBias");
+cublasStatus_t (*lcublasCgemmEx_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)) dlsym(cublas_handle, "cublasCgemmEx_64");
 
 cublasStatus_t (*lcublasSsyrk_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  beta, float*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  beta, float*  C, int  ldc)) dlsym(cublas_handle, "cublasSsyrk_v2");
 
+cublasStatus_t (*lcublasSsyrk_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  beta, float*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  beta, float*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasSsyrk_v2_64");
+
 cublasStatus_t (*lcublasDsyrk_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  beta, double*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  beta, double*  C, int  ldc)) dlsym(cublas_handle, "cublasDsyrk_v2");
+
+cublasStatus_t (*lcublasDsyrk_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  beta, double*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  beta, double*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasDsyrk_v2_64");
 
 cublasStatus_t (*lcublasCsyrk_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  beta, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  beta, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCsyrk_v2");
 
+cublasStatus_t (*lcublasCsyrk_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  beta, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCsyrk_v2_64");
+
 cublasStatus_t (*lcublasZsyrk_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZsyrk_v2");
+
+cublasStatus_t (*lcublasZsyrk_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZsyrk_v2_64");
 
 cublasStatus_t (*lcublasCsyrkEx) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)) dlsym(cublas_handle, "cublasCsyrkEx");
 
+cublasStatus_t (*lcublasCsyrkEx_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)) dlsym(cublas_handle, "cublasCsyrkEx_64");
+
 cublasStatus_t (*lcublasCsyrk3mEx) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)) dlsym(cublas_handle, "cublasCsyrk3mEx");
+
+cublasStatus_t (*lcublasCsyrk3mEx_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)) dlsym(cublas_handle, "cublasCsyrk3mEx_64");
 
 cublasStatus_t (*lcublasCherk_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const cuComplex*  A, int  lda, const float*  beta, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const cuComplex*  A, int  lda, const float*  beta, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCherk_v2");
 
+cublasStatus_t (*lcublasCherk_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const cuComplex*  A, int64_t  lda, const float*  beta, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const cuComplex*  A, int64_t  lda, const float*  beta, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCherk_v2_64");
+
 cublasStatus_t (*lcublasZherk_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const cuDoubleComplex*  A, int  lda, const double*  beta, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const cuDoubleComplex*  A, int  lda, const double*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZherk_v2");
+
+cublasStatus_t (*lcublasZherk_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const cuDoubleComplex*  A, int64_t  lda, const double*  beta, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const cuDoubleComplex*  A, int64_t  lda, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZherk_v2_64");
 
 cublasStatus_t (*lcublasCherkEx) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc)) dlsym(cublas_handle, "cublasCherkEx");
 
+cublasStatus_t (*lcublasCherkEx_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)) dlsym(cublas_handle, "cublasCherkEx_64");
+
 cublasStatus_t (*lcublasCherk3mEx) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc)) dlsym(cublas_handle, "cublasCherk3mEx");
+
+cublasStatus_t (*lcublasCherk3mEx_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)) dlsym(cublas_handle, "cublasCherk3mEx_64");
 
 cublasStatus_t (*lcublasSsyr2k_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)) dlsym(cublas_handle, "cublasSsyr2k_v2");
 
+cublasStatus_t (*lcublasSsyr2k_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasSsyr2k_v2_64");
+
 cublasStatus_t (*lcublasDsyr2k_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)) dlsym(cublas_handle, "cublasDsyr2k_v2");
+
+cublasStatus_t (*lcublasDsyr2k_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasDsyr2k_v2_64");
 
 cublasStatus_t (*lcublasCsyr2k_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCsyr2k_v2");
 
+cublasStatus_t (*lcublasCsyr2k_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCsyr2k_v2_64");
+
 cublasStatus_t (*lcublasZsyr2k_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZsyr2k_v2");
+
+cublasStatus_t (*lcublasZsyr2k_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZsyr2k_v2_64");
 
 cublasStatus_t (*lcublasCher2k_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const float*  beta, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const float*  beta, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCher2k_v2");
 
+cublasStatus_t (*lcublasCher2k_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const float*  beta, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const float*  beta, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCher2k_v2_64");
+
 cublasStatus_t (*lcublasZher2k_v2) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const double*  beta, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const double*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZher2k_v2");
+
+cublasStatus_t (*lcublasZher2k_v2_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const double*  beta, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZher2k_v2_64");
 
 cublasStatus_t (*lcublasSsyrkx) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)) dlsym(cublas_handle, "cublasSsyrkx");
 
+cublasStatus_t (*lcublasSsyrkx_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasSsyrkx_64");
+
 cublasStatus_t (*lcublasDsyrkx) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)) dlsym(cublas_handle, "cublasDsyrkx");
+
+cublasStatus_t (*lcublasDsyrkx_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasDsyrkx_64");
 
 cublasStatus_t (*lcublasCsyrkx) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCsyrkx");
 
+cublasStatus_t (*lcublasCsyrkx_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCsyrkx_64");
+
 cublasStatus_t (*lcublasZsyrkx) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZsyrkx");
+
+cublasStatus_t (*lcublasZsyrkx_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZsyrkx_64");
 
 cublasStatus_t (*lcublasCherkx) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const float*  beta, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const float*  beta, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCherkx");
 
+cublasStatus_t (*lcublasCherkx_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const float*  beta, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const float*  beta, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCherkx_64");
+
 cublasStatus_t (*lcublasZherkx) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const double*  beta, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const double*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZherkx");
+
+cublasStatus_t (*lcublasZherkx_64) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const double*  beta, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZherkx_64");
 
 cublasStatus_t (*lcublasSsymm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)) dlsym(cublas_handle, "cublasSsymm_v2");
 
+cublasStatus_t (*lcublasSsymm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasSsymm_v2_64");
+
 cublasStatus_t (*lcublasDsymm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)) dlsym(cublas_handle, "cublasDsymm_v2");
+
+cublasStatus_t (*lcublasDsymm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasDsymm_v2_64");
 
 cublasStatus_t (*lcublasCsymm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCsymm_v2");
 
+cublasStatus_t (*lcublasCsymm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCsymm_v2_64");
+
 cublasStatus_t (*lcublasZsymm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZsymm_v2");
+
+cublasStatus_t (*lcublasZsymm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZsymm_v2_64");
 
 cublasStatus_t (*lcublasChemm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasChemm_v2");
 
+cublasStatus_t (*lcublasChemm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasChemm_v2_64");
+
 cublasStatus_t (*lcublasZhemm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZhemm_v2");
+
+cublasStatus_t (*lcublasZhemm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZhemm_v2_64");
 
 cublasStatus_t (*lcublasStrsm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const float*  alpha, const float*  A, int  lda, float*  B, int  ldb) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const float*  alpha, const float*  A, int  lda, float*  B, int  ldb)) dlsym(cublas_handle, "cublasStrsm_v2");
 
+cublasStatus_t (*lcublasStrsm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, float*  B, int64_t  ldb) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, float*  B, int64_t  ldb)) dlsym(cublas_handle, "cublasStrsm_v2_64");
+
 cublasStatus_t (*lcublasDtrsm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double*  A, int  lda, double*  B, int  ldb) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double*  A, int  lda, double*  B, int  ldb)) dlsym(cublas_handle, "cublasDtrsm_v2");
+
+cublasStatus_t (*lcublasDtrsm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, double*  B, int64_t  ldb) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, double*  B, int64_t  ldb)) dlsym(cublas_handle, "cublasDtrsm_v2_64");
 
 cublasStatus_t (*lcublasCtrsm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, cuComplex*  B, int  ldb) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, cuComplex*  B, int  ldb)) dlsym(cublas_handle, "cublasCtrsm_v2");
 
+cublasStatus_t (*lcublasCtrsm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, cuComplex*  B, int64_t  ldb) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, cuComplex*  B, int64_t  ldb)) dlsym(cublas_handle, "cublasCtrsm_v2_64");
+
 cublasStatus_t (*lcublasZtrsm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  B, int  ldb) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  B, int  ldb)) dlsym(cublas_handle, "cublasZtrsm_v2");
+
+cublasStatus_t (*lcublasZtrsm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  B, int64_t  ldb) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  B, int64_t  ldb)) dlsym(cublas_handle, "cublasZtrsm_v2_64");
 
 cublasStatus_t (*lcublasStrmm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, float*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, float*  C, int  ldc)) dlsym(cublas_handle, "cublasStrmm_v2");
 
+cublasStatus_t (*lcublasStrmm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, float*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, float*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasStrmm_v2_64");
+
 cublasStatus_t (*lcublasDtrmm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, double*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, double*  C, int  ldc)) dlsym(cublas_handle, "cublasDtrmm_v2");
+
+cublasStatus_t (*lcublasDtrmm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, double*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, double*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasDtrmm_v2_64");
 
 cublasStatus_t (*lcublasCtrmm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCtrmm_v2");
 
+cublasStatus_t (*lcublasCtrmm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCtrmm_v2_64");
+
 cublasStatus_t (*lcublasZtrmm_v2) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZtrmm_v2");
+
+cublasStatus_t (*lcublasZtrmm_v2_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZtrmm_v2_64");
 
 cublasStatus_t (*lcublasHgemmBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const __half*  alpha, const __half* const  Aarray[], int  lda, const __half* const  Barray[], int  ldb, const __half*  beta, __half* const  Carray[], int  ldc, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const __half*  alpha, const __half* const  Aarray[], int  lda, const __half* const  Barray[], int  ldb, const __half*  beta, __half* const  Carray[], int  ldc, int  batchCount)) dlsym(cublas_handle, "cublasHgemmBatched");
 
+cublasStatus_t (*lcublasHgemmBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  Barray[], int64_t  ldb, const __half*  beta, __half* const  Carray[], int64_t  ldc, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  Barray[], int64_t  ldb, const __half*  beta, __half* const  Carray[], int64_t  ldc, int64_t  batchCount)) dlsym(cublas_handle, "cublasHgemmBatched_64");
+
 cublasStatus_t (*lcublasSgemmBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float* const  Aarray[], int  lda, const float* const  Barray[], int  ldb, const float*  beta, float* const  Carray[], int  ldc, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float* const  Aarray[], int  lda, const float* const  Barray[], int  ldb, const float*  beta, float* const  Carray[], int  ldc, int  batchCount)) dlsym(cublas_handle, "cublasSgemmBatched");
+
+cublasStatus_t (*lcublasSgemmBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float* const  Aarray[], int64_t  lda, const float* const  Barray[], int64_t  ldb, const float*  beta, float* const  Carray[], int64_t  ldc, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float* const  Aarray[], int64_t  lda, const float* const  Barray[], int64_t  ldb, const float*  beta, float* const  Carray[], int64_t  ldc, int64_t  batchCount)) dlsym(cublas_handle, "cublasSgemmBatched_64");
 
 cublasStatus_t (*lcublasDgemmBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double* const  Aarray[], int  lda, const double* const  Barray[], int  ldb, const double*  beta, double* const  Carray[], int  ldc, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double* const  Aarray[], int  lda, const double* const  Barray[], int  ldb, const double*  beta, double* const  Carray[], int  ldc, int  batchCount)) dlsym(cublas_handle, "cublasDgemmBatched");
 
+cublasStatus_t (*lcublasDgemmBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double* const  Aarray[], int64_t  lda, const double* const  Barray[], int64_t  ldb, const double*  beta, double* const  Carray[], int64_t  ldc, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double* const  Aarray[], int64_t  lda, const double* const  Barray[], int64_t  ldb, const double*  beta, double* const  Carray[], int64_t  ldc, int64_t  batchCount)) dlsym(cublas_handle, "cublasDgemmBatched_64");
+
 cublasStatus_t (*lcublasCgemmBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  Barray[], int  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int  ldc, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  Barray[], int  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int  ldc, int  batchCount)) dlsym(cublas_handle, "cublasCgemmBatched");
+
+cublasStatus_t (*lcublasCgemmBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  Barray[], int64_t  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int64_t  ldc, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  Barray[], int64_t  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)) dlsym(cublas_handle, "cublasCgemmBatched_64");
 
 cublasStatus_t (*lcublasCgemm3mBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  Barray[], int  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int  ldc, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  Barray[], int  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int  ldc, int  batchCount)) dlsym(cublas_handle, "cublasCgemm3mBatched");
 
+cublasStatus_t (*lcublasCgemm3mBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  Barray[], int64_t  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int64_t  ldc, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  Barray[], int64_t  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)) dlsym(cublas_handle, "cublasCgemm3mBatched_64");
+
 cublasStatus_t (*lcublasZgemmBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int  lda, const cuDoubleComplex* const  Barray[], int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex* const  Carray[], int  ldc, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int  lda, const cuDoubleComplex* const  Barray[], int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex* const  Carray[], int  ldc, int  batchCount)) dlsym(cublas_handle, "cublasZgemmBatched");
 
-cublasStatus_t (*lcublasGemmBatchedEx) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int  lda, const void* const  Barray[], cudaDataType  Btype, int  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int  ldc, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int  lda, const void* const  Barray[], cudaDataType  Btype, int  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int  ldc, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)) dlsym(cublas_handle, "cublasGemmBatchedEx");
-
-cublasStatus_t (*lcublasGemmStridedBatchedEx) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, long long int  strideC, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, long long int  strideC, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)) dlsym(cublas_handle, "cublasGemmStridedBatchedEx");
-
-cublasStatus_t (*lcublasSgemmStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  B, int  ldb, long long int  strideB, const float*  beta, float*  C, int  ldc, long long int  strideC, int  batchCount) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  B, int  ldb, long long int  strideB, const float*  beta, float*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasSgemmStridedBatched");
-
-cublasStatus_t (*lcublasDgemmStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  B, int  ldb, long long int  strideB, const double*  beta, double*  C, int  ldc, long long int  strideC, int  batchCount) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  B, int  ldb, long long int  strideB, const double*  beta, double*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasDgemmStridedBatched");
-
-cublasStatus_t (*lcublasCgemmStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasCgemmStridedBatched");
-
-cublasStatus_t (*lcublasCgemm3mStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasCgemm3mStridedBatched");
-
-cublasStatus_t (*lcublasZgemmStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  B, int  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc, long long int  strideC, int  batchCount) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  B, int  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasZgemmStridedBatched");
+cublasStatus_t (*lcublasZgemmBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int64_t  lda, const cuDoubleComplex* const  Barray[], int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex* const  Carray[], int64_t  ldc, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int64_t  lda, const cuDoubleComplex* const  Barray[], int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)) dlsym(cublas_handle, "cublasZgemmBatched_64");
 
 cublasStatus_t (*lcublasHgemmStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const __half*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  B, int  ldb, long long int  strideB, const __half*  beta, __half*  C, int  ldc, long long int  strideC, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const __half*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  B, int  ldb, long long int  strideB, const __half*  beta, __half*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasHgemmStridedBatched");
 
+cublasStatus_t (*lcublasHgemmStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  B, int64_t  ldb, long long int  strideB, const __half*  beta, __half*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  B, int64_t  ldb, long long int  strideB, const __half*  beta, __half*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)) dlsym(cublas_handle, "cublasHgemmStridedBatched_64");
+
+cublasStatus_t (*lcublasSgemmStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  B, int  ldb, long long int  strideB, const float*  beta, float*  C, int  ldc, long long int  strideC, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  B, int  ldb, long long int  strideB, const float*  beta, float*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasSgemmStridedBatched");
+
+cublasStatus_t (*lcublasSgemmStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, long long int  strideA, const float*  B, int64_t  ldb, long long int  strideB, const float*  beta, float*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, long long int  strideA, const float*  B, int64_t  ldb, long long int  strideB, const float*  beta, float*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)) dlsym(cublas_handle, "cublasSgemmStridedBatched_64");
+
+cublasStatus_t (*lcublasDgemmStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  B, int  ldb, long long int  strideB, const double*  beta, double*  C, int  ldc, long long int  strideC, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  B, int  ldb, long long int  strideB, const double*  beta, double*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasDgemmStridedBatched");
+
+cublasStatus_t (*lcublasDgemmStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, long long int  strideA, const double*  B, int64_t  ldb, long long int  strideB, const double*  beta, double*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, long long int  strideA, const double*  B, int64_t  ldb, long long int  strideB, const double*  beta, double*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)) dlsym(cublas_handle, "cublasDgemmStridedBatched_64");
+
+cublasStatus_t (*lcublasCgemmStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasCgemmStridedBatched");
+
+cublasStatus_t (*lcublasCgemmStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  B, int64_t  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  B, int64_t  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)) dlsym(cublas_handle, "cublasCgemmStridedBatched_64");
+
+cublasStatus_t (*lcublasCgemm3mStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasCgemm3mStridedBatched");
+
+cublasStatus_t (*lcublasCgemm3mStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  B, int64_t  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  B, int64_t  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)) dlsym(cublas_handle, "cublasCgemm3mStridedBatched_64");
+
+cublasStatus_t (*lcublasZgemmStridedBatched) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  B, int  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc, long long int  strideC, int  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  B, int  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc, long long int  strideC, int  batchCount)) dlsym(cublas_handle, "cublasZgemmStridedBatched");
+
+cublasStatus_t (*lcublasZgemmStridedBatched_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, long long int  strideA, const cuDoubleComplex*  B, int64_t  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, long long int  strideA, const cuDoubleComplex*  B, int64_t  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)) dlsym(cublas_handle, "cublasZgemmStridedBatched_64");
+
+cublasStatus_t (*lcublasGemmBatchedEx) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int  lda, const void* const  Barray[], cudaDataType  Btype, int  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int  ldc, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int  lda, const void* const  Barray[], cudaDataType  Btype, int  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int  ldc, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)) dlsym(cublas_handle, "cublasGemmBatchedEx");
+
+cublasStatus_t (*lcublasGemmBatchedEx_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int64_t  lda, const void* const  Barray[], cudaDataType  Btype, int64_t  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int64_t  ldc, int64_t  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int64_t  lda, const void* const  Barray[], cudaDataType  Btype, int64_t  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int64_t  ldc, int64_t  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)) dlsym(cublas_handle, "cublasGemmBatchedEx_64");
+
+cublasStatus_t (*lcublasGemmStridedBatchedEx) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, long long int  strideC, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, long long int  strideC, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)) dlsym(cublas_handle, "cublasGemmStridedBatchedEx");
+
+cublasStatus_t (*lcublasGemmStridedBatchedEx_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int64_t  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc, long long int  strideC, int64_t  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int64_t  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc, long long int  strideC, int64_t  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)) dlsym(cublas_handle, "cublasGemmStridedBatchedEx_64");
+
 cublasStatus_t (*lcublasSgeam) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  beta, const float*  B, int  ldb, float*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  beta, const float*  B, int  ldb, float*  C, int  ldc)) dlsym(cublas_handle, "cublasSgeam");
+
+cublasStatus_t (*lcublasSgeam_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  beta, const float*  B, int64_t  ldb, float*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  beta, const float*  B, int64_t  ldb, float*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasSgeam_64");
 
 cublasStatus_t (*lcublasDgeam) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  beta, const double*  B, int  ldb, double*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  beta, const double*  B, int  ldb, double*  C, int  ldc)) dlsym(cublas_handle, "cublasDgeam");
 
+cublasStatus_t (*lcublasDgeam_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  beta, const double*  B, int64_t  ldb, double*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  beta, const double*  B, int64_t  ldb, double*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasDgeam_64");
+
 cublasStatus_t (*lcublasCgeam) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  beta, const cuComplex*  B, int  ldb, cuComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  beta, const cuComplex*  B, int  ldb, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCgeam");
+
+cublasStatus_t (*lcublasCgeam_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  beta, const cuComplex*  B, int64_t  ldb, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  beta, const cuComplex*  B, int64_t  ldb, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCgeam_64");
 
 cublasStatus_t (*lcublasZgeam) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  beta, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  C, int  ldc) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  beta, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZgeam");
 
-cublasStatus_t (*lcublasSgetrfBatched) (cublasHandle_t  handle, int  n, float* const  A[], int  lda, int*  P, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, float* const  A[], int  lda, int*  P, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasSgetrfBatched");
-
-cublasStatus_t (*lcublasDgetrfBatched) (cublasHandle_t  handle, int  n, double* const  A[], int  lda, int*  P, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, double* const  A[], int  lda, int*  P, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasDgetrfBatched");
-
-cublasStatus_t (*lcublasCgetrfBatched) (cublasHandle_t  handle, int  n, cuComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, cuComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasCgetrfBatched");
-
-cublasStatus_t (*lcublasZgetrfBatched) (cublasHandle_t  handle, int  n, cuDoubleComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, cuDoubleComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasZgetrfBatched");
-
-cublasStatus_t (*lcublasSgetriBatched) (cublasHandle_t  handle, int  n, const float* const  A[], int  lda, const int*  P, float* const  C[], int  ldc, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float* const  A[], int  lda, const int*  P, float* const  C[], int  ldc, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasSgetriBatched");
-
-cublasStatus_t (*lcublasDgetriBatched) (cublasHandle_t  handle, int  n, const double* const  A[], int  lda, const int*  P, double* const  C[], int  ldc, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double* const  A[], int  lda, const int*  P, double* const  C[], int  ldc, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasDgetriBatched");
-
-cublasStatus_t (*lcublasCgetriBatched) (cublasHandle_t  handle, int  n, const cuComplex* const  A[], int  lda, const int*  P, cuComplex* const  C[], int  ldc, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex* const  A[], int  lda, const int*  P, cuComplex* const  C[], int  ldc, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasCgetriBatched");
-
-cublasStatus_t (*lcublasZgetriBatched) (cublasHandle_t  handle, int  n, const cuDoubleComplex* const  A[], int  lda, const int*  P, cuDoubleComplex* const  C[], int  ldc, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex* const  A[], int  lda, const int*  P, cuDoubleComplex* const  C[], int  ldc, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasZgetriBatched");
-
-cublasStatus_t (*lcublasSgetrsBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const float* const  Aarray[], int  lda, const int*  devIpiv, float* const  Barray[], int  ldb, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const float* const  Aarray[], int  lda, const int*  devIpiv, float* const  Barray[], int  ldb, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasSgetrsBatched");
-
-cublasStatus_t (*lcublasDgetrsBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const double* const  Aarray[], int  lda, const int*  devIpiv, double* const  Barray[], int  ldb, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const double* const  Aarray[], int  lda, const int*  devIpiv, double* const  Barray[], int  ldb, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasDgetrsBatched");
-
-cublasStatus_t (*lcublasCgetrsBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuComplex* const  Aarray[], int  lda, const int*  devIpiv, cuComplex* const  Barray[], int  ldb, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuComplex* const  Aarray[], int  lda, const int*  devIpiv, cuComplex* const  Barray[], int  ldb, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasCgetrsBatched");
-
-cublasStatus_t (*lcublasZgetrsBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuDoubleComplex* const  Aarray[], int  lda, const int*  devIpiv, cuDoubleComplex* const  Barray[], int  ldb, int*  info, int  batchSize) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuDoubleComplex* const  Aarray[], int  lda, const int*  devIpiv, cuDoubleComplex* const  Barray[], int  ldb, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasZgetrsBatched");
+cublasStatus_t (*lcublasZgeam_64) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  beta, const cuDoubleComplex*  B, int64_t  ldb, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  beta, const cuDoubleComplex*  B, int64_t  ldb, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZgeam_64");
 
 cublasStatus_t (*lcublasStrsmBatched) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const float*  alpha, const float* const  A[], int  lda, float* const  B[], int  ldb, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const float*  alpha, const float* const  A[], int  lda, float* const  B[], int  ldb, int  batchCount)) dlsym(cublas_handle, "cublasStrsmBatched");
 
+cublasStatus_t (*lcublasStrsmBatched_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float* const  A[], int64_t  lda, float* const  B[], int64_t  ldb, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float* const  A[], int64_t  lda, float* const  B[], int64_t  ldb, int64_t  batchCount)) dlsym(cublas_handle, "cublasStrsmBatched_64");
+
 cublasStatus_t (*lcublasDtrsmBatched) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double* const  A[], int  lda, double* const  B[], int  ldb, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double* const  A[], int  lda, double* const  B[], int  ldb, int  batchCount)) dlsym(cublas_handle, "cublasDtrsmBatched");
+
+cublasStatus_t (*lcublasDtrsmBatched_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double* const  A[], int64_t  lda, double* const  B[], int64_t  ldb, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double* const  A[], int64_t  lda, double* const  B[], int64_t  ldb, int64_t  batchCount)) dlsym(cublas_handle, "cublasDtrsmBatched_64");
 
 cublasStatus_t (*lcublasCtrsmBatched) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuComplex*  alpha, const cuComplex* const  A[], int  lda, cuComplex* const  B[], int  ldb, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuComplex*  alpha, const cuComplex* const  A[], int  lda, cuComplex* const  B[], int  ldb, int  batchCount)) dlsym(cublas_handle, "cublasCtrsmBatched");
 
+cublasStatus_t (*lcublasCtrsmBatched_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex* const  A[], int64_t  lda, cuComplex* const  B[], int64_t  ldb, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex* const  A[], int64_t  lda, cuComplex* const  B[], int64_t  ldb, int64_t  batchCount)) dlsym(cublas_handle, "cublasCtrsmBatched_64");
+
 cublasStatus_t (*lcublasZtrsmBatched) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  A[], int  lda, cuDoubleComplex* const  B[], int  ldb, int  batchCount) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  A[], int  lda, cuDoubleComplex* const  B[], int  ldb, int  batchCount)) dlsym(cublas_handle, "cublasZtrsmBatched");
+
+cublasStatus_t (*lcublasZtrsmBatched_64) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  A[], int64_t  lda, cuDoubleComplex* const  B[], int64_t  ldb, int64_t  batchCount) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  A[], int64_t  lda, cuDoubleComplex* const  B[], int64_t  ldb, int64_t  batchCount)) dlsym(cublas_handle, "cublasZtrsmBatched_64");
+
+cublasStatus_t (*lcublasSdgmm) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const float*  A, int  lda, const float*  x, int  incx, float*  C, int  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const float*  A, int  lda, const float*  x, int  incx, float*  C, int  ldc)) dlsym(cublas_handle, "cublasSdgmm");
+
+cublasStatus_t (*lcublasSdgmm_64) (cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const float*  A, int64_t  lda, const float*  x, int64_t  incx, float*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const float*  A, int64_t  lda, const float*  x, int64_t  incx, float*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasSdgmm_64");
+
+cublasStatus_t (*lcublasDdgmm) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const double*  A, int  lda, const double*  x, int  incx, double*  C, int  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const double*  A, int  lda, const double*  x, int  incx, double*  C, int  ldc)) dlsym(cublas_handle, "cublasDdgmm");
+
+cublasStatus_t (*lcublasDdgmm_64) (cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const double*  A, int64_t  lda, const double*  x, int64_t  incx, double*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const double*  A, int64_t  lda, const double*  x, int64_t  incx, double*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasDdgmm_64");
+
+cublasStatus_t (*lcublasCdgmm) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, cuComplex*  C, int  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCdgmm");
+
+cublasStatus_t (*lcublasCdgmm_64) (cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, cuComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, cuComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasCdgmm_64");
+
+cublasStatus_t (*lcublasZdgmm) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  C, int  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZdgmm");
+
+cublasStatus_t (*lcublasZdgmm_64) (cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  C, int64_t  ldc) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  C, int64_t  ldc)) dlsym(cublas_handle, "cublasZdgmm_64");
 
 cublasStatus_t (*lcublasSmatinvBatched) (cublasHandle_t  handle, int  n, const float* const  A[], int  lda, float* const  Ainv[], int  lda_inv, int*  info, int  batchSize) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float* const  A[], int  lda, float* const  Ainv[], int  lda_inv, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasSmatinvBatched");
@@ -3488,18 +4355,6 @@ cublasStatus_t (*lcublasCgelsBatched) (cublasHandle_t  handle, cublasOperation_t
 cublasStatus_t (*lcublasZgelsBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  nrhs, cuDoubleComplex* const  Aarray[], int  lda, cuDoubleComplex* const  Carray[], int  ldc, int*  info, int*  devInfoArray, int  batchSize) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  nrhs, cuDoubleComplex* const  Aarray[], int  lda, cuDoubleComplex* const  Carray[], int  ldc, int*  info, int*  devInfoArray, int  batchSize)) dlsym(cublas_handle, "cublasZgelsBatched");
 
-cublasStatus_t (*lcublasSdgmm) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const float*  A, int  lda, const float*  x, int  incx, float*  C, int  ldc) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const float*  A, int  lda, const float*  x, int  incx, float*  C, int  ldc)) dlsym(cublas_handle, "cublasSdgmm");
-
-cublasStatus_t (*lcublasDdgmm) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const double*  A, int  lda, const double*  x, int  incx, double*  C, int  ldc) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const double*  A, int  lda, const double*  x, int  incx, double*  C, int  ldc)) dlsym(cublas_handle, "cublasDdgmm");
-
-cublasStatus_t (*lcublasCdgmm) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, cuComplex*  C, int  ldc) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, cuComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasCdgmm");
-
-cublasStatus_t (*lcublasZdgmm) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  C, int  ldc) =
-	(cublasStatus_t (*) (cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  C, int  ldc)) dlsym(cublas_handle, "cublasZdgmm");
-
 cublasStatus_t (*lcublasStpttr) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  AP, float*  A, int  lda) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  AP, float*  A, int  lda)) dlsym(cublas_handle, "cublasStpttr");
 
@@ -3524,8 +4379,44 @@ cublasStatus_t (*lcublasCtrttp) (cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t (*lcublasZtrttp) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  AP) =
 	(cublasStatus_t (*) (cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  AP)) dlsym(cublas_handle, "cublasZtrttp");
 
-cudaError_t (*lcudaProfilerInitialize) (const char * configFile, const char * outputFile, cudaOutputMode_t  outputMode) =
-	(cudaError_t (*) (const char * configFile, const char * outputFile, cudaOutputMode_t  outputMode)) dlsym(cudart_handle, "cudaProfilerInitialize");
+cublasStatus_t (*lcublasSgetrfBatched) (cublasHandle_t  handle, int  n, float* const  A[], int  lda, int*  P, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, float* const  A[], int  lda, int*  P, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasSgetrfBatched");
+
+cublasStatus_t (*lcublasDgetrfBatched) (cublasHandle_t  handle, int  n, double* const  A[], int  lda, int*  P, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, double* const  A[], int  lda, int*  P, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasDgetrfBatched");
+
+cublasStatus_t (*lcublasCgetrfBatched) (cublasHandle_t  handle, int  n, cuComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, cuComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasCgetrfBatched");
+
+cublasStatus_t (*lcublasZgetrfBatched) (cublasHandle_t  handle, int  n, cuDoubleComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, cuDoubleComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasZgetrfBatched");
+
+cublasStatus_t (*lcublasSgetriBatched) (cublasHandle_t  handle, int  n, const float* const  A[], int  lda, const int*  P, float* const  C[], int  ldc, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const float* const  A[], int  lda, const int*  P, float* const  C[], int  ldc, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasSgetriBatched");
+
+cublasStatus_t (*lcublasDgetriBatched) (cublasHandle_t  handle, int  n, const double* const  A[], int  lda, const int*  P, double* const  C[], int  ldc, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const double* const  A[], int  lda, const int*  P, double* const  C[], int  ldc, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasDgetriBatched");
+
+cublasStatus_t (*lcublasCgetriBatched) (cublasHandle_t  handle, int  n, const cuComplex* const  A[], int  lda, const int*  P, cuComplex* const  C[], int  ldc, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuComplex* const  A[], int  lda, const int*  P, cuComplex* const  C[], int  ldc, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasCgetriBatched");
+
+cublasStatus_t (*lcublasZgetriBatched) (cublasHandle_t  handle, int  n, const cuDoubleComplex* const  A[], int  lda, const int*  P, cuDoubleComplex* const  C[], int  ldc, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, int  n, const cuDoubleComplex* const  A[], int  lda, const int*  P, cuDoubleComplex* const  C[], int  ldc, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasZgetriBatched");
+
+cublasStatus_t (*lcublasSgetrsBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const float* const  Aarray[], int  lda, const int*  devIpiv, float* const  Barray[], int  ldb, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const float* const  Aarray[], int  lda, const int*  devIpiv, float* const  Barray[], int  ldb, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasSgetrsBatched");
+
+cublasStatus_t (*lcublasDgetrsBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const double* const  Aarray[], int  lda, const int*  devIpiv, double* const  Barray[], int  ldb, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const double* const  Aarray[], int  lda, const int*  devIpiv, double* const  Barray[], int  ldb, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasDgetrsBatched");
+
+cublasStatus_t (*lcublasCgetrsBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuComplex* const  Aarray[], int  lda, const int*  devIpiv, cuComplex* const  Barray[], int  ldb, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuComplex* const  Aarray[], int  lda, const int*  devIpiv, cuComplex* const  Barray[], int  ldb, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasCgetrsBatched");
+
+cublasStatus_t (*lcublasZgetrsBatched) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuDoubleComplex* const  Aarray[], int  lda, const int*  devIpiv, cuDoubleComplex* const  Barray[], int  ldb, int*  info, int  batchSize) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuDoubleComplex* const  Aarray[], int  lda, const int*  devIpiv, cuDoubleComplex* const  Barray[], int  ldb, int*  info, int  batchSize)) dlsym(cublas_handle, "cublasZgetrsBatched");
+
+cublasStatus_t (*lcublasUint8gemmBias) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, cublasOperation_t  transc, int  m, int  n, int  k, const unsigned char*  A, int  A_bias, int  lda, const unsigned char*  B, int  B_bias, int  ldb, unsigned char*  C, int  C_bias, int  ldc, int  C_mult, int  C_shift) =
+	(cublasStatus_t (*) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, cublasOperation_t  transc, int  m, int  n, int  k, const unsigned char*  A, int  A_bias, int  lda, const unsigned char*  B, int  B_bias, int  ldb, unsigned char*  C, int  C_bias, int  ldc, int  C_mult, int  C_shift)) dlsym(cublas_handle, "cublasUint8gemmBias");
 
 cudaError_t (*lcudaProfilerStart) () =
 	(cudaError_t (*) ()) dlsym(cudart_handle, "cudaProfilerStart");
@@ -3559,6 +4450,15 @@ size_t (*lcublasLtGetCudartVersion) () =
 
 cublasStatus_t (*lcublasLtGetProperty) (libraryPropertyType  type, int*  value) =
 	(cublasStatus_t (*) (libraryPropertyType  type, int*  value)) dlsym(cublasLt_handle, "cublasLtGetProperty");
+
+cublasStatus_t (*lcublasLtHeuristicsCacheGetCapacity) (size_t*  capacity) =
+	(cublasStatus_t (*) (size_t*  capacity)) dlsym(cublasLt_handle, "cublasLtHeuristicsCacheGetCapacity");
+
+cublasStatus_t (*lcublasLtHeuristicsCacheSetCapacity) (size_t  capacity) =
+	(cublasStatus_t (*) (size_t  capacity)) dlsym(cublasLt_handle, "cublasLtHeuristicsCacheSetCapacity");
+
+unsigned (*lcublasLtDisableCpuInstructionsSetMask) (unsigned  mask) =
+	(unsigned (*) (unsigned  mask)) dlsym(cublasLt_handle, "cublasLtDisableCpuInstructionsSetMask");
 
 cublasStatus_t (*lcublasLtMatmul) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream) =
 	(cublasStatus_t (*) (cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)) dlsym(cublasLt_handle, "cublasLtMatmul");

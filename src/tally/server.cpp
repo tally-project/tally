@@ -109,9 +109,11 @@ void TallyServer::start_worker_server(int32_t client_id) {
 
 void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_size)
 {
+    auto original_data = TallyCache::cache->cubin_cache.get_original_data(cubin_data, cubin_size);
     auto sliced_data = TallyCache::cache->cubin_cache.get_sliced_data(cubin_data, cubin_size);
     auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
 
+    register_kernels_from_ptx_fatbin(original_data, mangled_kernel_name_to_host_func_map, original_kernel_map);
     register_kernels_from_ptx_fatbin(sliced_data, mangled_kernel_name_to_host_func_map, sliced_kernel_map);
     register_kernels_from_ptx_fatbin(ptb_data, mangled_kernel_name_to_host_func_map, ptb_kernel_map);
 }
@@ -334,15 +336,6 @@ void TallyServer::load_cache()
 
         for (auto &cubin_data : cubin_vec) {
 
-            const my__fatBinC_Wrapper_t __fatDeviceText __attribute__ ((aligned (8))) = {
-                cubin_data.magic,
-                cubin_data.version,
-                (const long long unsigned int*) cubin_data.cubin_data.c_str(),
-                0
-            };
-
-            void **handle = l__cudaRegisterFatBinary((void *) &__fatDeviceText);
-
             auto kernel_args = cubin_data.kernel_args;
 
             for (auto &kernel_args_pair : cubin_data.kernel_args) {
@@ -354,9 +347,6 @@ void TallyServer::load_cache()
                 // allocate an address for the kernel
                 void *kernel_server_addr = malloc(8);
 
-                // Register the kernel with this address
-                l__cudaRegisterFunction(handle, (const char*) kernel_server_addr, (char *)kernel_name.c_str(), kernel_name.c_str(), -1, (uint3*)0, (uint3*)0, (dim3*)0, (dim3*)0, (int*)0);
-            
                 // Bookkeeping
                 _kernel_addr_to_args[kernel_server_addr] = param_sizes;
                 mangled_kernel_name_to_host_func_map[kernel_name] = kernel_server_addr;
@@ -364,14 +354,7 @@ void TallyServer::load_cache()
                 demangled_kernel_name_to_host_func_map[demangled_kernel_name] = (const char*) kernel_server_addr;
             }
 
-            l__cudaRegisterFatBinaryEnd(handle);
-
-            // For some reason, must call one cuda api call here. Otherwise it won't run.
-            int *arr;
-            cudaMalloc((void**)&arr, sizeof(int));
-            cudaFree(arr);
-
-            // Load the transformed PTX and register them as callable functions
+            // Load the original and transformed PTX and register them as callable functions
             register_ptx_transform(cubin_data.cubin_data.c_str(), cubin_size);
         }
     }
@@ -388,8 +371,6 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
     int32_t client_uid = msg_header->client_id;
 
     auto &client_meta = client_data[client_uid];
-    client_meta.magic = args->magic;
-    client_meta.version = args->version;
 
     if (client_meta.default_stream == nullptr) {
         cudaStreamCreate(&client_meta.default_stream);
@@ -422,9 +403,6 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
     if (!client_meta.cubin_registered) {
         // Load necessary data into cache if not exists
         cache_cubin_data(cubin_data, cubin_size, client_meta.magic, client_meta.version);
-
-        // Load the transformed PTX and register them as callable functions
-        register_ptx_transform(cubin_data, cubin_size);
 
         client_meta.fatBinSize = cubin_size;
         client_meta.fatbin_data = (unsigned long long *) malloc(cubin_size);
@@ -466,9 +444,7 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
 {
     TALLY_SPD_LOG("Received request: __cudaRegisterFatBinaryEnd");
 
-    void **handle;
     void *kernel_server_addr;
-    my__fatBinC_Wrapper_t __fatDeviceText __attribute__ ((aligned (8)));
     std::map<std::string, std::vector<uint32_t>> kernel_names_and_param_sizes;
     
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
@@ -478,8 +454,6 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
     auto &client_meta = client_data[client_uid];
 
     if (!client_meta.cubin_registered) {
-        __fatDeviceText = { client_meta.magic, client_meta.version, client_meta.fatbin_data, 0 };
-        handle = l__cudaRegisterFatBinary((void *) &__fatDeviceText);
         kernel_names_and_param_sizes = TallyCache::cache->cubin_cache.get_kernel_args((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
     }
 
@@ -495,23 +469,16 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
 
             // Register the kernel with this address
             mangled_kernel_name_to_host_func_map[kernel_name] = kernel_server_addr;
-            _kernel_addr_to_args[kernel_server_addr] = param_sizes;
-            l__cudaRegisterFunction(handle, (const char*) kernel_server_addr, (char *)kernel_name.c_str(), kernel_name.c_str(), -1, (uint3*)0, (uint3*)0, (dim3*)0, (dim3*)0, (int*)0);
-        }
 
+            _kernel_addr_to_args[kernel_server_addr] = param_sizes;
+
+            // Load the transformed PTX and register them as callable functions
+            register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+        }
 
         assert (client_meta._kernel_client_addr_mapping.find(client_addr) == client_meta._kernel_client_addr_mapping.end());
         client_meta._kernel_client_addr_mapping[client_addr] = mangled_kernel_name_to_host_func_map[kernel_name];
     }
-
-    if (!client_meta.cubin_registered) {
-        l__cudaRegisterFatBinaryEnd(handle);
-    }
-
-    // For some reason, must call one cuda api call here. Otherwise it won't run.
-    int *arr;
-    cudaMalloc((void**)&arr, sizeof(int));
-    cudaFree(arr);
 }
 
 void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)

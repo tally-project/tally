@@ -586,6 +586,48 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 	return err;
 }
 
+CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUdevice  dev)
+{
+	TALLY_LOG("cuDeviceGetExecAffinitySupport hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuDeviceGetExecAffinitySupport(pi, type, dev);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetExecAffinitySupportArg), alignof(cuDeviceGetExecAffinitySupportArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETEXECAFFINITYSUPPORT;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuDeviceGetExecAffinitySupportArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->pi = pi;
+			request->type = type;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetExecAffinitySupportResponse*>(responsePayload);
+			if (pi) { *pi = response->pi; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetExecAffinitySupport);
+	return err;
+}
+
 CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CUflushGPUDirectRDMAWritesScope  scope)
 {
 	TALLY_LOG("cuFlushGPUDirectRDMAWrites hooked");
@@ -912,48 +954,6 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 	return err;
 }
 
-CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUdevice  dev)
-{
-	TALLY_LOG("cuDeviceGetExecAffinitySupport hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcuDeviceGetExecAffinitySupport(pi, type, dev);
-#else
-
-    CUresult err;
-
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetExecAffinitySupportArg), alignof(cuDeviceGetExecAffinitySupportArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDEVICEGETEXECAFFINITYSUPPORT;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuDeviceGetExecAffinitySupportArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->pi = pi;
-			request->type = type;
-			request->dev = dev;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cuDeviceGetExecAffinitySupportResponse*>(responsePayload);
-			if (pi) { *pi = response->pi; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetExecAffinitySupport);
-	return err;
-}
-
 CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
 {
 	TALLY_LOG("cuCtxCreate_v2 hooked");
@@ -1277,6 +1277,18 @@ CUresult cuCtxGetFlags(unsigned int * flags)
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetFlags);
 	return err;
+}
+
+CUresult cuCtxSetFlags(unsigned int  flags)
+{
+	TALLY_LOG("cuCtxSetFlags hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuCtxGetId(CUcontext  ctx, unsigned long long * ctxId)
+{
+	TALLY_LOG("cuCtxGetId hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 CUresult cuCtxSynchronize()
@@ -1861,6 +1873,12 @@ CUresult cuModuleUnload(CUmodule  hmod)
 	return err;
 }
 
+CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
+{
+	TALLY_LOG("cuModuleGetLoadingMode hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * name)
 {
 	TALLY_LOG("cuModuleGetFunction hooked");
@@ -1870,18 +1888,6 @@ CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * na
 CUresult cuModuleGetGlobal_v2(CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod, const char * name)
 {
 	TALLY_LOG("cuModuleGetGlobal_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuModuleGetTexRef(CUtexref * pTexRef, CUmodule  hmod, const char * name)
-{
-	TALLY_LOG("cuModuleGetTexRef hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuModuleGetSurfRef(CUsurfref * pSurfRef, CUmodule  hmod, const char * name)
-{
-	TALLY_LOG("cuModuleGetSurfRef hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -1912,6 +1918,90 @@ CUresult cuLinkComplete(CUlinkState  state, void ** cubinOut, size_t * sizeOut)
 CUresult cuLinkDestroy(CUlinkState  state)
 {
 	TALLY_LOG("cuLinkDestroy hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuModuleGetTexRef(CUtexref * pTexRef, CUmodule  hmod, const char * name)
+{
+	TALLY_LOG("cuModuleGetTexRef hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuModuleGetSurfRef(CUsurfref * pSurfRef, CUmodule  hmod, const char * name)
+{
+	TALLY_LOG("cuModuleGetSurfRef hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuLibraryLoadData(CUlibrary * library, const void * code, CUjit_option * jitOptions, void ** jitOptionsValues, unsigned int  numJitOptions, CUlibraryOption * libraryOptions, void**  libraryOptionValues, unsigned int  numLibraryOptions)
+{
+	TALLY_LOG("cuLibraryLoadData hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuLibraryLoadFromFile(CUlibrary * library, const char * fileName, CUjit_option * jitOptions, void ** jitOptionsValues, unsigned int  numJitOptions, CUlibraryOption * libraryOptions, void ** libraryOptionValues, unsigned int  numLibraryOptions)
+{
+	TALLY_LOG("cuLibraryLoadFromFile hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuLibraryUnload(CUlibrary  library)
+{
+	TALLY_LOG("cuLibraryUnload hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuLibraryGetKernel(CUkernel * pKernel, CUlibrary  library, const char * name)
+{
+	TALLY_LOG("cuLibraryGetKernel hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuLibraryGetModule(CUmodule * pMod, CUlibrary  library)
+{
+	TALLY_LOG("cuLibraryGetModule hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuKernelGetFunction(CUfunction * pFunc, CUkernel  kernel)
+{
+	TALLY_LOG("cuKernelGetFunction hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuLibraryGetGlobal(CUdeviceptr * dptr, size_t * bytes, CUlibrary  library, const char * name)
+{
+	TALLY_LOG("cuLibraryGetGlobal hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuLibraryGetManaged(CUdeviceptr * dptr, size_t * bytes, CUlibrary  library, const char * name)
+{
+	TALLY_LOG("cuLibraryGetManaged hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuLibraryGetUnifiedFunction(void ** fptr, CUlibrary  library, const char * symbol)
+{
+	TALLY_LOG("cuLibraryGetUnifiedFunction hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuKernelGetAttribute(int * pi, CUfunction_attribute  attrib, CUkernel  kernel, CUdevice  dev)
+{
+	TALLY_LOG("cuKernelGetAttribute hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuKernelSetAttribute(CUfunction_attribute  attrib, int  val, CUkernel  kernel, CUdevice  dev)
+{
+	TALLY_LOG("cuKernelSetAttribute hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuKernelSetCacheConfig(CUkernel  kernel, CUfunc_cache  config, CUdevice  dev)
+{
+	TALLY_LOG("cuKernelSetCacheConfig hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -2344,6 +2434,18 @@ CUresult cuMipmappedArrayGetSparseProperties(CUDA_ARRAY_SPARSE_PROPERTIES * spar
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+CUresult cuArrayGetMemoryRequirements(CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryRequirements, CUarray  array, CUdevice  device)
+{
+	TALLY_LOG("cuArrayGetMemoryRequirements hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuMipmappedArrayGetMemoryRequirements(CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryRequirements, CUmipmappedArray  mipmap, CUdevice  device)
+{
+	TALLY_LOG("cuMipmappedArrayGetMemoryRequirements hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 CUresult cuArrayGetPlane(CUarray * pPlaneArray, CUarray  hArray, unsigned int  planeIdx)
 {
 	TALLY_LOG("cuArrayGetPlane hooked");
@@ -2383,6 +2485,12 @@ CUresult cuMipmappedArrayGetLevel(CUarray * pLevelArray, CUmipmappedArray  hMipm
 CUresult cuMipmappedArrayDestroy(CUmipmappedArray  hMipmappedArray)
 {
 	TALLY_LOG("cuMipmappedArrayDestroy hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuMemGetHandleForAddressRange(void * handle, CUdeviceptr  dptr, size_t  size, CUmemRangeHandleType  handleType, unsigned long long  flags)
+{
+	TALLY_LOG("cuMemGetHandleForAddressRange hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -2591,6 +2699,42 @@ CUresult cuMemPoolImportPointer(CUdeviceptr * ptr_out, CUmemoryPool  pool, CUmem
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+CUresult cuMulticastCreate(CUmemGenericAllocationHandle * mcHandle, const CUmulticastObjectProp * prop)
+{
+	TALLY_LOG("cuMulticastCreate hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuMulticastAddDevice(CUmemGenericAllocationHandle  mcHandle, CUdevice  dev)
+{
+	TALLY_LOG("cuMulticastAddDevice hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuMulticastBindMem(CUmemGenericAllocationHandle  mcHandle, size_t  mcOffset, CUmemGenericAllocationHandle  memHandle, size_t  memOffset, size_t  size, unsigned long long  flags)
+{
+	TALLY_LOG("cuMulticastBindMem hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuMulticastBindAddr(CUmemGenericAllocationHandle  mcHandle, size_t  mcOffset, CUdeviceptr  memptr, size_t  size, unsigned long long  flags)
+{
+	TALLY_LOG("cuMulticastBindAddr hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuMulticastUnbind(CUmemGenericAllocationHandle  mcHandle, CUdevice  dev, size_t  mcOffset, size_t  size)
+{
+	TALLY_LOG("cuMulticastUnbind hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuMulticastGetGranularity(size_t * granularity, const CUmulticastObjectProp * prop, CUmulticastGranularity_flags  option)
+{
+	TALLY_LOG("cuMulticastGetGranularity hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 CUresult cuPointerGetAttribute(void * data, CUpointer_attribute  attribute, CUdeviceptr  ptr)
 {
 	TALLY_LOG("cuPointerGetAttribute hooked");
@@ -2603,9 +2747,21 @@ CUresult cuMemPrefetchAsync(CUdeviceptr  devPtr, size_t  count, CUdevice  dstDev
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+CUresult cuMemPrefetchAsync_v2(CUdeviceptr  devPtr, size_t  count, CUmemLocation  location, unsigned int  flags, CUstream  hStream)
+{
+	TALLY_LOG("cuMemPrefetchAsync_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 CUresult cuMemAdvise(CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, CUdevice  device)
 {
 	TALLY_LOG("cuMemAdvise hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuMemAdvise_v2(CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, CUmemLocation  location)
+{
+	TALLY_LOG("cuMemAdvise_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -2657,6 +2813,12 @@ CUresult cuStreamGetFlags(CUstream  hStream, unsigned int * flags)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+CUresult cuStreamGetId(CUstream  hStream, unsigned long long * streamId)
+{
+	TALLY_LOG("cuStreamGetId hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 CUresult cuStreamGetCtx(CUstream  hStream, CUcontext * pctx)
 {
 	TALLY_LOG("cuStreamGetCtx hooked");
@@ -2696,12 +2858,6 @@ CUresult cuStreamEndCapture(CUstream  hStream, CUgraph * phGraph)
 CUresult cuStreamIsCapturing(CUstream  hStream, CUstreamCaptureStatus * captureStatus)
 {
 	TALLY_LOG("cuStreamIsCapturing hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuStreamGetCaptureInfo(CUstream  hStream, CUstreamCaptureStatus * captureStatus_out, cuuint64_t * id_out)
-{
-	TALLY_LOG("cuStreamGetCaptureInfo hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -2882,33 +3038,33 @@ CUresult cuDestroyExternalSemaphore(CUexternalSemaphore  extSem)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuStreamWaitValue32(CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)
+CUresult cuStreamWaitValue32_v2(CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)
 {
-	TALLY_LOG("cuStreamWaitValue32 hooked");
+	TALLY_LOG("cuStreamWaitValue32_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuStreamWaitValue64(CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)
+CUresult cuStreamWaitValue64_v2(CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)
 {
-	TALLY_LOG("cuStreamWaitValue64 hooked");
+	TALLY_LOG("cuStreamWaitValue64_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuStreamWriteValue32(CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)
+CUresult cuStreamWriteValue32_v2(CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)
 {
-	TALLY_LOG("cuStreamWriteValue32 hooked");
+	TALLY_LOG("cuStreamWriteValue32_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuStreamWriteValue64(CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)
+CUresult cuStreamWriteValue64_v2(CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)
 {
-	TALLY_LOG("cuStreamWriteValue64 hooked");
+	TALLY_LOG("cuStreamWriteValue64_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuStreamBatchMemOp(CUstream  stream, unsigned int  count, CUstreamBatchMemOpParams * paramArray, unsigned int  flags)
+CUresult cuStreamBatchMemOp_v2(CUstream  stream, unsigned int  count, CUstreamBatchMemOpParams * paramArray, unsigned int  flags)
 {
-	TALLY_LOG("cuStreamBatchMemOp hooked");
+	TALLY_LOG("cuStreamBatchMemOp_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -2945,6 +3101,12 @@ CUresult cuFuncGetModule(CUmodule * hmod, CUfunction  hfunc)
 CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams, void ** extra)
 {
 	TALLY_LOG("cuLaunchKernel hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuLaunchKernelEx(const CUlaunchConfig * config, CUfunction  f, void ** kernelParams, void ** extra)
+{
+	TALLY_LOG("cuLaunchKernelEx hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -3032,21 +3194,21 @@ CUresult cuGraphCreate(CUgraph * phGraph, unsigned int  flags)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuGraphAddKernelNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
+CUresult cuGraphAddKernelNode_v2(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
 {
-	TALLY_LOG("cuGraphAddKernelNode hooked");
+	TALLY_LOG("cuGraphAddKernelNode_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuGraphKernelNodeGetParams(CUgraphNode  hNode, CUDA_KERNEL_NODE_PARAMS * nodeParams)
+CUresult cuGraphKernelNodeGetParams_v2(CUgraphNode  hNode, CUDA_KERNEL_NODE_PARAMS * nodeParams)
 {
-	TALLY_LOG("cuGraphKernelNodeGetParams hooked");
+	TALLY_LOG("cuGraphKernelNodeGetParams_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuGraphKernelNodeSetParams(CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
+CUresult cuGraphKernelNodeSetParams_v2(CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
 {
-	TALLY_LOG("cuGraphKernelNodeSetParams hooked");
+	TALLY_LOG("cuGraphKernelNodeSetParams_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -3194,6 +3356,30 @@ CUresult cuGraphExternalSemaphoresWaitNodeSetParams(CUgraphNode  hNode, const CU
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+CUresult cuGraphAddBatchMemOpNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)
+{
+	TALLY_LOG("cuGraphAddBatchMemOpNode hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuGraphBatchMemOpNodeGetParams(CUgraphNode  hNode, CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams_out)
+{
+	TALLY_LOG("cuGraphBatchMemOpNodeGetParams hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuGraphBatchMemOpNodeSetParams(CUgraphNode  hNode, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)
+{
+	TALLY_LOG("cuGraphBatchMemOpNodeSetParams hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuGraphExecBatchMemOpNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)
+{
+	TALLY_LOG("cuGraphExecBatchMemOpNodeSetParams hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 CUresult cuGraphAddMemAllocNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUDA_MEM_ALLOC_NODE_PARAMS * nodeParams)
 {
 	TALLY_LOG("cuGraphAddMemAllocNode hooked");
@@ -3302,21 +3488,27 @@ CUresult cuGraphDestroyNode(CUgraphNode  hNode)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuGraphInstantiate_v2(CUgraphExec * phGraphExec, CUgraph  hGraph, CUgraphNode * phErrorNode, char * logBuffer, size_t  bufferSize)
-{
-	TALLY_LOG("cuGraphInstantiate_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 CUresult cuGraphInstantiateWithFlags(CUgraphExec * phGraphExec, CUgraph  hGraph, unsigned long long  flags)
 {
 	TALLY_LOG("cuGraphInstantiateWithFlags hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuGraphExecKernelNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
+CUresult cuGraphInstantiateWithParams(CUgraphExec * phGraphExec, CUgraph  hGraph, CUDA_GRAPH_INSTANTIATE_PARAMS * instantiateParams)
 {
-	TALLY_LOG("cuGraphExecKernelNodeSetParams hooked");
+	TALLY_LOG("cuGraphInstantiateWithParams hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuGraphExecGetFlags(CUgraphExec  hGraphExec, cuuint64_t * flags)
+{
+	TALLY_LOG("cuGraphExecGetFlags hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuGraphExecKernelNodeSetParams_v2(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
+{
+	TALLY_LOG("cuGraphExecKernelNodeSetParams_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -3368,6 +3560,18 @@ CUresult cuGraphExecExternalSemaphoresWaitNodeSetParams(CUgraphExec  hGraphExec,
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+CUresult cuGraphNodeSetEnabled(CUgraphExec  hGraphExec, CUgraphNode  hNode, unsigned int  isEnabled)
+{
+	TALLY_LOG("cuGraphNodeSetEnabled hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuGraphNodeGetEnabled(CUgraphExec  hGraphExec, CUgraphNode  hNode, unsigned int * isEnabled)
+{
+	TALLY_LOG("cuGraphNodeGetEnabled hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 CUresult cuGraphUpload(CUgraphExec  hGraphExec, CUstream  hStream)
 {
 	TALLY_LOG("cuGraphUpload hooked");
@@ -3392,9 +3596,9 @@ CUresult cuGraphDestroy(CUgraph  hGraph)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuGraphExecUpdate(CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphNode * hErrorNode_out, CUgraphExecUpdateResult * updateResult_out)
+CUresult cuGraphExecUpdate_v2(CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphExecUpdateResultInfo * resultInfo)
 {
-	TALLY_LOG("cuGraphExecUpdate hooked");
+	TALLY_LOG("cuGraphExecUpdate_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -3452,6 +3656,24 @@ CUresult cuGraphReleaseUserObject(CUgraph  graph, CUuserObject  object, unsigned
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+CUresult cuGraphAddNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUgraphNodeParams * nodeParams)
+{
+	TALLY_LOG("cuGraphAddNode hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuGraphNodeSetParams(CUgraphNode  hNode, CUgraphNodeParams * nodeParams)
+{
+	TALLY_LOG("cuGraphNodeSetParams hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuGraphExecNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, CUgraphNodeParams * nodeParams)
+{
+	TALLY_LOG("cuGraphExecNodeSetParams hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 CUresult cuOccupancyMaxActiveBlocksPerMultiprocessor(int * numBlocks, CUfunction  func, int  blockSize, size_t  dynamicSMemSize)
 {
 	TALLY_LOG("cuOccupancyMaxActiveBlocksPerMultiprocessor hooked");
@@ -3479,6 +3701,18 @@ CUresult cuOccupancyMaxPotentialBlockSizeWithFlags(int * minGridSize, int * bloc
 CUresult cuOccupancyAvailableDynamicSMemPerBlock(size_t * dynamicSmemSize, CUfunction  func, int  numBlocks, int  blockSize)
 {
 	TALLY_LOG("cuOccupancyAvailableDynamicSMemPerBlock hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuOccupancyMaxPotentialClusterSize(int * clusterSize, CUfunction  func, const CUlaunchConfig * config)
+{
+	TALLY_LOG("cuOccupancyMaxPotentialClusterSize hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuOccupancyMaxActiveClusters(int * numClusters, CUfunction  func, const CUlaunchConfig * config)
+{
+	TALLY_LOG("cuOccupancyMaxActiveClusters hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -3704,6 +3938,24 @@ CUresult cuSurfObjectGetResourceDesc(CUDA_RESOURCE_DESC * pResDesc, CUsurfObject
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+CUresult cuTensorMapEncodeTiled(CUtensorMap * tensorMap, CUtensorMapDataType  tensorDataType, cuuint32_t  tensorRank, void * globalAddress, const cuuint64_t * globalDim, const cuuint64_t * globalStrides, const cuuint32_t * boxDim, const cuuint32_t * elementStrides, CUtensorMapInterleave  interleave, CUtensorMapSwizzle  swizzle, CUtensorMapL2promotion  l2Promotion, CUtensorMapFloatOOBfill  oobFill)
+{
+	TALLY_LOG("cuTensorMapEncodeTiled hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuTensorMapEncodeIm2col(CUtensorMap * tensorMap, CUtensorMapDataType  tensorDataType, cuuint32_t  tensorRank, void * globalAddress, const cuuint64_t * globalDim, const cuuint64_t * globalStrides, const int * pixelBoxLowerCorner, const int * pixelBoxUpperCorner, cuuint32_t  channelsPerPixel, cuuint32_t  pixelsPerColumn, const cuuint32_t * elementStrides, CUtensorMapInterleave  interleave, CUtensorMapSwizzle  swizzle, CUtensorMapL2promotion  l2Promotion, CUtensorMapFloatOOBfill  oobFill)
+{
+	TALLY_LOG("cuTensorMapEncodeIm2col hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuTensorMapReplaceAddress(CUtensorMap * tensorMap, void * globalAddress)
+{
+	TALLY_LOG("cuTensorMapReplaceAddress hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 CUresult cuDeviceCanAccessPeer(int * canAccessPeer, CUdevice  dev, CUdevice  peerDev)
 {
 	TALLY_LOG("cuDeviceCanAccessPeer hooked");
@@ -3770,11 +4022,34 @@ CUresult cuGraphicsUnmapResources(unsigned int  count, CUgraphicsResource * reso
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuGetProcAddress(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags)
+CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)
 {
-	TALLY_LOG("cuGetProcAddress hooked");
-	CUresult res = 		lcuGetProcAddress(symbol, pfn, cudaVersion, flags);
-	return res;
+	TALLY_LOG("cuGetProcAddress_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuCoredumpGetAttribute(CUcoredumpSettings  attrib, void*  value, size_t * size)
+{
+	TALLY_LOG("cuCoredumpGetAttribute hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuCoredumpGetAttributeGlobal(CUcoredumpSettings  attrib, void * value, size_t * size)
+{
+	TALLY_LOG("cuCoredumpGetAttributeGlobal hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuCoredumpSetAttribute(CUcoredumpSettings  attrib, void*  value, size_t * size)
+{
+	TALLY_LOG("cuCoredumpSetAttribute hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuCoredumpSetAttributeGlobal(CUcoredumpSettings  attrib, void * value, size_t * size)
+{
+	TALLY_LOG("cuCoredumpSetAttributeGlobal hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 CUresult cuGetExportTable(const void ** ppExportTable, const CUuuid * pExportTableId)
@@ -4660,45 +4935,10 @@ cudaError_t cudaGetDeviceCount(int * count)
 	return res;
 }
 
-cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
+cudaError_t cudaGetDeviceProperties_v2(struct cudaDeviceProp * prop, int  device)
 {
-	TALLY_LOG("cudaGetDeviceProperties hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcudaGetDeviceProperties(prop, device);
-#else
-
-    cudaError_t err;
-
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetDevicePropertiesArg), alignof(cudaGetDevicePropertiesArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDAGETDEVICEPROPERTIES;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cudaGetDevicePropertiesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->prop = prop;
-			request->device = device;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cudaGetDevicePropertiesResponse*>(responsePayload);
-			if (prop) { *prop = response->prop; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceProperties);
-	return err;
+	TALLY_LOG("cudaGetDeviceProperties_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  device)
@@ -4912,6 +5152,12 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetP2PAttribute);
 	return err;
+}
+
+cudaError_t cudaInitDevice(int  device, unsigned int  deviceFlags, unsigned int  flags)
+{
+	TALLY_LOG("cudaInitDevice hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 cudaError_t cudaGetDevice(int * device)
@@ -5211,6 +5457,12 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 	return err;
 }
 
+cudaError_t cudaStreamGetId(cudaStream_t  hStream, unsigned long long * streamId)
+{
+	TALLY_LOG("cudaStreamGetId hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cudaError_t cudaCtxResetPersistingL2Cache()
 {
 	TALLY_LOG("cudaCtxResetPersistingL2Cache hooked");
@@ -5289,13 +5541,13 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 	return err;
 }
 
-cudaError_t cudaStreamGetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID  attr, union cudaStreamAttrValue * value_out)
+cudaError_t cudaStreamGetAttribute(cudaStream_t  hStream, cudaLaunchAttributeID  attr, cudaLaunchAttributeValue * value_out)
 {
 	TALLY_LOG("cudaStreamGetAttribute hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaStreamSetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID  attr, const union cudaStreamAttrValue * value)
+cudaError_t cudaStreamSetAttribute(cudaStream_t  hStream, cudaLaunchAttributeID  attr, const cudaLaunchAttributeValue * value)
 {
 	TALLY_LOG("cudaStreamSetAttribute hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
@@ -5556,49 +5808,6 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamIsCapturing);
-	return err;
-}
-
-cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus, unsigned long long * pId)
-{
-	TALLY_LOG("cudaStreamGetCaptureInfo hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcudaStreamGetCaptureInfo(stream, pCaptureStatus, pId);
-#else
-
-    cudaError_t err;
-
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamGetCaptureInfoArg), alignof(cudaStreamGetCaptureInfoArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDASTREAMGETCAPTUREINFO;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cudaStreamGetCaptureInfoArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->stream = stream;
-			request->pCaptureStatus = pCaptureStatus;
-			request->pId = pId;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cudaStreamGetCaptureInfoResponse*>(responsePayload);
-			if (pCaptureStatus) { *pCaptureStatus = response->pCaptureStatus; }
-			if (pId) { *pId = response->pId; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetCaptureInfo);
 	return err;
 }
 
@@ -5943,6 +6152,12 @@ cudaError_t cudaDestroyExternalSemaphore(cudaExternalSemaphore_t  extSem)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cudaError_t cudaLaunchKernelExC(const cudaLaunchConfig_t * config, const void * func, void ** args)
+{
+	TALLY_LOG("cudaLaunchKernelExC hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cudaError_t cudaLaunchCooperativeKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
 	TALLY_LOG("cudaLaunchCooperativeKernel hooked");
@@ -6000,6 +6215,18 @@ cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessor(int * numBlocks, const
 cudaError_t cudaOccupancyAvailableDynamicSMemPerBlock(size_t * dynamicSmemSize, const void * func, int  numBlocks, int  blockSize)
 {
 	TALLY_LOG("cudaOccupancyAvailableDynamicSMemPerBlock hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaOccupancyMaxPotentialClusterSize(int * clusterSize, const void * func, const cudaLaunchConfig_t * launchConfig)
+{
+	TALLY_LOG("cudaOccupancyMaxPotentialClusterSize hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaOccupancyMaxActiveClusters(int * numClusters, const void * func, const cudaLaunchConfig_t * launchConfig)
+{
+	TALLY_LOG("cudaOccupancyMaxActiveClusters hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -6176,6 +6403,18 @@ cudaError_t cudaArrayGetInfo(struct cudaChannelFormatDesc * desc, struct cudaExt
 cudaError_t cudaArrayGetPlane(cudaArray_t * pPlaneArray, cudaArray_t  hArray, unsigned int  planeIdx)
 {
 	TALLY_LOG("cudaArrayGetPlane hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaArrayGetMemoryRequirements(struct cudaArrayMemoryRequirements * memoryRequirements, cudaArray_t  array, int  device)
+{
+	TALLY_LOG("cudaArrayGetMemoryRequirements hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaMipmappedArrayGetMemoryRequirements(struct cudaArrayMemoryRequirements * memoryRequirements, cudaMipmappedArray_t  mipmap, int  device)
+{
+	TALLY_LOG("cudaMipmappedArrayGetMemoryRequirements hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -6394,9 +6633,21 @@ cudaError_t cudaMemPrefetchAsync(const void * devPtr, size_t  count, int  dstDev
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cudaError_t cudaMemPrefetchAsync_v2(const void * devPtr, size_t  count, struct cudaMemLocation  location, unsigned int  flags, cudaStream_t  stream)
+{
+	TALLY_LOG("cudaMemPrefetchAsync_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cudaError_t cudaMemAdvise(const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, int  device)
 {
 	TALLY_LOG("cudaMemAdvise hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaMemAdvise_v2(const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, struct cudaMemLocation  location)
+{
+	TALLY_LOG("cudaMemAdvise_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -6592,60 +6843,6 @@ cudaError_t cudaGraphicsResourceGetMappedMipmappedArray(cudaMipmappedArray_t * m
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaBindTexture(size_t * offset, const struct textureReference * texref, const void * devPtr, const struct cudaChannelFormatDesc * desc, size_t  size)
-{
-	TALLY_LOG("cudaBindTexture hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudaError_t cudaBindTexture2D(size_t * offset, const struct textureReference * texref, const void * devPtr, const struct cudaChannelFormatDesc * desc, size_t  width, size_t  height, size_t  pitch)
-{
-	TALLY_LOG("cudaBindTexture2D hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudaError_t cudaBindTextureToArray(const struct textureReference * texref, cudaArray_const_t  array, const struct cudaChannelFormatDesc * desc)
-{
-	TALLY_LOG("cudaBindTextureToArray hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudaError_t cudaBindTextureToMipmappedArray(const struct textureReference * texref, cudaMipmappedArray_const_t  mipmappedArray, const struct cudaChannelFormatDesc * desc)
-{
-	TALLY_LOG("cudaBindTextureToMipmappedArray hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudaError_t cudaUnbindTexture(const struct textureReference * texref)
-{
-	TALLY_LOG("cudaUnbindTexture hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudaError_t cudaGetTextureAlignmentOffset(size_t * offset, const struct textureReference * texref)
-{
-	TALLY_LOG("cudaGetTextureAlignmentOffset hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudaError_t cudaGetTextureReference(const struct textureReference ** texref, const void * symbol)
-{
-	TALLY_LOG("cudaGetTextureReference hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudaError_t cudaBindSurfaceToArray(const struct surfaceReference * surfref, cudaArray_const_t  array, const struct cudaChannelFormatDesc * desc)
-{
-	TALLY_LOG("cudaBindSurfaceToArray hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudaError_t cudaGetSurfaceReference(const struct surfaceReference ** surfref, const void * symbol)
-{
-	TALLY_LOG("cudaGetSurfaceReference hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc * desc, cudaArray_const_t  array)
 {
 	TALLY_LOG("cudaGetChannelDesc hooked");
@@ -6783,13 +6980,13 @@ cudaError_t cudaGraphKernelNodeCopyAttributes(cudaGraphNode_t  hSrc, cudaGraphNo
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaGraphKernelNodeGetAttribute(cudaGraphNode_t  hNode, enum cudaKernelNodeAttrID  attr, union cudaKernelNodeAttrValue * value_out)
+cudaError_t cudaGraphKernelNodeGetAttribute(cudaGraphNode_t  hNode, cudaLaunchAttributeID  attr, cudaLaunchAttributeValue * value_out)
 {
 	TALLY_LOG("cudaGraphKernelNodeGetAttribute hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaGraphKernelNodeSetAttribute(cudaGraphNode_t  hNode, enum cudaKernelNodeAttrID  attr, const union cudaKernelNodeAttrValue * value)
+cudaError_t cudaGraphKernelNodeSetAttribute(cudaGraphNode_t  hNode, cudaLaunchAttributeID  attr, const cudaLaunchAttributeValue * value)
 {
 	TALLY_LOG("cudaGraphKernelNodeSetAttribute hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
@@ -7083,7 +7280,7 @@ cudaError_t cudaGraphDestroyNode(cudaGraphNode_t  node)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphNode_t * pErrorNode, char * pLogBuffer, size_t  bufferSize)
+cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags)
 {
 	TALLY_LOG("cudaGraphInstantiate hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
@@ -7092,6 +7289,18 @@ cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  grap
 cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags)
 {
 	TALLY_LOG("cudaGraphInstantiateWithFlags hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaGraphInstantiateWithParams(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphInstantiateParams * instantiateParams)
+{
+	TALLY_LOG("cudaGraphInstantiateWithParams hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaGraphExecGetFlags(cudaGraphExec_t  graphExec, unsigned long long * flags)
+{
+	TALLY_LOG("cudaGraphExecGetFlags hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -7167,7 +7376,19 @@ cudaError_t cudaGraphExecExternalSemaphoresWaitNodeSetParams(cudaGraphExec_t  hG
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaGraphExecUpdate(cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph, cudaGraphNode_t * hErrorNode_out, enum cudaGraphExecUpdateResult * updateResult_out)
+cudaError_t cudaGraphNodeSetEnabled(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, unsigned int  isEnabled)
+{
+	TALLY_LOG("cudaGraphNodeSetEnabled hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaGraphNodeGetEnabled(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, unsigned int * isEnabled)
+{
+	TALLY_LOG("cudaGraphNodeGetEnabled hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaGraphExecUpdate(cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph, cudaGraphExecUpdateResultInfo * resultInfo)
 {
 	TALLY_LOG("cudaGraphExecUpdate hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
@@ -7233,7 +7454,25 @@ cudaError_t cudaGraphReleaseUserObject(cudaGraph_t  graph, cudaUserObject_t  obj
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaGetDriverEntryPoint(const char * symbol, void ** funcPtr, unsigned long long  flags)
+cudaError_t cudaGraphAddNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, struct cudaGraphNodeParams * nodeParams)
+{
+	TALLY_LOG("cudaGraphAddNode hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaGraphNodeSetParams(cudaGraphNode_t  node, struct cudaGraphNodeParams * nodeParams)
+{
+	TALLY_LOG("cudaGraphNodeSetParams hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaGraphExecNodeSetParams(cudaGraphExec_t  graphExec, cudaGraphNode_t  node, struct cudaGraphNodeParams * nodeParams)
+{
+	TALLY_LOG("cudaGraphExecNodeSetParams hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaGetDriverEntryPoint(const char * symbol, void ** funcPtr, unsigned long long  flags, enum cudaDriverEntryPointQueryResult * driverStatus)
 {
 	TALLY_LOG("cudaGetDriverEntryPoint hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
@@ -7248,6 +7487,12 @@ cudaError_t cudaGetExportTable(const void ** ppExportTable, const cudaUUID_t * p
 cudaError_t cudaGetFuncBySymbol(cudaFunction_t*  functionPtr, const void*  symbolPtr)
 {
 	TALLY_LOG("cudaGetFuncBySymbol hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cudaError_t cudaGetKernel(cudaKernel_t * kernelPtr, const void * entryFuncAddr)
+{
+	TALLY_LOG("cudaGetKernel hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -9892,12 +10137,12 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
 	return err;
 }
 
-cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fMode, cudnnRNNDataDescriptor_t  xDesc, size_t * workSpaceSize, size_t * reserveSpaceSize)
+cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fwdMode, cudnnRNNDataDescriptor_t  xDesc, size_t * workSpaceSize, size_t * reserveSpaceSize)
 {
 	TALLY_LOG("cudnnGetRNNTempSpaceSizes hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	auto err = lcudnnGetRNNTempSpaceSizes(handle, rnnDesc, fMode, xDesc, workSpaceSize, reserveSpaceSize);
+	auto err = lcudnnGetRNNTempSpaceSizes(handle, rnnDesc, fwdMode, xDesc, workSpaceSize, reserveSpaceSize);
 #else
 
     cudnnStatus_t err;
@@ -9912,7 +10157,7 @@ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescripto
             auto request = (cudnnGetRNNTempSpaceSizesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
 			request->handle = handle;
 			request->rnnDesc = rnnDesc;
-			request->fMode = fMode;
+			request->fwdMode = fwdMode;
 			request->xDesc = xDesc;
 			request->workSpaceSize = workSpaceSize;
 			request->reserveSpaceSize = reserveSpaceSize;
@@ -12241,9 +12486,21 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 	return err;
 }
 
+cublasStatus_t cublasSetVector_64(int64_t  n, int64_t  elemSize, const void*  x, int64_t  incx, void*  devicePtr, int64_t  incy)
+{
+	TALLY_LOG("cublasSetVector_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasGetVector(int  n, int  elemSize, const void*  x, int  incx, void*  y, int  incy)
 {
 	TALLY_LOG("cublasGetVector hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasGetVector_64(int64_t  n, int64_t  elemSize, const void*  x, int64_t  incx, void*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasGetVector_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12253,9 +12510,21 @@ cublasStatus_t cublasSetMatrix(int  rows, int  cols, int  elemSize, const void* 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSetMatrix_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb)
+{
+	TALLY_LOG("cublasSetMatrix_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasGetMatrix(int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb)
 {
 	TALLY_LOG("cublasGetMatrix hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasGetMatrix_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb)
+{
+	TALLY_LOG("cublasGetMatrix_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12265,9 +12534,21 @@ cublasStatus_t cublasSetVectorAsync(int  n, int  elemSize, const void*  hostPtr,
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSetVectorAsync_64(int64_t  n, int64_t  elemSize, const void*  hostPtr, int64_t  incx, void*  devicePtr, int64_t  incy, cudaStream_t  stream)
+{
+	TALLY_LOG("cublasSetVectorAsync_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasGetVectorAsync(int  n, int  elemSize, const void*  devicePtr, int  incx, void*  hostPtr, int  incy, cudaStream_t  stream)
 {
 	TALLY_LOG("cublasGetVectorAsync hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasGetVectorAsync_64(int64_t  n, int64_t  elemSize, const void*  devicePtr, int64_t  incx, void*  hostPtr, int64_t  incy, cudaStream_t  stream)
+{
+	TALLY_LOG("cublasGetVectorAsync_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12277,9 +12558,21 @@ cublasStatus_t cublasSetMatrixAsync(int  rows, int  cols, int  elemSize, const v
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSetMatrixAsync_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb, cudaStream_t  stream)
+{
+	TALLY_LOG("cublasSetMatrixAsync_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasGetMatrixAsync(int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb, cudaStream_t  stream)
 {
 	TALLY_LOG("cublasGetMatrixAsync hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasGetMatrixAsync_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb, cudaStream_t  stream)
+{
+	TALLY_LOG("cublasGetMatrixAsync_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12295,9 +12588,21 @@ cublasStatus_t cublasNrm2Ex(cublasHandle_t  handle, int  n, const void*  x, cuda
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasNrm2Ex_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  result, cudaDataType  resultType, cudaDataType  executionType)
+{
+	TALLY_LOG("cublasNrm2Ex_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasSnrm2_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  result)
 {
 	TALLY_LOG("cublasSnrm2_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  result)
+{
+	TALLY_LOG("cublasSnrm2_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12307,9 +12612,21 @@ cublasStatus_t cublasDnrm2_v2(cublasHandle_t  handle, int  n, const double*  x, 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasDnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  result)
+{
+	TALLY_LOG("cublasDnrm2_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasScnrm2_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, float*  result)
 {
 	TALLY_LOG("cublasScnrm2_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasScnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, float*  result)
+{
+	TALLY_LOG("cublasScnrm2_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12319,9 +12636,21 @@ cublasStatus_t cublasDznrm2_v2(cublasHandle_t  handle, int  n, const cuDoubleCom
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasDznrm2_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, double*  result)
+{
+	TALLY_LOG("cublasDznrm2_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDotEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, const void*  y, cudaDataType  yType, int  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)
 {
 	TALLY_LOG("cublasDotEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDotEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, const void*  y, cudaDataType  yType, int64_t  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)
+{
+	TALLY_LOG("cublasDotEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12331,9 +12660,21 @@ cublasStatus_t cublasDotcEx(cublasHandle_t  handle, int  n, const void*  x, cuda
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasDotcEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, const void*  y, cudaDataType  yType, int64_t  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)
+{
+	TALLY_LOG("cublasDotcEx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasSdot_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, const float*  y, int  incy, float*  result)
 {
 	TALLY_LOG("cublasSdot_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSdot_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  result)
+{
+	TALLY_LOG("cublasSdot_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12343,9 +12684,21 @@ cublasStatus_t cublasDdot_v2(cublasHandle_t  handle, int  n, const double*  x, i
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasDdot_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  result)
+{
+	TALLY_LOG("cublasDdot_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCdotu_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  result)
 {
 	TALLY_LOG("cublasCdotu_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCdotu_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  result)
+{
+	TALLY_LOG("cublasCdotu_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12355,9 +12708,21 @@ cublasStatus_t cublasCdotc_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCdotc_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  result)
+{
+	TALLY_LOG("cublasCdotc_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZdotu_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  result)
 {
 	TALLY_LOG("cublasZdotu_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZdotu_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  result)
+{
+	TALLY_LOG("cublasZdotu_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12367,9 +12732,21 @@ cublasStatus_t cublasZdotc_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasZdotc_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  result)
+{
+	TALLY_LOG("cublasZdotc_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasScalEx(cublasHandle_t  handle, int  n, const void*  alpha, cudaDataType  alphaType, void*  x, cudaDataType  xType, int  incx, cudaDataType  executionType)
 {
 	TALLY_LOG("cublasScalEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasScalEx_64(cublasHandle_t  handle, int64_t  n, const void*  alpha, cudaDataType  alphaType, void*  x, cudaDataType  xType, int64_t  incx, cudaDataType  executionType)
+{
+	TALLY_LOG("cublasScalEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12379,9 +12756,21 @@ cublasStatus_t cublasSscal_v2(cublasHandle_t  handle, int  n, const float*  alph
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSscal_v2_64(cublasHandle_t  handle, int64_t  n, const float*  alpha, float*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasSscal_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDscal_v2(cublasHandle_t  handle, int  n, const double*  alpha, double*  x, int  incx)
 {
 	TALLY_LOG("cublasDscal_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDscal_v2_64(cublasHandle_t  handle, int64_t  n, const double*  alpha, double*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasDscal_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12391,9 +12780,21 @@ cublasStatus_t cublasCscal_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCscal_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  alpha, cuComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasCscal_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCsscal_v2(cublasHandle_t  handle, int  n, const float*  alpha, cuComplex*  x, int  incx)
 {
 	TALLY_LOG("cublasCsscal_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCsscal_v2_64(cublasHandle_t  handle, int64_t  n, const float*  alpha, cuComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasCsscal_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12403,9 +12804,21 @@ cublasStatus_t cublasZscal_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasZscal_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  alpha, cuDoubleComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasZscal_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZdscal_v2(cublasHandle_t  handle, int  n, const double*  alpha, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_LOG("cublasZdscal_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZdscal_v2_64(cublasHandle_t  handle, int64_t  n, const double*  alpha, cuDoubleComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasZdscal_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12415,9 +12828,21 @@ cublasStatus_t cublasAxpyEx(cublasHandle_t  handle, int  n, const void*  alpha, 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasAxpyEx_64(cublasHandle_t  handle, int64_t  n, const void*  alpha, cudaDataType  alphaType, const void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, cudaDataType  executiontype)
+{
+	TALLY_LOG("cublasAxpyEx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasSaxpy_v2(cublasHandle_t  handle, int  n, const float*  alpha, const float*  x, int  incx, float*  y, int  incy)
 {
 	TALLY_LOG("cublasSaxpy_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasSaxpy_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12427,9 +12852,21 @@ cublasStatus_t cublasDaxpy_v2(cublasHandle_t  handle, int  n, const double*  alp
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasDaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasDaxpy_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCaxpy_v2(cublasHandle_t  handle, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, cuComplex*  y, int  incy)
 {
 	TALLY_LOG("cublasCaxpy_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasCaxpy_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12439,9 +12876,21 @@ cublasStatus_t cublasZaxpy_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasZaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasZaxpy_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCopyEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy)
 {
 	TALLY_LOG("cublasCopyEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCopyEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy)
+{
+	TALLY_LOG("cublasCopyEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12451,9 +12900,21 @@ cublasStatus_t cublasScopy_v2(cublasHandle_t  handle, int  n, const float*  x, i
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasScopy_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasScopy_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDcopy_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  y, int  incy)
 {
 	TALLY_LOG("cublasDcopy_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDcopy_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasDcopy_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12463,9 +12924,21 @@ cublasStatus_t cublasCcopy_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCcopy_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasCcopy_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZcopy_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_LOG("cublasZcopy_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZcopy_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasZcopy_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12475,9 +12948,21 @@ cublasStatus_t cublasSswap_v2(cublasHandle_t  handle, int  n, float*  x, int  in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSswap_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasSswap_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDswap_v2(cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy)
 {
 	TALLY_LOG("cublasDswap_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDswap_v2_64(cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasDswap_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12487,9 +12972,21 @@ cublasStatus_t cublasCswap_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCswap_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasCswap_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZswap_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_LOG("cublasZswap_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZswap_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasZswap_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12499,9 +12996,21 @@ cublasStatus_t cublasSwapEx(cublasHandle_t  handle, int  n, void*  x, cudaDataTy
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSwapEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy)
+{
+	TALLY_LOG("cublasSwapEx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasIsamax_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, int*  result)
 {
 	TALLY_LOG("cublasIsamax_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasIsamax_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, int64_t*  result)
+{
+	TALLY_LOG("cublasIsamax_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12511,9 +13020,21 @@ cublasStatus_t cublasIdamax_v2(cublasHandle_t  handle, int  n, const double*  x,
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasIdamax_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, int64_t*  result)
+{
+	TALLY_LOG("cublasIdamax_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasIcamax_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, int*  result)
 {
 	TALLY_LOG("cublasIcamax_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasIcamax_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, int64_t*  result)
+{
+	TALLY_LOG("cublasIcamax_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12523,9 +13044,21 @@ cublasStatus_t cublasIzamax_v2(cublasHandle_t  handle, int  n, const cuDoubleCom
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasIzamax_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, int64_t*  result)
+{
+	TALLY_LOG("cublasIzamax_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasIamaxEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, int*  result)
 {
 	TALLY_LOG("cublasIamaxEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasIamaxEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, int64_t*  result)
+{
+	TALLY_LOG("cublasIamaxEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12535,9 +13068,21 @@ cublasStatus_t cublasIsamin_v2(cublasHandle_t  handle, int  n, const float*  x, 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasIsamin_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, int64_t*  result)
+{
+	TALLY_LOG("cublasIsamin_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasIdamin_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, int*  result)
 {
 	TALLY_LOG("cublasIdamin_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasIdamin_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, int64_t*  result)
+{
+	TALLY_LOG("cublasIdamin_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12547,9 +13092,21 @@ cublasStatus_t cublasIcamin_v2(cublasHandle_t  handle, int  n, const cuComplex* 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasIcamin_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, int64_t*  result)
+{
+	TALLY_LOG("cublasIcamin_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasIzamin_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, int*  result)
 {
 	TALLY_LOG("cublasIzamin_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasIzamin_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, int64_t*  result)
+{
+	TALLY_LOG("cublasIzamin_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12559,9 +13116,21 @@ cublasStatus_t cublasIaminEx(cublasHandle_t  handle, int  n, const void*  x, cud
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasIaminEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, int64_t*  result)
+{
+	TALLY_LOG("cublasIaminEx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasAsumEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  result, cudaDataType  resultType, cudaDataType  executiontype)
 {
 	TALLY_LOG("cublasAsumEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasAsumEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  result, cudaDataType  resultType, cudaDataType  executiontype)
+{
+	TALLY_LOG("cublasAsumEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12571,9 +13140,21 @@ cublasStatus_t cublasSasum_v2(cublasHandle_t  handle, int  n, const float*  x, i
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSasum_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  result)
+{
+	TALLY_LOG("cublasSasum_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDasum_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  result)
 {
 	TALLY_LOG("cublasDasum_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDasum_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  result)
+{
+	TALLY_LOG("cublasDasum_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12583,9 +13164,21 @@ cublasStatus_t cublasScasum_v2(cublasHandle_t  handle, int  n, const cuComplex* 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasScasum_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, float*  result)
+{
+	TALLY_LOG("cublasScasum_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDzasum_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, double*  result)
 {
 	TALLY_LOG("cublasDzasum_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDzasum_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, double*  result)
+{
+	TALLY_LOG("cublasDzasum_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12595,9 +13188,21 @@ cublasStatus_t cublasSrot_v2(cublasHandle_t  handle, int  n, float*  x, int  inc
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSrot_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy, const float*  c, const float*  s)
+{
+	TALLY_LOG("cublasSrot_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDrot_v2(cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy, const double*  c, const double*  s)
 {
 	TALLY_LOG("cublasDrot_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDrot_v2_64(cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy, const double*  c, const double*  s)
+{
+	TALLY_LOG("cublasDrot_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12607,9 +13212,21 @@ cublasStatus_t cublasCrot_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCrot_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy, const float*  c, const cuComplex*  s)
+{
+	TALLY_LOG("cublasCrot_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCsrot_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy, const float*  c, const float*  s)
 {
 	TALLY_LOG("cublasCsrot_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCsrot_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy, const float*  c, const float*  s)
+{
+	TALLY_LOG("cublasCsrot_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12619,15 +13236,33 @@ cublasStatus_t cublasZrot_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  x
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasZrot_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy, const double*  c, const cuDoubleComplex*  s)
+{
+	TALLY_LOG("cublasZrot_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZdrot_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy, const double*  c, const double*  s)
 {
 	TALLY_LOG("cublasZdrot_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasZdrot_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy, const double*  c, const double*  s)
+{
+	TALLY_LOG("cublasZdrot_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasRotEx(cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, const void*  c, const void*  s, cudaDataType  csType, cudaDataType  executiontype)
 {
 	TALLY_LOG("cublasRotEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasRotEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, const void*  c, const void*  s, cudaDataType  csType, cudaDataType  executiontype)
+{
+	TALLY_LOG("cublasRotEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12667,15 +13302,33 @@ cublasStatus_t cublasSrotm_v2(cublasHandle_t  handle, int  n, float*  x, int  in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSrotm_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy, const float*  param)
+{
+	TALLY_LOG("cublasSrotm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDrotm_v2(cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy, const double*  param)
 {
 	TALLY_LOG("cublasDrotm_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasDrotm_v2_64(cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy, const double*  param)
+{
+	TALLY_LOG("cublasDrotm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasRotmEx(cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, const void*  param, cudaDataType  paramType, cudaDataType  executiontype)
 {
 	TALLY_LOG("cublasRotmEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasRotmEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, const void*  param, cudaDataType  paramType, cudaDataType  executiontype)
+{
+	TALLY_LOG("cublasRotmEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12697,9 +13350,21 @@ cublasStatus_t cublasRotmgEx(cublasHandle_t  handle, void*  d1, cudaDataType  d1
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasSgemv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	TALLY_LOG("cublasDgemv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasDgemv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12709,9 +13374,21 @@ cublasStatus_t cublasCgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasCgemv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_LOG("cublasZgemv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasZgemv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12721,9 +13398,21 @@ cublasStatus_t cublasSgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasSgbmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	TALLY_LOG("cublasDgbmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasDgbmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12733,9 +13422,21 @@ cublasStatus_t cublasCgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasCgbmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_LOG("cublasZgbmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasZgbmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12745,9 +13446,21 @@ cublasStatus_t cublasStrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasStrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  A, int64_t  lda, float*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasStrmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  A, int  lda, double*  x, int  incx)
 {
 	TALLY_LOG("cublasDtrmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  A, int64_t  lda, double*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasDtrmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12757,9 +13470,21 @@ cublasStatus_t cublasCtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasCtrmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_LOG("cublasZtrmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasZtrmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12769,9 +13494,21 @@ cublasStatus_t cublasStbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasStbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const float*  A, int64_t  lda, float*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasStbmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const double*  A, int  lda, double*  x, int  incx)
 {
 	TALLY_LOG("cublasDtbmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const double*  A, int64_t  lda, double*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasDtbmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12781,9 +13518,21 @@ cublasStatus_t cublasCtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasCtbmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_LOG("cublasZtbmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasZtbmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12793,9 +13542,21 @@ cublasStatus_t cublasStpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasStpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  AP, float*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasStpmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  AP, double*  x, int  incx)
 {
 	TALLY_LOG("cublasDtpmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  AP, double*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasDtpmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12805,9 +13566,21 @@ cublasStatus_t cublasCtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  AP, cuComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasCtpmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_LOG("cublasZtpmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasZtpmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12817,9 +13590,21 @@ cublasStatus_t cublasStrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasStrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  A, int64_t  lda, float*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasStrsv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  A, int  lda, double*  x, int  incx)
 {
 	TALLY_LOG("cublasDtrsv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  A, int64_t  lda, double*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasDtrsv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12829,9 +13614,21 @@ cublasStatus_t cublasCtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasCtrsv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_LOG("cublasZtrsv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasZtrsv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12841,9 +13638,21 @@ cublasStatus_t cublasStpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasStpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  AP, float*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasStpsv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  AP, double*  x, int  incx)
 {
 	TALLY_LOG("cublasDtpsv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  AP, double*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasDtpsv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12853,9 +13662,21 @@ cublasStatus_t cublasCtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  AP, cuComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasCtpsv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_LOG("cublasZtpsv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasZtpsv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12865,9 +13686,21 @@ cublasStatus_t cublasStbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasStbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const float*  A, int64_t  lda, float*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasStbsv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const double*  A, int  lda, double*  x, int  incx)
 {
 	TALLY_LOG("cublasDtbsv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const double*  A, int64_t  lda, double*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasDtbsv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12877,9 +13710,21 @@ cublasStatus_t cublasCtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasCtbsv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_LOG("cublasZtbsv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
+{
+	TALLY_LOG("cublasZtbsv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12889,9 +13734,21 @@ cublasStatus_t cublasSsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasSsymv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	TALLY_LOG("cublasDsymv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasDsymv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12901,9 +13758,21 @@ cublasStatus_t cublasCsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasCsymv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_LOG("cublasZsymv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasZsymv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12913,9 +13782,21 @@ cublasStatus_t cublasChemv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasChemv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasChemv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZhemv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_LOG("cublasZhemv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZhemv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasZhemv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12925,9 +13806,21 @@ cublasStatus_t cublasSsbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSsbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasSsbmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDsbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	TALLY_LOG("cublasDsbmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDsbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasDsbmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12937,9 +13830,21 @@ cublasStatus_t cublasChbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasChbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasChbmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZhbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_LOG("cublasZhbmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZhbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasZhbmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12949,9 +13854,21 @@ cublasStatus_t cublasSspmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSspmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  AP, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasSspmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDspmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  AP, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	TALLY_LOG("cublasDspmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDspmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  AP, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasDspmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12961,9 +13878,21 @@ cublasStatus_t cublasChpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasChpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  AP, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasChpmv_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZhpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  AP, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_LOG("cublasZhpmv_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZhpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  AP, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	TALLY_LOG("cublasZhpmv_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12973,9 +13902,21 @@ cublasStatus_t cublasSger_v2(cublasHandle_t  handle, int  m, int  n, const float
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSger_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasSger_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDger_v2(cublasHandle_t  handle, int  m, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  A, int  lda)
 {
 	TALLY_LOG("cublasDger_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDger_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasDger_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12985,9 +13926,21 @@ cublasStatus_t cublasCgeru_v2(cublasHandle_t  handle, int  m, int  n, const cuCo
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCgeru_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasCgeru_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCgerc_v2(cublasHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda)
 {
 	TALLY_LOG("cublasCgerc_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgerc_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasCgerc_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -12997,9 +13950,21 @@ cublasStatus_t cublasZgeru_v2(cublasHandle_t  handle, int  m, int  n, const cuDo
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasZgeru_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasZgeru_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZgerc_v2(cublasHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_LOG("cublasZgerc_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgerc_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasZgerc_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13009,9 +13974,21 @@ cublasStatus_t cublasSsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasSsyr_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, double*  A, int  lda)
 {
 	TALLY_LOG("cublasDsyr_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasDsyr_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13021,9 +13998,21 @@ cublasStatus_t cublasCsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasCsyr_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_LOG("cublasZsyr_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasZsyr_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13033,9 +14022,21 @@ cublasStatus_t cublasCher_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCher_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasCher_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZher_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_LOG("cublasZher_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZher_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasZher_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13045,9 +14046,21 @@ cublasStatus_t cublasSspr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSspr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  AP)
+{
+	TALLY_LOG("cublasSspr_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDspr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, double*  AP)
 {
 	TALLY_LOG("cublasDspr_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDspr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  AP)
+{
+	TALLY_LOG("cublasDspr_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13057,9 +14070,21 @@ cublasStatus_t cublasChpr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasChpr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  AP)
+{
+	TALLY_LOG("cublasChpr_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZhpr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  AP)
 {
 	TALLY_LOG("cublasZhpr_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZhpr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  AP)
+{
+	TALLY_LOG("cublasZhpr_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13069,9 +14094,21 @@ cublasStatus_t cublasSsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasSsyr2_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  A, int  lda)
 {
 	TALLY_LOG("cublasDsyr2_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasDsyr2_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13081,9 +14118,21 @@ cublasStatus_t cublasCsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasCsyr2_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_LOG("cublasZsyr2_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasZsyr2_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13093,9 +14142,21 @@ cublasStatus_t cublasCher2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCher2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasCher2_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZher2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_LOG("cublasZher2_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZher2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
+{
+	TALLY_LOG("cublasZher2_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13105,9 +14166,21 @@ cublasStatus_t cublasSspr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSspr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  AP)
+{
+	TALLY_LOG("cublasSspr2_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDspr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  AP)
 {
 	TALLY_LOG("cublasDspr2_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDspr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  AP)
+{
+	TALLY_LOG("cublasDspr2_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13117,9 +14190,219 @@ cublasStatus_t cublasChpr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasChpr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  AP)
+{
+	TALLY_LOG("cublasChpr2_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZhpr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  AP)
 {
 	TALLY_LOG("cublasZhpr2_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZhpr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  AP)
+{
+	TALLY_LOG("cublasZhpr2_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float* const  Aarray[], int  lda, const float* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)
+{
+	TALLY_LOG("cublasSgemvBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float* const  Aarray[], int64_t  lda, const float* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	TALLY_LOG("cublasSgemvBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double* const  Aarray[], int  lda, const double* const  xarray[], int  incx, const double*  beta, double* const  yarray[], int  incy, int  batchCount)
+{
+	TALLY_LOG("cublasDgemvBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double* const  Aarray[], int64_t  lda, const double* const  xarray[], int64_t  incx, const double*  beta, double* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	TALLY_LOG("cublasDgemvBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  xarray[], int  incx, const cuComplex*  beta, cuComplex* const  yarray[], int  incy, int  batchCount)
+{
+	TALLY_LOG("cublasCgemvBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  xarray[], int64_t  incx, const cuComplex*  beta, cuComplex* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	TALLY_LOG("cublasCgemvBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int  lda, const cuDoubleComplex* const  xarray[], int  incx, const cuDoubleComplex*  beta, cuDoubleComplex* const  yarray[], int  incy, int  batchCount)
+{
+	TALLY_LOG("cublasZgemvBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int64_t  lda, const cuDoubleComplex* const  xarray[], int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	TALLY_LOG("cublasZgemvBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasHSHgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half* const  Aarray[], int  lda, const __half* const  xarray[], int  incx, const float*  beta, __half* const  yarray[], int  incy, int  batchCount)
+{
+	TALLY_LOG("cublasHSHgemvBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasHSHgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  xarray[], int64_t  incx, const float*  beta, __half* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	TALLY_LOG("cublasHSHgemvBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasHSSgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half* const  Aarray[], int  lda, const __half* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)
+{
+	TALLY_LOG("cublasHSSgemvBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasHSSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	TALLY_LOG("cublasHSSgemvBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasTSTgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int  lda, const __nv_bfloat16* const  xarray[], int  incx, const float*  beta, __nv_bfloat16* const  yarray[], int  incy, int  batchCount)
+{
+	TALLY_LOG("cublasTSTgemvBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasTSTgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int64_t  lda, const __nv_bfloat16* const  xarray[], int64_t  incx, const float*  beta, __nv_bfloat16* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	TALLY_LOG("cublasTSTgemvBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasTSSgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int  lda, const __nv_bfloat16* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)
+{
+	TALLY_LOG("cublasTSSgemvBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasTSSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int64_t  lda, const __nv_bfloat16* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	TALLY_LOG("cublasTSSgemvBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	TALLY_LOG("cublasSgemvStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, long long int  strideA, const float*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	TALLY_LOG("cublasSgemvStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  x, int  incx, long long int  stridex, const double*  beta, double*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	TALLY_LOG("cublasDgemvStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, long long int  strideA, const double*  x, int64_t  incx, long long int  stridex, const double*  beta, double*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	TALLY_LOG("cublasDgemvStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  x, int  incx, long long int  stridex, const cuComplex*  beta, cuComplex*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	TALLY_LOG("cublasCgemvStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  x, int64_t  incx, long long int  stridex, const cuComplex*  beta, cuComplex*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	TALLY_LOG("cublasCgemvStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  x, int  incx, long long int  stridex, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	TALLY_LOG("cublasZgemvStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, long long int  strideA, const cuDoubleComplex*  x, int64_t  incx, long long int  stridex, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	TALLY_LOG("cublasZgemvStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasHSHgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  x, int  incx, long long int  stridex, const float*  beta, __half*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	TALLY_LOG("cublasHSHgemvStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasHSHgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  x, int64_t  incx, long long int  stridex, const float*  beta, __half*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	TALLY_LOG("cublasHSHgemvStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasHSSgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	TALLY_LOG("cublasHSSgemvStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasHSSgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	TALLY_LOG("cublasHSSgemvStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasTSTgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16*  A, int  lda, long long int  strideA, const __nv_bfloat16*  x, int  incx, long long int  stridex, const float*  beta, __nv_bfloat16*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	TALLY_LOG("cublasTSTgemvStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasTSTgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16*  A, int64_t  lda, long long int  strideA, const __nv_bfloat16*  x, int64_t  incx, long long int  stridex, const float*  beta, __nv_bfloat16*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	TALLY_LOG("cublasTSTgemvStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasTSSgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16*  A, int  lda, long long int  strideA, const __nv_bfloat16*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	TALLY_LOG("cublasTSSgemvStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasTSSgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16*  A, int64_t  lda, long long int  strideA, const __nv_bfloat16*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	TALLY_LOG("cublasTSSgemvStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasSgemm_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13129,9 +14412,21 @@ cublasStatus_t cublasDgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasDgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasDgemm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasCgemm_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCgemm_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13141,9 +14436,21 @@ cublasStatus_t cublasCgemm3m(cublasHandle_t  handle, cublasOperation_t  transa, 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCgemm3m_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCgemm3m_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCgemm3mEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	TALLY_LOG("cublasCgemm3mEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemm3mEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	TALLY_LOG("cublasCgemm3mEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13153,9 +14460,21 @@ cublasStatus_t cublasZgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasZgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZgemm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZgemm3m(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasZgemm3m hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgemm3m_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZgemm3m_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13165,9 +14484,27 @@ cublasStatus_t cublasHgemm(cublasHandle_t  handle, cublasOperation_t  transa, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasHgemm_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half*  A, int64_t  lda, const __half*  B, int64_t  ldb, const __half*  beta, __half*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasHgemm_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgemmEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	TALLY_LOG("cublasSgemmEx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
 {
 	TALLY_LOG("cublasGemmEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasGemmEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	TALLY_LOG("cublasGemmEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13177,9 +14514,9 @@ cublasStatus_t cublasCgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cublasStatus_t cublasUint8gemmBias(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, cublasOperation_t  transc, int  m, int  n, int  k, const unsigned char*  A, int  A_bias, int  lda, const unsigned char*  B, int  B_bias, int  ldb, unsigned char*  C, int  C_bias, int  ldc, int  C_mult, int  C_shift)
+cublasStatus_t cublasCgemmEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
 {
-	TALLY_LOG("cublasUint8gemmBias hooked");
+	TALLY_LOG("cublasCgemmEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13189,9 +14526,21 @@ cublasStatus_t cublasSsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  beta, float*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasSsyrk_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  beta, double*  C, int  ldc)
 {
 	TALLY_LOG("cublasDsyrk_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  beta, double*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasDsyrk_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13201,9 +14550,21 @@ cublasStatus_t cublasCsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCsyrk_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasZsyrk_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZsyrk_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13213,9 +14574,21 @@ cublasStatus_t cublasCsyrkEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cub
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCsyrkEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	TALLY_LOG("cublasCsyrkEx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCsyrk3mEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	TALLY_LOG("cublasCsyrk3mEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCsyrk3mEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	TALLY_LOG("cublasCsyrk3mEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13225,9 +14598,21 @@ cublasStatus_t cublasCherk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCherk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const cuComplex*  A, int64_t  lda, const float*  beta, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCherk_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZherk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const cuDoubleComplex*  A, int  lda, const double*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasZherk_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZherk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const cuDoubleComplex*  A, int64_t  lda, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZherk_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13237,9 +14622,21 @@ cublasStatus_t cublasCherkEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cub
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCherkEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	TALLY_LOG("cublasCherkEx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCherk3mEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	TALLY_LOG("cublasCherk3mEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCherk3mEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	TALLY_LOG("cublasCherk3mEx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13249,9 +14646,21 @@ cublasStatus_t cublasSsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasSsyr2k_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	TALLY_LOG("cublasDsyr2k_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasDsyr2k_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13261,9 +14670,21 @@ cublasStatus_t cublasCsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCsyr2k_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasZsyr2k_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZsyr2k_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13273,9 +14694,21 @@ cublasStatus_t cublasCher2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCher2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const float*  beta, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCher2k_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZher2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const double*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasZher2k_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZher2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZher2k_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13285,9 +14718,21 @@ cublasStatus_t cublasSsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasSsyrkx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	TALLY_LOG("cublasDsyrkx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasDsyrkx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13297,9 +14742,21 @@ cublasStatus_t cublasCsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCsyrkx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasZsyrkx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZsyrkx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13309,9 +14766,21 @@ cublasStatus_t cublasCherkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCherkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const float*  beta, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCherkx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZherkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const double*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasZherkx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZherkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZherkx_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13321,9 +14790,21 @@ cublasStatus_t cublasSsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasSsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasSsymm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	TALLY_LOG("cublasDsymm_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasDsymm_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13333,9 +14814,21 @@ cublasStatus_t cublasCsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCsymm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasZsymm_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZsymm_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13345,9 +14838,21 @@ cublasStatus_t cublasChemm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasChemm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasChemm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZhemm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasZhemm_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZhemm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZhemm_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13357,9 +14862,21 @@ cublasStatus_t cublasStrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasStrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, float*  B, int64_t  ldb)
+{
+	TALLY_LOG("cublasStrsm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double*  A, int  lda, double*  B, int  ldb)
 {
 	TALLY_LOG("cublasDtrsm_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, double*  B, int64_t  ldb)
+{
+	TALLY_LOG("cublasDtrsm_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13369,9 +14886,21 @@ cublasStatus_t cublasCtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, cuComplex*  B, int64_t  ldb)
+{
+	TALLY_LOG("cublasCtrsm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  B, int  ldb)
 {
 	TALLY_LOG("cublasZtrsm_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  B, int64_t  ldb)
+{
+	TALLY_LOG("cublasZtrsm_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13381,9 +14910,21 @@ cublasStatus_t cublasStrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasStrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, float*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasStrmm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, double*  C, int  ldc)
 {
 	TALLY_LOG("cublasDtrmm_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, double*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasDtrmm_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13393,9 +14934,21 @@ cublasStatus_t cublasCtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCtrmm_v2_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasZtrmm_v2 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZtrmm_v2_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13405,9 +14958,21 @@ cublasStatus_t cublasHgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasHgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  Barray[], int64_t  ldb, const __half*  beta, __half* const  Carray[], int64_t  ldc, int64_t  batchCount)
+{
+	TALLY_LOG("cublasHgemmBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasSgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float* const  Aarray[], int  lda, const float* const  Barray[], int  ldb, const float*  beta, float* const  Carray[], int  ldc, int  batchCount)
 {
 	TALLY_LOG("cublasSgemmBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float* const  Aarray[], int64_t  lda, const float* const  Barray[], int64_t  ldb, const float*  beta, float* const  Carray[], int64_t  ldc, int64_t  batchCount)
+{
+	TALLY_LOG("cublasSgemmBatched_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13417,9 +14982,21 @@ cublasStatus_t cublasDgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasDgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double* const  Aarray[], int64_t  lda, const double* const  Barray[], int64_t  ldb, const double*  beta, double* const  Carray[], int64_t  ldc, int64_t  batchCount)
+{
+	TALLY_LOG("cublasDgemmBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  Barray[], int  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int  ldc, int  batchCount)
 {
 	TALLY_LOG("cublasCgemmBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  Barray[], int64_t  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)
+{
+	TALLY_LOG("cublasCgemmBatched_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13429,45 +15006,21 @@ cublasStatus_t cublasCgemm3mBatched(cublasHandle_t  handle, cublasOperation_t  t
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCgemm3mBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  Barray[], int64_t  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)
+{
+	TALLY_LOG("cublasCgemm3mBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int  lda, const cuDoubleComplex* const  Barray[], int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex* const  Carray[], int  ldc, int  batchCount)
 {
 	TALLY_LOG("cublasZgemmBatched hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cublasStatus_t cublasGemmBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int  lda, const void* const  Barray[], cudaDataType  Btype, int  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int  ldc, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+cublasStatus_t cublasZgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int64_t  lda, const cuDoubleComplex* const  Barray[], int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)
 {
-	TALLY_LOG("cublasGemmBatchedEx hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, long long int  strideC, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
-{
-	TALLY_LOG("cublasGemmStridedBatchedEx hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasDgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  B, int  ldb, long long int  strideB, const double*  beta, double*  C, int  ldc, long long int  strideC, int  batchCount)
-{
-	TALLY_LOG("cublasDgemmStridedBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasCgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)
-{
-	TALLY_LOG("cublasCgemmStridedBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasCgemm3mStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)
-{
-	TALLY_LOG("cublasCgemm3mStridedBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasZgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  B, int  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc, long long int  strideC, int  batchCount)
-{
-	TALLY_LOG("cublasZgemmStridedBatched hooked");
+	TALLY_LOG("cublasZgemmBatched_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13477,9 +15030,99 @@ cublasStatus_t cublasHgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasHgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  B, int64_t  ldb, long long int  strideB, const __half*  beta, __half*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	TALLY_LOG("cublasHgemmStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, long long int  strideA, const float*  B, int64_t  ldb, long long int  strideB, const float*  beta, float*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	TALLY_LOG("cublasSgemmStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  B, int  ldb, long long int  strideB, const double*  beta, double*  C, int  ldc, long long int  strideC, int  batchCount)
+{
+	TALLY_LOG("cublasDgemmStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, long long int  strideA, const double*  B, int64_t  ldb, long long int  strideB, const double*  beta, double*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	TALLY_LOG("cublasDgemmStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)
+{
+	TALLY_LOG("cublasCgemmStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  B, int64_t  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	TALLY_LOG("cublasCgemmStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemm3mStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)
+{
+	TALLY_LOG("cublasCgemm3mStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgemm3mStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  B, int64_t  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	TALLY_LOG("cublasCgemm3mStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  B, int  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc, long long int  strideC, int  batchCount)
+{
+	TALLY_LOG("cublasZgemmStridedBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, long long int  strideA, const cuDoubleComplex*  B, int64_t  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	TALLY_LOG("cublasZgemmStridedBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasGemmBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int  lda, const void* const  Barray[], cudaDataType  Btype, int  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int  ldc, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	TALLY_LOG("cublasGemmBatchedEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasGemmBatchedEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int64_t  lda, const void* const  Barray[], cudaDataType  Btype, int64_t  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int64_t  ldc, int64_t  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	TALLY_LOG("cublasGemmBatchedEx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, long long int  strideC, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	TALLY_LOG("cublasGemmStridedBatchedEx hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasGemmStridedBatchedEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int64_t  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc, long long int  strideC, int64_t  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	TALLY_LOG("cublasGemmStridedBatchedEx_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasSgeam(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  beta, const float*  B, int  ldb, float*  C, int  ldc)
 {
 	TALLY_LOG("cublasSgeam hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  beta, const float*  B, int64_t  ldb, float*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasSgeam_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13489,9 +15132,21 @@ cublasStatus_t cublasDgeam(cublasHandle_t  handle, cublasOperation_t  transa, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasDgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  beta, const double*  B, int64_t  ldb, double*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasDgeam_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasCgeam(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  beta, const cuComplex*  B, int  ldb, cuComplex*  C, int  ldc)
 {
 	TALLY_LOG("cublasCgeam hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  beta, const cuComplex*  B, int64_t  ldb, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCgeam_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13501,75 +15156,9 @@ cublasStatus_t cublasZgeam(cublasHandle_t  handle, cublasOperation_t  transa, cu
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cublasStatus_t cublasSgetrfBatched(cublasHandle_t  handle, int  n, float* const  A[], int  lda, int*  P, int*  info, int  batchSize)
+cublasStatus_t cublasZgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  beta, const cuDoubleComplex*  B, int64_t  ldb, cuDoubleComplex*  C, int64_t  ldc)
 {
-	TALLY_LOG("cublasSgetrfBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasDgetrfBatched(cublasHandle_t  handle, int  n, double* const  A[], int  lda, int*  P, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasDgetrfBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasCgetrfBatched(cublasHandle_t  handle, int  n, cuComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasCgetrfBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasZgetrfBatched(cublasHandle_t  handle, int  n, cuDoubleComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasZgetrfBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasSgetriBatched(cublasHandle_t  handle, int  n, const float* const  A[], int  lda, const int*  P, float* const  C[], int  ldc, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasSgetriBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasDgetriBatched(cublasHandle_t  handle, int  n, const double* const  A[], int  lda, const int*  P, double* const  C[], int  ldc, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasDgetriBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasCgetriBatched(cublasHandle_t  handle, int  n, const cuComplex* const  A[], int  lda, const int*  P, cuComplex* const  C[], int  ldc, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasCgetriBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasZgetriBatched(cublasHandle_t  handle, int  n, const cuDoubleComplex* const  A[], int  lda, const int*  P, cuDoubleComplex* const  C[], int  ldc, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasZgetriBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasSgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const float* const  Aarray[], int  lda, const int*  devIpiv, float* const  Barray[], int  ldb, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasSgetrsBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasDgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const double* const  Aarray[], int  lda, const int*  devIpiv, double* const  Barray[], int  ldb, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasDgetrsBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasCgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuComplex* const  Aarray[], int  lda, const int*  devIpiv, cuComplex* const  Barray[], int  ldb, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasCgetrsBatched hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasZgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuDoubleComplex* const  Aarray[], int  lda, const int*  devIpiv, cuDoubleComplex* const  Barray[], int  ldb, int*  info, int  batchSize)
-{
-	TALLY_LOG("cublasZgetrsBatched hooked");
+	TALLY_LOG("cublasZgeam_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13579,9 +15168,21 @@ cublasStatus_t cublasStrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasStrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float* const  A[], int64_t  lda, float* const  B[], int64_t  ldb, int64_t  batchCount)
+{
+	TALLY_LOG("cublasStrsmBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasDtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double* const  A[], int  lda, double* const  B[], int  ldb, int  batchCount)
 {
 	TALLY_LOG("cublasDtrsmBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double* const  A[], int64_t  lda, double* const  B[], int64_t  ldb, int64_t  batchCount)
+{
+	TALLY_LOG("cublasDtrsmBatched_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13591,9 +15192,69 @@ cublasStatus_t cublasCtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+cublasStatus_t cublasCtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex* const  A[], int64_t  lda, cuComplex* const  B[], int64_t  ldb, int64_t  batchCount)
+{
+	TALLY_LOG("cublasCtrsmBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 cublasStatus_t cublasZtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  A[], int  lda, cuDoubleComplex* const  B[], int  ldb, int  batchCount)
 {
 	TALLY_LOG("cublasZtrsmBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  A[], int64_t  lda, cuDoubleComplex* const  B[], int64_t  ldb, int64_t  batchCount)
+{
+	TALLY_LOG("cublasZtrsmBatched_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const float*  A, int  lda, const float*  x, int  incx, float*  C, int  ldc)
+{
+	TALLY_LOG("cublasSdgmm hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const float*  A, int64_t  lda, const float*  x, int64_t  incx, float*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasSdgmm_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const double*  A, int  lda, const double*  x, int  incx, double*  C, int  ldc)
+{
+	TALLY_LOG("cublasDdgmm hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const double*  A, int64_t  lda, const double*  x, int64_t  incx, double*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasDdgmm_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, cuComplex*  C, int  ldc)
+{
+	TALLY_LOG("cublasCdgmm hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, cuComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasCdgmm_64 hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  C, int  ldc)
+{
+	TALLY_LOG("cublasZdgmm hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  C, int64_t  ldc)
+{
+	TALLY_LOG("cublasZdgmm_64 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -13669,30 +15330,6 @@ cublasStatus_t cublasZgelsBatched(cublasHandle_t  handle, cublasOperation_t  tra
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cublasStatus_t cublasSdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const float*  A, int  lda, const float*  x, int  incx, float*  C, int  ldc)
-{
-	TALLY_LOG("cublasSdgmm hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasDdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const double*  A, int  lda, const double*  x, int  incx, double*  C, int  ldc)
-{
-	TALLY_LOG("cublasDdgmm hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasCdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, cuComplex*  C, int  ldc)
-{
-	TALLY_LOG("cublasCdgmm hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cublasStatus_t cublasZdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  C, int  ldc)
-{
-	TALLY_LOG("cublasZdgmm hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 cublasStatus_t cublasStpttr(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  AP, float*  A, int  lda)
 {
 	TALLY_LOG("cublasStpttr hooked");
@@ -13741,9 +15378,81 @@ cublasStatus_t cublasZtrttp(cublasHandle_t  handle, cublasFillMode_t  uplo, int 
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaProfilerInitialize(const char * configFile, const char * outputFile, cudaOutputMode_t  outputMode)
+cublasStatus_t cublasSgetrfBatched(cublasHandle_t  handle, int  n, float* const  A[], int  lda, int*  P, int*  info, int  batchSize)
 {
-	TALLY_LOG("cudaProfilerInitialize hooked");
+	TALLY_LOG("cublasSgetrfBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgetrfBatched(cublasHandle_t  handle, int  n, double* const  A[], int  lda, int*  P, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasDgetrfBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgetrfBatched(cublasHandle_t  handle, int  n, cuComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasCgetrfBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgetrfBatched(cublasHandle_t  handle, int  n, cuDoubleComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasZgetrfBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgetriBatched(cublasHandle_t  handle, int  n, const float* const  A[], int  lda, const int*  P, float* const  C[], int  ldc, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasSgetriBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgetriBatched(cublasHandle_t  handle, int  n, const double* const  A[], int  lda, const int*  P, double* const  C[], int  ldc, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasDgetriBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgetriBatched(cublasHandle_t  handle, int  n, const cuComplex* const  A[], int  lda, const int*  P, cuComplex* const  C[], int  ldc, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasCgetriBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgetriBatched(cublasHandle_t  handle, int  n, const cuDoubleComplex* const  A[], int  lda, const int*  P, cuDoubleComplex* const  C[], int  ldc, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasZgetriBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasSgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const float* const  Aarray[], int  lda, const int*  devIpiv, float* const  Barray[], int  ldb, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasSgetrsBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasDgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const double* const  Aarray[], int  lda, const int*  devIpiv, double* const  Barray[], int  ldb, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasDgetrsBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasCgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuComplex* const  Aarray[], int  lda, const int*  devIpiv, cuComplex* const  Barray[], int  ldb, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasCgetrsBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasZgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuDoubleComplex* const  Aarray[], int  lda, const int*  devIpiv, cuDoubleComplex* const  Barray[], int  ldb, int*  info, int  batchSize)
+{
+	TALLY_LOG("cublasZgetrsBatched hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasUint8gemmBias(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, cublasOperation_t  transc, int  m, int  n, int  k, const unsigned char*  A, int  A_bias, int  lda, const unsigned char*  B, int  B_bias, int  ldb, unsigned char*  C, int  C_bias, int  ldc, int  C_mult, int  C_shift)
+{
+	TALLY_LOG("cublasUint8gemmBias hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -14005,6 +15714,24 @@ size_t cublasLtGetCudartVersion()
 cublasStatus_t cublasLtGetProperty(libraryPropertyType  type, int*  value)
 {
 	TALLY_LOG("cublasLtGetProperty hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasLtHeuristicsCacheGetCapacity(size_t*  capacity)
+{
+	TALLY_LOG("cublasLtHeuristicsCacheGetCapacity hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+cublasStatus_t cublasLtHeuristicsCacheSetCapacity(size_t  capacity)
+{
+	TALLY_LOG("cublasLtHeuristicsCacheSetCapacity hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+unsigned cublasLtDisableCpuInstructionsSetMask(unsigned  mask)
+{
+	TALLY_LOG("cublasLtDisableCpuInstructionsSetMask hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 

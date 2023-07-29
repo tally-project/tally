@@ -78,4 +78,4 @@ set_target_properties(test-sync PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
 )
 
-add_subdirectory(cudnn-samples)
+# add_subdirectory(cudnn-samples)

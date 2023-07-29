@@ -201,7 +201,18 @@ cudaError_t CudaLaunchConfig::launch(
             cudaEventRecord(_start);
         }
 
-        auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
+        auto cu_func = TallyServer::server->original_kernel_map[func].first;
+        auto num_args = TallyServer::server->original_kernel_map[func].second;
+        
+        assert(cu_func);
+
+        auto res = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
+                                blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
+
+        if (res != CUDA_SUCCESS) {
+            std::cerr << "Encountering res != CUDA_SUCCESS" << std::endl;
+            return cudaErrorInvalidValue;
+        }
 
         if (run_profile) {
             cudaEventRecord(_stop);
@@ -211,7 +222,7 @@ cudaError_t CudaLaunchConfig::launch(
             cudaEventDestroy(_stop);
         }
 
-        return err;
+        return cudaSuccess;
     } else if (use_sliced) {
 
         uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
@@ -320,13 +331,13 @@ cudaError_t CudaLaunchConfig::launch(
                 cuda_graph_call->instantiated = true;
             } else {
                 // graph already exists; try to apply changes
-                cudaGraphExecUpdateResult update;
+                cudaGraphExecUpdateResultInfo update;
 
                 std::cout << "try to update" << std::endl;
                 
                 try {
 
-                    if (cudaGraphExecUpdate(cuda_graph_call->instance, cuda_graph_call->graph, NULL, &update) != cudaSuccess) 
+                    if (cudaGraphExecUpdate(cuda_graph_call->instance, cuda_graph_call->graph, &update) != cudaSuccess) 
                     {
                         cudaGraphExecDestroy(cuda_graph_call->instance);
                         cudaGraphInstantiate(&(cuda_graph_call->instance), cuda_graph_call->graph, NULL, NULL, 0);

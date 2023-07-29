@@ -1,0 +1,6 @@
+build
+data
+
+.tally_cache
+.tally_cache_client
+.tally_perf_cache

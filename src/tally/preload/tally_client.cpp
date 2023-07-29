@@ -103,7 +103,6 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-#endif
 
     std::map<std::string, std::vector<uint32_t>> kernel_args;
 
@@ -131,6 +130,8 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     }
 
     return l__cudaRegisterFatBinary(fatCubin);
+
+#endif
 }
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)

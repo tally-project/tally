@@ -11,7 +11,7 @@ CUDA_API_HEADER_FILES = [
 
 FUNC_SIG_MUST_CONTAIN = ["cu", "(", ")"]
 FUNC_SIG_MUST_NOT_CONTAIN = ["{", "}",]
-FUNC_SIG_MUST_NOT_CONTAIN_KEYWORDS = ["noexcept", "return", "for", "throw"]
+FUNC_SIG_MUST_NOT_CONTAIN_KEYWORDS = ["noexcept", "return", "for", "throw", "sizeof"]
 
 IGNORE_KEYWORDS = [
     "\"C\"", "CUDARTAPI", "extern", "__host__", "__cudart_builtin__",
