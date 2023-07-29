@@ -533,6 +533,32 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 	return res;
 }
 
+CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUdevice  dev)
+{
+	static CUresult (*lcuDeviceGetExecAffinitySupport) (int *, CUexecAffinityType , CUdevice );
+	if (!lcuDeviceGetExecAffinitySupport) {
+		lcuDeviceGetExecAffinitySupport = (CUresult (*) (int *, CUexecAffinityType , CUdevice )) dlsym(RTLD_NEXT, "cuDeviceGetExecAffinitySupport");
+		tracer._kernel_map[(void *) lcuDeviceGetExecAffinitySupport] = std::string("cuDeviceGetExecAffinitySupport");
+	}
+	assert(lcuDeviceGetExecAffinitySupport);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuDeviceGetExecAffinitySupport(pi, type, dev);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuDeviceGetExecAffinitySupport);
+	}
+	return res;
+}
+
 CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CUflushGPUDirectRDMAWritesScope  scope)
 {
 	static CUresult (*lcuFlushGPUDirectRDMAWrites) (CUflushGPUDirectRDMAWritesTarget , CUflushGPUDirectRDMAWritesScope );
@@ -737,32 +763,6 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcuDevicePrimaryCtxReset_v2);
-	}
-	return res;
-}
-
-CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUdevice  dev)
-{
-	static CUresult (*lcuDeviceGetExecAffinitySupport) (int *, CUexecAffinityType , CUdevice );
-	if (!lcuDeviceGetExecAffinitySupport) {
-		lcuDeviceGetExecAffinitySupport = (CUresult (*) (int *, CUexecAffinityType , CUdevice )) dlsym(RTLD_NEXT, "cuDeviceGetExecAffinitySupport");
-		tracer._kernel_map[(void *) lcuDeviceGetExecAffinitySupport] = std::string("cuDeviceGetExecAffinitySupport");
-	}
-	assert(lcuDeviceGetExecAffinitySupport);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	CUresult res = 
-		lcuDeviceGetExecAffinitySupport(pi, type, dev);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuDeviceGetExecAffinitySupport);
 	}
 	return res;
 }
@@ -997,6 +997,58 @@ CUresult cuCtxGetFlags(unsigned int * flags)
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcuCtxGetFlags);
+	}
+	return res;
+}
+
+CUresult cuCtxSetFlags(unsigned int  flags)
+{
+	static CUresult (*lcuCtxSetFlags) (unsigned int );
+	if (!lcuCtxSetFlags) {
+		lcuCtxSetFlags = (CUresult (*) (unsigned int )) dlsym(RTLD_NEXT, "cuCtxSetFlags");
+		tracer._kernel_map[(void *) lcuCtxSetFlags] = std::string("cuCtxSetFlags");
+	}
+	assert(lcuCtxSetFlags);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuCtxSetFlags(flags);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuCtxSetFlags);
+	}
+	return res;
+}
+
+CUresult cuCtxGetId(CUcontext  ctx, unsigned long long * ctxId)
+{
+	static CUresult (*lcuCtxGetId) (CUcontext , unsigned long long *);
+	if (!lcuCtxGetId) {
+		lcuCtxGetId = (CUresult (*) (CUcontext , unsigned long long *)) dlsym(RTLD_NEXT, "cuCtxGetId");
+		tracer._kernel_map[(void *) lcuCtxGetId] = std::string("cuCtxGetId");
+	}
+	assert(lcuCtxGetId);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuCtxGetId(ctx, ctxId);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuCtxGetId);
 	}
 	return res;
 }
@@ -1469,6 +1521,32 @@ CUresult cuModuleUnload(CUmodule  hmod)
 	return res;
 }
 
+CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
+{
+	static CUresult (*lcuModuleGetLoadingMode) (CUmoduleLoadingMode *);
+	if (!lcuModuleGetLoadingMode) {
+		lcuModuleGetLoadingMode = (CUresult (*) (CUmoduleLoadingMode *)) dlsym(RTLD_NEXT, "cuModuleGetLoadingMode");
+		tracer._kernel_map[(void *) lcuModuleGetLoadingMode] = std::string("cuModuleGetLoadingMode");
+	}
+	assert(lcuModuleGetLoadingMode);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuModuleGetLoadingMode(mode);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuModuleGetLoadingMode);
+	}
+	return res;
+}
+
 CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * name)
 {
 	static CUresult (*lcuModuleGetFunction) (CUfunction *, CUmodule , const char *);
@@ -1517,58 +1595,6 @@ CUresult cuModuleGetGlobal_v2(CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcuModuleGetGlobal_v2);
-	}
-	return res;
-}
-
-CUresult cuModuleGetTexRef(CUtexref * pTexRef, CUmodule  hmod, const char * name)
-{
-	static CUresult (*lcuModuleGetTexRef) (CUtexref *, CUmodule , const char *);
-	if (!lcuModuleGetTexRef) {
-		lcuModuleGetTexRef = (CUresult (*) (CUtexref *, CUmodule , const char *)) dlsym(RTLD_NEXT, "cuModuleGetTexRef");
-		tracer._kernel_map[(void *) lcuModuleGetTexRef] = std::string("cuModuleGetTexRef");
-	}
-	assert(lcuModuleGetTexRef);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	CUresult res = 
-		lcuModuleGetTexRef(pTexRef, hmod, name);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuModuleGetTexRef);
-	}
-	return res;
-}
-
-CUresult cuModuleGetSurfRef(CUsurfref * pSurfRef, CUmodule  hmod, const char * name)
-{
-	static CUresult (*lcuModuleGetSurfRef) (CUsurfref *, CUmodule , const char *);
-	if (!lcuModuleGetSurfRef) {
-		lcuModuleGetSurfRef = (CUresult (*) (CUsurfref *, CUmodule , const char *)) dlsym(RTLD_NEXT, "cuModuleGetSurfRef");
-		tracer._kernel_map[(void *) lcuModuleGetSurfRef] = std::string("cuModuleGetSurfRef");
-	}
-	assert(lcuModuleGetSurfRef);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	CUresult res = 
-		lcuModuleGetSurfRef(pSurfRef, hmod, name);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuModuleGetSurfRef);
 	}
 	return res;
 }
@@ -1699,6 +1725,370 @@ CUresult cuLinkDestroy(CUlinkState  state)
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcuLinkDestroy);
+	}
+	return res;
+}
+
+CUresult cuModuleGetTexRef(CUtexref * pTexRef, CUmodule  hmod, const char * name)
+{
+	static CUresult (*lcuModuleGetTexRef) (CUtexref *, CUmodule , const char *);
+	if (!lcuModuleGetTexRef) {
+		lcuModuleGetTexRef = (CUresult (*) (CUtexref *, CUmodule , const char *)) dlsym(RTLD_NEXT, "cuModuleGetTexRef");
+		tracer._kernel_map[(void *) lcuModuleGetTexRef] = std::string("cuModuleGetTexRef");
+	}
+	assert(lcuModuleGetTexRef);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuModuleGetTexRef(pTexRef, hmod, name);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuModuleGetTexRef);
+	}
+	return res;
+}
+
+CUresult cuModuleGetSurfRef(CUsurfref * pSurfRef, CUmodule  hmod, const char * name)
+{
+	static CUresult (*lcuModuleGetSurfRef) (CUsurfref *, CUmodule , const char *);
+	if (!lcuModuleGetSurfRef) {
+		lcuModuleGetSurfRef = (CUresult (*) (CUsurfref *, CUmodule , const char *)) dlsym(RTLD_NEXT, "cuModuleGetSurfRef");
+		tracer._kernel_map[(void *) lcuModuleGetSurfRef] = std::string("cuModuleGetSurfRef");
+	}
+	assert(lcuModuleGetSurfRef);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuModuleGetSurfRef(pSurfRef, hmod, name);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuModuleGetSurfRef);
+	}
+	return res;
+}
+
+CUresult cuLibraryLoadData(CUlibrary * library, const void * code, CUjit_option * jitOptions, void ** jitOptionsValues, unsigned int  numJitOptions, CUlibraryOption * libraryOptions, void**  libraryOptionValues, unsigned int  numLibraryOptions)
+{
+	static CUresult (*lcuLibraryLoadData) (CUlibrary *, const void *, CUjit_option *, void **, unsigned int , CUlibraryOption *, void** , unsigned int );
+	if (!lcuLibraryLoadData) {
+		lcuLibraryLoadData = (CUresult (*) (CUlibrary *, const void *, CUjit_option *, void **, unsigned int , CUlibraryOption *, void** , unsigned int )) dlsym(RTLD_NEXT, "cuLibraryLoadData");
+		tracer._kernel_map[(void *) lcuLibraryLoadData] = std::string("cuLibraryLoadData");
+	}
+	assert(lcuLibraryLoadData);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuLibraryLoadData(library, code, jitOptions, jitOptionsValues, numJitOptions, libraryOptions, libraryOptionValues, numLibraryOptions);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuLibraryLoadData);
+	}
+	return res;
+}
+
+CUresult cuLibraryLoadFromFile(CUlibrary * library, const char * fileName, CUjit_option * jitOptions, void ** jitOptionsValues, unsigned int  numJitOptions, CUlibraryOption * libraryOptions, void ** libraryOptionValues, unsigned int  numLibraryOptions)
+{
+	static CUresult (*lcuLibraryLoadFromFile) (CUlibrary *, const char *, CUjit_option *, void **, unsigned int , CUlibraryOption *, void **, unsigned int );
+	if (!lcuLibraryLoadFromFile) {
+		lcuLibraryLoadFromFile = (CUresult (*) (CUlibrary *, const char *, CUjit_option *, void **, unsigned int , CUlibraryOption *, void **, unsigned int )) dlsym(RTLD_NEXT, "cuLibraryLoadFromFile");
+		tracer._kernel_map[(void *) lcuLibraryLoadFromFile] = std::string("cuLibraryLoadFromFile");
+	}
+	assert(lcuLibraryLoadFromFile);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuLibraryLoadFromFile(library, fileName, jitOptions, jitOptionsValues, numJitOptions, libraryOptions, libraryOptionValues, numLibraryOptions);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuLibraryLoadFromFile);
+	}
+	return res;
+}
+
+CUresult cuLibraryUnload(CUlibrary  library)
+{
+	static CUresult (*lcuLibraryUnload) (CUlibrary );
+	if (!lcuLibraryUnload) {
+		lcuLibraryUnload = (CUresult (*) (CUlibrary )) dlsym(RTLD_NEXT, "cuLibraryUnload");
+		tracer._kernel_map[(void *) lcuLibraryUnload] = std::string("cuLibraryUnload");
+	}
+	assert(lcuLibraryUnload);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuLibraryUnload(library);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuLibraryUnload);
+	}
+	return res;
+}
+
+CUresult cuLibraryGetKernel(CUkernel * pKernel, CUlibrary  library, const char * name)
+{
+	static CUresult (*lcuLibraryGetKernel) (CUkernel *, CUlibrary , const char *);
+	if (!lcuLibraryGetKernel) {
+		lcuLibraryGetKernel = (CUresult (*) (CUkernel *, CUlibrary , const char *)) dlsym(RTLD_NEXT, "cuLibraryGetKernel");
+		tracer._kernel_map[(void *) lcuLibraryGetKernel] = std::string("cuLibraryGetKernel");
+	}
+	assert(lcuLibraryGetKernel);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuLibraryGetKernel(pKernel, library, name);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuLibraryGetKernel);
+	}
+	return res;
+}
+
+CUresult cuLibraryGetModule(CUmodule * pMod, CUlibrary  library)
+{
+	static CUresult (*lcuLibraryGetModule) (CUmodule *, CUlibrary );
+	if (!lcuLibraryGetModule) {
+		lcuLibraryGetModule = (CUresult (*) (CUmodule *, CUlibrary )) dlsym(RTLD_NEXT, "cuLibraryGetModule");
+		tracer._kernel_map[(void *) lcuLibraryGetModule] = std::string("cuLibraryGetModule");
+	}
+	assert(lcuLibraryGetModule);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuLibraryGetModule(pMod, library);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuLibraryGetModule);
+	}
+	return res;
+}
+
+CUresult cuKernelGetFunction(CUfunction * pFunc, CUkernel  kernel)
+{
+	static CUresult (*lcuKernelGetFunction) (CUfunction *, CUkernel );
+	if (!lcuKernelGetFunction) {
+		lcuKernelGetFunction = (CUresult (*) (CUfunction *, CUkernel )) dlsym(RTLD_NEXT, "cuKernelGetFunction");
+		tracer._kernel_map[(void *) lcuKernelGetFunction] = std::string("cuKernelGetFunction");
+	}
+	assert(lcuKernelGetFunction);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuKernelGetFunction(pFunc, kernel);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuKernelGetFunction);
+	}
+	return res;
+}
+
+CUresult cuLibraryGetGlobal(CUdeviceptr * dptr, size_t * bytes, CUlibrary  library, const char * name)
+{
+	static CUresult (*lcuLibraryGetGlobal) (CUdeviceptr *, size_t *, CUlibrary , const char *);
+	if (!lcuLibraryGetGlobal) {
+		lcuLibraryGetGlobal = (CUresult (*) (CUdeviceptr *, size_t *, CUlibrary , const char *)) dlsym(RTLD_NEXT, "cuLibraryGetGlobal");
+		tracer._kernel_map[(void *) lcuLibraryGetGlobal] = std::string("cuLibraryGetGlobal");
+	}
+	assert(lcuLibraryGetGlobal);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuLibraryGetGlobal(dptr, bytes, library, name);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuLibraryGetGlobal);
+	}
+	return res;
+}
+
+CUresult cuLibraryGetManaged(CUdeviceptr * dptr, size_t * bytes, CUlibrary  library, const char * name)
+{
+	static CUresult (*lcuLibraryGetManaged) (CUdeviceptr *, size_t *, CUlibrary , const char *);
+	if (!lcuLibraryGetManaged) {
+		lcuLibraryGetManaged = (CUresult (*) (CUdeviceptr *, size_t *, CUlibrary , const char *)) dlsym(RTLD_NEXT, "cuLibraryGetManaged");
+		tracer._kernel_map[(void *) lcuLibraryGetManaged] = std::string("cuLibraryGetManaged");
+	}
+	assert(lcuLibraryGetManaged);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuLibraryGetManaged(dptr, bytes, library, name);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuLibraryGetManaged);
+	}
+	return res;
+}
+
+CUresult cuLibraryGetUnifiedFunction(void ** fptr, CUlibrary  library, const char * symbol)
+{
+	static CUresult (*lcuLibraryGetUnifiedFunction) (void **, CUlibrary , const char *);
+	if (!lcuLibraryGetUnifiedFunction) {
+		lcuLibraryGetUnifiedFunction = (CUresult (*) (void **, CUlibrary , const char *)) dlsym(RTLD_NEXT, "cuLibraryGetUnifiedFunction");
+		tracer._kernel_map[(void *) lcuLibraryGetUnifiedFunction] = std::string("cuLibraryGetUnifiedFunction");
+	}
+	assert(lcuLibraryGetUnifiedFunction);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuLibraryGetUnifiedFunction(fptr, library, symbol);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuLibraryGetUnifiedFunction);
+	}
+	return res;
+}
+
+CUresult cuKernelGetAttribute(int * pi, CUfunction_attribute  attrib, CUkernel  kernel, CUdevice  dev)
+{
+	static CUresult (*lcuKernelGetAttribute) (int *, CUfunction_attribute , CUkernel , CUdevice );
+	if (!lcuKernelGetAttribute) {
+		lcuKernelGetAttribute = (CUresult (*) (int *, CUfunction_attribute , CUkernel , CUdevice )) dlsym(RTLD_NEXT, "cuKernelGetAttribute");
+		tracer._kernel_map[(void *) lcuKernelGetAttribute] = std::string("cuKernelGetAttribute");
+	}
+	assert(lcuKernelGetAttribute);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuKernelGetAttribute(pi, attrib, kernel, dev);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuKernelGetAttribute);
+	}
+	return res;
+}
+
+CUresult cuKernelSetAttribute(CUfunction_attribute  attrib, int  val, CUkernel  kernel, CUdevice  dev)
+{
+	static CUresult (*lcuKernelSetAttribute) (CUfunction_attribute , int , CUkernel , CUdevice );
+	if (!lcuKernelSetAttribute) {
+		lcuKernelSetAttribute = (CUresult (*) (CUfunction_attribute , int , CUkernel , CUdevice )) dlsym(RTLD_NEXT, "cuKernelSetAttribute");
+		tracer._kernel_map[(void *) lcuKernelSetAttribute] = std::string("cuKernelSetAttribute");
+	}
+	assert(lcuKernelSetAttribute);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuKernelSetAttribute(attrib, val, kernel, dev);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuKernelSetAttribute);
+	}
+	return res;
+}
+
+CUresult cuKernelSetCacheConfig(CUkernel  kernel, CUfunc_cache  config, CUdevice  dev)
+{
+	static CUresult (*lcuKernelSetCacheConfig) (CUkernel , CUfunc_cache , CUdevice );
+	if (!lcuKernelSetCacheConfig) {
+		lcuKernelSetCacheConfig = (CUresult (*) (CUkernel , CUfunc_cache , CUdevice )) dlsym(RTLD_NEXT, "cuKernelSetCacheConfig");
+		tracer._kernel_map[(void *) lcuKernelSetCacheConfig] = std::string("cuKernelSetCacheConfig");
+	}
+	assert(lcuKernelSetCacheConfig);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuKernelSetCacheConfig(kernel, config, dev);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuKernelSetCacheConfig);
 	}
 	return res;
 }
@@ -3263,6 +3653,58 @@ CUresult cuMipmappedArrayGetSparseProperties(CUDA_ARRAY_SPARSE_PROPERTIES * spar
 	return res;
 }
 
+CUresult cuArrayGetMemoryRequirements(CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryRequirements, CUarray  array, CUdevice  device)
+{
+	static CUresult (*lcuArrayGetMemoryRequirements) (CUDA_ARRAY_MEMORY_REQUIREMENTS *, CUarray , CUdevice );
+	if (!lcuArrayGetMemoryRequirements) {
+		lcuArrayGetMemoryRequirements = (CUresult (*) (CUDA_ARRAY_MEMORY_REQUIREMENTS *, CUarray , CUdevice )) dlsym(RTLD_NEXT, "cuArrayGetMemoryRequirements");
+		tracer._kernel_map[(void *) lcuArrayGetMemoryRequirements] = std::string("cuArrayGetMemoryRequirements");
+	}
+	assert(lcuArrayGetMemoryRequirements);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuArrayGetMemoryRequirements(memoryRequirements, array, device);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuArrayGetMemoryRequirements);
+	}
+	return res;
+}
+
+CUresult cuMipmappedArrayGetMemoryRequirements(CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryRequirements, CUmipmappedArray  mipmap, CUdevice  device)
+{
+	static CUresult (*lcuMipmappedArrayGetMemoryRequirements) (CUDA_ARRAY_MEMORY_REQUIREMENTS *, CUmipmappedArray , CUdevice );
+	if (!lcuMipmappedArrayGetMemoryRequirements) {
+		lcuMipmappedArrayGetMemoryRequirements = (CUresult (*) (CUDA_ARRAY_MEMORY_REQUIREMENTS *, CUmipmappedArray , CUdevice )) dlsym(RTLD_NEXT, "cuMipmappedArrayGetMemoryRequirements");
+		tracer._kernel_map[(void *) lcuMipmappedArrayGetMemoryRequirements] = std::string("cuMipmappedArrayGetMemoryRequirements");
+	}
+	assert(lcuMipmappedArrayGetMemoryRequirements);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuMipmappedArrayGetMemoryRequirements(memoryRequirements, mipmap, device);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuMipmappedArrayGetMemoryRequirements);
+	}
+	return res;
+}
+
 CUresult cuArrayGetPlane(CUarray * pPlaneArray, CUarray  hArray, unsigned int  planeIdx)
 {
 	static CUresult (*lcuArrayGetPlane) (CUarray *, CUarray , unsigned int );
@@ -3441,6 +3883,32 @@ CUresult cuMipmappedArrayDestroy(CUmipmappedArray  hMipmappedArray)
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcuMipmappedArrayDestroy);
+	}
+	return res;
+}
+
+CUresult cuMemGetHandleForAddressRange(void * handle, CUdeviceptr  dptr, size_t  size, CUmemRangeHandleType  handleType, unsigned long long  flags)
+{
+	static CUresult (*lcuMemGetHandleForAddressRange) (void *, CUdeviceptr , size_t , CUmemRangeHandleType , unsigned long long );
+	if (!lcuMemGetHandleForAddressRange) {
+		lcuMemGetHandleForAddressRange = (CUresult (*) (void *, CUdeviceptr , size_t , CUmemRangeHandleType , unsigned long long )) dlsym(RTLD_NEXT, "cuMemGetHandleForAddressRange");
+		tracer._kernel_map[(void *) lcuMemGetHandleForAddressRange] = std::string("cuMemGetHandleForAddressRange");
+	}
+	assert(lcuMemGetHandleForAddressRange);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuMemGetHandleForAddressRange(handle, dptr, size, handleType, flags);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuMemGetHandleForAddressRange);
 	}
 	return res;
 }
@@ -4173,6 +4641,162 @@ CUresult cuMemPoolImportPointer(CUdeviceptr * ptr_out, CUmemoryPool  pool, CUmem
 	return res;
 }
 
+CUresult cuMulticastCreate(CUmemGenericAllocationHandle * mcHandle, const CUmulticastObjectProp * prop)
+{
+	static CUresult (*lcuMulticastCreate) (CUmemGenericAllocationHandle *, const CUmulticastObjectProp *);
+	if (!lcuMulticastCreate) {
+		lcuMulticastCreate = (CUresult (*) (CUmemGenericAllocationHandle *, const CUmulticastObjectProp *)) dlsym(RTLD_NEXT, "cuMulticastCreate");
+		tracer._kernel_map[(void *) lcuMulticastCreate] = std::string("cuMulticastCreate");
+	}
+	assert(lcuMulticastCreate);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuMulticastCreate(mcHandle, prop);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuMulticastCreate);
+	}
+	return res;
+}
+
+CUresult cuMulticastAddDevice(CUmemGenericAllocationHandle  mcHandle, CUdevice  dev)
+{
+	static CUresult (*lcuMulticastAddDevice) (CUmemGenericAllocationHandle , CUdevice );
+	if (!lcuMulticastAddDevice) {
+		lcuMulticastAddDevice = (CUresult (*) (CUmemGenericAllocationHandle , CUdevice )) dlsym(RTLD_NEXT, "cuMulticastAddDevice");
+		tracer._kernel_map[(void *) lcuMulticastAddDevice] = std::string("cuMulticastAddDevice");
+	}
+	assert(lcuMulticastAddDevice);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuMulticastAddDevice(mcHandle, dev);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuMulticastAddDevice);
+	}
+	return res;
+}
+
+CUresult cuMulticastBindMem(CUmemGenericAllocationHandle  mcHandle, size_t  mcOffset, CUmemGenericAllocationHandle  memHandle, size_t  memOffset, size_t  size, unsigned long long  flags)
+{
+	static CUresult (*lcuMulticastBindMem) (CUmemGenericAllocationHandle , size_t , CUmemGenericAllocationHandle , size_t , size_t , unsigned long long );
+	if (!lcuMulticastBindMem) {
+		lcuMulticastBindMem = (CUresult (*) (CUmemGenericAllocationHandle , size_t , CUmemGenericAllocationHandle , size_t , size_t , unsigned long long )) dlsym(RTLD_NEXT, "cuMulticastBindMem");
+		tracer._kernel_map[(void *) lcuMulticastBindMem] = std::string("cuMulticastBindMem");
+	}
+	assert(lcuMulticastBindMem);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuMulticastBindMem(mcHandle, mcOffset, memHandle, memOffset, size, flags);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuMulticastBindMem);
+	}
+	return res;
+}
+
+CUresult cuMulticastBindAddr(CUmemGenericAllocationHandle  mcHandle, size_t  mcOffset, CUdeviceptr  memptr, size_t  size, unsigned long long  flags)
+{
+	static CUresult (*lcuMulticastBindAddr) (CUmemGenericAllocationHandle , size_t , CUdeviceptr , size_t , unsigned long long );
+	if (!lcuMulticastBindAddr) {
+		lcuMulticastBindAddr = (CUresult (*) (CUmemGenericAllocationHandle , size_t , CUdeviceptr , size_t , unsigned long long )) dlsym(RTLD_NEXT, "cuMulticastBindAddr");
+		tracer._kernel_map[(void *) lcuMulticastBindAddr] = std::string("cuMulticastBindAddr");
+	}
+	assert(lcuMulticastBindAddr);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuMulticastBindAddr(mcHandle, mcOffset, memptr, size, flags);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuMulticastBindAddr);
+	}
+	return res;
+}
+
+CUresult cuMulticastUnbind(CUmemGenericAllocationHandle  mcHandle, CUdevice  dev, size_t  mcOffset, size_t  size)
+{
+	static CUresult (*lcuMulticastUnbind) (CUmemGenericAllocationHandle , CUdevice , size_t , size_t );
+	if (!lcuMulticastUnbind) {
+		lcuMulticastUnbind = (CUresult (*) (CUmemGenericAllocationHandle , CUdevice , size_t , size_t )) dlsym(RTLD_NEXT, "cuMulticastUnbind");
+		tracer._kernel_map[(void *) lcuMulticastUnbind] = std::string("cuMulticastUnbind");
+	}
+	assert(lcuMulticastUnbind);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuMulticastUnbind(mcHandle, dev, mcOffset, size);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuMulticastUnbind);
+	}
+	return res;
+}
+
+CUresult cuMulticastGetGranularity(size_t * granularity, const CUmulticastObjectProp * prop, CUmulticastGranularity_flags  option)
+{
+	static CUresult (*lcuMulticastGetGranularity) (size_t *, const CUmulticastObjectProp *, CUmulticastGranularity_flags );
+	if (!lcuMulticastGetGranularity) {
+		lcuMulticastGetGranularity = (CUresult (*) (size_t *, const CUmulticastObjectProp *, CUmulticastGranularity_flags )) dlsym(RTLD_NEXT, "cuMulticastGetGranularity");
+		tracer._kernel_map[(void *) lcuMulticastGetGranularity] = std::string("cuMulticastGetGranularity");
+	}
+	assert(lcuMulticastGetGranularity);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuMulticastGetGranularity(granularity, prop, option);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuMulticastGetGranularity);
+	}
+	return res;
+}
+
 CUresult cuPointerGetAttribute(void * data, CUpointer_attribute  attribute, CUdeviceptr  ptr)
 {
 	static CUresult (*lcuPointerGetAttribute) (void *, CUpointer_attribute , CUdeviceptr );
@@ -4225,6 +4849,32 @@ CUresult cuMemPrefetchAsync(CUdeviceptr  devPtr, size_t  count, CUdevice  dstDev
 	return res;
 }
 
+CUresult cuMemPrefetchAsync_v2(CUdeviceptr  devPtr, size_t  count, CUmemLocation  location, unsigned int  flags, CUstream  hStream)
+{
+	static CUresult (*lcuMemPrefetchAsync_v2) (CUdeviceptr , size_t , CUmemLocation , unsigned int , CUstream );
+	if (!lcuMemPrefetchAsync_v2) {
+		lcuMemPrefetchAsync_v2 = (CUresult (*) (CUdeviceptr , size_t , CUmemLocation , unsigned int , CUstream )) dlsym(RTLD_NEXT, "cuMemPrefetchAsync_v2");
+		tracer._kernel_map[(void *) lcuMemPrefetchAsync_v2] = std::string("cuMemPrefetchAsync_v2");
+	}
+	assert(lcuMemPrefetchAsync_v2);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuMemPrefetchAsync_v2(devPtr, count, location, flags, hStream);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuMemPrefetchAsync_v2);
+	}
+	return res;
+}
+
 CUresult cuMemAdvise(CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, CUdevice  device)
 {
 	static CUresult (*lcuMemAdvise) (CUdeviceptr , size_t , CUmem_advise , CUdevice );
@@ -4247,6 +4897,32 @@ CUresult cuMemAdvise(CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, C
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcuMemAdvise);
+	}
+	return res;
+}
+
+CUresult cuMemAdvise_v2(CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, CUmemLocation  location)
+{
+	static CUresult (*lcuMemAdvise_v2) (CUdeviceptr , size_t , CUmem_advise , CUmemLocation );
+	if (!lcuMemAdvise_v2) {
+		lcuMemAdvise_v2 = (CUresult (*) (CUdeviceptr , size_t , CUmem_advise , CUmemLocation )) dlsym(RTLD_NEXT, "cuMemAdvise_v2");
+		tracer._kernel_map[(void *) lcuMemAdvise_v2] = std::string("cuMemAdvise_v2");
+	}
+	assert(lcuMemAdvise_v2);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuMemAdvise_v2(devPtr, count, advice, location);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuMemAdvise_v2);
 	}
 	return res;
 }
@@ -4459,6 +5135,32 @@ CUresult cuStreamGetFlags(CUstream  hStream, unsigned int * flags)
 	return res;
 }
 
+CUresult cuStreamGetId(CUstream  hStream, unsigned long long * streamId)
+{
+	static CUresult (*lcuStreamGetId) (CUstream , unsigned long long *);
+	if (!lcuStreamGetId) {
+		lcuStreamGetId = (CUresult (*) (CUstream , unsigned long long *)) dlsym(RTLD_NEXT, "cuStreamGetId");
+		tracer._kernel_map[(void *) lcuStreamGetId] = std::string("cuStreamGetId");
+	}
+	assert(lcuStreamGetId);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuStreamGetId(hStream, streamId);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuStreamGetId);
+	}
+	return res;
+}
+
 CUresult cuStreamGetCtx(CUstream  hStream, CUcontext * pctx)
 {
 	static CUresult (*lcuStreamGetCtx) (CUstream , CUcontext *);
@@ -4637,32 +5339,6 @@ CUresult cuStreamIsCapturing(CUstream  hStream, CUstreamCaptureStatus * captureS
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcuStreamIsCapturing);
-	}
-	return res;
-}
-
-CUresult cuStreamGetCaptureInfo(CUstream  hStream, CUstreamCaptureStatus * captureStatus_out, cuuint64_t * id_out)
-{
-	static CUresult (*lcuStreamGetCaptureInfo) (CUstream , CUstreamCaptureStatus *, cuuint64_t *);
-	if (!lcuStreamGetCaptureInfo) {
-		lcuStreamGetCaptureInfo = (CUresult (*) (CUstream , CUstreamCaptureStatus *, cuuint64_t *)) dlsym(RTLD_NEXT, "cuStreamGetCaptureInfo");
-		tracer._kernel_map[(void *) lcuStreamGetCaptureInfo] = std::string("cuStreamGetCaptureInfo");
-	}
-	assert(lcuStreamGetCaptureInfo);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	CUresult res = 
-		lcuStreamGetCaptureInfo(hStream, captureStatus_out, id_out);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuStreamGetCaptureInfo);
 	}
 	return res;
 }
@@ -5291,132 +5967,132 @@ CUresult cuDestroyExternalSemaphore(CUexternalSemaphore  extSem)
 	return res;
 }
 
-CUresult cuStreamWaitValue32(CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)
+CUresult cuStreamWaitValue32_v2(CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)
 {
-	static CUresult (*lcuStreamWaitValue32) (CUstream , CUdeviceptr , cuuint32_t , unsigned int );
-	if (!lcuStreamWaitValue32) {
-		lcuStreamWaitValue32 = (CUresult (*) (CUstream , CUdeviceptr , cuuint32_t , unsigned int )) dlsym(RTLD_NEXT, "cuStreamWaitValue32");
-		tracer._kernel_map[(void *) lcuStreamWaitValue32] = std::string("cuStreamWaitValue32");
+	static CUresult (*lcuStreamWaitValue32_v2) (CUstream , CUdeviceptr , cuuint32_t , unsigned int );
+	if (!lcuStreamWaitValue32_v2) {
+		lcuStreamWaitValue32_v2 = (CUresult (*) (CUstream , CUdeviceptr , cuuint32_t , unsigned int )) dlsym(RTLD_NEXT, "cuStreamWaitValue32_v2");
+		tracer._kernel_map[(void *) lcuStreamWaitValue32_v2] = std::string("cuStreamWaitValue32_v2");
 	}
-	assert(lcuStreamWaitValue32);
+	assert(lcuStreamWaitValue32_v2);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuStreamWaitValue32(stream, addr, value, flags);
+		lcuStreamWaitValue32_v2(stream, addr, value, flags);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuStreamWaitValue32);
+		tracer._kernel_seq.push_back((void *)lcuStreamWaitValue32_v2);
 	}
 	return res;
 }
 
-CUresult cuStreamWaitValue64(CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)
+CUresult cuStreamWaitValue64_v2(CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)
 {
-	static CUresult (*lcuStreamWaitValue64) (CUstream , CUdeviceptr , cuuint64_t , unsigned int );
-	if (!lcuStreamWaitValue64) {
-		lcuStreamWaitValue64 = (CUresult (*) (CUstream , CUdeviceptr , cuuint64_t , unsigned int )) dlsym(RTLD_NEXT, "cuStreamWaitValue64");
-		tracer._kernel_map[(void *) lcuStreamWaitValue64] = std::string("cuStreamWaitValue64");
+	static CUresult (*lcuStreamWaitValue64_v2) (CUstream , CUdeviceptr , cuuint64_t , unsigned int );
+	if (!lcuStreamWaitValue64_v2) {
+		lcuStreamWaitValue64_v2 = (CUresult (*) (CUstream , CUdeviceptr , cuuint64_t , unsigned int )) dlsym(RTLD_NEXT, "cuStreamWaitValue64_v2");
+		tracer._kernel_map[(void *) lcuStreamWaitValue64_v2] = std::string("cuStreamWaitValue64_v2");
 	}
-	assert(lcuStreamWaitValue64);
+	assert(lcuStreamWaitValue64_v2);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuStreamWaitValue64(stream, addr, value, flags);
+		lcuStreamWaitValue64_v2(stream, addr, value, flags);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuStreamWaitValue64);
+		tracer._kernel_seq.push_back((void *)lcuStreamWaitValue64_v2);
 	}
 	return res;
 }
 
-CUresult cuStreamWriteValue32(CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)
+CUresult cuStreamWriteValue32_v2(CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)
 {
-	static CUresult (*lcuStreamWriteValue32) (CUstream , CUdeviceptr , cuuint32_t , unsigned int );
-	if (!lcuStreamWriteValue32) {
-		lcuStreamWriteValue32 = (CUresult (*) (CUstream , CUdeviceptr , cuuint32_t , unsigned int )) dlsym(RTLD_NEXT, "cuStreamWriteValue32");
-		tracer._kernel_map[(void *) lcuStreamWriteValue32] = std::string("cuStreamWriteValue32");
+	static CUresult (*lcuStreamWriteValue32_v2) (CUstream , CUdeviceptr , cuuint32_t , unsigned int );
+	if (!lcuStreamWriteValue32_v2) {
+		lcuStreamWriteValue32_v2 = (CUresult (*) (CUstream , CUdeviceptr , cuuint32_t , unsigned int )) dlsym(RTLD_NEXT, "cuStreamWriteValue32_v2");
+		tracer._kernel_map[(void *) lcuStreamWriteValue32_v2] = std::string("cuStreamWriteValue32_v2");
 	}
-	assert(lcuStreamWriteValue32);
+	assert(lcuStreamWriteValue32_v2);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuStreamWriteValue32(stream, addr, value, flags);
+		lcuStreamWriteValue32_v2(stream, addr, value, flags);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuStreamWriteValue32);
+		tracer._kernel_seq.push_back((void *)lcuStreamWriteValue32_v2);
 	}
 	return res;
 }
 
-CUresult cuStreamWriteValue64(CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)
+CUresult cuStreamWriteValue64_v2(CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)
 {
-	static CUresult (*lcuStreamWriteValue64) (CUstream , CUdeviceptr , cuuint64_t , unsigned int );
-	if (!lcuStreamWriteValue64) {
-		lcuStreamWriteValue64 = (CUresult (*) (CUstream , CUdeviceptr , cuuint64_t , unsigned int )) dlsym(RTLD_NEXT, "cuStreamWriteValue64");
-		tracer._kernel_map[(void *) lcuStreamWriteValue64] = std::string("cuStreamWriteValue64");
+	static CUresult (*lcuStreamWriteValue64_v2) (CUstream , CUdeviceptr , cuuint64_t , unsigned int );
+	if (!lcuStreamWriteValue64_v2) {
+		lcuStreamWriteValue64_v2 = (CUresult (*) (CUstream , CUdeviceptr , cuuint64_t , unsigned int )) dlsym(RTLD_NEXT, "cuStreamWriteValue64_v2");
+		tracer._kernel_map[(void *) lcuStreamWriteValue64_v2] = std::string("cuStreamWriteValue64_v2");
 	}
-	assert(lcuStreamWriteValue64);
+	assert(lcuStreamWriteValue64_v2);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuStreamWriteValue64(stream, addr, value, flags);
+		lcuStreamWriteValue64_v2(stream, addr, value, flags);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuStreamWriteValue64);
+		tracer._kernel_seq.push_back((void *)lcuStreamWriteValue64_v2);
 	}
 	return res;
 }
 
-CUresult cuStreamBatchMemOp(CUstream  stream, unsigned int  count, CUstreamBatchMemOpParams * paramArray, unsigned int  flags)
+CUresult cuStreamBatchMemOp_v2(CUstream  stream, unsigned int  count, CUstreamBatchMemOpParams * paramArray, unsigned int  flags)
 {
-	static CUresult (*lcuStreamBatchMemOp) (CUstream , unsigned int , CUstreamBatchMemOpParams *, unsigned int );
-	if (!lcuStreamBatchMemOp) {
-		lcuStreamBatchMemOp = (CUresult (*) (CUstream , unsigned int , CUstreamBatchMemOpParams *, unsigned int )) dlsym(RTLD_NEXT, "cuStreamBatchMemOp");
-		tracer._kernel_map[(void *) lcuStreamBatchMemOp] = std::string("cuStreamBatchMemOp");
+	static CUresult (*lcuStreamBatchMemOp_v2) (CUstream , unsigned int , CUstreamBatchMemOpParams *, unsigned int );
+	if (!lcuStreamBatchMemOp_v2) {
+		lcuStreamBatchMemOp_v2 = (CUresult (*) (CUstream , unsigned int , CUstreamBatchMemOpParams *, unsigned int )) dlsym(RTLD_NEXT, "cuStreamBatchMemOp_v2");
+		tracer._kernel_map[(void *) lcuStreamBatchMemOp_v2] = std::string("cuStreamBatchMemOp_v2");
 	}
-	assert(lcuStreamBatchMemOp);
+	assert(lcuStreamBatchMemOp_v2);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuStreamBatchMemOp(stream, count, paramArray, flags);
+		lcuStreamBatchMemOp_v2(stream, count, paramArray, flags);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuStreamBatchMemOp);
+		tracer._kernel_seq.push_back((void *)lcuStreamBatchMemOp_v2);
 	}
 	return res;
 }
@@ -5573,6 +6249,32 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcuLaunchKernel);
+	}
+	return res;
+}
+
+CUresult cuLaunchKernelEx(const CUlaunchConfig * config, CUfunction  f, void ** kernelParams, void ** extra)
+{
+	static CUresult (*lcuLaunchKernelEx) (const CUlaunchConfig *, CUfunction , void **, void **);
+	if (!lcuLaunchKernelEx) {
+		lcuLaunchKernelEx = (CUresult (*) (const CUlaunchConfig *, CUfunction , void **, void **)) dlsym(RTLD_NEXT, "cuLaunchKernelEx");
+		tracer._kernel_map[(void *) lcuLaunchKernelEx] = std::string("cuLaunchKernelEx");
+	}
+	assert(lcuLaunchKernelEx);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuLaunchKernelEx(config, f, kernelParams, extra);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuLaunchKernelEx);
 	}
 	return res;
 }
@@ -5941,80 +6643,80 @@ CUresult cuGraphCreate(CUgraph * phGraph, unsigned int  flags)
 	return res;
 }
 
-CUresult cuGraphAddKernelNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
+CUresult cuGraphAddKernelNode_v2(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
 {
-	static CUresult (*lcuGraphAddKernelNode) (CUgraphNode *, CUgraph , const CUgraphNode *, size_t , const CUDA_KERNEL_NODE_PARAMS *);
-	if (!lcuGraphAddKernelNode) {
-		lcuGraphAddKernelNode = (CUresult (*) (CUgraphNode *, CUgraph , const CUgraphNode *, size_t , const CUDA_KERNEL_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphAddKernelNode");
-		tracer._kernel_map[(void *) lcuGraphAddKernelNode] = std::string("cuGraphAddKernelNode");
+	static CUresult (*lcuGraphAddKernelNode_v2) (CUgraphNode *, CUgraph , const CUgraphNode *, size_t , const CUDA_KERNEL_NODE_PARAMS *);
+	if (!lcuGraphAddKernelNode_v2) {
+		lcuGraphAddKernelNode_v2 = (CUresult (*) (CUgraphNode *, CUgraph , const CUgraphNode *, size_t , const CUDA_KERNEL_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphAddKernelNode_v2");
+		tracer._kernel_map[(void *) lcuGraphAddKernelNode_v2] = std::string("cuGraphAddKernelNode_v2");
 	}
-	assert(lcuGraphAddKernelNode);
+	assert(lcuGraphAddKernelNode_v2);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuGraphAddKernelNode(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
+		lcuGraphAddKernelNode_v2(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuGraphAddKernelNode);
+		tracer._kernel_seq.push_back((void *)lcuGraphAddKernelNode_v2);
 	}
 	return res;
 }
 
-CUresult cuGraphKernelNodeGetParams(CUgraphNode  hNode, CUDA_KERNEL_NODE_PARAMS * nodeParams)
+CUresult cuGraphKernelNodeGetParams_v2(CUgraphNode  hNode, CUDA_KERNEL_NODE_PARAMS * nodeParams)
 {
-	static CUresult (*lcuGraphKernelNodeGetParams) (CUgraphNode , CUDA_KERNEL_NODE_PARAMS *);
-	if (!lcuGraphKernelNodeGetParams) {
-		lcuGraphKernelNodeGetParams = (CUresult (*) (CUgraphNode , CUDA_KERNEL_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphKernelNodeGetParams");
-		tracer._kernel_map[(void *) lcuGraphKernelNodeGetParams] = std::string("cuGraphKernelNodeGetParams");
+	static CUresult (*lcuGraphKernelNodeGetParams_v2) (CUgraphNode , CUDA_KERNEL_NODE_PARAMS *);
+	if (!lcuGraphKernelNodeGetParams_v2) {
+		lcuGraphKernelNodeGetParams_v2 = (CUresult (*) (CUgraphNode , CUDA_KERNEL_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphKernelNodeGetParams_v2");
+		tracer._kernel_map[(void *) lcuGraphKernelNodeGetParams_v2] = std::string("cuGraphKernelNodeGetParams_v2");
 	}
-	assert(lcuGraphKernelNodeGetParams);
+	assert(lcuGraphKernelNodeGetParams_v2);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuGraphKernelNodeGetParams(hNode, nodeParams);
+		lcuGraphKernelNodeGetParams_v2(hNode, nodeParams);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuGraphKernelNodeGetParams);
+		tracer._kernel_seq.push_back((void *)lcuGraphKernelNodeGetParams_v2);
 	}
 	return res;
 }
 
-CUresult cuGraphKernelNodeSetParams(CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
+CUresult cuGraphKernelNodeSetParams_v2(CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
 {
-	static CUresult (*lcuGraphKernelNodeSetParams) (CUgraphNode , const CUDA_KERNEL_NODE_PARAMS *);
-	if (!lcuGraphKernelNodeSetParams) {
-		lcuGraphKernelNodeSetParams = (CUresult (*) (CUgraphNode , const CUDA_KERNEL_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphKernelNodeSetParams");
-		tracer._kernel_map[(void *) lcuGraphKernelNodeSetParams] = std::string("cuGraphKernelNodeSetParams");
+	static CUresult (*lcuGraphKernelNodeSetParams_v2) (CUgraphNode , const CUDA_KERNEL_NODE_PARAMS *);
+	if (!lcuGraphKernelNodeSetParams_v2) {
+		lcuGraphKernelNodeSetParams_v2 = (CUresult (*) (CUgraphNode , const CUDA_KERNEL_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphKernelNodeSetParams_v2");
+		tracer._kernel_map[(void *) lcuGraphKernelNodeSetParams_v2] = std::string("cuGraphKernelNodeSetParams_v2");
 	}
-	assert(lcuGraphKernelNodeSetParams);
+	assert(lcuGraphKernelNodeSetParams_v2);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuGraphKernelNodeSetParams(hNode, nodeParams);
+		lcuGraphKernelNodeSetParams_v2(hNode, nodeParams);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuGraphKernelNodeSetParams);
+		tracer._kernel_seq.push_back((void *)lcuGraphKernelNodeSetParams_v2);
 	}
 	return res;
 }
@@ -6643,6 +7345,110 @@ CUresult cuGraphExternalSemaphoresWaitNodeSetParams(CUgraphNode  hNode, const CU
 	return res;
 }
 
+CUresult cuGraphAddBatchMemOpNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)
+{
+	static CUresult (*lcuGraphAddBatchMemOpNode) (CUgraphNode *, CUgraph , const CUgraphNode *, size_t , const CUDA_BATCH_MEM_OP_NODE_PARAMS *);
+	if (!lcuGraphAddBatchMemOpNode) {
+		lcuGraphAddBatchMemOpNode = (CUresult (*) (CUgraphNode *, CUgraph , const CUgraphNode *, size_t , const CUDA_BATCH_MEM_OP_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphAddBatchMemOpNode");
+		tracer._kernel_map[(void *) lcuGraphAddBatchMemOpNode] = std::string("cuGraphAddBatchMemOpNode");
+	}
+	assert(lcuGraphAddBatchMemOpNode);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphAddBatchMemOpNode(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphAddBatchMemOpNode);
+	}
+	return res;
+}
+
+CUresult cuGraphBatchMemOpNodeGetParams(CUgraphNode  hNode, CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams_out)
+{
+	static CUresult (*lcuGraphBatchMemOpNodeGetParams) (CUgraphNode , CUDA_BATCH_MEM_OP_NODE_PARAMS *);
+	if (!lcuGraphBatchMemOpNodeGetParams) {
+		lcuGraphBatchMemOpNodeGetParams = (CUresult (*) (CUgraphNode , CUDA_BATCH_MEM_OP_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphBatchMemOpNodeGetParams");
+		tracer._kernel_map[(void *) lcuGraphBatchMemOpNodeGetParams] = std::string("cuGraphBatchMemOpNodeGetParams");
+	}
+	assert(lcuGraphBatchMemOpNodeGetParams);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphBatchMemOpNodeGetParams(hNode, nodeParams_out);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphBatchMemOpNodeGetParams);
+	}
+	return res;
+}
+
+CUresult cuGraphBatchMemOpNodeSetParams(CUgraphNode  hNode, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)
+{
+	static CUresult (*lcuGraphBatchMemOpNodeSetParams) (CUgraphNode , const CUDA_BATCH_MEM_OP_NODE_PARAMS *);
+	if (!lcuGraphBatchMemOpNodeSetParams) {
+		lcuGraphBatchMemOpNodeSetParams = (CUresult (*) (CUgraphNode , const CUDA_BATCH_MEM_OP_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphBatchMemOpNodeSetParams");
+		tracer._kernel_map[(void *) lcuGraphBatchMemOpNodeSetParams] = std::string("cuGraphBatchMemOpNodeSetParams");
+	}
+	assert(lcuGraphBatchMemOpNodeSetParams);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphBatchMemOpNodeSetParams(hNode, nodeParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphBatchMemOpNodeSetParams);
+	}
+	return res;
+}
+
+CUresult cuGraphExecBatchMemOpNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)
+{
+	static CUresult (*lcuGraphExecBatchMemOpNodeSetParams) (CUgraphExec , CUgraphNode , const CUDA_BATCH_MEM_OP_NODE_PARAMS *);
+	if (!lcuGraphExecBatchMemOpNodeSetParams) {
+		lcuGraphExecBatchMemOpNodeSetParams = (CUresult (*) (CUgraphExec , CUgraphNode , const CUDA_BATCH_MEM_OP_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphExecBatchMemOpNodeSetParams");
+		tracer._kernel_map[(void *) lcuGraphExecBatchMemOpNodeSetParams] = std::string("cuGraphExecBatchMemOpNodeSetParams");
+	}
+	assert(lcuGraphExecBatchMemOpNodeSetParams);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphExecBatchMemOpNodeSetParams(hGraphExec, hNode, nodeParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphExecBatchMemOpNodeSetParams);
+	}
+	return res;
+}
+
 CUresult cuGraphAddMemAllocNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUDA_MEM_ALLOC_NODE_PARAMS * nodeParams)
 {
 	static CUresult (*lcuGraphAddMemAllocNode) (CUgraphNode *, CUgraph , const CUgraphNode *, size_t , CUDA_MEM_ALLOC_NODE_PARAMS *);
@@ -7111,32 +7917,6 @@ CUresult cuGraphDestroyNode(CUgraphNode  hNode)
 	return res;
 }
 
-CUresult cuGraphInstantiate_v2(CUgraphExec * phGraphExec, CUgraph  hGraph, CUgraphNode * phErrorNode, char * logBuffer, size_t  bufferSize)
-{
-	static CUresult (*lcuGraphInstantiate_v2) (CUgraphExec *, CUgraph , CUgraphNode *, char *, size_t );
-	if (!lcuGraphInstantiate_v2) {
-		lcuGraphInstantiate_v2 = (CUresult (*) (CUgraphExec *, CUgraph , CUgraphNode *, char *, size_t )) dlsym(RTLD_NEXT, "cuGraphInstantiate_v2");
-		tracer._kernel_map[(void *) lcuGraphInstantiate_v2] = std::string("cuGraphInstantiate_v2");
-	}
-	assert(lcuGraphInstantiate_v2);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	CUresult res = 
-		lcuGraphInstantiate_v2(phGraphExec, hGraph, phErrorNode, logBuffer, bufferSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuGraphInstantiate_v2);
-	}
-	return res;
-}
-
 CUresult cuGraphInstantiateWithFlags(CUgraphExec * phGraphExec, CUgraph  hGraph, unsigned long long  flags)
 {
 	static CUresult (*lcuGraphInstantiateWithFlags) (CUgraphExec *, CUgraph , unsigned long long );
@@ -7163,28 +7943,80 @@ CUresult cuGraphInstantiateWithFlags(CUgraphExec * phGraphExec, CUgraph  hGraph,
 	return res;
 }
 
-CUresult cuGraphExecKernelNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
+CUresult cuGraphInstantiateWithParams(CUgraphExec * phGraphExec, CUgraph  hGraph, CUDA_GRAPH_INSTANTIATE_PARAMS * instantiateParams)
 {
-	static CUresult (*lcuGraphExecKernelNodeSetParams) (CUgraphExec , CUgraphNode , const CUDA_KERNEL_NODE_PARAMS *);
-	if (!lcuGraphExecKernelNodeSetParams) {
-		lcuGraphExecKernelNodeSetParams = (CUresult (*) (CUgraphExec , CUgraphNode , const CUDA_KERNEL_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphExecKernelNodeSetParams");
-		tracer._kernel_map[(void *) lcuGraphExecKernelNodeSetParams] = std::string("cuGraphExecKernelNodeSetParams");
+	static CUresult (*lcuGraphInstantiateWithParams) (CUgraphExec *, CUgraph , CUDA_GRAPH_INSTANTIATE_PARAMS *);
+	if (!lcuGraphInstantiateWithParams) {
+		lcuGraphInstantiateWithParams = (CUresult (*) (CUgraphExec *, CUgraph , CUDA_GRAPH_INSTANTIATE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphInstantiateWithParams");
+		tracer._kernel_map[(void *) lcuGraphInstantiateWithParams] = std::string("cuGraphInstantiateWithParams");
 	}
-	assert(lcuGraphExecKernelNodeSetParams);
+	assert(lcuGraphInstantiateWithParams);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuGraphExecKernelNodeSetParams(hGraphExec, hNode, nodeParams);
+		lcuGraphInstantiateWithParams(phGraphExec, hGraph, instantiateParams);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuGraphExecKernelNodeSetParams);
+		tracer._kernel_seq.push_back((void *)lcuGraphInstantiateWithParams);
+	}
+	return res;
+}
+
+CUresult cuGraphExecGetFlags(CUgraphExec  hGraphExec, cuuint64_t * flags)
+{
+	static CUresult (*lcuGraphExecGetFlags) (CUgraphExec , cuuint64_t *);
+	if (!lcuGraphExecGetFlags) {
+		lcuGraphExecGetFlags = (CUresult (*) (CUgraphExec , cuuint64_t *)) dlsym(RTLD_NEXT, "cuGraphExecGetFlags");
+		tracer._kernel_map[(void *) lcuGraphExecGetFlags] = std::string("cuGraphExecGetFlags");
+	}
+	assert(lcuGraphExecGetFlags);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphExecGetFlags(hGraphExec, flags);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphExecGetFlags);
+	}
+	return res;
+}
+
+CUresult cuGraphExecKernelNodeSetParams_v2(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
+{
+	static CUresult (*lcuGraphExecKernelNodeSetParams_v2) (CUgraphExec , CUgraphNode , const CUDA_KERNEL_NODE_PARAMS *);
+	if (!lcuGraphExecKernelNodeSetParams_v2) {
+		lcuGraphExecKernelNodeSetParams_v2 = (CUresult (*) (CUgraphExec , CUgraphNode , const CUDA_KERNEL_NODE_PARAMS *)) dlsym(RTLD_NEXT, "cuGraphExecKernelNodeSetParams_v2");
+		tracer._kernel_map[(void *) lcuGraphExecKernelNodeSetParams_v2] = std::string("cuGraphExecKernelNodeSetParams_v2");
+	}
+	assert(lcuGraphExecKernelNodeSetParams_v2);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphExecKernelNodeSetParams_v2(hGraphExec, hNode, nodeParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphExecKernelNodeSetParams_v2);
 	}
 	return res;
 }
@@ -7397,6 +8229,58 @@ CUresult cuGraphExecExternalSemaphoresWaitNodeSetParams(CUgraphExec  hGraphExec,
 	return res;
 }
 
+CUresult cuGraphNodeSetEnabled(CUgraphExec  hGraphExec, CUgraphNode  hNode, unsigned int  isEnabled)
+{
+	static CUresult (*lcuGraphNodeSetEnabled) (CUgraphExec , CUgraphNode , unsigned int );
+	if (!lcuGraphNodeSetEnabled) {
+		lcuGraphNodeSetEnabled = (CUresult (*) (CUgraphExec , CUgraphNode , unsigned int )) dlsym(RTLD_NEXT, "cuGraphNodeSetEnabled");
+		tracer._kernel_map[(void *) lcuGraphNodeSetEnabled] = std::string("cuGraphNodeSetEnabled");
+	}
+	assert(lcuGraphNodeSetEnabled);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphNodeSetEnabled(hGraphExec, hNode, isEnabled);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphNodeSetEnabled);
+	}
+	return res;
+}
+
+CUresult cuGraphNodeGetEnabled(CUgraphExec  hGraphExec, CUgraphNode  hNode, unsigned int * isEnabled)
+{
+	static CUresult (*lcuGraphNodeGetEnabled) (CUgraphExec , CUgraphNode , unsigned int *);
+	if (!lcuGraphNodeGetEnabled) {
+		lcuGraphNodeGetEnabled = (CUresult (*) (CUgraphExec , CUgraphNode , unsigned int *)) dlsym(RTLD_NEXT, "cuGraphNodeGetEnabled");
+		tracer._kernel_map[(void *) lcuGraphNodeGetEnabled] = std::string("cuGraphNodeGetEnabled");
+	}
+	assert(lcuGraphNodeGetEnabled);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphNodeGetEnabled(hGraphExec, hNode, isEnabled);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphNodeGetEnabled);
+	}
+	return res;
+}
+
 CUresult cuGraphUpload(CUgraphExec  hGraphExec, CUstream  hStream)
 {
 	static CUresult (*lcuGraphUpload) (CUgraphExec , CUstream );
@@ -7501,28 +8385,28 @@ CUresult cuGraphDestroy(CUgraph  hGraph)
 	return res;
 }
 
-CUresult cuGraphExecUpdate(CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphNode * hErrorNode_out, CUgraphExecUpdateResult * updateResult_out)
+CUresult cuGraphExecUpdate_v2(CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphExecUpdateResultInfo * resultInfo)
 {
-	static CUresult (*lcuGraphExecUpdate) (CUgraphExec , CUgraph , CUgraphNode *, CUgraphExecUpdateResult *);
-	if (!lcuGraphExecUpdate) {
-		lcuGraphExecUpdate = (CUresult (*) (CUgraphExec , CUgraph , CUgraphNode *, CUgraphExecUpdateResult *)) dlsym(RTLD_NEXT, "cuGraphExecUpdate");
-		tracer._kernel_map[(void *) lcuGraphExecUpdate] = std::string("cuGraphExecUpdate");
+	static CUresult (*lcuGraphExecUpdate_v2) (CUgraphExec , CUgraph , CUgraphExecUpdateResultInfo *);
+	if (!lcuGraphExecUpdate_v2) {
+		lcuGraphExecUpdate_v2 = (CUresult (*) (CUgraphExec , CUgraph , CUgraphExecUpdateResultInfo *)) dlsym(RTLD_NEXT, "cuGraphExecUpdate_v2");
+		tracer._kernel_map[(void *) lcuGraphExecUpdate_v2] = std::string("cuGraphExecUpdate_v2");
 	}
-	assert(lcuGraphExecUpdate);
+	assert(lcuGraphExecUpdate_v2);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuGraphExecUpdate(hGraphExec, hGraph, hErrorNode_out, updateResult_out);
+		lcuGraphExecUpdate_v2(hGraphExec, hGraph, resultInfo);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuGraphExecUpdate);
+		tracer._kernel_seq.push_back((void *)lcuGraphExecUpdate_v2);
 	}
 	return res;
 }
@@ -7761,6 +8645,84 @@ CUresult cuGraphReleaseUserObject(CUgraph  graph, CUuserObject  object, unsigned
 	return res;
 }
 
+CUresult cuGraphAddNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUgraphNodeParams * nodeParams)
+{
+	static CUresult (*lcuGraphAddNode) (CUgraphNode *, CUgraph , const CUgraphNode *, size_t , CUgraphNodeParams *);
+	if (!lcuGraphAddNode) {
+		lcuGraphAddNode = (CUresult (*) (CUgraphNode *, CUgraph , const CUgraphNode *, size_t , CUgraphNodeParams *)) dlsym(RTLD_NEXT, "cuGraphAddNode");
+		tracer._kernel_map[(void *) lcuGraphAddNode] = std::string("cuGraphAddNode");
+	}
+	assert(lcuGraphAddNode);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphAddNode(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphAddNode);
+	}
+	return res;
+}
+
+CUresult cuGraphNodeSetParams(CUgraphNode  hNode, CUgraphNodeParams * nodeParams)
+{
+	static CUresult (*lcuGraphNodeSetParams) (CUgraphNode , CUgraphNodeParams *);
+	if (!lcuGraphNodeSetParams) {
+		lcuGraphNodeSetParams = (CUresult (*) (CUgraphNode , CUgraphNodeParams *)) dlsym(RTLD_NEXT, "cuGraphNodeSetParams");
+		tracer._kernel_map[(void *) lcuGraphNodeSetParams] = std::string("cuGraphNodeSetParams");
+	}
+	assert(lcuGraphNodeSetParams);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphNodeSetParams(hNode, nodeParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphNodeSetParams);
+	}
+	return res;
+}
+
+CUresult cuGraphExecNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, CUgraphNodeParams * nodeParams)
+{
+	static CUresult (*lcuGraphExecNodeSetParams) (CUgraphExec , CUgraphNode , CUgraphNodeParams *);
+	if (!lcuGraphExecNodeSetParams) {
+		lcuGraphExecNodeSetParams = (CUresult (*) (CUgraphExec , CUgraphNode , CUgraphNodeParams *)) dlsym(RTLD_NEXT, "cuGraphExecNodeSetParams");
+		tracer._kernel_map[(void *) lcuGraphExecNodeSetParams] = std::string("cuGraphExecNodeSetParams");
+	}
+	assert(lcuGraphExecNodeSetParams);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuGraphExecNodeSetParams(hGraphExec, hNode, nodeParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuGraphExecNodeSetParams);
+	}
+	return res;
+}
+
 CUresult cuOccupancyMaxActiveBlocksPerMultiprocessor(int * numBlocks, CUfunction  func, int  blockSize, size_t  dynamicSMemSize)
 {
 	static CUresult (*lcuOccupancyMaxActiveBlocksPerMultiprocessor) (int *, CUfunction , int , size_t );
@@ -7887,6 +8849,58 @@ CUresult cuOccupancyAvailableDynamicSMemPerBlock(size_t * dynamicSmemSize, CUfun
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcuOccupancyAvailableDynamicSMemPerBlock);
+	}
+	return res;
+}
+
+CUresult cuOccupancyMaxPotentialClusterSize(int * clusterSize, CUfunction  func, const CUlaunchConfig * config)
+{
+	static CUresult (*lcuOccupancyMaxPotentialClusterSize) (int *, CUfunction , const CUlaunchConfig *);
+	if (!lcuOccupancyMaxPotentialClusterSize) {
+		lcuOccupancyMaxPotentialClusterSize = (CUresult (*) (int *, CUfunction , const CUlaunchConfig *)) dlsym(RTLD_NEXT, "cuOccupancyMaxPotentialClusterSize");
+		tracer._kernel_map[(void *) lcuOccupancyMaxPotentialClusterSize] = std::string("cuOccupancyMaxPotentialClusterSize");
+	}
+	assert(lcuOccupancyMaxPotentialClusterSize);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuOccupancyMaxPotentialClusterSize(clusterSize, func, config);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuOccupancyMaxPotentialClusterSize);
+	}
+	return res;
+}
+
+CUresult cuOccupancyMaxActiveClusters(int * numClusters, CUfunction  func, const CUlaunchConfig * config)
+{
+	static CUresult (*lcuOccupancyMaxActiveClusters) (int *, CUfunction , const CUlaunchConfig *);
+	if (!lcuOccupancyMaxActiveClusters) {
+		lcuOccupancyMaxActiveClusters = (CUresult (*) (int *, CUfunction , const CUlaunchConfig *)) dlsym(RTLD_NEXT, "cuOccupancyMaxActiveClusters");
+		tracer._kernel_map[(void *) lcuOccupancyMaxActiveClusters] = std::string("cuOccupancyMaxActiveClusters");
+	}
+	assert(lcuOccupancyMaxActiveClusters);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuOccupancyMaxActiveClusters(numClusters, func, config);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuOccupancyMaxActiveClusters);
 	}
 	return res;
 }
@@ -8853,6 +9867,84 @@ CUresult cuSurfObjectGetResourceDesc(CUDA_RESOURCE_DESC * pResDesc, CUsurfObject
 	return res;
 }
 
+CUresult cuTensorMapEncodeTiled(CUtensorMap * tensorMap, CUtensorMapDataType  tensorDataType, cuuint32_t  tensorRank, void * globalAddress, const cuuint64_t * globalDim, const cuuint64_t * globalStrides, const cuuint32_t * boxDim, const cuuint32_t * elementStrides, CUtensorMapInterleave  interleave, CUtensorMapSwizzle  swizzle, CUtensorMapL2promotion  l2Promotion, CUtensorMapFloatOOBfill  oobFill)
+{
+	static CUresult (*lcuTensorMapEncodeTiled) (CUtensorMap *, CUtensorMapDataType , cuuint32_t , void *, const cuuint64_t *, const cuuint64_t *, const cuuint32_t *, const cuuint32_t *, CUtensorMapInterleave , CUtensorMapSwizzle , CUtensorMapL2promotion , CUtensorMapFloatOOBfill );
+	if (!lcuTensorMapEncodeTiled) {
+		lcuTensorMapEncodeTiled = (CUresult (*) (CUtensorMap *, CUtensorMapDataType , cuuint32_t , void *, const cuuint64_t *, const cuuint64_t *, const cuuint32_t *, const cuuint32_t *, CUtensorMapInterleave , CUtensorMapSwizzle , CUtensorMapL2promotion , CUtensorMapFloatOOBfill )) dlsym(RTLD_NEXT, "cuTensorMapEncodeTiled");
+		tracer._kernel_map[(void *) lcuTensorMapEncodeTiled] = std::string("cuTensorMapEncodeTiled");
+	}
+	assert(lcuTensorMapEncodeTiled);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuTensorMapEncodeTiled(tensorMap, tensorDataType, tensorRank, globalAddress, globalDim, globalStrides, boxDim, elementStrides, interleave, swizzle, l2Promotion, oobFill);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuTensorMapEncodeTiled);
+	}
+	return res;
+}
+
+CUresult cuTensorMapEncodeIm2col(CUtensorMap * tensorMap, CUtensorMapDataType  tensorDataType, cuuint32_t  tensorRank, void * globalAddress, const cuuint64_t * globalDim, const cuuint64_t * globalStrides, const int * pixelBoxLowerCorner, const int * pixelBoxUpperCorner, cuuint32_t  channelsPerPixel, cuuint32_t  pixelsPerColumn, const cuuint32_t * elementStrides, CUtensorMapInterleave  interleave, CUtensorMapSwizzle  swizzle, CUtensorMapL2promotion  l2Promotion, CUtensorMapFloatOOBfill  oobFill)
+{
+	static CUresult (*lcuTensorMapEncodeIm2col) (CUtensorMap *, CUtensorMapDataType , cuuint32_t , void *, const cuuint64_t *, const cuuint64_t *, const int *, const int *, cuuint32_t , cuuint32_t , const cuuint32_t *, CUtensorMapInterleave , CUtensorMapSwizzle , CUtensorMapL2promotion , CUtensorMapFloatOOBfill );
+	if (!lcuTensorMapEncodeIm2col) {
+		lcuTensorMapEncodeIm2col = (CUresult (*) (CUtensorMap *, CUtensorMapDataType , cuuint32_t , void *, const cuuint64_t *, const cuuint64_t *, const int *, const int *, cuuint32_t , cuuint32_t , const cuuint32_t *, CUtensorMapInterleave , CUtensorMapSwizzle , CUtensorMapL2promotion , CUtensorMapFloatOOBfill )) dlsym(RTLD_NEXT, "cuTensorMapEncodeIm2col");
+		tracer._kernel_map[(void *) lcuTensorMapEncodeIm2col] = std::string("cuTensorMapEncodeIm2col");
+	}
+	assert(lcuTensorMapEncodeIm2col);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuTensorMapEncodeIm2col(tensorMap, tensorDataType, tensorRank, globalAddress, globalDim, globalStrides, pixelBoxLowerCorner, pixelBoxUpperCorner, channelsPerPixel, pixelsPerColumn, elementStrides, interleave, swizzle, l2Promotion, oobFill);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuTensorMapEncodeIm2col);
+	}
+	return res;
+}
+
+CUresult cuTensorMapReplaceAddress(CUtensorMap * tensorMap, void * globalAddress)
+{
+	static CUresult (*lcuTensorMapReplaceAddress) (CUtensorMap *, void *);
+	if (!lcuTensorMapReplaceAddress) {
+		lcuTensorMapReplaceAddress = (CUresult (*) (CUtensorMap *, void *)) dlsym(RTLD_NEXT, "cuTensorMapReplaceAddress");
+		tracer._kernel_map[(void *) lcuTensorMapReplaceAddress] = std::string("cuTensorMapReplaceAddress");
+	}
+	assert(lcuTensorMapReplaceAddress);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuTensorMapReplaceAddress(tensorMap, globalAddress);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuTensorMapReplaceAddress);
+	}
+	return res;
+}
+
 CUresult cuDeviceCanAccessPeer(int * canAccessPeer, CUdevice  dev, CUdevice  peerDev)
 {
 	static CUresult (*lcuDeviceCanAccessPeer) (int *, CUdevice , CUdevice );
@@ -9139,28 +10231,132 @@ CUresult cuGraphicsUnmapResources(unsigned int  count, CUgraphicsResource * reso
 	return res;
 }
 
-CUresult cuGetProcAddress(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags)
+CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)
 {
-	static CUresult (*lcuGetProcAddress) (const char *, void **, int , cuuint64_t );
-	if (!lcuGetProcAddress) {
-		lcuGetProcAddress = (CUresult (*) (const char *, void **, int , cuuint64_t )) dlsym(RTLD_NEXT, "cuGetProcAddress");
-		tracer._kernel_map[(void *) lcuGetProcAddress] = std::string("cuGetProcAddress");
+	static CUresult (*lcuGetProcAddress_v2) (const char *, void **, int , cuuint64_t , CUdriverProcAddressQueryResult *);
+	if (!lcuGetProcAddress_v2) {
+		lcuGetProcAddress_v2 = (CUresult (*) (const char *, void **, int , cuuint64_t , CUdriverProcAddressQueryResult *)) dlsym(RTLD_NEXT, "cuGetProcAddress_v2");
+		tracer._kernel_map[(void *) lcuGetProcAddress_v2] = std::string("cuGetProcAddress_v2");
 	}
-	assert(lcuGetProcAddress);
+	assert(lcuGetProcAddress_v2);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	CUresult res = 
-		lcuGetProcAddress(symbol, pfn, cudaVersion, flags);
+		lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcuGetProcAddress);
+		tracer._kernel_seq.push_back((void *)lcuGetProcAddress_v2);
+	}
+	return res;
+}
+
+CUresult cuCoredumpGetAttribute(CUcoredumpSettings  attrib, void*  value, size_t * size)
+{
+	static CUresult (*lcuCoredumpGetAttribute) (CUcoredumpSettings , void* , size_t *);
+	if (!lcuCoredumpGetAttribute) {
+		lcuCoredumpGetAttribute = (CUresult (*) (CUcoredumpSettings , void* , size_t *)) dlsym(RTLD_NEXT, "cuCoredumpGetAttribute");
+		tracer._kernel_map[(void *) lcuCoredumpGetAttribute] = std::string("cuCoredumpGetAttribute");
+	}
+	assert(lcuCoredumpGetAttribute);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuCoredumpGetAttribute(attrib, value, size);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuCoredumpGetAttribute);
+	}
+	return res;
+}
+
+CUresult cuCoredumpGetAttributeGlobal(CUcoredumpSettings  attrib, void * value, size_t * size)
+{
+	static CUresult (*lcuCoredumpGetAttributeGlobal) (CUcoredumpSettings , void *, size_t *);
+	if (!lcuCoredumpGetAttributeGlobal) {
+		lcuCoredumpGetAttributeGlobal = (CUresult (*) (CUcoredumpSettings , void *, size_t *)) dlsym(RTLD_NEXT, "cuCoredumpGetAttributeGlobal");
+		tracer._kernel_map[(void *) lcuCoredumpGetAttributeGlobal] = std::string("cuCoredumpGetAttributeGlobal");
+	}
+	assert(lcuCoredumpGetAttributeGlobal);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuCoredumpGetAttributeGlobal(attrib, value, size);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuCoredumpGetAttributeGlobal);
+	}
+	return res;
+}
+
+CUresult cuCoredumpSetAttribute(CUcoredumpSettings  attrib, void*  value, size_t * size)
+{
+	static CUresult (*lcuCoredumpSetAttribute) (CUcoredumpSettings , void* , size_t *);
+	if (!lcuCoredumpSetAttribute) {
+		lcuCoredumpSetAttribute = (CUresult (*) (CUcoredumpSettings , void* , size_t *)) dlsym(RTLD_NEXT, "cuCoredumpSetAttribute");
+		tracer._kernel_map[(void *) lcuCoredumpSetAttribute] = std::string("cuCoredumpSetAttribute");
+	}
+	assert(lcuCoredumpSetAttribute);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuCoredumpSetAttribute(attrib, value, size);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuCoredumpSetAttribute);
+	}
+	return res;
+}
+
+CUresult cuCoredumpSetAttributeGlobal(CUcoredumpSettings  attrib, void * value, size_t * size)
+{
+	static CUresult (*lcuCoredumpSetAttributeGlobal) (CUcoredumpSettings , void *, size_t *);
+	if (!lcuCoredumpSetAttributeGlobal) {
+		lcuCoredumpSetAttributeGlobal = (CUresult (*) (CUcoredumpSettings , void *, size_t *)) dlsym(RTLD_NEXT, "cuCoredumpSetAttributeGlobal");
+		tracer._kernel_map[(void *) lcuCoredumpSetAttributeGlobal] = std::string("cuCoredumpSetAttributeGlobal");
+	}
+	assert(lcuCoredumpSetAttributeGlobal);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	CUresult res = 
+		lcuCoredumpSetAttributeGlobal(attrib, value, size);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuCoredumpSetAttributeGlobal);
 	}
 	return res;
 }
@@ -9924,16 +11120,29 @@ cudaError_t cudaGetDeviceCount(int * count)
 	return res;
 }
 
-cudaError_t cudaGetDeviceProperties(struct cudaDeviceProp * prop, int  device)
+cudaError_t cudaGetDeviceProperties_v2(struct cudaDeviceProp * prop, int  device)
 {
-	static cudaError_t (*lcudaGetDeviceProperties) (struct cudaDeviceProp *, int );
-	if (!lcudaGetDeviceProperties) {
-		lcudaGetDeviceProperties = (cudaError_t (*) (struct cudaDeviceProp *, int )) dlsym(RTLD_NEXT, "cudaGetDeviceProperties");
-		tracer._kernel_map[(void *) lcudaGetDeviceProperties] = std::string("cudaGetDeviceProperties");
+	static cudaError_t (*lcudaGetDeviceProperties_v2) (struct cudaDeviceProp *, int );
+	if (!lcudaGetDeviceProperties_v2) {
+		lcudaGetDeviceProperties_v2 = (cudaError_t (*) (struct cudaDeviceProp *, int )) dlsym(RTLD_NEXT, "cudaGetDeviceProperties_v2");
+		tracer._kernel_map[(void *) lcudaGetDeviceProperties_v2] = std::string("cudaGetDeviceProperties_v2");
 	}
-	assert(lcudaGetDeviceProperties);
+	assert(lcudaGetDeviceProperties_v2);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
 	cudaError_t res = 
-		lcudaGetDeviceProperties(prop, device);
+		lcudaGetDeviceProperties_v2(prop, device);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaGetDeviceProperties_v2);
+	}
 	return res;
 }
 
@@ -10115,6 +11324,32 @@ cudaError_t cudaChooseDevice(int * device, const struct cudaDeviceProp * prop)
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudaChooseDevice);
+	}
+	return res;
+}
+
+cudaError_t cudaInitDevice(int  device, unsigned int  deviceFlags, unsigned int  flags)
+{
+	static cudaError_t (*lcudaInitDevice) (int , unsigned int , unsigned int );
+	if (!lcudaInitDevice) {
+		lcudaInitDevice = (cudaError_t (*) (int , unsigned int , unsigned int )) dlsym(RTLD_NEXT, "cudaInitDevice");
+		tracer._kernel_map[(void *) lcudaInitDevice] = std::string("cudaInitDevice");
+	}
+	assert(lcudaInitDevice);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaInitDevice(device, deviceFlags, flags);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaInitDevice);
 	}
 	return res;
 }
@@ -10366,6 +11601,32 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 	return res;
 }
 
+cudaError_t cudaStreamGetId(cudaStream_t  hStream, unsigned long long * streamId)
+{
+	static cudaError_t (*lcudaStreamGetId) (cudaStream_t , unsigned long long *);
+	if (!lcudaStreamGetId) {
+		lcudaStreamGetId = (cudaError_t (*) (cudaStream_t , unsigned long long *)) dlsym(RTLD_NEXT, "cudaStreamGetId");
+		tracer._kernel_map[(void *) lcudaStreamGetId] = std::string("cudaStreamGetId");
+	}
+	assert(lcudaStreamGetId);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaStreamGetId(hStream, streamId);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaStreamGetId);
+	}
+	return res;
+}
+
 cudaError_t cudaCtxResetPersistingL2Cache()
 {
 	static cudaError_t (*lcudaCtxResetPersistingL2Cache) ();
@@ -10418,11 +11679,11 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 	return res;
 }
 
-cudaError_t cudaStreamGetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID  attr, union cudaStreamAttrValue * value_out)
+cudaError_t cudaStreamGetAttribute(cudaStream_t  hStream, cudaLaunchAttributeID  attr, cudaLaunchAttributeValue * value_out)
 {
-	static cudaError_t (*lcudaStreamGetAttribute) (cudaStream_t , enum cudaStreamAttrID , union cudaStreamAttrValue *);
+	static cudaError_t (*lcudaStreamGetAttribute) (cudaStream_t , cudaLaunchAttributeID , cudaLaunchAttributeValue *);
 	if (!lcudaStreamGetAttribute) {
-		lcudaStreamGetAttribute = (cudaError_t (*) (cudaStream_t , enum cudaStreamAttrID , union cudaStreamAttrValue *)) dlsym(RTLD_NEXT, "cudaStreamGetAttribute");
+		lcudaStreamGetAttribute = (cudaError_t (*) (cudaStream_t , cudaLaunchAttributeID , cudaLaunchAttributeValue *)) dlsym(RTLD_NEXT, "cudaStreamGetAttribute");
 		tracer._kernel_map[(void *) lcudaStreamGetAttribute] = std::string("cudaStreamGetAttribute");
 	}
 	assert(lcudaStreamGetAttribute);
@@ -10444,11 +11705,11 @@ cudaError_t cudaStreamGetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID 
 	return res;
 }
 
-cudaError_t cudaStreamSetAttribute(cudaStream_t  hStream, enum cudaStreamAttrID  attr, const union cudaStreamAttrValue * value)
+cudaError_t cudaStreamSetAttribute(cudaStream_t  hStream, cudaLaunchAttributeID  attr, const cudaLaunchAttributeValue * value)
 {
-	static cudaError_t (*lcudaStreamSetAttribute) (cudaStream_t , enum cudaStreamAttrID , const union cudaStreamAttrValue *);
+	static cudaError_t (*lcudaStreamSetAttribute) (cudaStream_t , cudaLaunchAttributeID , const cudaLaunchAttributeValue *);
 	if (!lcudaStreamSetAttribute) {
-		lcudaStreamSetAttribute = (cudaError_t (*) (cudaStream_t , enum cudaStreamAttrID , const union cudaStreamAttrValue *)) dlsym(RTLD_NEXT, "cudaStreamSetAttribute");
+		lcudaStreamSetAttribute = (cudaError_t (*) (cudaStream_t , cudaLaunchAttributeID , const cudaLaunchAttributeValue *)) dlsym(RTLD_NEXT, "cudaStreamSetAttribute");
 		tracer._kernel_map[(void *) lcudaStreamSetAttribute] = std::string("cudaStreamSetAttribute");
 	}
 	assert(lcudaStreamSetAttribute);
@@ -10719,32 +11980,6 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
 	assert(lcudaStreamIsCapturing);
 	cudaError_t res = 
 		lcudaStreamIsCapturing(stream, pCaptureStatus);
-	return res;
-}
-
-cudaError_t cudaStreamGetCaptureInfo(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus, unsigned long long * pId)
-{
-	static cudaError_t (*lcudaStreamGetCaptureInfo) (cudaStream_t , enum cudaStreamCaptureStatus *, unsigned long long *);
-	if (!lcudaStreamGetCaptureInfo) {
-		lcudaStreamGetCaptureInfo = (cudaError_t (*) (cudaStream_t , enum cudaStreamCaptureStatus *, unsigned long long *)) dlsym(RTLD_NEXT, "cudaStreamGetCaptureInfo");
-		tracer._kernel_map[(void *) lcudaStreamGetCaptureInfo] = std::string("cudaStreamGetCaptureInfo");
-	}
-	assert(lcudaStreamGetCaptureInfo);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cudaError_t res = 
-		lcudaStreamGetCaptureInfo(stream, pCaptureStatus, pId);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcudaStreamGetCaptureInfo);
-	}
 	return res;
 }
 
@@ -11182,6 +12417,32 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 }
         
 
+cudaError_t cudaLaunchKernelExC(const cudaLaunchConfig_t * config, const void * func, void ** args)
+{
+	static cudaError_t (*lcudaLaunchKernelExC) (const cudaLaunchConfig_t *, const void *, void **);
+	if (!lcudaLaunchKernelExC) {
+		lcudaLaunchKernelExC = (cudaError_t (*) (const cudaLaunchConfig_t *, const void *, void **)) dlsym(RTLD_NEXT, "cudaLaunchKernelExC");
+		tracer._kernel_map[(void *) lcudaLaunchKernelExC] = std::string("cudaLaunchKernelExC");
+	}
+	assert(lcudaLaunchKernelExC);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaLaunchKernelExC(config, func, args);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaLaunchKernelExC);
+	}
+	return res;
+}
+
 cudaError_t cudaLaunchCooperativeKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
 	static cudaError_t (*lcudaLaunchCooperativeKernel) (const void *, dim3 , dim3 , void **, size_t , cudaStream_t );
@@ -11490,6 +12751,58 @@ cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBloc
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags);
+	}
+	return res;
+}
+
+cudaError_t cudaOccupancyMaxPotentialClusterSize(int * clusterSize, const void * func, const cudaLaunchConfig_t * launchConfig)
+{
+	static cudaError_t (*lcudaOccupancyMaxPotentialClusterSize) (int *, const void *, const cudaLaunchConfig_t *);
+	if (!lcudaOccupancyMaxPotentialClusterSize) {
+		lcudaOccupancyMaxPotentialClusterSize = (cudaError_t (*) (int *, const void *, const cudaLaunchConfig_t *)) dlsym(RTLD_NEXT, "cudaOccupancyMaxPotentialClusterSize");
+		tracer._kernel_map[(void *) lcudaOccupancyMaxPotentialClusterSize] = std::string("cudaOccupancyMaxPotentialClusterSize");
+	}
+	assert(lcudaOccupancyMaxPotentialClusterSize);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaOccupancyMaxPotentialClusterSize(clusterSize, func, launchConfig);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaOccupancyMaxPotentialClusterSize);
+	}
+	return res;
+}
+
+cudaError_t cudaOccupancyMaxActiveClusters(int * numClusters, const void * func, const cudaLaunchConfig_t * launchConfig)
+{
+	static cudaError_t (*lcudaOccupancyMaxActiveClusters) (int *, const void *, const cudaLaunchConfig_t *);
+	if (!lcudaOccupancyMaxActiveClusters) {
+		lcudaOccupancyMaxActiveClusters = (cudaError_t (*) (int *, const void *, const cudaLaunchConfig_t *)) dlsym(RTLD_NEXT, "cudaOccupancyMaxActiveClusters");
+		tracer._kernel_map[(void *) lcudaOccupancyMaxActiveClusters] = std::string("cudaOccupancyMaxActiveClusters");
+	}
+	assert(lcudaOccupancyMaxActiveClusters);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaOccupancyMaxActiveClusters(numClusters, func, launchConfig);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaOccupancyMaxActiveClusters);
 	}
 	return res;
 }
@@ -12140,6 +13453,58 @@ cudaError_t cudaArrayGetPlane(cudaArray_t * pPlaneArray, cudaArray_t  hArray, un
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudaArrayGetPlane);
+	}
+	return res;
+}
+
+cudaError_t cudaArrayGetMemoryRequirements(struct cudaArrayMemoryRequirements * memoryRequirements, cudaArray_t  array, int  device)
+{
+	static cudaError_t (*lcudaArrayGetMemoryRequirements) (struct cudaArrayMemoryRequirements *, cudaArray_t , int );
+	if (!lcudaArrayGetMemoryRequirements) {
+		lcudaArrayGetMemoryRequirements = (cudaError_t (*) (struct cudaArrayMemoryRequirements *, cudaArray_t , int )) dlsym(RTLD_NEXT, "cudaArrayGetMemoryRequirements");
+		tracer._kernel_map[(void *) lcudaArrayGetMemoryRequirements] = std::string("cudaArrayGetMemoryRequirements");
+	}
+	assert(lcudaArrayGetMemoryRequirements);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaArrayGetMemoryRequirements(memoryRequirements, array, device);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaArrayGetMemoryRequirements);
+	}
+	return res;
+}
+
+cudaError_t cudaMipmappedArrayGetMemoryRequirements(struct cudaArrayMemoryRequirements * memoryRequirements, cudaMipmappedArray_t  mipmap, int  device)
+{
+	static cudaError_t (*lcudaMipmappedArrayGetMemoryRequirements) (struct cudaArrayMemoryRequirements *, cudaMipmappedArray_t , int );
+	if (!lcudaMipmappedArrayGetMemoryRequirements) {
+		lcudaMipmappedArrayGetMemoryRequirements = (cudaError_t (*) (struct cudaArrayMemoryRequirements *, cudaMipmappedArray_t , int )) dlsym(RTLD_NEXT, "cudaMipmappedArrayGetMemoryRequirements");
+		tracer._kernel_map[(void *) lcudaMipmappedArrayGetMemoryRequirements] = std::string("cudaMipmappedArrayGetMemoryRequirements");
+	}
+	assert(lcudaMipmappedArrayGetMemoryRequirements);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaMipmappedArrayGetMemoryRequirements(memoryRequirements, mipmap, device);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaMipmappedArrayGetMemoryRequirements);
 	}
 	return res;
 }
@@ -12820,6 +14185,32 @@ cudaError_t cudaMemPrefetchAsync(const void * devPtr, size_t  count, int  dstDev
 	return res;
 }
 
+cudaError_t cudaMemPrefetchAsync_v2(const void * devPtr, size_t  count, struct cudaMemLocation  location, unsigned int  flags, cudaStream_t  stream)
+{
+	static cudaError_t (*lcudaMemPrefetchAsync_v2) (const void *, size_t , struct cudaMemLocation , unsigned int , cudaStream_t );
+	if (!lcudaMemPrefetchAsync_v2) {
+		lcudaMemPrefetchAsync_v2 = (cudaError_t (*) (const void *, size_t , struct cudaMemLocation , unsigned int , cudaStream_t )) dlsym(RTLD_NEXT, "cudaMemPrefetchAsync_v2");
+		tracer._kernel_map[(void *) lcudaMemPrefetchAsync_v2] = std::string("cudaMemPrefetchAsync_v2");
+	}
+	assert(lcudaMemPrefetchAsync_v2);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaMemPrefetchAsync_v2(devPtr, count, location, flags, stream);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaMemPrefetchAsync_v2);
+	}
+	return res;
+}
+
 cudaError_t cudaMemAdvise(const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, int  device)
 {
 	static cudaError_t (*lcudaMemAdvise) (const void *, size_t , enum cudaMemoryAdvise , int );
@@ -12842,6 +14233,32 @@ cudaError_t cudaMemAdvise(const void * devPtr, size_t  count, enum cudaMemoryAdv
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudaMemAdvise);
+	}
+	return res;
+}
+
+cudaError_t cudaMemAdvise_v2(const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, struct cudaMemLocation  location)
+{
+	static cudaError_t (*lcudaMemAdvise_v2) (const void *, size_t , enum cudaMemoryAdvise , struct cudaMemLocation );
+	if (!lcudaMemAdvise_v2) {
+		lcudaMemAdvise_v2 = (cudaError_t (*) (const void *, size_t , enum cudaMemoryAdvise , struct cudaMemLocation )) dlsym(RTLD_NEXT, "cudaMemAdvise_v2");
+		tracer._kernel_map[(void *) lcudaMemAdvise_v2] = std::string("cudaMemAdvise_v2");
+	}
+	assert(lcudaMemAdvise_v2);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaMemAdvise_v2(devPtr, count, advice, location);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaMemAdvise_v2);
 	}
 	return res;
 }
@@ -13678,240 +15095,6 @@ cudaError_t cudaGraphicsResourceGetMappedMipmappedArray(cudaMipmappedArray_t * m
 	return res;
 }
 
-cudaError_t cudaBindTexture(size_t * offset, const struct textureReference * texref, const void * devPtr, const struct cudaChannelFormatDesc * desc, size_t  size)
-{
-	static cudaError_t (*lcudaBindTexture) (size_t *, const struct textureReference *, const void *, const struct cudaChannelFormatDesc *, size_t );
-	if (!lcudaBindTexture) {
-		lcudaBindTexture = (cudaError_t (*) (size_t *, const struct textureReference *, const void *, const struct cudaChannelFormatDesc *, size_t )) dlsym(RTLD_NEXT, "cudaBindTexture");
-		tracer._kernel_map[(void *) lcudaBindTexture] = std::string("cudaBindTexture");
-	}
-	assert(lcudaBindTexture);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cudaError_t res = 
-		lcudaBindTexture(offset, texref, devPtr, desc, size);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcudaBindTexture);
-	}
-	return res;
-}
-
-cudaError_t cudaBindTexture2D(size_t * offset, const struct textureReference * texref, const void * devPtr, const struct cudaChannelFormatDesc * desc, size_t  width, size_t  height, size_t  pitch)
-{
-	static cudaError_t (*lcudaBindTexture2D) (size_t *, const struct textureReference *, const void *, const struct cudaChannelFormatDesc *, size_t , size_t , size_t );
-	if (!lcudaBindTexture2D) {
-		lcudaBindTexture2D = (cudaError_t (*) (size_t *, const struct textureReference *, const void *, const struct cudaChannelFormatDesc *, size_t , size_t , size_t )) dlsym(RTLD_NEXT, "cudaBindTexture2D");
-		tracer._kernel_map[(void *) lcudaBindTexture2D] = std::string("cudaBindTexture2D");
-	}
-	assert(lcudaBindTexture2D);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cudaError_t res = 
-		lcudaBindTexture2D(offset, texref, devPtr, desc, width, height, pitch);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcudaBindTexture2D);
-	}
-	return res;
-}
-
-cudaError_t cudaBindTextureToArray(const struct textureReference * texref, cudaArray_const_t  array, const struct cudaChannelFormatDesc * desc)
-{
-	static cudaError_t (*lcudaBindTextureToArray) (const struct textureReference *, cudaArray_const_t , const struct cudaChannelFormatDesc *);
-	if (!lcudaBindTextureToArray) {
-		lcudaBindTextureToArray = (cudaError_t (*) (const struct textureReference *, cudaArray_const_t , const struct cudaChannelFormatDesc *)) dlsym(RTLD_NEXT, "cudaBindTextureToArray");
-		tracer._kernel_map[(void *) lcudaBindTextureToArray] = std::string("cudaBindTextureToArray");
-	}
-	assert(lcudaBindTextureToArray);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cudaError_t res = 
-		lcudaBindTextureToArray(texref, array, desc);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcudaBindTextureToArray);
-	}
-	return res;
-}
-
-cudaError_t cudaBindTextureToMipmappedArray(const struct textureReference * texref, cudaMipmappedArray_const_t  mipmappedArray, const struct cudaChannelFormatDesc * desc)
-{
-	static cudaError_t (*lcudaBindTextureToMipmappedArray) (const struct textureReference *, cudaMipmappedArray_const_t , const struct cudaChannelFormatDesc *);
-	if (!lcudaBindTextureToMipmappedArray) {
-		lcudaBindTextureToMipmappedArray = (cudaError_t (*) (const struct textureReference *, cudaMipmappedArray_const_t , const struct cudaChannelFormatDesc *)) dlsym(RTLD_NEXT, "cudaBindTextureToMipmappedArray");
-		tracer._kernel_map[(void *) lcudaBindTextureToMipmappedArray] = std::string("cudaBindTextureToMipmappedArray");
-	}
-	assert(lcudaBindTextureToMipmappedArray);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cudaError_t res = 
-		lcudaBindTextureToMipmappedArray(texref, mipmappedArray, desc);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcudaBindTextureToMipmappedArray);
-	}
-	return res;
-}
-
-cudaError_t cudaUnbindTexture(const struct textureReference * texref)
-{
-	static cudaError_t (*lcudaUnbindTexture) (const struct textureReference *);
-	if (!lcudaUnbindTexture) {
-		lcudaUnbindTexture = (cudaError_t (*) (const struct textureReference *)) dlsym(RTLD_NEXT, "cudaUnbindTexture");
-		tracer._kernel_map[(void *) lcudaUnbindTexture] = std::string("cudaUnbindTexture");
-	}
-	assert(lcudaUnbindTexture);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cudaError_t res = 
-		lcudaUnbindTexture(texref);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcudaUnbindTexture);
-	}
-	return res;
-}
-
-cudaError_t cudaGetTextureAlignmentOffset(size_t * offset, const struct textureReference * texref)
-{
-	static cudaError_t (*lcudaGetTextureAlignmentOffset) (size_t *, const struct textureReference *);
-	if (!lcudaGetTextureAlignmentOffset) {
-		lcudaGetTextureAlignmentOffset = (cudaError_t (*) (size_t *, const struct textureReference *)) dlsym(RTLD_NEXT, "cudaGetTextureAlignmentOffset");
-		tracer._kernel_map[(void *) lcudaGetTextureAlignmentOffset] = std::string("cudaGetTextureAlignmentOffset");
-	}
-	assert(lcudaGetTextureAlignmentOffset);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cudaError_t res = 
-		lcudaGetTextureAlignmentOffset(offset, texref);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcudaGetTextureAlignmentOffset);
-	}
-	return res;
-}
-
-cudaError_t cudaGetTextureReference(const struct textureReference ** texref, const void * symbol)
-{
-	static cudaError_t (*lcudaGetTextureReference) (const struct textureReference **, const void *);
-	if (!lcudaGetTextureReference) {
-		lcudaGetTextureReference = (cudaError_t (*) (const struct textureReference **, const void *)) dlsym(RTLD_NEXT, "cudaGetTextureReference");
-		tracer._kernel_map[(void *) lcudaGetTextureReference] = std::string("cudaGetTextureReference");
-	}
-	assert(lcudaGetTextureReference);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cudaError_t res = 
-		lcudaGetTextureReference(texref, symbol);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcudaGetTextureReference);
-	}
-	return res;
-}
-
-cudaError_t cudaBindSurfaceToArray(const struct surfaceReference * surfref, cudaArray_const_t  array, const struct cudaChannelFormatDesc * desc)
-{
-	static cudaError_t (*lcudaBindSurfaceToArray) (const struct surfaceReference *, cudaArray_const_t , const struct cudaChannelFormatDesc *);
-	if (!lcudaBindSurfaceToArray) {
-		lcudaBindSurfaceToArray = (cudaError_t (*) (const struct surfaceReference *, cudaArray_const_t , const struct cudaChannelFormatDesc *)) dlsym(RTLD_NEXT, "cudaBindSurfaceToArray");
-		tracer._kernel_map[(void *) lcudaBindSurfaceToArray] = std::string("cudaBindSurfaceToArray");
-	}
-	assert(lcudaBindSurfaceToArray);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cudaError_t res = 
-		lcudaBindSurfaceToArray(surfref, array, desc);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcudaBindSurfaceToArray);
-	}
-	return res;
-}
-
-cudaError_t cudaGetSurfaceReference(const struct surfaceReference ** surfref, const void * symbol)
-{
-	static cudaError_t (*lcudaGetSurfaceReference) (const struct surfaceReference **, const void *);
-	if (!lcudaGetSurfaceReference) {
-		lcudaGetSurfaceReference = (cudaError_t (*) (const struct surfaceReference **, const void *)) dlsym(RTLD_NEXT, "cudaGetSurfaceReference");
-		tracer._kernel_map[(void *) lcudaGetSurfaceReference] = std::string("cudaGetSurfaceReference");
-	}
-	assert(lcudaGetSurfaceReference);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cudaError_t res = 
-		lcudaGetSurfaceReference(surfref, symbol);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcudaGetSurfaceReference);
-	}
-	return res;
-}
-
 cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc * desc, cudaArray_const_t  array)
 {
 	static cudaError_t (*lcudaGetChannelDesc) (struct cudaChannelFormatDesc *, cudaArray_const_t );
@@ -14354,11 +15537,11 @@ cudaError_t cudaGraphKernelNodeCopyAttributes(cudaGraphNode_t  hSrc, cudaGraphNo
 	return res;
 }
 
-cudaError_t cudaGraphKernelNodeGetAttribute(cudaGraphNode_t  hNode, enum cudaKernelNodeAttrID  attr, union cudaKernelNodeAttrValue * value_out)
+cudaError_t cudaGraphKernelNodeGetAttribute(cudaGraphNode_t  hNode, cudaLaunchAttributeID  attr, cudaLaunchAttributeValue * value_out)
 {
-	static cudaError_t (*lcudaGraphKernelNodeGetAttribute) (cudaGraphNode_t , enum cudaKernelNodeAttrID , union cudaKernelNodeAttrValue *);
+	static cudaError_t (*lcudaGraphKernelNodeGetAttribute) (cudaGraphNode_t , cudaLaunchAttributeID , cudaLaunchAttributeValue *);
 	if (!lcudaGraphKernelNodeGetAttribute) {
-		lcudaGraphKernelNodeGetAttribute = (cudaError_t (*) (cudaGraphNode_t , enum cudaKernelNodeAttrID , union cudaKernelNodeAttrValue *)) dlsym(RTLD_NEXT, "cudaGraphKernelNodeGetAttribute");
+		lcudaGraphKernelNodeGetAttribute = (cudaError_t (*) (cudaGraphNode_t , cudaLaunchAttributeID , cudaLaunchAttributeValue *)) dlsym(RTLD_NEXT, "cudaGraphKernelNodeGetAttribute");
 		tracer._kernel_map[(void *) lcudaGraphKernelNodeGetAttribute] = std::string("cudaGraphKernelNodeGetAttribute");
 	}
 	assert(lcudaGraphKernelNodeGetAttribute);
@@ -14380,11 +15563,11 @@ cudaError_t cudaGraphKernelNodeGetAttribute(cudaGraphNode_t  hNode, enum cudaKer
 	return res;
 }
 
-cudaError_t cudaGraphKernelNodeSetAttribute(cudaGraphNode_t  hNode, enum cudaKernelNodeAttrID  attr, const union cudaKernelNodeAttrValue * value)
+cudaError_t cudaGraphKernelNodeSetAttribute(cudaGraphNode_t  hNode, cudaLaunchAttributeID  attr, const cudaLaunchAttributeValue * value)
 {
-	static cudaError_t (*lcudaGraphKernelNodeSetAttribute) (cudaGraphNode_t , enum cudaKernelNodeAttrID , const union cudaKernelNodeAttrValue *);
+	static cudaError_t (*lcudaGraphKernelNodeSetAttribute) (cudaGraphNode_t , cudaLaunchAttributeID , const cudaLaunchAttributeValue *);
 	if (!lcudaGraphKernelNodeSetAttribute) {
-		lcudaGraphKernelNodeSetAttribute = (cudaError_t (*) (cudaGraphNode_t , enum cudaKernelNodeAttrID , const union cudaKernelNodeAttrValue *)) dlsym(RTLD_NEXT, "cudaGraphKernelNodeSetAttribute");
+		lcudaGraphKernelNodeSetAttribute = (cudaError_t (*) (cudaGraphNode_t , cudaLaunchAttributeID , const cudaLaunchAttributeValue *)) dlsym(RTLD_NEXT, "cudaGraphKernelNodeSetAttribute");
 		tracer._kernel_map[(void *) lcudaGraphKernelNodeSetAttribute] = std::string("cudaGraphKernelNodeSetAttribute");
 	}
 	assert(lcudaGraphKernelNodeSetAttribute);
@@ -15654,11 +16837,11 @@ cudaError_t cudaGraphDestroyNode(cudaGraphNode_t  node)
 	return res;
 }
 
-cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphNode_t * pErrorNode, char * pLogBuffer, size_t  bufferSize)
+cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags)
 {
-	static cudaError_t (*lcudaGraphInstantiate) (cudaGraphExec_t *, cudaGraph_t , cudaGraphNode_t *, char *, size_t );
+	static cudaError_t (*lcudaGraphInstantiate) (cudaGraphExec_t *, cudaGraph_t , unsigned long long );
 	if (!lcudaGraphInstantiate) {
-		lcudaGraphInstantiate = (cudaError_t (*) (cudaGraphExec_t *, cudaGraph_t , cudaGraphNode_t *, char *, size_t )) dlsym(RTLD_NEXT, "cudaGraphInstantiate");
+		lcudaGraphInstantiate = (cudaError_t (*) (cudaGraphExec_t *, cudaGraph_t , unsigned long long )) dlsym(RTLD_NEXT, "cudaGraphInstantiate");
 		tracer._kernel_map[(void *) lcudaGraphInstantiate] = std::string("cudaGraphInstantiate");
 	}
 	assert(lcudaGraphInstantiate);
@@ -15668,7 +16851,7 @@ cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  grap
         _start = std::chrono::high_resolution_clock::now();
     }
 	cudaError_t res = 
-		lcudaGraphInstantiate(pGraphExec, graph, pErrorNode, pLogBuffer, bufferSize);
+		lcudaGraphInstantiate(pGraphExec, graph, flags);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
@@ -15702,6 +16885,58 @@ cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t * pGraphExec, cudaGrap
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudaGraphInstantiateWithFlags);
+	}
+	return res;
+}
+
+cudaError_t cudaGraphInstantiateWithParams(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphInstantiateParams * instantiateParams)
+{
+	static cudaError_t (*lcudaGraphInstantiateWithParams) (cudaGraphExec_t *, cudaGraph_t , cudaGraphInstantiateParams *);
+	if (!lcudaGraphInstantiateWithParams) {
+		lcudaGraphInstantiateWithParams = (cudaError_t (*) (cudaGraphExec_t *, cudaGraph_t , cudaGraphInstantiateParams *)) dlsym(RTLD_NEXT, "cudaGraphInstantiateWithParams");
+		tracer._kernel_map[(void *) lcudaGraphInstantiateWithParams] = std::string("cudaGraphInstantiateWithParams");
+	}
+	assert(lcudaGraphInstantiateWithParams);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaGraphInstantiateWithParams(pGraphExec, graph, instantiateParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaGraphInstantiateWithParams);
+	}
+	return res;
+}
+
+cudaError_t cudaGraphExecGetFlags(cudaGraphExec_t  graphExec, unsigned long long * flags)
+{
+	static cudaError_t (*lcudaGraphExecGetFlags) (cudaGraphExec_t , unsigned long long *);
+	if (!lcudaGraphExecGetFlags) {
+		lcudaGraphExecGetFlags = (cudaError_t (*) (cudaGraphExec_t , unsigned long long *)) dlsym(RTLD_NEXT, "cudaGraphExecGetFlags");
+		tracer._kernel_map[(void *) lcudaGraphExecGetFlags] = std::string("cudaGraphExecGetFlags");
+	}
+	assert(lcudaGraphExecGetFlags);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaGraphExecGetFlags(graphExec, flags);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaGraphExecGetFlags);
 	}
 	return res;
 }
@@ -16018,11 +17253,63 @@ cudaError_t cudaGraphExecExternalSemaphoresWaitNodeSetParams(cudaGraphExec_t  hG
 	return res;
 }
 
-cudaError_t cudaGraphExecUpdate(cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph, cudaGraphNode_t * hErrorNode_out, enum cudaGraphExecUpdateResult * updateResult_out)
+cudaError_t cudaGraphNodeSetEnabled(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, unsigned int  isEnabled)
 {
-	static cudaError_t (*lcudaGraphExecUpdate) (cudaGraphExec_t , cudaGraph_t , cudaGraphNode_t *, enum cudaGraphExecUpdateResult *);
+	static cudaError_t (*lcudaGraphNodeSetEnabled) (cudaGraphExec_t , cudaGraphNode_t , unsigned int );
+	if (!lcudaGraphNodeSetEnabled) {
+		lcudaGraphNodeSetEnabled = (cudaError_t (*) (cudaGraphExec_t , cudaGraphNode_t , unsigned int )) dlsym(RTLD_NEXT, "cudaGraphNodeSetEnabled");
+		tracer._kernel_map[(void *) lcudaGraphNodeSetEnabled] = std::string("cudaGraphNodeSetEnabled");
+	}
+	assert(lcudaGraphNodeSetEnabled);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaGraphNodeSetEnabled(hGraphExec, hNode, isEnabled);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaGraphNodeSetEnabled);
+	}
+	return res;
+}
+
+cudaError_t cudaGraphNodeGetEnabled(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, unsigned int * isEnabled)
+{
+	static cudaError_t (*lcudaGraphNodeGetEnabled) (cudaGraphExec_t , cudaGraphNode_t , unsigned int *);
+	if (!lcudaGraphNodeGetEnabled) {
+		lcudaGraphNodeGetEnabled = (cudaError_t (*) (cudaGraphExec_t , cudaGraphNode_t , unsigned int *)) dlsym(RTLD_NEXT, "cudaGraphNodeGetEnabled");
+		tracer._kernel_map[(void *) lcudaGraphNodeGetEnabled] = std::string("cudaGraphNodeGetEnabled");
+	}
+	assert(lcudaGraphNodeGetEnabled);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaGraphNodeGetEnabled(hGraphExec, hNode, isEnabled);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaGraphNodeGetEnabled);
+	}
+	return res;
+}
+
+cudaError_t cudaGraphExecUpdate(cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph, cudaGraphExecUpdateResultInfo * resultInfo)
+{
+	static cudaError_t (*lcudaGraphExecUpdate) (cudaGraphExec_t , cudaGraph_t , cudaGraphExecUpdateResultInfo *);
 	if (!lcudaGraphExecUpdate) {
-		lcudaGraphExecUpdate = (cudaError_t (*) (cudaGraphExec_t , cudaGraph_t , cudaGraphNode_t *, enum cudaGraphExecUpdateResult *)) dlsym(RTLD_NEXT, "cudaGraphExecUpdate");
+		lcudaGraphExecUpdate = (cudaError_t (*) (cudaGraphExec_t , cudaGraph_t , cudaGraphExecUpdateResultInfo *)) dlsym(RTLD_NEXT, "cudaGraphExecUpdate");
 		tracer._kernel_map[(void *) lcudaGraphExecUpdate] = std::string("cudaGraphExecUpdate");
 	}
 	assert(lcudaGraphExecUpdate);
@@ -16032,7 +17319,7 @@ cudaError_t cudaGraphExecUpdate(cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph
         _start = std::chrono::high_resolution_clock::now();
     }
 	cudaError_t res = 
-		lcudaGraphExecUpdate(hGraphExec, hGraph, hErrorNode_out, updateResult_out);
+		lcudaGraphExecUpdate(hGraphExec, hGraph, resultInfo);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
@@ -16304,11 +17591,89 @@ cudaError_t cudaGraphReleaseUserObject(cudaGraph_t  graph, cudaUserObject_t  obj
 	return res;
 }
 
-cudaError_t cudaGetDriverEntryPoint(const char * symbol, void ** funcPtr, unsigned long long  flags)
+cudaError_t cudaGraphAddNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, struct cudaGraphNodeParams * nodeParams)
 {
-	static cudaError_t (*lcudaGetDriverEntryPoint) (const char *, void **, unsigned long long );
+	static cudaError_t (*lcudaGraphAddNode) (cudaGraphNode_t *, cudaGraph_t , const cudaGraphNode_t *, size_t , struct cudaGraphNodeParams *);
+	if (!lcudaGraphAddNode) {
+		lcudaGraphAddNode = (cudaError_t (*) (cudaGraphNode_t *, cudaGraph_t , const cudaGraphNode_t *, size_t , struct cudaGraphNodeParams *)) dlsym(RTLD_NEXT, "cudaGraphAddNode");
+		tracer._kernel_map[(void *) lcudaGraphAddNode] = std::string("cudaGraphAddNode");
+	}
+	assert(lcudaGraphAddNode);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaGraphAddNode(pGraphNode, graph, pDependencies, numDependencies, nodeParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaGraphAddNode);
+	}
+	return res;
+}
+
+cudaError_t cudaGraphNodeSetParams(cudaGraphNode_t  node, struct cudaGraphNodeParams * nodeParams)
+{
+	static cudaError_t (*lcudaGraphNodeSetParams) (cudaGraphNode_t , struct cudaGraphNodeParams *);
+	if (!lcudaGraphNodeSetParams) {
+		lcudaGraphNodeSetParams = (cudaError_t (*) (cudaGraphNode_t , struct cudaGraphNodeParams *)) dlsym(RTLD_NEXT, "cudaGraphNodeSetParams");
+		tracer._kernel_map[(void *) lcudaGraphNodeSetParams] = std::string("cudaGraphNodeSetParams");
+	}
+	assert(lcudaGraphNodeSetParams);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaGraphNodeSetParams(node, nodeParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaGraphNodeSetParams);
+	}
+	return res;
+}
+
+cudaError_t cudaGraphExecNodeSetParams(cudaGraphExec_t  graphExec, cudaGraphNode_t  node, struct cudaGraphNodeParams * nodeParams)
+{
+	static cudaError_t (*lcudaGraphExecNodeSetParams) (cudaGraphExec_t , cudaGraphNode_t , struct cudaGraphNodeParams *);
+	if (!lcudaGraphExecNodeSetParams) {
+		lcudaGraphExecNodeSetParams = (cudaError_t (*) (cudaGraphExec_t , cudaGraphNode_t , struct cudaGraphNodeParams *)) dlsym(RTLD_NEXT, "cudaGraphExecNodeSetParams");
+		tracer._kernel_map[(void *) lcudaGraphExecNodeSetParams] = std::string("cudaGraphExecNodeSetParams");
+	}
+	assert(lcudaGraphExecNodeSetParams);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaGraphExecNodeSetParams(graphExec, node, nodeParams);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaGraphExecNodeSetParams);
+	}
+	return res;
+}
+
+cudaError_t cudaGetDriverEntryPoint(const char * symbol, void ** funcPtr, unsigned long long  flags, enum cudaDriverEntryPointQueryResult * driverStatus)
+{
+	static cudaError_t (*lcudaGetDriverEntryPoint) (const char *, void **, unsigned long long , enum cudaDriverEntryPointQueryResult *);
 	if (!lcudaGetDriverEntryPoint) {
-		lcudaGetDriverEntryPoint = (cudaError_t (*) (const char *, void **, unsigned long long )) dlsym(RTLD_NEXT, "cudaGetDriverEntryPoint");
+		lcudaGetDriverEntryPoint = (cudaError_t (*) (const char *, void **, unsigned long long , enum cudaDriverEntryPointQueryResult *)) dlsym(RTLD_NEXT, "cudaGetDriverEntryPoint");
 		tracer._kernel_map[(void *) lcudaGetDriverEntryPoint] = std::string("cudaGetDriverEntryPoint");
 	}
 	assert(lcudaGetDriverEntryPoint);
@@ -16318,7 +17683,7 @@ cudaError_t cudaGetDriverEntryPoint(const char * symbol, void ** funcPtr, unsign
         _start = std::chrono::high_resolution_clock::now();
     }
 	cudaError_t res = 
-		lcudaGetDriverEntryPoint(symbol, funcPtr, flags);
+		lcudaGetDriverEntryPoint(symbol, funcPtr, flags, driverStatus);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
@@ -16378,6 +17743,32 @@ cudaError_t cudaGetFuncBySymbol(cudaFunction_t*  functionPtr, const void*  symbo
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcudaGetFuncBySymbol);
+	}
+	return res;
+}
+
+cudaError_t cudaGetKernel(cudaKernel_t * kernelPtr, const void * entryFuncAddr)
+{
+	static cudaError_t (*lcudaGetKernel) (cudaKernel_t *, const void *);
+	if (!lcudaGetKernel) {
+		lcudaGetKernel = (cudaError_t (*) (cudaKernel_t *, const void *)) dlsym(RTLD_NEXT, "cudaGetKernel");
+		tracer._kernel_map[(void *) lcudaGetKernel] = std::string("cudaGetKernel");
+	}
+	assert(lcudaGetKernel);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cudaError_t res = 
+		lcudaGetKernel(kernelPtr, entryFuncAddr);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcudaGetKernel);
 	}
 	return res;
 }
@@ -19944,7 +21335,7 @@ cudnnStatus_t cudnnGetRNNTrainingReserveSize(cudnnHandle_t  handle, const cudnnR
 	return res;
 }
 
-cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fMode, cudnnRNNDataDescriptor_t  xDesc, size_t * workSpaceSize, size_t * reserveSpaceSize)
+cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fwdMode, cudnnRNNDataDescriptor_t  xDesc, size_t * workSpaceSize, size_t * reserveSpaceSize)
 {
 	static cudnnStatus_t (*lcudnnGetRNNTempSpaceSizes) (cudnnHandle_t , cudnnRNNDescriptor_t , cudnnForwardMode_t , cudnnRNNDataDescriptor_t , size_t *, size_t *);
 	if (!lcudnnGetRNNTempSpaceSizes) {
@@ -19958,7 +21349,7 @@ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescripto
         _start = std::chrono::high_resolution_clock::now();
     }
 	cudnnStatus_t res = 
-		lcudnnGetRNNTempSpaceSizes(handle, rnnDesc, fMode, xDesc, workSpaceSize, reserveSpaceSize);
+		lcudnnGetRNNTempSpaceSizes(handle, rnnDesc, fwdMode, xDesc, workSpaceSize, reserveSpaceSize);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
@@ -23389,6 +24780,32 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 	return res;
 }
 
+cublasStatus_t cublasSetVector_64(int64_t  n, int64_t  elemSize, const void*  x, int64_t  incx, void*  devicePtr, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasSetVector_64) (int64_t , int64_t , const void* , int64_t , void* , int64_t );
+	if (!lcublasSetVector_64) {
+		lcublasSetVector_64 = (cublasStatus_t (*) (int64_t , int64_t , const void* , int64_t , void* , int64_t )) dlsym(RTLD_NEXT, "cublasSetVector_64");
+		tracer._kernel_map[(void *) lcublasSetVector_64] = std::string("cublasSetVector_64");
+	}
+	assert(lcublasSetVector_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSetVector_64(n, elemSize, x, incx, devicePtr, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSetVector_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasGetVector(int  n, int  elemSize, const void*  x, int  incx, void*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasGetVector) (int , int , const void* , int , void* , int );
@@ -23411,6 +24828,32 @@ cublasStatus_t cublasGetVector(int  n, int  elemSize, const void*  x, int  incx,
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasGetVector);
+	}
+	return res;
+}
+
+cublasStatus_t cublasGetVector_64(int64_t  n, int64_t  elemSize, const void*  x, int64_t  incx, void*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasGetVector_64) (int64_t , int64_t , const void* , int64_t , void* , int64_t );
+	if (!lcublasGetVector_64) {
+		lcublasGetVector_64 = (cublasStatus_t (*) (int64_t , int64_t , const void* , int64_t , void* , int64_t )) dlsym(RTLD_NEXT, "cublasGetVector_64");
+		tracer._kernel_map[(void *) lcublasGetVector_64] = std::string("cublasGetVector_64");
+	}
+	assert(lcublasGetVector_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasGetVector_64(n, elemSize, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasGetVector_64);
 	}
 	return res;
 }
@@ -23441,6 +24884,32 @@ cublasStatus_t cublasSetMatrix(int  rows, int  cols, int  elemSize, const void* 
 	return res;
 }
 
+cublasStatus_t cublasSetMatrix_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb)
+{
+	static cublasStatus_t (*lcublasSetMatrix_64) (int64_t , int64_t , int64_t , const void* , int64_t , void* , int64_t );
+	if (!lcublasSetMatrix_64) {
+		lcublasSetMatrix_64 = (cublasStatus_t (*) (int64_t , int64_t , int64_t , const void* , int64_t , void* , int64_t )) dlsym(RTLD_NEXT, "cublasSetMatrix_64");
+		tracer._kernel_map[(void *) lcublasSetMatrix_64] = std::string("cublasSetMatrix_64");
+	}
+	assert(lcublasSetMatrix_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSetMatrix_64(rows, cols, elemSize, A, lda, B, ldb);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSetMatrix_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasGetMatrix(int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb)
 {
 	static cublasStatus_t (*lcublasGetMatrix) (int , int , int , const void* , int , void* , int );
@@ -23463,6 +24932,32 @@ cublasStatus_t cublasGetMatrix(int  rows, int  cols, int  elemSize, const void* 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasGetMatrix);
+	}
+	return res;
+}
+
+cublasStatus_t cublasGetMatrix_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb)
+{
+	static cublasStatus_t (*lcublasGetMatrix_64) (int64_t , int64_t , int64_t , const void* , int64_t , void* , int64_t );
+	if (!lcublasGetMatrix_64) {
+		lcublasGetMatrix_64 = (cublasStatus_t (*) (int64_t , int64_t , int64_t , const void* , int64_t , void* , int64_t )) dlsym(RTLD_NEXT, "cublasGetMatrix_64");
+		tracer._kernel_map[(void *) lcublasGetMatrix_64] = std::string("cublasGetMatrix_64");
+	}
+	assert(lcublasGetMatrix_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasGetMatrix_64(rows, cols, elemSize, A, lda, B, ldb);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasGetMatrix_64);
 	}
 	return res;
 }
@@ -23493,6 +24988,32 @@ cublasStatus_t cublasSetVectorAsync(int  n, int  elemSize, const void*  hostPtr,
 	return res;
 }
 
+cublasStatus_t cublasSetVectorAsync_64(int64_t  n, int64_t  elemSize, const void*  hostPtr, int64_t  incx, void*  devicePtr, int64_t  incy, cudaStream_t  stream)
+{
+	static cublasStatus_t (*lcublasSetVectorAsync_64) (int64_t , int64_t , const void* , int64_t , void* , int64_t , cudaStream_t );
+	if (!lcublasSetVectorAsync_64) {
+		lcublasSetVectorAsync_64 = (cublasStatus_t (*) (int64_t , int64_t , const void* , int64_t , void* , int64_t , cudaStream_t )) dlsym(RTLD_NEXT, "cublasSetVectorAsync_64");
+		tracer._kernel_map[(void *) lcublasSetVectorAsync_64] = std::string("cublasSetVectorAsync_64");
+	}
+	assert(lcublasSetVectorAsync_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSetVectorAsync_64(n, elemSize, hostPtr, incx, devicePtr, incy, stream);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSetVectorAsync_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasGetVectorAsync(int  n, int  elemSize, const void*  devicePtr, int  incx, void*  hostPtr, int  incy, cudaStream_t  stream)
 {
 	static cublasStatus_t (*lcublasGetVectorAsync) (int , int , const void* , int , void* , int , cudaStream_t );
@@ -23515,6 +25036,32 @@ cublasStatus_t cublasGetVectorAsync(int  n, int  elemSize, const void*  devicePt
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasGetVectorAsync);
+	}
+	return res;
+}
+
+cublasStatus_t cublasGetVectorAsync_64(int64_t  n, int64_t  elemSize, const void*  devicePtr, int64_t  incx, void*  hostPtr, int64_t  incy, cudaStream_t  stream)
+{
+	static cublasStatus_t (*lcublasGetVectorAsync_64) (int64_t , int64_t , const void* , int64_t , void* , int64_t , cudaStream_t );
+	if (!lcublasGetVectorAsync_64) {
+		lcublasGetVectorAsync_64 = (cublasStatus_t (*) (int64_t , int64_t , const void* , int64_t , void* , int64_t , cudaStream_t )) dlsym(RTLD_NEXT, "cublasGetVectorAsync_64");
+		tracer._kernel_map[(void *) lcublasGetVectorAsync_64] = std::string("cublasGetVectorAsync_64");
+	}
+	assert(lcublasGetVectorAsync_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasGetVectorAsync_64(n, elemSize, devicePtr, incx, hostPtr, incy, stream);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasGetVectorAsync_64);
 	}
 	return res;
 }
@@ -23545,6 +25092,32 @@ cublasStatus_t cublasSetMatrixAsync(int  rows, int  cols, int  elemSize, const v
 	return res;
 }
 
+cublasStatus_t cublasSetMatrixAsync_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb, cudaStream_t  stream)
+{
+	static cublasStatus_t (*lcublasSetMatrixAsync_64) (int64_t , int64_t , int64_t , const void* , int64_t , void* , int64_t , cudaStream_t );
+	if (!lcublasSetMatrixAsync_64) {
+		lcublasSetMatrixAsync_64 = (cublasStatus_t (*) (int64_t , int64_t , int64_t , const void* , int64_t , void* , int64_t , cudaStream_t )) dlsym(RTLD_NEXT, "cublasSetMatrixAsync_64");
+		tracer._kernel_map[(void *) lcublasSetMatrixAsync_64] = std::string("cublasSetMatrixAsync_64");
+	}
+	assert(lcublasSetMatrixAsync_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSetMatrixAsync_64(rows, cols, elemSize, A, lda, B, ldb, stream);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSetMatrixAsync_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasGetMatrixAsync(int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb, cudaStream_t  stream)
 {
 	static cublasStatus_t (*lcublasGetMatrixAsync) (int , int , int , const void* , int , void* , int , cudaStream_t );
@@ -23567,6 +25140,32 @@ cublasStatus_t cublasGetMatrixAsync(int  rows, int  cols, int  elemSize, const v
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasGetMatrixAsync);
+	}
+	return res;
+}
+
+cublasStatus_t cublasGetMatrixAsync_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb, cudaStream_t  stream)
+{
+	static cublasStatus_t (*lcublasGetMatrixAsync_64) (int64_t , int64_t , int64_t , const void* , int64_t , void* , int64_t , cudaStream_t );
+	if (!lcublasGetMatrixAsync_64) {
+		lcublasGetMatrixAsync_64 = (cublasStatus_t (*) (int64_t , int64_t , int64_t , const void* , int64_t , void* , int64_t , cudaStream_t )) dlsym(RTLD_NEXT, "cublasGetMatrixAsync_64");
+		tracer._kernel_map[(void *) lcublasGetMatrixAsync_64] = std::string("cublasGetMatrixAsync_64");
+	}
+	assert(lcublasGetMatrixAsync_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasGetMatrixAsync_64(rows, cols, elemSize, A, lda, B, ldb, stream);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasGetMatrixAsync_64);
 	}
 	return res;
 }
@@ -23621,6 +25220,32 @@ cublasStatus_t cublasNrm2Ex(cublasHandle_t  handle, int  n, const void*  x, cuda
 	return res;
 }
 
+cublasStatus_t cublasNrm2Ex_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  result, cudaDataType  resultType, cudaDataType  executionType)
+{
+	static cublasStatus_t (*lcublasNrm2Ex_64) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , void* , cudaDataType , cudaDataType );
+	if (!lcublasNrm2Ex_64) {
+		lcublasNrm2Ex_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , void* , cudaDataType , cudaDataType )) dlsym(RTLD_NEXT, "cublasNrm2Ex_64");
+		tracer._kernel_map[(void *) lcublasNrm2Ex_64] = std::string("cublasNrm2Ex_64");
+	}
+	assert(lcublasNrm2Ex_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasNrm2Ex_64(handle, n, x, xType, incx, result, resultType, executionType);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasNrm2Ex_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasSnrm2_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  result)
 {
 	static cublasStatus_t (*lcublasSnrm2_v2) (cublasHandle_t , int , const float* , int , float* );
@@ -23643,6 +25268,32 @@ cublasStatus_t cublasSnrm2_v2(cublasHandle_t  handle, int  n, const float*  x, i
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasSnrm2_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  result)
+{
+	static cublasStatus_t (*lcublasSnrm2_v2_64) (cublasHandle_t , int64_t , const float* , int64_t , float* );
+	if (!lcublasSnrm2_v2_64) {
+		lcublasSnrm2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const float* , int64_t , float* )) dlsym(RTLD_NEXT, "cublasSnrm2_v2_64");
+		tracer._kernel_map[(void *) lcublasSnrm2_v2_64] = std::string("cublasSnrm2_v2_64");
+	}
+	assert(lcublasSnrm2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSnrm2_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSnrm2_v2_64);
 	}
 	return res;
 }
@@ -23673,6 +25324,32 @@ cublasStatus_t cublasDnrm2_v2(cublasHandle_t  handle, int  n, const double*  x, 
 	return res;
 }
 
+cublasStatus_t cublasDnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  result)
+{
+	static cublasStatus_t (*lcublasDnrm2_v2_64) (cublasHandle_t , int64_t , const double* , int64_t , double* );
+	if (!lcublasDnrm2_v2_64) {
+		lcublasDnrm2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const double* , int64_t , double* )) dlsym(RTLD_NEXT, "cublasDnrm2_v2_64");
+		tracer._kernel_map[(void *) lcublasDnrm2_v2_64] = std::string("cublasDnrm2_v2_64");
+	}
+	assert(lcublasDnrm2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDnrm2_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDnrm2_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasScnrm2_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, float*  result)
 {
 	static cublasStatus_t (*lcublasScnrm2_v2) (cublasHandle_t , int , const cuComplex* , int , float* );
@@ -23695,6 +25372,32 @@ cublasStatus_t cublasScnrm2_v2(cublasHandle_t  handle, int  n, const cuComplex* 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasScnrm2_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasScnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, float*  result)
+{
+	static cublasStatus_t (*lcublasScnrm2_v2_64) (cublasHandle_t , int64_t , const cuComplex* , int64_t , float* );
+	if (!lcublasScnrm2_v2_64) {
+		lcublasScnrm2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuComplex* , int64_t , float* )) dlsym(RTLD_NEXT, "cublasScnrm2_v2_64");
+		tracer._kernel_map[(void *) lcublasScnrm2_v2_64] = std::string("cublasScnrm2_v2_64");
+	}
+	assert(lcublasScnrm2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasScnrm2_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasScnrm2_v2_64);
 	}
 	return res;
 }
@@ -23725,6 +25428,32 @@ cublasStatus_t cublasDznrm2_v2(cublasHandle_t  handle, int  n, const cuDoubleCom
 	return res;
 }
 
+cublasStatus_t cublasDznrm2_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, double*  result)
+{
+	static cublasStatus_t (*lcublasDznrm2_v2_64) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , double* );
+	if (!lcublasDznrm2_v2_64) {
+		lcublasDznrm2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , double* )) dlsym(RTLD_NEXT, "cublasDznrm2_v2_64");
+		tracer._kernel_map[(void *) lcublasDznrm2_v2_64] = std::string("cublasDznrm2_v2_64");
+	}
+	assert(lcublasDznrm2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDznrm2_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDznrm2_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDotEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, const void*  y, cudaDataType  yType, int  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)
 {
 	static cublasStatus_t (*lcublasDotEx) (cublasHandle_t , int , const void* , cudaDataType , int , const void* , cudaDataType , int , void* , cudaDataType , cudaDataType );
@@ -23747,6 +25476,32 @@ cublasStatus_t cublasDotEx(cublasHandle_t  handle, int  n, const void*  x, cudaD
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDotEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDotEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, const void*  y, cudaDataType  yType, int64_t  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)
+{
+	static cublasStatus_t (*lcublasDotEx_64) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , void* , cudaDataType , cudaDataType );
+	if (!lcublasDotEx_64) {
+		lcublasDotEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , void* , cudaDataType , cudaDataType )) dlsym(RTLD_NEXT, "cublasDotEx_64");
+		tracer._kernel_map[(void *) lcublasDotEx_64] = std::string("cublasDotEx_64");
+	}
+	assert(lcublasDotEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDotEx_64(handle, n, x, xType, incx, y, yType, incy, result, resultType, executionType);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDotEx_64);
 	}
 	return res;
 }
@@ -23777,6 +25532,32 @@ cublasStatus_t cublasDotcEx(cublasHandle_t  handle, int  n, const void*  x, cuda
 	return res;
 }
 
+cublasStatus_t cublasDotcEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, const void*  y, cudaDataType  yType, int64_t  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)
+{
+	static cublasStatus_t (*lcublasDotcEx_64) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , void* , cudaDataType , cudaDataType );
+	if (!lcublasDotcEx_64) {
+		lcublasDotcEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , void* , cudaDataType , cudaDataType )) dlsym(RTLD_NEXT, "cublasDotcEx_64");
+		tracer._kernel_map[(void *) lcublasDotcEx_64] = std::string("cublasDotcEx_64");
+	}
+	assert(lcublasDotcEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDotcEx_64(handle, n, x, xType, incx, y, yType, incy, result, resultType, executionType);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDotcEx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasSdot_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, const float*  y, int  incy, float*  result)
 {
 	static cublasStatus_t (*lcublasSdot_v2) (cublasHandle_t , int , const float* , int , const float* , int , float* );
@@ -23799,6 +25580,32 @@ cublasStatus_t cublasSdot_v2(cublasHandle_t  handle, int  n, const float*  x, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasSdot_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSdot_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  result)
+{
+	static cublasStatus_t (*lcublasSdot_v2_64) (cublasHandle_t , int64_t , const float* , int64_t , const float* , int64_t , float* );
+	if (!lcublasSdot_v2_64) {
+		lcublasSdot_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const float* , int64_t , const float* , int64_t , float* )) dlsym(RTLD_NEXT, "cublasSdot_v2_64");
+		tracer._kernel_map[(void *) lcublasSdot_v2_64] = std::string("cublasSdot_v2_64");
+	}
+	assert(lcublasSdot_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSdot_v2_64(handle, n, x, incx, y, incy, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSdot_v2_64);
 	}
 	return res;
 }
@@ -23829,6 +25636,32 @@ cublasStatus_t cublasDdot_v2(cublasHandle_t  handle, int  n, const double*  x, i
 	return res;
 }
 
+cublasStatus_t cublasDdot_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  result)
+{
+	static cublasStatus_t (*lcublasDdot_v2_64) (cublasHandle_t , int64_t , const double* , int64_t , const double* , int64_t , double* );
+	if (!lcublasDdot_v2_64) {
+		lcublasDdot_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const double* , int64_t , const double* , int64_t , double* )) dlsym(RTLD_NEXT, "cublasDdot_v2_64");
+		tracer._kernel_map[(void *) lcublasDdot_v2_64] = std::string("cublasDdot_v2_64");
+	}
+	assert(lcublasDdot_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDdot_v2_64(handle, n, x, incx, y, incy, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDdot_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCdotu_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  result)
 {
 	static cublasStatus_t (*lcublasCdotu_v2) (cublasHandle_t , int , const cuComplex* , int , const cuComplex* , int , cuComplex* );
@@ -23851,6 +25684,32 @@ cublasStatus_t cublasCdotu_v2(cublasHandle_t  handle, int  n, const cuComplex*  
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCdotu_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCdotu_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  result)
+{
+	static cublasStatus_t (*lcublasCdotu_v2_64) (cublasHandle_t , int64_t , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* );
+	if (!lcublasCdotu_v2_64) {
+		lcublasCdotu_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* )) dlsym(RTLD_NEXT, "cublasCdotu_v2_64");
+		tracer._kernel_map[(void *) lcublasCdotu_v2_64] = std::string("cublasCdotu_v2_64");
+	}
+	assert(lcublasCdotu_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCdotu_v2_64(handle, n, x, incx, y, incy, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCdotu_v2_64);
 	}
 	return res;
 }
@@ -23881,6 +25740,32 @@ cublasStatus_t cublasCdotc_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 	return res;
 }
 
+cublasStatus_t cublasCdotc_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  result)
+{
+	static cublasStatus_t (*lcublasCdotc_v2_64) (cublasHandle_t , int64_t , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* );
+	if (!lcublasCdotc_v2_64) {
+		lcublasCdotc_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* )) dlsym(RTLD_NEXT, "cublasCdotc_v2_64");
+		tracer._kernel_map[(void *) lcublasCdotc_v2_64] = std::string("cublasCdotc_v2_64");
+	}
+	assert(lcublasCdotc_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCdotc_v2_64(handle, n, x, incx, y, incy, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCdotc_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZdotu_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  result)
 {
 	static cublasStatus_t (*lcublasZdotu_v2) (cublasHandle_t , int , const cuDoubleComplex* , int , const cuDoubleComplex* , int , cuDoubleComplex* );
@@ -23903,6 +25788,32 @@ cublasStatus_t cublasZdotu_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZdotu_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZdotu_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  result)
+{
+	static cublasStatus_t (*lcublasZdotu_v2_64) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* );
+	if (!lcublasZdotu_v2_64) {
+		lcublasZdotu_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* )) dlsym(RTLD_NEXT, "cublasZdotu_v2_64");
+		tracer._kernel_map[(void *) lcublasZdotu_v2_64] = std::string("cublasZdotu_v2_64");
+	}
+	assert(lcublasZdotu_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZdotu_v2_64(handle, n, x, incx, y, incy, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZdotu_v2_64);
 	}
 	return res;
 }
@@ -23933,6 +25844,32 @@ cublasStatus_t cublasZdotc_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 	return res;
 }
 
+cublasStatus_t cublasZdotc_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  result)
+{
+	static cublasStatus_t (*lcublasZdotc_v2_64) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* );
+	if (!lcublasZdotc_v2_64) {
+		lcublasZdotc_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* )) dlsym(RTLD_NEXT, "cublasZdotc_v2_64");
+		tracer._kernel_map[(void *) lcublasZdotc_v2_64] = std::string("cublasZdotc_v2_64");
+	}
+	assert(lcublasZdotc_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZdotc_v2_64(handle, n, x, incx, y, incy, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZdotc_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasScalEx(cublasHandle_t  handle, int  n, const void*  alpha, cudaDataType  alphaType, void*  x, cudaDataType  xType, int  incx, cudaDataType  executionType)
 {
 	static cublasStatus_t (*lcublasScalEx) (cublasHandle_t , int , const void* , cudaDataType , void* , cudaDataType , int , cudaDataType );
@@ -23955,6 +25892,32 @@ cublasStatus_t cublasScalEx(cublasHandle_t  handle, int  n, const void*  alpha, 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasScalEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasScalEx_64(cublasHandle_t  handle, int64_t  n, const void*  alpha, cudaDataType  alphaType, void*  x, cudaDataType  xType, int64_t  incx, cudaDataType  executionType)
+{
+	static cublasStatus_t (*lcublasScalEx_64) (cublasHandle_t , int64_t , const void* , cudaDataType , void* , cudaDataType , int64_t , cudaDataType );
+	if (!lcublasScalEx_64) {
+		lcublasScalEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const void* , cudaDataType , void* , cudaDataType , int64_t , cudaDataType )) dlsym(RTLD_NEXT, "cublasScalEx_64");
+		tracer._kernel_map[(void *) lcublasScalEx_64] = std::string("cublasScalEx_64");
+	}
+	assert(lcublasScalEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasScalEx_64(handle, n, alpha, alphaType, x, xType, incx, executionType);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasScalEx_64);
 	}
 	return res;
 }
@@ -23985,6 +25948,32 @@ cublasStatus_t cublasSscal_v2(cublasHandle_t  handle, int  n, const float*  alph
 	return res;
 }
 
+cublasStatus_t cublasSscal_v2_64(cublasHandle_t  handle, int64_t  n, const float*  alpha, float*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasSscal_v2_64) (cublasHandle_t , int64_t , const float* , float* , int64_t );
+	if (!lcublasSscal_v2_64) {
+		lcublasSscal_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSscal_v2_64");
+		tracer._kernel_map[(void *) lcublasSscal_v2_64] = std::string("cublasSscal_v2_64");
+	}
+	assert(lcublasSscal_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSscal_v2_64(handle, n, alpha, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSscal_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDscal_v2(cublasHandle_t  handle, int  n, const double*  alpha, double*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasDscal_v2) (cublasHandle_t , int , const double* , double* , int );
@@ -24007,6 +25996,32 @@ cublasStatus_t cublasDscal_v2(cublasHandle_t  handle, int  n, const double*  alp
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDscal_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDscal_v2_64(cublasHandle_t  handle, int64_t  n, const double*  alpha, double*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasDscal_v2_64) (cublasHandle_t , int64_t , const double* , double* , int64_t );
+	if (!lcublasDscal_v2_64) {
+		lcublasDscal_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDscal_v2_64");
+		tracer._kernel_map[(void *) lcublasDscal_v2_64] = std::string("cublasDscal_v2_64");
+	}
+	assert(lcublasDscal_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDscal_v2_64(handle, n, alpha, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDscal_v2_64);
 	}
 	return res;
 }
@@ -24037,6 +26052,32 @@ cublasStatus_t cublasCscal_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 	return res;
 }
 
+cublasStatus_t cublasCscal_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  alpha, cuComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasCscal_v2_64) (cublasHandle_t , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCscal_v2_64) {
+		lcublasCscal_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCscal_v2_64");
+		tracer._kernel_map[(void *) lcublasCscal_v2_64] = std::string("cublasCscal_v2_64");
+	}
+	assert(lcublasCscal_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCscal_v2_64(handle, n, alpha, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCscal_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCsscal_v2(cublasHandle_t  handle, int  n, const float*  alpha, cuComplex*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasCsscal_v2) (cublasHandle_t , int , const float* , cuComplex* , int );
@@ -24059,6 +26100,32 @@ cublasStatus_t cublasCsscal_v2(cublasHandle_t  handle, int  n, const float*  alp
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCsscal_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCsscal_v2_64(cublasHandle_t  handle, int64_t  n, const float*  alpha, cuComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasCsscal_v2_64) (cublasHandle_t , int64_t , const float* , cuComplex* , int64_t );
+	if (!lcublasCsscal_v2_64) {
+		lcublasCsscal_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const float* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCsscal_v2_64");
+		tracer._kernel_map[(void *) lcublasCsscal_v2_64] = std::string("cublasCsscal_v2_64");
+	}
+	assert(lcublasCsscal_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsscal_v2_64(handle, n, alpha, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsscal_v2_64);
 	}
 	return res;
 }
@@ -24089,6 +26156,32 @@ cublasStatus_t cublasZscal_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 	return res;
 }
 
+cublasStatus_t cublasZscal_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  alpha, cuDoubleComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasZscal_v2_64) (cublasHandle_t , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZscal_v2_64) {
+		lcublasZscal_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZscal_v2_64");
+		tracer._kernel_map[(void *) lcublasZscal_v2_64] = std::string("cublasZscal_v2_64");
+	}
+	assert(lcublasZscal_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZscal_v2_64(handle, n, alpha, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZscal_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZdscal_v2(cublasHandle_t  handle, int  n, const double*  alpha, cuDoubleComplex*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasZdscal_v2) (cublasHandle_t , int , const double* , cuDoubleComplex* , int );
@@ -24111,6 +26204,32 @@ cublasStatus_t cublasZdscal_v2(cublasHandle_t  handle, int  n, const double*  al
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZdscal_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZdscal_v2_64(cublasHandle_t  handle, int64_t  n, const double*  alpha, cuDoubleComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasZdscal_v2_64) (cublasHandle_t , int64_t , const double* , cuDoubleComplex* , int64_t );
+	if (!lcublasZdscal_v2_64) {
+		lcublasZdscal_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const double* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZdscal_v2_64");
+		tracer._kernel_map[(void *) lcublasZdscal_v2_64] = std::string("cublasZdscal_v2_64");
+	}
+	assert(lcublasZdscal_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZdscal_v2_64(handle, n, alpha, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZdscal_v2_64);
 	}
 	return res;
 }
@@ -24141,6 +26260,32 @@ cublasStatus_t cublasAxpyEx(cublasHandle_t  handle, int  n, const void*  alpha, 
 	return res;
 }
 
+cublasStatus_t cublasAxpyEx_64(cublasHandle_t  handle, int64_t  n, const void*  alpha, cudaDataType  alphaType, const void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, cudaDataType  executiontype)
+{
+	static cublasStatus_t (*lcublasAxpyEx_64) (cublasHandle_t , int64_t , const void* , cudaDataType , const void* , cudaDataType , int64_t , void* , cudaDataType , int64_t , cudaDataType );
+	if (!lcublasAxpyEx_64) {
+		lcublasAxpyEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const void* , cudaDataType , const void* , cudaDataType , int64_t , void* , cudaDataType , int64_t , cudaDataType )) dlsym(RTLD_NEXT, "cublasAxpyEx_64");
+		tracer._kernel_map[(void *) lcublasAxpyEx_64] = std::string("cublasAxpyEx_64");
+	}
+	assert(lcublasAxpyEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasAxpyEx_64(handle, n, alpha, alphaType, x, xType, incx, y, yType, incy, executiontype);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasAxpyEx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasSaxpy_v2(cublasHandle_t  handle, int  n, const float*  alpha, const float*  x, int  incx, float*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasSaxpy_v2) (cublasHandle_t , int , const float* , const float* , int , float* , int );
@@ -24163,6 +26308,32 @@ cublasStatus_t cublasSaxpy_v2(cublasHandle_t  handle, int  n, const float*  alph
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasSaxpy_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasSaxpy_v2_64) (cublasHandle_t , int64_t , const float* , const float* , int64_t , float* , int64_t );
+	if (!lcublasSaxpy_v2_64) {
+		lcublasSaxpy_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const float* , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSaxpy_v2_64");
+		tracer._kernel_map[(void *) lcublasSaxpy_v2_64] = std::string("cublasSaxpy_v2_64");
+	}
+	assert(lcublasSaxpy_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSaxpy_v2_64(handle, n, alpha, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSaxpy_v2_64);
 	}
 	return res;
 }
@@ -24193,6 +26364,32 @@ cublasStatus_t cublasDaxpy_v2(cublasHandle_t  handle, int  n, const double*  alp
 	return res;
 }
 
+cublasStatus_t cublasDaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasDaxpy_v2_64) (cublasHandle_t , int64_t , const double* , const double* , int64_t , double* , int64_t );
+	if (!lcublasDaxpy_v2_64) {
+		lcublasDaxpy_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const double* , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDaxpy_v2_64");
+		tracer._kernel_map[(void *) lcublasDaxpy_v2_64] = std::string("cublasDaxpy_v2_64");
+	}
+	assert(lcublasDaxpy_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDaxpy_v2_64(handle, n, alpha, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDaxpy_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCaxpy_v2(cublasHandle_t  handle, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, cuComplex*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasCaxpy_v2) (cublasHandle_t , int , const cuComplex* , const cuComplex* , int , cuComplex* , int );
@@ -24215,6 +26412,32 @@ cublasStatus_t cublasCaxpy_v2(cublasHandle_t  handle, int  n, const cuComplex*  
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCaxpy_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasCaxpy_v2_64) (cublasHandle_t , int64_t , const cuComplex* , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCaxpy_v2_64) {
+		lcublasCaxpy_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuComplex* , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCaxpy_v2_64");
+		tracer._kernel_map[(void *) lcublasCaxpy_v2_64] = std::string("cublasCaxpy_v2_64");
+	}
+	assert(lcublasCaxpy_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCaxpy_v2_64(handle, n, alpha, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCaxpy_v2_64);
 	}
 	return res;
 }
@@ -24245,6 +26468,32 @@ cublasStatus_t cublasZaxpy_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 	return res;
 }
 
+cublasStatus_t cublasZaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasZaxpy_v2_64) (cublasHandle_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZaxpy_v2_64) {
+		lcublasZaxpy_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZaxpy_v2_64");
+		tracer._kernel_map[(void *) lcublasZaxpy_v2_64] = std::string("cublasZaxpy_v2_64");
+	}
+	assert(lcublasZaxpy_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZaxpy_v2_64(handle, n, alpha, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZaxpy_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCopyEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy)
 {
 	static cublasStatus_t (*lcublasCopyEx) (cublasHandle_t , int , const void* , cudaDataType , int , void* , cudaDataType , int );
@@ -24267,6 +26516,32 @@ cublasStatus_t cublasCopyEx(cublasHandle_t  handle, int  n, const void*  x, cuda
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCopyEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCopyEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasCopyEx_64) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , void* , cudaDataType , int64_t );
+	if (!lcublasCopyEx_64) {
+		lcublasCopyEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , void* , cudaDataType , int64_t )) dlsym(RTLD_NEXT, "cublasCopyEx_64");
+		tracer._kernel_map[(void *) lcublasCopyEx_64] = std::string("cublasCopyEx_64");
+	}
+	assert(lcublasCopyEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCopyEx_64(handle, n, x, xType, incx, y, yType, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCopyEx_64);
 	}
 	return res;
 }
@@ -24297,6 +26572,32 @@ cublasStatus_t cublasScopy_v2(cublasHandle_t  handle, int  n, const float*  x, i
 	return res;
 }
 
+cublasStatus_t cublasScopy_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasScopy_v2_64) (cublasHandle_t , int64_t , const float* , int64_t , float* , int64_t );
+	if (!lcublasScopy_v2_64) {
+		lcublasScopy_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasScopy_v2_64");
+		tracer._kernel_map[(void *) lcublasScopy_v2_64] = std::string("cublasScopy_v2_64");
+	}
+	assert(lcublasScopy_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasScopy_v2_64(handle, n, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasScopy_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDcopy_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasDcopy_v2) (cublasHandle_t , int , const double* , int , double* , int );
@@ -24319,6 +26620,32 @@ cublasStatus_t cublasDcopy_v2(cublasHandle_t  handle, int  n, const double*  x, 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDcopy_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDcopy_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasDcopy_v2_64) (cublasHandle_t , int64_t , const double* , int64_t , double* , int64_t );
+	if (!lcublasDcopy_v2_64) {
+		lcublasDcopy_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDcopy_v2_64");
+		tracer._kernel_map[(void *) lcublasDcopy_v2_64] = std::string("cublasDcopy_v2_64");
+	}
+	assert(lcublasDcopy_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDcopy_v2_64(handle, n, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDcopy_v2_64);
 	}
 	return res;
 }
@@ -24349,6 +26676,32 @@ cublasStatus_t cublasCcopy_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 	return res;
 }
 
+cublasStatus_t cublasCcopy_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasCcopy_v2_64) (cublasHandle_t , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCcopy_v2_64) {
+		lcublasCcopy_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCcopy_v2_64");
+		tracer._kernel_map[(void *) lcublasCcopy_v2_64] = std::string("cublasCcopy_v2_64");
+	}
+	assert(lcublasCcopy_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCcopy_v2_64(handle, n, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCcopy_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZcopy_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasZcopy_v2) (cublasHandle_t , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -24371,6 +26724,32 @@ cublasStatus_t cublasZcopy_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZcopy_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZcopy_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasZcopy_v2_64) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZcopy_v2_64) {
+		lcublasZcopy_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZcopy_v2_64");
+		tracer._kernel_map[(void *) lcublasZcopy_v2_64] = std::string("cublasZcopy_v2_64");
+	}
+	assert(lcublasZcopy_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZcopy_v2_64(handle, n, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZcopy_v2_64);
 	}
 	return res;
 }
@@ -24401,6 +26780,32 @@ cublasStatus_t cublasSswap_v2(cublasHandle_t  handle, int  n, float*  x, int  in
 	return res;
 }
 
+cublasStatus_t cublasSswap_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasSswap_v2_64) (cublasHandle_t , int64_t , float* , int64_t , float* , int64_t );
+	if (!lcublasSswap_v2_64) {
+		lcublasSswap_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSswap_v2_64");
+		tracer._kernel_map[(void *) lcublasSswap_v2_64] = std::string("cublasSswap_v2_64");
+	}
+	assert(lcublasSswap_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSswap_v2_64(handle, n, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSswap_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDswap_v2(cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasDswap_v2) (cublasHandle_t , int , double* , int , double* , int );
@@ -24423,6 +26828,32 @@ cublasStatus_t cublasDswap_v2(cublasHandle_t  handle, int  n, double*  x, int  i
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDswap_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDswap_v2_64(cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasDswap_v2_64) (cublasHandle_t , int64_t , double* , int64_t , double* , int64_t );
+	if (!lcublasDswap_v2_64) {
+		lcublasDswap_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDswap_v2_64");
+		tracer._kernel_map[(void *) lcublasDswap_v2_64] = std::string("cublasDswap_v2_64");
+	}
+	assert(lcublasDswap_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDswap_v2_64(handle, n, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDswap_v2_64);
 	}
 	return res;
 }
@@ -24453,6 +26884,32 @@ cublasStatus_t cublasCswap_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int
 	return res;
 }
 
+cublasStatus_t cublasCswap_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasCswap_v2_64) (cublasHandle_t , int64_t , cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCswap_v2_64) {
+		lcublasCswap_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCswap_v2_64");
+		tracer._kernel_map[(void *) lcublasCswap_v2_64] = std::string("cublasCswap_v2_64");
+	}
+	assert(lcublasCswap_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCswap_v2_64(handle, n, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCswap_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZswap_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasZswap_v2) (cublasHandle_t , int , cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -24475,6 +26932,32 @@ cublasStatus_t cublasZswap_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZswap_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZswap_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasZswap_v2_64) (cublasHandle_t , int64_t , cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZswap_v2_64) {
+		lcublasZswap_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZswap_v2_64");
+		tracer._kernel_map[(void *) lcublasZswap_v2_64] = std::string("cublasZswap_v2_64");
+	}
+	assert(lcublasZswap_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZswap_v2_64(handle, n, x, incx, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZswap_v2_64);
 	}
 	return res;
 }
@@ -24505,6 +26988,32 @@ cublasStatus_t cublasSwapEx(cublasHandle_t  handle, int  n, void*  x, cudaDataTy
 	return res;
 }
 
+cublasStatus_t cublasSwapEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasSwapEx_64) (cublasHandle_t , int64_t , void* , cudaDataType , int64_t , void* , cudaDataType , int64_t );
+	if (!lcublasSwapEx_64) {
+		lcublasSwapEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , void* , cudaDataType , int64_t , void* , cudaDataType , int64_t )) dlsym(RTLD_NEXT, "cublasSwapEx_64");
+		tracer._kernel_map[(void *) lcublasSwapEx_64] = std::string("cublasSwapEx_64");
+	}
+	assert(lcublasSwapEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSwapEx_64(handle, n, x, xType, incx, y, yType, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSwapEx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasIsamax_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, int*  result)
 {
 	static cublasStatus_t (*lcublasIsamax_v2) (cublasHandle_t , int , const float* , int , int* );
@@ -24527,6 +27036,32 @@ cublasStatus_t cublasIsamax_v2(cublasHandle_t  handle, int  n, const float*  x, 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasIsamax_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasIsamax_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, int64_t*  result)
+{
+	static cublasStatus_t (*lcublasIsamax_v2_64) (cublasHandle_t , int64_t , const float* , int64_t , int64_t* );
+	if (!lcublasIsamax_v2_64) {
+		lcublasIsamax_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const float* , int64_t , int64_t* )) dlsym(RTLD_NEXT, "cublasIsamax_v2_64");
+		tracer._kernel_map[(void *) lcublasIsamax_v2_64] = std::string("cublasIsamax_v2_64");
+	}
+	assert(lcublasIsamax_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasIsamax_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasIsamax_v2_64);
 	}
 	return res;
 }
@@ -24557,6 +27092,32 @@ cublasStatus_t cublasIdamax_v2(cublasHandle_t  handle, int  n, const double*  x,
 	return res;
 }
 
+cublasStatus_t cublasIdamax_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, int64_t*  result)
+{
+	static cublasStatus_t (*lcublasIdamax_v2_64) (cublasHandle_t , int64_t , const double* , int64_t , int64_t* );
+	if (!lcublasIdamax_v2_64) {
+		lcublasIdamax_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const double* , int64_t , int64_t* )) dlsym(RTLD_NEXT, "cublasIdamax_v2_64");
+		tracer._kernel_map[(void *) lcublasIdamax_v2_64] = std::string("cublasIdamax_v2_64");
+	}
+	assert(lcublasIdamax_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasIdamax_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasIdamax_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasIcamax_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, int*  result)
 {
 	static cublasStatus_t (*lcublasIcamax_v2) (cublasHandle_t , int , const cuComplex* , int , int* );
@@ -24579,6 +27140,32 @@ cublasStatus_t cublasIcamax_v2(cublasHandle_t  handle, int  n, const cuComplex* 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasIcamax_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasIcamax_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, int64_t*  result)
+{
+	static cublasStatus_t (*lcublasIcamax_v2_64) (cublasHandle_t , int64_t , const cuComplex* , int64_t , int64_t* );
+	if (!lcublasIcamax_v2_64) {
+		lcublasIcamax_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuComplex* , int64_t , int64_t* )) dlsym(RTLD_NEXT, "cublasIcamax_v2_64");
+		tracer._kernel_map[(void *) lcublasIcamax_v2_64] = std::string("cublasIcamax_v2_64");
+	}
+	assert(lcublasIcamax_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasIcamax_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasIcamax_v2_64);
 	}
 	return res;
 }
@@ -24609,6 +27196,32 @@ cublasStatus_t cublasIzamax_v2(cublasHandle_t  handle, int  n, const cuDoubleCom
 	return res;
 }
 
+cublasStatus_t cublasIzamax_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, int64_t*  result)
+{
+	static cublasStatus_t (*lcublasIzamax_v2_64) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , int64_t* );
+	if (!lcublasIzamax_v2_64) {
+		lcublasIzamax_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , int64_t* )) dlsym(RTLD_NEXT, "cublasIzamax_v2_64");
+		tracer._kernel_map[(void *) lcublasIzamax_v2_64] = std::string("cublasIzamax_v2_64");
+	}
+	assert(lcublasIzamax_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasIzamax_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasIzamax_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasIamaxEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, int*  result)
 {
 	static cublasStatus_t (*lcublasIamaxEx) (cublasHandle_t , int , const void* , cudaDataType , int , int* );
@@ -24631,6 +27244,32 @@ cublasStatus_t cublasIamaxEx(cublasHandle_t  handle, int  n, const void*  x, cud
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasIamaxEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasIamaxEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, int64_t*  result)
+{
+	static cublasStatus_t (*lcublasIamaxEx_64) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , int64_t* );
+	if (!lcublasIamaxEx_64) {
+		lcublasIamaxEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , int64_t* )) dlsym(RTLD_NEXT, "cublasIamaxEx_64");
+		tracer._kernel_map[(void *) lcublasIamaxEx_64] = std::string("cublasIamaxEx_64");
+	}
+	assert(lcublasIamaxEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasIamaxEx_64(handle, n, x, xType, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasIamaxEx_64);
 	}
 	return res;
 }
@@ -24661,6 +27300,32 @@ cublasStatus_t cublasIsamin_v2(cublasHandle_t  handle, int  n, const float*  x, 
 	return res;
 }
 
+cublasStatus_t cublasIsamin_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, int64_t*  result)
+{
+	static cublasStatus_t (*lcublasIsamin_v2_64) (cublasHandle_t , int64_t , const float* , int64_t , int64_t* );
+	if (!lcublasIsamin_v2_64) {
+		lcublasIsamin_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const float* , int64_t , int64_t* )) dlsym(RTLD_NEXT, "cublasIsamin_v2_64");
+		tracer._kernel_map[(void *) lcublasIsamin_v2_64] = std::string("cublasIsamin_v2_64");
+	}
+	assert(lcublasIsamin_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasIsamin_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasIsamin_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasIdamin_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, int*  result)
 {
 	static cublasStatus_t (*lcublasIdamin_v2) (cublasHandle_t , int , const double* , int , int* );
@@ -24683,6 +27348,32 @@ cublasStatus_t cublasIdamin_v2(cublasHandle_t  handle, int  n, const double*  x,
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasIdamin_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasIdamin_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, int64_t*  result)
+{
+	static cublasStatus_t (*lcublasIdamin_v2_64) (cublasHandle_t , int64_t , const double* , int64_t , int64_t* );
+	if (!lcublasIdamin_v2_64) {
+		lcublasIdamin_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const double* , int64_t , int64_t* )) dlsym(RTLD_NEXT, "cublasIdamin_v2_64");
+		tracer._kernel_map[(void *) lcublasIdamin_v2_64] = std::string("cublasIdamin_v2_64");
+	}
+	assert(lcublasIdamin_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasIdamin_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasIdamin_v2_64);
 	}
 	return res;
 }
@@ -24713,6 +27404,32 @@ cublasStatus_t cublasIcamin_v2(cublasHandle_t  handle, int  n, const cuComplex* 
 	return res;
 }
 
+cublasStatus_t cublasIcamin_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, int64_t*  result)
+{
+	static cublasStatus_t (*lcublasIcamin_v2_64) (cublasHandle_t , int64_t , const cuComplex* , int64_t , int64_t* );
+	if (!lcublasIcamin_v2_64) {
+		lcublasIcamin_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuComplex* , int64_t , int64_t* )) dlsym(RTLD_NEXT, "cublasIcamin_v2_64");
+		tracer._kernel_map[(void *) lcublasIcamin_v2_64] = std::string("cublasIcamin_v2_64");
+	}
+	assert(lcublasIcamin_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasIcamin_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasIcamin_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasIzamin_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, int*  result)
 {
 	static cublasStatus_t (*lcublasIzamin_v2) (cublasHandle_t , int , const cuDoubleComplex* , int , int* );
@@ -24735,6 +27452,32 @@ cublasStatus_t cublasIzamin_v2(cublasHandle_t  handle, int  n, const cuDoubleCom
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasIzamin_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasIzamin_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, int64_t*  result)
+{
+	static cublasStatus_t (*lcublasIzamin_v2_64) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , int64_t* );
+	if (!lcublasIzamin_v2_64) {
+		lcublasIzamin_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , int64_t* )) dlsym(RTLD_NEXT, "cublasIzamin_v2_64");
+		tracer._kernel_map[(void *) lcublasIzamin_v2_64] = std::string("cublasIzamin_v2_64");
+	}
+	assert(lcublasIzamin_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasIzamin_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasIzamin_v2_64);
 	}
 	return res;
 }
@@ -24765,6 +27508,32 @@ cublasStatus_t cublasIaminEx(cublasHandle_t  handle, int  n, const void*  x, cud
 	return res;
 }
 
+cublasStatus_t cublasIaminEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, int64_t*  result)
+{
+	static cublasStatus_t (*lcublasIaminEx_64) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , int64_t* );
+	if (!lcublasIaminEx_64) {
+		lcublasIaminEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , int64_t* )) dlsym(RTLD_NEXT, "cublasIaminEx_64");
+		tracer._kernel_map[(void *) lcublasIaminEx_64] = std::string("cublasIaminEx_64");
+	}
+	assert(lcublasIaminEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasIaminEx_64(handle, n, x, xType, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasIaminEx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasAsumEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  result, cudaDataType  resultType, cudaDataType  executiontype)
 {
 	static cublasStatus_t (*lcublasAsumEx) (cublasHandle_t , int , const void* , cudaDataType , int , void* , cudaDataType , cudaDataType );
@@ -24787,6 +27556,32 @@ cublasStatus_t cublasAsumEx(cublasHandle_t  handle, int  n, const void*  x, cuda
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasAsumEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasAsumEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  result, cudaDataType  resultType, cudaDataType  executiontype)
+{
+	static cublasStatus_t (*lcublasAsumEx_64) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , void* , cudaDataType , cudaDataType );
+	if (!lcublasAsumEx_64) {
+		lcublasAsumEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const void* , cudaDataType , int64_t , void* , cudaDataType , cudaDataType )) dlsym(RTLD_NEXT, "cublasAsumEx_64");
+		tracer._kernel_map[(void *) lcublasAsumEx_64] = std::string("cublasAsumEx_64");
+	}
+	assert(lcublasAsumEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasAsumEx_64(handle, n, x, xType, incx, result, resultType, executiontype);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasAsumEx_64);
 	}
 	return res;
 }
@@ -24817,6 +27612,32 @@ cublasStatus_t cublasSasum_v2(cublasHandle_t  handle, int  n, const float*  x, i
 	return res;
 }
 
+cublasStatus_t cublasSasum_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  result)
+{
+	static cublasStatus_t (*lcublasSasum_v2_64) (cublasHandle_t , int64_t , const float* , int64_t , float* );
+	if (!lcublasSasum_v2_64) {
+		lcublasSasum_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const float* , int64_t , float* )) dlsym(RTLD_NEXT, "cublasSasum_v2_64");
+		tracer._kernel_map[(void *) lcublasSasum_v2_64] = std::string("cublasSasum_v2_64");
+	}
+	assert(lcublasSasum_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSasum_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSasum_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDasum_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  result)
 {
 	static cublasStatus_t (*lcublasDasum_v2) (cublasHandle_t , int , const double* , int , double* );
@@ -24839,6 +27660,32 @@ cublasStatus_t cublasDasum_v2(cublasHandle_t  handle, int  n, const double*  x, 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDasum_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDasum_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  result)
+{
+	static cublasStatus_t (*lcublasDasum_v2_64) (cublasHandle_t , int64_t , const double* , int64_t , double* );
+	if (!lcublasDasum_v2_64) {
+		lcublasDasum_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const double* , int64_t , double* )) dlsym(RTLD_NEXT, "cublasDasum_v2_64");
+		tracer._kernel_map[(void *) lcublasDasum_v2_64] = std::string("cublasDasum_v2_64");
+	}
+	assert(lcublasDasum_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDasum_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDasum_v2_64);
 	}
 	return res;
 }
@@ -24869,6 +27716,32 @@ cublasStatus_t cublasScasum_v2(cublasHandle_t  handle, int  n, const cuComplex* 
 	return res;
 }
 
+cublasStatus_t cublasScasum_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, float*  result)
+{
+	static cublasStatus_t (*lcublasScasum_v2_64) (cublasHandle_t , int64_t , const cuComplex* , int64_t , float* );
+	if (!lcublasScasum_v2_64) {
+		lcublasScasum_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuComplex* , int64_t , float* )) dlsym(RTLD_NEXT, "cublasScasum_v2_64");
+		tracer._kernel_map[(void *) lcublasScasum_v2_64] = std::string("cublasScasum_v2_64");
+	}
+	assert(lcublasScasum_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasScasum_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasScasum_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDzasum_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, double*  result)
 {
 	static cublasStatus_t (*lcublasDzasum_v2) (cublasHandle_t , int , const cuDoubleComplex* , int , double* );
@@ -24891,6 +27764,32 @@ cublasStatus_t cublasDzasum_v2(cublasHandle_t  handle, int  n, const cuDoubleCom
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDzasum_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDzasum_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, double*  result)
+{
+	static cublasStatus_t (*lcublasDzasum_v2_64) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , double* );
+	if (!lcublasDzasum_v2_64) {
+		lcublasDzasum_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , const cuDoubleComplex* , int64_t , double* )) dlsym(RTLD_NEXT, "cublasDzasum_v2_64");
+		tracer._kernel_map[(void *) lcublasDzasum_v2_64] = std::string("cublasDzasum_v2_64");
+	}
+	assert(lcublasDzasum_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDzasum_v2_64(handle, n, x, incx, result);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDzasum_v2_64);
 	}
 	return res;
 }
@@ -24921,6 +27820,32 @@ cublasStatus_t cublasSrot_v2(cublasHandle_t  handle, int  n, float*  x, int  inc
 	return res;
 }
 
+cublasStatus_t cublasSrot_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy, const float*  c, const float*  s)
+{
+	static cublasStatus_t (*lcublasSrot_v2_64) (cublasHandle_t , int64_t , float* , int64_t , float* , int64_t , const float* , const float* );
+	if (!lcublasSrot_v2_64) {
+		lcublasSrot_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , float* , int64_t , float* , int64_t , const float* , const float* )) dlsym(RTLD_NEXT, "cublasSrot_v2_64");
+		tracer._kernel_map[(void *) lcublasSrot_v2_64] = std::string("cublasSrot_v2_64");
+	}
+	assert(lcublasSrot_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSrot_v2_64(handle, n, x, incx, y, incy, c, s);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSrot_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDrot_v2(cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy, const double*  c, const double*  s)
 {
 	static cublasStatus_t (*lcublasDrot_v2) (cublasHandle_t , int , double* , int , double* , int , const double* , const double* );
@@ -24943,6 +27868,32 @@ cublasStatus_t cublasDrot_v2(cublasHandle_t  handle, int  n, double*  x, int  in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDrot_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDrot_v2_64(cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy, const double*  c, const double*  s)
+{
+	static cublasStatus_t (*lcublasDrot_v2_64) (cublasHandle_t , int64_t , double* , int64_t , double* , int64_t , const double* , const double* );
+	if (!lcublasDrot_v2_64) {
+		lcublasDrot_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , double* , int64_t , double* , int64_t , const double* , const double* )) dlsym(RTLD_NEXT, "cublasDrot_v2_64");
+		tracer._kernel_map[(void *) lcublasDrot_v2_64] = std::string("cublasDrot_v2_64");
+	}
+	assert(lcublasDrot_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDrot_v2_64(handle, n, x, incx, y, incy, c, s);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDrot_v2_64);
 	}
 	return res;
 }
@@ -24973,6 +27924,32 @@ cublasStatus_t cublasCrot_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int 
 	return res;
 }
 
+cublasStatus_t cublasCrot_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy, const float*  c, const cuComplex*  s)
+{
+	static cublasStatus_t (*lcublasCrot_v2_64) (cublasHandle_t , int64_t , cuComplex* , int64_t , cuComplex* , int64_t , const float* , const cuComplex* );
+	if (!lcublasCrot_v2_64) {
+		lcublasCrot_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , cuComplex* , int64_t , cuComplex* , int64_t , const float* , const cuComplex* )) dlsym(RTLD_NEXT, "cublasCrot_v2_64");
+		tracer._kernel_map[(void *) lcublasCrot_v2_64] = std::string("cublasCrot_v2_64");
+	}
+	assert(lcublasCrot_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCrot_v2_64(handle, n, x, incx, y, incy, c, s);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCrot_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCsrot_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy, const float*  c, const float*  s)
 {
 	static cublasStatus_t (*lcublasCsrot_v2) (cublasHandle_t , int , cuComplex* , int , cuComplex* , int , const float* , const float* );
@@ -24995,6 +27972,32 @@ cublasStatus_t cublasCsrot_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCsrot_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCsrot_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy, const float*  c, const float*  s)
+{
+	static cublasStatus_t (*lcublasCsrot_v2_64) (cublasHandle_t , int64_t , cuComplex* , int64_t , cuComplex* , int64_t , const float* , const float* );
+	if (!lcublasCsrot_v2_64) {
+		lcublasCsrot_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , cuComplex* , int64_t , cuComplex* , int64_t , const float* , const float* )) dlsym(RTLD_NEXT, "cublasCsrot_v2_64");
+		tracer._kernel_map[(void *) lcublasCsrot_v2_64] = std::string("cublasCsrot_v2_64");
+	}
+	assert(lcublasCsrot_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsrot_v2_64(handle, n, x, incx, y, incy, c, s);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsrot_v2_64);
 	}
 	return res;
 }
@@ -25025,6 +28028,32 @@ cublasStatus_t cublasZrot_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  x
 	return res;
 }
 
+cublasStatus_t cublasZrot_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy, const double*  c, const cuDoubleComplex*  s)
+{
+	static cublasStatus_t (*lcublasZrot_v2_64) (cublasHandle_t , int64_t , cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t , const double* , const cuDoubleComplex* );
+	if (!lcublasZrot_v2_64) {
+		lcublasZrot_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t , const double* , const cuDoubleComplex* )) dlsym(RTLD_NEXT, "cublasZrot_v2_64");
+		tracer._kernel_map[(void *) lcublasZrot_v2_64] = std::string("cublasZrot_v2_64");
+	}
+	assert(lcublasZrot_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZrot_v2_64(handle, n, x, incx, y, incy, c, s);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZrot_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZdrot_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy, const double*  c, const double*  s)
 {
 	static cublasStatus_t (*lcublasZdrot_v2) (cublasHandle_t , int , cuDoubleComplex* , int , cuDoubleComplex* , int , const double* , const double* );
@@ -25051,6 +28080,32 @@ cublasStatus_t cublasZdrot_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  
 	return res;
 }
 
+cublasStatus_t cublasZdrot_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy, const double*  c, const double*  s)
+{
+	static cublasStatus_t (*lcublasZdrot_v2_64) (cublasHandle_t , int64_t , cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t , const double* , const double* );
+	if (!lcublasZdrot_v2_64) {
+		lcublasZdrot_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t , const double* , const double* )) dlsym(RTLD_NEXT, "cublasZdrot_v2_64");
+		tracer._kernel_map[(void *) lcublasZdrot_v2_64] = std::string("cublasZdrot_v2_64");
+	}
+	assert(lcublasZdrot_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZdrot_v2_64(handle, n, x, incx, y, incy, c, s);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZdrot_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasRotEx(cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, const void*  c, const void*  s, cudaDataType  csType, cudaDataType  executiontype)
 {
 	static cublasStatus_t (*lcublasRotEx) (cublasHandle_t , int , void* , cudaDataType , int , void* , cudaDataType , int , const void* , const void* , cudaDataType , cudaDataType );
@@ -25073,6 +28128,32 @@ cublasStatus_t cublasRotEx(cublasHandle_t  handle, int  n, void*  x, cudaDataTyp
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasRotEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasRotEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, const void*  c, const void*  s, cudaDataType  csType, cudaDataType  executiontype)
+{
+	static cublasStatus_t (*lcublasRotEx_64) (cublasHandle_t , int64_t , void* , cudaDataType , int64_t , void* , cudaDataType , int64_t , const void* , const void* , cudaDataType , cudaDataType );
+	if (!lcublasRotEx_64) {
+		lcublasRotEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , void* , cudaDataType , int64_t , void* , cudaDataType , int64_t , const void* , const void* , cudaDataType , cudaDataType )) dlsym(RTLD_NEXT, "cublasRotEx_64");
+		tracer._kernel_map[(void *) lcublasRotEx_64] = std::string("cublasRotEx_64");
+	}
+	assert(lcublasRotEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasRotEx_64(handle, n, x, xType, incx, y, yType, incy, c, s, csType, executiontype);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasRotEx_64);
 	}
 	return res;
 }
@@ -25233,6 +28314,32 @@ cublasStatus_t cublasSrotm_v2(cublasHandle_t  handle, int  n, float*  x, int  in
 	return res;
 }
 
+cublasStatus_t cublasSrotm_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy, const float*  param)
+{
+	static cublasStatus_t (*lcublasSrotm_v2_64) (cublasHandle_t , int64_t , float* , int64_t , float* , int64_t , const float* );
+	if (!lcublasSrotm_v2_64) {
+		lcublasSrotm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , float* , int64_t , float* , int64_t , const float* )) dlsym(RTLD_NEXT, "cublasSrotm_v2_64");
+		tracer._kernel_map[(void *) lcublasSrotm_v2_64] = std::string("cublasSrotm_v2_64");
+	}
+	assert(lcublasSrotm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSrotm_v2_64(handle, n, x, incx, y, incy, param);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSrotm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDrotm_v2(cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy, const double*  param)
 {
 	static cublasStatus_t (*lcublasDrotm_v2) (cublasHandle_t , int , double* , int , double* , int , const double* );
@@ -25259,6 +28366,32 @@ cublasStatus_t cublasDrotm_v2(cublasHandle_t  handle, int  n, double*  x, int  i
 	return res;
 }
 
+cublasStatus_t cublasDrotm_v2_64(cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy, const double*  param)
+{
+	static cublasStatus_t (*lcublasDrotm_v2_64) (cublasHandle_t , int64_t , double* , int64_t , double* , int64_t , const double* );
+	if (!lcublasDrotm_v2_64) {
+		lcublasDrotm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , double* , int64_t , double* , int64_t , const double* )) dlsym(RTLD_NEXT, "cublasDrotm_v2_64");
+		tracer._kernel_map[(void *) lcublasDrotm_v2_64] = std::string("cublasDrotm_v2_64");
+	}
+	assert(lcublasDrotm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDrotm_v2_64(handle, n, x, incx, y, incy, param);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDrotm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasRotmEx(cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, const void*  param, cudaDataType  paramType, cudaDataType  executiontype)
 {
 	static cublasStatus_t (*lcublasRotmEx) (cublasHandle_t , int , void* , cudaDataType , int , void* , cudaDataType , int , const void* , cudaDataType , cudaDataType );
@@ -25281,6 +28414,32 @@ cublasStatus_t cublasRotmEx(cublasHandle_t  handle, int  n, void*  x, cudaDataTy
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasRotmEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasRotmEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, const void*  param, cudaDataType  paramType, cudaDataType  executiontype)
+{
+	static cublasStatus_t (*lcublasRotmEx_64) (cublasHandle_t , int64_t , void* , cudaDataType , int64_t , void* , cudaDataType , int64_t , const void* , cudaDataType , cudaDataType );
+	if (!lcublasRotmEx_64) {
+		lcublasRotmEx_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , void* , cudaDataType , int64_t , void* , cudaDataType , int64_t , const void* , cudaDataType , cudaDataType )) dlsym(RTLD_NEXT, "cublasRotmEx_64");
+		tracer._kernel_map[(void *) lcublasRotmEx_64] = std::string("cublasRotmEx_64");
+	}
+	assert(lcublasRotmEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasRotmEx_64(handle, n, x, xType, incx, y, yType, incy, param, paramType, executiontype);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasRotmEx_64);
 	}
 	return res;
 }
@@ -25389,6 +28548,32 @@ cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 	return res;
 }
 
+cublasStatus_t cublasSgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasSgemv_v2_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t );
+	if (!lcublasSgemv_v2_64) {
+		lcublasSgemv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSgemv_v2_64");
+		tracer._kernel_map[(void *) lcublasSgemv_v2_64] = std::string("cublasSgemv_v2_64");
+	}
+	assert(lcublasSgemv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgemv_v2_64(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgemv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasDgemv_v2) (cublasHandle_t , cublasOperation_t , int , int , const double* , const double* , int , const double* , int , const double* , double* , int );
@@ -25411,6 +28596,32 @@ cublasStatus_t cublasDgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDgemv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasDgemv_v2_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t );
+	if (!lcublasDgemv_v2_64) {
+		lcublasDgemv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDgemv_v2_64");
+		tracer._kernel_map[(void *) lcublasDgemv_v2_64] = std::string("cublasDgemv_v2_64");
+	}
+	assert(lcublasDgemv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgemv_v2_64(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgemv_v2_64);
 	}
 	return res;
 }
@@ -25441,6 +28652,32 @@ cublasStatus_t cublasCgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 	return res;
 }
 
+cublasStatus_t cublasCgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasCgemv_v2_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCgemv_v2_64) {
+		lcublasCgemv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCgemv_v2_64");
+		tracer._kernel_map[(void *) lcublasCgemv_v2_64] = std::string("cublasCgemv_v2_64");
+	}
+	assert(lcublasCgemv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemv_v2_64(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasZgemv_v2) (cublasHandle_t , cublasOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -25463,6 +28700,32 @@ cublasStatus_t cublasZgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZgemv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasZgemv_v2_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZgemv_v2_64) {
+		lcublasZgemv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZgemv_v2_64");
+		tracer._kernel_map[(void *) lcublasZgemv_v2_64] = std::string("cublasZgemv_v2_64");
+	}
+	assert(lcublasZgemv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgemv_v2_64(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgemv_v2_64);
 	}
 	return res;
 }
@@ -25493,6 +28756,32 @@ cublasStatus_t cublasSgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 	return res;
 }
 
+cublasStatus_t cublasSgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasSgbmv_v2_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t );
+	if (!lcublasSgbmv_v2_64) {
+		lcublasSgbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSgbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasSgbmv_v2_64] = std::string("cublasSgbmv_v2_64");
+	}
+	assert(lcublasSgbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgbmv_v2_64(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgbmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasDgbmv_v2) (cublasHandle_t , cublasOperation_t , int , int , int , int , const double* , const double* , int , const double* , int , const double* , double* , int );
@@ -25515,6 +28804,32 @@ cublasStatus_t cublasDgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDgbmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasDgbmv_v2_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t );
+	if (!lcublasDgbmv_v2_64) {
+		lcublasDgbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDgbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasDgbmv_v2_64] = std::string("cublasDgbmv_v2_64");
+	}
+	assert(lcublasDgbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgbmv_v2_64(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgbmv_v2_64);
 	}
 	return res;
 }
@@ -25545,6 +28860,32 @@ cublasStatus_t cublasCgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 	return res;
 }
 
+cublasStatus_t cublasCgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasCgbmv_v2_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCgbmv_v2_64) {
+		lcublasCgbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCgbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasCgbmv_v2_64] = std::string("cublasCgbmv_v2_64");
+	}
+	assert(lcublasCgbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgbmv_v2_64(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgbmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasZgbmv_v2) (cublasHandle_t , cublasOperation_t , int , int , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -25567,6 +28908,32 @@ cublasStatus_t cublasZgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZgbmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasZgbmv_v2_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZgbmv_v2_64) {
+		lcublasZgbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZgbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasZgbmv_v2_64] = std::string("cublasZgbmv_v2_64");
+	}
+	assert(lcublasZgbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgbmv_v2_64(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgbmv_v2_64);
 	}
 	return res;
 }
@@ -25597,6 +28964,32 @@ cublasStatus_t cublasStrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasStrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  A, int64_t  lda, float*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasStrmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const float* , int64_t , float* , int64_t );
+	if (!lcublasStrmv_v2_64) {
+		lcublasStrmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasStrmv_v2_64");
+		tracer._kernel_map[(void *) lcublasStrmv_v2_64] = std::string("cublasStrmv_v2_64");
+	}
+	assert(lcublasStrmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasStrmv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasStrmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  A, int  lda, double*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasDtrmv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , const double* , int , double* , int );
@@ -25619,6 +29012,32 @@ cublasStatus_t cublasDtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDtrmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  A, int64_t  lda, double*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasDtrmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const double* , int64_t , double* , int64_t );
+	if (!lcublasDtrmv_v2_64) {
+		lcublasDtrmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDtrmv_v2_64");
+		tracer._kernel_map[(void *) lcublasDtrmv_v2_64] = std::string("cublasDtrmv_v2_64");
+	}
+	assert(lcublasDtrmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDtrmv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDtrmv_v2_64);
 	}
 	return res;
 }
@@ -25649,6 +29068,32 @@ cublasStatus_t cublasCtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasCtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasCtrmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCtrmv_v2_64) {
+		lcublasCtrmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCtrmv_v2_64");
+		tracer._kernel_map[(void *) lcublasCtrmv_v2_64] = std::string("cublasCtrmv_v2_64");
+	}
+	assert(lcublasCtrmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCtrmv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCtrmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasZtrmv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -25671,6 +29116,32 @@ cublasStatus_t cublasZtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZtrmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasZtrmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZtrmv_v2_64) {
+		lcublasZtrmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZtrmv_v2_64");
+		tracer._kernel_map[(void *) lcublasZtrmv_v2_64] = std::string("cublasZtrmv_v2_64");
+	}
+	assert(lcublasZtrmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZtrmv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZtrmv_v2_64);
 	}
 	return res;
 }
@@ -25701,6 +29172,32 @@ cublasStatus_t cublasStbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasStbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const float*  A, int64_t  lda, float*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasStbmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const float* , int64_t , float* , int64_t );
+	if (!lcublasStbmv_v2_64) {
+		lcublasStbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasStbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasStbmv_v2_64] = std::string("cublasStbmv_v2_64");
+	}
+	assert(lcublasStbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasStbmv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasStbmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const double*  A, int  lda, double*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasDtbmv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , int , const double* , int , double* , int );
@@ -25723,6 +29220,32 @@ cublasStatus_t cublasDtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDtbmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const double*  A, int64_t  lda, double*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasDtbmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const double* , int64_t , double* , int64_t );
+	if (!lcublasDtbmv_v2_64) {
+		lcublasDtbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDtbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasDtbmv_v2_64] = std::string("cublasDtbmv_v2_64");
+	}
+	assert(lcublasDtbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDtbmv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDtbmv_v2_64);
 	}
 	return res;
 }
@@ -25753,6 +29276,32 @@ cublasStatus_t cublasCtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasCtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasCtbmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCtbmv_v2_64) {
+		lcublasCtbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCtbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasCtbmv_v2_64] = std::string("cublasCtbmv_v2_64");
+	}
+	assert(lcublasCtbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCtbmv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCtbmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasZtbmv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -25775,6 +29324,32 @@ cublasStatus_t cublasZtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZtbmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasZtbmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZtbmv_v2_64) {
+		lcublasZtbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZtbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasZtbmv_v2_64] = std::string("cublasZtbmv_v2_64");
+	}
+	assert(lcublasZtbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZtbmv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZtbmv_v2_64);
 	}
 	return res;
 }
@@ -25805,6 +29380,32 @@ cublasStatus_t cublasStpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasStpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  AP, float*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasStpmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const float* , float* , int64_t );
+	if (!lcublasStpmv_v2_64) {
+		lcublasStpmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasStpmv_v2_64");
+		tracer._kernel_map[(void *) lcublasStpmv_v2_64] = std::string("cublasStpmv_v2_64");
+	}
+	assert(lcublasStpmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasStpmv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasStpmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  AP, double*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasDtpmv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , const double* , double* , int );
@@ -25827,6 +29428,32 @@ cublasStatus_t cublasDtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDtpmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  AP, double*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasDtpmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const double* , double* , int64_t );
+	if (!lcublasDtpmv_v2_64) {
+		lcublasDtpmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDtpmv_v2_64");
+		tracer._kernel_map[(void *) lcublasDtpmv_v2_64] = std::string("cublasDtpmv_v2_64");
+	}
+	assert(lcublasDtpmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDtpmv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDtpmv_v2_64);
 	}
 	return res;
 }
@@ -25857,6 +29484,32 @@ cublasStatus_t cublasCtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasCtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  AP, cuComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasCtpmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCtpmv_v2_64) {
+		lcublasCtpmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCtpmv_v2_64");
+		tracer._kernel_map[(void *) lcublasCtpmv_v2_64] = std::string("cublasCtpmv_v2_64");
+	}
+	assert(lcublasCtpmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCtpmv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCtpmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasZtpmv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -25879,6 +29532,32 @@ cublasStatus_t cublasZtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZtpmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasZtpmv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZtpmv_v2_64) {
+		lcublasZtpmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZtpmv_v2_64");
+		tracer._kernel_map[(void *) lcublasZtpmv_v2_64] = std::string("cublasZtpmv_v2_64");
+	}
+	assert(lcublasZtpmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZtpmv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZtpmv_v2_64);
 	}
 	return res;
 }
@@ -25909,6 +29588,32 @@ cublasStatus_t cublasStrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasStrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  A, int64_t  lda, float*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasStrsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const float* , int64_t , float* , int64_t );
+	if (!lcublasStrsv_v2_64) {
+		lcublasStrsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasStrsv_v2_64");
+		tracer._kernel_map[(void *) lcublasStrsv_v2_64] = std::string("cublasStrsv_v2_64");
+	}
+	assert(lcublasStrsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasStrsv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasStrsv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  A, int  lda, double*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasDtrsv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , const double* , int , double* , int );
@@ -25931,6 +29636,32 @@ cublasStatus_t cublasDtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDtrsv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  A, int64_t  lda, double*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasDtrsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const double* , int64_t , double* , int64_t );
+	if (!lcublasDtrsv_v2_64) {
+		lcublasDtrsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDtrsv_v2_64");
+		tracer._kernel_map[(void *) lcublasDtrsv_v2_64] = std::string("cublasDtrsv_v2_64");
+	}
+	assert(lcublasDtrsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDtrsv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDtrsv_v2_64);
 	}
 	return res;
 }
@@ -25961,6 +29692,32 @@ cublasStatus_t cublasCtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasCtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasCtrsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCtrsv_v2_64) {
+		lcublasCtrsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCtrsv_v2_64");
+		tracer._kernel_map[(void *) lcublasCtrsv_v2_64] = std::string("cublasCtrsv_v2_64");
+	}
+	assert(lcublasCtrsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCtrsv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCtrsv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasZtrsv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -25983,6 +29740,32 @@ cublasStatus_t cublasZtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZtrsv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasZtrsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZtrsv_v2_64) {
+		lcublasZtrsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZtrsv_v2_64");
+		tracer._kernel_map[(void *) lcublasZtrsv_v2_64] = std::string("cublasZtrsv_v2_64");
+	}
+	assert(lcublasZtrsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZtrsv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZtrsv_v2_64);
 	}
 	return res;
 }
@@ -26013,6 +29796,32 @@ cublasStatus_t cublasStpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasStpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  AP, float*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasStpsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const float* , float* , int64_t );
+	if (!lcublasStpsv_v2_64) {
+		lcublasStpsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasStpsv_v2_64");
+		tracer._kernel_map[(void *) lcublasStpsv_v2_64] = std::string("cublasStpsv_v2_64");
+	}
+	assert(lcublasStpsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasStpsv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasStpsv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  AP, double*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasDtpsv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , const double* , double* , int );
@@ -26035,6 +29844,32 @@ cublasStatus_t cublasDtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDtpsv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  AP, double*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasDtpsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const double* , double* , int64_t );
+	if (!lcublasDtpsv_v2_64) {
+		lcublasDtpsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDtpsv_v2_64");
+		tracer._kernel_map[(void *) lcublasDtpsv_v2_64] = std::string("cublasDtpsv_v2_64");
+	}
+	assert(lcublasDtpsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDtpsv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDtpsv_v2_64);
 	}
 	return res;
 }
@@ -26065,6 +29900,32 @@ cublasStatus_t cublasCtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasCtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  AP, cuComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasCtpsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCtpsv_v2_64) {
+		lcublasCtpsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCtpsv_v2_64");
+		tracer._kernel_map[(void *) lcublasCtpsv_v2_64] = std::string("cublasCtpsv_v2_64");
+	}
+	assert(lcublasCtpsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCtpsv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCtpsv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasZtpsv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -26087,6 +29948,32 @@ cublasStatus_t cublasZtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZtpsv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasZtpsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZtpsv_v2_64) {
+		lcublasZtpsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZtpsv_v2_64");
+		tracer._kernel_map[(void *) lcublasZtpsv_v2_64] = std::string("cublasZtpsv_v2_64");
+	}
+	assert(lcublasZtpsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZtpsv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZtpsv_v2_64);
 	}
 	return res;
 }
@@ -26117,6 +30004,32 @@ cublasStatus_t cublasStbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasStbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const float*  A, int64_t  lda, float*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasStbsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const float* , int64_t , float* , int64_t );
+	if (!lcublasStbsv_v2_64) {
+		lcublasStbsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasStbsv_v2_64");
+		tracer._kernel_map[(void *) lcublasStbsv_v2_64] = std::string("cublasStbsv_v2_64");
+	}
+	assert(lcublasStbsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasStbsv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasStbsv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const double*  A, int  lda, double*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasDtbsv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , int , const double* , int , double* , int );
@@ -26139,6 +30052,32 @@ cublasStatus_t cublasDtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDtbsv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const double*  A, int64_t  lda, double*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasDtbsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const double* , int64_t , double* , int64_t );
+	if (!lcublasDtbsv_v2_64) {
+		lcublasDtbsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDtbsv_v2_64");
+		tracer._kernel_map[(void *) lcublasDtbsv_v2_64] = std::string("cublasDtbsv_v2_64");
+	}
+	assert(lcublasDtbsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDtbsv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDtbsv_v2_64);
 	}
 	return res;
 }
@@ -26169,6 +30108,32 @@ cublasStatus_t cublasCtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasCtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasCtbsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCtbsv_v2_64) {
+		lcublasCtbsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCtbsv_v2_64");
+		tracer._kernel_map[(void *) lcublasCtbsv_v2_64] = std::string("cublasCtbsv_v2_64");
+	}
+	assert(lcublasCtbsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCtbsv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCtbsv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	static cublasStatus_t (*lcublasZtbsv_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -26191,6 +30156,32 @@ cublasStatus_t cublasZtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZtbsv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
+{
+	static cublasStatus_t (*lcublasZtbsv_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZtbsv_v2_64) {
+		lcublasZtbsv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZtbsv_v2_64");
+		tracer._kernel_map[(void *) lcublasZtbsv_v2_64] = std::string("cublasZtbsv_v2_64");
+	}
+	assert(lcublasZtbsv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZtbsv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZtbsv_v2_64);
 	}
 	return res;
 }
@@ -26221,6 +30212,32 @@ cublasStatus_t cublasSsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasSsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasSsymv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t );
+	if (!lcublasSsymv_v2_64) {
+		lcublasSsymv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSsymv_v2_64");
+		tracer._kernel_map[(void *) lcublasSsymv_v2_64] = std::string("cublasSsymv_v2_64");
+	}
+	assert(lcublasSsymv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSsymv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSsymv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasDsymv_v2) (cublasHandle_t , cublasFillMode_t , int , const double* , const double* , int , const double* , int , const double* , double* , int );
@@ -26243,6 +30260,32 @@ cublasStatus_t cublasDsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDsymv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasDsymv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t );
+	if (!lcublasDsymv_v2_64) {
+		lcublasDsymv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDsymv_v2_64");
+		tracer._kernel_map[(void *) lcublasDsymv_v2_64] = std::string("cublasDsymv_v2_64");
+	}
+	assert(lcublasDsymv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDsymv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDsymv_v2_64);
 	}
 	return res;
 }
@@ -26273,6 +30316,32 @@ cublasStatus_t cublasCsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasCsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasCsymv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCsymv_v2_64) {
+		lcublasCsymv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCsymv_v2_64");
+		tracer._kernel_map[(void *) lcublasCsymv_v2_64] = std::string("cublasCsymv_v2_64");
+	}
+	assert(lcublasCsymv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsymv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsymv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasZsymv_v2) (cublasHandle_t , cublasFillMode_t , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -26295,6 +30364,32 @@ cublasStatus_t cublasZsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZsymv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasZsymv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZsymv_v2_64) {
+		lcublasZsymv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZsymv_v2_64");
+		tracer._kernel_map[(void *) lcublasZsymv_v2_64] = std::string("cublasZsymv_v2_64");
+	}
+	assert(lcublasZsymv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZsymv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZsymv_v2_64);
 	}
 	return res;
 }
@@ -26325,6 +30420,32 @@ cublasStatus_t cublasChemv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasChemv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasChemv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasChemv_v2_64) {
+		lcublasChemv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasChemv_v2_64");
+		tracer._kernel_map[(void *) lcublasChemv_v2_64] = std::string("cublasChemv_v2_64");
+	}
+	assert(lcublasChemv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasChemv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasChemv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZhemv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasZhemv_v2) (cublasHandle_t , cublasFillMode_t , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -26347,6 +30468,32 @@ cublasStatus_t cublasZhemv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZhemv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZhemv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasZhemv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZhemv_v2_64) {
+		lcublasZhemv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZhemv_v2_64");
+		tracer._kernel_map[(void *) lcublasZhemv_v2_64] = std::string("cublasZhemv_v2_64");
+	}
+	assert(lcublasZhemv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZhemv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZhemv_v2_64);
 	}
 	return res;
 }
@@ -26377,6 +30524,32 @@ cublasStatus_t cublasSsbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasSsbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasSsbmv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t );
+	if (!lcublasSsbmv_v2_64) {
+		lcublasSsbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSsbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasSsbmv_v2_64] = std::string("cublasSsbmv_v2_64");
+	}
+	assert(lcublasSsbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSsbmv_v2_64(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSsbmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDsbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasDsbmv_v2) (cublasHandle_t , cublasFillMode_t , int , int , const double* , const double* , int , const double* , int , const double* , double* , int );
@@ -26399,6 +30572,32 @@ cublasStatus_t cublasDsbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDsbmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDsbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasDsbmv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t );
+	if (!lcublasDsbmv_v2_64) {
+		lcublasDsbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDsbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasDsbmv_v2_64] = std::string("cublasDsbmv_v2_64");
+	}
+	assert(lcublasDsbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDsbmv_v2_64(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDsbmv_v2_64);
 	}
 	return res;
 }
@@ -26429,6 +30628,32 @@ cublasStatus_t cublasChbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasChbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasChbmv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasChbmv_v2_64) {
+		lcublasChbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasChbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasChbmv_v2_64] = std::string("cublasChbmv_v2_64");
+	}
+	assert(lcublasChbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasChbmv_v2_64(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasChbmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZhbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasZhbmv_v2) (cublasHandle_t , cublasFillMode_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -26451,6 +30676,32 @@ cublasStatus_t cublasZhbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZhbmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZhbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasZhbmv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZhbmv_v2_64) {
+		lcublasZhbmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZhbmv_v2_64");
+		tracer._kernel_map[(void *) lcublasZhbmv_v2_64] = std::string("cublasZhbmv_v2_64");
+	}
+	assert(lcublasZhbmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZhbmv_v2_64(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZhbmv_v2_64);
 	}
 	return res;
 }
@@ -26481,6 +30732,32 @@ cublasStatus_t cublasSspmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasSspmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  AP, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasSspmv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , const float* , int64_t , const float* , float* , int64_t );
+	if (!lcublasSspmv_v2_64) {
+		lcublasSspmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , const float* , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSspmv_v2_64");
+		tracer._kernel_map[(void *) lcublasSspmv_v2_64] = std::string("cublasSspmv_v2_64");
+	}
+	assert(lcublasSspmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSspmv_v2_64(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSspmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDspmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  AP, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasDspmv_v2) (cublasHandle_t , cublasFillMode_t , int , const double* , const double* , const double* , int , const double* , double* , int );
@@ -26503,6 +30780,32 @@ cublasStatus_t cublasDspmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDspmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDspmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  AP, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasDspmv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , const double* , int64_t , const double* , double* , int64_t );
+	if (!lcublasDspmv_v2_64) {
+		lcublasDspmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , const double* , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDspmv_v2_64");
+		tracer._kernel_map[(void *) lcublasDspmv_v2_64] = std::string("cublasDspmv_v2_64");
+	}
+	assert(lcublasDspmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDspmv_v2_64(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDspmv_v2_64);
 	}
 	return res;
 }
@@ -26533,6 +30836,32 @@ cublasStatus_t cublasChpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasChpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  AP, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasChpmv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasChpmv_v2_64) {
+		lcublasChpmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasChpmv_v2_64");
+		tracer._kernel_map[(void *) lcublasChpmv_v2_64] = std::string("cublasChpmv_v2_64");
+	}
+	assert(lcublasChpmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasChpmv_v2_64(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasChpmv_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZhpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  AP, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	static cublasStatus_t (*lcublasZhpmv_v2) (cublasHandle_t , cublasFillMode_t , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -26555,6 +30884,32 @@ cublasStatus_t cublasZhpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZhpmv_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZhpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  AP, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
+{
+	static cublasStatus_t (*lcublasZhpmv_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZhpmv_v2_64) {
+		lcublasZhpmv_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZhpmv_v2_64");
+		tracer._kernel_map[(void *) lcublasZhpmv_v2_64] = std::string("cublasZhpmv_v2_64");
+	}
+	assert(lcublasZhpmv_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZhpmv_v2_64(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZhpmv_v2_64);
 	}
 	return res;
 }
@@ -26585,6 +30940,32 @@ cublasStatus_t cublasSger_v2(cublasHandle_t  handle, int  m, int  n, const float
 	return res;
 }
 
+cublasStatus_t cublasSger_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasSger_v2_64) (cublasHandle_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , float* , int64_t );
+	if (!lcublasSger_v2_64) {
+		lcublasSger_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSger_v2_64");
+		tracer._kernel_map[(void *) lcublasSger_v2_64] = std::string("cublasSger_v2_64");
+	}
+	assert(lcublasSger_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSger_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSger_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDger_v2(cublasHandle_t  handle, int  m, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  A, int  lda)
 {
 	static cublasStatus_t (*lcublasDger_v2) (cublasHandle_t , int , int , const double* , const double* , int , const double* , int , double* , int );
@@ -26607,6 +30988,32 @@ cublasStatus_t cublasDger_v2(cublasHandle_t  handle, int  m, int  n, const doubl
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDger_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDger_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasDger_v2_64) (cublasHandle_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , double* , int64_t );
+	if (!lcublasDger_v2_64) {
+		lcublasDger_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDger_v2_64");
+		tracer._kernel_map[(void *) lcublasDger_v2_64] = std::string("cublasDger_v2_64");
+	}
+	assert(lcublasDger_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDger_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDger_v2_64);
 	}
 	return res;
 }
@@ -26637,6 +31044,32 @@ cublasStatus_t cublasCgeru_v2(cublasHandle_t  handle, int  m, int  n, const cuCo
 	return res;
 }
 
+cublasStatus_t cublasCgeru_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasCgeru_v2_64) (cublasHandle_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCgeru_v2_64) {
+		lcublasCgeru_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCgeru_v2_64");
+		tracer._kernel_map[(void *) lcublasCgeru_v2_64] = std::string("cublasCgeru_v2_64");
+	}
+	assert(lcublasCgeru_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgeru_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgeru_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCgerc_v2(cublasHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda)
 {
 	static cublasStatus_t (*lcublasCgerc_v2) (cublasHandle_t , int , int , const cuComplex* , const cuComplex* , int , const cuComplex* , int , cuComplex* , int );
@@ -26659,6 +31092,32 @@ cublasStatus_t cublasCgerc_v2(cublasHandle_t  handle, int  m, int  n, const cuCo
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCgerc_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgerc_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasCgerc_v2_64) (cublasHandle_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCgerc_v2_64) {
+		lcublasCgerc_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCgerc_v2_64");
+		tracer._kernel_map[(void *) lcublasCgerc_v2_64] = std::string("cublasCgerc_v2_64");
+	}
+	assert(lcublasCgerc_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgerc_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgerc_v2_64);
 	}
 	return res;
 }
@@ -26689,6 +31148,32 @@ cublasStatus_t cublasZgeru_v2(cublasHandle_t  handle, int  m, int  n, const cuDo
 	return res;
 }
 
+cublasStatus_t cublasZgeru_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasZgeru_v2_64) (cublasHandle_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZgeru_v2_64) {
+		lcublasZgeru_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZgeru_v2_64");
+		tracer._kernel_map[(void *) lcublasZgeru_v2_64] = std::string("cublasZgeru_v2_64");
+	}
+	assert(lcublasZgeru_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgeru_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgeru_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZgerc_v2(cublasHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)
 {
 	static cublasStatus_t (*lcublasZgerc_v2) (cublasHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -26711,6 +31196,32 @@ cublasStatus_t cublasZgerc_v2(cublasHandle_t  handle, int  m, int  n, const cuDo
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZgerc_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgerc_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasZgerc_v2_64) (cublasHandle_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZgerc_v2_64) {
+		lcublasZgerc_v2_64 = (cublasStatus_t (*) (cublasHandle_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZgerc_v2_64");
+		tracer._kernel_map[(void *) lcublasZgerc_v2_64] = std::string("cublasZgerc_v2_64");
+	}
+	assert(lcublasZgerc_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgerc_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgerc_v2_64);
 	}
 	return res;
 }
@@ -26741,6 +31252,32 @@ cublasStatus_t cublasSsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 	return res;
 }
 
+cublasStatus_t cublasSsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasSsyr_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , int64_t , float* , int64_t );
+	if (!lcublasSsyr_v2_64) {
+		lcublasSsyr_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSsyr_v2_64");
+		tracer._kernel_map[(void *) lcublasSsyr_v2_64] = std::string("cublasSsyr_v2_64");
+	}
+	assert(lcublasSsyr_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSsyr_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSsyr_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, double*  A, int  lda)
 {
 	static cublasStatus_t (*lcublasDsyr_v2) (cublasHandle_t , cublasFillMode_t , int , const double* , const double* , int , double* , int );
@@ -26763,6 +31300,32 @@ cublasStatus_t cublasDsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDsyr_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasDsyr_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , int64_t , double* , int64_t );
+	if (!lcublasDsyr_v2_64) {
+		lcublasDsyr_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDsyr_v2_64");
+		tracer._kernel_map[(void *) lcublasDsyr_v2_64] = std::string("cublasDsyr_v2_64");
+	}
+	assert(lcublasDsyr_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDsyr_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDsyr_v2_64);
 	}
 	return res;
 }
@@ -26793,6 +31356,32 @@ cublasStatus_t cublasCsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 	return res;
 }
 
+cublasStatus_t cublasCsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasCsyr_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCsyr_v2_64) {
+		lcublasCsyr_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCsyr_v2_64");
+		tracer._kernel_map[(void *) lcublasCsyr_v2_64] = std::string("cublasCsyr_v2_64");
+	}
+	assert(lcublasCsyr_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsyr_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsyr_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  A, int  lda)
 {
 	static cublasStatus_t (*lcublasZsyr_v2) (cublasHandle_t , cublasFillMode_t , int , const cuDoubleComplex* , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -26815,6 +31404,32 @@ cublasStatus_t cublasZsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZsyr_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasZsyr_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZsyr_v2_64) {
+		lcublasZsyr_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZsyr_v2_64");
+		tracer._kernel_map[(void *) lcublasZsyr_v2_64] = std::string("cublasZsyr_v2_64");
+	}
+	assert(lcublasZsyr_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZsyr_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZsyr_v2_64);
 	}
 	return res;
 }
@@ -26845,6 +31460,32 @@ cublasStatus_t cublasCher_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 	return res;
 }
 
+cublasStatus_t cublasCher_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasCher_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCher_v2_64) {
+		lcublasCher_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCher_v2_64");
+		tracer._kernel_map[(void *) lcublasCher_v2_64] = std::string("cublasCher_v2_64");
+	}
+	assert(lcublasCher_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCher_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCher_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZher_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  A, int  lda)
 {
 	static cublasStatus_t (*lcublasZher_v2) (cublasHandle_t , cublasFillMode_t , int , const double* , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -26867,6 +31508,32 @@ cublasStatus_t cublasZher_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZher_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZher_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasZher_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZher_v2_64) {
+		lcublasZher_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZher_v2_64");
+		tracer._kernel_map[(void *) lcublasZher_v2_64] = std::string("cublasZher_v2_64");
+	}
+	assert(lcublasZher_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZher_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZher_v2_64);
 	}
 	return res;
 }
@@ -26897,6 +31564,32 @@ cublasStatus_t cublasSspr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 	return res;
 }
 
+cublasStatus_t cublasSspr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  AP)
+{
+	static cublasStatus_t (*lcublasSspr_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , int64_t , float* );
+	if (!lcublasSspr_v2_64) {
+		lcublasSspr_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , int64_t , float* )) dlsym(RTLD_NEXT, "cublasSspr_v2_64");
+		tracer._kernel_map[(void *) lcublasSspr_v2_64] = std::string("cublasSspr_v2_64");
+	}
+	assert(lcublasSspr_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSspr_v2_64(handle, uplo, n, alpha, x, incx, AP);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSspr_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDspr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, double*  AP)
 {
 	static cublasStatus_t (*lcublasDspr_v2) (cublasHandle_t , cublasFillMode_t , int , const double* , const double* , int , double* );
@@ -26919,6 +31612,32 @@ cublasStatus_t cublasDspr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDspr_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDspr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  AP)
+{
+	static cublasStatus_t (*lcublasDspr_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , int64_t , double* );
+	if (!lcublasDspr_v2_64) {
+		lcublasDspr_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , int64_t , double* )) dlsym(RTLD_NEXT, "cublasDspr_v2_64");
+		tracer._kernel_map[(void *) lcublasDspr_v2_64] = std::string("cublasDspr_v2_64");
+	}
+	assert(lcublasDspr_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDspr_v2_64(handle, uplo, n, alpha, x, incx, AP);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDspr_v2_64);
 	}
 	return res;
 }
@@ -26949,6 +31668,32 @@ cublasStatus_t cublasChpr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 	return res;
 }
 
+cublasStatus_t cublasChpr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  AP)
+{
+	static cublasStatus_t (*lcublasChpr_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const cuComplex* , int64_t , cuComplex* );
+	if (!lcublasChpr_v2_64) {
+		lcublasChpr_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const cuComplex* , int64_t , cuComplex* )) dlsym(RTLD_NEXT, "cublasChpr_v2_64");
+		tracer._kernel_map[(void *) lcublasChpr_v2_64] = std::string("cublasChpr_v2_64");
+	}
+	assert(lcublasChpr_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasChpr_v2_64(handle, uplo, n, alpha, x, incx, AP);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasChpr_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZhpr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  AP)
 {
 	static cublasStatus_t (*lcublasZhpr_v2) (cublasHandle_t , cublasFillMode_t , int , const double* , const cuDoubleComplex* , int , cuDoubleComplex* );
@@ -26971,6 +31716,32 @@ cublasStatus_t cublasZhpr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZhpr_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZhpr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  AP)
+{
+	static cublasStatus_t (*lcublasZhpr_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const cuDoubleComplex* , int64_t , cuDoubleComplex* );
+	if (!lcublasZhpr_v2_64) {
+		lcublasZhpr_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const cuDoubleComplex* , int64_t , cuDoubleComplex* )) dlsym(RTLD_NEXT, "cublasZhpr_v2_64");
+		tracer._kernel_map[(void *) lcublasZhpr_v2_64] = std::string("cublasZhpr_v2_64");
+	}
+	assert(lcublasZhpr_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZhpr_v2_64(handle, uplo, n, alpha, x, incx, AP);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZhpr_v2_64);
 	}
 	return res;
 }
@@ -27001,6 +31772,32 @@ cublasStatus_t cublasSsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasSsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasSsyr2_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , float* , int64_t );
+	if (!lcublasSsyr2_v2_64) {
+		lcublasSsyr2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSsyr2_v2_64");
+		tracer._kernel_map[(void *) lcublasSsyr2_v2_64] = std::string("cublasSsyr2_v2_64");
+	}
+	assert(lcublasSsyr2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSsyr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSsyr2_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  A, int  lda)
 {
 	static cublasStatus_t (*lcublasDsyr2_v2) (cublasHandle_t , cublasFillMode_t , int , const double* , const double* , int , const double* , int , double* , int );
@@ -27023,6 +31820,32 @@ cublasStatus_t cublasDsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDsyr2_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasDsyr2_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , double* , int64_t );
+	if (!lcublasDsyr2_v2_64) {
+		lcublasDsyr2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDsyr2_v2_64");
+		tracer._kernel_map[(void *) lcublasDsyr2_v2_64] = std::string("cublasDsyr2_v2_64");
+	}
+	assert(lcublasDsyr2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDsyr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDsyr2_v2_64);
 	}
 	return res;
 }
@@ -27053,6 +31876,32 @@ cublasStatus_t cublasCsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasCsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasCsyr2_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCsyr2_v2_64) {
+		lcublasCsyr2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCsyr2_v2_64");
+		tracer._kernel_map[(void *) lcublasCsyr2_v2_64] = std::string("cublasCsyr2_v2_64");
+	}
+	assert(lcublasCsyr2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsyr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsyr2_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)
 {
 	static cublasStatus_t (*lcublasZsyr2_v2) (cublasHandle_t , cublasFillMode_t , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -27075,6 +31924,32 @@ cublasStatus_t cublasZsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZsyr2_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasZsyr2_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZsyr2_v2_64) {
+		lcublasZsyr2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZsyr2_v2_64");
+		tracer._kernel_map[(void *) lcublasZsyr2_v2_64] = std::string("cublasZsyr2_v2_64");
+	}
+	assert(lcublasZsyr2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZsyr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZsyr2_v2_64);
 	}
 	return res;
 }
@@ -27105,6 +31980,32 @@ cublasStatus_t cublasCher2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasCher2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasCher2_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCher2_v2_64) {
+		lcublasCher2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCher2_v2_64");
+		tracer._kernel_map[(void *) lcublasCher2_v2_64] = std::string("cublasCher2_v2_64");
+	}
+	assert(lcublasCher2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCher2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCher2_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZher2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)
 {
 	static cublasStatus_t (*lcublasZher2_v2) (cublasHandle_t , cublasFillMode_t , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -27127,6 +32028,32 @@ cublasStatus_t cublasZher2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZher2_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZher2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
+{
+	static cublasStatus_t (*lcublasZher2_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZher2_v2_64) {
+		lcublasZher2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZher2_v2_64");
+		tracer._kernel_map[(void *) lcublasZher2_v2_64] = std::string("cublasZher2_v2_64");
+	}
+	assert(lcublasZher2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZher2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZher2_v2_64);
 	}
 	return res;
 }
@@ -27157,6 +32084,32 @@ cublasStatus_t cublasSspr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasSspr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  AP)
+{
+	static cublasStatus_t (*lcublasSspr2_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , float* );
+	if (!lcublasSspr2_v2_64) {
+		lcublasSspr2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , float* )) dlsym(RTLD_NEXT, "cublasSspr2_v2_64");
+		tracer._kernel_map[(void *) lcublasSspr2_v2_64] = std::string("cublasSspr2_v2_64");
+	}
+	assert(lcublasSspr2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSspr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, AP);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSspr2_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDspr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  AP)
 {
 	static cublasStatus_t (*lcublasDspr2_v2) (cublasHandle_t , cublasFillMode_t , int , const double* , const double* , int , const double* , int , double* );
@@ -27179,6 +32132,32 @@ cublasStatus_t cublasDspr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDspr2_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDspr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  AP)
+{
+	static cublasStatus_t (*lcublasDspr2_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , double* );
+	if (!lcublasDspr2_v2_64) {
+		lcublasDspr2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , double* )) dlsym(RTLD_NEXT, "cublasDspr2_v2_64");
+		tracer._kernel_map[(void *) lcublasDspr2_v2_64] = std::string("cublasDspr2_v2_64");
+	}
+	assert(lcublasDspr2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDspr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, AP);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDspr2_v2_64);
 	}
 	return res;
 }
@@ -27209,6 +32188,32 @@ cublasStatus_t cublasChpr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 	return res;
 }
 
+cublasStatus_t cublasChpr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  AP)
+{
+	static cublasStatus_t (*lcublasChpr2_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* );
+	if (!lcublasChpr2_v2_64) {
+		lcublasChpr2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* )) dlsym(RTLD_NEXT, "cublasChpr2_v2_64");
+		tracer._kernel_map[(void *) lcublasChpr2_v2_64] = std::string("cublasChpr2_v2_64");
+	}
+	assert(lcublasChpr2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasChpr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, AP);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasChpr2_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZhpr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  AP)
 {
 	static cublasStatus_t (*lcublasZhpr2_v2) (cublasHandle_t , cublasFillMode_t , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , cuDoubleComplex* );
@@ -27231,6 +32236,864 @@ cublasStatus_t cublasZhpr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZhpr2_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZhpr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  AP)
+{
+	static cublasStatus_t (*lcublasZhpr2_v2_64) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* );
+	if (!lcublasZhpr2_v2_64) {
+		lcublasZhpr2_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* )) dlsym(RTLD_NEXT, "cublasZhpr2_v2_64");
+		tracer._kernel_map[(void *) lcublasZhpr2_v2_64] = std::string("cublasZhpr2_v2_64");
+	}
+	assert(lcublasZhpr2_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZhpr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, AP);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZhpr2_v2_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float* const  Aarray[], int  lda, const float* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)
+{
+	static cublasStatus_t (*lcublasSgemvBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* , const float* const [], int , const float* const [], int , const float* , float* const [], int , int );
+	if (!lcublasSgemvBatched) {
+		lcublasSgemvBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* , const float* const [], int , const float* const [], int , const float* , float* const [], int , int )) dlsym(RTLD_NEXT, "cublasSgemvBatched");
+		tracer._kernel_map[(void *) lcublasSgemvBatched] = std::string("cublasSgemvBatched");
+	}
+	assert(lcublasSgemvBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgemvBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float* const  Aarray[], int64_t  lda, const float* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasSgemvBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const float* const [], int64_t , const float* const [], int64_t , const float* , float* const [], int64_t , int64_t );
+	if (!lcublasSgemvBatched_64) {
+		lcublasSgemvBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const float* const [], int64_t , const float* const [], int64_t , const float* , float* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasSgemvBatched_64");
+		tracer._kernel_map[(void *) lcublasSgemvBatched_64] = std::string("cublasSgemvBatched_64");
+	}
+	assert(lcublasSgemvBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgemvBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double* const  Aarray[], int  lda, const double* const  xarray[], int  incx, const double*  beta, double* const  yarray[], int  incy, int  batchCount)
+{
+	static cublasStatus_t (*lcublasDgemvBatched) (cublasHandle_t , cublasOperation_t , int , int , const double* , const double* const [], int , const double* const [], int , const double* , double* const [], int , int );
+	if (!lcublasDgemvBatched) {
+		lcublasDgemvBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const double* , const double* const [], int , const double* const [], int , const double* , double* const [], int , int )) dlsym(RTLD_NEXT, "cublasDgemvBatched");
+		tracer._kernel_map[(void *) lcublasDgemvBatched] = std::string("cublasDgemvBatched");
+	}
+	assert(lcublasDgemvBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgemvBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double* const  Aarray[], int64_t  lda, const double* const  xarray[], int64_t  incx, const double*  beta, double* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasDgemvBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const double* , const double* const [], int64_t , const double* const [], int64_t , const double* , double* const [], int64_t , int64_t );
+	if (!lcublasDgemvBatched_64) {
+		lcublasDgemvBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const double* , const double* const [], int64_t , const double* const [], int64_t , const double* , double* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasDgemvBatched_64");
+		tracer._kernel_map[(void *) lcublasDgemvBatched_64] = std::string("cublasDgemvBatched_64");
+	}
+	assert(lcublasDgemvBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgemvBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  xarray[], int  incx, const cuComplex*  beta, cuComplex* const  yarray[], int  incy, int  batchCount)
+{
+	static cublasStatus_t (*lcublasCgemvBatched) (cublasHandle_t , cublasOperation_t , int , int , const cuComplex* , const cuComplex* const [], int , const cuComplex* const [], int , const cuComplex* , cuComplex* const [], int , int );
+	if (!lcublasCgemvBatched) {
+		lcublasCgemvBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const cuComplex* , const cuComplex* const [], int , const cuComplex* const [], int , const cuComplex* , cuComplex* const [], int , int )) dlsym(RTLD_NEXT, "cublasCgemvBatched");
+		tracer._kernel_map[(void *) lcublasCgemvBatched] = std::string("cublasCgemvBatched");
+	}
+	assert(lcublasCgemvBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemvBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  xarray[], int64_t  incx, const cuComplex*  beta, cuComplex* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasCgemvBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* const [], int64_t , const cuComplex* const [], int64_t , const cuComplex* , cuComplex* const [], int64_t , int64_t );
+	if (!lcublasCgemvBatched_64) {
+		lcublasCgemvBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* const [], int64_t , const cuComplex* const [], int64_t , const cuComplex* , cuComplex* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasCgemvBatched_64");
+		tracer._kernel_map[(void *) lcublasCgemvBatched_64] = std::string("cublasCgemvBatched_64");
+	}
+	assert(lcublasCgemvBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemvBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int  lda, const cuDoubleComplex* const  xarray[], int  incx, const cuDoubleComplex*  beta, cuDoubleComplex* const  yarray[], int  incy, int  batchCount)
+{
+	static cublasStatus_t (*lcublasZgemvBatched) (cublasHandle_t , cublasOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* const [], int , const cuDoubleComplex* const [], int , const cuDoubleComplex* , cuDoubleComplex* const [], int , int );
+	if (!lcublasZgemvBatched) {
+		lcublasZgemvBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* const [], int , const cuDoubleComplex* const [], int , const cuDoubleComplex* , cuDoubleComplex* const [], int , int )) dlsym(RTLD_NEXT, "cublasZgemvBatched");
+		tracer._kernel_map[(void *) lcublasZgemvBatched] = std::string("cublasZgemvBatched");
+	}
+	assert(lcublasZgemvBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgemvBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int64_t  lda, const cuDoubleComplex* const  xarray[], int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasZgemvBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* const [], int64_t , const cuDoubleComplex* const [], int64_t , const cuDoubleComplex* , cuDoubleComplex* const [], int64_t , int64_t );
+	if (!lcublasZgemvBatched_64) {
+		lcublasZgemvBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* const [], int64_t , const cuDoubleComplex* const [], int64_t , const cuDoubleComplex* , cuDoubleComplex* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasZgemvBatched_64");
+		tracer._kernel_map[(void *) lcublasZgemvBatched_64] = std::string("cublasZgemvBatched_64");
+	}
+	assert(lcublasZgemvBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgemvBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasHSHgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half* const  Aarray[], int  lda, const __half* const  xarray[], int  incx, const float*  beta, __half* const  yarray[], int  incy, int  batchCount)
+{
+	static cublasStatus_t (*lcublasHSHgemvBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __half* const [], int , const __half* const [], int , const float* , __half* const [], int , int );
+	if (!lcublasHSHgemvBatched) {
+		lcublasHSHgemvBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __half* const [], int , const __half* const [], int , const float* , __half* const [], int , int )) dlsym(RTLD_NEXT, "cublasHSHgemvBatched");
+		tracer._kernel_map[(void *) lcublasHSHgemvBatched] = std::string("cublasHSHgemvBatched");
+	}
+	assert(lcublasHSHgemvBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHSHgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHSHgemvBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasHSHgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  xarray[], int64_t  incx, const float*  beta, __half* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasHSHgemvBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __half* const [], int64_t , const __half* const [], int64_t , const float* , __half* const [], int64_t , int64_t );
+	if (!lcublasHSHgemvBatched_64) {
+		lcublasHSHgemvBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __half* const [], int64_t , const __half* const [], int64_t , const float* , __half* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasHSHgemvBatched_64");
+		tracer._kernel_map[(void *) lcublasHSHgemvBatched_64] = std::string("cublasHSHgemvBatched_64");
+	}
+	assert(lcublasHSHgemvBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHSHgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHSHgemvBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasHSSgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half* const  Aarray[], int  lda, const __half* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)
+{
+	static cublasStatus_t (*lcublasHSSgemvBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __half* const [], int , const __half* const [], int , const float* , float* const [], int , int );
+	if (!lcublasHSSgemvBatched) {
+		lcublasHSSgemvBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __half* const [], int , const __half* const [], int , const float* , float* const [], int , int )) dlsym(RTLD_NEXT, "cublasHSSgemvBatched");
+		tracer._kernel_map[(void *) lcublasHSSgemvBatched] = std::string("cublasHSSgemvBatched");
+	}
+	assert(lcublasHSSgemvBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHSSgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHSSgemvBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasHSSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasHSSgemvBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __half* const [], int64_t , const __half* const [], int64_t , const float* , float* const [], int64_t , int64_t );
+	if (!lcublasHSSgemvBatched_64) {
+		lcublasHSSgemvBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __half* const [], int64_t , const __half* const [], int64_t , const float* , float* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasHSSgemvBatched_64");
+		tracer._kernel_map[(void *) lcublasHSSgemvBatched_64] = std::string("cublasHSSgemvBatched_64");
+	}
+	assert(lcublasHSSgemvBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHSSgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHSSgemvBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasTSTgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int  lda, const __nv_bfloat16* const  xarray[], int  incx, const float*  beta, __nv_bfloat16* const  yarray[], int  incy, int  batchCount)
+{
+	static cublasStatus_t (*lcublasTSTgemvBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __nv_bfloat16* const [], int , const __nv_bfloat16* const [], int , const float* , __nv_bfloat16* const [], int , int );
+	if (!lcublasTSTgemvBatched) {
+		lcublasTSTgemvBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __nv_bfloat16* const [], int , const __nv_bfloat16* const [], int , const float* , __nv_bfloat16* const [], int , int )) dlsym(RTLD_NEXT, "cublasTSTgemvBatched");
+		tracer._kernel_map[(void *) lcublasTSTgemvBatched] = std::string("cublasTSTgemvBatched");
+	}
+	assert(lcublasTSTgemvBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasTSTgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasTSTgemvBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasTSTgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int64_t  lda, const __nv_bfloat16* const  xarray[], int64_t  incx, const float*  beta, __nv_bfloat16* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasTSTgemvBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __nv_bfloat16* const [], int64_t , const __nv_bfloat16* const [], int64_t , const float* , __nv_bfloat16* const [], int64_t , int64_t );
+	if (!lcublasTSTgemvBatched_64) {
+		lcublasTSTgemvBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __nv_bfloat16* const [], int64_t , const __nv_bfloat16* const [], int64_t , const float* , __nv_bfloat16* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasTSTgemvBatched_64");
+		tracer._kernel_map[(void *) lcublasTSTgemvBatched_64] = std::string("cublasTSTgemvBatched_64");
+	}
+	assert(lcublasTSTgemvBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasTSTgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasTSTgemvBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasTSSgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int  lda, const __nv_bfloat16* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)
+{
+	static cublasStatus_t (*lcublasTSSgemvBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __nv_bfloat16* const [], int , const __nv_bfloat16* const [], int , const float* , float* const [], int , int );
+	if (!lcublasTSSgemvBatched) {
+		lcublasTSSgemvBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __nv_bfloat16* const [], int , const __nv_bfloat16* const [], int , const float* , float* const [], int , int )) dlsym(RTLD_NEXT, "cublasTSSgemvBatched");
+		tracer._kernel_map[(void *) lcublasTSSgemvBatched] = std::string("cublasTSSgemvBatched");
+	}
+	assert(lcublasTSSgemvBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasTSSgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasTSSgemvBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasTSSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int64_t  lda, const __nv_bfloat16* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasTSSgemvBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __nv_bfloat16* const [], int64_t , const __nv_bfloat16* const [], int64_t , const float* , float* const [], int64_t , int64_t );
+	if (!lcublasTSSgemvBatched_64) {
+		lcublasTSSgemvBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __nv_bfloat16* const [], int64_t , const __nv_bfloat16* const [], int64_t , const float* , float* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasTSSgemvBatched_64");
+		tracer._kernel_map[(void *) lcublasTSSgemvBatched_64] = std::string("cublasTSSgemvBatched_64");
+	}
+	assert(lcublasTSSgemvBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasTSSgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasTSSgemvBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	static cublasStatus_t (*lcublasSgemvStridedBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* , const float* , int , long long int , const float* , int , long long int , const float* , float* , int , long long int , int );
+	if (!lcublasSgemvStridedBatched) {
+		lcublasSgemvStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* , const float* , int , long long int , const float* , int , long long int , const float* , float* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasSgemvStridedBatched");
+		tracer._kernel_map[(void *) lcublasSgemvStridedBatched] = std::string("cublasSgemvStridedBatched");
+	}
+	assert(lcublasSgemvStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgemvStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, long long int  strideA, const float*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasSgemvStridedBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , long long int , const float* , int64_t , long long int , const float* , float* , int64_t , long long int , int64_t );
+	if (!lcublasSgemvStridedBatched_64) {
+		lcublasSgemvStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , long long int , const float* , int64_t , long long int , const float* , float* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasSgemvStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasSgemvStridedBatched_64] = std::string("cublasSgemvStridedBatched_64");
+	}
+	assert(lcublasSgemvStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgemvStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  x, int  incx, long long int  stridex, const double*  beta, double*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	static cublasStatus_t (*lcublasDgemvStridedBatched) (cublasHandle_t , cublasOperation_t , int , int , const double* , const double* , int , long long int , const double* , int , long long int , const double* , double* , int , long long int , int );
+	if (!lcublasDgemvStridedBatched) {
+		lcublasDgemvStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const double* , const double* , int , long long int , const double* , int , long long int , const double* , double* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasDgemvStridedBatched");
+		tracer._kernel_map[(void *) lcublasDgemvStridedBatched] = std::string("cublasDgemvStridedBatched");
+	}
+	assert(lcublasDgemvStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgemvStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, long long int  strideA, const double*  x, int64_t  incx, long long int  stridex, const double*  beta, double*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasDgemvStridedBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , long long int , const double* , int64_t , long long int , const double* , double* , int64_t , long long int , int64_t );
+	if (!lcublasDgemvStridedBatched_64) {
+		lcublasDgemvStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , long long int , const double* , int64_t , long long int , const double* , double* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasDgemvStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasDgemvStridedBatched_64] = std::string("cublasDgemvStridedBatched_64");
+	}
+	assert(lcublasDgemvStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgemvStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  x, int  incx, long long int  stridex, const cuComplex*  beta, cuComplex*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	static cublasStatus_t (*lcublasCgemvStridedBatched) (cublasHandle_t , cublasOperation_t , int , int , const cuComplex* , const cuComplex* , int , long long int , const cuComplex* , int , long long int , const cuComplex* , cuComplex* , int , long long int , int );
+	if (!lcublasCgemvStridedBatched) {
+		lcublasCgemvStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const cuComplex* , const cuComplex* , int , long long int , const cuComplex* , int , long long int , const cuComplex* , cuComplex* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasCgemvStridedBatched");
+		tracer._kernel_map[(void *) lcublasCgemvStridedBatched] = std::string("cublasCgemvStridedBatched");
+	}
+	assert(lcublasCgemvStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemvStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  x, int64_t  incx, long long int  stridex, const cuComplex*  beta, cuComplex*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasCgemvStridedBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , long long int , const cuComplex* , int64_t , long long int , const cuComplex* , cuComplex* , int64_t , long long int , int64_t );
+	if (!lcublasCgemvStridedBatched_64) {
+		lcublasCgemvStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , long long int , const cuComplex* , int64_t , long long int , const cuComplex* , cuComplex* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasCgemvStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasCgemvStridedBatched_64] = std::string("cublasCgemvStridedBatched_64");
+	}
+	assert(lcublasCgemvStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemvStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  x, int  incx, long long int  stridex, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	static cublasStatus_t (*lcublasZgemvStridedBatched) (cublasHandle_t , cublasOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , cuDoubleComplex* , int , long long int , int );
+	if (!lcublasZgemvStridedBatched) {
+		lcublasZgemvStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , cuDoubleComplex* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasZgemvStridedBatched");
+		tracer._kernel_map[(void *) lcublasZgemvStridedBatched] = std::string("cublasZgemvStridedBatched");
+	}
+	assert(lcublasZgemvStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgemvStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, long long int  strideA, const cuDoubleComplex*  x, int64_t  incx, long long int  stridex, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasZgemvStridedBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , long long int , const cuDoubleComplex* , int64_t , long long int , const cuDoubleComplex* , cuDoubleComplex* , int64_t , long long int , int64_t );
+	if (!lcublasZgemvStridedBatched_64) {
+		lcublasZgemvStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , long long int , const cuDoubleComplex* , int64_t , long long int , const cuDoubleComplex* , cuDoubleComplex* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasZgemvStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasZgemvStridedBatched_64] = std::string("cublasZgemvStridedBatched_64");
+	}
+	assert(lcublasZgemvStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgemvStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasHSHgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  x, int  incx, long long int  stridex, const float*  beta, __half*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	static cublasStatus_t (*lcublasHSHgemvStridedBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __half* , int , long long int , const __half* , int , long long int , const float* , __half* , int , long long int , int );
+	if (!lcublasHSHgemvStridedBatched) {
+		lcublasHSHgemvStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __half* , int , long long int , const __half* , int , long long int , const float* , __half* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasHSHgemvStridedBatched");
+		tracer._kernel_map[(void *) lcublasHSHgemvStridedBatched] = std::string("cublasHSHgemvStridedBatched");
+	}
+	assert(lcublasHSHgemvStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHSHgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHSHgemvStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasHSHgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  x, int64_t  incx, long long int  stridex, const float*  beta, __half*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasHSHgemvStridedBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __half* , int64_t , long long int , const __half* , int64_t , long long int , const float* , __half* , int64_t , long long int , int64_t );
+	if (!lcublasHSHgemvStridedBatched_64) {
+		lcublasHSHgemvStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __half* , int64_t , long long int , const __half* , int64_t , long long int , const float* , __half* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasHSHgemvStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasHSHgemvStridedBatched_64] = std::string("cublasHSHgemvStridedBatched_64");
+	}
+	assert(lcublasHSHgemvStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHSHgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHSHgemvStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasHSSgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	static cublasStatus_t (*lcublasHSSgemvStridedBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __half* , int , long long int , const __half* , int , long long int , const float* , float* , int , long long int , int );
+	if (!lcublasHSSgemvStridedBatched) {
+		lcublasHSSgemvStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __half* , int , long long int , const __half* , int , long long int , const float* , float* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasHSSgemvStridedBatched");
+		tracer._kernel_map[(void *) lcublasHSSgemvStridedBatched] = std::string("cublasHSSgemvStridedBatched");
+	}
+	assert(lcublasHSSgemvStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHSSgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHSSgemvStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasHSSgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasHSSgemvStridedBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __half* , int64_t , long long int , const __half* , int64_t , long long int , const float* , float* , int64_t , long long int , int64_t );
+	if (!lcublasHSSgemvStridedBatched_64) {
+		lcublasHSSgemvStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __half* , int64_t , long long int , const __half* , int64_t , long long int , const float* , float* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasHSSgemvStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasHSSgemvStridedBatched_64] = std::string("cublasHSSgemvStridedBatched_64");
+	}
+	assert(lcublasHSSgemvStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHSSgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHSSgemvStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasTSTgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16*  A, int  lda, long long int  strideA, const __nv_bfloat16*  x, int  incx, long long int  stridex, const float*  beta, __nv_bfloat16*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	static cublasStatus_t (*lcublasTSTgemvStridedBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __nv_bfloat16* , int , long long int , const __nv_bfloat16* , int , long long int , const float* , __nv_bfloat16* , int , long long int , int );
+	if (!lcublasTSTgemvStridedBatched) {
+		lcublasTSTgemvStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __nv_bfloat16* , int , long long int , const __nv_bfloat16* , int , long long int , const float* , __nv_bfloat16* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasTSTgemvStridedBatched");
+		tracer._kernel_map[(void *) lcublasTSTgemvStridedBatched] = std::string("cublasTSTgemvStridedBatched");
+	}
+	assert(lcublasTSTgemvStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasTSTgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasTSTgemvStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasTSTgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16*  A, int64_t  lda, long long int  strideA, const __nv_bfloat16*  x, int64_t  incx, long long int  stridex, const float*  beta, __nv_bfloat16*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasTSTgemvStridedBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __nv_bfloat16* , int64_t , long long int , const __nv_bfloat16* , int64_t , long long int , const float* , __nv_bfloat16* , int64_t , long long int , int64_t );
+	if (!lcublasTSTgemvStridedBatched_64) {
+		lcublasTSTgemvStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __nv_bfloat16* , int64_t , long long int , const __nv_bfloat16* , int64_t , long long int , const float* , __nv_bfloat16* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasTSTgemvStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasTSTgemvStridedBatched_64] = std::string("cublasTSTgemvStridedBatched_64");
+	}
+	assert(lcublasTSTgemvStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasTSTgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasTSTgemvStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasTSSgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16*  A, int  lda, long long int  strideA, const __nv_bfloat16*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)
+{
+	static cublasStatus_t (*lcublasTSSgemvStridedBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __nv_bfloat16* , int , long long int , const __nv_bfloat16* , int , long long int , const float* , float* , int , long long int , int );
+	if (!lcublasTSSgemvStridedBatched) {
+		lcublasTSSgemvStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* , const __nv_bfloat16* , int , long long int , const __nv_bfloat16* , int , long long int , const float* , float* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasTSSgemvStridedBatched");
+		tracer._kernel_map[(void *) lcublasTSSgemvStridedBatched] = std::string("cublasTSSgemvStridedBatched");
+	}
+	assert(lcublasTSSgemvStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasTSSgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasTSSgemvStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasTSSgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16*  A, int64_t  lda, long long int  strideA, const __nv_bfloat16*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasTSSgemvStridedBatched_64) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __nv_bfloat16* , int64_t , long long int , const __nv_bfloat16* , int64_t , long long int , const float* , float* , int64_t , long long int , int64_t );
+	if (!lcublasTSSgemvStridedBatched_64) {
+		lcublasTSSgemvStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int64_t , int64_t , const float* , const __nv_bfloat16* , int64_t , long long int , const __nv_bfloat16* , int64_t , long long int , const float* , float* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasTSSgemvStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasTSSgemvStridedBatched_64] = std::string("cublasTSSgemvStridedBatched_64");
+	}
+	assert(lcublasTSSgemvStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasTSSgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasTSSgemvStridedBatched_64);
 	}
 	return res;
 }
@@ -27261,6 +33124,32 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 	return res;
 }
 
+cublasStatus_t cublasSgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasSgemm_v2_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t );
+	if (!lcublasSgemm_v2_64) {
+		lcublasSgemm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSgemm_v2_64");
+		tracer._kernel_map[(void *) lcublasSgemm_v2_64] = std::string("cublasSgemm_v2_64");
+	}
+	assert(lcublasSgemm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgemm_v2_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgemm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasDgemm_v2) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const double* , const double* , int , const double* , int , const double* , double* , int );
@@ -27283,6 +33172,32 @@ cublasStatus_t cublasDgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDgemm_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasDgemm_v2_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t );
+	if (!lcublasDgemm_v2_64) {
+		lcublasDgemm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDgemm_v2_64");
+		tracer._kernel_map[(void *) lcublasDgemm_v2_64] = std::string("cublasDgemm_v2_64");
+	}
+	assert(lcublasDgemm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgemm_v2_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgemm_v2_64);
 	}
 	return res;
 }
@@ -27313,6 +33228,32 @@ cublasStatus_t cublasCgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 	return res;
 }
 
+cublasStatus_t cublasCgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCgemm_v2_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCgemm_v2_64) {
+		lcublasCgemm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCgemm_v2_64");
+		tracer._kernel_map[(void *) lcublasCgemm_v2_64] = std::string("cublasCgemm_v2_64");
+	}
+	assert(lcublasCgemm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemm_v2_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCgemm3m(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasCgemm3m) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuComplex* , const cuComplex* , int , const cuComplex* , int , const cuComplex* , cuComplex* , int );
@@ -27335,6 +33276,32 @@ cublasStatus_t cublasCgemm3m(cublasHandle_t  handle, cublasOperation_t  transa, 
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCgemm3m);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgemm3m_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCgemm3m_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCgemm3m_64) {
+		lcublasCgemm3m_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCgemm3m_64");
+		tracer._kernel_map[(void *) lcublasCgemm3m_64] = std::string("cublasCgemm3m_64");
+	}
+	assert(lcublasCgemm3m_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemm3m_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemm3m_64);
 	}
 	return res;
 }
@@ -27365,6 +33332,32 @@ cublasStatus_t cublasCgemm3mEx(cublasHandle_t  handle, cublasOperation_t  transa
 	return res;
 }
 
+cublasStatus_t cublasCgemm3mEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCgemm3mEx_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , const cuComplex* , void* , cudaDataType , int64_t );
+	if (!lcublasCgemm3mEx_64) {
+		lcublasCgemm3mEx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , const cuComplex* , void* , cudaDataType , int64_t )) dlsym(RTLD_NEXT, "cublasCgemm3mEx_64");
+		tracer._kernel_map[(void *) lcublasCgemm3mEx_64] = std::string("cublasCgemm3mEx_64");
+	}
+	assert(lcublasCgemm3mEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemm3mEx_64(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemm3mEx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasZgemm_v2) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -27387,6 +33380,32 @@ cublasStatus_t cublasZgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZgemm_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZgemm_v2_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZgemm_v2_64) {
+		lcublasZgemm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZgemm_v2_64");
+		tracer._kernel_map[(void *) lcublasZgemm_v2_64] = std::string("cublasZgemm_v2_64");
+	}
+	assert(lcublasZgemm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgemm_v2_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgemm_v2_64);
 	}
 	return res;
 }
@@ -27417,6 +33436,32 @@ cublasStatus_t cublasZgemm3m(cublasHandle_t  handle, cublasOperation_t  transa, 
 	return res;
 }
 
+cublasStatus_t cublasZgemm3m_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZgemm3m_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZgemm3m_64) {
+		lcublasZgemm3m_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZgemm3m_64");
+		tracer._kernel_map[(void *) lcublasZgemm3m_64] = std::string("cublasZgemm3m_64");
+	}
+	assert(lcublasZgemm3m_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgemm3m_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgemm3m_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasHgemm(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const __half*  alpha, const __half*  A, int  lda, const __half*  B, int  ldb, const __half*  beta, __half*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasHgemm) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const __half* , const __half* , int , const __half* , int , const __half* , __half* , int );
@@ -27439,6 +33484,32 @@ cublasStatus_t cublasHgemm(cublasHandle_t  handle, cublasOperation_t  transa, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasHgemm);
+	}
+	return res;
+}
+
+cublasStatus_t cublasHgemm_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half*  A, int64_t  lda, const __half*  B, int64_t  ldb, const __half*  beta, __half*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasHgemm_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const __half* , const __half* , int64_t , const __half* , int64_t , const __half* , __half* , int64_t );
+	if (!lcublasHgemm_64) {
+		lcublasHgemm_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const __half* , const __half* , int64_t , const __half* , int64_t , const __half* , __half* , int64_t )) dlsym(RTLD_NEXT, "cublasHgemm_64");
+		tracer._kernel_map[(void *) lcublasHgemm_64] = std::string("cublasHgemm_64");
+	}
+	assert(lcublasHgemm_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHgemm_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHgemm_64);
 	}
 	return res;
 }
@@ -27469,6 +33540,32 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 	return res;
 }
 
+cublasStatus_t cublasSgemmEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasSgemmEx_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const float* , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , const float* , void* , cudaDataType , int64_t );
+	if (!lcublasSgemmEx_64) {
+		lcublasSgemmEx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const float* , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , const float* , void* , cudaDataType , int64_t )) dlsym(RTLD_NEXT, "cublasSgemmEx_64");
+		tracer._kernel_map[(void *) lcublasSgemmEx_64] = std::string("cublasSgemmEx_64");
+	}
+	assert(lcublasSgemmEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgemmEx_64(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgemmEx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
 {
 	static cublasStatus_t (*lcublasGemmEx) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const void* , const void* , cudaDataType , int , const void* , cudaDataType , int , const void* , void* , cudaDataType , int , cublasComputeType_t , cublasGemmAlgo_t );
@@ -27491,6 +33588,32 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasGemmEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasGemmEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	static cublasStatus_t (*lcublasGemmEx_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const void* , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , const void* , void* , cudaDataType , int64_t , cublasComputeType_t , cublasGemmAlgo_t );
+	if (!lcublasGemmEx_64) {
+		lcublasGemmEx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const void* , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , const void* , void* , cudaDataType , int64_t , cublasComputeType_t , cublasGemmAlgo_t )) dlsym(RTLD_NEXT, "cublasGemmEx_64");
+		tracer._kernel_map[(void *) lcublasGemmEx_64] = std::string("cublasGemmEx_64");
+	}
+	assert(lcublasGemmEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasGemmEx_64(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc, computeType, algo);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasGemmEx_64);
 	}
 	return res;
 }
@@ -27521,28 +33644,28 @@ cublasStatus_t cublasCgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 	return res;
 }
 
-cublasStatus_t cublasUint8gemmBias(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, cublasOperation_t  transc, int  m, int  n, int  k, const unsigned char*  A, int  A_bias, int  lda, const unsigned char*  B, int  B_bias, int  ldb, unsigned char*  C, int  C_bias, int  ldc, int  C_mult, int  C_shift)
+cublasStatus_t cublasCgemmEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
 {
-	static cublasStatus_t (*lcublasUint8gemmBias) (cublasHandle_t , cublasOperation_t , cublasOperation_t , cublasOperation_t , int , int , int , const unsigned char* , int , int , const unsigned char* , int , int , unsigned char* , int , int , int , int );
-	if (!lcublasUint8gemmBias) {
-		lcublasUint8gemmBias = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , cublasOperation_t , int , int , int , const unsigned char* , int , int , const unsigned char* , int , int , unsigned char* , int , int , int , int )) dlsym(RTLD_NEXT, "cublasUint8gemmBias");
-		tracer._kernel_map[(void *) lcublasUint8gemmBias] = std::string("cublasUint8gemmBias");
+	static cublasStatus_t (*lcublasCgemmEx_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , const cuComplex* , void* , cudaDataType , int64_t );
+	if (!lcublasCgemmEx_64) {
+		lcublasCgemmEx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const void* , cudaDataType , int64_t , const void* , cudaDataType , int64_t , const cuComplex* , void* , cudaDataType , int64_t )) dlsym(RTLD_NEXT, "cublasCgemmEx_64");
+		tracer._kernel_map[(void *) lcublasCgemmEx_64] = std::string("cublasCgemmEx_64");
 	}
-	assert(lcublasUint8gemmBias);
+	assert(lcublasCgemmEx_64);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	cublasStatus_t res = 
-		lcublasUint8gemmBias(handle, transa, transb, transc, m, n, k, A, A_bias, lda, B, B_bias, ldb, C, C_bias, ldc, C_mult, C_shift);
+		lcublasCgemmEx_64(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasUint8gemmBias);
+		tracer._kernel_seq.push_back((void *)lcublasCgemmEx_64);
 	}
 	return res;
 }
@@ -27573,6 +33696,32 @@ cublasStatus_t cublasSsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasSsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  beta, float*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasSsyrk_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , float* , int64_t );
+	if (!lcublasSsyrk_v2_64) {
+		lcublasSsyrk_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSsyrk_v2_64");
+		tracer._kernel_map[(void *) lcublasSsyrk_v2_64] = std::string("cublasSsyrk_v2_64");
+	}
+	assert(lcublasSsyrk_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSsyrk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSsyrk_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  beta, double*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasDsyrk_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const double* , const double* , int , const double* , double* , int );
@@ -27595,6 +33744,32 @@ cublasStatus_t cublasDsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDsyrk_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  beta, double*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasDsyrk_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , double* , int64_t );
+	if (!lcublasDsyrk_v2_64) {
+		lcublasDsyrk_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDsyrk_v2_64");
+		tracer._kernel_map[(void *) lcublasDsyrk_v2_64] = std::string("cublasDsyrk_v2_64");
+	}
+	assert(lcublasDsyrk_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDsyrk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDsyrk_v2_64);
 	}
 	return res;
 }
@@ -27625,6 +33800,32 @@ cublasStatus_t cublasCsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasCsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCsyrk_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCsyrk_v2_64) {
+		lcublasCsyrk_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCsyrk_v2_64");
+		tracer._kernel_map[(void *) lcublasCsyrk_v2_64] = std::string("cublasCsyrk_v2_64");
+	}
+	assert(lcublasCsyrk_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsyrk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsyrk_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasZsyrk_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -27647,6 +33848,32 @@ cublasStatus_t cublasZsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZsyrk_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZsyrk_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZsyrk_v2_64) {
+		lcublasZsyrk_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZsyrk_v2_64");
+		tracer._kernel_map[(void *) lcublasZsyrk_v2_64] = std::string("cublasZsyrk_v2_64");
+	}
+	assert(lcublasZsyrk_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZsyrk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZsyrk_v2_64);
 	}
 	return res;
 }
@@ -27677,6 +33904,32 @@ cublasStatus_t cublasCsyrkEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cub
 	return res;
 }
 
+cublasStatus_t cublasCsyrkEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCsyrkEx_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const void* , cudaDataType , int64_t , const cuComplex* , void* , cudaDataType , int64_t );
+	if (!lcublasCsyrkEx_64) {
+		lcublasCsyrkEx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const void* , cudaDataType , int64_t , const cuComplex* , void* , cudaDataType , int64_t )) dlsym(RTLD_NEXT, "cublasCsyrkEx_64");
+		tracer._kernel_map[(void *) lcublasCsyrkEx_64] = std::string("cublasCsyrkEx_64");
+	}
+	assert(lcublasCsyrkEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsyrkEx_64(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsyrkEx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCsyrk3mEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	static cublasStatus_t (*lcublasCsyrk3mEx) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const cuComplex* , const void* , cudaDataType , int , const cuComplex* , void* , cudaDataType , int );
@@ -27699,6 +33952,32 @@ cublasStatus_t cublasCsyrk3mEx(cublasHandle_t  handle, cublasFillMode_t  uplo, c
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCsyrk3mEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCsyrk3mEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCsyrk3mEx_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const void* , cudaDataType , int64_t , const cuComplex* , void* , cudaDataType , int64_t );
+	if (!lcublasCsyrk3mEx_64) {
+		lcublasCsyrk3mEx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const void* , cudaDataType , int64_t , const cuComplex* , void* , cudaDataType , int64_t )) dlsym(RTLD_NEXT, "cublasCsyrk3mEx_64");
+		tracer._kernel_map[(void *) lcublasCsyrk3mEx_64] = std::string("cublasCsyrk3mEx_64");
+	}
+	assert(lcublasCsyrk3mEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsyrk3mEx_64(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsyrk3mEx_64);
 	}
 	return res;
 }
@@ -27729,6 +34008,32 @@ cublasStatus_t cublasCherk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 	return res;
 }
 
+cublasStatus_t cublasCherk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const cuComplex*  A, int64_t  lda, const float*  beta, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCherk_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const cuComplex* , int64_t , const float* , cuComplex* , int64_t );
+	if (!lcublasCherk_v2_64) {
+		lcublasCherk_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const cuComplex* , int64_t , const float* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCherk_v2_64");
+		tracer._kernel_map[(void *) lcublasCherk_v2_64] = std::string("cublasCherk_v2_64");
+	}
+	assert(lcublasCherk_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCherk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCherk_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZherk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const cuDoubleComplex*  A, int  lda, const double*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasZherk_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const double* , const cuDoubleComplex* , int , const double* , cuDoubleComplex* , int );
@@ -27751,6 +34056,32 @@ cublasStatus_t cublasZherk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZherk_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZherk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const cuDoubleComplex*  A, int64_t  lda, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZherk_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const double* , const cuDoubleComplex* , int64_t , const double* , cuDoubleComplex* , int64_t );
+	if (!lcublasZherk_v2_64) {
+		lcublasZherk_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const double* , const cuDoubleComplex* , int64_t , const double* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZherk_v2_64");
+		tracer._kernel_map[(void *) lcublasZherk_v2_64] = std::string("cublasZherk_v2_64");
+	}
+	assert(lcublasZherk_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZherk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZherk_v2_64);
 	}
 	return res;
 }
@@ -27781,6 +34112,32 @@ cublasStatus_t cublasCherkEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cub
 	return res;
 }
 
+cublasStatus_t cublasCherkEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCherkEx_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const void* , cudaDataType , int64_t , const float* , void* , cudaDataType , int64_t );
+	if (!lcublasCherkEx_64) {
+		lcublasCherkEx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const void* , cudaDataType , int64_t , const float* , void* , cudaDataType , int64_t )) dlsym(RTLD_NEXT, "cublasCherkEx_64");
+		tracer._kernel_map[(void *) lcublasCherkEx_64] = std::string("cublasCherkEx_64");
+	}
+	assert(lcublasCherkEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCherkEx_64(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCherkEx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCherk3mEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	static cublasStatus_t (*lcublasCherk3mEx) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const float* , const void* , cudaDataType , int , const float* , void* , cudaDataType , int );
@@ -27803,6 +34160,32 @@ cublasStatus_t cublasCherk3mEx(cublasHandle_t  handle, cublasFillMode_t  uplo, c
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCherk3mEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCherk3mEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCherk3mEx_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const void* , cudaDataType , int64_t , const float* , void* , cudaDataType , int64_t );
+	if (!lcublasCherk3mEx_64) {
+		lcublasCherk3mEx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const void* , cudaDataType , int64_t , const float* , void* , cudaDataType , int64_t )) dlsym(RTLD_NEXT, "cublasCherk3mEx_64");
+		tracer._kernel_map[(void *) lcublasCherk3mEx_64] = std::string("cublasCherk3mEx_64");
+	}
+	assert(lcublasCherk3mEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCherk3mEx_64(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCherk3mEx_64);
 	}
 	return res;
 }
@@ -27833,6 +34216,32 @@ cublasStatus_t cublasSsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 	return res;
 }
 
+cublasStatus_t cublasSsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasSsyr2k_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t );
+	if (!lcublasSsyr2k_v2_64) {
+		lcublasSsyr2k_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSsyr2k_v2_64");
+		tracer._kernel_map[(void *) lcublasSsyr2k_v2_64] = std::string("cublasSsyr2k_v2_64");
+	}
+	assert(lcublasSsyr2k_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSsyr2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSsyr2k_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasDsyr2k_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const double* , const double* , int , const double* , int , const double* , double* , int );
@@ -27855,6 +34264,32 @@ cublasStatus_t cublasDsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDsyr2k_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasDsyr2k_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t );
+	if (!lcublasDsyr2k_v2_64) {
+		lcublasDsyr2k_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDsyr2k_v2_64");
+		tracer._kernel_map[(void *) lcublasDsyr2k_v2_64] = std::string("cublasDsyr2k_v2_64");
+	}
+	assert(lcublasDsyr2k_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDsyr2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDsyr2k_v2_64);
 	}
 	return res;
 }
@@ -27885,6 +34320,32 @@ cublasStatus_t cublasCsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 	return res;
 }
 
+cublasStatus_t cublasCsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCsyr2k_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCsyr2k_v2_64) {
+		lcublasCsyr2k_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCsyr2k_v2_64");
+		tracer._kernel_map[(void *) lcublasCsyr2k_v2_64] = std::string("cublasCsyr2k_v2_64");
+	}
+	assert(lcublasCsyr2k_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsyr2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsyr2k_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasZsyr2k_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -27907,6 +34368,32 @@ cublasStatus_t cublasZsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZsyr2k_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZsyr2k_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZsyr2k_v2_64) {
+		lcublasZsyr2k_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZsyr2k_v2_64");
+		tracer._kernel_map[(void *) lcublasZsyr2k_v2_64] = std::string("cublasZsyr2k_v2_64");
+	}
+	assert(lcublasZsyr2k_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZsyr2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZsyr2k_v2_64);
 	}
 	return res;
 }
@@ -27937,6 +34424,32 @@ cublasStatus_t cublasCher2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 	return res;
 }
 
+cublasStatus_t cublasCher2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const float*  beta, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCher2k_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const float* , cuComplex* , int64_t );
+	if (!lcublasCher2k_v2_64) {
+		lcublasCher2k_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const float* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCher2k_v2_64");
+		tracer._kernel_map[(void *) lcublasCher2k_v2_64] = std::string("cublasCher2k_v2_64");
+	}
+	assert(lcublasCher2k_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCher2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCher2k_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZher2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const double*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasZher2k_v2) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const double* , cuDoubleComplex* , int );
@@ -27959,6 +34472,32 @@ cublasStatus_t cublasZher2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZher2k_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZher2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZher2k_v2_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const double* , cuDoubleComplex* , int64_t );
+	if (!lcublasZher2k_v2_64) {
+		lcublasZher2k_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const double* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZher2k_v2_64");
+		tracer._kernel_map[(void *) lcublasZher2k_v2_64] = std::string("cublasZher2k_v2_64");
+	}
+	assert(lcublasZher2k_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZher2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZher2k_v2_64);
 	}
 	return res;
 }
@@ -27989,6 +34528,32 @@ cublasStatus_t cublasSsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 	return res;
 }
 
+cublasStatus_t cublasSsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasSsyrkx_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t );
+	if (!lcublasSsyrkx_64) {
+		lcublasSsyrkx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSsyrkx_64");
+		tracer._kernel_map[(void *) lcublasSsyrkx_64] = std::string("cublasSsyrkx_64");
+	}
+	assert(lcublasSsyrkx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSsyrkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSsyrkx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasDsyrkx) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const double* , const double* , int , const double* , int , const double* , double* , int );
@@ -28011,6 +34576,32 @@ cublasStatus_t cublasDsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDsyrkx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasDsyrkx_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t );
+	if (!lcublasDsyrkx_64) {
+		lcublasDsyrkx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDsyrkx_64");
+		tracer._kernel_map[(void *) lcublasDsyrkx_64] = std::string("cublasDsyrkx_64");
+	}
+	assert(lcublasDsyrkx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDsyrkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDsyrkx_64);
 	}
 	return res;
 }
@@ -28041,6 +34632,32 @@ cublasStatus_t cublasCsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 	return res;
 }
 
+cublasStatus_t cublasCsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCsyrkx_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCsyrkx_64) {
+		lcublasCsyrkx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCsyrkx_64");
+		tracer._kernel_map[(void *) lcublasCsyrkx_64] = std::string("cublasCsyrkx_64");
+	}
+	assert(lcublasCsyrkx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsyrkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsyrkx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasZsyrkx) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -28063,6 +34680,32 @@ cublasStatus_t cublasZsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZsyrkx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZsyrkx_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZsyrkx_64) {
+		lcublasZsyrkx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZsyrkx_64");
+		tracer._kernel_map[(void *) lcublasZsyrkx_64] = std::string("cublasZsyrkx_64");
+	}
+	assert(lcublasZsyrkx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZsyrkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZsyrkx_64);
 	}
 	return res;
 }
@@ -28093,6 +34736,32 @@ cublasStatus_t cublasCherkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 	return res;
 }
 
+cublasStatus_t cublasCherkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const float*  beta, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCherkx_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const float* , cuComplex* , int64_t );
+	if (!lcublasCherkx_64) {
+		lcublasCherkx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const float* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCherkx_64");
+		tracer._kernel_map[(void *) lcublasCherkx_64] = std::string("cublasCherkx_64");
+	}
+	assert(lcublasCherkx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCherkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCherkx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZherkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const double*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasZherkx) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const double* , cuDoubleComplex* , int );
@@ -28115,6 +34784,32 @@ cublasStatus_t cublasZherkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZherkx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZherkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZherkx_64) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const double* , cuDoubleComplex* , int64_t );
+	if (!lcublasZherkx_64) {
+		lcublasZherkx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasFillMode_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const double* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZherkx_64");
+		tracer._kernel_map[(void *) lcublasZherkx_64] = std::string("cublasZherkx_64");
+	}
+	assert(lcublasZherkx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZherkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZherkx_64);
 	}
 	return res;
 }
@@ -28145,6 +34840,32 @@ cublasStatus_t cublasSsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	return res;
 }
 
+cublasStatus_t cublasSsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasSsymm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t );
+	if (!lcublasSsymm_v2_64) {
+		lcublasSsymm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , const float* , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSsymm_v2_64");
+		tracer._kernel_map[(void *) lcublasSsymm_v2_64] = std::string("cublasSsymm_v2_64");
+	}
+	assert(lcublasSsymm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSsymm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSsymm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasDsymm_v2) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int , int , const double* , const double* , int , const double* , int , const double* , double* , int );
@@ -28167,6 +34888,32 @@ cublasStatus_t cublasDsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDsymm_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasDsymm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t );
+	if (!lcublasDsymm_v2_64) {
+		lcublasDsymm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , const double* , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDsymm_v2_64");
+		tracer._kernel_map[(void *) lcublasDsymm_v2_64] = std::string("cublasDsymm_v2_64");
+	}
+	assert(lcublasDsymm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDsymm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDsymm_v2_64);
 	}
 	return res;
 }
@@ -28197,6 +34944,32 @@ cublasStatus_t cublasCsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	return res;
 }
 
+cublasStatus_t cublasCsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCsymm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasCsymm_v2_64) {
+		lcublasCsymm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCsymm_v2_64");
+		tracer._kernel_map[(void *) lcublasCsymm_v2_64] = std::string("cublasCsymm_v2_64");
+	}
+	assert(lcublasCsymm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCsymm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCsymm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasZsymm_v2) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -28219,6 +34992,32 @@ cublasStatus_t cublasZsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZsymm_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZsymm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZsymm_v2_64) {
+		lcublasZsymm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZsymm_v2_64");
+		tracer._kernel_map[(void *) lcublasZsymm_v2_64] = std::string("cublasZsymm_v2_64");
+	}
+	assert(lcublasZsymm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZsymm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZsymm_v2_64);
 	}
 	return res;
 }
@@ -28249,6 +35048,32 @@ cublasStatus_t cublasChemm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	return res;
 }
 
+cublasStatus_t cublasChemm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasChemm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t );
+	if (!lcublasChemm_v2_64) {
+		lcublasChemm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , const cuComplex* , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasChemm_v2_64");
+		tracer._kernel_map[(void *) lcublasChemm_v2_64] = std::string("cublasChemm_v2_64");
+	}
+	assert(lcublasChemm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasChemm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasChemm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZhemm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasZhemm_v2) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , const cuDoubleComplex* , cuDoubleComplex* , int );
@@ -28271,6 +35096,32 @@ cublasStatus_t cublasZhemm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZhemm_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZhemm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZhemm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t );
+	if (!lcublasZhemm_v2_64) {
+		lcublasZhemm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZhemm_v2_64");
+		tracer._kernel_map[(void *) lcublasZhemm_v2_64] = std::string("cublasZhemm_v2_64");
+	}
+	assert(lcublasZhemm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZhemm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZhemm_v2_64);
 	}
 	return res;
 }
@@ -28301,6 +35152,32 @@ cublasStatus_t cublasStrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	return res;
 }
 
+cublasStatus_t cublasStrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, float*  B, int64_t  ldb)
+{
+	static cublasStatus_t (*lcublasStrsm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const float* , const float* , int64_t , float* , int64_t );
+	if (!lcublasStrsm_v2_64) {
+		lcublasStrsm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const float* , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasStrsm_v2_64");
+		tracer._kernel_map[(void *) lcublasStrsm_v2_64] = std::string("cublasStrsm_v2_64");
+	}
+	assert(lcublasStrsm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasStrsm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasStrsm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double*  A, int  lda, double*  B, int  ldb)
 {
 	static cublasStatus_t (*lcublasDtrsm_v2) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , int , const double* , const double* , int , double* , int );
@@ -28323,6 +35200,32 @@ cublasStatus_t cublasDtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDtrsm_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, double*  B, int64_t  ldb)
+{
+	static cublasStatus_t (*lcublasDtrsm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const double* , const double* , int64_t , double* , int64_t );
+	if (!lcublasDtrsm_v2_64) {
+		lcublasDtrsm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const double* , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDtrsm_v2_64");
+		tracer._kernel_map[(void *) lcublasDtrsm_v2_64] = std::string("cublasDtrsm_v2_64");
+	}
+	assert(lcublasDtrsm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDtrsm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDtrsm_v2_64);
 	}
 	return res;
 }
@@ -28353,6 +35256,32 @@ cublasStatus_t cublasCtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	return res;
 }
 
+cublasStatus_t cublasCtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, cuComplex*  B, int64_t  ldb)
+{
+	static cublasStatus_t (*lcublasCtrsm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCtrsm_v2_64) {
+		lcublasCtrsm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCtrsm_v2_64");
+		tracer._kernel_map[(void *) lcublasCtrsm_v2_64] = std::string("cublasCtrsm_v2_64");
+	}
+	assert(lcublasCtrsm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCtrsm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCtrsm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  B, int  ldb)
 {
 	static cublasStatus_t (*lcublasZtrsm_v2) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -28375,6 +35304,32 @@ cublasStatus_t cublasZtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZtrsm_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  B, int64_t  ldb)
+{
+	static cublasStatus_t (*lcublasZtrsm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZtrsm_v2_64) {
+		lcublasZtrsm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZtrsm_v2_64");
+		tracer._kernel_map[(void *) lcublasZtrsm_v2_64] = std::string("cublasZtrsm_v2_64");
+	}
+	assert(lcublasZtrsm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZtrsm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZtrsm_v2_64);
 	}
 	return res;
 }
@@ -28405,6 +35360,32 @@ cublasStatus_t cublasStrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	return res;
 }
 
+cublasStatus_t cublasStrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, float*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasStrmm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , float* , int64_t );
+	if (!lcublasStrmm_v2_64) {
+		lcublasStrmm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasStrmm_v2_64");
+		tracer._kernel_map[(void *) lcublasStrmm_v2_64] = std::string("cublasStrmm_v2_64");
+	}
+	assert(lcublasStrmm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasStrmm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasStrmm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, double*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasDtrmm_v2) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , int , const double* , const double* , int , const double* , int , double* , int );
@@ -28427,6 +35408,32 @@ cublasStatus_t cublasDtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDtrmm_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, double*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasDtrmm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , double* , int64_t );
+	if (!lcublasDtrmm_v2_64) {
+		lcublasDtrmm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDtrmm_v2_64");
+		tracer._kernel_map[(void *) lcublasDtrmm_v2_64] = std::string("cublasDtrmm_v2_64");
+	}
+	assert(lcublasDtrmm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDtrmm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDtrmm_v2_64);
 	}
 	return res;
 }
@@ -28457,6 +35464,32 @@ cublasStatus_t cublasCtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 	return res;
 }
 
+cublasStatus_t cublasCtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCtrmm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCtrmm_v2_64) {
+		lcublasCtrmm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCtrmm_v2_64");
+		tracer._kernel_map[(void *) lcublasCtrmm_v2_64] = std::string("cublasCtrmm_v2_64");
+	}
+	assert(lcublasCtrmm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCtrmm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCtrmm_v2_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasZtrmm_v2) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
@@ -28479,6 +35512,32 @@ cublasStatus_t cublasZtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZtrmm_v2);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZtrmm_v2_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZtrmm_v2_64) {
+		lcublasZtrmm_v2_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZtrmm_v2_64");
+		tracer._kernel_map[(void *) lcublasZtrmm_v2_64] = std::string("cublasZtrmm_v2_64");
+	}
+	assert(lcublasZtrmm_v2_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZtrmm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZtrmm_v2_64);
 	}
 	return res;
 }
@@ -28509,6 +35568,32 @@ cublasStatus_t cublasHgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
 	return res;
 }
 
+cublasStatus_t cublasHgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  Barray[], int64_t  ldb, const __half*  beta, __half* const  Carray[], int64_t  ldc, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasHgemmBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const __half* , const __half* const [], int64_t , const __half* const [], int64_t , const __half* , __half* const [], int64_t , int64_t );
+	if (!lcublasHgemmBatched_64) {
+		lcublasHgemmBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const __half* , const __half* const [], int64_t , const __half* const [], int64_t , const __half* , __half* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasHgemmBatched_64");
+		tracer._kernel_map[(void *) lcublasHgemmBatched_64] = std::string("cublasHgemmBatched_64");
+	}
+	assert(lcublasHgemmBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHgemmBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHgemmBatched_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasSgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float* const  Aarray[], int  lda, const float* const  Barray[], int  ldb, const float*  beta, float* const  Carray[], int  ldc, int  batchCount)
 {
 	static cublasStatus_t (*lcublasSgemmBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const float* , const float* const [], int , const float* const [], int , const float* , float* const [], int , int );
@@ -28531,6 +35616,32 @@ cublasStatus_t cublasSgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasSgemmBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float* const  Aarray[], int64_t  lda, const float* const  Barray[], int64_t  ldb, const float*  beta, float* const  Carray[], int64_t  ldc, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasSgemmBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const float* , const float* const [], int64_t , const float* const [], int64_t , const float* , float* const [], int64_t , int64_t );
+	if (!lcublasSgemmBatched_64) {
+		lcublasSgemmBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const float* , const float* const [], int64_t , const float* const [], int64_t , const float* , float* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasSgemmBatched_64");
+		tracer._kernel_map[(void *) lcublasSgemmBatched_64] = std::string("cublasSgemmBatched_64");
+	}
+	assert(lcublasSgemmBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgemmBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgemmBatched_64);
 	}
 	return res;
 }
@@ -28561,6 +35672,32 @@ cublasStatus_t cublasDgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
 	return res;
 }
 
+cublasStatus_t cublasDgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double* const  Aarray[], int64_t  lda, const double* const  Barray[], int64_t  ldb, const double*  beta, double* const  Carray[], int64_t  ldc, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasDgemmBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const double* , const double* const [], int64_t , const double* const [], int64_t , const double* , double* const [], int64_t , int64_t );
+	if (!lcublasDgemmBatched_64) {
+		lcublasDgemmBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const double* , const double* const [], int64_t , const double* const [], int64_t , const double* , double* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasDgemmBatched_64");
+		tracer._kernel_map[(void *) lcublasDgemmBatched_64] = std::string("cublasDgemmBatched_64");
+	}
+	assert(lcublasDgemmBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgemmBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgemmBatched_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  Barray[], int  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int  ldc, int  batchCount)
 {
 	static cublasStatus_t (*lcublasCgemmBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuComplex* , const cuComplex* const [], int , const cuComplex* const [], int , const cuComplex* , cuComplex* const [], int , int );
@@ -28583,6 +35720,32 @@ cublasStatus_t cublasCgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCgemmBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  Barray[], int64_t  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasCgemmBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* const [], int64_t , const cuComplex* const [], int64_t , const cuComplex* , cuComplex* const [], int64_t , int64_t );
+	if (!lcublasCgemmBatched_64) {
+		lcublasCgemmBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* const [], int64_t , const cuComplex* const [], int64_t , const cuComplex* , cuComplex* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasCgemmBatched_64");
+		tracer._kernel_map[(void *) lcublasCgemmBatched_64] = std::string("cublasCgemmBatched_64");
+	}
+	assert(lcublasCgemmBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemmBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemmBatched_64);
 	}
 	return res;
 }
@@ -28613,6 +35776,32 @@ cublasStatus_t cublasCgemm3mBatched(cublasHandle_t  handle, cublasOperation_t  t
 	return res;
 }
 
+cublasStatus_t cublasCgemm3mBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  Barray[], int64_t  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasCgemm3mBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* const [], int64_t , const cuComplex* const [], int64_t , const cuComplex* , cuComplex* const [], int64_t , int64_t );
+	if (!lcublasCgemm3mBatched_64) {
+		lcublasCgemm3mBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* const [], int64_t , const cuComplex* const [], int64_t , const cuComplex* , cuComplex* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasCgemm3mBatched_64");
+		tracer._kernel_map[(void *) lcublasCgemm3mBatched_64] = std::string("cublasCgemm3mBatched_64");
+	}
+	assert(lcublasCgemm3mBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemm3mBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemm3mBatched_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int  lda, const cuDoubleComplex* const  Barray[], int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex* const  Carray[], int  ldc, int  batchCount)
 {
 	static cublasStatus_t (*lcublasZgemmBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuDoubleComplex* , const cuDoubleComplex* const [], int , const cuDoubleComplex* const [], int , const cuDoubleComplex* , cuDoubleComplex* const [], int , int );
@@ -28639,184 +35828,28 @@ cublasStatus_t cublasZgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
 	return res;
 }
 
-cublasStatus_t cublasGemmBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int  lda, const void* const  Barray[], cudaDataType  Btype, int  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int  ldc, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+cublasStatus_t cublasZgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int64_t  lda, const cuDoubleComplex* const  Barray[], int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)
 {
-	static cublasStatus_t (*lcublasGemmBatchedEx) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const void* , const void* const [], cudaDataType , int , const void* const [], cudaDataType , int , const void* , void* const [], cudaDataType , int , int , cublasComputeType_t , cublasGemmAlgo_t );
-	if (!lcublasGemmBatchedEx) {
-		lcublasGemmBatchedEx = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const void* , const void* const [], cudaDataType , int , const void* const [], cudaDataType , int , const void* , void* const [], cudaDataType , int , int , cublasComputeType_t , cublasGemmAlgo_t )) dlsym(RTLD_NEXT, "cublasGemmBatchedEx");
-		tracer._kernel_map[(void *) lcublasGemmBatchedEx] = std::string("cublasGemmBatchedEx");
+	static cublasStatus_t (*lcublasZgemmBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* const [], int64_t , const cuDoubleComplex* const [], int64_t , const cuDoubleComplex* , cuDoubleComplex* const [], int64_t , int64_t );
+	if (!lcublasZgemmBatched_64) {
+		lcublasZgemmBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* const [], int64_t , const cuDoubleComplex* const [], int64_t , const cuDoubleComplex* , cuDoubleComplex* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasZgemmBatched_64");
+		tracer._kernel_map[(void *) lcublasZgemmBatched_64] = std::string("cublasZgemmBatched_64");
 	}
-	assert(lcublasGemmBatchedEx);
+	assert(lcublasZgemmBatched_64);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	cublasStatus_t res = 
-		lcublasGemmBatchedEx(handle, transa, transb, m, n, k, alpha, Aarray, Atype, lda, Barray, Btype, ldb, beta, Carray, Ctype, ldc, batchCount, computeType, algo);
+		lcublasZgemmBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasGemmBatchedEx);
-	}
-	return res;
-}
-
-cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, long long int  strideC, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
-{
-	static cublasStatus_t (*lcublasGemmStridedBatchedEx) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const void* , const void* , cudaDataType , int , long long int , const void* , cudaDataType , int , long long int , const void* , void* , cudaDataType , int , long long int , int , cublasComputeType_t , cublasGemmAlgo_t );
-	if (!lcublasGemmStridedBatchedEx) {
-		lcublasGemmStridedBatchedEx = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const void* , const void* , cudaDataType , int , long long int , const void* , cudaDataType , int , long long int , const void* , void* , cudaDataType , int , long long int , int , cublasComputeType_t , cublasGemmAlgo_t )) dlsym(RTLD_NEXT, "cublasGemmStridedBatchedEx");
-		tracer._kernel_map[(void *) lcublasGemmStridedBatchedEx] = std::string("cublasGemmStridedBatchedEx");
-	}
-	assert(lcublasGemmStridedBatchedEx);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasGemmStridedBatchedEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C, Ctype, ldc, strideC, batchCount, computeType, algo);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasGemmStridedBatchedEx);
-	}
-	return res;
-}
-
-cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  B, int  ldb, long long int  strideB, const float*  beta, float*  C, int  ldc, long long int  strideC, int  batchCount)
-{
-	static cublasStatus_t (*lcublasSgemmStridedBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const float* , const float* , int , long long int , const float* , int , long long int , const float* , float* , int , long long int , int );
-	if (!lcublasSgemmStridedBatched) {
-		lcublasSgemmStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const float* , const float* , int , long long int , const float* , int , long long int , const float* , float* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasSgemmStridedBatched");
-		tracer._kernel_map[(void *) lcublasSgemmStridedBatched] = std::string("cublasSgemmStridedBatched");
-	}
-	assert(lcublasSgemmStridedBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasSgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasSgemmStridedBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasDgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  B, int  ldb, long long int  strideB, const double*  beta, double*  C, int  ldc, long long int  strideC, int  batchCount)
-{
-	static cublasStatus_t (*lcublasDgemmStridedBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const double* , const double* , int , long long int , const double* , int , long long int , const double* , double* , int , long long int , int );
-	if (!lcublasDgemmStridedBatched) {
-		lcublasDgemmStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const double* , const double* , int , long long int , const double* , int , long long int , const double* , double* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasDgemmStridedBatched");
-		tracer._kernel_map[(void *) lcublasDgemmStridedBatched] = std::string("cublasDgemmStridedBatched");
-	}
-	assert(lcublasDgemmStridedBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasDgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasDgemmStridedBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasCgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)
-{
-	static cublasStatus_t (*lcublasCgemmStridedBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuComplex* , const cuComplex* , int , long long int , const cuComplex* , int , long long int , const cuComplex* , cuComplex* , int , long long int , int );
-	if (!lcublasCgemmStridedBatched) {
-		lcublasCgemmStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuComplex* , const cuComplex* , int , long long int , const cuComplex* , int , long long int , const cuComplex* , cuComplex* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasCgemmStridedBatched");
-		tracer._kernel_map[(void *) lcublasCgemmStridedBatched] = std::string("cublasCgemmStridedBatched");
-	}
-	assert(lcublasCgemmStridedBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasCgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasCgemmStridedBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasCgemm3mStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)
-{
-	static cublasStatus_t (*lcublasCgemm3mStridedBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuComplex* , const cuComplex* , int , long long int , const cuComplex* , int , long long int , const cuComplex* , cuComplex* , int , long long int , int );
-	if (!lcublasCgemm3mStridedBatched) {
-		lcublasCgemm3mStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuComplex* , const cuComplex* , int , long long int , const cuComplex* , int , long long int , const cuComplex* , cuComplex* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasCgemm3mStridedBatched");
-		tracer._kernel_map[(void *) lcublasCgemm3mStridedBatched] = std::string("cublasCgemm3mStridedBatched");
-	}
-	assert(lcublasCgemm3mStridedBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasCgemm3mStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasCgemm3mStridedBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasZgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  B, int  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc, long long int  strideC, int  batchCount)
-{
-	static cublasStatus_t (*lcublasZgemmStridedBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , cuDoubleComplex* , int , long long int , int );
-	if (!lcublasZgemmStridedBatched) {
-		lcublasZgemmStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , cuDoubleComplex* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasZgemmStridedBatched");
-		tracer._kernel_map[(void *) lcublasZgemmStridedBatched] = std::string("cublasZgemmStridedBatched");
-	}
-	assert(lcublasZgemmStridedBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasZgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasZgemmStridedBatched);
+		tracer._kernel_seq.push_back((void *)lcublasZgemmBatched_64);
 	}
 	return res;
 }
@@ -28847,6 +35880,396 @@ cublasStatus_t cublasHgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 	return res;
 }
 
+cublasStatus_t cublasHgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  B, int64_t  ldb, long long int  strideB, const __half*  beta, __half*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasHgemmStridedBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const __half* , const __half* , int64_t , long long int , const __half* , int64_t , long long int , const __half* , __half* , int64_t , long long int , int64_t );
+	if (!lcublasHgemmStridedBatched_64) {
+		lcublasHgemmStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const __half* , const __half* , int64_t , long long int , const __half* , int64_t , long long int , const __half* , __half* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasHgemmStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasHgemmStridedBatched_64] = std::string("cublasHgemmStridedBatched_64");
+	}
+	assert(lcublasHgemmStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasHgemmStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasHgemmStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  B, int  ldb, long long int  strideB, const float*  beta, float*  C, int  ldc, long long int  strideC, int  batchCount)
+{
+	static cublasStatus_t (*lcublasSgemmStridedBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const float* , const float* , int , long long int , const float* , int , long long int , const float* , float* , int , long long int , int );
+	if (!lcublasSgemmStridedBatched) {
+		lcublasSgemmStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const float* , const float* , int , long long int , const float* , int , long long int , const float* , float* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasSgemmStridedBatched");
+		tracer._kernel_map[(void *) lcublasSgemmStridedBatched] = std::string("cublasSgemmStridedBatched");
+	}
+	assert(lcublasSgemmStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgemmStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, long long int  strideA, const float*  B, int64_t  ldb, long long int  strideB, const float*  beta, float*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasSgemmStridedBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const float* , const float* , int64_t , long long int , const float* , int64_t , long long int , const float* , float* , int64_t , long long int , int64_t );
+	if (!lcublasSgemmStridedBatched_64) {
+		lcublasSgemmStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const float* , const float* , int64_t , long long int , const float* , int64_t , long long int , const float* , float* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasSgemmStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasSgemmStridedBatched_64] = std::string("cublasSgemmStridedBatched_64");
+	}
+	assert(lcublasSgemmStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgemmStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgemmStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  B, int  ldb, long long int  strideB, const double*  beta, double*  C, int  ldc, long long int  strideC, int  batchCount)
+{
+	static cublasStatus_t (*lcublasDgemmStridedBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const double* , const double* , int , long long int , const double* , int , long long int , const double* , double* , int , long long int , int );
+	if (!lcublasDgemmStridedBatched) {
+		lcublasDgemmStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const double* , const double* , int , long long int , const double* , int , long long int , const double* , double* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasDgemmStridedBatched");
+		tracer._kernel_map[(void *) lcublasDgemmStridedBatched] = std::string("cublasDgemmStridedBatched");
+	}
+	assert(lcublasDgemmStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgemmStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, long long int  strideA, const double*  B, int64_t  ldb, long long int  strideB, const double*  beta, double*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasDgemmStridedBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const double* , const double* , int64_t , long long int , const double* , int64_t , long long int , const double* , double* , int64_t , long long int , int64_t );
+	if (!lcublasDgemmStridedBatched_64) {
+		lcublasDgemmStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const double* , const double* , int64_t , long long int , const double* , int64_t , long long int , const double* , double* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasDgemmStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasDgemmStridedBatched_64] = std::string("cublasDgemmStridedBatched_64");
+	}
+	assert(lcublasDgemmStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgemmStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgemmStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)
+{
+	static cublasStatus_t (*lcublasCgemmStridedBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuComplex* , const cuComplex* , int , long long int , const cuComplex* , int , long long int , const cuComplex* , cuComplex* , int , long long int , int );
+	if (!lcublasCgemmStridedBatched) {
+		lcublasCgemmStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuComplex* , const cuComplex* , int , long long int , const cuComplex* , int , long long int , const cuComplex* , cuComplex* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasCgemmStridedBatched");
+		tracer._kernel_map[(void *) lcublasCgemmStridedBatched] = std::string("cublasCgemmStridedBatched");
+	}
+	assert(lcublasCgemmStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemmStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  B, int64_t  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasCgemmStridedBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , long long int , const cuComplex* , int64_t , long long int , const cuComplex* , cuComplex* , int64_t , long long int , int64_t );
+	if (!lcublasCgemmStridedBatched_64) {
+		lcublasCgemmStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , long long int , const cuComplex* , int64_t , long long int , const cuComplex* , cuComplex* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasCgemmStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasCgemmStridedBatched_64] = std::string("cublasCgemmStridedBatched_64");
+	}
+	assert(lcublasCgemmStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemmStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemmStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgemm3mStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)
+{
+	static cublasStatus_t (*lcublasCgemm3mStridedBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuComplex* , const cuComplex* , int , long long int , const cuComplex* , int , long long int , const cuComplex* , cuComplex* , int , long long int , int );
+	if (!lcublasCgemm3mStridedBatched) {
+		lcublasCgemm3mStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuComplex* , const cuComplex* , int , long long int , const cuComplex* , int , long long int , const cuComplex* , cuComplex* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasCgemm3mStridedBatched");
+		tracer._kernel_map[(void *) lcublasCgemm3mStridedBatched] = std::string("cublasCgemm3mStridedBatched");
+	}
+	assert(lcublasCgemm3mStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemm3mStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemm3mStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgemm3mStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  B, int64_t  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasCgemm3mStridedBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , long long int , const cuComplex* , int64_t , long long int , const cuComplex* , cuComplex* , int64_t , long long int , int64_t );
+	if (!lcublasCgemm3mStridedBatched_64) {
+		lcublasCgemm3mStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , long long int , const cuComplex* , int64_t , long long int , const cuComplex* , cuComplex* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasCgemm3mStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasCgemm3mStridedBatched_64] = std::string("cublasCgemm3mStridedBatched_64");
+	}
+	assert(lcublasCgemm3mStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgemm3mStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgemm3mStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  B, int  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc, long long int  strideC, int  batchCount)
+{
+	static cublasStatus_t (*lcublasZgemmStridedBatched) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , cuDoubleComplex* , int , long long int , int );
+	if (!lcublasZgemmStridedBatched) {
+		lcublasZgemmStridedBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , int , long long int , const cuDoubleComplex* , cuDoubleComplex* , int , long long int , int )) dlsym(RTLD_NEXT, "cublasZgemmStridedBatched");
+		tracer._kernel_map[(void *) lcublasZgemmStridedBatched] = std::string("cublasZgemmStridedBatched");
+	}
+	assert(lcublasZgemmStridedBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgemmStridedBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, long long int  strideA, const cuDoubleComplex*  B, int64_t  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasZgemmStridedBatched_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , long long int , const cuDoubleComplex* , int64_t , long long int , const cuDoubleComplex* , cuDoubleComplex* , int64_t , long long int , int64_t );
+	if (!lcublasZgemmStridedBatched_64) {
+		lcublasZgemmStridedBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , long long int , const cuDoubleComplex* , int64_t , long long int , const cuDoubleComplex* , cuDoubleComplex* , int64_t , long long int , int64_t )) dlsym(RTLD_NEXT, "cublasZgemmStridedBatched_64");
+		tracer._kernel_map[(void *) lcublasZgemmStridedBatched_64] = std::string("cublasZgemmStridedBatched_64");
+	}
+	assert(lcublasZgemmStridedBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgemmStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgemmStridedBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasGemmBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int  lda, const void* const  Barray[], cudaDataType  Btype, int  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int  ldc, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	static cublasStatus_t (*lcublasGemmBatchedEx) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const void* , const void* const [], cudaDataType , int , const void* const [], cudaDataType , int , const void* , void* const [], cudaDataType , int , int , cublasComputeType_t , cublasGemmAlgo_t );
+	if (!lcublasGemmBatchedEx) {
+		lcublasGemmBatchedEx = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const void* , const void* const [], cudaDataType , int , const void* const [], cudaDataType , int , const void* , void* const [], cudaDataType , int , int , cublasComputeType_t , cublasGemmAlgo_t )) dlsym(RTLD_NEXT, "cublasGemmBatchedEx");
+		tracer._kernel_map[(void *) lcublasGemmBatchedEx] = std::string("cublasGemmBatchedEx");
+	}
+	assert(lcublasGemmBatchedEx);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasGemmBatchedEx(handle, transa, transb, m, n, k, alpha, Aarray, Atype, lda, Barray, Btype, ldb, beta, Carray, Ctype, ldc, batchCount, computeType, algo);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasGemmBatchedEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasGemmBatchedEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int64_t  lda, const void* const  Barray[], cudaDataType  Btype, int64_t  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int64_t  ldc, int64_t  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	static cublasStatus_t (*lcublasGemmBatchedEx_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const void* , const void* const [], cudaDataType , int64_t , const void* const [], cudaDataType , int64_t , const void* , void* const [], cudaDataType , int64_t , int64_t , cublasComputeType_t , cublasGemmAlgo_t );
+	if (!lcublasGemmBatchedEx_64) {
+		lcublasGemmBatchedEx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const void* , const void* const [], cudaDataType , int64_t , const void* const [], cudaDataType , int64_t , const void* , void* const [], cudaDataType , int64_t , int64_t , cublasComputeType_t , cublasGemmAlgo_t )) dlsym(RTLD_NEXT, "cublasGemmBatchedEx_64");
+		tracer._kernel_map[(void *) lcublasGemmBatchedEx_64] = std::string("cublasGemmBatchedEx_64");
+	}
+	assert(lcublasGemmBatchedEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasGemmBatchedEx_64(handle, transa, transb, m, n, k, alpha, Aarray, Atype, lda, Barray, Btype, ldb, beta, Carray, Ctype, ldc, batchCount, computeType, algo);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasGemmBatchedEx_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, long long int  strideC, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	static cublasStatus_t (*lcublasGemmStridedBatchedEx) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const void* , const void* , cudaDataType , int , long long int , const void* , cudaDataType , int , long long int , const void* , void* , cudaDataType , int , long long int , int , cublasComputeType_t , cublasGemmAlgo_t );
+	if (!lcublasGemmStridedBatchedEx) {
+		lcublasGemmStridedBatchedEx = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , int , const void* , const void* , cudaDataType , int , long long int , const void* , cudaDataType , int , long long int , const void* , void* , cudaDataType , int , long long int , int , cublasComputeType_t , cublasGemmAlgo_t )) dlsym(RTLD_NEXT, "cublasGemmStridedBatchedEx");
+		tracer._kernel_map[(void *) lcublasGemmStridedBatchedEx] = std::string("cublasGemmStridedBatchedEx");
+	}
+	assert(lcublasGemmStridedBatchedEx);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasGemmStridedBatchedEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C, Ctype, ldc, strideC, batchCount, computeType, algo);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasGemmStridedBatchedEx);
+	}
+	return res;
+}
+
+cublasStatus_t cublasGemmStridedBatchedEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int64_t  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc, long long int  strideC, int64_t  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	static cublasStatus_t (*lcublasGemmStridedBatchedEx_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const void* , const void* , cudaDataType , int64_t , long long int , const void* , cudaDataType , int64_t , long long int , const void* , void* , cudaDataType , int64_t , long long int , int64_t , cublasComputeType_t , cublasGemmAlgo_t );
+	if (!lcublasGemmStridedBatchedEx_64) {
+		lcublasGemmStridedBatchedEx_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , int64_t , const void* , const void* , cudaDataType , int64_t , long long int , const void* , cudaDataType , int64_t , long long int , const void* , void* , cudaDataType , int64_t , long long int , int64_t , cublasComputeType_t , cublasGemmAlgo_t )) dlsym(RTLD_NEXT, "cublasGemmStridedBatchedEx_64");
+		tracer._kernel_map[(void *) lcublasGemmStridedBatchedEx_64] = std::string("cublasGemmStridedBatchedEx_64");
+	}
+	assert(lcublasGemmStridedBatchedEx_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasGemmStridedBatchedEx_64(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C, Ctype, ldc, strideC, batchCount, computeType, algo);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasGemmStridedBatchedEx_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasSgeam(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  beta, const float*  B, int  ldb, float*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasSgeam) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , const float* , const float* , int , const float* , const float* , int , float* , int );
@@ -28869,6 +36292,32 @@ cublasStatus_t cublasSgeam(cublasHandle_t  handle, cublasOperation_t  transa, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasSgeam);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  beta, const float*  B, int64_t  ldb, float*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasSgeam_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , const float* , int64_t , float* , int64_t );
+	if (!lcublasSgeam_64) {
+		lcublasSgeam_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , const float* , const float* , int64_t , const float* , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSgeam_64");
+		tracer._kernel_map[(void *) lcublasSgeam_64] = std::string("cublasSgeam_64");
+	}
+	assert(lcublasSgeam_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgeam_64(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgeam_64);
 	}
 	return res;
 }
@@ -28899,6 +36348,32 @@ cublasStatus_t cublasDgeam(cublasHandle_t  handle, cublasOperation_t  transa, cu
 	return res;
 }
 
+cublasStatus_t cublasDgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  beta, const double*  B, int64_t  ldb, double*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasDgeam_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , const double* , int64_t , double* , int64_t );
+	if (!lcublasDgeam_64) {
+		lcublasDgeam_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , const double* , const double* , int64_t , const double* , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDgeam_64");
+		tracer._kernel_map[(void *) lcublasDgeam_64] = std::string("cublasDgeam_64");
+	}
+	assert(lcublasDgeam_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgeam_64(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgeam_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasCgeam(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  beta, const cuComplex*  B, int  ldb, cuComplex*  C, int  ldc)
 {
 	static cublasStatus_t (*lcublasCgeam) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int , int , const cuComplex* , const cuComplex* , int , const cuComplex* , const cuComplex* , int , cuComplex* , int );
@@ -28921,6 +36396,32 @@ cublasStatus_t cublasCgeam(cublasHandle_t  handle, cublasOperation_t  transa, cu
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasCgeam);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  beta, const cuComplex*  B, int64_t  ldb, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCgeam_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCgeam_64) {
+		lcublasCgeam_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , const cuComplex* , const cuComplex* , int64_t , const cuComplex* , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCgeam_64");
+		tracer._kernel_map[(void *) lcublasCgeam_64] = std::string("cublasCgeam_64");
+	}
+	assert(lcublasCgeam_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgeam_64(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgeam_64);
 	}
 	return res;
 }
@@ -28951,314 +36452,28 @@ cublasStatus_t cublasZgeam(cublasHandle_t  handle, cublasOperation_t  transa, cu
 	return res;
 }
 
-cublasStatus_t cublasSgetrfBatched(cublasHandle_t  handle, int  n, float* const  A[], int  lda, int*  P, int*  info, int  batchSize)
+cublasStatus_t cublasZgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  beta, const cuDoubleComplex*  B, int64_t  ldb, cuDoubleComplex*  C, int64_t  ldc)
 {
-	static cublasStatus_t (*lcublasSgetrfBatched) (cublasHandle_t , int , float* const [], int , int* , int* , int );
-	if (!lcublasSgetrfBatched) {
-		lcublasSgetrfBatched = (cublasStatus_t (*) (cublasHandle_t , int , float* const [], int , int* , int* , int )) dlsym(RTLD_NEXT, "cublasSgetrfBatched");
-		tracer._kernel_map[(void *) lcublasSgetrfBatched] = std::string("cublasSgetrfBatched");
+	static cublasStatus_t (*lcublasZgeam_64) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZgeam_64) {
+		lcublasZgeam_64 = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZgeam_64");
+		tracer._kernel_map[(void *) lcublasZgeam_64] = std::string("cublasZgeam_64");
 	}
-	assert(lcublasSgetrfBatched);
+	assert(lcublasZgeam_64);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	cublasStatus_t res = 
-		lcublasSgetrfBatched(handle, n, A, lda, P, info, batchSize);
+		lcublasZgeam_64(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasSgetrfBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasDgetrfBatched(cublasHandle_t  handle, int  n, double* const  A[], int  lda, int*  P, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasDgetrfBatched) (cublasHandle_t , int , double* const [], int , int* , int* , int );
-	if (!lcublasDgetrfBatched) {
-		lcublasDgetrfBatched = (cublasStatus_t (*) (cublasHandle_t , int , double* const [], int , int* , int* , int )) dlsym(RTLD_NEXT, "cublasDgetrfBatched");
-		tracer._kernel_map[(void *) lcublasDgetrfBatched] = std::string("cublasDgetrfBatched");
-	}
-	assert(lcublasDgetrfBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasDgetrfBatched(handle, n, A, lda, P, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasDgetrfBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasCgetrfBatched(cublasHandle_t  handle, int  n, cuComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasCgetrfBatched) (cublasHandle_t , int , cuComplex* const [], int , int* , int* , int );
-	if (!lcublasCgetrfBatched) {
-		lcublasCgetrfBatched = (cublasStatus_t (*) (cublasHandle_t , int , cuComplex* const [], int , int* , int* , int )) dlsym(RTLD_NEXT, "cublasCgetrfBatched");
-		tracer._kernel_map[(void *) lcublasCgetrfBatched] = std::string("cublasCgetrfBatched");
-	}
-	assert(lcublasCgetrfBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasCgetrfBatched(handle, n, A, lda, P, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasCgetrfBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasZgetrfBatched(cublasHandle_t  handle, int  n, cuDoubleComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasZgetrfBatched) (cublasHandle_t , int , cuDoubleComplex* const [], int , int* , int* , int );
-	if (!lcublasZgetrfBatched) {
-		lcublasZgetrfBatched = (cublasStatus_t (*) (cublasHandle_t , int , cuDoubleComplex* const [], int , int* , int* , int )) dlsym(RTLD_NEXT, "cublasZgetrfBatched");
-		tracer._kernel_map[(void *) lcublasZgetrfBatched] = std::string("cublasZgetrfBatched");
-	}
-	assert(lcublasZgetrfBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasZgetrfBatched(handle, n, A, lda, P, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasZgetrfBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasSgetriBatched(cublasHandle_t  handle, int  n, const float* const  A[], int  lda, const int*  P, float* const  C[], int  ldc, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasSgetriBatched) (cublasHandle_t , int , const float* const [], int , const int* , float* const [], int , int* , int );
-	if (!lcublasSgetriBatched) {
-		lcublasSgetriBatched = (cublasStatus_t (*) (cublasHandle_t , int , const float* const [], int , const int* , float* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasSgetriBatched");
-		tracer._kernel_map[(void *) lcublasSgetriBatched] = std::string("cublasSgetriBatched");
-	}
-	assert(lcublasSgetriBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasSgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasSgetriBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasDgetriBatched(cublasHandle_t  handle, int  n, const double* const  A[], int  lda, const int*  P, double* const  C[], int  ldc, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasDgetriBatched) (cublasHandle_t , int , const double* const [], int , const int* , double* const [], int , int* , int );
-	if (!lcublasDgetriBatched) {
-		lcublasDgetriBatched = (cublasStatus_t (*) (cublasHandle_t , int , const double* const [], int , const int* , double* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasDgetriBatched");
-		tracer._kernel_map[(void *) lcublasDgetriBatched] = std::string("cublasDgetriBatched");
-	}
-	assert(lcublasDgetriBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasDgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasDgetriBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasCgetriBatched(cublasHandle_t  handle, int  n, const cuComplex* const  A[], int  lda, const int*  P, cuComplex* const  C[], int  ldc, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasCgetriBatched) (cublasHandle_t , int , const cuComplex* const [], int , const int* , cuComplex* const [], int , int* , int );
-	if (!lcublasCgetriBatched) {
-		lcublasCgetriBatched = (cublasStatus_t (*) (cublasHandle_t , int , const cuComplex* const [], int , const int* , cuComplex* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasCgetriBatched");
-		tracer._kernel_map[(void *) lcublasCgetriBatched] = std::string("cublasCgetriBatched");
-	}
-	assert(lcublasCgetriBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasCgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasCgetriBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasZgetriBatched(cublasHandle_t  handle, int  n, const cuDoubleComplex* const  A[], int  lda, const int*  P, cuDoubleComplex* const  C[], int  ldc, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasZgetriBatched) (cublasHandle_t , int , const cuDoubleComplex* const [], int , const int* , cuDoubleComplex* const [], int , int* , int );
-	if (!lcublasZgetriBatched) {
-		lcublasZgetriBatched = (cublasStatus_t (*) (cublasHandle_t , int , const cuDoubleComplex* const [], int , const int* , cuDoubleComplex* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasZgetriBatched");
-		tracer._kernel_map[(void *) lcublasZgetriBatched] = std::string("cublasZgetriBatched");
-	}
-	assert(lcublasZgetriBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasZgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasZgetriBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasSgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const float* const  Aarray[], int  lda, const int*  devIpiv, float* const  Barray[], int  ldb, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasSgetrsBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* const [], int , const int* , float* const [], int , int* , int );
-	if (!lcublasSgetrsBatched) {
-		lcublasSgetrsBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* const [], int , const int* , float* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasSgetrsBatched");
-		tracer._kernel_map[(void *) lcublasSgetrsBatched] = std::string("cublasSgetrsBatched");
-	}
-	assert(lcublasSgetrsBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasSgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasSgetrsBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasDgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const double* const  Aarray[], int  lda, const int*  devIpiv, double* const  Barray[], int  ldb, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasDgetrsBatched) (cublasHandle_t , cublasOperation_t , int , int , const double* const [], int , const int* , double* const [], int , int* , int );
-	if (!lcublasDgetrsBatched) {
-		lcublasDgetrsBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const double* const [], int , const int* , double* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasDgetrsBatched");
-		tracer._kernel_map[(void *) lcublasDgetrsBatched] = std::string("cublasDgetrsBatched");
-	}
-	assert(lcublasDgetrsBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasDgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasDgetrsBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasCgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuComplex* const  Aarray[], int  lda, const int*  devIpiv, cuComplex* const  Barray[], int  ldb, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasCgetrsBatched) (cublasHandle_t , cublasOperation_t , int , int , const cuComplex* const [], int , const int* , cuComplex* const [], int , int* , int );
-	if (!lcublasCgetrsBatched) {
-		lcublasCgetrsBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const cuComplex* const [], int , const int* , cuComplex* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasCgetrsBatched");
-		tracer._kernel_map[(void *) lcublasCgetrsBatched] = std::string("cublasCgetrsBatched");
-	}
-	assert(lcublasCgetrsBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasCgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasCgetrsBatched);
-	}
-	return res;
-}
-
-cublasStatus_t cublasZgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuDoubleComplex* const  Aarray[], int  lda, const int*  devIpiv, cuDoubleComplex* const  Barray[], int  ldb, int*  info, int  batchSize)
-{
-	static cublasStatus_t (*lcublasZgetrsBatched) (cublasHandle_t , cublasOperation_t , int , int , const cuDoubleComplex* const [], int , const int* , cuDoubleComplex* const [], int , int* , int );
-	if (!lcublasZgetrsBatched) {
-		lcublasZgetrsBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const cuDoubleComplex* const [], int , const int* , cuDoubleComplex* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasZgetrsBatched");
-		tracer._kernel_map[(void *) lcublasZgetrsBatched] = std::string("cublasZgetrsBatched");
-	}
-	assert(lcublasZgetrsBatched);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasZgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasZgetrsBatched);
+		tracer._kernel_seq.push_back((void *)lcublasZgeam_64);
 	}
 	return res;
 }
@@ -29289,6 +36504,32 @@ cublasStatus_t cublasStrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side
 	return res;
 }
 
+cublasStatus_t cublasStrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float* const  A[], int64_t  lda, float* const  B[], int64_t  ldb, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasStrsmBatched_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const float* , const float* const [], int64_t , float* const [], int64_t , int64_t );
+	if (!lcublasStrsmBatched_64) {
+		lcublasStrsmBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const float* , const float* const [], int64_t , float* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasStrsmBatched_64");
+		tracer._kernel_map[(void *) lcublasStrsmBatched_64] = std::string("cublasStrsmBatched_64");
+	}
+	assert(lcublasStrsmBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasStrsmBatched_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasStrsmBatched_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasDtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double* const  A[], int  lda, double* const  B[], int  ldb, int  batchCount)
 {
 	static cublasStatus_t (*lcublasDtrsmBatched) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , int , const double* , const double* const [], int , double* const [], int , int );
@@ -29311,6 +36552,32 @@ cublasStatus_t cublasDtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasDtrsmBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double* const  A[], int64_t  lda, double* const  B[], int64_t  ldb, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasDtrsmBatched_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const double* , const double* const [], int64_t , double* const [], int64_t , int64_t );
+	if (!lcublasDtrsmBatched_64) {
+		lcublasDtrsmBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const double* , const double* const [], int64_t , double* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasDtrsmBatched_64");
+		tracer._kernel_map[(void *) lcublasDtrsmBatched_64] = std::string("cublasDtrsmBatched_64");
+	}
+	assert(lcublasDtrsmBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDtrsmBatched_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDtrsmBatched_64);
 	}
 	return res;
 }
@@ -29341,6 +36608,32 @@ cublasStatus_t cublasCtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side
 	return res;
 }
 
+cublasStatus_t cublasCtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex* const  A[], int64_t  lda, cuComplex* const  B[], int64_t  ldb, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasCtrsmBatched_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuComplex* , const cuComplex* const [], int64_t , cuComplex* const [], int64_t , int64_t );
+	if (!lcublasCtrsmBatched_64) {
+		lcublasCtrsmBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuComplex* , const cuComplex* const [], int64_t , cuComplex* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasCtrsmBatched_64");
+		tracer._kernel_map[(void *) lcublasCtrsmBatched_64] = std::string("cublasCtrsmBatched_64");
+	}
+	assert(lcublasCtrsmBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCtrsmBatched_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCtrsmBatched_64);
+	}
+	return res;
+}
+
 cublasStatus_t cublasZtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  A[], int  lda, cuDoubleComplex* const  B[], int  ldb, int  batchCount)
 {
 	static cublasStatus_t (*lcublasZtrsmBatched) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* const [], int , cuDoubleComplex* const [], int , int );
@@ -29363,6 +36656,240 @@ cublasStatus_t cublasZtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasZtrsmBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  A[], int64_t  lda, cuDoubleComplex* const  B[], int64_t  ldb, int64_t  batchCount)
+{
+	static cublasStatus_t (*lcublasZtrsmBatched_64) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* const [], int64_t , cuDoubleComplex* const [], int64_t , int64_t );
+	if (!lcublasZtrsmBatched_64) {
+		lcublasZtrsmBatched_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , cublasFillMode_t , cublasOperation_t , cublasDiagType_t , int64_t , int64_t , const cuDoubleComplex* , const cuDoubleComplex* const [], int64_t , cuDoubleComplex* const [], int64_t , int64_t )) dlsym(RTLD_NEXT, "cublasZtrsmBatched_64");
+		tracer._kernel_map[(void *) lcublasZtrsmBatched_64] = std::string("cublasZtrsmBatched_64");
+	}
+	assert(lcublasZtrsmBatched_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZtrsmBatched_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZtrsmBatched_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const float*  A, int  lda, const float*  x, int  incx, float*  C, int  ldc)
+{
+	static cublasStatus_t (*lcublasSdgmm) (cublasHandle_t , cublasSideMode_t , int , int , const float* , int , const float* , int , float* , int );
+	if (!lcublasSdgmm) {
+		lcublasSdgmm = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int , int , const float* , int , const float* , int , float* , int )) dlsym(RTLD_NEXT, "cublasSdgmm");
+		tracer._kernel_map[(void *) lcublasSdgmm] = std::string("cublasSdgmm");
+	}
+	assert(lcublasSdgmm);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSdgmm);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const float*  A, int64_t  lda, const float*  x, int64_t  incx, float*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasSdgmm_64) (cublasHandle_t , cublasSideMode_t , int64_t , int64_t , const float* , int64_t , const float* , int64_t , float* , int64_t );
+	if (!lcublasSdgmm_64) {
+		lcublasSdgmm_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int64_t , int64_t , const float* , int64_t , const float* , int64_t , float* , int64_t )) dlsym(RTLD_NEXT, "cublasSdgmm_64");
+		tracer._kernel_map[(void *) lcublasSdgmm_64] = std::string("cublasSdgmm_64");
+	}
+	assert(lcublasSdgmm_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSdgmm_64(handle, mode, m, n, A, lda, x, incx, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSdgmm_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const double*  A, int  lda, const double*  x, int  incx, double*  C, int  ldc)
+{
+	static cublasStatus_t (*lcublasDdgmm) (cublasHandle_t , cublasSideMode_t , int , int , const double* , int , const double* , int , double* , int );
+	if (!lcublasDdgmm) {
+		lcublasDdgmm = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int , int , const double* , int , const double* , int , double* , int )) dlsym(RTLD_NEXT, "cublasDdgmm");
+		tracer._kernel_map[(void *) lcublasDdgmm] = std::string("cublasDdgmm");
+	}
+	assert(lcublasDdgmm);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDdgmm);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const double*  A, int64_t  lda, const double*  x, int64_t  incx, double*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasDdgmm_64) (cublasHandle_t , cublasSideMode_t , int64_t , int64_t , const double* , int64_t , const double* , int64_t , double* , int64_t );
+	if (!lcublasDdgmm_64) {
+		lcublasDdgmm_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int64_t , int64_t , const double* , int64_t , const double* , int64_t , double* , int64_t )) dlsym(RTLD_NEXT, "cublasDdgmm_64");
+		tracer._kernel_map[(void *) lcublasDdgmm_64] = std::string("cublasDdgmm_64");
+	}
+	assert(lcublasDdgmm_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDdgmm_64(handle, mode, m, n, A, lda, x, incx, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDdgmm_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, cuComplex*  C, int  ldc)
+{
+	static cublasStatus_t (*lcublasCdgmm) (cublasHandle_t , cublasSideMode_t , int , int , const cuComplex* , int , const cuComplex* , int , cuComplex* , int );
+	if (!lcublasCdgmm) {
+		lcublasCdgmm = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int , int , const cuComplex* , int , const cuComplex* , int , cuComplex* , int )) dlsym(RTLD_NEXT, "cublasCdgmm");
+		tracer._kernel_map[(void *) lcublasCdgmm] = std::string("cublasCdgmm");
+	}
+	assert(lcublasCdgmm);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCdgmm);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, cuComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasCdgmm_64) (cublasHandle_t , cublasSideMode_t , int64_t , int64_t , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t );
+	if (!lcublasCdgmm_64) {
+		lcublasCdgmm_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int64_t , int64_t , const cuComplex* , int64_t , const cuComplex* , int64_t , cuComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasCdgmm_64");
+		tracer._kernel_map[(void *) lcublasCdgmm_64] = std::string("cublasCdgmm_64");
+	}
+	assert(lcublasCdgmm_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCdgmm_64(handle, mode, m, n, A, lda, x, incx, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCdgmm_64);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  C, int  ldc)
+{
+	static cublasStatus_t (*lcublasZdgmm) (cublasHandle_t , cublasSideMode_t , int , int , const cuDoubleComplex* , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
+	if (!lcublasZdgmm) {
+		lcublasZdgmm = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int , int , const cuDoubleComplex* , int , const cuDoubleComplex* , int , cuDoubleComplex* , int )) dlsym(RTLD_NEXT, "cublasZdgmm");
+		tracer._kernel_map[(void *) lcublasZdgmm] = std::string("cublasZdgmm");
+	}
+	assert(lcublasZdgmm);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZdgmm);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  C, int64_t  ldc)
+{
+	static cublasStatus_t (*lcublasZdgmm_64) (cublasHandle_t , cublasSideMode_t , int64_t , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t );
+	if (!lcublasZdgmm_64) {
+		lcublasZdgmm_64 = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int64_t , int64_t , const cuDoubleComplex* , int64_t , const cuDoubleComplex* , int64_t , cuDoubleComplex* , int64_t )) dlsym(RTLD_NEXT, "cublasZdgmm_64");
+		tracer._kernel_map[(void *) lcublasZdgmm_64] = std::string("cublasZdgmm_64");
+	}
+	assert(lcublasZdgmm_64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZdgmm_64(handle, mode, m, n, A, lda, x, incx, C, ldc);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZdgmm_64);
 	}
 	return res;
 }
@@ -29679,110 +37206,6 @@ cublasStatus_t cublasZgelsBatched(cublasHandle_t  handle, cublasOperation_t  tra
 	return res;
 }
 
-cublasStatus_t cublasSdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const float*  A, int  lda, const float*  x, int  incx, float*  C, int  ldc)
-{
-	static cublasStatus_t (*lcublasSdgmm) (cublasHandle_t , cublasSideMode_t , int , int , const float* , int , const float* , int , float* , int );
-	if (!lcublasSdgmm) {
-		lcublasSdgmm = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int , int , const float* , int , const float* , int , float* , int )) dlsym(RTLD_NEXT, "cublasSdgmm");
-		tracer._kernel_map[(void *) lcublasSdgmm] = std::string("cublasSdgmm");
-	}
-	assert(lcublasSdgmm);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasSdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasSdgmm);
-	}
-	return res;
-}
-
-cublasStatus_t cublasDdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const double*  A, int  lda, const double*  x, int  incx, double*  C, int  ldc)
-{
-	static cublasStatus_t (*lcublasDdgmm) (cublasHandle_t , cublasSideMode_t , int , int , const double* , int , const double* , int , double* , int );
-	if (!lcublasDdgmm) {
-		lcublasDdgmm = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int , int , const double* , int , const double* , int , double* , int )) dlsym(RTLD_NEXT, "cublasDdgmm");
-		tracer._kernel_map[(void *) lcublasDdgmm] = std::string("cublasDdgmm");
-	}
-	assert(lcublasDdgmm);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasDdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasDdgmm);
-	}
-	return res;
-}
-
-cublasStatus_t cublasCdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, cuComplex*  C, int  ldc)
-{
-	static cublasStatus_t (*lcublasCdgmm) (cublasHandle_t , cublasSideMode_t , int , int , const cuComplex* , int , const cuComplex* , int , cuComplex* , int );
-	if (!lcublasCdgmm) {
-		lcublasCdgmm = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int , int , const cuComplex* , int , const cuComplex* , int , cuComplex* , int )) dlsym(RTLD_NEXT, "cublasCdgmm");
-		tracer._kernel_map[(void *) lcublasCdgmm] = std::string("cublasCdgmm");
-	}
-	assert(lcublasCdgmm);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasCdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasCdgmm);
-	}
-	return res;
-}
-
-cublasStatus_t cublasZdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  C, int  ldc)
-{
-	static cublasStatus_t (*lcublasZdgmm) (cublasHandle_t , cublasSideMode_t , int , int , const cuDoubleComplex* , int , const cuDoubleComplex* , int , cuDoubleComplex* , int );
-	if (!lcublasZdgmm) {
-		lcublasZdgmm = (cublasStatus_t (*) (cublasHandle_t , cublasSideMode_t , int , int , const cuDoubleComplex* , int , const cuDoubleComplex* , int , cuDoubleComplex* , int )) dlsym(RTLD_NEXT, "cublasZdgmm");
-		tracer._kernel_map[(void *) lcublasZdgmm] = std::string("cublasZdgmm");
-	}
-	assert(lcublasZdgmm);
-
-    time_point_t _start;
-    if (tracer.profile_start) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
-	cublasStatus_t res = 
-		lcublasZdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
-
-    if (tracer.profile_start) {
-        auto _end = std::chrono::high_resolution_clock::now();
-        tracer._cpu_timestamps.push_back({ _start, _end });
-    }
-	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lcublasZdgmm);
-	}
-	return res;
-}
-
 cublasStatus_t cublasStpttr(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  AP, float*  A, int  lda)
 {
 	static cublasStatus_t (*lcublasStpttr) (cublasHandle_t , cublasFillMode_t , int , const float* , float* , int );
@@ -29991,16 +37414,341 @@ cublasStatus_t cublasZtrttp(cublasHandle_t  handle, cublasFillMode_t  uplo, int 
 	return res;
 }
 
-cudaError_t cudaProfilerInitialize(const char * configFile, const char * outputFile, cudaOutputMode_t  outputMode)
+cublasStatus_t cublasSgetrfBatched(cublasHandle_t  handle, int  n, float* const  A[], int  lda, int*  P, int*  info, int  batchSize)
 {
-	static cudaError_t (*lcudaProfilerInitialize) (const char *, const char *, cudaOutputMode_t );
-	if (!lcudaProfilerInitialize) {
-		lcudaProfilerInitialize = (cudaError_t (*) (const char *, const char *, cudaOutputMode_t )) dlsym(RTLD_NEXT, "cudaProfilerInitialize");
-		tracer._kernel_map[(void *) lcudaProfilerInitialize] = std::string("cudaProfilerInitialize");
+	static cublasStatus_t (*lcublasSgetrfBatched) (cublasHandle_t , int , float* const [], int , int* , int* , int );
+	if (!lcublasSgetrfBatched) {
+		lcublasSgetrfBatched = (cublasStatus_t (*) (cublasHandle_t , int , float* const [], int , int* , int* , int )) dlsym(RTLD_NEXT, "cublasSgetrfBatched");
+		tracer._kernel_map[(void *) lcublasSgetrfBatched] = std::string("cublasSgetrfBatched");
 	}
-	assert(lcudaProfilerInitialize);
-	cudaError_t res = 
-		lcudaProfilerInitialize(configFile, outputFile, outputMode);
+	assert(lcublasSgetrfBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgetrfBatched(handle, n, A, lda, P, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgetrfBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgetrfBatched(cublasHandle_t  handle, int  n, double* const  A[], int  lda, int*  P, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasDgetrfBatched) (cublasHandle_t , int , double* const [], int , int* , int* , int );
+	if (!lcublasDgetrfBatched) {
+		lcublasDgetrfBatched = (cublasStatus_t (*) (cublasHandle_t , int , double* const [], int , int* , int* , int )) dlsym(RTLD_NEXT, "cublasDgetrfBatched");
+		tracer._kernel_map[(void *) lcublasDgetrfBatched] = std::string("cublasDgetrfBatched");
+	}
+	assert(lcublasDgetrfBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgetrfBatched(handle, n, A, lda, P, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgetrfBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgetrfBatched(cublasHandle_t  handle, int  n, cuComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasCgetrfBatched) (cublasHandle_t , int , cuComplex* const [], int , int* , int* , int );
+	if (!lcublasCgetrfBatched) {
+		lcublasCgetrfBatched = (cublasStatus_t (*) (cublasHandle_t , int , cuComplex* const [], int , int* , int* , int )) dlsym(RTLD_NEXT, "cublasCgetrfBatched");
+		tracer._kernel_map[(void *) lcublasCgetrfBatched] = std::string("cublasCgetrfBatched");
+	}
+	assert(lcublasCgetrfBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgetrfBatched(handle, n, A, lda, P, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgetrfBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgetrfBatched(cublasHandle_t  handle, int  n, cuDoubleComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasZgetrfBatched) (cublasHandle_t , int , cuDoubleComplex* const [], int , int* , int* , int );
+	if (!lcublasZgetrfBatched) {
+		lcublasZgetrfBatched = (cublasStatus_t (*) (cublasHandle_t , int , cuDoubleComplex* const [], int , int* , int* , int )) dlsym(RTLD_NEXT, "cublasZgetrfBatched");
+		tracer._kernel_map[(void *) lcublasZgetrfBatched] = std::string("cublasZgetrfBatched");
+	}
+	assert(lcublasZgetrfBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgetrfBatched(handle, n, A, lda, P, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgetrfBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSgetriBatched(cublasHandle_t  handle, int  n, const float* const  A[], int  lda, const int*  P, float* const  C[], int  ldc, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasSgetriBatched) (cublasHandle_t , int , const float* const [], int , const int* , float* const [], int , int* , int );
+	if (!lcublasSgetriBatched) {
+		lcublasSgetriBatched = (cublasStatus_t (*) (cublasHandle_t , int , const float* const [], int , const int* , float* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasSgetriBatched");
+		tracer._kernel_map[(void *) lcublasSgetriBatched] = std::string("cublasSgetriBatched");
+	}
+	assert(lcublasSgetriBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgetriBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgetriBatched(cublasHandle_t  handle, int  n, const double* const  A[], int  lda, const int*  P, double* const  C[], int  ldc, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasDgetriBatched) (cublasHandle_t , int , const double* const [], int , const int* , double* const [], int , int* , int );
+	if (!lcublasDgetriBatched) {
+		lcublasDgetriBatched = (cublasStatus_t (*) (cublasHandle_t , int , const double* const [], int , const int* , double* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasDgetriBatched");
+		tracer._kernel_map[(void *) lcublasDgetriBatched] = std::string("cublasDgetriBatched");
+	}
+	assert(lcublasDgetriBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgetriBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgetriBatched(cublasHandle_t  handle, int  n, const cuComplex* const  A[], int  lda, const int*  P, cuComplex* const  C[], int  ldc, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasCgetriBatched) (cublasHandle_t , int , const cuComplex* const [], int , const int* , cuComplex* const [], int , int* , int );
+	if (!lcublasCgetriBatched) {
+		lcublasCgetriBatched = (cublasStatus_t (*) (cublasHandle_t , int , const cuComplex* const [], int , const int* , cuComplex* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasCgetriBatched");
+		tracer._kernel_map[(void *) lcublasCgetriBatched] = std::string("cublasCgetriBatched");
+	}
+	assert(lcublasCgetriBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgetriBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgetriBatched(cublasHandle_t  handle, int  n, const cuDoubleComplex* const  A[], int  lda, const int*  P, cuDoubleComplex* const  C[], int  ldc, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasZgetriBatched) (cublasHandle_t , int , const cuDoubleComplex* const [], int , const int* , cuDoubleComplex* const [], int , int* , int );
+	if (!lcublasZgetriBatched) {
+		lcublasZgetriBatched = (cublasStatus_t (*) (cublasHandle_t , int , const cuDoubleComplex* const [], int , const int* , cuDoubleComplex* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasZgetriBatched");
+		tracer._kernel_map[(void *) lcublasZgetriBatched] = std::string("cublasZgetriBatched");
+	}
+	assert(lcublasZgetriBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgetriBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasSgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const float* const  Aarray[], int  lda, const int*  devIpiv, float* const  Barray[], int  ldb, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasSgetrsBatched) (cublasHandle_t , cublasOperation_t , int , int , const float* const [], int , const int* , float* const [], int , int* , int );
+	if (!lcublasSgetrsBatched) {
+		lcublasSgetrsBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const float* const [], int , const int* , float* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasSgetrsBatched");
+		tracer._kernel_map[(void *) lcublasSgetrsBatched] = std::string("cublasSgetrsBatched");
+	}
+	assert(lcublasSgetrsBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasSgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasSgetrsBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasDgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const double* const  Aarray[], int  lda, const int*  devIpiv, double* const  Barray[], int  ldb, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasDgetrsBatched) (cublasHandle_t , cublasOperation_t , int , int , const double* const [], int , const int* , double* const [], int , int* , int );
+	if (!lcublasDgetrsBatched) {
+		lcublasDgetrsBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const double* const [], int , const int* , double* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasDgetrsBatched");
+		tracer._kernel_map[(void *) lcublasDgetrsBatched] = std::string("cublasDgetrsBatched");
+	}
+	assert(lcublasDgetrsBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasDgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasDgetrsBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasCgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuComplex* const  Aarray[], int  lda, const int*  devIpiv, cuComplex* const  Barray[], int  ldb, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasCgetrsBatched) (cublasHandle_t , cublasOperation_t , int , int , const cuComplex* const [], int , const int* , cuComplex* const [], int , int* , int );
+	if (!lcublasCgetrsBatched) {
+		lcublasCgetrsBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const cuComplex* const [], int , const int* , cuComplex* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasCgetrsBatched");
+		tracer._kernel_map[(void *) lcublasCgetrsBatched] = std::string("cublasCgetrsBatched");
+	}
+	assert(lcublasCgetrsBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasCgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasCgetrsBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasZgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuDoubleComplex* const  Aarray[], int  lda, const int*  devIpiv, cuDoubleComplex* const  Barray[], int  ldb, int*  info, int  batchSize)
+{
+	static cublasStatus_t (*lcublasZgetrsBatched) (cublasHandle_t , cublasOperation_t , int , int , const cuDoubleComplex* const [], int , const int* , cuDoubleComplex* const [], int , int* , int );
+	if (!lcublasZgetrsBatched) {
+		lcublasZgetrsBatched = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , int , int , const cuDoubleComplex* const [], int , const int* , cuDoubleComplex* const [], int , int* , int )) dlsym(RTLD_NEXT, "cublasZgetrsBatched");
+		tracer._kernel_map[(void *) lcublasZgetrsBatched] = std::string("cublasZgetrsBatched");
+	}
+	assert(lcublasZgetrsBatched);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasZgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasZgetrsBatched);
+	}
+	return res;
+}
+
+cublasStatus_t cublasUint8gemmBias(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, cublasOperation_t  transc, int  m, int  n, int  k, const unsigned char*  A, int  A_bias, int  lda, const unsigned char*  B, int  B_bias, int  ldb, unsigned char*  C, int  C_bias, int  ldc, int  C_mult, int  C_shift)
+{
+	static cublasStatus_t (*lcublasUint8gemmBias) (cublasHandle_t , cublasOperation_t , cublasOperation_t , cublasOperation_t , int , int , int , const unsigned char* , int , int , const unsigned char* , int , int , unsigned char* , int , int , int , int );
+	if (!lcublasUint8gemmBias) {
+		lcublasUint8gemmBias = (cublasStatus_t (*) (cublasHandle_t , cublasOperation_t , cublasOperation_t , cublasOperation_t , int , int , int , const unsigned char* , int , int , const unsigned char* , int , int , unsigned char* , int , int , int , int )) dlsym(RTLD_NEXT, "cublasUint8gemmBias");
+		tracer._kernel_map[(void *) lcublasUint8gemmBias] = std::string("cublasUint8gemmBias");
+	}
+	assert(lcublasUint8gemmBias);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasUint8gemmBias(handle, transa, transb, transc, m, n, k, A, A_bias, lda, B, B_bias, ldb, C, C_bias, ldc, C_mult, C_shift);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasUint8gemmBias);
+	}
 	return res;
 }
 
@@ -30262,6 +38010,84 @@ cublasStatus_t cublasLtGetProperty(libraryPropertyType  type, int*  value)
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasLtGetProperty);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtHeuristicsCacheGetCapacity(size_t*  capacity)
+{
+	static cublasStatus_t (*lcublasLtHeuristicsCacheGetCapacity) (size_t* );
+	if (!lcublasLtHeuristicsCacheGetCapacity) {
+		lcublasLtHeuristicsCacheGetCapacity = (cublasStatus_t (*) (size_t* )) dlsym(RTLD_NEXT, "cublasLtHeuristicsCacheGetCapacity");
+		tracer._kernel_map[(void *) lcublasLtHeuristicsCacheGetCapacity] = std::string("cublasLtHeuristicsCacheGetCapacity");
+	}
+	assert(lcublasLtHeuristicsCacheGetCapacity);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasLtHeuristicsCacheGetCapacity(capacity);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtHeuristicsCacheGetCapacity);
+	}
+	return res;
+}
+
+cublasStatus_t cublasLtHeuristicsCacheSetCapacity(size_t  capacity)
+{
+	static cublasStatus_t (*lcublasLtHeuristicsCacheSetCapacity) (size_t );
+	if (!lcublasLtHeuristicsCacheSetCapacity) {
+		lcublasLtHeuristicsCacheSetCapacity = (cublasStatus_t (*) (size_t )) dlsym(RTLD_NEXT, "cublasLtHeuristicsCacheSetCapacity");
+		tracer._kernel_map[(void *) lcublasLtHeuristicsCacheSetCapacity] = std::string("cublasLtHeuristicsCacheSetCapacity");
+	}
+	assert(lcublasLtHeuristicsCacheSetCapacity);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	cublasStatus_t res = 
+		lcublasLtHeuristicsCacheSetCapacity(capacity);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtHeuristicsCacheSetCapacity);
+	}
+	return res;
+}
+
+unsigned cublasLtDisableCpuInstructionsSetMask(unsigned  mask)
+{
+	static unsigned (*lcublasLtDisableCpuInstructionsSetMask) (unsigned );
+	if (!lcublasLtDisableCpuInstructionsSetMask) {
+		lcublasLtDisableCpuInstructionsSetMask = (unsigned (*) (unsigned )) dlsym(RTLD_NEXT, "cublasLtDisableCpuInstructionsSetMask");
+		tracer._kernel_map[(void *) lcublasLtDisableCpuInstructionsSetMask] = std::string("cublasLtDisableCpuInstructionsSetMask");
+	}
+	assert(lcublasLtDisableCpuInstructionsSetMask);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	unsigned res = 
+		lcublasLtDisableCpuInstructionsSetMask(mask);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcublasLtDisableCpuInstructionsSetMask);
 	}
 	return res;
 }

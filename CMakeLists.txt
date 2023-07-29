@@ -4,8 +4,8 @@ enable_language(CUDA)
 
 set(CMAKE_CUDA_COMPILER nvcc)
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_BUILD_TYPE "Release")
-# set(CMAKE_BUILD_TYPE "Debug")
+# set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-comment -Wno-deprecated")
 
 option(ENABLE_LOGGING "Enable logging" OFF)
@@ -61,6 +61,7 @@ target_include_directories(tally
 
 target_link_libraries(tally PUBLIC
     iceoryx_posh::iceoryx_posh
+    dl
 )
 
 add_library(tally_client SHARED
@@ -151,4 +152,10 @@ target_link_libraries(tally_server PUBLIC
     iceoryx_posh::iceoryx_posh
 )
 
+set_target_properties(tally_server PROPERTIES
+    CUDA_ARCHITECTURES "86"
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
 add_subdirectory(tests)
+add_subdirectory(third_party/cudnn-frontend)

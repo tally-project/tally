@@ -133,6 +133,17 @@ struct cuDeviceGetDefaultMemPoolResponse {
 	CUresult err;
 };
 
+struct cuDeviceGetExecAffinitySupportArg {
+	int * pi;
+	CUexecAffinityType  type;
+	CUdevice  dev;
+};
+
+struct cuDeviceGetExecAffinitySupportResponse {
+	int  pi;
+	CUresult err;
+};
+
 struct cuFlushGPUDirectRDMAWritesArg {
 	CUflushGPUDirectRDMAWritesTarget  target;
 	CUflushGPUDirectRDMAWritesScope  scope;
@@ -193,17 +204,6 @@ struct cuDevicePrimaryCtxGetStateResponse {
 
 struct cuDevicePrimaryCtxReset_v2Arg {
 	CUdevice  dev;
-};
-
-struct cuDeviceGetExecAffinitySupportArg {
-	int * pi;
-	CUexecAffinityType  type;
-	CUdevice  dev;
-};
-
-struct cuDeviceGetExecAffinitySupportResponse {
-	int  pi;
-	CUresult err;
 };
 
 struct cuCtxCreate_v2Arg {
@@ -532,16 +532,6 @@ struct cudaGetLastErrorArg {
 struct cudaPeekAtLastErrorArg {
 };
 
-struct cudaGetDevicePropertiesArg {
-	struct cudaDeviceProp * prop;
-	int  device;
-};
-
-struct cudaGetDevicePropertiesResponse {
-	struct cudaDeviceProp  prop;
-	cudaError_t err;
-};
-
 struct cudaDeviceGetAttributeArg {
 	int * value;
 	enum cudaDeviceAttr  attr;
@@ -692,18 +682,6 @@ struct cudaStreamIsCapturingArg {
 
 struct cudaStreamIsCapturingResponse {
 	enum cudaStreamCaptureStatus  pCaptureStatus;
-	cudaError_t err;
-};
-
-struct cudaStreamGetCaptureInfoArg {
-	cudaStream_t  stream;
-	enum cudaStreamCaptureStatus * pCaptureStatus;
-	unsigned long long * pId;
-};
-
-struct cudaStreamGetCaptureInfoResponse {
-	enum cudaStreamCaptureStatus  pCaptureStatus;
-	unsigned long long  pId;
 	cudaError_t err;
 };
 
@@ -1238,7 +1216,7 @@ struct cudnnBuildRNNDynamicArg {
 struct cudnnGetRNNTempSpaceSizesArg {
 	cudnnHandle_t  handle;
 	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnForwardMode_t  fMode;
+	cudnnForwardMode_t  fwdMode;
 	cudnnRNNDataDescriptor_t  xDesc;
 	size_t * workSpaceSize;
 	size_t * reserveSpaceSize;

@@ -42,7 +42,7 @@ test_list=(
     "./build/tests/cudnn_test"
     "./build/tests/cublas_test"
     "./build/tests/cublasLt_test"
-    "./build/tests/cudnn-samples/samples"
+    "./build/bin/samples"
     "./tests/cudnn_samples_v8/conv_sample/conv_sample"
     "./tests/cudnn_samples_v8/mnistCUDNN/mnistCUDNN"
     "./tests/cudnn_samples_v8/multiHeadAttention/multiHeadAttention -attnTrain1 -attnDataType0 -attnNumHeads3 -attnBatchSize6 -attnBeamSize1 -attnQsize8 -attnKsize8 -attnVsize8 -attnProjQsize2 -attnProjKsize2 -attnProjVsize2 -attnProjOsize8 -attnResLink0 -attnSeqLenQ3 -attnSeqLenK10"

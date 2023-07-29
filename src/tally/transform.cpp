@@ -264,6 +264,19 @@ std::string gen_ptb_ptx(std::string ptx_path)
     return ptb_ptx_code;
 }
 
+std::string gen_original_ptx(std::string ptx_path)
+{
+    std::cout << "Generating original version of " << ptx_path << std::endl;
+    std::ifstream t(ptx_path);
+    if (!t.is_open()) {
+        std::cerr << ptx_path << " not found." << std::endl;
+        return "";
+    }
+    std::string ptx_code_str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+
+    return ptx_code_str;
+}
+
 std::string gen_sliced_ptx(std::string ptx_path)
 {
     std::cout << "Generating sliced version of " << ptx_path << std::endl;
