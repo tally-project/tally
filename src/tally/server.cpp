@@ -460,24 +460,37 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
     for (auto &kernel_pair : client_meta.register_queue) {
         auto &client_addr = kernel_pair.first;
         auto &kernel_name = kernel_pair.second;
-        
-        if (!client_meta.cubin_registered) {
-            // allocate an address for the kernel
-            kernel_server_addr = malloc(8);
 
-            auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
+        // already registered this client addr
+        if (client_meta._kernel_client_addr_mapping.find(client_addr) != client_meta._kernel_client_addr_mapping.end()) {
 
-            // Register the kernel with this address
-            mangled_kernel_name_to_host_func_map[kernel_name] = kernel_server_addr;
+            assert(client_meta._kernel_client_addr_mapping[client_addr] == mangled_kernel_name_to_host_func_map[kernel_name]);
 
-            _kernel_addr_to_args[kernel_server_addr] = param_sizes;
+            if (client_meta._kernel_client_addr_mapping[client_addr] != mangled_kernel_name_to_host_func_map[kernel_name]) {
+                throw std::runtime_error("Client addr exists but is different from previous record.");
+            }
 
-            // Load the transformed PTX and register them as callable functions
-            register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+        } else {
+
+            if (!client_meta.cubin_registered) {
+                // allocate an address for the kernel
+                kernel_server_addr = malloc(8);
+
+                auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
+
+                // Register the kernel with this address
+                mangled_kernel_name_to_host_func_map[kernel_name] = kernel_server_addr;
+
+                _kernel_addr_to_args[kernel_server_addr] = param_sizes;
+            }
+
+            client_meta._kernel_client_addr_mapping[client_addr] = mangled_kernel_name_to_host_func_map[kernel_name];
         }
+    }
 
-        assert (client_meta._kernel_client_addr_mapping.find(client_addr) == client_meta._kernel_client_addr_mapping.end());
-        client_meta._kernel_client_addr_mapping[client_addr] = mangled_kernel_name_to_host_func_map[kernel_name];
+    if (!client_meta.cubin_registered) {
+        // Load the transformed PTX and register them as callable functions
+        register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
     }
 }
 
