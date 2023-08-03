@@ -1816,12 +1816,6 @@ CUresult cuModuleLoad(CUmodule * module, const char * fname)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuModuleLoadData(CUmodule * module, const void * image)
-{
-	TALLY_LOG("cuModuleLoadData hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int  numOptions, CUjit_option * options, void ** optionValues)
 {
 	TALLY_LOG("cuModuleLoadDataEx hooked");
@@ -1876,12 +1870,6 @@ CUresult cuModuleUnload(CUmodule  hmod)
 CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
 {
 	TALLY_LOG("cuModuleGetLoadingMode hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * name)
-{
-	TALLY_LOG("cuModuleGetFunction hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -2735,12 +2723,6 @@ CUresult cuMulticastGetGranularity(size_t * granularity, const CUmulticastObject
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuPointerGetAttribute(void * data, CUpointer_attribute  attribute, CUdeviceptr  ptr)
-{
-	TALLY_LOG("cuPointerGetAttribute hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 CUresult cuMemPrefetchAsync(CUdeviceptr  devPtr, size_t  count, CUdevice  dstDevice, CUstream  hStream)
 {
 	TALLY_LOG("cuMemPrefetchAsync hooked");
@@ -3068,12 +3050,6 @@ CUresult cuStreamBatchMemOp_v2(CUstream  stream, unsigned int  count, CUstreamBa
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuFuncGetAttribute(int * pi, CUfunction_attribute  attrib, CUfunction  hfunc)
-{
-	TALLY_LOG("cuFuncGetAttribute hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 CUresult cuFuncSetAttribute(CUfunction  hfunc, CUfunction_attribute  attrib, int  value)
 {
 	TALLY_LOG("cuFuncSetAttribute hooked");
@@ -3095,12 +3071,6 @@ CUresult cuFuncSetSharedMemConfig(CUfunction  hfunc, CUsharedconfig  config)
 CUresult cuFuncGetModule(CUmodule * hmod, CUfunction  hfunc)
 {
 	TALLY_LOG("cuFuncGetModule hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams, void ** extra)
-{
-	TALLY_LOG("cuLaunchKernel hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -5847,12 +5817,6 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
 	return err;
 }
 
-cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCaptureStatus * captureStatus_out, unsigned long long * id_out, cudaGraph_t * graph_out, const cudaGraphNode_t ** dependencies_out, size_t * numDependencies_out)
-{
-	TALLY_LOG("cudaStreamGetCaptureInfo_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 cudaError_t cudaStreamUpdateCaptureDependencies(cudaStream_t  stream, cudaGraphNode_t * dependencies, size_t  numDependencies, unsigned int  flags)
 {
 	TALLY_LOG("cudaStreamUpdateCaptureDependencies hooked");
@@ -6942,13 +6906,15 @@ cudaError_t cudaGetSurfaceObjectResourceDesc(struct cudaResourceDesc * pResDesc,
 cudaError_t cudaDriverGetVersion(int * driverVersion)
 {
 	TALLY_LOG("cudaDriverGetVersion hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudaError_t res = 		lcudaDriverGetVersion(driverVersion);
+	return res;
 }
 
 cudaError_t cudaRuntimeGetVersion(int * runtimeVersion)
 {
 	TALLY_LOG("cudaRuntimeGetVersion hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudaError_t res = 		lcudaRuntimeGetVersion(runtimeVersion);
+	return res;
 }
 
 cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
@@ -7268,12 +7234,6 @@ cudaError_t cudaGraphNodeGetType(cudaGraphNode_t  node, enum cudaGraphNodeType *
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaGraphGetNodes(cudaGraph_t  graph, cudaGraphNode_t * nodes, size_t * numNodes)
-{
-	TALLY_LOG("cudaGraphGetNodes hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 cudaError_t cudaGraphGetRootNodes(cudaGraph_t  graph, cudaGraphNode_t * pRootNodes, size_t * pNumRootNodes)
 {
 	TALLY_LOG("cudaGraphGetRootNodes hooked");
@@ -7325,7 +7285,43 @@ cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  grap
 cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags)
 {
 	TALLY_LOG("cudaGraphInstantiateWithFlags hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaGraphInstantiateWithFlags(pGraphExec, graph, flags);
+#else
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphInstantiateWithFlagsArg), alignof(cudaGraphInstantiateWithFlagsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGRAPHINSTANTIATEWITHFLAGS;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaGraphInstantiateWithFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->pGraphExec = pGraphExec;
+			request->graph = graph;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaGraphInstantiateWithFlagsResponse*>(responsePayload);
+			if (pGraphExec) { *pGraphExec = response->pGraphExec; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaGraphInstantiateWithFlags);
+	return err;
 }
 
 cudaError_t cudaGraphInstantiateWithParams(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphInstantiateParams * instantiateParams)
@@ -7433,25 +7429,159 @@ cudaError_t cudaGraphExecUpdate(cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph
 cudaError_t cudaGraphUpload(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 {
 	TALLY_LOG("cudaGraphUpload hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaGraphUpload(graphExec, stream);
+#else
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphUploadArg), alignof(cudaGraphUploadArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGRAPHUPLOAD;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaGraphUploadArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->graphExec = graphExec;
+			request->stream = stream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaGraphUpload);
+	return err;
 }
 
 cudaError_t cudaGraphLaunch(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 {
 	TALLY_LOG("cudaGraphLaunch hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaGraphLaunch(graphExec, stream);
+#else
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphLaunchArg), alignof(cudaGraphLaunchArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGRAPHLAUNCH;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaGraphLaunchArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->graphExec = graphExec;
+			request->stream = stream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaGraphLaunch);
+	return err;
 }
 
 cudaError_t cudaGraphExecDestroy(cudaGraphExec_t  graphExec)
 {
 	TALLY_LOG("cudaGraphExecDestroy hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaGraphExecDestroy(graphExec);
+#else
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphExecDestroyArg), alignof(cudaGraphExecDestroyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGRAPHEXECDESTROY;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaGraphExecDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->graphExec = graphExec;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaGraphExecDestroy);
+	return err;
 }
 
 cudaError_t cudaGraphDestroy(cudaGraph_t  graph)
 {
 	TALLY_LOG("cudaGraphDestroy hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaGraphDestroy(graph);
+#else
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphDestroyArg), alignof(cudaGraphDestroyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGRAPHDESTROY;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaGraphDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->graph = graph;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaGraphDestroy);
+	return err;
 }
 
 cudaError_t cudaGraphDebugDotPrint(cudaGraph_t  graph, const char * path, unsigned int  flags)
@@ -15568,6 +15698,60 @@ cudaError_t cudaProfilerStop()
 	return err;
 }
 
+const char * nvrtcGetErrorString(nvrtcResult  result)
+{
+	TALLY_LOG("nvrtcGetErrorString hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcVersion(int * major, int * minor)
+{
+	TALLY_LOG("nvrtcVersion hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetNumSupportedArchs(int*  numArchs)
+{
+	TALLY_LOG("nvrtcGetNumSupportedArchs hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetSupportedArchs(int*  supportedArchs)
+{
+	TALLY_LOG("nvrtcGetSupportedArchs hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcCreateProgram(nvrtcProgram * prog, const char * src, const char * name, int  numHeaders, const char * const * headers, const char * const * includeNames)
+{
+	TALLY_LOG("nvrtcCreateProgram hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcDestroyProgram(nvrtcProgram * prog)
+{
+	TALLY_LOG("nvrtcDestroyProgram hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcCompileProgram(nvrtcProgram  prog, int  numOptions, const char * const * options)
+{
+	TALLY_LOG("nvrtcCompileProgram hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetPTXSize(nvrtcProgram  prog, size_t * ptxSizeRet)
+{
+	TALLY_LOG("nvrtcGetPTXSize hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetPTX(nvrtcProgram  prog, char * ptx)
+{
+	TALLY_LOG("nvrtcGetPTX hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
 nvrtcResult nvrtcGetCUBINSize(nvrtcProgram  prog, size_t * cubinSizeRet)
 {
 	TALLY_LOG("nvrtcGetCUBINSize hooked");
@@ -15577,6 +15761,54 @@ nvrtcResult nvrtcGetCUBINSize(nvrtcProgram  prog, size_t * cubinSizeRet)
 nvrtcResult nvrtcGetCUBIN(nvrtcProgram  prog, char * cubin)
 {
 	TALLY_LOG("nvrtcGetCUBIN hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetLTOIRSize(nvrtcProgram  prog, size_t * LTOIRSizeRet)
+{
+	TALLY_LOG("nvrtcGetLTOIRSize hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetLTOIR(nvrtcProgram  prog, char * LTOIR)
+{
+	TALLY_LOG("nvrtcGetLTOIR hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetOptiXIRSize(nvrtcProgram  prog, size_t * optixirSizeRet)
+{
+	TALLY_LOG("nvrtcGetOptiXIRSize hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetOptiXIR(nvrtcProgram  prog, char * optixir)
+{
+	TALLY_LOG("nvrtcGetOptiXIR hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetProgramLogSize(nvrtcProgram  prog, size_t * logSizeRet)
+{
+	TALLY_LOG("nvrtcGetProgramLogSize hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetProgramLog(nvrtcProgram  prog, char * log)
+{
+	TALLY_LOG("nvrtcGetProgramLog hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcAddNameExpression(nvrtcProgram  prog, const char * const  name_expression)
+{
+	TALLY_LOG("nvrtcAddNameExpression hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+nvrtcResult nvrtcGetLoweredName(nvrtcProgram  prog, const char *const  name_expression, const char**  lowered_name)
+{
+	TALLY_LOG("nvrtcGetLoweredName hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 

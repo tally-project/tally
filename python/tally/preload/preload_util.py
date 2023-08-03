@@ -2,7 +2,7 @@ import subprocess
 import re
 
 from tally.preload.consts import IGNORE_KEYWORDS, FUNC_SIG_MUST_CONTAIN, FUNC_SIG_MUST_NOT_CONTAIN, FUNC_SIG_MUST_NOT_CONTAIN_KEYWORDS
-from tally.util.util import split_and_strip, remove_keywords, is_alnum_underscore
+from tally.util.util import split_and_strip, remove_keywords, is_alnum_underscore, rsplit_by_first_non_alnum_underscore
 
 def get_func_name_from_sig(func_sig):
     parse_res = parse_func_sig(func_sig)
@@ -69,13 +69,18 @@ def gen_func_sig_args_str(arg_types, arg_names):
 
 
 def parse_func_sig(func_sig):
+
     func_sig = remove_keywords(func_sig, IGNORE_KEYWORDS)
     before_args, args = func_sig.split("(", 1)
-    if "=" in before_args:
+    if "=" in before_args or args.count(")") > 1:
         return None
 
     # Extract return type and function name
-    before_args_parts = split_and_strip(before_args, max_count=1, rsplit=True)
+    try:
+        before_args_parts = rsplit_by_first_non_alnum_underscore(before_args.strip())
+    except:
+        return None
+    
     if len(before_args_parts) == 2:
         ret_type, func_name = before_args_parts
     else:
@@ -97,6 +102,23 @@ def parse_func_sig(func_sig):
             arg_vals.append(arg_val)
     
     return ret_type, func_name, arg_types, arg_names, arg_vals
+
+
+def satisfy_must_contain(func_sig, must_contain_list):
+
+    for word in must_contain_list:
+        if isinstance(word, str):
+            if word not in func_sig:
+                return False
+        elif isinstance(word, tuple):
+            contains = False
+            for sub_word in word:
+                if sub_word in func_sig:
+                    contains = True
+            if not contains:
+                return False
+
+    return True
 
 
 def generate_func_sig_from_file(file):
@@ -139,7 +161,7 @@ def generate_func_sig_from_file(file):
                 else:
                     continue
             
-            if (all([word in func_sig for word in FUNC_SIG_MUST_CONTAIN]) and
+            if (satisfy_must_contain(func_sig, FUNC_SIG_MUST_CONTAIN) and
                     not any([word in func_sig for word in FUNC_SIG_MUST_NOT_CONTAIN]) and
                     not any([word in re.findall(r'\w+', func_sig) for word in FUNC_SIG_MUST_NOT_CONTAIN_KEYWORDS])):
 

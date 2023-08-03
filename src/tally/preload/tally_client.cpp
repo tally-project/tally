@@ -3134,4 +3134,136 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
 	return err;
 }
 
+CUresult cuModuleLoadData(CUmodule * module, const void * image)
+{
+	TALLY_LOG("cuModuleLoadData hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+    // For now, assume `image` is a fatbin file
+    // TODO: figure how to distinguish between different data format (e.g. fatbin, cubin)
+    auto fbh = (struct fatBinaryHeader *) image;
+    size_t cubin_size = fbh->headerSize + fbh->fatSize;
+    (void) cubin_size;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcuModuleLoadData(module, image);
+#else
+
+    CUresult err;
+
+#endif
+
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuModuleLoadData);
+	return err;
+}
+
+CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * name)
+{
+	TALLY_LOG("cuModuleGetFunction hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcuModuleGetFunction(hfunc, hmod, name);
+#else
+
+    CUresult err;
+
+#endif
+
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuModuleGetFunction);
+	return err;
+}
+
+CUresult cuFuncGetAttribute(int * pi, CUfunction_attribute  attrib, CUfunction  hfunc)
+{
+	TALLY_LOG("cuFuncGetAttribute hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcuFuncGetAttribute(pi, attrib, hfunc);
+#else
+
+    CUresult err;
+
+#endif
+
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuFuncGetAttribute);
+	return err;
+}
+
+CUresult cuPointerGetAttribute(void * data, CUpointer_attribute  attribute, CUdeviceptr  ptr)
+{
+	TALLY_LOG("cuPointerGetAttribute hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcuPointerGetAttribute(data, attribute, ptr);
+#else
+
+    CUresult err;
+
+#endif
+
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuPointerGetAttribute);
+	return err;
+}
+
+CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams, void ** extra)
+{
+	TALLY_LOG("cuLaunchKernel hooked");
+		TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcuLaunchKernel(f, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, sharedMemBytes, hStream, kernelParams, extra);
+#else
+
+    CUresult err;
+
+#endif
+
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuLaunchKernel);
+	return err;
+}
+
+cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCaptureStatus * captureStatus_out, unsigned long long * id_out, cudaGraph_t * graph_out, const cudaGraphNode_t ** dependencies_out, size_t * numDependencies_out)
+{
+	TALLY_LOG("cudaStreamGetCaptureInfo_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcudaStreamGetCaptureInfo_v2(stream, captureStatus_out, id_out, graph_out, dependencies_out, numDependencies_out);
+#else
+
+    CUresult err;
+
+#endif
+
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetCaptureInfo_v2);
+	return err;
+}
+
+cudaError_t cudaGraphGetNodes(cudaGraph_t  graph, cudaGraphNode_t * nodes, size_t * numNodes)
+{
+	TALLY_LOG("cudaGraphGetNodes hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcudaGraphGetNodes(graph, nodes, numNodes);
+#else
+
+    CUresult err;
+
+#endif
+
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaGraphGetNodes);
+	return err;
+}
+
 }

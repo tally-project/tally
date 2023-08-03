@@ -50576,6 +50576,321 @@ cudaError_t cudaProfilerStop()
 }
         
 
+const char * nvrtcGetErrorString(nvrtcResult  result)
+{
+	static const char * (*lnvrtcGetErrorString) (nvrtcResult );
+	if (!lnvrtcGetErrorString) {
+		lnvrtcGetErrorString = (const char * (*) (nvrtcResult )) dlsym(RTLD_NEXT, "nvrtcGetErrorString");
+		tracer._kernel_map[(void *) lnvrtcGetErrorString] = std::string("nvrtcGetErrorString");
+	}
+	assert(lnvrtcGetErrorString);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	const char * res = 
+		lnvrtcGetErrorString(result);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetErrorString);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcVersion(int * major, int * minor)
+{
+	static nvrtcResult (*lnvrtcVersion) (int *, int *);
+	if (!lnvrtcVersion) {
+		lnvrtcVersion = (nvrtcResult (*) (int *, int *)) dlsym(RTLD_NEXT, "nvrtcVersion");
+		tracer._kernel_map[(void *) lnvrtcVersion] = std::string("nvrtcVersion");
+	}
+	assert(lnvrtcVersion);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcVersion(major, minor);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcVersion);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetNumSupportedArchs(int*  numArchs)
+{
+	static nvrtcResult (*lnvrtcGetNumSupportedArchs) (int* );
+	if (!lnvrtcGetNumSupportedArchs) {
+		lnvrtcGetNumSupportedArchs = (nvrtcResult (*) (int* )) dlsym(RTLD_NEXT, "nvrtcGetNumSupportedArchs");
+		tracer._kernel_map[(void *) lnvrtcGetNumSupportedArchs] = std::string("nvrtcGetNumSupportedArchs");
+	}
+	assert(lnvrtcGetNumSupportedArchs);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetNumSupportedArchs(numArchs);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetNumSupportedArchs);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetSupportedArchs(int*  supportedArchs)
+{
+	static nvrtcResult (*lnvrtcGetSupportedArchs) (int* );
+	if (!lnvrtcGetSupportedArchs) {
+		lnvrtcGetSupportedArchs = (nvrtcResult (*) (int* )) dlsym(RTLD_NEXT, "nvrtcGetSupportedArchs");
+		tracer._kernel_map[(void *) lnvrtcGetSupportedArchs] = std::string("nvrtcGetSupportedArchs");
+	}
+	assert(lnvrtcGetSupportedArchs);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetSupportedArchs(supportedArchs);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetSupportedArchs);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcCreateProgram(nvrtcProgram * prog, const char * src, const char * name, int  numHeaders, const char * const * headers, const char * const * includeNames)
+{
+	static nvrtcResult (*lnvrtcCreateProgram) (nvrtcProgram *, const char *, const char *, int , const char * const *, const char * const *);
+	if (!lnvrtcCreateProgram) {
+		lnvrtcCreateProgram = (nvrtcResult (*) (nvrtcProgram *, const char *, const char *, int , const char * const *, const char * const *)) dlsym(RTLD_NEXT, "nvrtcCreateProgram");
+		tracer._kernel_map[(void *) lnvrtcCreateProgram] = std::string("nvrtcCreateProgram");
+	}
+	assert(lnvrtcCreateProgram);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcCreateProgram(prog, src, name, numHeaders, headers, includeNames);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcCreateProgram);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcDestroyProgram(nvrtcProgram * prog)
+{
+	static nvrtcResult (*lnvrtcDestroyProgram) (nvrtcProgram *);
+	if (!lnvrtcDestroyProgram) {
+		lnvrtcDestroyProgram = (nvrtcResult (*) (nvrtcProgram *)) dlsym(RTLD_NEXT, "nvrtcDestroyProgram");
+		tracer._kernel_map[(void *) lnvrtcDestroyProgram] = std::string("nvrtcDestroyProgram");
+	}
+	assert(lnvrtcDestroyProgram);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcDestroyProgram(prog);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcDestroyProgram);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcCompileProgram(nvrtcProgram  prog, int  numOptions, const char * const * options)
+{
+	static nvrtcResult (*lnvrtcCompileProgram) (nvrtcProgram , int , const char * const *);
+	if (!lnvrtcCompileProgram) {
+		lnvrtcCompileProgram = (nvrtcResult (*) (nvrtcProgram , int , const char * const *)) dlsym(RTLD_NEXT, "nvrtcCompileProgram");
+		tracer._kernel_map[(void *) lnvrtcCompileProgram] = std::string("nvrtcCompileProgram");
+	}
+	assert(lnvrtcCompileProgram);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcCompileProgram(prog, numOptions, options);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcCompileProgram);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetPTXSize(nvrtcProgram  prog, size_t * ptxSizeRet)
+{
+	static nvrtcResult (*lnvrtcGetPTXSize) (nvrtcProgram , size_t *);
+	if (!lnvrtcGetPTXSize) {
+		lnvrtcGetPTXSize = (nvrtcResult (*) (nvrtcProgram , size_t *)) dlsym(RTLD_NEXT, "nvrtcGetPTXSize");
+		tracer._kernel_map[(void *) lnvrtcGetPTXSize] = std::string("nvrtcGetPTXSize");
+	}
+	assert(lnvrtcGetPTXSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetPTXSize(prog, ptxSizeRet);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetPTXSize);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetPTX(nvrtcProgram  prog, char * ptx)
+{
+	static nvrtcResult (*lnvrtcGetPTX) (nvrtcProgram , char *);
+	if (!lnvrtcGetPTX) {
+		lnvrtcGetPTX = (nvrtcResult (*) (nvrtcProgram , char *)) dlsym(RTLD_NEXT, "nvrtcGetPTX");
+		tracer._kernel_map[(void *) lnvrtcGetPTX] = std::string("nvrtcGetPTX");
+	}
+	assert(lnvrtcGetPTX);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetPTX(prog, ptx);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetPTX);
+	}
+	return res;
+}
+
 nvrtcResult nvrtcGetCUBINSize(nvrtcProgram  prog, size_t * cubinSizeRet)
 {
 	static nvrtcResult (*lnvrtcGetCUBINSize) (nvrtcProgram , size_t *);
@@ -50642,6 +50957,286 @@ nvrtcResult nvrtcGetCUBIN(nvrtcProgram  prog, char * cubin)
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lnvrtcGetCUBIN);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetLTOIRSize(nvrtcProgram  prog, size_t * LTOIRSizeRet)
+{
+	static nvrtcResult (*lnvrtcGetLTOIRSize) (nvrtcProgram , size_t *);
+	if (!lnvrtcGetLTOIRSize) {
+		lnvrtcGetLTOIRSize = (nvrtcResult (*) (nvrtcProgram , size_t *)) dlsym(RTLD_NEXT, "nvrtcGetLTOIRSize");
+		tracer._kernel_map[(void *) lnvrtcGetLTOIRSize] = std::string("nvrtcGetLTOIRSize");
+	}
+	assert(lnvrtcGetLTOIRSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetLTOIRSize(prog, LTOIRSizeRet);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetLTOIRSize);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetLTOIR(nvrtcProgram  prog, char * LTOIR)
+{
+	static nvrtcResult (*lnvrtcGetLTOIR) (nvrtcProgram , char *);
+	if (!lnvrtcGetLTOIR) {
+		lnvrtcGetLTOIR = (nvrtcResult (*) (nvrtcProgram , char *)) dlsym(RTLD_NEXT, "nvrtcGetLTOIR");
+		tracer._kernel_map[(void *) lnvrtcGetLTOIR] = std::string("nvrtcGetLTOIR");
+	}
+	assert(lnvrtcGetLTOIR);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetLTOIR(prog, LTOIR);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetLTOIR);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetOptiXIRSize(nvrtcProgram  prog, size_t * optixirSizeRet)
+{
+	static nvrtcResult (*lnvrtcGetOptiXIRSize) (nvrtcProgram , size_t *);
+	if (!lnvrtcGetOptiXIRSize) {
+		lnvrtcGetOptiXIRSize = (nvrtcResult (*) (nvrtcProgram , size_t *)) dlsym(RTLD_NEXT, "nvrtcGetOptiXIRSize");
+		tracer._kernel_map[(void *) lnvrtcGetOptiXIRSize] = std::string("nvrtcGetOptiXIRSize");
+	}
+	assert(lnvrtcGetOptiXIRSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetOptiXIRSize(prog, optixirSizeRet);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetOptiXIRSize);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetOptiXIR(nvrtcProgram  prog, char * optixir)
+{
+	static nvrtcResult (*lnvrtcGetOptiXIR) (nvrtcProgram , char *);
+	if (!lnvrtcGetOptiXIR) {
+		lnvrtcGetOptiXIR = (nvrtcResult (*) (nvrtcProgram , char *)) dlsym(RTLD_NEXT, "nvrtcGetOptiXIR");
+		tracer._kernel_map[(void *) lnvrtcGetOptiXIR] = std::string("nvrtcGetOptiXIR");
+	}
+	assert(lnvrtcGetOptiXIR);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetOptiXIR(prog, optixir);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetOptiXIR);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetProgramLogSize(nvrtcProgram  prog, size_t * logSizeRet)
+{
+	static nvrtcResult (*lnvrtcGetProgramLogSize) (nvrtcProgram , size_t *);
+	if (!lnvrtcGetProgramLogSize) {
+		lnvrtcGetProgramLogSize = (nvrtcResult (*) (nvrtcProgram , size_t *)) dlsym(RTLD_NEXT, "nvrtcGetProgramLogSize");
+		tracer._kernel_map[(void *) lnvrtcGetProgramLogSize] = std::string("nvrtcGetProgramLogSize");
+	}
+	assert(lnvrtcGetProgramLogSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetProgramLogSize(prog, logSizeRet);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetProgramLogSize);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetProgramLog(nvrtcProgram  prog, char * log)
+{
+	static nvrtcResult (*lnvrtcGetProgramLog) (nvrtcProgram , char *);
+	if (!lnvrtcGetProgramLog) {
+		lnvrtcGetProgramLog = (nvrtcResult (*) (nvrtcProgram , char *)) dlsym(RTLD_NEXT, "nvrtcGetProgramLog");
+		tracer._kernel_map[(void *) lnvrtcGetProgramLog] = std::string("nvrtcGetProgramLog");
+	}
+	assert(lnvrtcGetProgramLog);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetProgramLog(prog, log);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetProgramLog);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcAddNameExpression(nvrtcProgram  prog, const char * const  name_expression)
+{
+	static nvrtcResult (*lnvrtcAddNameExpression) (nvrtcProgram , const char * const );
+	if (!lnvrtcAddNameExpression) {
+		lnvrtcAddNameExpression = (nvrtcResult (*) (nvrtcProgram , const char * const )) dlsym(RTLD_NEXT, "nvrtcAddNameExpression");
+		tracer._kernel_map[(void *) lnvrtcAddNameExpression] = std::string("nvrtcAddNameExpression");
+	}
+	assert(lnvrtcAddNameExpression);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcAddNameExpression(prog, name_expression);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcAddNameExpression);
+	}
+	return res;
+}
+
+nvrtcResult nvrtcGetLoweredName(nvrtcProgram  prog, const char *const  name_expression, const char**  lowered_name)
+{
+	static nvrtcResult (*lnvrtcGetLoweredName) (nvrtcProgram , const char *const , const char** );
+	if (!lnvrtcGetLoweredName) {
+		lnvrtcGetLoweredName = (nvrtcResult (*) (nvrtcProgram , const char *const , const char** )) dlsym(RTLD_NEXT, "nvrtcGetLoweredName");
+		tracer._kernel_map[(void *) lnvrtcGetLoweredName] = std::string("nvrtcGetLoweredName");
+	}
+	assert(lnvrtcGetLoweredName);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	nvrtcResult res = 
+		lnvrtcGetLoweredName(prog, name_expression, lowered_name);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lnvrtcGetLoweredName);
 	}
 	return res;
 }

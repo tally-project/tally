@@ -777,6 +777,35 @@ struct cudaGraphCreateResponse {
 	cudaError_t err;
 };
 
+struct cudaGraphInstantiateWithFlagsArg {
+	cudaGraphExec_t * pGraphExec;
+	cudaGraph_t  graph;
+	unsigned long long  flags;
+};
+
+struct cudaGraphInstantiateWithFlagsResponse {
+	cudaGraphExec_t  pGraphExec;
+	cudaError_t err;
+};
+
+struct cudaGraphUploadArg {
+	cudaGraphExec_t  graphExec;
+	cudaStream_t  stream;
+};
+
+struct cudaGraphLaunchArg {
+	cudaGraphExec_t  graphExec;
+	cudaStream_t  stream;
+};
+
+struct cudaGraphExecDestroyArg {
+	cudaGraphExec_t  graphExec;
+};
+
+struct cudaGraphDestroyArg {
+	cudaGraph_t  graph;
+};
+
 struct cudnnGetVersionArg {
 };
 

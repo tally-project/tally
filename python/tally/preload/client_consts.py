@@ -304,11 +304,20 @@ DIRECT_CALLS = [
     "cudaMallocHost",
     "cudaFreeHost",
     "cudaGetDevice",
-    "cudaGetDeviceCount"
+    "cudaGetDeviceCount",
+    "cudaDriverGetVersion",
+    "cudaRuntimeGetVersion"
 ]
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaGraphGetNodes",
+    "cudaStreamGetCaptureInfo_v2",
+    "cuLaunchKernel",
+    "cuPointerGetAttribute",
+    "cuFuncGetAttribute",
+    "cuModuleGetFunction",
+    "cuModuleLoadData",
     "cublasCreate_v2",
     "cudnnCreate",
     "cudaStreamSynchronize",
@@ -379,6 +388,10 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cudaGraphUpload",
+    "cudaGraphLaunch",
+    "cudaGraphExecDestroy",
+    "cudaGraphDestroy",
     "cudnnRestoreDropoutDescriptor",
     "cudnnRNNSetClip",
     "cudnnRNNSetClip_v8",
@@ -494,6 +507,7 @@ FORWARD_API_CALLS = [
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cudaGraphInstantiateWithFlags",
     "cublasGetLoggerCallback",
     "cudnnCreateOpTensorDescriptor",
     "cudaIpcGetMemHandle",

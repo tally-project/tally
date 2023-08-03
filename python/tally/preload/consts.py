@@ -9,7 +9,7 @@ CUDA_API_HEADER_FILES = [
     "/usr/local/cuda/include/cublasLt.h"
 ]
 
-FUNC_SIG_MUST_CONTAIN = ["cu", "(", ")"]
+FUNC_SIG_MUST_CONTAIN = [("cu", "nvrtc"), "(", ")"]
 FUNC_SIG_MUST_NOT_CONTAIN = ["{", "}",]
 FUNC_SIG_MUST_NOT_CONTAIN_KEYWORDS = ["noexcept", "return", "for", "throw", "sizeof"]
 

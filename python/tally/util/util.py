@@ -14,6 +14,17 @@ def split_and_strip(_str, splitter=" ", max_count=-1, rsplit=False):
     return new_parts
 
 
+def rsplit_by_first_non_alnum_underscore(_str):
+
+    str_len = len(_str)
+
+    for i in range(str_len - 1, -1, -1):
+        if not (_str[i].isalnum() or _str[i] == "_"):
+            return _str[:i+1].strip(), _str[i+1:].strip()
+
+    raise Exception("unexpected.")
+
+
 def remove_keywords(_str, ignore_keywords):
 
     for keyword in ignore_keywords:
