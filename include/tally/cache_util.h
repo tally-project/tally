@@ -12,7 +12,7 @@
 #include <tally/cuda_util.h>
 #include <tally/cache.h>
 
-static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int magic, int version)
+static void cache_cubin_data(const char* cubin_data, size_t cubin_size)
 {
     // Not exist in cache
     if (TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size)) {
@@ -65,7 +65,7 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int magi
         std::remove(ptx_file_name.c_str());
     }
 
-    TallyCache::cache->cubin_cache.add_data(cubin_size, magic, version, cubin_str, kernel_args, original_data, sliced_data, ptb_data);
+    TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args, original_data, sliced_data, ptb_data);
     TallyCache::cache->save_transform_cache();
 }
 

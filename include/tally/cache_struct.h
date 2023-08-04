@@ -156,12 +156,6 @@ static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPairR
 class CubinData
 {
 public:
-    // magic
-    int magic;
-
-    // version
-    int version;
-
     // a cubin file
     std::string cubin_data;
 
@@ -234,10 +228,15 @@ public:
         return transform_data->kernel_args;
     }
 
+    const char *get_cubin_data_ptr(const char* cubin_data, size_t cubin_size)
+    {
+        auto transform_data = find_transform_data(cubin_data, cubin_size);
+        assert(transform_data);
+        return transform_data->cubin_data.c_str();
+    }
+
     void add_data(
         size_t cubin_size,
-        int magic,
-        int version,
         std::string &cubin_str,
         std::map<std::string, std::vector<uint32_t>> &kernel_args,
         std::vector<std::pair<std::string, std::string>> &original_data,
@@ -245,7 +244,7 @@ public:
         std::vector<std::pair<std::string, std::string>> &ptb_data
     )
     {
-        cubin_map[cubin_size].push_back( CubinData { magic, version, cubin_str, kernel_args, original_data, sliced_data, ptb_data } );
+        cubin_map[cubin_size].push_back( CubinData { cubin_str, kernel_args, original_data, sliced_data, ptb_data } );
     }
 };
 

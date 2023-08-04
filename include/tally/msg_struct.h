@@ -20,24 +20,14 @@ struct __align__(8) fatBinaryHeader
 
 struct __cudaRegisterFatBinaryArg {
     bool cached;
-    int magic;
-    int version;
     char data[];
 };
 
-struct registerKernelArg {
+struct __cudaRegisterFunctionArg {
     void *host_func;
     uint32_t kernel_func_len; 
     char data[]; // kernel_func_name
 };
-
-typedef struct {
-    int magic;
-    int version;
-    const unsigned long long* data;
-    void *filename_or_fatbins;  /* version 1: offline filename,
-                                * version 2: array of prelinked fatbins */
-} my__fatBinC_Wrapper_t;
 
 struct HandshakeMessgae {
     int32_t client_id;
@@ -893,5 +883,80 @@ struct cudnnCreateResponse {
 	cudnnHandle_t  handle;
 	cudnnStatus_t err;
 };
+
+struct cuModuleLoadDataArg {
+    bool cached;
+    char image[];
+};
+
+struct cuModuleLoadDataResponse {
+    CUresult err;
+    CUmodule module;
+    char tmp_elf_file[];
+};
+
+struct cuModuleGetFunctionArg {
+    CUmodule  hmod;
+    char name[];
+};
+
+struct cuModuleGetFunctionResponse {
+    CUresult err;
+    CUfunction hfunc;
+};
+
+struct cuPointerGetAttributeArg {
+    CUpointer_attribute  attribute;
+    CUdeviceptr  ptr;
+};
+
+struct cuPointerGetAttributeResponse {
+    CUresult err;
+    char data[];
+};
+
+struct cudaStreamGetCaptureInfo_v2Arg {
+	cudaStream_t  stream;
+	enum cudaStreamCaptureStatus * captureStatus_out;
+	unsigned long long * id_out;
+	cudaGraph_t * graph_out;
+	cudaGraphNode_t ** dependencies_out;
+	size_t * numDependencies_out;
+};
+
+struct cudaStreamGetCaptureInfo_v2Response {
+	enum cudaStreamCaptureStatus  captureStatus_out;
+	unsigned long long  id_out;
+	cudaGraph_t  graph_out;
+	cudaGraphNode_t * dependencies_out;
+	size_t  numDependencies_out;
+	cudaError_t err;
+};
+
+struct cudaGraphGetNodesArg {
+    cudaGraph_t  graph;
+    cudaGraphNode_t *nodes;
+    size_t numNodes;
+};
+
+struct cudaGraphGetNodesResponse {
+    cudaError_t err;
+    size_t numNodes;
+    cudaGraphNode_t nodes[];
+};
+
+struct cuLaunchKernelArg {
+    CUfunction  f;
+    unsigned int  gridDimX;
+    unsigned int  gridDimY;
+    unsigned int  gridDimZ;
+    unsigned int  blockDimX;
+    unsigned int  blockDimY;
+    unsigned int  blockDimZ;
+    unsigned int  sharedMemBytes;
+    CUstream  hStream;
+    char kernelParams[];
+};
+
 
 #endif // TALLY_DEF_H

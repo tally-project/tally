@@ -80,14 +80,12 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 void** __cudaRegisterFatBinary( void *fatCubin ) {
     
     auto wp = (__fatBinC_Wrapper_t *) fatCubin;
-    int magic = wp->magic;
-    int version = wp->version;
     const char *cubin_data = (const char *) wp->data;
     auto header = (struct fatBinaryHeader *) wp->data;
     size_t cubin_size = header->headerSize + header->fatSize;
 
     // Load necessary data into cache if not exists
-    cache_cubin_data(cubin_data, cubin_size, magic, version);
+    cache_cubin_data(cubin_data, cubin_size);
 
     // register using cache
     TallyDaemon::daemon->register_fat_binary(cubin_data, cubin_size);

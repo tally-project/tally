@@ -388,6 +388,17 @@ struct cuDestroyExternalMemoryArg {
 	CUexternalMemory  extMem;
 };
 
+struct cuFuncGetAttributeArg {
+	int * pi;
+	CUfunction_attribute  attrib;
+	CUfunction  hfunc;
+};
+
+struct cuFuncGetAttributeResponse {
+	int  pi;
+	CUresult err;
+};
+
 struct cudaDeviceResetArg {
 };
 
@@ -683,6 +694,11 @@ struct cudaStreamBeginCaptureArg {
 struct cudaStreamEndCaptureArg {
 	cudaStream_t  stream;
 	cudaGraph_t * pGraph;
+};
+
+struct cudaStreamEndCaptureResponse {
+	cudaGraph_t  pGraph;
+	cudaError_t err;
 };
 
 struct cudaStreamIsCapturingArg {

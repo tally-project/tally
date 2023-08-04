@@ -72,8 +72,6 @@ void serialize(Archive & ar, CudaLaunchKeyConfigPairResult & g, const unsigned i
 template<class Archive>
 void serialize(Archive & ar, CubinData & g, const unsigned int version)
 {
-    ar & g.magic;
-    ar & g.version;
     ar & g.cubin_data;
     ar & g.kernel_args;
     ar & g.sliced_data;

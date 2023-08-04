@@ -65,6 +65,7 @@ public:
     std::map<std::string, std::vector<uint32_t>> _kernel_name_to_args;
 
     std::unordered_map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
+    std::unordered_map<CUfunction, std::vector<uint32_t>> _jit_kernel_addr_to_args;
 
 #ifndef RUN_LOCALLY
     iox::popo::UntypedClient *iox_client;

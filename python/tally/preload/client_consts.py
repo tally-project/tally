@@ -154,8 +154,6 @@ class ClientData {
 public:
 
 	// For registering kernels at the start:
-	int magic;
-    int version;
     unsigned long long* fatbin_data = nullptr;
     uint32_t fatBinSize;
     bool cubin_registered = false;
@@ -189,6 +187,8 @@ public:
 	std::map<int32_t, std::thread> worker_threads;
     
 	// ==================== Global state =====================
+	std::map<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
+	std::unordered_map<CUfunction, std::vector<uint32_t>> _jit_kernel_addr_to_args;
 	std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, iox::popo::UntypedServer *, const void* const)>> cuda_api_handler_map;
 	std::map<const void *, std::string> host_func_to_demangled_kernel_name_map;
@@ -204,6 +204,9 @@ public:
 	std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> original_kernel_map;
     std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> sliced_kernel_map;
     std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> ptb_kernel_map;
+
+	std::unordered_map<CUfunction, CUfunction> jit_sliced_kernel_map;
+    std::unordered_map<CUfunction, CUfunction> jit_ptb_kernel_map;
 
 	// Performance cache to use at runtime
     std::unordered_map<CudaLaunchCallPair, std::unordered_map<CudaLaunchCallConfigPair, CudaLaunchCallConfigPairResult>> kernel_pair_perf_map;
@@ -311,11 +314,10 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
-    "cudaGraphGetNodes",
     "cudaStreamGetCaptureInfo_v2",
+    "cudaGraphGetNodes",
     "cuLaunchKernel",
     "cuPointerGetAttribute",
-    "cuFuncGetAttribute",
     "cuModuleGetFunction",
     "cuModuleLoadData",
     "cublasCreate_v2",
@@ -446,7 +448,6 @@ FORWARD_API_CALLS = [
     "cudaStreamWaitEvent",
     "cudaStreamQuery",
     "cudaStreamBeginCapture",
-    "cudaStreamEndCapture",
     "cublasDestroy_v2",
     "cublasGetCudartVersion",
     "cuDeviceSetMemPool",
@@ -507,6 +508,7 @@ FORWARD_API_CALLS = [
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cuFuncGetAttribute",
     "cudaGraphInstantiateWithFlags",
     "cublasGetLoggerCallback",
     "cudnnCreateOpTensorDescriptor",
@@ -583,6 +585,7 @@ UNSUPPORTED_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
+    "cudaStreamEndCapture",
     "cudnnGetRNNBiasMode",
     "cudnnGetRNNMatrixMathType",
     "cublasGetSmCountTarget",
@@ -666,6 +669,10 @@ CUDA_GET_11_PARAM_FUNCS = [
     "cudnnGetBatchNormalizationBackwardExWorkspaceSize"
 ]
 
+CUDA_GET_2_3_4_5_6_PARAM_FUNCS = [
+
+]
+
 CUDA_GET_1_PARAM_FUNC_KEY = 1
 CUDA_GET_2_3_PARAM_FUNC_KEY = 2
 CUDA_GET_1_2_PARAM_FUNC_KEY = 3
@@ -681,6 +688,7 @@ CUDA_GET_5_6_PARAM_FUNC_KEY = 12
 CUDA_GET_8_10_PARAM_FUNC_KEY = 13
 CUDA_GET_6_PARAM_FUNC_KEY = 14
 CUDA_GET_11_PARAM_FUNC_KEY = 15
+CUDA_GET_2_3_4_5_6_PARAM_FUNC_KEY = 16
 
 PARAM_INDICES = {
     CUDA_GET_1_PARAM_FUNC_KEY: [0],
@@ -697,7 +705,8 @@ PARAM_INDICES = {
     CUDA_GET_5_6_PARAM_FUNC_KEY: [4, 5],
     CUDA_GET_8_10_PARAM_FUNC_KEY: [7, 9],
     CUDA_GET_6_PARAM_FUNC_KEY: [5],
-    CUDA_GET_11_PARAM_FUNC_KEY: [10]
+    CUDA_GET_11_PARAM_FUNC_KEY: [10],
+    CUDA_GET_2_3_4_5_6_PARAM_FUNC_KEY: [1, 2, 3, 4, 5]
 }
 
 def is_get_param_func(func_name):
@@ -719,7 +728,8 @@ def is_get_param_func(func_name):
         CUDA_GET_5_6_PARAM_FUNCS,
         CUDA_GET_8_10_PARAM_FUNCS,
         CUDA_GET_6_PARAM_FUNCS,
-        CUDA_GET_11_PARAM_FUNCS
+        CUDA_GET_11_PARAM_FUNCS,
+        CUDA_GET_2_3_4_5_6_PARAM_FUNCS
     ]:
         if func_name in funcs:
             return True
@@ -756,6 +766,8 @@ def get_param_group(func_name):
         return CUDA_GET_6_PARAM_FUNC_KEY
     elif func_name in CUDA_GET_11_PARAM_FUNCS:
         return CUDA_GET_11_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_2_3_4_5_6_PARAM_FUNCS:
+        return CUDA_GET_2_3_4_5_6_PARAM_FUNC_KEY
     else:
         assert(False)
 

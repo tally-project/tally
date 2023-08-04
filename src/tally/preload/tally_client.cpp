@@ -63,9 +63,6 @@ void *dlopen(const char *filename, int flag)
 void** __cudaRegisterFatBinary( void *fatCubin ) {
 
     auto wp = (__fatBinC_Wrapper_t *) fatCubin;
-    int magic = wp->magic;
-    int version = wp->version;
-
     auto fbh = (struct fatBinaryHeader *) wp->data;
     const char *cubin_data = (const char *) wp->data;
     size_t cubin_size = fbh->headerSize + fbh->fatSize;
@@ -93,8 +90,6 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
 
             auto request = (__cudaRegisterFatBinaryArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
             request->cached = cached;
-            request->magic = magic;
-            request->version = version;
             if (!cached) {
                 memcpy(request->data, wp->data, cubin_size);
             }
@@ -139,7 +134,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
     std::string deviceFunName (deviceFun);
     TallyClient::client->host_func_to_demangled_kernel_name_map[hostFun] = demangleFunc(deviceFunName);
     uint32_t kernel_func_len = deviceFunName.size();
-    uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct registerKernelArg) + kernel_func_len * sizeof(char);
+    uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct __cudaRegisterFunctionArg) + kernel_func_len * sizeof(char);
 
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
@@ -152,7 +147,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
             header->api_id = CUDA_API_ENUM::__CUDAREGISTERFUNCTION;
             header->client_id = TallyClient::client->client_id;
             
-            auto request = (registerKernelArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+            auto request = (__cudaRegisterFunctionArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
             request->host_func = (void*) hostFun;
             request->kernel_func_len = kernel_func_len;
             memcpy(request->data, deviceFun, kernel_func_len * sizeof(char));
@@ -457,6 +452,63 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     TALLY_CLIENT_TRACE_KERNEL_CALL(func);
 
     return err;
+}
+
+CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams, void ** extra)
+{
+	TALLY_LOG("cuLaunchKernel hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcuLaunchKernel(f, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, sharedMemBytes, hStream, kernelParams, extra);
+#else
+    assert(TallyClient::client->_jit_kernel_addr_to_args.find(f) != TallyClient::client->_jit_kernel_addr_to_args.end());
+    assert(extra == NULL);
+    if (extra != NULL) {
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": extra is not yet supported for cuLaunchKernel.");
+    }
+
+    auto &params_info = TallyClient::client->_jit_kernel_addr_to_args[f];
+    uint32_t params_size =  std::accumulate(params_info.begin(), params_info.end(), 0);
+    uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct cuLaunchKernelArg) + params_size;
+    
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CULAUNCHKERNEL;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuLaunchKernelArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+            request->f = f;
+            request->gridDimX = gridDimX;
+            request->gridDimY = gridDimY;
+            request->gridDimZ = gridDimZ;
+            request->blockDimX = blockDimX;
+            request->blockDimY = blockDimY;
+            request->blockDimZ = blockDimZ;
+            request->sharedMemBytes = sharedMemBytes;
+            request->hStream = hStream;
+            
+            size_t offset = 0;
+            for (size_t i = 0; i < params_info.size(); i++) {
+                memcpy(request->kernelParams + offset, kernelParams[i], params_info[i]);
+                offset += params_info[i];
+            }
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(CUresult);
+
+#endif
+
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuLaunchKernel);
+	return err;
 }
 
 cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
@@ -3104,7 +3156,7 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateArg), alignof(cudnnCreateArg))
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -3139,17 +3191,68 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
 	TALLY_LOG("cuModuleLoadData hooked");
 	TALLY_CLIENT_PROFILE_START;
 
-    // For now, assume `image` is a fatbin file
-    // TODO: figure how to distinguish between different data format (e.g. fatbin, cubin)
-    auto fbh = (struct fatBinaryHeader *) image;
-    size_t cubin_size = fbh->headerSize + fbh->fatSize;
-    (void) cubin_size;
-
 #if defined(RUN_LOCALLY)
 	auto err = lcuModuleLoadData(module, image);
 #else
 
     CUresult err;
+
+    // For now, assume `image` is a fatbin file
+    // TODO: figure how to distinguish between different data format (e.g. fatbin, cubin)
+    auto fbh = (struct fatBinaryHeader *) image;
+    const char *cubin_data = (const char *) image;
+    size_t cubin_size = fbh->headerSize + fbh->fatSize;
+
+    bool cached = TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size);
+
+    size_t msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleLoadDataArg) + cubin_size;
+
+    TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMODULELOADDATA;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuModuleLoadDataArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			
+            request->cached = cached;
+            memcpy(request->image, image, msg_len);
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    std::map<std::string, std::vector<uint32_t>> kernel_args;
+    std::string tmp_elf_file;
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuModuleLoadDataResponse*>(responsePayload);
+			
+            *module = response->module;
+
+            if (!cached) {
+                tmp_elf_file = std::string(response->tmp_elf_file);
+            }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    if (cached) {
+        kernel_args = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
+    } else {
+        kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
+    }
+
+    for (auto &pair : kernel_args) {
+        auto &kernel_name = pair.first;
+        auto &param_sizes = pair.second;
+        TallyClient::client->_kernel_name_to_args[kernel_name] = param_sizes;
+    }
 
 #endif
 
@@ -3169,6 +3272,39 @@ CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * na
 
     CUresult err;
 
+    std::string kernel_name(name);
+    size_t kernel_name_size = kernel_name.size() + 1;
+    size_t msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleGetFunctionArg) + kernel_name_size * sizeof(char);
+
+    TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMODULEGETFUNCTION;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuModuleGetFunctionArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hmod = hmod;
+            memcpy(request->name, name, kernel_name_size);
+            request->name[kernel_name_size] = '\0';
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuModuleGetFunctionResponse*>(responsePayload);
+			*hfunc = response->hfunc;
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    TallyClient::client->_jit_kernel_addr_to_args[*hfunc] = TallyClient::client->_kernel_name_to_args[kernel_name];
+
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
@@ -3176,21 +3312,52 @@ CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * na
 	return err;
 }
 
-CUresult cuFuncGetAttribute(int * pi, CUfunction_attribute  attrib, CUfunction  hfunc)
+cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCaptureStatus * captureStatus_out, unsigned long long * id_out, cudaGraph_t * graph_out, const cudaGraphNode_t ** dependencies_out, size_t * numDependencies_out)
 {
-	TALLY_LOG("cuFuncGetAttribute hooked");
+	TALLY_LOG("cudaStreamGetCaptureInfo_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
-
 #if defined(RUN_LOCALLY)
-	auto err = lcuFuncGetAttribute(pi, attrib, hfunc);
+	auto err = lcudaStreamGetCaptureInfo_v2(stream, captureStatus_out, id_out, graph_out, dependencies_out, numDependencies_out);
 #else
 
-    CUresult err;
+    cudaError_t err;
 
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamGetCaptureInfo_v2Arg), alignof(cudaStreamGetCaptureInfo_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDASTREAMGETCAPTUREINFO_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaStreamGetCaptureInfo_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->stream = stream;
+			request->captureStatus_out = captureStatus_out;
+			request->id_out = id_out;
+			request->graph_out = graph_out;
+			request->dependencies_out = (CUgraphNode_st***) dependencies_out;
+			request->numDependencies_out = numDependencies_out;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaStreamGetCaptureInfo_v2Response*>(responsePayload);
+			if (captureStatus_out) { *captureStatus_out = response->captureStatus_out; }
+			if (id_out) { *id_out = response->id_out; }
+			if (graph_out) { *graph_out = response->graph_out; }
+			if (dependencies_out) { *dependencies_out = response->dependencies_out; }
+			if (numDependencies_out) { *numDependencies_out = response->numDependencies_out; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
-
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuFuncGetAttribute);
+	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetCaptureInfo_v2);
 	return err;
 }
 
@@ -3205,46 +3372,38 @@ CUresult cuPointerGetAttribute(void * data, CUpointer_attribute  attribute, CUde
 
     CUresult err;
 
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuPointerGetAttributeArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUPOINTERGETATTRIBUTE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuPointerGetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->attribute = attribute;
+            request->ptr = ptr;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuPointerGetAttributeResponse*>(responsePayload);
+			
+            size_t attribute_size = get_cupointer_attribute_size(attribute);
+            memcpy(data, response->data, attribute_size);
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuPointerGetAttribute);
-	return err;
-}
-
-CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams, void ** extra)
-{
-	TALLY_LOG("cuLaunchKernel hooked");
-		TALLY_CLIENT_PROFILE_START;
-
-#if defined(RUN_LOCALLY)
-	auto err = lcuLaunchKernel(f, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, sharedMemBytes, hStream, kernelParams, extra);
-#else
-
-    CUresult err;
-
-#endif
-
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuLaunchKernel);
-	return err;
-}
-
-cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCaptureStatus * captureStatus_out, unsigned long long * id_out, cudaGraph_t * graph_out, const cudaGraphNode_t ** dependencies_out, size_t * numDependencies_out)
-{
-	TALLY_LOG("cudaStreamGetCaptureInfo_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
-
-#if defined(RUN_LOCALLY)
-	auto err = lcudaStreamGetCaptureInfo_v2(stream, captureStatus_out, id_out, graph_out, dependencies_out, numDependencies_out);
-#else
-
-    CUresult err;
-
-#endif
-
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetCaptureInfo_v2);
 	return err;
 }
 
@@ -3257,7 +3416,40 @@ cudaError_t cudaGraphGetNodes(cudaGraph_t  graph, cudaGraphNode_t * nodes, size_
 	auto err = lcudaGraphGetNodes(graph, nodes, numNodes);
 #else
 
-    CUresult err;
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphGetNodesArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAGRAPHGETNODES;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaGraphGetNodesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->graph = graph;
+            request->nodes = nodes;
+            request->numNodes = *numNodes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaGraphGetNodesResponse*>(responsePayload);
+			
+            *numNodes = response->numNodes;
+
+            if (nodes) {
+                memcpy(nodes, response->nodes, sizeof(cudaGraphNode_t) * (*numNodes));
+            }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
 
 #endif
 

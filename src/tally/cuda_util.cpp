@@ -78,6 +78,41 @@ void register_kernels_from_ptx_fatbin(
     }
 }
 
+void register_jit_kernel_from_ptx_fatbin(
+    std::vector<std::pair<std::string, std::string>> &ptx_fatbin_strs,
+    CUfunction orig_func,
+    std::string kernel_name,
+    std::unordered_map<CUfunction, CUfunction> &kernel_map
+)
+{
+    for (auto &ptx_fatbin_pair : ptx_fatbin_strs) {
+        
+        auto &ptx_str = ptx_fatbin_pair.first;
+        auto &fatbin_str = ptx_fatbin_pair.second;
+
+        auto kernel_names_and_nparams = get_kernel_names_and_nparams_from_ptx(ptx_str);
+        
+        for (auto &name_and_nparams : kernel_names_and_nparams) {
+
+            auto &curr_kernel_name = name_and_nparams.first;
+            
+            if (kernel_name != curr_kernel_name) {
+                continue;
+            }
+
+            CUmodule cudaModule;
+            lcuModuleLoadDataEx(&cudaModule, fatbin_str.c_str(), 0, 0, 0);
+
+            CUfunction function;
+            lcuModuleGetFunction(&function, cudaModule, kernel_name.c_str());
+
+            kernel_map[orig_func] = function;
+            
+            return;
+        }
+    }
+}
+
 std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str)
 {
     std::vector<std::pair<std::string, uint32_t>> kernel_names_and_nparams;

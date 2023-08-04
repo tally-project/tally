@@ -26,7 +26,7 @@ run_tally_test() {
     ./start_server.sh &
 
     echo wait for server to start ...
-    sleep 10
+    sleep 5
 
     # Launch client process
     echo $@
