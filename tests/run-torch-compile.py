@@ -11,22 +11,26 @@ import torch
 class MyModule(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.lin = torch.nn.Linear(100, 10)
 
     def forward(self, x):
-        return torch.nn.functional.relu(self.lin(x))
+        return x + 1
+
+_tensor = torch.randn(10, 100, device="cuda")
 
 mod = MyModule().cuda()
 opt_mod = torch.compile(mod, backend='inductor', mode="max-autotune")
-print(opt_mod(torch.randn(10, 100, device="cuda")))
+
+res = opt_mod(_tensor)
 
 torch.cuda.synchronize()
 
-b = torch.randn(10, 100, device="cuda")
+print(res)
 
-for i in range(10):
-    c = opt_mod(b)
+# b = torch.randn(10, 100, device="cuda")
 
-torch.cuda.synchronize()
+# for i in range(10):
+#     c = opt_mod(b)
 
-print(c)
+# torch.cuda.synchronize()
+
+# print(c)

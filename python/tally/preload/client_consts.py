@@ -165,10 +165,10 @@ public:
 	std::vector<DeviceMemoryKey> dev_addr_map;
 
 	std::unordered_map<const void *, const void *> _kernel_client_addr_mapping;
-	std::function<cudaError_t(CudaLaunchConfig, bool, float, float*, float*)> *kernel_to_dispatch = nullptr;
+	std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*)> *kernel_to_dispatch = nullptr;
 	std::atomic<bool> has_kernel = false;
 	CudaLaunchCall launch_call;
-	cudaError_t err;
+	CUresult err;
 
     cudaStream_t default_stream = nullptr;
 };
@@ -189,7 +189,7 @@ public:
 	// ==================== Global state =====================
 	std::map<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
 	std::unordered_map<CUfunction, std::vector<uint32_t>> _jit_kernel_addr_to_args;
-	std::unordered_map<void *, std::vector<uint32_t>> _kernel_addr_to_args;
+	std::unordered_map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, iox::popo::UntypedServer *, const void* const)>> cuda_api_handler_map;
 	std::map<const void *, std::string> host_func_to_demangled_kernel_name_map;
 	std::map<std::string, const void *> demangled_kernel_name_to_host_func_map;
@@ -238,7 +238,8 @@ public:
     void start_main_server();
     void start_worker_server(int32_t client_id);
 
-    std::function<cudaError_t(CudaLaunchConfig, bool, float, float*, float*)> cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
+	template<typename T>
+    std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*)> cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
 
 """
 
@@ -298,6 +299,7 @@ KERNEL_LAUNCH_CALLS = [
 
 # let the client call the APIs directly
 DIRECT_CALLS = [
+    "cuDeviceGetName",
     "cudaGetErrorString",
     "cuGetProcAddress",
     "cuGetProcAddress_v2",
@@ -309,11 +311,15 @@ DIRECT_CALLS = [
     "cudaGetDevice",
     "cudaGetDeviceCount",
     "cudaDriverGetVersion",
-    "cudaRuntimeGetVersion"
+    "cudaRuntimeGetVersion",
+    "cudaFuncGetAttributes",
+    "cudaFuncGetAttribute"
 ]
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaFuncSetAttribute",
+    "cuCtxCreate_v2",
     "cudaStreamGetCaptureInfo_v2",
     "cudaGraphGetNodes",
     "cuLaunchKernel",
@@ -332,7 +338,6 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "cudnnRNNBackwardWeights_v8",
     "cudaSetDevice",
     "cudaChooseDevice",
-    "cudaFuncGetAttributes",
     "cublasSgemmStridedBatched",
     "cudnnGetTensorNdDescriptor",
     "cudnnSetRNNDataDescriptor",
@@ -562,7 +567,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cublasLtCreate",
     "cuDeviceGetTexture1DLinearMaxWidth",
     "cuDeviceGetExecAffinitySupport",
-    "cuCtxCreate_v2",
     "cuCtxPopCurrent_v2",
     "cuCtxGetCurrent",
     "cuCtxGetDevice",

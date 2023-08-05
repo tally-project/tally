@@ -150,8 +150,12 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config);
-    cudaError_t launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, bool run_profile=false, float *elapsed_time_ms=nullptr);
-    cudaError_t repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, float *time_ms=nullptr, float *iters=nullptr, uint32_t max_count=-1);
+    
+    template <typename T>
+    CUresult launch(T, dim3, dim3, void **, size_t, cudaStream_t, bool run_profile=false, float *elapsed_time_ms=nullptr);
+    
+    template <typename T>
+    CUresult repeat_launch(T, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, float *time_ms=nullptr, float *iters=nullptr, uint32_t max_count=-1);
 };
 
 struct CudaLaunchCallConfig {

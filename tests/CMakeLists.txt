@@ -78,4 +78,48 @@ set_target_properties(test-sync PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
 )
 
-# add_subdirectory(cudnn-samples)
+add_executable(test-jit test-jit.cpp)
+
+target_link_libraries(test-jit
+    cuda
+    cudart
+)
+
+target_include_directories(test-jit
+    PUBLIC  /usr/local/cuda/include
+)
+
+add_executable(basic_gemm basic_gemm.cu)
+
+target_link_libraries(basic_gemm
+    cuda
+    cudart
+)
+
+set_target_properties(basic_gemm PROPERTIES
+    CUDA_ARCHITECTURES "86"
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_include_directories(basic_gemm
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
+    PUBLIC  ${PROJECT_SOURCE_DIR}/tests
+)
+
+add_executable(turing_tensorop_gemm turing_tensorop_gemm.cu)
+
+target_link_libraries(turing_tensorop_gemm
+    cuda
+    cudart
+)
+
+set_target_properties(turing_tensorop_gemm PROPERTIES
+    CUDA_ARCHITECTURES "86"
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_include_directories(turing_tensorop_gemm
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
+    PUBLIC  ${PROJECT_SOURCE_DIR}/tests
+)

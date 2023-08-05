@@ -206,17 +206,6 @@ struct cuDevicePrimaryCtxReset_v2Arg {
 	CUdevice  dev;
 };
 
-struct cuCtxCreate_v2Arg {
-	CUcontext * pctx;
-	unsigned int  flags;
-	CUdevice  dev;
-};
-
-struct cuCtxCreate_v2Response {
-	CUcontext  pctx;
-	CUresult err;
-};
-
 struct cuCtxDestroy_v2Arg {
 	CUcontext  ctx;
 };

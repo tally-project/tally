@@ -74,6 +74,8 @@ void register_kernels_from_ptx_fatbin(
             lcuModuleGetFunction(&function, cudaModule, kernel_name.c_str());
 
             kernel_map[host_func] = std::make_pair(function, num_params);
+
+            // std::cout << "registering kernel: " << kernel_name << std::endl;
         }
     }
 }

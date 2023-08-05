@@ -2607,50 +2607,6 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
     return err;
 }
 
-cudaError_t cudaFuncGetAttributes(struct cudaFuncAttributes * attr, const void * func)
-{
-	TALLY_LOG("cudaFuncGetAttributes hooked");
-    TALLY_CLIENT_PROFILE_START;
-
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudaFuncGetAttributesArg);
-
-#if defined(RUN_LOCALLY)
-	auto err = lcudaFuncGetAttributes(attr, func);
-
-#else
-    cudaError_t err;
-
-    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
-    .and_then([&](auto& requestPayload) {
-        auto header = static_cast<MessageHeader_t*>(requestPayload);
-        header->api_id = CUDA_API_ENUM::CUDAFUNCGETATTRIBUTES;
-        header->client_id = TallyClient::client->client_id;
-        
-        auto request = (cudaFuncGetAttributesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-        request->attr = attr;
-	    request->func = const_cast<void *>(func);
-
-        TallyClient::client->iox_client->send(header).or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-    })
-    .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cudaFuncGetAttributesResponse*>(responsePayload);
-            err = response->err;
-            if (attr) { *attr = response->attr; }
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {}
-#endif
-
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaFuncGetAttributes);
-	
-    return err;
-}
-
 cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBlocks, const void * func, int  blockSize, size_t  dynamicSMemSize, unsigned int  flags)
 {
 	TALLY_LOG("cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags hooked");
@@ -3217,7 +3173,7 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
             auto request = (cuModuleLoadDataArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
 			
             request->cached = cached;
-            memcpy(request->image, image, msg_len);
+            memcpy(request->image, image, cubin_size);
 
             TallyClient::client->iox_client->send(header).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
@@ -3456,6 +3412,57 @@ cudaError_t cudaGraphGetNodes(cudaGraph_t  graph, cudaGraphNode_t * nodes, size_
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGraphGetNodes);
 	return err;
+}
+
+CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
+{
+	TALLY_LOG("cuCtxCreate_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuCtxCreate_v2(pctx, flags, dev);
+#else
+    CUresult err = CUDA_SUCCESS;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuCtxCreate_v2);
+	return err;
+}
+
+cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr, int  value)
+{
+	TALLY_LOG("cudaFuncSetAttribute hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaFuncSetAttribute(func, attr, value);
+#else
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaFuncSetAttributeArg), alignof(cudaFuncSetAttributeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAFUNCSETATTRIBUTE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaFuncSetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->func = const_cast<void *>(func);
+			request->attr = attr;
+			request->value = value;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(cudaError_t);
+
+    err = lcudaFuncSetAttribute(func, attr, value);
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaFuncSetAttribute);
+	
+    return err;
 }
 
 }

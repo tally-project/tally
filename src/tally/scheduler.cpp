@@ -6,6 +6,10 @@
 
 void TallyServer::start_scheduler()
 {
+    // Implicitly initialize CUDA context
+    float *arr;
+    cudaMalloc(&arr, sizeof(float));
+    cudaFree(arr);
 
 #ifdef PROFILE_KERNEL_WISE
 
@@ -29,7 +33,7 @@ void TallyServer::start_scheduler()
         assert(kernel_count == 2);
 
         CudaLaunchCall launch_calls[2];
-        std::function<cudaError_t(CudaLaunchConfig, bool, float, float*, float*)> kernel_partials[2];
+        std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*)> kernel_partials[2];
         std::string kernel_names[2];
 
         int index = 0;
@@ -44,7 +48,7 @@ void TallyServer::start_scheduler()
 
         float iters[2];
         float time_elapsed[2];
-        cudaError_t errs[2];
+        CUresult errs[2];
 
         auto launch_kernel_func = [kernel_partials, &iters, &time_elapsed, &errs](int idx, CudaLaunchConfig config) {
             errs[idx] = (kernel_partials[idx])(config, true, 5, &(time_elapsed[idx]), &(iters[idx]));
@@ -137,8 +141,8 @@ void TallyServer::start_scheduler()
     }
 
 #else
-    // CudaLaunchConfig config = CudaLaunchConfig::default_config;
-    CudaLaunchConfig config(false, false, true, false, 0, 4);
+    CudaLaunchConfig config = CudaLaunchConfig::default_config;
+    // CudaLaunchConfig config(false, false, true, false, 0, 4);
 
     while (!iox::posix::hasTerminationRequested()) {
 
@@ -147,6 +151,7 @@ void TallyServer::start_scheduler()
             auto &info = pair.second;
 
             if (info.has_kernel) {
+
                 info.err = (*info.kernel_to_dispatch)(config, false, 0, nullptr, nullptr);
                 info.has_kernel = false;
             }

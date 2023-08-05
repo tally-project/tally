@@ -958,5 +958,10 @@ struct cuLaunchKernelArg {
     char kernelParams[];
 };
 
+struct cudaFuncSetAttributeArg {
+	void * func;
+	enum cudaFuncAttribute  attr;
+	int  value;
+};
 
 #endif // TALLY_DEF_H

@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iostream>
 #include <cassert>
+#include <type_traits>
 
 #include <cuda.h>
 
@@ -64,13 +65,22 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per
     return configs;
 }
 
+
+// Instantiate template
+template
+CUresult CudaLaunchConfig::repeat_launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, float, float *, float *, uint32_t);
+
+template
+CUresult CudaLaunchConfig::repeat_launch<CUfunction>(CUfunction, dim3, dim3, void **, size_t, cudaStream_t, float, float *, float *, uint32_t);
+
 // return (time, iterations)
-cudaError_t CudaLaunchConfig::repeat_launch(
-    const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
+template <typename T>
+CUresult CudaLaunchConfig::repeat_launch(
+    T func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
     float dur_seconds, float *time_ms, float *iters, uint32_t max_count)
 {
     float _time_ms;
-    cudaError_t err;
+    CUresult err;
 
     // get a rough estimate of the kernel duration
     err = launch(func, gridDim, blockDim, args, sharedMem, stream, true, &_time_ms);
@@ -185,8 +195,20 @@ CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  
     return best_config;
 }
 
-cudaError_t CudaLaunchConfig::launch(
-    const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
+// Instantiate template
+template
+CUresult CudaLaunchConfig::launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, bool, float *);
+
+template
+CUresult CudaLaunchConfig::launch<CUfunction>(CUfunction, dim3, dim3, void **, size_t, cudaStream_t, bool, float *);
+
+void checkCudaErrors(CUresult err) {
+  assert(err == CUDA_SUCCESS);
+}
+
+template <typename T>
+CUresult CudaLaunchConfig::launch(
+    T func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
     bool run_profile, float *elapsed_time_ms)
 {
     cudaEvent_t _start, _stop;
@@ -201,18 +223,32 @@ cudaError_t CudaLaunchConfig::launch(
             cudaEventRecord(_start);
         }
 
-        auto cu_func = TallyServer::server->original_kernel_map[func].first;
-        auto num_args = TallyServer::server->original_kernel_map[func].second;
-        
+        CUfunction cu_func;
+
+        if constexpr (std::is_same<T, const void *>::value) {
+            assert(TallyServer::server->original_kernel_map.find(func) != TallyServer::server->original_kernel_map.end());
+            cu_func = TallyServer::server->original_kernel_map[func].first;
+        } else if constexpr (std::is_same<T, CUfunction>::value) {
+            cu_func = func;
+            // std::cout << "cu_func: " << cu_func << std::endl;
+        } else {
+            throw std::runtime_error("Unsupported typename");
+        }
+
         assert(cu_func);
 
-        auto res = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
-                                blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
-
-        if (res != CUDA_SUCCESS) {
-            std::cerr << "Encountering res != CUDA_SUCCESS" << std::endl;
-            return cudaErrorInvalidValue;
+        size_t num_args;
+        
+        if (std::is_same<T, const void *>::value) {
+            num_args = TallyServer::server->sliced_kernel_map[func].second;
+        } else if constexpr (std::is_same<T, CUfunction>::value) {
+            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size();
+        } else {
+            throw std::runtime_error("Unsupported typename");
         }
+
+        auto err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
+                                blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
 
         if (run_profile) {
             cudaEventRecord(_stop);
@@ -222,13 +258,23 @@ cudaError_t CudaLaunchConfig::launch(
             cudaEventDestroy(_stop);
         }
 
-        return cudaSuccess;
+        return err;
     } else if (use_sliced) {
 
         uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
 
-        auto cu_func = TallyServer::server->sliced_kernel_map[func].first;
-        auto num_args = TallyServer::server->sliced_kernel_map[func].second;
+        CUfunction cu_func;
+        size_t num_args;
+        
+        if (std::is_same<T, const void *>::value) {
+            cu_func = TallyServer::server->sliced_kernel_map[func].first;
+            num_args = TallyServer::server->sliced_kernel_map[func].second;
+        } else if constexpr (std::is_same<T, CUfunction>::value) {
+            cu_func = TallyServer::server->jit_sliced_kernel_map[func];
+            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size();
+        } else {
+            throw std::runtime_error("Unsupported typename");
+        }
 
         assert(cu_func);
 
@@ -236,25 +282,27 @@ cudaError_t CudaLaunchConfig::launch(
 
         cudaStream_t _stream;
 
-        if (use_cuda_graph) {
+        if (std::is_same<T, const void *>::value) {
+            if (use_cuda_graph) {
 
-            // Try to use cuda graph first 
-            for (auto *call : TallyServer::server->cuda_graph_vec) {
-                if (call->equals(func, args, num_args - 1, gridDim, blockDim)) {
-                    cuda_graph_call = call;
-                    break;
+                // Try to use cuda graph first 
+                for (auto *call : TallyServer::server->cuda_graph_vec) {
+                    if (call->equals(func, args, num_args - 1, gridDim, blockDim)) {
+                        cuda_graph_call = call;
+                        break;
+                    }
                 }
-            }
 
-            if (!cuda_graph_call) {
-                // Otherwise, construct one
-                cuda_graph_call = new CudaGraphCall(func, args, num_args - 1, gridDim, blockDim);
-                TallyServer::server->cuda_graph_vec.push_back(cuda_graph_call);
-            }
+                if (!cuda_graph_call) {
+                    // Otherwise, construct one
+                    cuda_graph_call = new CudaGraphCall(func, args, num_args - 1, gridDim, blockDim);
+                    TallyServer::server->cuda_graph_vec.push_back(cuda_graph_call);
+                }
 
-            _stream = TallyServer::server->stream;
-        } else {
-            _stream = stream;
+                _stream = TallyServer::server->stream;
+            } else {
+                _stream = stream;
+            }
         }
 
         dim3 new_grid_dim;
@@ -286,7 +334,7 @@ cudaError_t CudaLaunchConfig::launch(
             }
         }
 
-        CUresult res;
+        CUresult err;
         while (blockOffset.x < gridDim.x && blockOffset.y < gridDim.y && blockOffset.z < gridDim.z) {
 
             void *KernelParams[num_args];
@@ -302,13 +350,8 @@ cudaError_t CudaLaunchConfig::launch(
                 std::min(gridDim.z - blockOffset.z, new_grid_dim.z)
             );
 
-            res = lcuLaunchKernel(cu_func, curr_grid_dim.x, curr_grid_dim.y, curr_grid_dim.z,
+            err = lcuLaunchKernel(cu_func, curr_grid_dim.x, curr_grid_dim.y, curr_grid_dim.z,
                                 blockDim.x, blockDim.y, blockDim.z, sharedMem, _stream, KernelParams, NULL);
-
-            if (res != CUDA_SUCCESS) {
-                std::cerr << "Encountering res != CUDA_SUCCESS" << std::endl;
-                return cudaErrorInvalidValue;
-            }
 
             blockOffset.x += new_grid_dim.x;
 
@@ -356,7 +399,7 @@ cudaError_t CudaLaunchConfig::launch(
                 cudaEventRecord(_start);
             }
 
-            auto res = cudaGraphLaunch(cuda_graph_call->instance, stream);
+            auto graph_launch_err = cudaGraphLaunch(cuda_graph_call->instance, stream);
 
             if (run_profile) {
                 cudaEventRecord(_stop);
@@ -366,7 +409,11 @@ cudaError_t CudaLaunchConfig::launch(
                 cudaEventDestroy(_stop);
             }
 
-            return res;
+            if (graph_launch_err) {
+                throw std::runtime_error("cudaGraphLaunch returns error code!");
+            }
+
+            return CUDA_SUCCESS;
         } else {
 
             if (run_profile) {
@@ -377,12 +424,22 @@ cudaError_t CudaLaunchConfig::launch(
                 cudaEventDestroy(_stop);
             }
 
-            return cudaSuccess;
+            return err;
         }
     } else if (use_ptb) {
 
-        auto cu_func = TallyServer::server->ptb_kernel_map[func].first;
-        auto num_args = TallyServer::server->ptb_kernel_map[func].second;
+        CUfunction cu_func;
+        size_t num_args;
+
+        if (std::is_same<T, const void *>::value) {
+            cu_func = TallyServer::server->ptb_kernel_map[func].first;
+            num_args = TallyServer::server->ptb_kernel_map[func].second;
+        } else if constexpr (std::is_same<T, CUfunction>::value) {
+            cu_func = TallyServer::server->jit_ptb_kernel_map[func];
+            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size();
+        } else {
+            throw std::runtime_error("Unsupported typename");
+        }
 
         assert(cu_func);
 
@@ -403,7 +460,7 @@ cudaError_t CudaLaunchConfig::launch(
             cudaEventRecord(_start);
         }
 
-        auto res = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
+        auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
                               blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
 
         if (run_profile) {
@@ -414,12 +471,7 @@ cudaError_t CudaLaunchConfig::launch(
             cudaEventDestroy(_stop);
         }
 
-        if (res != CUDA_SUCCESS) {
-            std::cerr << "Encountering res != CUDA_SUCCESS" << std::endl;
-            return cudaErrorInvalidValue;
-        }
-
-        return cudaSuccess;
+        return err;
         
     } else {
         throw std::runtime_error("Invalid launch config.");

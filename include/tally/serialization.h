@@ -74,6 +74,7 @@ void serialize(Archive & ar, CubinData & g, const unsigned int version)
 {
     ar & g.cubin_data;
     ar & g.kernel_args;
+    ar & g.original_data;
     ar & g.sliced_data;
     ar & g.ptb_data;
 }
