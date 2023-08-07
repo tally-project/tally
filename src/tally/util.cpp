@@ -21,6 +21,17 @@ std::string demangleFunc(std::string mangledName)
     }
 }
 
+bool is_process_running(pid_t pid) {
+    struct stat st;
+    char path[256];
+    snprintf(path, sizeof(path), "/proc/%d", pid);
+
+    if (stat(path, &st) == 0)
+        return true;
+    
+    return false;
+}
+
 std::pair<std::string, int> exec(std::string cmd) {
     std::array<char, 128> buffer;
 

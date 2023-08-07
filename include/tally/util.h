@@ -1,10 +1,14 @@
 #ifndef TALLY_UTIL_H
 #define TALLY_UTIL_H
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <string>
 #include <vector>
 
 std::string demangleFunc(std::string mangledName);
+bool is_process_running(pid_t pid);
 std::pair<std::string, int> exec(std::string cmd);
 void launch_shell(std::string cmd);
 std::pair<std::string, std::string> splitOnce(const std::string& str, const std::string& delimiter);

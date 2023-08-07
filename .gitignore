@@ -51,6 +51,7 @@ docs/_build/
 
 .tally_cache
 .tally_cache_client
+.tally_perf_cache
 data/
 
 tests/cudnn_samples_v8/RNN/RNN

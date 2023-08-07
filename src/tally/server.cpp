@@ -111,7 +111,16 @@ void TallyServer::start_worker_server(int32_t client_id) {
 
             worker_server->releaseRequest(requestPayload);
         });
+
+        if (!is_process_running(client_id)) {
+            break;
+        }
     }
+
+    worker_servers.erase(client_id);
+    delete worker_server;
+
+    spdlog::info("Tally worker server has exited ...");
 }
 
 void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_size)
@@ -2697,6 +2706,9 @@ void TallyServer::handle_cuCtxCreate_v2(void *__args, iox::popo::UntypedServer *
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
+// TODO: This CUDA API is supposed to set attribute for a kernel function
+// However, since the server register kernels using JIT APIs instead of host functions
+// We need to figure out a way to set attribute for the CUfunctions
 void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudaFuncSetAttribute");

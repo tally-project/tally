@@ -351,7 +351,9 @@ cudaError_t TestCutlassGemm(int M, int N, int K, float alpha, float beta) {
   // Launch CUTLASS GEMM.
   //
 
-  result = CutlassSgemmNN(M, N, K, alpha, A, lda, B, ldb, beta, C_cutlass, ldc);
+  for (int i = 0; i < 1000; i++) {
+    result = CutlassSgemmNN(M, N, K, alpha, A, lda, B, ldb, beta, C_cutlass, ldc);
+  }
 
   if (result != cudaSuccess) {
       std::cerr << "CUTLASS GEMM kernel failed: "
@@ -453,7 +455,7 @@ int main(int argc, const char *arg[]) {
   //
 
   // GEMM problem dimensions.
-  int problem[3] = { 1024, 1024, 1024 };
+  int problem[3] = { 2048, 2048, 2048 };
 
   for (int i = 1; i < argc && i < 4; ++i) {
     std::stringstream ss(arg[i]);

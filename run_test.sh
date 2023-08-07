@@ -49,6 +49,8 @@ test_list=(
     "./tests/cudnn_samples_v8/RNN/RNN"
     "./tests/cudnn_samples_v8/RNN_v8.0/RNN"
     "python3 ./tests/train.py"
+    "python3 ./tests/run-triton.py"
+    "python3 ./tests/run-torch-compile.py"
 )
 
 # Set up
@@ -68,7 +70,7 @@ for item in "${test_list[@]}"; do
     run_tally_test $item
 done
 
-sleep 1
+sleep 5
 
 echo All tests passed!
 
