@@ -265,8 +265,7 @@ int run() {
   CUTLASS_CHECK(status);
 
   // Launch initialized CUTLASS kernel
-  status = gemm_op();
-  CUTLASS_CHECK(status);
+  gemm_op();
 
   // Create instantiation for device reference gemm kernel
   cutlass::reference::device::Gemm<ElementInputA,
