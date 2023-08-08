@@ -1,12 +1,15 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.24)
 project(tally LANGUAGES C CXX CUDA)
 enable_language(CUDA)
 
 set(CMAKE_CUDA_COMPILER nvcc)
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_BUILD_TYPE "Release")
-# set(CMAKE_BUILD_TYPE "Debug")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-comment -Wno-deprecated")
+
+if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+    # set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "" FORCE)
+endif()
 
 option(ENABLE_LOGGING "Enable logging" OFF)
 option(ENABLE_PROFILING "Enable profiling" OFF)
@@ -31,7 +34,6 @@ include(IceoryxPlatform)
 include(IceoryxPlatformSettings)
 
 set(TALLY_SRC_FILES
-    # ${PROJECT_SOURCE_DIR}/src/tally/daemon.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/cache.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/cuda_util.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/util.cpp
@@ -95,19 +97,6 @@ target_link_libraries(tally_client PUBLIC
 )
 
 target_compile_definitions(tally_client PRIVATE IS_CLIENT="TRUE")
-
-# add_library(tally_transform SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_transform.cpp ${TALLY_SRC_FILES})
-
-# target_include_directories(tally_transform
-#     PUBLIC ${PROJECT_SOURCE_DIR}/include
-#     PUBLIC  /usr/local/cuda/include
-#     PUBLIC ${Boost_INCLUDE_DIR}
-# )
-
-# target_link_libraries(tally_transform
-#     PUBLIC Boost::serialization
-#     PUBLIC Boost::regex
-# )
 
 add_library(tally_profile_cpu SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_profile_cpu.cpp)
 

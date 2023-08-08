@@ -66,7 +66,7 @@ public:
 	std::atomic<bool> is_quit__ {false};
 
 	// ================== Per-client state ===================
-	std::map<int32_t, ClientData> client_data;
+	std::map<int32_t, ClientData> client_data_all;
     std::map<int32_t, iox::popo::UntypedServer *> worker_servers;
 	std::map<int32_t, std::thread> worker_threads;
     
@@ -110,7 +110,7 @@ public:
     TallyServer();
     ~TallyServer();
 
-    void wait_until_launch_queue_empty();
+	void profile_kernel_wise();
     void register_api_handler();
     void load_cache();
 

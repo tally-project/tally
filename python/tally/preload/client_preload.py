@@ -136,7 +136,7 @@ def gen_server_handler(func_sig):
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {{
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }}
 """
                 break
@@ -182,7 +182,7 @@ def gen_server_handler(func_sig):
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {{
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }}
 """
                 break

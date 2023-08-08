@@ -4879,7 +4879,7 @@ void TallyServer::handle_cudaStreamGetPriority(void *__args, iox::popo::UntypedS
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaStreamGetPriorityResponse), alignof(cudaStreamGetPriorityResponse))
@@ -4909,7 +4909,7 @@ void TallyServer::handle_cudaStreamGetFlags(void *__args, iox::popo::UntypedServ
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaStreamGetFlagsResponse), alignof(cudaStreamGetFlagsResponse))
@@ -4962,7 +4962,7 @@ void TallyServer::handle_cudaStreamCopyAttributes(void *__args, iox::popo::Untyp
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
@@ -5001,7 +5001,7 @@ void TallyServer::handle_cudaStreamDestroy(void *__args, iox::popo::UntypedServe
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
@@ -5029,7 +5029,7 @@ void TallyServer::handle_cudaStreamWaitEvent(void *__args, iox::popo::UntypedSer
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
@@ -5064,7 +5064,7 @@ void TallyServer::handle_cudaStreamQuery(void *__args, iox::popo::UntypedServer 
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
@@ -5097,7 +5097,7 @@ void TallyServer::handle_cudaStreamBeginCapture(void *__args, iox::popo::Untyped
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
@@ -5131,7 +5131,7 @@ void TallyServer::handle_cudaStreamEndCapture(void *__args, iox::popo::UntypedSe
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaStreamEndCaptureResponse), alignof(cudaStreamEndCaptureResponse))
@@ -5161,7 +5161,7 @@ void TallyServer::handle_cudaStreamIsCapturing(void *__args, iox::popo::UntypedS
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaStreamIsCapturingResponse), alignof(cudaStreamIsCapturingResponse))
@@ -5235,7 +5235,7 @@ void TallyServer::handle_cudaEventRecordWithFlags(void *__args, iox::popo::Untyp
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
@@ -5690,7 +5690,7 @@ void TallyServer::handle_cudaMemsetAsync(void *__args, iox::popo::UntypedServer 
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
@@ -6377,7 +6377,7 @@ void TallyServer::handle_cudaGraphUpload(void *__args, iox::popo::UntypedServer 
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
@@ -6406,7 +6406,7 @@ void TallyServer::handle_cudaGraphLaunch(void *__args, iox::popo::UntypedServer 
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
@@ -6638,7 +6638,7 @@ void TallyServer::handle_cudnnSetStream(void *__args, iox::popo::UntypedServer *
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cudnnStatus_t), alignof(cudnnStatus_t))
@@ -9099,7 +9099,7 @@ void TallyServer::handle_cublasSetStream_v2(void *__args, iox::popo::UntypedServ
 
     // If client submits to default stream, set to a re-assigned stream
     if (stream == nullptr) {
-        stream = client_data[client_uid].default_stream;
+        stream = client_data_all[client_uid].default_stream;
     }
 
     iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))

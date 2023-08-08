@@ -182,7 +182,7 @@ public:
 	std::atomic<bool> is_quit__ {false};
 
 	// ================== Per-client state ===================
-	std::map<int32_t, ClientData> client_data;
+	std::map<int32_t, ClientData> client_data_all;
     std::map<int32_t, iox::popo::UntypedServer *> worker_servers;
 	std::map<int32_t, std::thread> worker_threads;
     

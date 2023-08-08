@@ -17,6 +17,14 @@ struct DeviceMemoryKey {
     size_t size;
 };
 
+// Implicitly initialize CUDA context
+inline void implicit_init_cuda_ctx()
+{
+    float *arr;
+    cudaMalloc(&arr, sizeof(float));
+    cudaFree(arr);
+}
+
 inline bool is_dev_addr(const std::vector<DeviceMemoryKey> &dev_addr_map, const void *addr)
 {
     for (auto &dev_addr_key : dev_addr_map) {

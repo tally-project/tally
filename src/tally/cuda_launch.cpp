@@ -41,26 +41,24 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per
 
     configs.push_back(CudaLaunchConfig::default_config);
 
-    // if (threads_per_block * num_blocks > 129560) {
-
-        // some sliced configs
-        // for (uint32_t _threads_per_block : { 129560, 161280, 174080, 184320, 196608 }) {
-        //     // for (bool _use_cuda_graph : { true, false }) {
-        //     for (bool _use_cuda_graph : { false }) {
-        //         CudaLaunchConfig config(false, true, false, _use_cuda_graph, _threads_per_block);
-        //         configs.push_back(config);
-        //     }
-        // }
-
     // some PTB configs
     uint32_t _num_blocks_per_sm = 1;
-    while(_num_blocks_per_sm * threads_per_block <= 1024 && _num_blocks_per_sm * 82 <= num_blocks) {
+    while(true) {
+
+        // One kernel should not take all the thread slots
+        if (_num_blocks_per_sm * threads_per_block >= CUDA_MAX_NUM_THREADS_PER_SM) {
+            break;
+        }
+        
+        // There is no point going over the total num of blocks
+        if (_num_blocks_per_sm * CUDA_NUM_SM > num_blocks) {
+            break;
+        }
+
         CudaLaunchConfig config(false, false, true, false, 0, _num_blocks_per_sm);
         configs.push_back(config);
         _num_blocks_per_sm++;
     }
-
-    // }
     
     return configs;
 }
@@ -122,78 +120,73 @@ CUresult CudaLaunchConfig::repeat_launch(
     return err;
 }
 
-CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
-{
-    CudaLaunchCall launch_call(func, gridDim, blockDim);
-    CudaLaunchConfig best_config;
-    std::vector<CudaLaunchConfig> candidates;
+// CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
+// {
+//     CudaLaunchCall launch_call(func, gridDim, blockDim);
+//     CudaLaunchConfig best_config;
+//     std::vector<CudaLaunchConfig> candidates;
 
-    float best_time_ms = std::numeric_limits<float>::max();
-    float time_ms;
-    float base_time_ms;
+//     float best_time_ms = std::numeric_limits<float>::max();
+//     float time_ms;
+//     float base_time_ms;
 
-    auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[func];
+//     auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[func];
 
-    std::cout << "[Profile result]" <<std::endl;
-    std::cout << "\tKernel: " << kernel_name << std::endl;
-    std::cout << "\tblockDim: " << blockDim.x << " " << blockDim.y << " " << blockDim.z << std::endl;
-    std::cout << "\tgridDim: " << gridDim.x << " " << gridDim.y << " " << gridDim.z << std::endl;
+//     std::cout << "[Profile result]" <<std::endl;
+//     std::cout << "\tKernel: " << kernel_name << std::endl;
+//     std::cout << "\tblockDim: " << blockDim.x << " " << blockDim.y << " " << blockDim.z << std::endl;
+//     std::cout << "\tgridDim: " << gridDim.x << " " << gridDim.y << " " << gridDim.z << std::endl;
 
-    // default config - use_original=true
-    CudaLaunchConfig base_config;
-    CudaLaunchCallConfig base_call_config(launch_call, base_config);
+//     // default config - use_original=true
+//     CudaLaunchConfig base_config;
+//     CudaLaunchCallConfig base_call_config(launch_call, base_config);
 
-    // warmup first
-    base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, nullptr, nullptr, 10000);
+//     // warmup first
+//     base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, nullptr, nullptr, 10000);
 
-    if (base_time_ms <= 0) {
+//     if (base_time_ms <= 0) {
 
-        float _time_ms;
-        float iters;
+//         float _time_ms;
+//         float iters;
 
-        base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, &_time_ms, &iters, 10000);
-        base_time_ms = _time_ms / iters;
-    }
+//         base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, &_time_ms, &iters, 10000);
+//         base_time_ms = _time_ms / iters;
+//     }
 
-    std::cout << "\tBaseline: Time: " << base_time_ms << std::endl;
+//     std::cout << "\tBaseline: Time: " << base_time_ms << std::endl;
 
-    if (USE_TRANSFORM) {
+//     uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
+//     uint32_t num_blocks = gridDim.x * gridDim.y * gridDim.z;
+//     candidates = get_configs(threads_per_block, num_blocks);
+    
+//     for (auto &config : candidates) {
 
-        uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
-        uint32_t num_blocks = gridDim.x * gridDim.y * gridDim.z;
-        candidates = get_configs(threads_per_block, num_blocks);
-        
-        for (auto &config : candidates) {
+//         CudaLaunchCallConfig call_config(launch_call, config);
 
-            CudaLaunchCallConfig call_config(launch_call, config);
+//         if (time_ms <= 0) {
+//             float _time_ms;
+//             float iters;
+//             config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, &_time_ms, &iters, 10000);
+//             time_ms = _time_ms / iters;
 
-            if (time_ms <= 0) {
-                float _time_ms;
-                float iters;
-                config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, &_time_ms, &iters, 10000);
-                time_ms = _time_ms / iters;
+//             std::cout << "\t" << config << " Time: " << time_ms << std::endl;
+//         }
 
-                std::cout << "\t" << config << " Time: " << time_ms << std::endl;
-            }
+//         if (time_ms < best_time_ms) {
+//             best_config = config;
+//             best_time_ms = time_ms;
+//         }
+//     }
 
-            if (time_ms < best_time_ms) {
-                best_config = config;
-                best_time_ms = time_ms;
-            }
-        }
+//     if (best_time_ms >= USE_TRANSFORM_THRESHOLD * base_time_ms) {
+//         best_config = base_config;
+//     }
 
-        if (best_time_ms >= USE_TRANSFORM_THRESHOLD * base_time_ms) {
-            best_config = base_config;
-        }
-    } else {
-        best_config = base_config;
-    }
+//     std::cout << "Choosen: " << best_config << std::endl;
+//     // TallyServer::server->save_performance_cache();
 
-    std::cout << "Choosen: " << best_config << std::endl;
-    // TallyServer::server->save_performance_cache();
-
-    return best_config;
-}
+//     return best_config;
+// }
 
 // Instantiate template
 template

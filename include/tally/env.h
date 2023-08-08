@@ -11,24 +11,14 @@ static const char* LIBCUDNN_PATH = "/usr/local/cuda/lib64/libcudnn.so";
 static const char* LIBCUBLAS_PATH = "/usr/local/cuda/lib64/libcublas.so";
 static const char* LIBCUBLASLT_PATH = "/usr/local/cuda/lib64/libcublasLt.so";
 
-extern bool USE_CUDA_GRAPH;
-extern uint32_t USE_TRANSFORM_THRESHOLD;
-extern uint32_t TRANSFORM_THREADS_THRESHOLD;
-extern bool USE_TRANSFORM;
+// These should be queried by CUDA API 
+// But just set them here for now
+static const char* CUDA_COMPUTE_VERSION = "86";
+static uint32_t CUDA_NUM_SM = 82;
+static uint32_t CUDA_MAX_NUM_THREADS_PER_SM = 1536;
 
-// For kernel-to-kernel profiling purposes
-extern bool PROFILE_KERNEL_TO_KERNEL_PERF;
-extern uint32_t PROFILE_KERNEL_IDX;
-extern uint32_t PROFILE_DURATION_SECONDS;
-extern bool PROFILE_WARMED_UP; // Set this to true when warmed up
-
-// Sepcify which config to profile
-extern bool PROFILE_USE_ORIGINAL;
-extern bool PROFILE_USE_SLICED;
-extern bool PROFILE_USE_PTB;
-extern bool PROFILE_USE_CUDA_GRAPH;
-extern uint32_t PROFILE_THREADS_PER_SLICE;
-extern uint32_t PROFILE_NUM_BLOCKS_PER_SM;
+// For kernel-wise profiling experiment
+extern uint32_t PROFILE_DURATION;
 
 void __attribute__((constructor)) register_env_vars();
 
