@@ -1,8 +1,15 @@
 
+include(FindCUDA/select_compute_arch)
+CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
+string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
+string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
+message(CUDA_ARCH_LIST="${CUDA_ARCH_LIST}")
+
 add_executable(elementwise elementwise.cu)
 
 set_target_properties(elementwise PROPERTIES
-    CUDA_ARCHITECTURES "86"
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 
@@ -14,14 +21,14 @@ target_link_libraries(elementwise
 add_executable(matmul matmul.cu)
 
 set_target_properties(matmul PROPERTIES
-    CUDA_ARCHITECTURES "86"
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 
 add_executable(max_pool max_pool.cu)
 
 set_target_properties(max_pool PROPERTIES
-    CUDA_ARCHITECTURES "86"
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 
@@ -34,7 +41,7 @@ target_link_libraries(cublas_test
 )
 
 set_target_properties(cublas_test PROPERTIES
-    CUDA_ARCHITECTURES "86"
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 
@@ -48,7 +55,7 @@ target_link_libraries(cublasLt_test
 )
 
 set_target_properties(cublasLt_test PROPERTIES
-    CUDA_ARCHITECTURES "86"
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 
@@ -61,7 +68,7 @@ target_link_libraries(cudnn_test
 )
 
 set_target_properties(cudnn_test PROPERTIES
-    CUDA_ARCHITECTURES "86"
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 
@@ -74,7 +81,7 @@ target_link_libraries(test-sync
 )
 
 set_target_properties(test-sync PROPERTIES
-    CUDA_ARCHITECTURES "86"
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 
@@ -97,7 +104,7 @@ target_link_libraries(basic_gemm
 )
 
 set_target_properties(basic_gemm PROPERTIES
-    CUDA_ARCHITECTURES "86"
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 
@@ -114,7 +121,7 @@ target_link_libraries(turing_tensorop_gemm
 )
 
 set_target_properties(turing_tensorop_gemm PROPERTIES
-    CUDA_ARCHITECTURES "86"
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 

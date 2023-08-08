@@ -141,10 +141,5 @@ target_link_libraries(tally_server PUBLIC
     iceoryx_posh::iceoryx_posh
 )
 
-set_target_properties(tally_server PROPERTIES
-    CUDA_ARCHITECTURES "86"
-    CUDA_RUNTIME_LIBRARY Shared
-)
-
 add_subdirectory(tests)
 add_subdirectory(third_party/cudnn-frontend)
