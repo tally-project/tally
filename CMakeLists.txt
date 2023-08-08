@@ -22,6 +22,7 @@ FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
 
 add_subdirectory(third_party/spdlog)
 add_subdirectory(third_party/iceoryx/iceoryx_meta)
+add_subdirectory(third_party/json)
 
 include(GNUInstallDirs)
 
@@ -44,6 +45,7 @@ set(TALLY_SRC_FILES
 )
 
 set(TALLY_SERVER_SRC_FILES
+    ${PROJECT_SOURCE_DIR}/src/tally/measurements.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/server.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/generated/server.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/partial.cpp
@@ -59,6 +61,7 @@ add_library(tally STATIC ${TALLY_SRC_FILES})
 target_include_directories(tally
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC  /usr/local/cuda/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
 )
 
 target_link_libraries(tally PUBLIC
@@ -88,6 +91,7 @@ endif()
 target_include_directories(tally_client
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC  /usr/local/cuda/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
 )
 
 target_link_libraries(tally_client PUBLIC
@@ -125,6 +129,7 @@ endif()
 target_include_directories(tally_server
     PUBLIC  /usr/local/cuda/include
     PUBLIC  ${PROJECT_SOURCE_DIR}/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
 )
 
 target_link_libraries(tally_server PUBLIC

@@ -8,6 +8,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include <nlohmann/json.hpp>
+
 #include <tally/env.h>
 
 // Used at runtime as key to launch configuration
@@ -149,13 +151,33 @@ public:
         );
     }
 
+    nlohmann::json json() const
+    {
+        return nlohmann::json({
+            {"use_original", use_original},
+            {"use_ptb", use_ptb},
+            {"num_blocks_per_sm", num_blocks_per_sm},
+        });
+    }
+
+    std::string str() const
+    {
+        if (use_original) {
+            return "original";
+        } else if (use_ptb) {
+            return "PTB_num_blocks_per_sm_" + std::to_string(num_blocks_per_sm);
+        } else {
+            return "";
+        }
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config);
     
     template <typename T>
     CUresult launch(T, dim3, dim3, void **, size_t, cudaStream_t, bool run_profile=false, float *elapsed_time_ms=nullptr);
     
     template <typename T>
-    CUresult repeat_launch(T, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, float *time_ms=nullptr, float *iters=nullptr, uint32_t max_count=-1);
+    CUresult repeat_launch(T, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1);
 };
 
 struct CudaLaunchCallConfig {
@@ -203,12 +225,52 @@ struct std::hash<CudaLaunchCallConfigPair>
     }
 };
 
+struct KernelProfileMetrics {
+    float latency_ms;
+    float norm_speed;
+    uint32_t iters;
+
+    nlohmann::json json() const
+    {
+        return nlohmann::json({
+            {"latency_ms", latency_ms},
+            {"norm_speed", norm_speed},
+            {"iters", iters},
+        });
+    }
+};
+
+struct WorkloadPerformance {
+    float latency_ms;
+    float speedup;
+
+    nlohmann::json json() const
+    {
+        return nlohmann::json({
+            {"latency_ms", latency_ms},
+            {"speedup", speedup}
+        });
+    }
+};
+
+struct CudaLaunchCallConfigResult {
+    CudaLaunchCall key;
+    CudaLaunchConfig config;
+    KernelProfileMetrics metrics;
+};
+
 struct CudaLaunchCallConfigPairResult {
-    std::pair<CudaLaunchCallConfig, float> call_config_norm_speed_1;
-    std::pair<CudaLaunchCallConfig, float> call_config_norm_speed_2;
+    std::pair<CudaLaunchCallConfig, KernelProfileMetrics> call_config_norm_speed_1;
+    std::pair<CudaLaunchCallConfig, KernelProfileMetrics> call_config_norm_speed_2;
+
+    // For a fixed workload across all configs, what's the speedup against MPS?
+    WorkloadPerformance fixed_workload_perf;
+
+    // For a workload that is skewed to this specific config, what's the speedup against MPS?
+    WorkloadPerformance unfair_workload_perf;
 
     float get_sum_norm_speed() {
-        return call_config_norm_speed_1.second + call_config_norm_speed_2.second;
+        return call_config_norm_speed_1.second.norm_speed + call_config_norm_speed_2.second.norm_speed;
     }
 };
 

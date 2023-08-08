@@ -5,8 +5,12 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <fstream>
+
+#include <nlohmann/json.hpp>
 
 #include <tally/cuda_launch.h>
+#include <tally/cuda_util.h>
 
 struct CudaLaunchKey {
     std::string kernel_name;
@@ -25,6 +29,21 @@ struct CudaLaunchKey {
             && blockDim.z == other.blockDim.z
         );
     }
+
+    nlohmann::json json() const
+    {
+        return nlohmann::json({
+            {"kernel_name", kernel_name},
+            {"gridDim", get_dim3_str(gridDim)},
+            {"blockDim", get_dim3_str(blockDim)},
+        });
+    }
+
+    std::string str() const
+    {
+        return kernel_name + "_" + get_dim3_str(gridDim) + "_" + get_dim3_str(blockDim);
+    }
+    
 };
 
 template <>
@@ -131,19 +150,31 @@ static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPair&
     return os;
 }
 
+struct CudaLaunchKeyConfigResult {
+    CudaLaunchKey key;
+    CudaLaunchConfig config;
+    KernelProfileMetrics metrics;
+};
+
 struct CudaLaunchKeyConfigPairResult {
-    std::pair<CudaLaunchKeyConfig, float> config_key_norm_speed_1;
-    std::pair<CudaLaunchKeyConfig, float> config_key_norm_speed_2;
+    std::pair<CudaLaunchKeyConfig, KernelProfileMetrics> config_key_norm_speed_1;
+    std::pair<CudaLaunchKeyConfig, KernelProfileMetrics> config_key_norm_speed_2;
+
+    // For a fixed workload across all configs, what's the speedup against MPS?
+    WorkloadPerformance fixed_workload_perf;
+
+    // For a workload that is skewed to this specific config, what's the speedup against MPS?
+    WorkloadPerformance unfair_workload_perf;
 
     float get_sum_norm_speed() const {
-        return config_key_norm_speed_1.second + config_key_norm_speed_2.second;
+        return config_key_norm_speed_1.second.norm_speed + config_key_norm_speed_2.second.norm_speed;
     }
 };
 
 static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPairResult& res)
 {
-    float norm_speed_1 = res.config_key_norm_speed_1.second;
-    float norm_speed_2 = res.config_key_norm_speed_2.second;
+    float norm_speed_1 = res.config_key_norm_speed_1.second.norm_speed;
+    float norm_speed_2 = res.config_key_norm_speed_2.second.norm_speed;
 
     os << "CudaLaunchKeyConfigPairResult: \n";
     os << "\tK1 Norm Speed: " << norm_speed_1 << " K2 Norm Speed: " << norm_speed_2 << " Sum: " << res.get_sum_norm_speed();
@@ -162,7 +193,7 @@ public:
     // Key: kernel name, value: vector of the sizes of arguments in ordinal order
     std::map<std::string, std::vector<uint32_t>> kernel_args;
 
-    // All the sliced PTX files and fatbin
+    // All the original PTX files and fatbin
     std::vector<std::pair<std::string, std::string>> original_data;
 
     // All the sliced PTX files and fatbin
@@ -251,11 +282,30 @@ public:
 class PerformanceCache
 {
 public:
+    // Single-kernel performance
+    std::unordered_map<CudaLaunchKeyConfig, CudaLaunchKeyConfigResult> single_kernel_perf_map;
+    std::unordered_map<CudaLaunchKey, CudaLaunchKeyConfigResult> single_kernel_best_config_map;
+
     // Kernel pair and the normalized speed
     std::unordered_map<CudaLaunchKeyPair, std::unordered_map<CudaLaunchKeyConfigPair, CudaLaunchKeyConfigPairResult>> kernel_pair_perf_map;
     std::unordered_map<CudaLaunchKeyPair, CudaLaunchKeyConfigPairResult> kernel_pair_best_config_map;
 
-    void set_kernel_pair_perf(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, CudaLaunchConfig launch_config_1, CudaLaunchConfig launch_config_2, CudaLaunchKeyConfigPairResult &res)
+    void set_single_kernel_perf(CudaLaunchKey &launch_key, CudaLaunchConfig &launch_config, CudaLaunchKeyConfigResult &res)
+    {
+        CudaLaunchKeyConfig key_config(launch_key,launch_config);
+        single_kernel_perf_map[key_config] = res;
+        write_single_kernel_perf_to_file();
+    }
+
+    void set_single_kernel_best_config(CudaLaunchKey &launch_key, CudaLaunchKeyConfigResult &res)
+    {
+        single_kernel_best_config_map[launch_key] = res;
+        write_single_kernel_best_config_to_file();
+    }
+
+    void set_kernel_pair_perf(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, 
+                              CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
+                              CudaLaunchKeyConfigPairResult &res)
     {
         CudaLaunchKeyPair key_pair(launch_key_1, launch_key_2);
 
@@ -266,14 +316,7 @@ public:
 
         kernel_pair_perf_map[key_pair][key_config_pair] = res;
 
-        std::cout << "=============== Kernel Pair Profile Result ===============" << std::endl;
-
-        std::cout << launch_key_1 << std::endl;
-        std::cout << launch_config_1 << std::endl;
-        std::cout << launch_key_2 << std::endl;
-        std::cout << launch_config_2 << std::endl;
-        std::cout << res << std::endl;
-        std::cout << std::endl;
+        write_kernel_pair_perf_to_file();
     }
 
     void set_kernel_pair_best_config(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, CudaLaunchKeyConfigPairResult &res)
@@ -281,17 +324,142 @@ public:
         CudaLaunchKeyPair key_pair(launch_key_1, launch_key_2);
         kernel_pair_best_config_map[key_pair] = res;
 
-        std::cout << "=============== Kernel Pair Best Result ===============" << std::endl;
+        write_kernel_pair_best_config_to_file();
+    }
 
-        auto launch_config_1 = res.config_key_norm_speed_1.first.config;
-        auto launch_config_2 = res.config_key_norm_speed_2.first.config;
+    void write_single_kernel_perf_to_file() const
+    {
+        nlohmann::json json;
+   
+        for (auto &pair : single_kernel_perf_map) {
 
-        std::cout << launch_key_1 << std::endl;
-        std::cout << launch_config_1 << std::endl;
-        std::cout << launch_key_2 << std::endl;
-        std::cout << launch_config_2 << std::endl;
-        std::cout << res << std::endl;
-        std::cout << std::endl;
+            auto key_config = pair.first;
+            auto res = pair.second;
+
+            std::string key_str = key_config.key.str();
+
+            if (!json.contains(key_str)) {
+                json[key_str]["LaunchKey"] = key_config.key.json();
+                json[key_str]["Results"] = nlohmann::json::array();
+            }
+
+            nlohmann::json entry = nlohmann::json({
+                {"LaunchConfig", key_config.config.json()},
+                {"ResultMetrics", res.metrics.json()}
+            });
+
+            json[key_str]["Results"].push_back(entry);
+        }
+
+        std::ofstream file("single_kernel_perf.json");
+        file << std::setw(4) << json << std::endl;
+    }
+
+    void write_single_kernel_best_config_to_file() const
+    {
+        nlohmann::json json;
+
+        for (auto &pair : single_kernel_best_config_map) {
+            auto key = pair.first;
+            auto best_res = pair.second;
+
+            std::string key_str = key.str();
+
+            if (!json.contains(key_str)) {
+                json[key_str]["LaunchKey"] = key.json();
+                json[key_str]["Results"] = nlohmann::json::array();
+            }
+
+            nlohmann::json entry = nlohmann::json({
+                {"LaunchConfig", best_res.config.json()},
+                {"Metrics", best_res.metrics.json()},
+            });
+
+            json[key_str]["Results"].push_back(entry);
+        }
+
+        std::ofstream file("single_kernel_best_config.json");
+        file << std::setw(4) << json << std::endl;
+    }
+
+    void write_kernel_pair_perf_to_file() const
+    {
+        nlohmann::json json;
+
+        for (auto &pair : kernel_pair_perf_map) {
+            auto &config_res_map = pair.second;
+
+            for (auto &config_res_pair : config_res_map) {
+
+                auto &key_config_pair = config_res_pair.first;
+                auto &res = config_res_pair.second;
+
+                auto &key_1 = key_config_pair.key_config_1.key;
+                auto &key_2 = key_config_pair.key_config_2.key;
+
+                auto &config_1 = key_config_pair.key_config_1.config;
+                auto &config_2 = key_config_pair.key_config_2.config;
+
+                std::string group_name = key_1.str() + "_" + key_2.str();
+
+                if (!json.contains(group_name)) {
+                    json[group_name]["LaunchKey_1"] = key_1.json();
+                    json[group_name]["LaunchKey_2"] = key_2.json();
+                    json[group_name]["Results"] = nlohmann::json::array();
+                }
+
+                nlohmann::json entry = nlohmann::json({
+                    {"LaunchConfig_1", config_1.json()},
+                    {"ResultMetrics_1", res.config_key_norm_speed_1.second.json()},
+                    {"LaunchConfig_2", config_2.json()},
+                    {"ResultMetrics_2", res.config_key_norm_speed_2.second.json()},
+                    {"FixedWorkloadPerf", res.fixed_workload_perf.json()},
+                    {"UnfairWorkloadPerf", res.unfair_workload_perf.json()},
+                    {"SumNormSpeed", res.get_sum_norm_speed()}
+                });
+
+                json[group_name]["Results"].push_back(entry);
+            }
+        }
+
+        std::ofstream file("kernel_pair_perf.json");
+        file << std::setw(4) << json << std::endl;
+    }
+
+    void write_kernel_pair_best_config_to_file() const
+    {
+        nlohmann::json json;
+
+        for (auto &pair : kernel_pair_best_config_map) {
+            auto &launch_key_pair = pair.first;
+            auto &res = pair.second;
+
+            auto &key_1 = launch_key_pair.launch_key_1;
+            auto &key_2 = launch_key_pair.launch_key_2;
+
+            std::string group_name = key_1.str() + "_" + key_2.str();
+
+            if (!json.contains(group_name)) {
+                json[group_name]["LaunchKey_1"] = key_1.json();
+                json[group_name]["LaunchKey_2"] = key_2.json();
+                json[group_name]["Results"] = nlohmann::json::array();
+            }
+
+            nlohmann::json entry = nlohmann::json({
+                {"LaunchConfig_1", res.config_key_norm_speed_1.first.config.json()},
+                {"ResultMetrics_1", res.config_key_norm_speed_1.second.json()},
+                {"LaunchConfig_2", res.config_key_norm_speed_2.first.config.json()},
+                {"ResultMetrics_2", res.config_key_norm_speed_2.second.json()},
+                {"FixedWorkloadPerf", res.fixed_workload_perf.json()},
+                {"UnfairWorkloadPerf", res.unfair_workload_perf.json()},
+                {"SumNormSpeed", res.get_sum_norm_speed()}
+            });
+
+            json[group_name]["Results"].push_back(entry);
+        }
+
+        std::ofstream file("kernel_pair_best_config.json");
+        file << std::setw(4) << json << std::endl;
     }
 
 };

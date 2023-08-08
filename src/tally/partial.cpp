@@ -16,15 +16,15 @@
 #define MAXIMUM_ARG_COUNT 50
 
 template
-std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*)>
+std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)>
 TallyServer::cudaLaunchKernel_Partial<const void *>(const void *, dim3, dim3, size_t, cudaStream_t, char *);
 
 template
-std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*)>
+std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)>
 TallyServer::cudaLaunchKernel_Partial<CUfunction>(CUfunction, dim3, dim3, size_t, cudaStream_t, char *);
 
 template <typename T>
-std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*)>
+std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)>
 TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
 {
 
@@ -38,8 +38,8 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
         if (_kernel_addr_to_args.find(func) == _kernel_addr_to_args.end()) {
             throw std::runtime_error("_kernel_addr_to_args.find(func) == _kernel_addr_to_args.end()");
         }
+
         arg_sizes = _kernel_addr_to_args[func];
-        // std::cout << "func: " << func << std::endl;
     } else if constexpr (std::is_same<T, CUfunction>::value) {
         assert(_jit_kernel_addr_to_args.find(func) != _jit_kernel_addr_to_args.end());
         arg_sizes = _jit_kernel_addr_to_args[func];
@@ -66,16 +66,14 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
                 bool repeat,
                 float dur_seconds,
                 float *time_ms,
-                float *iters
+                float *iters,
+                int32_t total_iters
             ) {
 
         CUresult err;
 
-        // std::cout << "gridDim: " << gridDim.x << ", " << gridDim.y << ", " << gridDim.z << std::endl;
-        // std::cout << "blockDim: " << blockDim.x << ", " << blockDim.y << ", " << blockDim.z << std::endl;
-
         if (repeat) {
-            err = config.repeat_launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, dur_seconds, time_ms, iters);
+            err = config.repeat_launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, dur_seconds, time_ms, iters, total_iters);
         } else {
             err = config.launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream);
         }

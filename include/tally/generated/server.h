@@ -26,6 +26,7 @@
 #include <tally/cuda_launch.h>
 #include <tally/msg_struct.h>
 #include <tally/cuda_util.h>
+#include <tally/cache_struct.h>
 
 static std::function<void(int)> __exit;
 
@@ -49,7 +50,7 @@ public:
 	std::vector<DeviceMemoryKey> dev_addr_map;
 
 	std::unordered_map<const void *, const void *> _kernel_client_addr_mapping;
-	std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*)> *kernel_to_dispatch = nullptr;
+	std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> *kernel_to_dispatch = nullptr;
 	std::atomic<bool> has_kernel = false;
 	CudaLaunchCall launch_call;
 	CUresult err;
@@ -93,15 +94,45 @@ public:
     std::unordered_map<CUfunction, CUfunction> jit_ptb_kernel_map;
 
 	// Performance cache to use at runtime
+	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
+	std::unordered_map<CudaLaunchCall, CudaLaunchCallConfigResult> single_kernel_best_config_map;
+
     std::unordered_map<CudaLaunchCallPair, std::unordered_map<CudaLaunchCallConfigPair, CudaLaunchCallConfigPairResult>> kernel_pair_perf_map;
 	std::unordered_map<CudaLaunchCallPair, CudaLaunchCallConfigPairResult> kernel_pair_best_config_map;
 
 	// Set and Get performance cache
-    CudaLaunchCallConfigPairResult get_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2, bool *found);
-	void set_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2, float norm_speed_1, float norm_speed_2);
+
+	CudaLaunchCallConfigResult get_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, bool *found);
+	void set_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, float norm_speed, float latency, uint32_t iters);
+
+	CudaLaunchCallConfigResult get_single_kernel_best_config(CudaLaunchCall &launch_call, bool *found);
+	void set_single_kernel_best_config(CudaLaunchCall &launch_call, CudaLaunchCallConfigResult &best_config);
+
+    CudaLaunchCallConfigPairResult get_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
+														CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
+														bool *found);
+	
+	void set_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
+							  CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
+							  float norm_speed_1, float norm_speed_2, float latency_1, float latency_2,
+							  float fixed_workload_latency, float fixed_workload_speedup,
+							  float unfair_workload_latency, float unfair_workload_speedup);
 
 	CudaLaunchCallConfigPairResult get_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, bool *found);
 	void set_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchCallConfigPairResult best_config);
+
+	// Utility functions for measurement data
+	CudaLaunchCall convert_key_to_call(CudaLaunchKey key);
+	CudaLaunchKey convert_call_to_key(CudaLaunchCall call);
+
+	CudaLaunchCallConfig convert_key_config_to_call_config(CudaLaunchKeyConfig key_config);
+	CudaLaunchKeyConfig convert_call_config_to_key_config(CudaLaunchCallConfig call_config);
+
+	CudaLaunchCallConfigPairResult convert_pair_res_to_runtime_res(CudaLaunchKeyConfigPairResult res);
+	CudaLaunchKeyConfigPairResult convert_pair_res_to_cache_res(CudaLaunchCallConfigPairResult res);
+
+	CudaLaunchCallConfigPair convert_key_config_pair_to_call_config_pair(CudaLaunchKeyConfigPair key_config_pair);
+	CudaLaunchKeyConfigPair convert_call_config_pair_to_key_config_pair(CudaLaunchCallConfigPair call_config_pair);
 
     void save_performance_cache();
 
@@ -123,7 +154,7 @@ public:
     void start_worker_server(int32_t client_id);
 
 	template<typename T>
-    std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*)> cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
+    std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
 
 	void handle_cudnnSetCTCLossDescriptor_v8(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
 	void handle_cudnnSetFusedOpsVariantParamPackAttribute(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);

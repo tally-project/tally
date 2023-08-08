@@ -8,6 +8,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include <tally/transform.h>
 #include <tally/util.h>
 #include <tally/cuda_util.h>
 #include <tally/cache.h>

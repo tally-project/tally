@@ -17,6 +17,8 @@ static const char* CUDA_COMPUTE_VERSION = "86";
 static uint32_t CUDA_NUM_SM = 82;
 static uint32_t CUDA_MAX_NUM_THREADS_PER_SM = 1536;
 
+static uint32_t PTB_MAX_NUM_THREADS_PER_SM = 1024;
+
 // For kernel-wise profiling experiment
 extern uint32_t PROFILE_DURATION;
 

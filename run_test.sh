@@ -3,7 +3,7 @@
 kill_iox_server() {
     # stop server
     pid=$(ps -ef | grep iox-roudi | grep -v grep | awk '{print $2}')
-    kill -15 $pid > /dev/null 2>&1
+    kill -9 $pid > /dev/null 2>&1
 
     sleep 1
 }
@@ -11,7 +11,7 @@ kill_iox_server() {
 kill_tally_server() {
     # stop server
     pid=$(ps -ef | grep tally_server | grep -v grep | awk '{print $2}')
-    kill -15 $pid > /dev/null 2>&1
+    kill -9 $pid > /dev/null 2>&1
 
     sleep 1
 }

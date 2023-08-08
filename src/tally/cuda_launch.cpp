@@ -46,7 +46,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per
     while(true) {
 
         // One kernel should not take all the thread slots
-        if (_num_blocks_per_sm * threads_per_block >= CUDA_MAX_NUM_THREADS_PER_SM) {
+        if (_num_blocks_per_sm * threads_per_block >= PTB_MAX_NUM_THREADS_PER_SM) {
             break;
         }
         
@@ -66,16 +66,16 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per
 
 // Instantiate template
 template
-CUresult CudaLaunchConfig::repeat_launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, float, float *, float *, uint32_t);
+CUresult CudaLaunchConfig::repeat_launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, float, float *, float *, int32_t);
 
 template
-CUresult CudaLaunchConfig::repeat_launch<CUfunction>(CUfunction, dim3, dim3, void **, size_t, cudaStream_t, float, float *, float *, uint32_t);
+CUresult CudaLaunchConfig::repeat_launch<CUfunction>(CUfunction, dim3, dim3, void **, size_t, cudaStream_t, float, float *, float *, int32_t);
 
 // return (time, iterations)
 template <typename T>
 CUresult CudaLaunchConfig::repeat_launch(
     T func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
-    float dur_seconds, float *time_ms, float *iters, uint32_t max_count)
+    float dur_seconds, float *time_ms, float *iters, int32_t max_count)
 {
     float _time_ms;
     CUresult err;
@@ -83,7 +83,7 @@ CUresult CudaLaunchConfig::repeat_launch(
     // get a rough estimate of the kernel duration
     err = launch(func, gridDim, blockDim, args, sharedMem, stream, true, &_time_ms);
 
-    uint64_t sync_interval = std::max((uint64_t)((dur_seconds * 1000.) / _time_ms) / 2, 1ul);
+    uint64_t sync_interval = std::max((uint64_t)((dur_seconds * 1000.) / _time_ms) / 100, 1ul);
 
     auto startTime = std::chrono::steady_clock::now();
     uint64_t ckpt_count = 0;
@@ -111,7 +111,6 @@ CUresult CudaLaunchConfig::repeat_launch(
             elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
             break;
         }
-
     }
 
     if (time_ms) *time_ms = (double)elapsed_ns / 1e6;
@@ -119,74 +118,6 @@ CUresult CudaLaunchConfig::repeat_launch(
 
     return err;
 }
-
-// CudaLaunchConfig CudaLaunchConfig::tune(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
-// {
-//     CudaLaunchCall launch_call(func, gridDim, blockDim);
-//     CudaLaunchConfig best_config;
-//     std::vector<CudaLaunchConfig> candidates;
-
-//     float best_time_ms = std::numeric_limits<float>::max();
-//     float time_ms;
-//     float base_time_ms;
-
-//     auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[func];
-
-//     std::cout << "[Profile result]" <<std::endl;
-//     std::cout << "\tKernel: " << kernel_name << std::endl;
-//     std::cout << "\tblockDim: " << blockDim.x << " " << blockDim.y << " " << blockDim.z << std::endl;
-//     std::cout << "\tgridDim: " << gridDim.x << " " << gridDim.y << " " << gridDim.z << std::endl;
-
-//     // default config - use_original=true
-//     CudaLaunchConfig base_config;
-//     CudaLaunchCallConfig base_call_config(launch_call, base_config);
-
-//     // warmup first
-//     base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, nullptr, nullptr, 10000);
-
-//     if (base_time_ms <= 0) {
-
-//         float _time_ms;
-//         float iters;
-
-//         base_config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, &_time_ms, &iters, 10000);
-//         base_time_ms = _time_ms / iters;
-//     }
-
-//     std::cout << "\tBaseline: Time: " << base_time_ms << std::endl;
-
-//     uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
-//     uint32_t num_blocks = gridDim.x * gridDim.y * gridDim.z;
-//     candidates = get_configs(threads_per_block, num_blocks);
-    
-//     for (auto &config : candidates) {
-
-//         CudaLaunchCallConfig call_config(launch_call, config);
-
-//         if (time_ms <= 0) {
-//             float _time_ms;
-//             float iters;
-//             config.repeat_launch(func, gridDim, blockDim, args, sharedMem, stream, 1, &_time_ms, &iters, 10000);
-//             time_ms = _time_ms / iters;
-
-//             std::cout << "\t" << config << " Time: " << time_ms << std::endl;
-//         }
-
-//         if (time_ms < best_time_ms) {
-//             best_config = config;
-//             best_time_ms = time_ms;
-//         }
-//     }
-
-//     if (best_time_ms >= USE_TRANSFORM_THRESHOLD * base_time_ms) {
-//         best_config = base_config;
-//     }
-
-//     std::cout << "Choosen: " << best_config << std::endl;
-//     // TallyServer::server->save_performance_cache();
-
-//     return best_config;
-// }
 
 // Instantiate template
 template
@@ -223,7 +154,6 @@ CUresult CudaLaunchConfig::launch(
             cu_func = TallyServer::server->original_kernel_map[func].first;
         } else if constexpr (std::is_same<T, CUfunction>::value) {
             cu_func = func;
-            // std::cout << "cu_func: " << cu_func << std::endl;
         } else {
             throw std::runtime_error("Unsupported typename");
         }

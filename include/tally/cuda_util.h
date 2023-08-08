@@ -25,6 +25,14 @@ inline void implicit_init_cuda_ctx()
     cudaFree(arr);
 }
 
+inline std::string get_dim3_str(dim3 dim)
+{
+    std::string dim_str = "(" + std::to_string(dim.x) + ", " + 
+                                std::to_string(dim.y) + ", " +
+                                std::to_string(dim.z) + ")";
+    return dim_str;
+}
+
 inline bool is_dev_addr(const std::vector<DeviceMemoryKey> &dev_addr_map, const void *addr)
 {
     for (auto &dev_addr_key : dev_addr_map) {
