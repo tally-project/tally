@@ -34,11 +34,6 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
 
     if constexpr (std::is_same<T, const void *>::value) {
         assert(_kernel_addr_to_args.find(func) != _kernel_addr_to_args.end());
-
-        if (_kernel_addr_to_args.find(func) == _kernel_addr_to_args.end()) {
-            throw std::runtime_error("_kernel_addr_to_args.find(func) == _kernel_addr_to_args.end()");
-        }
-
         arg_sizes = _kernel_addr_to_args[func];
     } else if constexpr (std::is_same<T, CUfunction>::value) {
         assert(_jit_kernel_addr_to_args.find(func) != _jit_kernel_addr_to_args.end());
@@ -49,8 +44,6 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
 
     auto argc = arg_sizes.size();
 
-    // std::cout << "argc: " << argc << std::endl;
- 
     void *__args_arr[MAXIMUM_ARG_COUNT];
     int __args_idx = 0;
     int offset = 0;

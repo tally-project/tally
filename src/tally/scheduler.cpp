@@ -43,6 +43,19 @@ void TallyServer::profile_kernel_wise()
         for (auto &pair : client_data_all) {
             auto &client_data = pair.second;
             if (client_data.has_kernel) {
+
+                auto kernel_name = host_func_to_demangled_kernel_name_map[client_data.launch_call.func];
+
+                // Skip certain kernels
+                if (kernel_name == "InitializeMatrix_kernel(float*, int, int, int)" ||
+                    containsSubstring(kernel_name, "cutlass::reference")) {
+
+                    client_data.err = (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, false, 0, nullptr, nullptr, -1);
+                    client_data.has_kernel = false;
+                    continue;
+
+                }
+
                 kernel_count++;
             }
         }
@@ -62,6 +75,7 @@ void TallyServer::profile_kernel_wise()
     }
 
     CudaLaunchCall launch_calls[2];
+    CudaLaunchCallMeta launch_call_metas[2];
     std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> kernel_partials[2];
     std::string kernel_names[2];
 
@@ -70,8 +84,17 @@ void TallyServer::profile_kernel_wise()
 
         auto &client_data = pair.second;
         launch_calls[index] = client_data.launch_call; 
+        launch_call_metas[index] = client_data.launch_call_meta;
         kernel_partials[index] = *client_data.kernel_to_dispatch;
         kernel_names[index] = host_func_to_demangled_kernel_name_map[client_data.launch_call.func];
+
+        // For now just print the meta data
+        std::cout << kernel_names[index] << ":" << std::endl;
+        std::cout << "max_threads_per_block: " << launch_call_metas[index].max_threads_per_block << std::endl;
+        std::cout << "static_shmem_size_bytes: " << launch_call_metas[index].static_shmem_size_bytes << std::endl;
+        std::cout << "num_regs: " << launch_call_metas[index].num_regs << std::endl;
+        std::cout << "max_dynamic_shmem_size_bytes: " << launch_call_metas[index].max_dynamic_shmem_size_bytes << std::endl;
+
         index++;
     }
 
@@ -178,7 +201,7 @@ void TallyServer::profile_kernel_wise()
                 // Some kernels experiment 100x slowdown after applying PTB
                 // for those we cannot run fixed workload experiment, so will skip them
                 if (norm_speed < 0.2) {
-                    std::cerr << "Kernel speed after applying PTB is less than 20% of the original speed" << "\n";
+                    std::cerr << "Kernel " << kernel_names[i] << " speed after applying PTB is less than 20% of the original speed" << "\n";
                     std::cerr << "Skipping kernel-pair co-located experiments" << std::endl;
                     skip_colocate_exp = true;
                 }

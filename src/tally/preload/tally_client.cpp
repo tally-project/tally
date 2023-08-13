@@ -410,6 +410,14 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
+
+    // std::cout << "blockDim: " << blockDim.x << ", " << blockDim.y << ", " << blockDim.z << std::endl;
+
+    // cudaFuncAttributes attr;
+
+    // cudaFuncGetAttributes (&attr, func );
+    // std::cout << "attr.numRegs: " << attr.numRegs << std::endl;
+
     auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
 
 #else

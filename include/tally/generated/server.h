@@ -53,6 +53,7 @@ public:
 	std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> *kernel_to_dispatch = nullptr;
 	std::atomic<bool> has_kernel = false;
 	CudaLaunchCall launch_call;
+	CudaLaunchCallMeta launch_call_meta;
 	CUresult err;
 
     cudaStream_t default_stream = nullptr;

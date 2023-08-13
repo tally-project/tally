@@ -130,3 +130,21 @@ target_include_directories(turing_tensorop_gemm
     PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
     PUBLIC  ${PROJECT_SOURCE_DIR}/tests
 )
+
+add_executable(ampere_tf32_tensorop_gemm ampere_tf32_tensorop_gemm.cu)
+
+target_link_libraries(ampere_tf32_tensorop_gemm
+    cuda
+    cudart
+)
+
+set_target_properties(ampere_tf32_tensorop_gemm PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_include_directories(ampere_tf32_tensorop_gemm
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
+    PUBLIC  ${PROJECT_SOURCE_DIR}/tests
+)

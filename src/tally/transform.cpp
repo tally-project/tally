@@ -47,7 +47,6 @@ std::string gen_ptb_ptx(std::string ptx_path)
     uint32_t num_additional_pred_regs = 2;
 
     std::string ptb_ptx_code = "";
-    bool found = false;
 
     boost::timer::progress_display progress(ptx_code_str.size());
     while (std::getline(ss, line, '\n')) {
@@ -150,11 +149,20 @@ std::string gen_ptb_ptx(std::string ptx_path)
 
                 if (strip(kernel_line) == "{") {
 
-                    ptb_ptx_code += kernel_line + "\n";
-
                     if (brace_encountered) {
+                        ptb_ptx_code += kernel_line + "\n";
                         continue;
                     }
+
+                    // if (kernel_name == "_ZN7cutlass6KernelINS_4gemm6kernel4GemmINS1_11threadblock12MmaPipelinedINS1_9GemmShapeILi128ELi256ELi64EEENS_9transform11threadblock22PredicatedTileIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLinearShapeILi64ELi128EEELi256ENSG_ILi4ELi8EEELi16EEELi16ELb0ENSD_9NoPermuteEEENS9_19RegularTileIteratorISC_aNSD_37RowMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi0ESJ_Li16EEENSA_INSB_ILi64ELi256EEEaNSD_11ColumnMajorELi0ENSF_INSG_ILi64ELi256EEELi256ESI_Li16EEELi16ELb0ESK_EENSM_ISQ_aNSD_40ColumnMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi1EST_Li16EEEiSE_NS4_9MmaPolicyINS1_4warp11MmaTensorOpINS6_ILi64ELi64ELi64EEEaSO_aSW_iSE_NSZ_17MmaTensorOpPolicyINS_4arch3MmaINS6_ILi8ELi8ELi16EEELi32EaSE_aSR_iSE_NS13_21OpMultiplyAddSaturateEEENSB_ILi1ELi1EEEEELi1ELb0EbEENSB_ILi0ELi0EEES1B_Li1EEENS_21NumericArrayConverterIaaLi32ELNS_15FloatRoundStyleE2ENS8_6thread14UnaryTransform8IdentityEEENS1D_IaaLi64ELS1E_2ES1H_EEbEENS_8epilogue11threadblock8EpilogueIS7_S1A_Li1ENS1M_22PredicatedTileIteratorINS1M_26OutputTileOptimalThreadMapINS1M_15OutputTileShapeILi256ELi8ELi2ELi1ELi1EEENS1Q_ILi1ELi8ELi1ELi1ELi8EEELi256ELi4ELi32EEEiLb0ESK_Lb0EEENS1L_4warp24FragmentIteratorTensorOpIS11_S15_iNS_5ArrayIiLi2ELb1EEESE_EENS1V_20TileIteratorTensorOpIS11_S15_iSE_EENS1M_18SharedLoadIteratorINS1T_18CompactedThreadMapEiLi16EEENS1L_6thread17LinearCombinationIiLi4EiiLNS25_9ScaleType4KindE0ELS1E_2EiEENSB_ILi0ELi8EEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEELb0EEEEEvNT_6ParamsE") {
+                    //     ptb_ptx_code += ".maxnreg 180\n";
+                    // }
+
+                    // if (kernel_name == "_ZN7cutlass6KernelINS_4gemm6kernel4GemmINS1_11threadblock12MmaPipelinedINS1_9GemmShapeILi128ELi128ELi8EEENS_9transform11threadblock22PredicatedTileIteratorINS_11MatrixShapeILi128ELi8EEEfNS_6layout8RowMajorELi1ENS8_30PitchLinearStripminedThreadMapINS_16PitchLinearShapeILi8ELi128EEELi256ELi1EEELi1ELb0ENSD_9NoPermuteEEENS9_19RegularTileIteratorISC_fNSD_11ColumnMajorELi1ENS8_33TransposePitchLinearThreadMapSimtISI_EELi4EEENSA_INSB_ILi8ELi128EEEfSE_Li0ENSF_INSG_ILi128ELi8EEELi256ELi1EEELi1ELb0ESJ_EENSL_ISQ_fSE_Li0ESS_Li4EEEfSE_NS4_9MmaPolicyINS1_4warp7MmaSimtINS6_ILi32ELi64ELi8EEEfSM_fSE_fSE_NSW_13MmaSimtPolicyINSB_ILi4ELi8EEENSD_19RowMajorInterleavedILi2EEENS6_ILi4ELi4ELi1EEEEELi1ELNS_16ComplexTransformE0ELS15_0EbEENSB_ILi4ELi0EEENSB_ILi0ELi0EEELi1EEENS_21NumericArrayConverterIffLi4ELNS_15FloatRoundStyleE2ENS8_6thread14UnaryTransform8IdentityEEES1F_bEENS_8epilogue11threadblock8EpilogueIS7_S16_Li1ENS1I_22PredicatedTileIteratorINS1I_26OutputTileOptimalThreadMapINS1I_15OutputTileShapeILi128ELi1ELi4ELi4ELi1EEENS1M_ILi1ELi4ELi2ELi1ELi8EEELi256ELi1ELi32EEEfLb0ESJ_Lb0EEENS1H_4warp20FragmentIteratorSimtISY_NS1_6thread3MmaINS6_ILi8ELi8ELi1EEEfSM_fSE_fSE_NS_4arch13OpMultiplyAddEbEESE_S14_EENS1R_16TileIteratorSimtISY_S1Y_fSE_S14_EENS1I_18SharedLoadIteratorINS1P_18CompactedThreadMapEfLi4EEENS1H_6thread17LinearCombinationIfLi1EffLNS25_9ScaleType4KindE0ELS1B_2EfEENSB_ILi0ELi17EEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEELb0EEEEEvNT_6ParamsE") {
+                    //     ptb_ptx_code += ".maxnreg 76\n";
+                    // }
+
+                    ptb_ptx_code += kernel_line + "\n";
     
                     brace_encountered = true;
 
@@ -255,12 +263,6 @@ std::string gen_ptb_ptx(std::string ptx_path)
         }
     }
 
-    if (found) {
-        std::cout << "ptb_ptx_code:" << std::endl;
-        std::cout << ptb_ptx_code << std::endl;
-        exit(0);
-    }
-
     return ptb_ptx_code;
 }
 
@@ -289,7 +291,7 @@ std::string gen_sliced_ptx(std::string ptx_path)
     std::stringstream ss(ptx_code_str);
     std::string line;
     
-    std::string ptb_ptx_code = "";
+    std::string sliced_ptx_code = "";
 
     boost::regex kernel_name_pattern("(\\.visible\\s+)?\\.entry (\\w+)");
     boost::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
@@ -329,7 +331,7 @@ std::string gen_sliced_ptx(std::string ptx_path)
         if (record_kernel) {
             kernel_lines.push_back(line);
         } else {
-            ptb_ptx_code += line + "\n";
+            sliced_ptx_code += line + "\n";
         }
 
         int32_t numLeftBrace = countLeftBrace(line);
@@ -390,7 +392,7 @@ std::string gen_sliced_ptx(std::string ptx_path)
 
                 if (strip(kernel_line) == "{") {
 
-                    ptb_ptx_code += kernel_line + "\n";
+                    sliced_ptx_code += kernel_line + "\n";
 
                     if (brace_encountered) {
                         continue;
@@ -399,35 +401,35 @@ std::string gen_sliced_ptx(std::string ptx_path)
                     brace_encountered = true;
 
                     // Perform actions at the top
-                    ptb_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
+                    sliced_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
 
                     // Load blockOffset.x
-                    ptb_ptx_code += "ld.param.u32 " + blockOffset_x_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "];\n";
+                    sliced_ptx_code += "ld.param.u32 " + blockOffset_x_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "];\n";
                     // Load blockOffset.y
-                    ptb_ptx_code += "ld.param.u32 " + blockOffset_y_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+4];\n";
+                    sliced_ptx_code += "ld.param.u32 " + blockOffset_y_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+4];\n";
                     // Load blockOffset.z
-                    ptb_ptx_code += "ld.param.u32 " + blockOffset_z_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+8];\n";
+                    sliced_ptx_code += "ld.param.u32 " + blockOffset_z_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+8];\n";
 
                     // Load blockIdx.x
-                    ptb_ptx_code += "mov.u32 " + blockIdx_x_reg + ", %ctaid.x;\n";
+                    sliced_ptx_code += "mov.u32 " + blockIdx_x_reg + ", %ctaid.x;\n";
                     // Load blockIdx.y
-                    ptb_ptx_code += "mov.u32 " + blockIdx_y_reg + ", %ctaid.y;\n";
+                    sliced_ptx_code += "mov.u32 " + blockIdx_y_reg + ", %ctaid.y;\n";
                     // Load blockIdx.z
-                    ptb_ptx_code += "mov.u32 " + blockIdx_z_reg + ", %ctaid.z;\n";
+                    sliced_ptx_code += "mov.u32 " + blockIdx_z_reg + ", %ctaid.z;\n";
 
                     // new_blockIdx.x = blockIdx.x + blockOffset.x
-                    ptb_ptx_code += "add.u32 " + new_blockIdx_x_reg + ", " + blockIdx_x_reg + ", " + blockOffset_x_reg + ";\n";
+                    sliced_ptx_code += "add.u32 " + new_blockIdx_x_reg + ", " + blockIdx_x_reg + ", " + blockOffset_x_reg + ";\n";
                     // new_blockIdx.y = blockIdx.y + blockOffset.y
-                    ptb_ptx_code += "add.u32 " + new_blockIdx_y_reg + ", " + blockIdx_y_reg + ", " + blockOffset_y_reg + ";\n";
+                    sliced_ptx_code += "add.u32 " + new_blockIdx_y_reg + ", " + blockIdx_y_reg + ", " + blockOffset_y_reg + ";\n";
                     // new_blockIdx.x = blockIdx.x + blockOffset.x
-                    ptb_ptx_code += "add.u32 " + new_blockIdx_z_reg + ", " + blockIdx_z_reg + ", " + blockOffset_z_reg + ";\n";
+                    sliced_ptx_code += "add.u32 " + new_blockIdx_z_reg + ", " + blockIdx_z_reg + ", " + blockOffset_z_reg + ";\n";
 
                     continue;
                 }
 
                 if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
-                    ptb_ptx_code += kernel_line + ",\n";
-                    ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12]\n";
+                    sliced_ptx_code += kernel_line + ",\n";
+                    sliced_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12]\n";
                     continue;
                 }
 
@@ -440,13 +442,11 @@ std::string gen_sliced_ptx(std::string ptx_path)
                     kernel_line = boost::regex_replace(kernel_line, pattern, pair.second);
                 }
 
-                ptb_ptx_code += kernel_line + "\n";
+                sliced_ptx_code += kernel_line + "\n";
             }
             continue;
         }
     }
 
-    // std::cout << "Processing done" << std::endl;
-
-    return ptb_ptx_code;
+    return sliced_ptx_code;
 }

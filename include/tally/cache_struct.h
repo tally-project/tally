@@ -156,6 +156,14 @@ struct CudaLaunchKeyConfigResult {
     KernelProfileMetrics metrics;
 };
 
+static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigResult& res)
+{
+    os << "CudaLaunchKeyConfigResult: \n";
+    os << "\tNorm Speed: " << res.metrics.norm_speed;
+
+    return os;
+}
+
 struct CudaLaunchKeyConfigPairResult {
     std::pair<CudaLaunchKeyConfig, KernelProfileMetrics> config_key_norm_speed_1;
     std::pair<CudaLaunchKeyConfig, KernelProfileMetrics> config_key_norm_speed_2;
@@ -177,7 +185,9 @@ static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPairR
     float norm_speed_2 = res.config_key_norm_speed_2.second.norm_speed;
 
     os << "CudaLaunchKeyConfigPairResult: \n";
-    os << "\tK1 Norm Speed: " << norm_speed_1 << " K2 Norm Speed: " << norm_speed_2 << " Sum: " << res.get_sum_norm_speed();
+    os << "\tK1 Norm Speed: " << norm_speed_1 << " K2 Norm Speed: " << norm_speed_2 << " Sum: " << res.get_sum_norm_speed() << "\n";
+    os << "Fixed Workload Performance: speedup: " << res.fixed_workload_perf.speedup << "\n";
+    os << "Unfair Workload Performance: speedup: " << res.unfair_workload_perf.speedup << "\n";
 
     return os;
 }
@@ -295,12 +305,26 @@ public:
         CudaLaunchKeyConfig key_config(launch_key,launch_config);
         single_kernel_perf_map[key_config] = res;
         write_single_kernel_perf_to_file();
+
+        std::cout << "=============== Single Kernel Profile Result ===============" << std::endl;
+
+        std::cout << launch_key << std::endl;
+        std::cout << launch_config << std::endl;
+        std::cout << res << std::endl;
+        std::cout << std::endl;
     }
 
     void set_single_kernel_best_config(CudaLaunchKey &launch_key, CudaLaunchKeyConfigResult &res)
     {
         single_kernel_best_config_map[launch_key] = res;
         write_single_kernel_best_config_to_file();
+
+        std::cout << "=============== Single Kernel Best Result ===============" << std::endl;
+
+        std::cout << launch_key << std::endl;
+        std::cout << res.config << std::endl;
+        std::cout << res << std::endl;
+        std::cout << std::endl;
     }
 
     void set_kernel_pair_perf(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, 
@@ -317,6 +341,15 @@ public:
         kernel_pair_perf_map[key_pair][key_config_pair] = res;
 
         write_kernel_pair_perf_to_file();
+
+        std::cout << "=============== Kernel Pair Profile Result ===============" << std::endl;
+
+        std::cout << launch_key_1 << std::endl;
+        std::cout << launch_config_1 << std::endl;
+        std::cout << launch_key_2 << std::endl;
+        std::cout << launch_config_2 << std::endl;
+        std::cout << res << std::endl;
+        std::cout << std::endl;
     }
 
     void set_kernel_pair_best_config(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, CudaLaunchKeyConfigPairResult &res)
@@ -325,6 +358,18 @@ public:
         kernel_pair_best_config_map[key_pair] = res;
 
         write_kernel_pair_best_config_to_file();
+
+        std::cout << "=============== Kernel Pair Best Result ===============" << std::endl;
+
+        auto launch_config_1 = res.config_key_norm_speed_1.first.config;
+        auto launch_config_2 = res.config_key_norm_speed_2.first.config;
+
+        std::cout << launch_key_1 << std::endl;
+        std::cout << launch_config_1 << std::endl;
+        std::cout << launch_key_2 << std::endl;
+        std::cout << launch_config_2 << std::endl;
+        std::cout << res << std::endl;
+        std::cout << std::endl;
     }
 
     void write_single_kernel_perf_to_file() const

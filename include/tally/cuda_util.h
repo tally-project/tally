@@ -33,6 +33,52 @@ inline std::string get_dim3_str(dim3 dim)
     return dim_str;
 }
 
+inline CUfunction_attribute convert_func_attribute(cudaFuncAttribute attr) {
+    switch(attr) {
+        case cudaFuncAttributeMaxDynamicSharedMemorySize:
+            return CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES;
+        case cudaFuncAttributePreferredSharedMemoryCarveout:
+            return CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT;
+        case cudaFuncAttributeClusterDimMustBeSet:
+            return CU_FUNC_ATTRIBUTE_CLUSTER_SIZE_MUST_BE_SET;
+        case cudaFuncAttributeRequiredClusterWidth:
+            return CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_WIDTH;
+        case cudaFuncAttributeRequiredClusterHeight:
+            return CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_HEIGHT;
+        case cudaFuncAttributeRequiredClusterDepth: 
+            return CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_DEPTH;
+        case cudaFuncAttributeNonPortableClusterSizeAllowed:
+            return CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED;
+        case cudaFuncAttributeClusterSchedulingPolicyPreference:
+            return CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE;
+        default:
+            throw std::runtime_error("unknown type");
+    }
+}
+
+inline std::string get_func_attr_str(CUfunction_attribute attr) {
+    switch(attr) {
+        case CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES:
+            return "CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES";
+        case CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT:
+            return "CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT";
+        case CU_FUNC_ATTRIBUTE_CLUSTER_SIZE_MUST_BE_SET:
+            return "CU_FUNC_ATTRIBUTE_CLUSTER_SIZE_MUST_BE_SET";
+        case CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_WIDTH:
+            return "CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_WIDTH";
+        case CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_HEIGHT:
+            return "CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_HEIGHT";
+        case CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_DEPTH: 
+            return "CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_DEPTH";
+        case CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED:
+            return "CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED";
+        case CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE:
+            return "CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE";
+        default:
+            throw std::runtime_error("unknown type");
+    }
+}
+
 inline bool is_dev_addr(const std::vector<DeviceMemoryKey> &dev_addr_map, const void *addr)
 {
     for (auto &dev_addr_key : dev_addr_map) {

@@ -147,9 +147,6 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
         stream = client_data_all[client_uid].default_stream;
     }
 
-    // std::cout << "args->host_func: " << args->host_func << std::endl;
-    // std::cout << "client_data_all[client_uid]._kernel_client_addr_mapping.size(): " << client_data_all[client_uid]._kernel_client_addr_mapping.size() << std::endl;
-
     assert(client_data_all[client_uid]._kernel_client_addr_mapping.find(args->host_func) != client_data_all[client_uid]._kernel_client_addr_mapping.end());
     if (client_data_all[client_uid]._kernel_client_addr_mapping.find(args->host_func) == client_data_all[client_uid]._kernel_client_addr_mapping.end()) {
         std::cout << "client_data_all[client_uid]._kernel_client_addr_mapping.size(): " << client_data_all[client_uid]._kernel_client_addr_mapping.size() << std::endl;
@@ -157,12 +154,19 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
     }
 
     const void *server_func_addr = client_data_all[client_uid]._kernel_client_addr_mapping[args->host_func];
-    
-    // std::cout << host_func_to_demangled_kernel_name_map[server_func_addr] << std::endl;
-    
     auto partial = cudaLaunchKernel_Partial(server_func_addr, args->gridDim, args->blockDim, args->sharedMem, stream, args->params);
 
     while (client_data_all[client_uid].has_kernel) {}
+
+#ifdef PROFILE_KERNEL_WISE
+    auto cu_func = ptb_kernel_map[server_func_addr].first;
+    auto launch_call_meta_ptr = &(client_data_all[client_uid].launch_call_meta);
+    
+    cuFuncGetAttribute (&(launch_call_meta_ptr->max_threads_per_block), CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, cu_func);
+    cuFuncGetAttribute (&(launch_call_meta_ptr->static_shmem_size_bytes), CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, cu_func);
+    cuFuncGetAttribute (&(launch_call_meta_ptr->num_regs), CU_FUNC_ATTRIBUTE_NUM_REGS, cu_func);
+    cuFuncGetAttribute (&(launch_call_meta_ptr->max_dynamic_shmem_size_bytes), CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, cu_func);
+#endif
 
     client_data_all[client_uid].launch_call = CudaLaunchCall(server_func_addr, args->gridDim, args->blockDim);
     client_data_all[client_uid].kernel_to_dispatch = &partial;
@@ -2541,17 +2545,32 @@ void TallyServer::handle_cuCtxCreate_v2(void *__args, iox::popo::UntypedServer *
 void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudaFuncSetAttribute");
+    
 	auto args = (struct cudaFuncSetAttributeArg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+    
+    const void *server_func_addr = client_data_all[client_uid]._kernel_client_addr_mapping[args->func];
+    auto cu_func = original_kernel_map[server_func_addr].first;
+    auto cu_func_sliced = sliced_kernel_map[server_func_addr].first;
+    auto cu_func_ptb = ptb_kernel_map[server_func_addr].first;
+
+    auto cu_attr = convert_func_attribute(args->attr);
+
+    cuFuncSetAttribute(cu_func, cu_attr, args->value);
+    cuFuncSetAttribute(cu_func_sliced, cu_attr, args->value);
+    cuFuncSetAttribute(cu_func_ptb, cu_attr, args->value);
+
+    std::string set_attr_log = "Setting attribute " + get_func_attr_str(cu_attr) + " to value " + std::to_string(args->value);
+    TALLY_SPD_LOG(set_attr_log);
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaError_t*>(responsePayload);
-            *response = cudaFuncSetAttribute(
-				args->func,
-				args->attr,
-				args->value
-            );
+
+            *response = cudaSuccess;
+
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })

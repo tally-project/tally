@@ -51,6 +51,24 @@ struct std::hash<CudaLaunchCall>
     }
 };
 
+struct CudaLaunchCallMeta {
+    // Set at compile time
+    int max_threads_per_block;
+
+    // Can be set at runtime
+    int static_shmem_size_bytes;
+
+    // Set at compile time
+    int num_regs;
+
+    // Can be set at runtime
+    int max_dynamic_shmem_size_bytes;
+
+    // Not sure what this is but it can be set at runtime
+    // Include here just to keep in mind
+    int preferred_shmem_carveout;
+};
+
 struct CudaLaunchCallPair {
     CudaLaunchCall launch_call_1;
     CudaLaunchCall launch_call_2;
@@ -241,8 +259,8 @@ struct KernelProfileMetrics {
 };
 
 struct WorkloadPerformance {
-    float latency_ms;
-    float speedup;
+    float latency_ms = 0.;
+    float speedup = 0.;
 
     nlohmann::json json() const
     {
