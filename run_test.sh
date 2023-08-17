@@ -44,6 +44,7 @@ test_list=(
     "./build/tests/cublasLt_test"
     "./build/tests/basic_gemm"
     "./build/tests/turing_tensorop_gemm"
+    "./build/tests/ampere_tf32_tensorop_gemm"
     "./build/bin/samples"
     "./tests/cudnn_samples_v8/conv_sample/conv_sample"
     "./tests/cudnn_samples_v8/mnistCUDNN/mnistCUDNN"

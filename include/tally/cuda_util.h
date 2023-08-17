@@ -8,6 +8,8 @@
 #include <cassert>
 #include <map>
 
+#include <tally/cuda_launch.h>
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cudnn.h>
@@ -333,7 +335,7 @@ std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path);
 void register_kernels_from_ptx_fatbin(
     std::vector<std::pair<std::string, std::string>> &ptx_fatbin_strs,
     std::map<std::string, const void *> &kernel_name_map,
-    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> &kernel_map
+    std::unordered_map<const void *, WrappedCUfunction> &kernel_map
 );
 
 void register_jit_kernel_from_ptx_fatbin(

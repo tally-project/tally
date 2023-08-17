@@ -12,6 +12,39 @@
 
 #include <tally/env.h>
 
+struct CudaLaunchMetadata {
+    int max_threads_per_block;
+    int static_shmem_size_bytes;
+    int num_regs;
+    int max_dynamic_shmem_size_bytes;
+
+    // runtime passed in through cudaLaunchKernel
+    int dynamic_shmem_size_bytes = 0;
+
+    nlohmann::json json() const
+    {
+        return nlohmann::json({
+            {"max_threads_per_block", max_threads_per_block},
+            {"static_shmem_size_bytes", static_shmem_size_bytes},
+            {"num_regs", num_regs},
+            {"max_dynamic_shmem_size_bytes", max_dynamic_shmem_size_bytes},
+            {"dynamic_shmem_size_bytes", dynamic_shmem_size_bytes},
+        });
+    }
+};
+
+static std::ostream& operator<<(std::ostream& os, const CudaLaunchMetadata& meta)
+{
+    os << "CudaLaunchMetadata: \n";
+    os << "\tmax_threads_per_block: " << meta.max_threads_per_block << "\n";
+    os << "\tstatic_shmem_size_bytes: " << meta.static_shmem_size_bytes << "\n";
+    os << "\tnum_regs: " << meta.num_regs << "\n";
+    os << "\tmax_dynamic_shmem_size_bytes: " << meta.max_dynamic_shmem_size_bytes << "\n";
+    os << "\tdynamic_shmem_size_bytes: " << meta.dynamic_shmem_size_bytes;
+
+    return os;
+}
+
 // Used at runtime as key to launch configuration
 struct CudaLaunchCall {
     const void *func;
@@ -28,7 +61,6 @@ struct CudaLaunchCall {
 
     bool operator==(const CudaLaunchCall &other) const
     {
-
         bool res = (func == other.func
                     && gridDim.x == other.gridDim.x
                     && gridDim.y == other.gridDim.y
@@ -49,24 +81,6 @@ struct std::hash<CudaLaunchCall>
         auto _hash = std::hash<const void *>()(k.func);
         return _hash;
     }
-};
-
-struct CudaLaunchCallMeta {
-    // Set at compile time
-    int max_threads_per_block;
-
-    // Can be set at runtime
-    int static_shmem_size_bytes;
-
-    // Set at compile time
-    int num_regs;
-
-    // Can be set at runtime
-    int max_dynamic_shmem_size_bytes;
-
-    // Not sure what this is but it can be set at runtime
-    // Include here just to keep in mind
-    int preferred_shmem_carveout;
 };
 
 struct CudaLaunchCallPair {
@@ -274,12 +288,16 @@ struct WorkloadPerformance {
 struct CudaLaunchCallConfigResult {
     CudaLaunchCall key;
     CudaLaunchConfig config;
+    CudaLaunchMetadata meta_data;
     KernelProfileMetrics metrics;
 };
 
 struct CudaLaunchCallConfigPairResult {
     std::pair<CudaLaunchCallConfig, KernelProfileMetrics> call_config_norm_speed_1;
     std::pair<CudaLaunchCallConfig, KernelProfileMetrics> call_config_norm_speed_2;
+
+    std::pair<CudaLaunchCallConfig, CudaLaunchMetadata> call_config_meta_data_1;
+    std::pair<CudaLaunchCallConfig, CudaLaunchMetadata> call_config_meta_data_2;
 
     // For a fixed workload across all configs, what's the speedup against MPS?
     WorkloadPerformance fixed_workload_perf;
@@ -292,5 +310,11 @@ struct CudaLaunchCallConfigPairResult {
     }
 };
 
+struct WrappedCUfunction {
+    CUfunction func;
+    uint32_t num_args;
+
+    CudaLaunchMetadata meta_data;
+};
 
 #endif // TALLY_CUDA_LAUNCH_H

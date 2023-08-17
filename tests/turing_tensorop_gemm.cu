@@ -178,9 +178,9 @@ using Gemm = cutlass::gemm::device::Gemm<ElementInputA,
 
 int run() {
 
-  const int length_m = 2048;
-  const int length_n = 2048;
-  const int length_k = 2048;
+  const int length_m = 5120;
+  const int length_n = 4096;
+  const int length_k = 4096;
 
   // Create a tuple of problem size for matrix multiplication
   cutlass::gemm::GemmCoord problem_size(length_m, length_n, length_k);

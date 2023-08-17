@@ -158,16 +158,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
 
     while (client_data_all[client_uid].has_kernel) {}
 
-#ifdef PROFILE_KERNEL_WISE
-    auto cu_func = ptb_kernel_map[server_func_addr].first;
-    auto launch_call_meta_ptr = &(client_data_all[client_uid].launch_call_meta);
-    
-    cuFuncGetAttribute (&(launch_call_meta_ptr->max_threads_per_block), CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, cu_func);
-    cuFuncGetAttribute (&(launch_call_meta_ptr->static_shmem_size_bytes), CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, cu_func);
-    cuFuncGetAttribute (&(launch_call_meta_ptr->num_regs), CU_FUNC_ATTRIBUTE_NUM_REGS, cu_func);
-    cuFuncGetAttribute (&(launch_call_meta_ptr->max_dynamic_shmem_size_bytes), CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, cu_func);
-#endif
-
+    client_data_all[client_uid].dynamic_shmem_size_bytes = args->sharedMem;
     client_data_all[client_uid].launch_call = CudaLaunchCall(server_func_addr, args->gridDim, args->blockDim);
     client_data_all[client_uid].kernel_to_dispatch = &partial;
     client_data_all[client_uid].has_kernel = true;
@@ -2552,9 +2543,9 @@ void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedSe
     int32_t client_uid = msg_header->client_id;
     
     const void *server_func_addr = client_data_all[client_uid]._kernel_client_addr_mapping[args->func];
-    auto cu_func = original_kernel_map[server_func_addr].first;
-    auto cu_func_sliced = sliced_kernel_map[server_func_addr].first;
-    auto cu_func_ptb = ptb_kernel_map[server_func_addr].first;
+    auto cu_func = original_kernel_map[server_func_addr].func;
+    auto cu_func_sliced = sliced_kernel_map[server_func_addr].func;
+    auto cu_func_ptb = ptb_kernel_map[server_func_addr].func;
 
     auto cu_attr = convert_func_attribute(args->attr);
 

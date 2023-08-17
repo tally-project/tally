@@ -30,6 +30,21 @@ struct CudaLaunchKey {
         );
     }
 
+    uint64_t block_size() const
+    {
+        return blockDim.x * blockDim.y * blockDim.z;
+    }
+
+    uint64_t total_threads() const
+    {
+        return gridDim.x * gridDim.y * gridDim.z * block_size();
+    }
+
+    uint64_t total_blocks() const
+    {
+        return gridDim.x * gridDim.y * gridDim.z;
+    }
+
     nlohmann::json json() const
     {
         return nlohmann::json({
@@ -153,13 +168,15 @@ static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPair&
 struct CudaLaunchKeyConfigResult {
     CudaLaunchKey key;
     CudaLaunchConfig config;
+    CudaLaunchMetadata meta_data;
     KernelProfileMetrics metrics;
 };
 
 static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigResult& res)
 {
     os << "CudaLaunchKeyConfigResult: \n";
-    os << "\tNorm Speed: " << res.metrics.norm_speed;
+    os << "\tNorm Speed: " << res.metrics.norm_speed << "\n";
+    os << "\tLatency: " << res.metrics.latency_ms << " ms";
 
     return os;
 }
@@ -167,6 +184,9 @@ static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigResul
 struct CudaLaunchKeyConfigPairResult {
     std::pair<CudaLaunchKeyConfig, KernelProfileMetrics> config_key_norm_speed_1;
     std::pair<CudaLaunchKeyConfig, KernelProfileMetrics> config_key_norm_speed_2;
+
+    std::pair<CudaLaunchKeyConfig, CudaLaunchMetadata> config_key_meta_data_1;
+    std::pair<CudaLaunchKeyConfig, CudaLaunchMetadata> config_key_meta_data_2;
 
     // For a fixed workload across all configs, what's the speedup against MPS?
     WorkloadPerformance fixed_workload_perf;
@@ -177,6 +197,71 @@ struct CudaLaunchKeyConfigPairResult {
     float get_sum_norm_speed() const {
         return config_key_norm_speed_1.second.norm_speed + config_key_norm_speed_2.second.norm_speed;
     }
+
+    std::pair<bool, std::string> exceeds_hardware_limit() const
+    {
+        auto key_1 = config_key_norm_speed_1.first.key;
+        auto key_2 = config_key_norm_speed_2.first.key;
+
+        auto config_1 = config_key_norm_speed_1.first.config;
+        auto config_2 = config_key_norm_speed_2.first.config;
+
+        auto meta_data_1 = config_key_meta_data_1.second;
+        auto meta_data_2 = config_key_meta_data_2.second;
+
+        uint64_t num_threads_1;
+        uint64_t num_threads_2;
+
+        uint64_t num_blocks_1;
+        uint64_t num_blocks_2;
+
+        if (config_1.use_original) {
+            num_threads_1 = key_1.total_threads() / CUDA_NUM_SM;
+            num_blocks_1 = key_1.total_blocks() / CUDA_NUM_SM;
+        } else {
+            num_threads_1 = key_1.block_size() * config_1.num_blocks_per_sm;
+            num_blocks_1 = config_1.num_blocks_per_sm;
+        }
+
+        if (config_2.use_original) {
+            num_threads_2 = key_2.total_threads() / CUDA_NUM_SM;
+            num_blocks_2 = key_2.total_blocks() / CUDA_NUM_SM;
+        } else {
+            num_threads_2 = key_2.block_size() * config_2.num_blocks_per_sm;
+            num_blocks_2 = config_2.num_blocks_per_sm;
+        }
+
+        uint64_t sum_threads = num_threads_1 + num_threads_2;
+
+        if (sum_threads > CUDA_MAX_NUM_THREADS_PER_SM) {
+            return std::make_pair<bool, std::string>(true, 
+                std::string("Exceeding threads per SM limit.") + 
+                std::string(" Limit: ") + std::to_string(CUDA_MAX_NUM_THREADS_PER_SM) +
+                std::string(" Total threads: ") + std::to_string(sum_threads));
+        }
+
+        uint64_t sum_regs = num_threads_1 * meta_data_1.num_regs + num_threads_2 * meta_data_2.num_regs;
+
+        if (sum_regs > CUDA_MAX_NUM_REGISTERS_PER_SM) {
+            return std::make_pair<bool, std::string>(true, 
+                std::string("Exceeding registers per SM limit.") + 
+                std::string(" Limit: ") + std::to_string(CUDA_MAX_NUM_REGISTERS_PER_SM) +
+                std::string(" Total regitsers: ") + std::to_string(sum_regs));
+        }
+
+
+        uint32_t total_shm_size = num_blocks_1 * (meta_data_1.static_shmem_size_bytes + meta_data_1.dynamic_shmem_size_bytes) + 
+                                  num_blocks_2 * (meta_data_2.static_shmem_size_bytes + meta_data_2.dynamic_shmem_size_bytes);
+
+        if (total_shm_size > CUDA_MAX_SHM_BYTES_PER_SM) {
+            return std::make_pair<bool, std::string>(true, 
+                std::string("Exceeding shared memory per SM limit.") + 
+                std::string(" Limit: ") + std::to_string(CUDA_MAX_SHM_BYTES_PER_SM) +
+                std::string(" Total shm size: ") + std::to_string(total_shm_size));
+        }
+
+        return std::make_pair<bool, std::string>(false, "");
+    }
 };
 
 static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPairResult& res)
@@ -184,10 +269,20 @@ static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPairR
     float norm_speed_1 = res.config_key_norm_speed_1.second.norm_speed;
     float norm_speed_2 = res.config_key_norm_speed_2.second.norm_speed;
 
+    auto check_hardware_limit = res.exceeds_hardware_limit();
+    auto exceed_limit = check_hardware_limit.first;
+    auto reason = check_hardware_limit.second;
+
     os << "CudaLaunchKeyConfigPairResult: \n";
     os << "\tK1 Norm Speed: " << norm_speed_1 << " K2 Norm Speed: " << norm_speed_2 << " Sum: " << res.get_sum_norm_speed() << "\n";
     os << "Fixed Workload Performance: speedup: " << res.fixed_workload_perf.speedup << "\n";
     os << "Unfair Workload Performance: speedup: " << res.unfair_workload_perf.speedup << "\n";
+    os << "ExceedsHardwareLimit: " << std::to_string(exceed_limit);
+
+    if (exceed_limit) {
+        os << "\n";
+        os << "ExceedsLimitReason: " << reason;
+    }
 
     return os;
 }
@@ -310,8 +405,9 @@ public:
 
         std::cout << launch_key << std::endl;
         std::cout << launch_config << std::endl;
+        std::cout << res.meta_data << std::endl;
         std::cout << res << std::endl;
-        std::cout << std::endl;
+        std::cout << "\n" << std::endl;
     }
 
     void set_single_kernel_best_config(CudaLaunchKey &launch_key, CudaLaunchKeyConfigResult &res)
@@ -323,8 +419,9 @@ public:
 
         std::cout << launch_key << std::endl;
         std::cout << res.config << std::endl;
+        std::cout << res.meta_data << std::endl;
         std::cout << res << std::endl;
-        std::cout << std::endl;
+        std::cout << "\n" << std::endl;
     }
 
     void set_kernel_pair_perf(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, 
@@ -346,10 +443,12 @@ public:
 
         std::cout << launch_key_1 << std::endl;
         std::cout << launch_config_1 << std::endl;
+        std::cout << res.config_key_meta_data_1.second << std::endl;
         std::cout << launch_key_2 << std::endl;
         std::cout << launch_config_2 << std::endl;
+        std::cout << res.config_key_meta_data_2.second << std::endl;
         std::cout << res << std::endl;
-        std::cout << std::endl;
+        std::cout << "\n" << std::endl;
     }
 
     void set_kernel_pair_best_config(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, CudaLaunchKeyConfigPairResult &res)
@@ -366,10 +465,12 @@ public:
 
         std::cout << launch_key_1 << std::endl;
         std::cout << launch_config_1 << std::endl;
+        std::cout << res.config_key_meta_data_1.second << std::endl;
         std::cout << launch_key_2 << std::endl;
         std::cout << launch_config_2 << std::endl;
+        std::cout << res.config_key_meta_data_2.second << std::endl;
         std::cout << res << std::endl;
-        std::cout << std::endl;
+        std::cout << "\n" << std::endl;
     }
 
     void write_single_kernel_perf_to_file() const
@@ -390,6 +491,7 @@ public:
 
             nlohmann::json entry = nlohmann::json({
                 {"LaunchConfig", key_config.config.json()},
+                {"LaunchMetadata", res.meta_data.json()},
                 {"ResultMetrics", res.metrics.json()}
             });
 
@@ -417,6 +519,7 @@ public:
 
             nlohmann::json entry = nlohmann::json({
                 {"LaunchConfig", best_res.config.json()},
+                {"LaunchMetadata", best_res.meta_data.json()},
                 {"Metrics", best_res.metrics.json()},
             });
 
@@ -455,12 +558,15 @@ public:
 
                 nlohmann::json entry = nlohmann::json({
                     {"LaunchConfig_1", config_1.json()},
+                    {"LaunchMetadata_1", res.config_key_meta_data_1.second.json()},
                     {"ResultMetrics_1", res.config_key_norm_speed_1.second.json()},
                     {"LaunchConfig_2", config_2.json()},
+                    {"LaunchMetadata_2", res.config_key_meta_data_2.second.json()},
                     {"ResultMetrics_2", res.config_key_norm_speed_2.second.json()},
                     {"FixedWorkloadPerf", res.fixed_workload_perf.json()},
                     {"UnfairWorkloadPerf", res.unfair_workload_perf.json()},
-                    {"SumNormSpeed", res.get_sum_norm_speed()}
+                    {"SumNormSpeed", res.get_sum_norm_speed()},
+                    {"ExceedsHardwareLimit", res.exceeds_hardware_limit()}
                 });
 
                 json[group_name]["Results"].push_back(entry);
@@ -492,12 +598,15 @@ public:
 
             nlohmann::json entry = nlohmann::json({
                 {"LaunchConfig_1", res.config_key_norm_speed_1.first.config.json()},
+                {"LaunchMetadata_1", res.config_key_meta_data_1.second.json()},
                 {"ResultMetrics_1", res.config_key_norm_speed_1.second.json()},
                 {"LaunchConfig_2", res.config_key_norm_speed_2.first.config.json()},
+                {"LaunchMetadata_2", res.config_key_meta_data_2.second.json()},
                 {"ResultMetrics_2", res.config_key_norm_speed_2.second.json()},
                 {"FixedWorkloadPerf", res.fixed_workload_perf.json()},
                 {"UnfairWorkloadPerf", res.unfair_workload_perf.json()},
-                {"SumNormSpeed", res.get_sum_norm_speed()}
+                {"SumNormSpeed", res.get_sum_norm_speed()},
+                {"ExceedsHardwareLimit", res.exceeds_hardware_limit()}
             });
 
             json[group_name]["Results"].push_back(entry);

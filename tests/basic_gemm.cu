@@ -455,7 +455,7 @@ int main(int argc, const char *arg[]) {
   //
 
   // GEMM problem dimensions.
-  int problem[3] = { 2048, 2048, 2048 };
+  int problem[3] = { 5120, 4096, 4096 };
 
   for (int i = 1; i < argc && i < 4; ++i) {
     std::stringstream ss(arg[i]);

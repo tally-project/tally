@@ -51,7 +51,8 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per
         }
         
         // There is no point going over the total num of blocks
-        if (_num_blocks_per_sm * CUDA_NUM_SM > num_blocks) {
+        // But we will keep the (_num_blocks_per_sm == 1) case
+        if (_num_blocks_per_sm > 1 && _num_blocks_per_sm * CUDA_NUM_SM > num_blocks) {
             break;
         }
 
@@ -150,8 +151,7 @@ CUresult CudaLaunchConfig::launch(
         CUfunction cu_func;
 
         if constexpr (std::is_same<T, const void *>::value) {
-            assert(TallyServer::server->original_kernel_map.find(func) != TallyServer::server->original_kernel_map.end());
-            cu_func = TallyServer::server->original_kernel_map[func].first;
+            cu_func = TallyServer::server->original_kernel_map[func].func;
         } else if constexpr (std::is_same<T, CUfunction>::value) {
             cu_func = func;
         } else {
@@ -159,16 +159,6 @@ CUresult CudaLaunchConfig::launch(
         }
 
         assert(cu_func);
-
-        size_t num_args;
-        
-        if (std::is_same<T, const void *>::value) {
-            num_args = TallyServer::server->sliced_kernel_map[func].second;
-        } else if constexpr (std::is_same<T, CUfunction>::value) {
-            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size();
-        } else {
-            throw std::runtime_error("Unsupported typename");
-        }
 
         auto err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
                                 blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
@@ -190,8 +180,8 @@ CUresult CudaLaunchConfig::launch(
         size_t num_args;
         
         if (std::is_same<T, const void *>::value) {
-            cu_func = TallyServer::server->sliced_kernel_map[func].first;
-            num_args = TallyServer::server->sliced_kernel_map[func].second;
+            cu_func = TallyServer::server->sliced_kernel_map[func].func;
+            num_args = TallyServer::server->sliced_kernel_map[func].num_args;
         } else if constexpr (std::is_same<T, CUfunction>::value) {
             cu_func = TallyServer::server->jit_sliced_kernel_map[func];
             num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size();
@@ -355,8 +345,8 @@ CUresult CudaLaunchConfig::launch(
         size_t num_args;
 
         if (std::is_same<T, const void *>::value) {
-            cu_func = TallyServer::server->ptb_kernel_map[func].first;
-            num_args = TallyServer::server->ptb_kernel_map[func].second;
+            cu_func = TallyServer::server->ptb_kernel_map[func].func;
+            num_args = TallyServer::server->ptb_kernel_map[func].num_args;
         } else if constexpr (std::is_same<T, CUfunction>::value) {
             cu_func = TallyServer::server->jit_ptb_kernel_map[func];
             num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size();

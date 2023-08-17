@@ -53,7 +53,7 @@ public:
 	std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> *kernel_to_dispatch = nullptr;
 	std::atomic<bool> has_kernel = false;
 	CudaLaunchCall launch_call;
-	CudaLaunchCallMeta launch_call_meta;
+	int dynamic_shmem_size_bytes = 0;
 	CUresult err;
 
     cudaStream_t default_stream = nullptr;
@@ -87,9 +87,9 @@ public:
     cudaStream_t stream;
 
 	// Register original and transformed kernels here
-	std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> original_kernel_map;
-    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> sliced_kernel_map;
-    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> ptb_kernel_map;
+	std::unordered_map<const void *, WrappedCUfunction> original_kernel_map;
+    std::unordered_map<const void *, WrappedCUfunction> sliced_kernel_map;
+    std::unordered_map<const void *, WrappedCUfunction> ptb_kernel_map;
 
 	std::unordered_map<CUfunction, CUfunction> jit_sliced_kernel_map;
     std::unordered_map<CUfunction, CUfunction> jit_ptb_kernel_map;
@@ -104,7 +104,7 @@ public:
 	// Set and Get performance cache
 
 	CudaLaunchCallConfigResult get_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, bool *found);
-	void set_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, float norm_speed, float latency, uint32_t iters);
+	void set_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, CudaLaunchMetadata meta_data, float norm_speed, float latency, uint32_t iters);
 
 	CudaLaunchCallConfigResult get_single_kernel_best_config(CudaLaunchCall &launch_call, bool *found);
 	void set_single_kernel_best_config(CudaLaunchCall &launch_call, CudaLaunchCallConfigResult &best_config);
@@ -115,6 +115,7 @@ public:
 	
 	void set_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
 							  CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
+							  CudaLaunchMetadata meta_data_1, CudaLaunchMetadata meta_data_2,
 							  float norm_speed_1, float norm_speed_2, float latency_1, float latency_2,
 							  float fixed_workload_latency, float fixed_workload_speedup,
 							  float unfair_workload_latency, float unfair_workload_speedup);

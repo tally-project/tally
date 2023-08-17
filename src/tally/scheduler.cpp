@@ -68,32 +68,44 @@ void TallyServer::profile_kernel_wise()
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
+    // Will set this to the max(100 * single run duration) for each kernel
+    // This makes sure the measurement error is within 1%
+    // This is in seconds
+    float profile_duration = 0.;
+
     // Launch both kernel - to warm up and in case all experiments are cached already
     for (auto &pair : client_data_all) {
         auto &client_data = pair.second;
-        (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, false, 0, nullptr, nullptr, -1);
+        float time_elapsed;
+        (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, true, 1000, &time_elapsed, nullptr, 1);
+
+        profile_duration = std::max(profile_duration, (100 * time_elapsed) / 1000.f);
     }
 
+    // Maybe don't exceed 1 minute;
+    profile_duration = std::min(profile_duration, 60.f);
+
     CudaLaunchCall launch_calls[2];
-    CudaLaunchCallMeta launch_call_metas[2];
     std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> kernel_partials[2];
     std::string kernel_names[2];
+
+    // Kernel Metadata (num registers, shared memory, etc.)
+    CudaLaunchMetadata launch_calls_meta_original[2];
+    CudaLaunchMetadata launch_calls_meta_ptb[2];
 
     int index = 0;
     for (auto &pair : client_data_all) {
 
         auto &client_data = pair.second;
         launch_calls[index] = client_data.launch_call; 
-        launch_call_metas[index] = client_data.launch_call_meta;
         kernel_partials[index] = *client_data.kernel_to_dispatch;
         kernel_names[index] = host_func_to_demangled_kernel_name_map[client_data.launch_call.func];
 
-        // For now just print the meta data
-        std::cout << kernel_names[index] << ":" << std::endl;
-        std::cout << "max_threads_per_block: " << launch_call_metas[index].max_threads_per_block << std::endl;
-        std::cout << "static_shmem_size_bytes: " << launch_call_metas[index].static_shmem_size_bytes << std::endl;
-        std::cout << "num_regs: " << launch_call_metas[index].num_regs << std::endl;
-        std::cout << "max_dynamic_shmem_size_bytes: " << launch_call_metas[index].max_dynamic_shmem_size_bytes << std::endl;
+        launch_calls_meta_original[index] = original_kernel_map[client_data.launch_call.func].meta_data;
+        launch_calls_meta_ptb[index] = ptb_kernel_map[client_data.launch_call.func].meta_data;
+
+        launch_calls_meta_original[index].dynamic_shmem_size_bytes = client_data.dynamic_shmem_size_bytes;
+        launch_calls_meta_ptb[index].dynamic_shmem_size_bytes = client_data.dynamic_shmem_size_bytes;
 
         index++;
     }
@@ -143,13 +155,13 @@ void TallyServer::profile_kernel_wise()
 
             cudaDeviceSynchronize();
 
-            launch_kernel_func(i, CudaLaunchConfig::default_config, PROFILE_DURATION, &time_elapsed, &iters, &(errs[i]), -1);
+            launch_kernel_func(i, CudaLaunchConfig::default_config, profile_duration, &time_elapsed, &iters, &(errs[i]), -1);
 
             // compute latency
             float latency_ms = time_elapsed / iters;
 
             // save result
-            set_single_kernel_perf(launch_calls[i], CudaLaunchConfig::default_config, 1., latency_ms, iters);
+            set_single_kernel_perf(launch_calls[i], CudaLaunchConfig::default_config, launch_calls_meta_original[i], 1., latency_ms, iters);
 
             // query again
             res = get_single_kernel_perf(launch_calls[i], CudaLaunchConfig::default_config, &found_in_cache);
@@ -192,7 +204,7 @@ void TallyServer::profile_kernel_wise()
 
                 cudaDeviceSynchronize();
 
-                launch_kernel_func(i, config, PROFILE_DURATION, &time_elapsed, &iters, &(errs[i]), -1);
+                launch_kernel_func(i, config, profile_duration, &time_elapsed, &iters, &(errs[i]), -1);
 
                 // compute latency
                 float latency_ms = time_elapsed / iters;
@@ -207,7 +219,7 @@ void TallyServer::profile_kernel_wise()
                 }
 
                 // save result
-                set_single_kernel_perf(launch_calls[i], config, norm_speed, latency_ms, iters);
+                set_single_kernel_perf(launch_calls[i], config, launch_calls_meta_ptb[i], norm_speed, latency_ms, iters);
 
                 // query again
                 res = get_single_kernel_perf(launch_calls[i], config, &found_in_cache);
@@ -241,6 +253,21 @@ void TallyServer::profile_kernel_wise()
         for (auto &k1_config : k1_configs) {
             for (auto &k2_config : k2_configs) {
 
+                CudaLaunchMetadata meta_data_1;
+                CudaLaunchMetadata meta_data_2;
+
+                if (k1_config == CudaLaunchConfig::default_config) {
+                    meta_data_1 = launch_calls_meta_original[0];
+                } else {
+                    meta_data_1 = launch_calls_meta_ptb[0];
+                }
+
+                if (k2_config == CudaLaunchConfig::default_config) {
+                    meta_data_2 = launch_calls_meta_original[1];
+                } else {
+                    meta_data_2 = launch_calls_meta_ptb[1];
+                }
+
                 bool found_in_cache = false;
                 auto res = get_kernel_pair_perf(launch_calls[0], launch_calls[1], k1_config, k2_config, &found_in_cache);
 
@@ -252,8 +279,8 @@ void TallyServer::profile_kernel_wise()
                     float iters[2];
                     float time_elapsed[2];
 
-                    std::thread launch_t_1(launch_kernel_func, 0, k1_config, PROFILE_DURATION, &(time_elapsed[0]), &(iters[0]), &(errs[0]), -1);
-                    std::thread launch_t_2(launch_kernel_func, 1, k2_config, PROFILE_DURATION, &(time_elapsed[1]), &(iters[1]), &(errs[1]), -1);
+                    std::thread launch_t_1(launch_kernel_func, 0, k1_config, profile_duration, &(time_elapsed[0]), &(iters[0]), &(errs[0]), -1);
+                    std::thread launch_t_2(launch_kernel_func, 1, k2_config, profile_duration, &(time_elapsed[1]), &(iters[1]), &(errs[1]), -1);
 
                     launch_t_1.join();
                     launch_t_2.join();
@@ -322,7 +349,7 @@ void TallyServer::profile_kernel_wise()
 
                     // Save the results
                     set_kernel_pair_perf(
-                        launch_calls[0], launch_calls[1], k1_config, k2_config,
+                        launch_calls[0], launch_calls[1], k1_config, k2_config, meta_data_1, meta_data_2,
                         k1_norm_speed, k2_norm_speed, k1_latency_ms, k2_latency_ms,
                         fixed_workload_latency, fixed_workload_speedup,
                         unfair_workload_latency, unfair_workload_speedup

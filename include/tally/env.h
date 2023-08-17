@@ -16,11 +16,10 @@ static const char* LIBCUBLASLT_PATH = "/usr/local/cuda/lib64/libcublasLt.so";
 static const char* CUDA_COMPUTE_VERSION = "86";
 static uint32_t CUDA_NUM_SM = 82;
 static uint32_t CUDA_MAX_NUM_THREADS_PER_SM = 1536;
+static uint32_t CUDA_MAX_NUM_REGISTERS_PER_SM = 64 * 1024;
+static uint32_t CUDA_MAX_SHM_BYTES_PER_SM = 100 * 1024;
 
 static uint32_t PTB_MAX_NUM_THREADS_PER_SM = 1024;
-
-// For kernel-wise profiling experiment
-extern uint32_t PROFILE_DURATION;
 
 void __attribute__((constructor)) register_env_vars();
 
