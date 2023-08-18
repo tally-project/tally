@@ -2,18 +2,16 @@ all: build
 
 build: FORCE
 	mkdir -p build
-	cd build && cmake -DENABLE_LOGGING=OFF -DENABLE_PROFILING=OFF .. && make -j
+	cd build && cmake .. && make -j
 
-build-profile: FORCE
-	mkdir -p build
-	cd build && cmake -DENABLE_PROFILING=ON -DRUN_LOCALLY=OFF .. && make -j
+docker-build-base:
+	sudo docker build --no-cache -t tally:base -f Dockerfile_base .
 
-build-profile-offine: FORCE
-	mkdir -p build
-	cd build && cmake -DENABLE_PROFILING=ON -DRUN_LOCALLY=ON .. && make -j
+docker-push-base:
+	sudo docker tag tally:base wzhao18/tally:base
+	sudo docker push wzhao18/tally:base
 
-build-verbose: FORCE
-	mkdir -p build
-	cd build && cmake -DENABLE_LOGGING=ON -DRUN_LOCALLY=OFF .. && make -j
+docker-build:
+	sudo docker build -t tally .
 
 FORCE: ;

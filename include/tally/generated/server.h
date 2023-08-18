@@ -91,6 +91,11 @@ public:
     std::unordered_map<const void *, WrappedCUfunction> sliced_kernel_map;
     std::unordered_map<const void *, WrappedCUfunction> ptb_kernel_map;
 
+	// This is for experimental purposes only now!!!
+	// Generate kernels that set a max reg flag
+	std::unordered_map<const void *, std::unordered_map<uint32_t, WrappedCUfunction>> original_kernel_map_max_reg;
+    std::unordered_map<const void *, std::unordered_map<uint32_t, WrappedCUfunction>> ptb_kernel_map_max_reg;
+
 	std::unordered_map<CUfunction, CUfunction> jit_sliced_kernel_map;
     std::unordered_map<CUfunction, CUfunction> jit_ptb_kernel_map;
 
