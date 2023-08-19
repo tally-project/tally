@@ -62,6 +62,8 @@ void *dlopen(const char *filename, int flag)
 
 void** __cudaRegisterFatBinary( void *fatCubin ) {
 
+    TALLY_LOG("__cudaRegisterFatBinary hooked");
+
     auto wp = (__fatBinC_Wrapper_t *) fatCubin;
     auto fbh = (struct fatBinaryHeader *) wp->data;
     const char *cubin_data = (const char *) wp->data;
@@ -131,8 +133,14 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
+    TALLY_LOG("__cudaRegisterFunction hooked");
+
     std::string deviceFunName (deviceFun);
-    TallyClient::client->host_func_to_demangled_kernel_name_map[hostFun] = demangleFunc(deviceFunName);
+    auto demangled_kernel_name = demangleFunc(deviceFunName);
+    TallyClient::client->host_func_to_demangled_kernel_name_map[hostFun] = demangled_kernel_name;
+    
+    TALLY_LOG(demangled_kernel_name);
+    
     uint32_t kernel_func_len = deviceFunName.size();
     uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct __cudaRegisterFunctionArg) + kernel_func_len * sizeof(char);
 
@@ -164,6 +172,8 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 
 void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 {
+    TALLY_LOG("__cudaRegisterFatBinaryEnd hooked");
+
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFatBinaryEnd(fatCubinHandle);
 
@@ -411,12 +421,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
 #if defined(RUN_LOCALLY)
 
-    // std::cout << "blockDim: " << blockDim.x << ", " << blockDim.y << ", " << blockDim.z << std::endl;
-
-    // cudaFuncAttributes attr;
-
-    // cudaFuncGetAttributes (&attr, func );
-    // std::cout << "attr.numRegs: " << attr.numRegs << std::endl;
+    auto kernel_name = TallyClient::client->host_func_to_demangled_kernel_name_map[func];
+    TALLY_LOG(kernel_name);
 
     auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
 

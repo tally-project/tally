@@ -104,7 +104,7 @@ struct Options {
     problem_size({5120, 4096, 4096}),
     batch_count(1),
     reference_check(true),
-    iterations(20),
+    iterations(1000),
     alpha(1),
     beta() { }
 
