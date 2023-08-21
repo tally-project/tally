@@ -11,6 +11,7 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 
+extern void* (*ldlopen) (const char *, int );
 extern CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuGetErrorName) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuInit) (unsigned int  Flags);

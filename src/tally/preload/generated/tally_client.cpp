@@ -3996,8 +3996,20 @@ CUresult cuGraphicsUnmapResources(unsigned int  count, CUgraphicsResource * reso
 CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)
 {
 	TALLY_LOG("cuGetProcAddress_v2 hooked");
-	CUresult res = 		lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
-	return res;
+
+    std::string symbol_str(symbol);
+    TALLY_LOG("cuGetProcAddress symbol: " + symbol_str);
+
+    if (symbol_str == "cuStreamBeginCapture") {
+        *pfn = dlsym(RTLD_DEFAULT, "cuStreamBeginCapture_v2");
+    } else {
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented cuGetProcAddress_v2 lookup.");
+    }
+
+    assert(pfn);
+    
+	// CUresult res = 		lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
+	return CUDA_SUCCESS;
 }
 
 CUresult cuCoredumpGetAttribute(CUcoredumpSettings  attrib, void*  value, size_t * size)

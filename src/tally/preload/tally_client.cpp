@@ -52,7 +52,8 @@ void *dlopen(const char *filename, int flag)
 
     if (filename) {
         std::string f_name(filename);
-        if (f_name == "libcuda.so.1") {
+
+        if (f_name == "libcuda.so.1" || f_name == "libnvrtc.so.12") {
             return ldlopen("/home/zhaowe58/tally/build/libtally_client.so", flag);
         }
     }
