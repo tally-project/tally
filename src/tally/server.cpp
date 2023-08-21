@@ -375,29 +375,27 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
 
         } else {
 
-            // std::cout << "kernel_name: " << kernel_name << std::endl;
-
             if (mangled_kernel_name_to_host_func_map.find(kernel_name) == mangled_kernel_name_to_host_func_map.end()) {
 
                 assert(!client_meta.cubin_registered);
 
+                auto demangled_kernel_name = demangleFunc(kernel_name);
+        
                 // allocate an address for the kernel
+                // TODO: In fact we don't need malloc here
+                // Just need a unique address for this purpose
                 kernel_server_addr = malloc(8);
 
                 auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
 
                 // Register the kernel with this address
                 mangled_kernel_name_to_host_func_map[kernel_name] = kernel_server_addr;
-
+                host_func_to_demangled_kernel_name_map[kernel_server_addr] = demangled_kernel_name;
+                demangled_kernel_name_to_host_func_map[demangled_kernel_name] = kernel_server_addr;
                 _kernel_addr_to_args[kernel_server_addr] = param_sizes;
-
-                // std::cout << "kernel_server_addr: " << kernel_server_addr << std::endl;
-                // std::cout << "kernel_name: " << kernel_name << std::endl;
             }
 
             client_meta._kernel_client_addr_mapping[client_addr] = mangled_kernel_name_to_host_func_map[kernel_name];
-
-            // std::cout << "mapping client_addr: " << client_addr << " to server_addr: " << mangled_kernel_name_to_host_func_map[kernel_name] << std::endl;
         }
     }
 
