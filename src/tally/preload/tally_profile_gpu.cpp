@@ -21,6 +21,8 @@
 #include <cublas_v2.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
 
 // g++ -I/usr/local/cuda/include -fPIC -shared -o preload.so preload.cpp
 
@@ -50575,6 +50577,111 @@ cudaError_t cudaProfilerStop()
     return lcudaProfilerStop();
 }
         
+
+CUresult cuProfilerInitialize(const char * configFile, const char * outputFile, CUoutput_mode  outputMode)
+{
+	static CUresult (*lcuProfilerInitialize) (const char *, const char *, CUoutput_mode );
+	if (!lcuProfilerInitialize) {
+		lcuProfilerInitialize = (CUresult (*) (const char *, const char *, CUoutput_mode )) dlsym(RTLD_NEXT, "cuProfilerInitialize");
+		tracer._kernel_map[(void *) lcuProfilerInitialize] = std::string("cuProfilerInitialize");
+	}
+	assert(lcuProfilerInitialize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	CUresult res = 
+		lcuProfilerInitialize(configFile, outputFile, outputMode);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuProfilerInitialize);
+	}
+	return res;
+}
+
+CUresult cuProfilerStart()
+{
+	static CUresult (*lcuProfilerStart) ();
+	if (!lcuProfilerStart) {
+		lcuProfilerStart = (CUresult (*) ()) dlsym(RTLD_NEXT, "cuProfilerStart");
+		tracer._kernel_map[(void *) lcuProfilerStart] = std::string("cuProfilerStart");
+	}
+	assert(lcuProfilerStart);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	CUresult res = 
+		lcuProfilerStart();
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuProfilerStart);
+	}
+	return res;
+}
+
+CUresult cuProfilerStop()
+{
+	static CUresult (*lcuProfilerStop) ();
+	if (!lcuProfilerStop) {
+		lcuProfilerStop = (CUresult (*) ()) dlsym(RTLD_NEXT, "cuProfilerStop");
+		tracer._kernel_map[(void *) lcuProfilerStop] = std::string("cuProfilerStop");
+	}
+	assert(lcuProfilerStop);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	CUresult res = 
+		lcuProfilerStop();
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuProfilerStop);
+	}
+	return res;
+}
 
 const char * nvrtcGetErrorString(nvrtcResult  result)
 {

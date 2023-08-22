@@ -7,6 +7,7 @@
 #include <cudnn.h>
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
 
@@ -350,8 +351,23 @@ struct cuModuleUnloadArg {
 	CUmodule  hmod;
 };
 
+struct cuModuleGetLoadingModeArg {
+	CUmoduleLoadingMode * mode;
+};
+
+struct cuModuleGetLoadingModeResponse {
+	CUmoduleLoadingMode  mode;
+	CUresult err;
+};
+
 struct cuMemFree_v2Arg {
 	CUdeviceptr  dptr;
+};
+
+struct cuMemcpyArg {
+	CUdeviceptr  dst;
+	CUdeviceptr  src;
+	size_t  ByteCount;
 };
 
 struct cuMemcpyAsyncArg {
@@ -359,6 +375,17 @@ struct cuMemcpyAsyncArg {
 	CUdeviceptr  src;
 	size_t  ByteCount;
 	CUstream  hStream;
+};
+
+struct cuMemAllocAsyncArg {
+	CUdeviceptr * dptr;
+	size_t  bytesize;
+	CUstream  hStream;
+};
+
+struct cuMemAllocAsyncResponse {
+	CUdeviceptr  dptr;
+	CUresult err;
 };
 
 struct cuMemAllocFromPoolAsyncArg {
@@ -371,6 +398,61 @@ struct cuMemAllocFromPoolAsyncArg {
 struct cuMemAllocFromPoolAsyncResponse {
 	CUdeviceptr  dptr;
 	CUresult err;
+};
+
+struct cuStreamCreateWithPriorityArg {
+	CUstream * phStream;
+	unsigned int  flags;
+	int  priority;
+};
+
+struct cuStreamCreateWithPriorityResponse {
+	CUstream  phStream;
+	CUresult err;
+};
+
+struct cuStreamWaitEventArg {
+	CUstream  hStream;
+	CUevent  hEvent;
+	unsigned int  Flags;
+};
+
+struct cuStreamBeginCapture_v2Arg {
+	CUstream  hStream;
+	CUstreamCaptureMode  mode;
+};
+
+struct cuStreamEndCaptureArg {
+	CUstream  hStream;
+	CUgraph * phGraph;
+};
+
+struct cuStreamEndCaptureResponse {
+	CUgraph  phGraph;
+	CUresult err;
+};
+
+struct cuStreamSynchronizeArg {
+	CUstream  hStream;
+};
+
+struct cuEventCreateArg {
+	CUevent * phEvent;
+	unsigned int  Flags;
+};
+
+struct cuEventCreateResponse {
+	CUevent  phEvent;
+	CUresult err;
+};
+
+struct cuEventRecordArg {
+	CUevent  hEvent;
+	CUstream  hStream;
+};
+
+struct cuEventDestroy_v2Arg {
+	CUevent  hEvent;
 };
 
 struct cuDestroyExternalMemoryArg {
@@ -386,6 +468,22 @@ struct cuFuncGetAttributeArg {
 struct cuFuncGetAttributeResponse {
 	int  pi;
 	CUresult err;
+};
+
+struct cuGraphInstantiateWithFlagsArg {
+	CUgraphExec * phGraphExec;
+	CUgraph  hGraph;
+	unsigned long long  flags;
+};
+
+struct cuGraphInstantiateWithFlagsResponse {
+	CUgraphExec  phGraphExec;
+	CUresult err;
+};
+
+struct cuGraphLaunchArg {
+	CUgraphExec  hGraphExec;
+	CUstream  hStream;
 };
 
 struct cudaDeviceResetArg {

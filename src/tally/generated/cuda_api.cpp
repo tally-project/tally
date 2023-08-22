@@ -2,17 +2,22 @@
 
 #include <dlfcn.h>
 
+#include <cuda_runtime.h>
+#include <cuda.h>
+#include <cublas_v2.h>
+#include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
+#include <nvrtc.h>
+#include <cublasLt.h>
+
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
 
-void* (*ldlopen) (const char *, int ) = 
-	(void* (*) (const char *, int  )) dlsym(RTLD_NEXT, "dlopen");
-
-void *cuda_handle = ldlopen(LIBCUDA_PATH, RTLD_LAZY);
-void *cudart_handle = ldlopen(LIBCUDART_PATH, RTLD_LAZY);
-void *cudnn_handle = ldlopen(LIBCUDNN_PATH, RTLD_LAZY);
-void *cublas_handle = ldlopen(LIBCUBLAS_PATH, RTLD_LAZY);
-void *cublasLt_handle = ldlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
+void *cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
+void *cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
+void *cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
+void *cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
+void *cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
 
 CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr) =
 	(CUresult (*) (CUresult  error, const char ** pStr)) dlsym(cuda_handle, "cuGetErrorString");
@@ -4426,6 +4431,15 @@ cudaError_t (*lcudaProfilerStart) () =
 
 cudaError_t (*lcudaProfilerStop) () =
 	(cudaError_t (*) ()) dlsym(cudart_handle, "cudaProfilerStop");
+
+CUresult (*lcuProfilerInitialize) (const char * configFile, const char * outputFile, CUoutput_mode  outputMode) =
+	(CUresult (*) (const char * configFile, const char * outputFile, CUoutput_mode  outputMode)) dlsym(cuda_handle, "cuProfilerInitialize");
+
+CUresult (*lcuProfilerStart) () =
+	(CUresult (*) ()) dlsym(cuda_handle, "cuProfilerStart");
+
+CUresult (*lcuProfilerStop) () =
+	(CUresult (*) ()) dlsym(cuda_handle, "cuProfilerStop");
 
 const char * (*lnvrtcGetErrorString) (nvrtcResult  result) =
 	(const char * (*) (nvrtcResult  result)) dlsym(RTLD_NEXT, "nvrtcGetErrorString");

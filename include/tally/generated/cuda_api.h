@@ -8,10 +8,10 @@
 #include <cudnn.h>
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
 
-extern void* (*ldlopen) (const char *, int );
 extern CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuGetErrorName) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuInit) (unsigned int  Flags);
@@ -1483,6 +1483,9 @@ extern cublasStatus_t (*lcublasZgetrsBatched) (cublasHandle_t  handle, cublasOpe
 extern cublasStatus_t (*lcublasUint8gemmBias) (cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, cublasOperation_t  transc, int  m, int  n, int  k, const unsigned char*  A, int  A_bias, int  lda, const unsigned char*  B, int  B_bias, int  ldb, unsigned char*  C, int  C_bias, int  ldc, int  C_mult, int  C_shift);
 extern cudaError_t (*lcudaProfilerStart) ();
 extern cudaError_t (*lcudaProfilerStop) ();
+extern CUresult (*lcuProfilerInitialize) (const char * configFile, const char * outputFile, CUoutput_mode  outputMode);
+extern CUresult (*lcuProfilerStart) ();
+extern CUresult (*lcuProfilerStop) ();
 extern const char * (*lnvrtcGetErrorString) (nvrtcResult  result);
 extern nvrtcResult (*lnvrtcVersion) (int * major, int * minor);
 extern nvrtcResult (*lnvrtcGetNumSupportedArchs) (int*  numArchs);

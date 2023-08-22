@@ -119,6 +119,7 @@ API_DECL_TEMPLATE_TOP = """
 #include <cudnn.h>
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
 
@@ -183,6 +184,8 @@ PRELOAD_TEMPLATE = """
 #include <cublas_v2.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
 
 // g++ -I/usr/local/cuda/include -fPIC -shared -o preload.so preload.cpp
 

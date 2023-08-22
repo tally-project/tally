@@ -5,6 +5,8 @@
 
 extern bool TALLY_INITIALIZED;
 
+static const char* TALLY_CLIENT_PRELOAD_PATH = "/home/zhaowe58/tally/build/libtally_client.so";
+
 static const char* LIBCUDART_PATH = "/usr/local/cuda/lib64/libcudart.so";
 static const char* LIBCUDA_PATH = "/usr/lib/x86_64-linux-gnu/libcuda.so.1";
 static const char* LIBCUDNN_PATH = "/usr/local/cuda/lib64/libcudnn.so";

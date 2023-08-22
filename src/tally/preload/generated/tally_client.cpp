@@ -14,6 +14,14 @@
 #include <unistd.h>
 #include <cstring>
 
+#include <cuda_runtime.h>
+#include <cuda.h>
+#include <cublas_v2.h>
+#include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
+#include <nvrtc.h>
+#include <cublasLt.h>
+
 #include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
 #include "tally/client.h"
@@ -1829,7 +1837,41 @@ CUresult cuModuleUnload(CUmodule  hmod)
 CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
 {
 	TALLY_LOG("cuModuleGetLoadingMode hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuModuleGetLoadingMode(mode);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuModuleGetLoadingModeArg), alignof(cuModuleGetLoadingModeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMODULEGETLOADINGMODE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuModuleGetLoadingModeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->mode = mode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuModuleGetLoadingModeResponse*>(responsePayload);
+			if (mode) { *mode = response->mode; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuModuleGetLoadingMode);
+	return err;
 }
 
 CUresult cuModuleGetGlobal_v2(CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod, const char * name)
@@ -2108,7 +2150,42 @@ CUresult cuMemHostUnregister(void * p)
 CUresult cuMemcpy(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount)
 {
 	TALLY_LOG("cuMemcpy hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemcpy(dst, src, ByteCount);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemcpyArg), alignof(cuMemcpyArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMCPY;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemcpyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dst = dst;
+			request->src = src;
+			request->ByteCount = ByteCount;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemcpy);
+	return err;
 }
 
 CUresult cuMemcpyPeer(CUdeviceptr  dstDevice, CUcontext  dstContext, CUdeviceptr  srcDevice, CUcontext  srcContext, size_t  ByteCount)
@@ -2534,7 +2611,43 @@ CUresult cuMemFreeAsync(CUdeviceptr  dptr, CUstream  hStream)
 CUresult cuMemAllocAsync(CUdeviceptr * dptr, size_t  bytesize, CUstream  hStream)
 {
 	TALLY_LOG("cuMemAllocAsync hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemAllocAsync(dptr, bytesize, hStream);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemAllocAsyncArg), alignof(cuMemAllocAsyncArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMALLOCASYNC;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemAllocAsyncArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dptr = dptr;
+			request->bytesize = bytesize;
+			request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuMemAllocAsyncResponse*>(responsePayload);
+			if (dptr) { *dptr = response->dptr; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemAllocAsync);
+	return err;
 }
 
 CUresult cuMemPoolTrimTo(CUmemoryPool  pool, size_t  minBytesToKeep)
@@ -2739,7 +2852,43 @@ CUresult cuStreamCreate(CUstream * phStream, unsigned int  Flags)
 CUresult cuStreamCreateWithPriority(CUstream * phStream, unsigned int  flags, int  priority)
 {
 	TALLY_LOG("cuStreamCreateWithPriority hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuStreamCreateWithPriority(phStream, flags, priority);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamCreateWithPriorityArg), alignof(cuStreamCreateWithPriorityArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUSTREAMCREATEWITHPRIORITY;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuStreamCreateWithPriorityArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->phStream = phStream;
+			request->flags = flags;
+			request->priority = priority;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuStreamCreateWithPriorityResponse*>(responsePayload);
+			if (phStream) { *phStream = response->phStream; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuStreamCreateWithPriority);
+	return err;
 }
 
 CUresult cuStreamGetPriority(CUstream  hStream, int * priority)
@@ -2769,7 +2918,42 @@ CUresult cuStreamGetCtx(CUstream  hStream, CUcontext * pctx)
 CUresult cuStreamWaitEvent(CUstream  hStream, CUevent  hEvent, unsigned int  Flags)
 {
 	TALLY_LOG("cuStreamWaitEvent hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuStreamWaitEvent(hStream, hEvent, Flags);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamWaitEventArg), alignof(cuStreamWaitEventArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUSTREAMWAITEVENT;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuStreamWaitEventArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hStream = hStream;
+			request->hEvent = hEvent;
+			request->Flags = Flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuStreamWaitEvent);
+	return err;
 }
 
 CUresult cuStreamAddCallback(CUstream  hStream, CUstreamCallback  callback, void * userData, unsigned int  flags)
@@ -2781,7 +2965,41 @@ CUresult cuStreamAddCallback(CUstream  hStream, CUstreamCallback  callback, void
 CUresult cuStreamBeginCapture_v2(CUstream  hStream, CUstreamCaptureMode  mode)
 {
 	TALLY_LOG("cuStreamBeginCapture_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuStreamBeginCapture_v2(hStream, mode);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamBeginCapture_v2Arg), alignof(cuStreamBeginCapture_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUSTREAMBEGINCAPTURE_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuStreamBeginCapture_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hStream = hStream;
+			request->mode = mode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuStreamBeginCapture_v2);
+	return err;
 }
 
 CUresult cuThreadExchangeStreamCaptureMode(CUstreamCaptureMode * mode)
@@ -2793,7 +3011,42 @@ CUresult cuThreadExchangeStreamCaptureMode(CUstreamCaptureMode * mode)
 CUresult cuStreamEndCapture(CUstream  hStream, CUgraph * phGraph)
 {
 	TALLY_LOG("cuStreamEndCapture hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuStreamEndCapture(hStream, phGraph);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamEndCaptureArg), alignof(cuStreamEndCaptureArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUSTREAMENDCAPTURE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuStreamEndCaptureArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hStream = hStream;
+			request->phGraph = phGraph;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuStreamEndCaptureResponse*>(responsePayload);
+			if (phGraph) { *phGraph = response->phGraph; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuStreamEndCapture);
+	return err;
 }
 
 CUresult cuStreamIsCapturing(CUstream  hStream, CUstreamCaptureStatus * captureStatus)
@@ -2829,7 +3082,40 @@ CUresult cuStreamQuery(CUstream  hStream)
 CUresult cuStreamSynchronize(CUstream  hStream)
 {
 	TALLY_LOG("cuStreamSynchronize hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuStreamSynchronize(hStream);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamSynchronizeArg), alignof(cuStreamSynchronizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUSTREAMSYNCHRONIZE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuStreamSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuStreamSynchronize);
+	return err;
 }
 
 CUresult cuStreamDestroy_v2(CUstream  hStream)
@@ -2859,13 +3145,82 @@ CUresult cuStreamSetAttribute(CUstream  hStream, CUstreamAttrID  attr, const CUs
 CUresult cuEventCreate(CUevent * phEvent, unsigned int  Flags)
 {
 	TALLY_LOG("cuEventCreate hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuEventCreate(phEvent, Flags);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventCreateArg), alignof(cuEventCreateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUEVENTCREATE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuEventCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->phEvent = phEvent;
+			request->Flags = Flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuEventCreateResponse*>(responsePayload);
+			if (phEvent) { *phEvent = response->phEvent; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuEventCreate);
+	return err;
 }
 
 CUresult cuEventRecord(CUevent  hEvent, CUstream  hStream)
 {
 	TALLY_LOG("cuEventRecord hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuEventRecord(hEvent, hStream);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventRecordArg), alignof(cuEventRecordArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUEVENTRECORD;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuEventRecordArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hEvent = hEvent;
+			request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuEventRecord);
+	return err;
 }
 
 CUresult cuEventRecordWithFlags(CUevent  hEvent, CUstream  hStream, unsigned int  flags)
@@ -2889,7 +3244,40 @@ CUresult cuEventSynchronize(CUevent  hEvent)
 CUresult cuEventDestroy_v2(CUevent  hEvent)
 {
 	TALLY_LOG("cuEventDestroy_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuEventDestroy_v2(hEvent);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventDestroy_v2Arg), alignof(cuEventDestroy_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUEVENTDESTROY_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuEventDestroy_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hEvent = hEvent;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuEventDestroy_v2);
+	return err;
 }
 
 CUresult cuEventElapsedTime(float * pMilliseconds, CUevent  hStart, CUevent  hEnd)
@@ -3462,7 +3850,43 @@ CUresult cuGraphDestroyNode(CUgraphNode  hNode)
 CUresult cuGraphInstantiateWithFlags(CUgraphExec * phGraphExec, CUgraph  hGraph, unsigned long long  flags)
 {
 	TALLY_LOG("cuGraphInstantiateWithFlags hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuGraphInstantiateWithFlags(phGraphExec, hGraph, flags);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphInstantiateWithFlagsArg), alignof(cuGraphInstantiateWithFlagsArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUGRAPHINSTANTIATEWITHFLAGS;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuGraphInstantiateWithFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->phGraphExec = phGraphExec;
+			request->hGraph = hGraph;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuGraphInstantiateWithFlagsResponse*>(responsePayload);
+			if (phGraphExec) { *phGraphExec = response->phGraphExec; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuGraphInstantiateWithFlags);
+	return err;
 }
 
 CUresult cuGraphInstantiateWithParams(CUgraphExec * phGraphExec, CUgraph  hGraph, CUDA_GRAPH_INSTANTIATE_PARAMS * instantiateParams)
@@ -3552,7 +3976,41 @@ CUresult cuGraphUpload(CUgraphExec  hGraphExec, CUstream  hStream)
 CUresult cuGraphLaunch(CUgraphExec  hGraphExec, CUstream  hStream)
 {
 	TALLY_LOG("cuGraphLaunch hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuGraphLaunch(hGraphExec, hStream);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphLaunchArg), alignof(cuGraphLaunchArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUGRAPHLAUNCH;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuGraphLaunchArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hGraphExec = hGraphExec;
+			request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuGraphLaunch);
+	return err;
 }
 
 CUresult cuGraphExecDestroy(CUgraphExec  hGraphExec)
@@ -3993,25 +4451,6 @@ CUresult cuGraphicsUnmapResources(unsigned int  count, CUgraphicsResource * reso
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)
-{
-	TALLY_LOG("cuGetProcAddress_v2 hooked");
-
-    std::string symbol_str(symbol);
-    TALLY_LOG("cuGetProcAddress symbol: " + symbol_str);
-
-    if (symbol_str == "cuStreamBeginCapture") {
-        *pfn = dlsym(RTLD_DEFAULT, "cuStreamBeginCapture_v2");
-    } else {
-        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented cuGetProcAddress_v2 lookup.");
-    }
-
-    assert(pfn);
-    
-	// CUresult res = 		lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
-	return CUDA_SUCCESS;
-}
-
 CUresult cuCoredumpGetAttribute(CUcoredumpSettings  attrib, void*  value, size_t * size)
 {
 	TALLY_LOG("cuCoredumpGetAttribute hooked");
@@ -4039,7 +4478,8 @@ CUresult cuCoredumpSetAttributeGlobal(CUcoredumpSettings  attrib, void * value, 
 CUresult cuGetExportTable(const void ** ppExportTable, const CUuuid * pExportTableId)
 {
 	TALLY_LOG("cuGetExportTable hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	CUresult res = 		lcuGetExportTable(ppExportTable, pExportTableId);
+	return res;
 }
 
 cudaError_t cudaDeviceReset()
@@ -15711,6 +16151,24 @@ cudaError_t cudaProfilerStop()
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaProfilerStop);
 	return err;
+}
+
+CUresult cuProfilerInitialize(const char * configFile, const char * outputFile, CUoutput_mode  outputMode)
+{
+	TALLY_LOG("cuProfilerInitialize hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuProfilerStart()
+{
+	TALLY_LOG("cuProfilerStart hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+CUresult cuProfilerStop()
+{
+	TALLY_LOG("cuProfilerStop hooked");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 const char * nvrtcGetErrorString(nvrtcResult  result)

@@ -5,6 +5,7 @@ CUDA_API_HEADER_FILES = [
     "/usr/local/cuda/include/cudnn.h",
     "/usr/local/cuda/include/cublas_v2.h",
     "/usr/local/cuda/include/cuda_profiler_api.h",
+    "/usr/local/cuda/include/cudaProfiler.h",
     "/usr/local/cuda/include/nvrtc.h",
     "/usr/local/cuda/include/cublasLt.h"
 ]

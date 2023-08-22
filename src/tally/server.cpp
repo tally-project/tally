@@ -2566,3 +2566,9 @@ void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedSe
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cuGetProcAddress_v2(void*, iox::popo::UntypedServer*, void const*)
+{
+    TALLY_SPD_LOG("Received request: cuGetProcAddress_v2");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}

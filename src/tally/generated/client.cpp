@@ -1480,6 +1480,9 @@ void TallyClient::register_profile_kernel_map()
 	_profile_kernel_map[(void *) lcublasUint8gemmBias] = "cublasUint8gemmBias";
 	_profile_kernel_map[(void *) lcudaProfilerStart] = "cudaProfilerStart";
 	_profile_kernel_map[(void *) lcudaProfilerStop] = "cudaProfilerStop";
+	_profile_kernel_map[(void *) lcuProfilerInitialize] = "cuProfilerInitialize";
+	_profile_kernel_map[(void *) lcuProfilerStart] = "cuProfilerStart";
+	_profile_kernel_map[(void *) lcuProfilerStop] = "cuProfilerStop";
 	_profile_kernel_map[(void *) lnvrtcGetErrorString] = "nvrtcGetErrorString";
 	_profile_kernel_map[(void *) lnvrtcVersion] = "nvrtcVersion";
 	_profile_kernel_map[(void *) lnvrtcGetNumSupportedArchs] = "nvrtcGetNumSupportedArchs";

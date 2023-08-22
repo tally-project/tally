@@ -24,6 +24,7 @@ API_DECL_TEMPLATE_TOP = """
 #include <cudnn.h>
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
 
@@ -42,6 +43,14 @@ extern void (*l__cudaRegisterFatBinaryEnd) (void **);
 API_DEF_TEMPLATE_TOP = """
 
 #include <dlfcn.h>
+
+#include <cuda_runtime.h>
+#include <cuda.h>
+#include <cublas_v2.h>
+#include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
+#include <nvrtc.h>
+#include <cublasLt.h>
 
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
@@ -76,6 +85,7 @@ MSG_STRUCT_TEMPLATE_TOP = """
 #include <cudnn.h>
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
 
@@ -103,6 +113,14 @@ CLIENT_PRELOAD_TEMPLATE = """
 #include <unistd.h>
 #include <cstring>
 
+#include <cuda_runtime.h>
+#include <cuda.h>
+#include <cublas_v2.h>
+#include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
+#include <nvrtc.h>
+#include <cublasLt.h>
+
 #include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
 #include "tally/client.h"
@@ -115,6 +133,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_TOP = """
+
 #ifndef TALLY_SERVER_H
 #define TALLY_SERVER_H
 
@@ -131,6 +150,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <cuda.h>
 #include <cublas_v2.h>
 #include <cuda_profiler_api.h>
+#include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
 
@@ -142,6 +162,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <tally/cuda_launch.h>
 #include <tally/msg_struct.h>
 #include <tally/cuda_util.h>
+#include <tally/cache_struct.h>
 
 static std::function<void(int)> __exit;
 
@@ -165,9 +186,10 @@ public:
 	std::vector<DeviceMemoryKey> dev_addr_map;
 
 	std::unordered_map<const void *, const void *> _kernel_client_addr_mapping;
-	std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*)> *kernel_to_dispatch = nullptr;
+	std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> *kernel_to_dispatch = nullptr;
 	std::atomic<bool> has_kernel = false;
 	CudaLaunchCall launch_call;
+	int dynamic_shmem_size_bytes = 0;
 	CUresult err;
 
     cudaStream_t default_stream = nullptr;
@@ -201,23 +223,54 @@ public:
     cudaStream_t stream;
 
 	// Register original and transformed kernels here
-	std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> original_kernel_map;
-    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> sliced_kernel_map;
-    std::unordered_map<const void *, std::pair<CUfunction, uint32_t>> ptb_kernel_map;
+	std::unordered_map<const void *, WrappedCUfunction> original_kernel_map;
+    std::unordered_map<const void *, WrappedCUfunction> sliced_kernel_map;
+    std::unordered_map<const void *, WrappedCUfunction> ptb_kernel_map;
 
 	std::unordered_map<CUfunction, CUfunction> jit_sliced_kernel_map;
     std::unordered_map<CUfunction, CUfunction> jit_ptb_kernel_map;
 
 	// Performance cache to use at runtime
+	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
+	std::unordered_map<CudaLaunchCall, CudaLaunchCallConfigResult> single_kernel_best_config_map;
+
     std::unordered_map<CudaLaunchCallPair, std::unordered_map<CudaLaunchCallConfigPair, CudaLaunchCallConfigPairResult>> kernel_pair_perf_map;
 	std::unordered_map<CudaLaunchCallPair, CudaLaunchCallConfigPairResult> kernel_pair_best_config_map;
 
 	// Set and Get performance cache
-    CudaLaunchCallConfigPairResult get_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2, bool *found);
-	void set_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2, float norm_speed_1, float norm_speed_2);
+
+	CudaLaunchCallConfigResult get_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, bool *found);
+	void set_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, CudaLaunchMetadata meta_data, float norm_speed, float latency, uint32_t iters);
+
+	CudaLaunchCallConfigResult get_single_kernel_best_config(CudaLaunchCall &launch_call, bool *found);
+	void set_single_kernel_best_config(CudaLaunchCall &launch_call, CudaLaunchCallConfigResult &best_config);
+
+    CudaLaunchCallConfigPairResult get_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
+														CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
+														bool *found);
+	
+	void set_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
+							  CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
+							  CudaLaunchMetadata meta_data_1, CudaLaunchMetadata meta_data_2,
+							  float norm_speed_1, float norm_speed_2, float latency_1, float latency_2,
+							  float fixed_workload_latency, float fixed_workload_speedup,
+							  float unfair_workload_latency, float unfair_workload_speedup);
 
 	CudaLaunchCallConfigPairResult get_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, bool *found);
 	void set_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchCallConfigPairResult best_config);
+
+	// Utility functions for measurement data
+	CudaLaunchCall convert_key_to_call(CudaLaunchKey key);
+	CudaLaunchKey convert_call_to_key(CudaLaunchCall call);
+
+	CudaLaunchCallConfig convert_key_config_to_call_config(CudaLaunchKeyConfig key_config);
+	CudaLaunchKeyConfig convert_call_config_to_key_config(CudaLaunchCallConfig call_config);
+
+	CudaLaunchCallConfigPairResult convert_pair_res_to_runtime_res(CudaLaunchKeyConfigPairResult res);
+	CudaLaunchKeyConfigPairResult convert_pair_res_to_cache_res(CudaLaunchCallConfigPairResult res);
+
+	CudaLaunchCallConfigPair convert_key_config_pair_to_call_config_pair(CudaLaunchKeyConfigPair key_config_pair);
+	CudaLaunchKeyConfigPair convert_call_config_pair_to_key_config_pair(CudaLaunchCallConfigPair call_config_pair);
 
     void save_performance_cache();
 
@@ -226,7 +279,7 @@ public:
     TallyServer();
     ~TallyServer();
 
-    void wait_until_launch_queue_empty();
+	void profile_kernel_wise();
     void register_api_handler();
     void load_cache();
 
@@ -239,7 +292,7 @@ public:
     void start_worker_server(int32_t client_id);
 
 	template<typename T>
-    std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*)> cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
+    std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
 
 """
 
@@ -301,8 +354,6 @@ KERNEL_LAUNCH_CALLS = [
 DIRECT_CALLS = [
     "cuDeviceGetName",
     "cudaGetErrorString",
-    "cuGetProcAddress",
-    "cuGetProcAddress_v2",
     "cuGetErrorString",
     "cuGetErrorName",
     "cudnnGetErrorString",
@@ -313,11 +364,13 @@ DIRECT_CALLS = [
     "cudaDriverGetVersion",
     "cudaRuntimeGetVersion",
     "cudaFuncGetAttributes",
-    "cudaFuncGetAttribute"
+    "cudaFuncGetAttribute",
+    "cuGetExportTable"
 ]
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuGetProcAddress_v2",
     "cudaFuncSetAttribute",
     "cuCtxCreate_v2",
     "cudaStreamGetCaptureInfo_v2",
@@ -395,6 +448,13 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cuEventDestroy_v2",
+    "cuStreamWaitEvent",
+    "cuEventRecord",
+    "cuGraphLaunch",
+    "cuStreamBeginCapture_v2",
+    "cuStreamSynchronize",
+    "cuMemcpy",
     "cudaGraphUpload",
     "cudaGraphLaunch",
     "cudaGraphExecDestroy",
@@ -513,6 +573,11 @@ FORWARD_API_CALLS = [
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cuEventCreate",
+    "cuGraphInstantiateWithFlags",
+    "cuStreamCreateWithPriority",
+    "cuMemAllocAsync",
+    "cuModuleGetLoadingMode",
     "cuFuncGetAttribute",
     "cudaGraphInstantiateWithFlags",
     "cublasGetLoggerCallback",
@@ -589,6 +654,7 @@ UNSUPPORTED_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
+    "cuStreamEndCapture",
     "cudaStreamEndCapture",
     "cudnnGetRNNBiasMode",
     "cudnnGetRNNMatrixMathType",
