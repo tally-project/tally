@@ -4095,6 +4095,7 @@ CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion,
 
     if (symbol_str == "") {
         // do nothing
+        return res;
     }
     else if (symbol_str == "cuGetProcAddress") {
         return res;

@@ -352,6 +352,7 @@ KERNEL_LAUNCH_CALLS = [
 
 # let the client call the APIs directly
 DIRECT_CALLS = [
+    "cuInit",
     "cuDeviceGetName",
     "cudaGetErrorString",
     "cuGetErrorString",
@@ -491,7 +492,6 @@ FORWARD_API_CALLS = [
     "cudnnDestroyPoolingDescriptor",
     "cudaProfilerStart",
     "cudaProfilerStop",
-    "cuInit",
     "cudaDeviceReset",
     "cudaDeviceSetLimit",
     "cudaDeviceSetCacheConfig",

@@ -52,40 +52,8 @@ CUresult cuGetErrorName(CUresult  error, const char ** pStr)
 CUresult cuInit(unsigned int  Flags)
 {
 	TALLY_LOG("cuInit hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcuInit(Flags);
-#else
-
-    CUresult err;
-
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuInitArg), alignof(cuInitArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUINIT;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuInitArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->Flags = Flags;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const CUresult*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuInit);
-	return err;
+	CUresult res = 		lcuInit(Flags);
+	return res;
 }
 
 CUresult cuDriverGetVersion(int * driverVersion)

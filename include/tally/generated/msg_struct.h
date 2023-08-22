@@ -12,10 +12,6 @@
 #include <cublasLt.h>
 
 
-struct cuInitArg {
-	unsigned int  Flags;
-};
-
 struct cuDriverGetVersionArg {
 	int * driverVersion;
 };
