@@ -16,11 +16,13 @@ struct CudaLaunchKey {
     std::string kernel_name;
     dim3 gridDim;
     dim3 blockDim;
+    size_t cubin_hash;
 
     bool operator==(const CudaLaunchKey &other) const
     {
         return (
             kernel_name == other.kernel_name
+            && cubin_hash == other.cubin_hash
             && gridDim.x == other.gridDim.x
             && gridDim.y == other.gridDim.y
             && gridDim.z == other.gridDim.z
@@ -49,6 +51,7 @@ struct CudaLaunchKey {
     {
         return nlohmann::json({
             {"kernel_name", kernel_name},
+            {"cubin_hash", cubin_hash},
             {"gridDim", get_dim3_str(gridDim)},
             {"blockDim", get_dim3_str(blockDim)},
         });
@@ -56,7 +59,7 @@ struct CudaLaunchKey {
 
     std::string str() const
     {
-        return kernel_name + "_" + get_dim3_str(gridDim) + "_" + get_dim3_str(blockDim);
+        return kernel_name + "_" + get_dim3_str(gridDim) + "_" + get_dim3_str(blockDim) + "_" + std::to_string(cubin_hash);
     }
     
 };
@@ -369,6 +372,13 @@ public:
         auto transform_data = find_transform_data(cubin_data, cubin_size);
         assert(transform_data);
         return transform_data->cubin_data.c_str();
+    }
+
+    std::string get_cubin_data_str(const char* cubin_data, size_t cubin_size)
+    {
+        auto transform_data = find_transform_data(cubin_data, cubin_size);
+        assert(transform_data);
+        return transform_data->cubin_data;
     }
 
     void add_data(

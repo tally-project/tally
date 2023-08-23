@@ -203,10 +203,6 @@ struct cuDevicePrimaryCtxReset_v2Arg {
 	CUdevice  dev;
 };
 
-struct cuCtxDestroy_v2Arg {
-	CUcontext  ctx;
-};
-
 struct cuCtxPushCurrent_v2Arg {
 	CUcontext  ctx;
 };
@@ -353,34 +349,6 @@ struct cuModuleGetLoadingModeArg {
 
 struct cuModuleGetLoadingModeResponse {
 	CUmoduleLoadingMode  mode;
-	CUresult err;
-};
-
-struct cuMemFree_v2Arg {
-	CUdeviceptr  dptr;
-};
-
-struct cuMemcpyArg {
-	CUdeviceptr  dst;
-	CUdeviceptr  src;
-	size_t  ByteCount;
-};
-
-struct cuMemcpyAsyncArg {
-	CUdeviceptr  dst;
-	CUdeviceptr  src;
-	size_t  ByteCount;
-	CUstream  hStream;
-};
-
-struct cuMemAllocAsyncArg {
-	CUdeviceptr * dptr;
-	size_t  bytesize;
-	CUstream  hStream;
-};
-
-struct cuMemAllocAsyncResponse {
-	CUdeviceptr  dptr;
 	CUresult err;
 };
 

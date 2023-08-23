@@ -87,7 +87,10 @@ void register_kernels_from_ptx_fatbin(
             cuFuncGetAttribute (&(wrapped_cu_func.meta_data.num_regs), CU_FUNC_ATTRIBUTE_NUM_REGS, function);
             cuFuncGetAttribute (&(wrapped_cu_func.meta_data.max_dynamic_shmem_size_bytes), CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, function);
 
-            kernel_map[host_func] = wrapped_cu_func;
+
+            if (kernel_map.find(host_func) == kernel_map.end()) {
+                kernel_map[host_func] = wrapped_cu_func;
+            }
         }
     }
 }

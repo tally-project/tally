@@ -18,6 +18,17 @@ target_link_libraries(elementwise
     cudart
 )
 
+add_executable(add_driver_api add_driver_api.cu)
+
+set_target_properties(add_driver_api PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_link_libraries(add_driver_api
+    cuda
+)
+
 add_executable(matmul matmul.cu)
 
 set_target_properties(matmul PROPERTIES

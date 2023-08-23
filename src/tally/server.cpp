@@ -49,7 +49,7 @@ void TallyServer::start_main_server() {
     iox::runtime::PoshRuntime::initRuntime(APP_NAME);
     iox::popo::UntypedServer handshake_server({"Tally", "handshake", "event"});
 
-    cudaStreamCreate(&stream);
+    cudaStreamCreate(&cuda_graph_stream);
 
     load_cache();
 
@@ -114,7 +114,10 @@ void TallyServer::start_worker_server(int32_t client_id) {
         }
     }
 
+    // Might need lock
+
     worker_servers.erase(client_id);
+    // client_data_all.erase(client_id);
     delete worker_server;
 
     spdlog::info("Tally worker server has exited ...");
@@ -126,9 +129,12 @@ void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_si
     auto sliced_data = TallyCache::cache->cubin_cache.get_sliced_data(cubin_data, cubin_size);
     auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
 
-    register_kernels_from_ptx_fatbin(original_data, mangled_kernel_name_to_host_func_map, original_kernel_map);
-    register_kernels_from_ptx_fatbin(sliced_data, mangled_kernel_name_to_host_func_map, sliced_kernel_map);
-    register_kernels_from_ptx_fatbin(ptb_data, mangled_kernel_name_to_host_func_map, ptb_kernel_map);
+    auto cubin_str_ptr = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
+    auto kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_str_ptr];
+
+    register_kernels_from_ptx_fatbin(original_data, kernel_name_to_host_func_map, original_kernel_map);
+    register_kernels_from_ptx_fatbin(sliced_data, kernel_name_to_host_func_map, sliced_kernel_map);
+    register_kernels_from_ptx_fatbin(ptb_data, kernel_name_to_host_func_map, ptb_kernel_map);
 }
 
 void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -154,6 +160,10 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
     }
 
     const void *server_func_addr = client_data_all[client_uid]._kernel_client_addr_mapping[args->host_func];
+    
+    auto kernel_name = host_func_to_demangled_kernel_name_map[server_func_addr];
+    TALLY_SPD_LOG(kernel_name);
+    
     auto partial = cudaLaunchKernel_Partial(server_func_addr, args->gridDim, args->blockDim, args->sharedMem, stream, args->params);
 
     while (client_data_all[client_uid].has_kernel) {}
@@ -252,16 +262,25 @@ void TallyServer::load_cache()
                 auto &param_sizes = kernel_args_pair.second;
                 auto demangled_kernel_name = demangleFunc(kernel_name);
 
-                if (mangled_kernel_name_to_host_func_map.find(kernel_name) == mangled_kernel_name_to_host_func_map.end()) {
+                if (cubin_to_kernel_name_to_host_func_map[cubin_data.cubin_data.c_str()].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_data.cubin_data.c_str()].end()) {
 
                     // allocate an address for the kernel
-                    void *kernel_server_addr = malloc(8);
+                    const void *kernel_server_addr = (const void *) malloc(8);
 
                     // Bookkeeping
                     _kernel_addr_to_args[kernel_server_addr] = param_sizes;
-                    mangled_kernel_name_to_host_func_map[kernel_name] = kernel_server_addr;
-                    host_func_to_demangled_kernel_name_map[(const char*) kernel_server_addr] = demangled_kernel_name;
-                    demangled_kernel_name_to_host_func_map[demangled_kernel_name] = (const char*) kernel_server_addr;
+                    host_func_to_demangled_kernel_name_map[kernel_server_addr] = demangled_kernel_name;
+
+                    std::hash<std::string> hasher;
+                    size_t cubin_hash = hasher(cubin_data.cubin_data);
+                    host_func_to_cubin_hash_map[kernel_server_addr] = cubin_hash;
+
+                    demangled_kernel_name_and_cubin_hash_to_host_func_map[
+                        std::make_pair<std::string, size_t>(std::move(demangled_kernel_name), std::move(cubin_hash))
+                    ] = kernel_server_addr;
+
+                    cubin_to_kernel_name_to_host_func_map[cubin_data.cubin_data.c_str()][kernel_name] = kernel_server_addr;
+                    cubin_to_kernel_name_to_host_func_map[cubin_data.cubin_data.c_str()][demangled_kernel_name] = kernel_server_addr;
                 }
             }
 
@@ -287,8 +306,6 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
         cudaStreamCreate(&client_meta.default_stream);
     }
 
-    client_meta.cubin_registered = args->cached;
-
     // Free data from last time
     if (client_meta.fatbin_data) {
         free(client_meta.fatbin_data);
@@ -297,35 +314,30 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
 
     client_meta.register_queue.clear();
 
-    if (!client_meta.cubin_registered) {
-        struct fatBinaryHeader *header = (struct fatBinaryHeader *) args->data;
-        size_t cubin_size = header->headerSize + header->fatSize;
-        const char *cubin_data = (const char *) args->data;
+    struct fatBinaryHeader *header = (struct fatBinaryHeader *) args->data;
+    size_t cubin_size = header->headerSize + header->fatSize;
+    const char *cubin_data = (const char *) args->data;
 
-        assert(!TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size));
+    // Load necessary data into cache if not exists
+    cache_cubin_data(cubin_data, cubin_size);
 
-        // Load necessary data into cache if not exists
-        cache_cubin_data(cubin_data, cubin_size);
+    client_meta.fatBinSize = cubin_size;
+    client_meta.fatbin_data = (unsigned long long *) malloc(cubin_size);
+    memcpy(client_meta.fatbin_data, args->data, cubin_size);
 
-        client_meta.fatBinSize = cubin_size;
-        client_meta.fatbin_data = (unsigned long long *) malloc(cubin_size);
-        memcpy(client_meta.fatbin_data, args->data, cubin_size);
+    std::string tmp_elf_file = get_tmp_file_path(".elf");
+    iox_server->loan(requestHeader, tmp_elf_file.size() + 1, alignof(char[]))
+        .and_then([&](auto& responsePayload) {
 
-        std::string tmp_elf_file = get_tmp_file_path(".elf");
-        auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
-        iox_server->loan(requestHeader, tmp_elf_file.size() + 1, alignof(char[]))
-            .and_then([&](auto& responsePayload) {
+            auto response = static_cast<char *>(responsePayload);
+            memcpy(response, tmp_elf_file.c_str(), tmp_elf_file.size());
+            response[tmp_elf_file.size()] = '\0';
 
-                auto response = static_cast<char *>(responsePayload);
-                memcpy(response, tmp_elf_file.c_str(), tmp_elf_file.size());
-                response[tmp_elf_file.size()] = '\0';
-
-                iox_server->send(response).or_else(
-                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
-            })
-            .or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
-    }
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::handle___cudaRegisterFunction(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -340,15 +352,12 @@ void TallyServer::handle___cudaRegisterFunction(void *__args, iox::popo::Untyped
     auto &client_meta = client_data_all[client_uid];
 
     std::string kernel_name {args->data, args->kernel_func_len};
-    client_meta.register_queue.push_back( std::make_pair(args->host_func, kernel_name));
+    client_meta.register_queue.push_back( std::make_pair(args->host_func, kernel_name) );
 }
 
 void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: __cudaRegisterFatBinaryEnd");
-
-    void *kernel_server_addr;
-    std::map<std::string, std::vector<uint32_t>> kernel_names_and_param_sizes;
     
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
     auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
@@ -356,53 +365,48 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
 
     auto &client_meta = client_data_all[client_uid];
 
-    if (!client_meta.cubin_registered) {
-        kernel_names_and_param_sizes = TallyCache::cache->cubin_cache.get_kernel_args((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
-    }
+    void *kernel_server_addr;
+    auto kernel_names_and_param_sizes = TallyCache::cache->cubin_cache.get_kernel_args((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+    auto cubin_str_ptr = TallyCache::cache->cubin_cache.get_cubin_data_ptr((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+    auto cubin_str = TallyCache::cache->cubin_cache.get_cubin_data_str((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
 
     for (auto &kernel_pair : client_meta.register_queue) {
         auto &client_addr = kernel_pair.first;
         auto &kernel_name = kernel_pair.second;
 
-        // already registered this client addr
-        if (client_meta._kernel_client_addr_mapping.find(client_addr) != client_meta._kernel_client_addr_mapping.end()) {
+        // make sure client data has not registered this client addr already
+        if (client_meta._kernel_client_addr_mapping.find(client_addr) == client_meta._kernel_client_addr_mapping.end()) {
 
-            assert(client_meta._kernel_client_addr_mapping[client_addr] == mangled_kernel_name_to_host_func_map[kernel_name]);
+            auto demangled_kernel_name = demangleFunc(kernel_name);
+    
+            // allocate an address for the kernel
+            // TODO: In fact we don't need malloc here
+            // Just need a unique address for this purpose
+            kernel_server_addr = malloc(8);
 
-            if (client_meta._kernel_client_addr_mapping[client_addr] != mangled_kernel_name_to_host_func_map[kernel_name]) {
-                throw std::runtime_error("Client addr exists but is different from previous record.");
-            }
+            auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
 
-        } else {
+            // Register the kernel with this address
+            host_func_to_demangled_kernel_name_map[kernel_server_addr] = demangled_kernel_name;
+            _kernel_addr_to_args[kernel_server_addr] = param_sizes;
 
-            if (mangled_kernel_name_to_host_func_map.find(kernel_name) == mangled_kernel_name_to_host_func_map.end()) {
+            std::hash<std::string> hasher;
+            size_t cubin_hash = hasher(cubin_str);
+            host_func_to_cubin_hash_map[kernel_server_addr] = cubin_hash;
 
-                assert(!client_meta.cubin_registered);
+            demangled_kernel_name_and_cubin_hash_to_host_func_map[
+                std::make_pair<std::string, size_t>(std::move(demangled_kernel_name), std::move(cubin_hash))
+            ] = kernel_server_addr;
 
-                auto demangled_kernel_name = demangleFunc(kernel_name);
-        
-                // allocate an address for the kernel
-                // TODO: In fact we don't need malloc here
-                // Just need a unique address for this purpose
-                kernel_server_addr = malloc(8);
+            cubin_to_kernel_name_to_host_func_map[cubin_str_ptr][demangled_kernel_name] = kernel_server_addr;
+            cubin_to_kernel_name_to_host_func_map[cubin_str_ptr][kernel_name] = kernel_server_addr;
 
-                auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
-
-                // Register the kernel with this address
-                mangled_kernel_name_to_host_func_map[kernel_name] = kernel_server_addr;
-                host_func_to_demangled_kernel_name_map[kernel_server_addr] = demangled_kernel_name;
-                demangled_kernel_name_to_host_func_map[demangled_kernel_name] = kernel_server_addr;
-                _kernel_addr_to_args[kernel_server_addr] = param_sizes;
-            }
-
-            client_meta._kernel_client_addr_mapping[client_addr] = mangled_kernel_name_to_host_func_map[kernel_name];
+            client_meta._kernel_client_addr_mapping[client_addr] = kernel_server_addr;
         }
     }
 
-    if (!client_meta.cubin_registered) {
-        // Load the transformed PTX and register them as callable functions
-        register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
-    }
+    // Load the transformed PTX and register them as callable functions
+    register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
 }
 
 void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -468,11 +472,11 @@ void TallyServer::handle_cudaMemcpy(void *__args, iox::popo::UntypedServer *iox_
     size_t res_size;
 
     if (args->kind == cudaMemcpyHostToDevice) {
-        res_size = sizeof(cudaError_t);
+        res_size = sizeof(cudaMemcpyResponse);
     } else if (args->kind == cudaMemcpyDeviceToHost){
-        res_size = sizeof(cudaError_t) + args->count;
+        res_size = sizeof(cudaMemcpyResponse) + args->count;
     } else if (args->kind == cudaMemcpyDeviceToDevice) {
-        res_size = sizeof(cudaError_t);
+        res_size = sizeof(cudaMemcpyResponse);
     } else {
         throw std::runtime_error("Unknown memcpy kind!");
     }
@@ -2522,11 +2526,11 @@ void TallyServer::handle_cudaGraphGetNodes(void *__args, iox::popo::UntypedServe
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::handle_cuCtxCreate_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
-{
-    TALLY_SPD_LOG("Received request: cuCtxCreate_v2");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
+// void TallyServer::handle_cuCtxCreate_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+// {
+//     TALLY_SPD_LOG("Received request: cuCtxCreate_v2");
+// 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+// }
 
 // TODO: This CUDA API is supposed to set attribute for a kernel function
 // However, since the server register kernels using JIT APIs instead of host functions
@@ -2571,4 +2575,142 @@ void TallyServer::handle_cuGetProcAddress_v2(void*, iox::popo::UntypedServer*, v
 {
     TALLY_SPD_LOG("Received request: cuGetProcAddress_v2");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cuMemcpy(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemcpy");
+	auto args = (struct cuMemcpyArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    size_t res_size;
+
+    if (is_dev_addr(client_data_all[client_uid].dev_addr_map, (void *) args->dst)) {
+        res_size = sizeof(cuMemcpyResponse);
+    } else {
+        res_size = sizeof(cuMemcpyResponse) + args->ByteCount;
+    }
+
+    iox_server->loan(requestHeader, res_size, alignof(cuMemcpyResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuMemcpyResponse*>(responsePayload);
+
+            response->err = cuMemcpy(
+				is_dev_addr(client_data_all[client_uid].dev_addr_map, (void *) args->dst) ? args->dst : (CUdeviceptr) response->data,
+				is_dev_addr(client_data_all[client_uid].dev_addr_map, (void *) args->src) ? args->src : (CUdeviceptr) args->data,
+				args->ByteCount
+            );
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemcpyAsync(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemcpyAsync");
+	auto args = (struct cuMemcpyAsyncArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    size_t res_size;
+
+    if (is_dev_addr(client_data_all[client_uid].dev_addr_map, (void *) args->dst)) {
+        res_size = sizeof(cuMemcpyAsyncResponse);
+    } else {
+        res_size = sizeof(cuMemcpyAsyncResponse) + args->ByteCount;
+    }
+
+    iox_server->loan(requestHeader, res_size, alignof(cuMemcpyAsyncResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuMemcpyAsyncResponse*>(responsePayload);
+
+            response->err = cuMemcpyAsync(
+				is_dev_addr(client_data_all[client_uid].dev_addr_map, (void *) args->dst) ? args->dst : (CUdeviceptr) response->data,
+				is_dev_addr(client_data_all[client_uid].dev_addr_map, (void *) args->src) ? args->src : (CUdeviceptr) args->data,
+				args->ByteCount,
+				__stream
+            );
+            
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemAllocAsync(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemAllocAsync");
+	auto args = (struct cuMemAllocAsyncArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cuMemAllocAsyncResponse), alignof(cuMemAllocAsyncResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuMemAllocAsyncResponse*>(responsePayload);
+            response->err = cuMemAllocAsync(
+				&(response->dptr),
+				args->bytesize,
+				__stream
+			);
+
+            // Keep track that this addr is device memory
+            if (response->err == CUDA_SUCCESS) {
+                client_data_all[client_uid].dev_addr_map.push_back( DeviceMemoryKey((void *)response->dptr, args->bytesize) );
+            }
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemFree_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemFree_v2");
+	auto args = (struct cuMemFree_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+            *response = cuMemFree_v2(
+				args->dptr
+            );
+
+            if (*response == CUDA_SUCCESS) {
+                free_dev_addr(client_data_all[client_uid].dev_addr_map, (void *)args->dptr);
+            }
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }

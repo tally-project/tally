@@ -6,6 +6,9 @@
 #include <sys/stat.h>
 #include <string>
 #include <vector>
+#include <sstream>
+#include <fstream>
+#include <iostream>
 
 std::string demangleFunc(std::string mangledName);
 bool is_process_running(pid_t pid);
@@ -25,6 +28,17 @@ std::string get_tmp_file_path(std::string suffix);
 template <typename T>
 void merge_vec(std::vector<T>& dest, const std::vector<T>& src) {
     dest.insert(dest.end(), src.begin(), src.end());
+}
+
+inline std::string get_process_name(int pid) {
+    std::stringstream ss;
+    ss << "/proc/" << pid << "/cmdline";
+    std::ifstream commFile(ss.str());
+    std::string processName;
+    std::stringstream buffer;
+    buffer << commFile.rdbuf();
+
+    return buffer.str();
 }
 
 #endif // TALLY_UTIL_H

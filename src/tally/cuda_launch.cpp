@@ -212,7 +212,7 @@ CUresult CudaLaunchConfig::launch(
                     TallyServer::server->cuda_graph_vec.push_back(cuda_graph_call);
                 }
 
-                _stream = TallyServer::server->stream;
+                _stream = TallyServer::server->cuda_graph_stream;
             } else {
                 _stream = stream;
             }
@@ -235,7 +235,7 @@ CUresult CudaLaunchConfig::launch(
         }
 
         if (use_cuda_graph) {
-            cudaStreamBeginCapture(TallyServer::server->stream, cudaStreamCaptureModeGlobal);
+            cudaStreamBeginCapture(TallyServer::server->cuda_graph_stream, cudaStreamCaptureModeGlobal);
         } else {
 
             if (run_profile) {
@@ -280,7 +280,7 @@ CUresult CudaLaunchConfig::launch(
         }
 
         if (use_cuda_graph) {
-            cudaStreamEndCapture(TallyServer::server->stream, &(cuda_graph_call->graph));
+            cudaStreamEndCapture(TallyServer::server->cuda_graph_stream, &(cuda_graph_call->graph));
 
             if (!cuda_graph_call->instantiated) {
                 cudaGraphInstantiate(&(cuda_graph_call->instance), cuda_graph_call->graph, NULL, NULL, 0);
