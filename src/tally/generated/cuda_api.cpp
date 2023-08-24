@@ -1,6 +1,7 @@
 
 
 #include <dlfcn.h>
+#include <iostream>
 
 #include <cuda_runtime.h>
 #include <cuda.h>

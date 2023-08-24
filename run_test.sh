@@ -3,7 +3,7 @@
 kill_iox_server() {
     # stop server
     pid=$(ps -ef | grep iox-roudi | grep -v grep | awk '{print $2}')
-    kill -9 $pid > /dev/null 2>&1
+    kill -9 $pid &> /dev/null
 
     sleep 1
 }
@@ -11,7 +11,7 @@ kill_iox_server() {
 kill_tally_server() {
     # stop server
     pid=$(ps -ef | grep tally_server | grep -v grep | awk '{print $2}')
-    kill -9 $pid > /dev/null 2>&1
+    kill -9 $pid &> /dev/null
 
     sleep 1
 }
@@ -22,17 +22,9 @@ cleanup() {
 }
 
 run_tally_test() {
-    # Launch tally server in the background
-    ./start_server.sh &
-
-    echo wait for server to start ...
-    sleep 5
-
     # Launch client process
     echo $@
     ./start_client.sh $@
-
-    kill_tally_server
 }
 
 test_list=(
@@ -54,6 +46,7 @@ test_list=(
     "python3 ./tests/train.py"
     "python3 ./tests/run-triton.py"
     "python3 ./tests/run-torch-compile.py"
+    "python3 ./tests/run-hidet.py"
 )
 
 # Set up
@@ -68,6 +61,12 @@ cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
 
 sleep 5
 
+# Launch tally server in the background
+    ./start_server.sh &
+
+echo wait for server to start ...
+sleep 5
+
 # Run tests
 for item in "${test_list[@]}"; do
     run_tally_test $item
@@ -77,4 +76,5 @@ sleep 5
 
 echo All tests passed!
 
+kill_tally_server
 kill_iox_server

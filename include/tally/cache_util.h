@@ -15,21 +15,26 @@
 
 static void cache_cubin_data(const char* cubin_data, size_t cubin_size)
 {
-    // Not exist in cache
-    if (TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size)) {
-        return;
-    }
-
     // Write cubin data to file
     std::string cubin_tmp_path = get_tmp_file_path(".cubin");
     write_binary_to_file(cubin_tmp_path, cubin_data, cubin_size);
     
-    // Extract PTX code from cubin file
-    auto ptx_file_names = gen_ptx_from_cubin(cubin_tmp_path);
-
     // Extract elf code from cubin file
     std::string tmp_elf_file_name = get_tmp_file_path(".elf");
     exec("cuobjdump " + cubin_tmp_path + " -elf > " + tmp_elf_file_name);
+
+    // If already exists, stop here
+    // The client would need the tmp elf file
+    if (TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size)) {
+
+        // Delete cubin file
+        std::remove(cubin_tmp_path.c_str());
+
+        return;
+    }
+
+    // Extract PTX code from cubin file
+    auto ptx_file_names = gen_ptx_from_cubin(cubin_tmp_path);
 
     // Delete cubin file
     std::remove(cubin_tmp_path.c_str());
@@ -44,7 +49,7 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size)
     // Parse arguments info from elf code
     kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file_name);
 
-    // Delete elf
+    // elf will be deleted by the client side
     // std::remove(tmp_elf_file_name.c_str());
 
     // Generate transformed version from the PTX code

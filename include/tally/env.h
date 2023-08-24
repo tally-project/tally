@@ -1,5 +1,5 @@
-#ifndef TALLY_CONST_H
-#define TALLY_CONST_H
+#ifndef TALLY_ENV_H
+#define TALLY_ENV_H
 
 #include <csignal>
 
@@ -25,4 +25,4 @@ static uint32_t PTB_MAX_NUM_THREADS_PER_SM = 1024;
 
 void __attribute__((constructor)) register_env_vars();
 
-#endif // TALLY_CONST_H
+#endif // TALLY_ENV_H

@@ -1,11 +1,30 @@
 
 #include <cstring>
 #include <memory>
+#include <vector>
 
+#include <tally/util.h>
 #include <tally/client.h>
+#include <tally/consts.h>
 #include <tally/generated/cuda_api.h>
 
-TallyClient *TallyClient::client = new TallyClient;
+TallyClient *TallyClient::client;
+
+__attribute__((__constructor__)) void init_client()
+{
+    NO_INIT_PROCESS_KEYWORDS_VEC;
+
+    auto process_name = get_process_name(getpid());
+
+    for (auto &keyword : no_init_process_keywords) {
+
+        if (containsSubstring(process_name, keyword)) {
+            return;
+        }
+    }
+
+    TallyClient::client = new TallyClient;
+}
 
 void TallyClient::register_profile_kernel_map()
 {

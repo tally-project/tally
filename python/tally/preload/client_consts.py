@@ -15,7 +15,6 @@ API_SPECIAL_ENUM = [
 ]
 
 API_DECL_TEMPLATE_TOP = """
-
 #ifndef TALLY_CUDA_API_H
 #define TALLY_CUDA_API_H
 
@@ -41,8 +40,8 @@ extern void (*l__cudaRegisterFatBinaryEnd) (void **);
 """
 
 API_DEF_TEMPLATE_TOP = """
-
 #include <dlfcn.h>
+#include <iostream>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -133,7 +132,6 @@ CLIENT_PRELOAD_TEMPLATE = """
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_TOP = """
-
 #ifndef TALLY_SERVER_H
 #define TALLY_SERVER_H
 
@@ -213,14 +211,22 @@ public:
 	std::unordered_map<CUfunction, std::vector<uint32_t>> _jit_kernel_addr_to_args;
 	std::unordered_map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, iox::popo::UntypedServer *, const void* const)>> cuda_api_handler_map;
+	
+	// Map func addr to kernel name and cubin hash
 	std::map<const void *, std::string> host_func_to_demangled_kernel_name_map;
-	std::map<std::string, const void *> demangled_kernel_name_to_host_func_map;
-	std::map<std::string, const void *> mangled_kernel_name_to_host_func_map;
+	std::map<const void *, size_t> host_func_to_cubin_hash_map;
+
+	// Map kernel name and cubin hash to a host func
+	std::map<std::pair<std::string, size_t>, const void *> demangled_kernel_name_and_cubin_hash_to_host_func_map;
+
+	// Use cubin as unique id of a kernel
+	// { Cubin str ptr: { Kernel Name: host func addr } }
+	std::map<const void *, std::map<std::string, const void *>> cubin_to_kernel_name_to_host_func_map;
 
 	std::vector<CudaGraphCall*> cuda_graph_vec;
 
 	// Dedicated stream for cuda graph
-    cudaStream_t stream;
+    cudaStream_t cuda_graph_stream;
 
 	// Register original and transformed kernels here
 	std::unordered_map<const void *, WrappedCUfunction> original_kernel_map;
@@ -302,14 +308,33 @@ TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
 #endif // TALLY_SERVER_H
 """
 
-TALLY_CLIENT_SRC_TEMPLATE_TOP = f"""
+TALLY_CLIENT_SRC_TEMPLATE_TOP = """
 #include <cstring>
 #include <memory>
+#include <vector>
 
+#include <tally/util.h>
 #include <tally/client.h>
+#include <tally/consts.h>
 #include <tally/generated/cuda_api.h>
 
-TallyClient *TallyClient::client = new TallyClient;
+TallyClient *TallyClient::client;
+
+__attribute__((__constructor__)) void init_client()
+{
+    NO_INIT_PROCESS_KEYWORDS_VEC;
+
+    auto process_name = get_process_name(getpid());
+
+    for (auto &keyword : no_init_process_keywords) {
+
+        if (containsSubstring(process_name, keyword)) {
+            return;
+        }
+    }
+
+    TallyClient::client = new TallyClient;
+}
 
 """
 
@@ -352,6 +377,7 @@ KERNEL_LAUNCH_CALLS = [
 
 # let the client call the APIs directly
 DIRECT_CALLS = [
+    "cuCtxDestroy_v2",
     "cuInit",
     "cuDeviceGetName",
     "cudaGetErrorString",
@@ -366,14 +392,18 @@ DIRECT_CALLS = [
     "cudaRuntimeGetVersion",
     "cudaFuncGetAttributes",
     "cudaFuncGetAttribute",
-    "cuGetExportTable"
+    "cuGetExportTable",
+    "cuCtxCreate_v2",
 ]
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuMemFree_v2",
+    "cuMemAllocAsync",
+    "cuMemcpyAsync",
+    "cuMemcpy",
     "cuGetProcAddress_v2",
     "cudaFuncSetAttribute",
-    "cuCtxCreate_v2",
     "cudaStreamGetCaptureInfo_v2",
     "cudaGraphGetNodes",
     "cuLaunchKernel",
@@ -455,7 +485,6 @@ FORWARD_API_CALLS = [
     "cuGraphLaunch",
     "cuStreamBeginCapture_v2",
     "cuStreamSynchronize",
-    "cuMemcpy",
     "cudaGraphUpload",
     "cudaGraphLaunch",
     "cudaGraphExecDestroy",
@@ -480,7 +509,6 @@ FORWARD_API_CALLS = [
     "cudnnOpsInferVersionCheck",
     "cudaMemPoolTrimTo"
     "cudaFreeArray",
-    "cuMemFree_v2",
     "cudaMemset",
     "cudnnSetAttnDescriptor",
     "cudnnSetDropoutDescriptor",
@@ -527,7 +555,6 @@ FORWARD_API_CALLS = [
     "cublasLtMatrixLayoutDestroy",
     "cublasLtMatmulPreferenceDestroy",
     "cublasLtDestroy",
-    "cuCtxDestroy_v2",
     "cuCtxPushCurrent_v2",
     "cuCtxSetCurrent",
     "cuCtxSynchronize",
@@ -550,7 +577,6 @@ FORWARD_API_CALLS = [
     "cudnnGetMaxDeviceVersion",
     "cudnnGetCudartVersion",
     "cudnnDestroyTensorDescriptor",
-    "cuMemcpyAsync",
     "cudnnCnnTrainVersionCheck",
     "cudnnSetActivationDescriptor",
     "cudnnDestroyConvolutionDescriptor",
@@ -576,7 +602,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cuEventCreate",
     "cuGraphInstantiateWithFlags",
     "cuStreamCreateWithPriority",
-    "cuMemAllocAsync",
     "cuModuleGetLoadingMode",
     "cuFuncGetAttribute",
     "cudaGraphInstantiateWithFlags",

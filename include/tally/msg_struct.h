@@ -964,4 +964,44 @@ struct cudaFuncSetAttributeArg {
 	int  value;
 };
 
+struct cuMemcpyArg {
+	CUdeviceptr  dst;
+	CUdeviceptr  src;
+	size_t  ByteCount;
+    char data[];
+};
+
+struct cuMemcpyResponse {
+    CUresult err;
+    char data[];
+};
+
+struct cuMemcpyAsyncArg {
+	CUdeviceptr  dst;
+	CUdeviceptr  src;
+	size_t  ByteCount;
+	CUstream  hStream;
+    char data[];
+};
+
+struct cuMemcpyAsyncResponse {
+    CUresult err;
+    char data[];
+};
+
+struct cuMemAllocAsyncArg {
+	CUdeviceptr * dptr;
+	size_t  bytesize;
+	CUstream  hStream;
+};
+
+struct cuMemAllocAsyncResponse {
+	CUdeviceptr  dptr;
+	CUresult err;
+};
+
+struct cuMemFree_v2Arg {
+	CUdeviceptr  dptr;
+};
+
 #endif // TALLY_DEF_H
