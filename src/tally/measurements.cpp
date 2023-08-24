@@ -270,7 +270,8 @@ CudaLaunchKey TallyServer::convert_call_to_key(CudaLaunchCall call)
     return CudaLaunchKey(
         host_func_to_demangled_kernel_name_map[call.func],
         call.gridDim,
-        call.blockDim
+        call.blockDim,
+        host_func_to_cubin_hash_map[call.func]
     );
 }
 

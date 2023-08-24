@@ -367,11 +367,11 @@ public:
         return transform_data->kernel_args;
     }
 
-    const char *get_cubin_data_ptr(const char* cubin_data, size_t cubin_size)
+    std::string *get_cubin_data_ptr(const char* cubin_data, size_t cubin_size)
     {
         auto transform_data = find_transform_data(cubin_data, cubin_size);
         assert(transform_data);
-        return transform_data->cubin_data.c_str();
+        return &(transform_data->cubin_data);
     }
 
     std::string get_cubin_data_str(const char* cubin_data, size_t cubin_size)

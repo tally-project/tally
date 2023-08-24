@@ -26,7 +26,7 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size)
     // If already exists, stop here
     // The client would need the tmp elf file
     if (TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size)) {
-
+        
         // Delete cubin file
         std::remove(cubin_tmp_path.c_str());
 
