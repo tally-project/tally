@@ -2,8 +2,7 @@
 #define TALLY_ENV_H
 
 #include <csignal>
-
-extern bool TALLY_INITIALIZED;
+#include <string>
 
 static const char* TALLY_CLIENT_PRELOAD_PATH = "/home/zhaowe58/tally/build/libtally_client.so";
 
@@ -22,6 +21,15 @@ static uint32_t CUDA_MAX_NUM_REGISTERS_PER_SM = 64 * 1024;
 static uint32_t CUDA_MAX_SHM_BYTES_PER_SM = 100 * 1024;
 
 static uint32_t PTB_MAX_NUM_THREADS_PER_SM = 1024;
+
+extern bool TALLY_INITIALIZED;
+
+enum TALLY_SCHEDULER_POLICY {
+    NAIVE,
+    PROFILE
+};
+
+extern TALLY_SCHEDULER_POLICY SCHEDULER_POLICY;
 
 void __attribute__((constructor)) register_env_vars();
 

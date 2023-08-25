@@ -4,8 +4,6 @@
 #include <unordered_set>
 #include <atomic>
 
-#include "spdlog/spdlog.h"
-
 #include <tally/transform.h>
 #include <tally/util.h>
 #include <tally/ipc_util.h>

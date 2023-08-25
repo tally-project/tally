@@ -285,7 +285,7 @@ public:
     TallyServer();
     ~TallyServer();
 
-	void profile_kernel_wise();
+	void run_profile_scheduler();
     void register_api_handler();
     void load_cache();
 

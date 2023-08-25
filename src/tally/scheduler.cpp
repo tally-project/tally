@@ -6,19 +6,30 @@
 #include <tally/generated/server.h>
 #include <tally/cuda_util.h>
 #include <tally/util.h>
+#include <tally/env.h>
 
 void TallyServer::start_scheduler()
 {
     implicit_init_cuda_ctx();
 
+    auto policy = SCHEDULER_POLICY;
+
+    if (policy == TALLY_SCHEDULER_POLICY::NAIVE) {
+        run_naive_scheduler();
+    } else if (policy == TALLY_SCHEDULER_POLICY::PROFILE) {
+        run_profile_scheduler();
+    } else {
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unknown policy enum.");
+    }
+}
+
+// Launch kernel as soon as they arrive
+void TallyServer::run_naive_scheduler()
+{
+    spdlog::info("Running naive scheduler ...");
+
     while (!iox::posix::hasTerminationRequested()) {
 
-#ifdef PROFILE_KERNEL_WISE
-        // Run profile kernel-wise experiment
-        profile_kernel_wise();
-
-#else
-        // Currently the scheduling decision is to launch kernel as long as they arrive
         for (auto &pair : client_data_all) {
 
             auto &client_data = pair.second;
@@ -29,13 +40,13 @@ void TallyServer::start_scheduler()
             }
 
         }
-#endif
-
     }
 }
 
-void TallyServer::profile_kernel_wise()
+void TallyServer::run_profile_scheduler()
 {
+    spdlog::info("Running profile scheduler ...");
+
     // Wait until there are two kernels from two clients
     while (!iox::posix::hasTerminationRequested()) {
         int kernel_count = 0;

@@ -20,6 +20,8 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 
+#include "spdlog/spdlog.h"
+
 #include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
 #include "iceoryx_posh/popo/untyped_server.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
@@ -153,7 +155,10 @@ public:
     TallyServer();
     ~TallyServer();
 
-	void profile_kernel_wise();
+	// Scheduler options
+	void run_naive_scheduler();
+	void run_profile_scheduler();
+
     void register_api_handler();
     void load_cache();
 

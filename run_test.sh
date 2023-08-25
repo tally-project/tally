@@ -37,16 +37,16 @@ test_list=(
     "./build/tests/basic_gemm"
     "./build/tests/turing_tensorop_gemm"
     "./build/tests/ampere_tf32_tensorop_gemm"
-    "./build/bin/samples"
-    "./tests/cudnn_samples_v8/conv_sample/conv_sample"
-    "./tests/cudnn_samples_v8/mnistCUDNN/mnistCUDNN"
-    "./tests/cudnn_samples_v8/multiHeadAttention/multiHeadAttention -attnTrain1 -attnDataType0 -attnNumHeads3 -attnBatchSize6 -attnBeamSize1 -attnQsize8 -attnKsize8 -attnVsize8 -attnProjQsize2 -attnProjKsize2 -attnProjVsize2 -attnProjOsize8 -attnResLink0 -attnSeqLenQ3 -attnSeqLenK10"
-    "./tests/cudnn_samples_v8/RNN/RNN"
-    "./tests/cudnn_samples_v8/RNN_v8.0/RNN"
     "python3 ./tests/train.py"
     "python3 ./tests/run-triton.py"
     "python3 ./tests/run-torch-compile.py"
     "python3 ./tests/run-hidet.py"
+    "./tests/cudnn_samples_v8/RNN/RNN"
+    "./tests/cudnn_samples_v8/RNN_v8.0/RNN"
+    "./tests/cudnn_samples_v8/conv_sample/conv_sample"
+    "./tests/cudnn_samples_v8/mnistCUDNN/mnistCUDNN"
+    "./tests/cudnn_samples_v8/multiHeadAttention/multiHeadAttention -attnTrain1 -attnDataType0 -attnNumHeads3 -attnBatchSize6 -attnBeamSize1 -attnQsize8 -attnKsize8 -attnVsize8 -attnProjQsize2 -attnProjKsize2 -attnProjVsize2 -attnProjOsize8 -attnResLink0 -attnSeqLenQ3 -attnSeqLenK10"
+    "./build/bin/samples"
 )
 
 # Set up
