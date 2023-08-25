@@ -13,14 +13,14 @@
 #include <tally/cuda_util.h>
 #include <tally/cache.h>
 
-static void cache_cubin_data(const char* cubin_data, size_t cubin_size)
+static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_filename=-1)
 {
     // Write cubin data to file
     std::string cubin_tmp_path = get_tmp_file_path(".cubin");
     write_binary_to_file(cubin_tmp_path, cubin_data, cubin_size);
     
     // Extract elf code from cubin file
-    std::string tmp_elf_file_name = get_tmp_file_path(".elf");
+    std::string tmp_elf_file_name = get_tmp_file_path(".elf", elf_filename);
     exec("cuobjdump " + cubin_tmp_path + " -elf > " + tmp_elf_file_name);
 
     // If already exists, stop here

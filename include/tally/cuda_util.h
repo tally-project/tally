@@ -9,6 +9,7 @@
 #include <map>
 
 #include <tally/cuda_launch.h>
+#include <tally/generated/cuda_api.h>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -332,20 +333,86 @@ std::string get_fatbin_str_from_ptx_str(std::string ptx_str);
 
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path);
 
+std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str);
+
+template <class KERNEL_NAME_MAP_TYPE, class KERNEL_MAP_TYPE>
 void register_kernels_from_ptx_fatbin(
     std::vector<std::pair<std::string, std::string>> &ptx_fatbin_strs,
-    std::map<std::string, const void *> &kernel_name_map,
-    std::unordered_map<const void *, WrappedCUfunction> &kernel_map
-);
+    KERNEL_NAME_MAP_TYPE &kernel_name_map,
+    KERNEL_MAP_TYPE &kernel_map
+)
+{
+    for (auto &ptx_fatbin_pair : ptx_fatbin_strs) {
+        
+        auto &ptx_str = ptx_fatbin_pair.first;
+        auto &fatbin_str = ptx_fatbin_pair.second;
 
+        CUmodule cudaModule;
+        cuModuleLoadDataEx(&cudaModule, fatbin_str.c_str(), 0, 0, 0);
+
+        auto kernel_names_and_nparams = get_kernel_names_and_nparams_from_ptx(ptx_str);
+        
+        for (auto &name_and_nparams : kernel_names_and_nparams) {
+
+            auto &kernel_name = name_and_nparams.first;
+            auto num_params = name_and_nparams.second;
+            auto host_func = kernel_name_map[kernel_name];
+
+            CUfunction function;
+            cuModuleGetFunction(&function, cudaModule, kernel_name.c_str());
+
+            WrappedCUfunction wrapped_cu_func;
+
+            wrapped_cu_func.func = function;
+            wrapped_cu_func.num_args = num_params;
+            cuFuncGetAttribute (&(wrapped_cu_func.meta_data.max_threads_per_block), CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, function);
+            cuFuncGetAttribute (&(wrapped_cu_func.meta_data.static_shmem_size_bytes), CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, function);
+            cuFuncGetAttribute (&(wrapped_cu_func.meta_data.num_regs), CU_FUNC_ATTRIBUTE_NUM_REGS, function);
+            cuFuncGetAttribute (&(wrapped_cu_func.meta_data.max_dynamic_shmem_size_bytes), CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, function);
+
+
+            if (kernel_map.find(host_func) == kernel_map.end()) {
+                kernel_map.insert(host_func, wrapped_cu_func);
+            }
+        }
+    }
+};
+
+template <typename KERNEL_MAP_TYPE>
 void register_jit_kernel_from_ptx_fatbin(
     std::vector<std::pair<std::string, std::string>> &ptx_fatbin_strs,
     CUfunction orig_func,
     std::string kernel_name,
-    std::unordered_map<CUfunction, CUfunction> &kernel_map
-);
+    KERNEL_MAP_TYPE &kernel_map
+)
+{
+    for (auto &ptx_fatbin_pair : ptx_fatbin_strs) {
+        
+        auto &ptx_str = ptx_fatbin_pair.first;
+        auto &fatbin_str = ptx_fatbin_pair.second;
 
-std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str);
+        auto kernel_names_and_nparams = get_kernel_names_and_nparams_from_ptx(ptx_str);
+        
+        for (auto &name_and_nparams : kernel_names_and_nparams) {
+
+            auto &curr_kernel_name = name_and_nparams.first;
+            
+            if (kernel_name != curr_kernel_name) {
+                continue;
+            }
+
+            CUmodule cudaModule;
+            lcuModuleLoadDataEx(&cudaModule, fatbin_str.c_str(), 0, 0, 0);
+
+            CUfunction function;
+            lcuModuleGetFunction(&function, cudaModule, kernel_name.c_str());
+
+            kernel_map.insert(orig_func, function);
+            
+            return;
+        }
+    }
+};
 
 std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_from_elf(std::string elf_path);
 

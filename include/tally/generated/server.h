@@ -22,6 +22,8 @@
 
 #include "spdlog/spdlog.h"
 
+#include <folly/concurrency/ConcurrentHashMap.h>
+
 #include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
 #include "iceoryx_posh/popo/untyped_server.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
@@ -79,27 +81,28 @@ public:
 	std::map<int32_t, std::atomic<bool>> threads_running_map;
     
 	// ==================== Global state =====================
-	std::map<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
-	std::unordered_map<CUfunction, std::vector<uint32_t>> _jit_kernel_addr_to_args;
-	std::unordered_map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, iox::popo::UntypedServer *, const void* const)>> cuda_api_handler_map;
+
+	folly::ConcurrentHashMap<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
+	folly::ConcurrentHashMap<CUfunction, std::vector<uint32_t>> _jit_kernel_addr_to_args;
+	folly::ConcurrentHashMap<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	
 	// Map func addr to kernel name and cubin hash
-	std::map<const void *, std::string> host_func_to_demangled_kernel_name_map;
-	std::map<const void *, size_t> host_func_to_cubin_hash_map;
+	folly::ConcurrentHashMap<const void *, std::string> host_func_to_demangled_kernel_name_map;
+	folly::ConcurrentHashMap<const void *, size_t> host_func_to_cubin_hash_map;
 
 	// Map kernel name and cubin hash to a host func
-	std::map<std::pair<std::string, size_t>, const void *> demangled_kernel_name_and_cubin_hash_to_host_func_map;
+	folly::ConcurrentHashMap<std::pair<std::string, size_t>, const void *> demangled_kernel_name_and_cubin_hash_to_host_func_map;
 
 	// Use cubin as unique id of a kernel
 	// { Cubin str ptr: { Kernel Name: host func addr } }
-	std::map<const void *, std::map<std::string, const void *>> cubin_to_kernel_name_to_host_func_map;
+	std::map<const void *, folly::ConcurrentHashMap<std::string, const void *>> cubin_to_kernel_name_to_host_func_map;
 
 	// Register original and transformed kernels here
-	std::unordered_map<const void *, WrappedCUfunction> original_kernel_map;
-    std::unordered_map<const void *, WrappedCUfunction> ptb_kernel_map;
+	folly::ConcurrentHashMap<const void *, WrappedCUfunction> original_kernel_map;
+    folly::ConcurrentHashMap<const void *, WrappedCUfunction> ptb_kernel_map;
 
-    std::unordered_map<CUfunction, CUfunction> jit_ptb_kernel_map;
+    folly::ConcurrentHashMap<CUfunction, CUfunction> jit_ptb_kernel_map;
 
 	// Performance cache to use at runtime
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;

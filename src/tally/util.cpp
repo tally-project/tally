@@ -141,8 +141,11 @@ void write_binary_to_file(std::string path, const char* data, uint32_t size)
     file.close();
 }
 
-std::string get_tmp_file_path(std::string suffix)
+std::string get_tmp_file_path(std::string suffix, int file_name)
 {
-    std::string tmp_file = "/tmp/tmp_" + std::to_string(getpid()) + suffix;
+    if (file_name < 0) {
+        file_name = getpid();
+    }
+    std::string tmp_file = "/tmp/tmp_" + std::to_string(file_name) + suffix;
     return tmp_file;
 }

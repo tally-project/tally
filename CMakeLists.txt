@@ -4,7 +4,7 @@ enable_language(CUDA)
 
 set(CMAKE_CUDA_COMPILER nvcc)
 set(CMAKE_CXX_STANDARD 20)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-comment -Wno-deprecated")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-comment -Wno-deprecated -Wno-maybe-uninitialized")
 
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
@@ -22,6 +22,7 @@ FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
 add_subdirectory(third_party/spdlog)
 add_subdirectory(third_party/iceoryx/iceoryx_meta)
 add_subdirectory(third_party/json)
+add_subdirectory(third_party/folly)
 
 include(GNUInstallDirs)
 
@@ -139,6 +140,7 @@ target_link_libraries(tally_server PUBLIC
     PUBLIC Boost::regex
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
     iceoryx_posh::iceoryx_posh
+    folly
 )
 
 add_subdirectory(tests)
