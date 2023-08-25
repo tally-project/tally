@@ -61,6 +61,8 @@ public:
 	CUresult err;
 
     cudaStream_t default_stream = nullptr;
+
+	std::atomic<bool> has_exit = false;
 };
 
 class TallyServer {
@@ -74,7 +76,7 @@ public:
 	// ================== Per-client state ===================
 	std::map<int32_t, ClientData> client_data_all;
     std::map<int32_t, iox::popo::UntypedServer *> worker_servers;
-	std::map<int32_t, std::thread> worker_threads;
+	std::map<int32_t, std::atomic<bool>> threads_running_map;
     
 	// ==================== Global state =====================
 	std::map<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;

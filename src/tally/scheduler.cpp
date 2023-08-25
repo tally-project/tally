@@ -34,6 +34,12 @@ void TallyServer::run_naive_scheduler()
 
             auto &client_data = pair.second;
 
+            if (client_data.has_exit) {
+                auto client_id = pair.first;
+                client_data_all.erase(client_id);
+                break;
+            }
+
             if (client_data.has_kernel) {
                 client_data.err = (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, false, 0, nullptr, nullptr, -1);
                 client_data.has_kernel = false;

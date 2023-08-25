@@ -6,11 +6,14 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <shared_mutex>
 
 #include <nlohmann/json.hpp>
 
 #include <tally/cuda_launch.h>
 #include <tally/cuda_util.h>
+
+static std::shared_mutex mutex_;
 
 struct CudaLaunchKey {
     std::string kernel_name;
@@ -324,6 +327,7 @@ public:
 
     CubinData* find_transform_data(const char* cubin_data, size_t cubin_size)
     {
+        std::shared_lock lock(mutex_);
         if (cubin_map.find(cubin_size) != cubin_map.end()) {
             for (auto &data : cubin_map[cubin_size]) {
                 if (memcmp(data.cubin_data.c_str(), cubin_data, cubin_size) == 0) {
@@ -390,6 +394,7 @@ public:
         std::vector<std::pair<std::string, std::string>> &ptb_data
     )
     {
+        std::unique_lock lock(mutex_);
         cubin_map[cubin_size].push_back( CubinData { cubin_str, kernel_args, original_data, sliced_data, ptb_data } );
     }
 };

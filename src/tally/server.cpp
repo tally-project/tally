@@ -65,7 +65,9 @@ void TallyServer::start_main_server() {
             strcpy(channel_desc, channel_desc_str.c_str()); 
 
             worker_servers[client_id] = new iox::popo::UntypedServer({channel_desc, "tally", "tally"});
-            worker_threads[client_id] = std::thread(&TallyServer::start_worker_server, TallyServer::server, client_id);
+            std::thread t(&TallyServer::start_worker_server, TallyServer::server, client_id);
+            t.detach();
+            threads_running_map[client_id] = true;
 
             auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
             handshake_server.loan(requestHeader, sizeof(HandshakeResponse), alignof(HandshakeResponse))
@@ -82,6 +84,24 @@ void TallyServer::start_main_server() {
 
             handshake_server.releaseRequest(requestPayload);
         });
+
+        // Check whether any worker thread has exited. Free its resources.
+        for (auto it = threads_running_map.cbegin(); it != threads_running_map.cend() /* not hoisted */; /* no increment */)
+        {
+            auto client_id = it->first;
+            auto &thread_running = it->second;
+
+            if (!thread_running) {
+                delete worker_servers[client_id];
+                worker_servers.erase(client_id);
+
+                client_data_all[client_id].has_exit = true;
+
+                it = threads_running_map.erase(it);
+            } else {
+                ++it;
+            }
+        }
     }
 }
 
@@ -112,11 +132,7 @@ void TallyServer::start_worker_server(int32_t client_id) {
         }
     }
 
-    // Might need lock
-
-    worker_servers.erase(client_id);
-    // client_data_all.erase(client_id);
-    delete worker_server;
+    threads_running_map[client_id] = false;
 
     spdlog::info("Tally worker server has exited ...");
 }
