@@ -95,17 +95,10 @@ public:
 	// { Cubin str ptr: { Kernel Name: host func addr } }
 	std::map<const void *, std::map<std::string, const void *>> cubin_to_kernel_name_to_host_func_map;
 
-	std::vector<CudaGraphCall*> cuda_graph_vec;
-
-	// Dedicated stream for cuda graph
-    cudaStream_t cuda_graph_stream;
-
 	// Register original and transformed kernels here
 	std::unordered_map<const void *, WrappedCUfunction> original_kernel_map;
-    std::unordered_map<const void *, WrappedCUfunction> sliced_kernel_map;
     std::unordered_map<const void *, WrappedCUfunction> ptb_kernel_map;
 
-	std::unordered_map<CUfunction, CUfunction> jit_sliced_kernel_map;
     std::unordered_map<CUfunction, CUfunction> jit_ptb_kernel_map;
 
 	// Performance cache to use at runtime

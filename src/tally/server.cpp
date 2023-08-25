@@ -47,7 +47,7 @@ void TallyServer::start_main_server() {
     iox::runtime::PoshRuntime::initRuntime(APP_NAME);
     iox::popo::UntypedServer handshake_server({"Tally", "handshake", "event"});
 
-    cudaStreamCreate(&cuda_graph_stream);
+    implicit_init_cuda_ctx();
 
     load_cache();
 
@@ -140,14 +140,12 @@ void TallyServer::start_worker_server(int32_t client_id) {
 void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_size)
 {
     auto original_data = TallyCache::cache->cubin_cache.get_original_data(cubin_data, cubin_size);
-    auto sliced_data = TallyCache::cache->cubin_cache.get_sliced_data(cubin_data, cubin_size);
     auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
 
     auto cubin_str_ptr = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
     auto kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_str_ptr];
 
     register_kernels_from_ptx_fatbin(original_data, kernel_name_to_host_func_map, original_kernel_map);
-    register_kernels_from_ptx_fatbin(sliced_data, kernel_name_to_host_func_map, sliced_kernel_map);
     register_kernels_from_ptx_fatbin(ptb_data, kernel_name_to_host_func_map, ptb_kernel_map);
 }
 
@@ -2428,7 +2426,6 @@ void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedSer
     auto kernel_name = std::string(args->name);
     auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
 
-    auto sliced_data = TallyCache::cache->cubin_cache.get_sliced_data(cubin_data, cubin_size);
     auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
 
     iox_server->loan(requestHeader, sizeof(cuModuleGetFunctionResponse), alignof(cuModuleGetFunctionResponse))
@@ -2438,7 +2435,6 @@ void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedSer
             response->err = cuModuleGetFunction(&(response->hfunc), args->hmod, args->name);
             _jit_kernel_addr_to_args[response->hfunc] = param_sizes;
 
-            register_jit_kernel_from_ptx_fatbin(sliced_data, response->hfunc, kernel_name, jit_sliced_kernel_map);
             register_jit_kernel_from_ptx_fatbin(ptb_data, response->hfunc, kernel_name, jit_ptb_kernel_map);
 
             iox_server->send(response).or_else(
@@ -2557,13 +2553,11 @@ void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedSe
     
     const void *server_func_addr = client_data_all[client_uid]._kernel_client_addr_mapping[args->func];
     auto cu_func = original_kernel_map[server_func_addr].func;
-    auto cu_func_sliced = sliced_kernel_map[server_func_addr].func;
     auto cu_func_ptb = ptb_kernel_map[server_func_addr].func;
 
     auto cu_attr = convert_func_attribute(args->attr);
 
     cuFuncSetAttribute(cu_func, cu_attr, args->value);
-    cuFuncSetAttribute(cu_func_sliced, cu_attr, args->value);
     cuFuncSetAttribute(cu_func_ptb, cu_attr, args->value);
 
     std::string set_attr_log = "Setting attribute " + get_func_attr_str(cu_attr) + " to value " + std::to_string(args->value);
