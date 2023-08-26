@@ -145,8 +145,8 @@ void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_si
     auto original_data = TallyCache::cache->cubin_cache.get_original_data(cubin_data, cubin_size);
     auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
 
-    auto cubin_str_ptr = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
-    auto &kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_str_ptr];
+    auto cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+    auto &kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_uid];
 
     register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(original_data, kernel_name_to_host_func_map, original_kernel_map);
     register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(ptb_data, kernel_name_to_host_func_map, ptb_kernel_map);
@@ -276,9 +276,9 @@ void TallyServer::load_cache()
                 auto &param_sizes = kernel_args_pair.second;
                 auto demangled_kernel_name = demangleFunc(kernel_name);
 
-                auto cubin_data_str_ptr = (void *) &(cubin_data.cubin_data);
+                auto cubin_uid = cubin_data.cubin_uid;
 
-                if (cubin_to_kernel_name_to_host_func_map[cubin_data_str_ptr].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_data_str_ptr].end()) {
+                if (cubin_to_kernel_name_to_host_func_map[cubin_uid].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_uid].end()) {
 
                     // allocate an address for the kernel
                     const void *kernel_server_addr = (const void *) malloc(8);
@@ -291,8 +291,8 @@ void TallyServer::load_cache()
                     size_t cubin_hash = hasher(cubin_data.cubin_data);
                     host_func_to_cubin_hash_map.insert(kernel_server_addr, cubin_hash);
 
-                    cubin_to_kernel_name_to_host_func_map[cubin_data_str_ptr].insert(kernel_name, kernel_server_addr);
-                    cubin_to_kernel_name_to_host_func_map[cubin_data_str_ptr].insert(demangled_kernel_name, kernel_server_addr);
+                    cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(kernel_name, kernel_server_addr);
+                    cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(demangled_kernel_name, kernel_server_addr);
 
                     demangled_kernel_name_and_cubin_hash_to_host_func_map.insert(
                         std::make_pair<std::string, size_t>(std::move(demangled_kernel_name), std::move(cubin_hash)),
@@ -323,6 +323,9 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
         cudaStreamCreate(&client_meta.default_stream);
     }
 
+    client_meta.cubin_registered = args->cached;
+    client_meta.cubin_uid = args->cubin_uid;
+
     // Free data from last time
     if (client_meta.fatbin_data) {
         free(client_meta.fatbin_data);
@@ -331,30 +334,32 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
 
     client_meta.register_queue.clear();
 
-    struct fatBinaryHeader *header = (struct fatBinaryHeader *) args->data;
-    size_t cubin_size = header->headerSize + header->fatSize;
-    const char *cubin_data = (const char *) args->data;
+    if (!client_meta.cubin_registered) {
+        struct fatBinaryHeader *header = (struct fatBinaryHeader *) args->data;
+        size_t cubin_size = header->headerSize + header->fatSize;
+        const char *cubin_data = (const char *) args->data;
 
-    // Load necessary data into cache if not exists
-    cache_cubin_data(cubin_data, cubin_size, client_uid);
+        // Load necessary data into cache if not exists
+        cache_cubin_data(cubin_data, cubin_size, client_uid);
 
-    client_meta.fatBinSize = cubin_size;
-    client_meta.fatbin_data = (unsigned long long *) malloc(cubin_size);
-    memcpy(client_meta.fatbin_data, args->data, cubin_size);
+        client_meta.fatBinSize = cubin_size;
+        client_meta.fatbin_data = (unsigned long long *) malloc(cubin_size);
+        memcpy(client_meta.fatbin_data, args->data, cubin_size);
 
-    std::string tmp_elf_file = get_tmp_file_path(".elf", client_uid);
-    iox_server->loan(requestHeader, tmp_elf_file.size() + 1, alignof(char[]))
-        .and_then([&](auto& responsePayload) {
+        std::string tmp_elf_file = get_tmp_file_path(".elf", client_uid);
+        iox_server->loan(requestHeader, tmp_elf_file.size() + 1, alignof(char[]))
+            .and_then([&](auto& responsePayload) {
 
-            auto response = static_cast<char *>(responsePayload);
-            memcpy(response, tmp_elf_file.c_str(), tmp_elf_file.size());
-            response[tmp_elf_file.size()] = '\0';
+                auto response = static_cast<char *>(responsePayload);
+                memcpy(response, tmp_elf_file.c_str(), tmp_elf_file.size());
+                response[tmp_elf_file.size()] = '\0';
 
-            iox_server->send(response).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
-        })
-        .or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+                iox_server->send(response).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+            })
+            .or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+    }
 }
 
 void TallyServer::handle___cudaRegisterFunction(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -383,9 +388,17 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
     auto &client_meta = client_data_all[client_uid];
 
     void *kernel_server_addr;
-    auto kernel_names_and_param_sizes = TallyCache::cache->cubin_cache.get_kernel_args((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
-    auto cubin_str_ptr = (void *) TallyCache::cache->cubin_cache.get_cubin_data_ptr((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
-    auto cubin_str = TallyCache::cache->cubin_cache.get_cubin_data_str((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+    std::map<std::string, std::vector<uint32_t>> kernel_names_and_param_sizes;
+    uint32_t cubin_uid;
+    
+    if (!client_meta.cubin_registered) {
+        kernel_names_and_param_sizes = TallyCache::cache->cubin_cache.get_kernel_args((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+        cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+    } else {
+        cubin_uid = client_meta.cubin_uid;
+    }
+    
+    auto cubin_str = TallyCache::cache->cubin_cache.get_cubin_data_str_from_cubin_uid(cubin_uid);
 
     for (auto &kernel_pair : client_meta.register_queue) {
         auto &client_addr = kernel_pair.first;
@@ -394,7 +407,7 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
         // make sure client data has not registered this client addr already
         if (client_meta._kernel_client_addr_mapping.find(client_addr) == client_meta._kernel_client_addr_mapping.end()) {
 
-            if (cubin_to_kernel_name_to_host_func_map[cubin_str_ptr].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_str_ptr].end()) {
+            if (cubin_to_kernel_name_to_host_func_map[cubin_uid].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_uid].end()) {
 
                 auto demangled_kernel_name = demangleFunc(kernel_name);
         
@@ -413,8 +426,8 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
                 size_t cubin_hash = hasher(cubin_str);
                 host_func_to_cubin_hash_map.insert(kernel_server_addr, cubin_hash);
 
-                cubin_to_kernel_name_to_host_func_map[cubin_str_ptr].insert(demangled_kernel_name, kernel_server_addr);
-                cubin_to_kernel_name_to_host_func_map[cubin_str_ptr].insert(kernel_name, kernel_server_addr);
+                cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(demangled_kernel_name, kernel_server_addr);
+                cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(kernel_name, kernel_server_addr);
 
                 demangled_kernel_name_and_cubin_hash_to_host_func_map.insert(
                     std::make_pair<std::string, size_t>(std::move(demangled_kernel_name), std::move(cubin_hash)),
@@ -422,12 +435,14 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
                 );
             }
 
-            client_meta._kernel_client_addr_mapping[client_addr] = cubin_to_kernel_name_to_host_func_map[cubin_str_ptr][kernel_name];
+            client_meta._kernel_client_addr_mapping[client_addr] = cubin_to_kernel_name_to_host_func_map[cubin_uid][kernel_name];
         }
     }
 
     // Load the transformed PTX and register them as callable functions
-    register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+    if (!client_meta.cubin_registered) {
+        register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+    }
 }
 
 void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -2377,17 +2392,23 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
 
     bool cached = args->cached;
     std::string tmp_elf_file;
-    
-    struct fatBinaryHeader *header = (struct fatBinaryHeader *) args->image;
-    size_t cubin_size = header->headerSize + header->fatSize;
-    const char *cubin_data = (const char *) args->image;
-
-    cache_cubin_data(cubin_data, cubin_size, client_uid);
-    tmp_elf_file = get_tmp_file_path(".elf", client_uid);
-
+    uint32_t cubin_uid = 0;
     size_t msg_len = sizeof(cuModuleLoadDataResponse);
 
-    msg_len += tmp_elf_file.size() + 1;
+    size_t cubin_size;
+    const char *cubin_data;
+    
+    if (!cached) {
+        auto header = (struct fatBinaryHeader *) args->image;
+        cubin_size = header->headerSize + header->fatSize;
+        cubin_data = (const char *) args->image;
+
+        cache_cubin_data(cubin_data, cubin_size, client_uid);
+        tmp_elf_file = get_tmp_file_path(".elf", client_uid);
+        msg_len += tmp_elf_file.size() + 1;
+    } else {
+        cubin_uid = args->cubin_uid;
+    }
 
     iox_server->loan(requestHeader, sizeof(cuModuleLoadDataResponse), alignof(cuModuleLoadDataResponse))
         .and_then([&](auto& responsePayload) {
@@ -2395,15 +2416,19 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
 
             response->err = cuModuleLoadData(&(response->module), args->image);
 
+            const char *cubin_data_str_ptr;
+
             if (!cached) {
                 memcpy(response->tmp_elf_file, tmp_elf_file.c_str(), tmp_elf_file.size());
                 response->tmp_elf_file[tmp_elf_file.size()] = '\0';
+
+                cubin_data_str_ptr = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
+            } else {
+                cubin_data_str_ptr = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
             }
 
-            auto cubin_data_str_ptr = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
-
             jit_module_to_cubin_map.insert(response->module, std::make_pair<const char *, size_t>(
-                cubin_data_str_ptr->c_str(),
+                std::move(cubin_data_str_ptr),
                 std::move(cubin_size)
             ));
 

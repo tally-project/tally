@@ -73,7 +73,16 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     const char *cubin_data = (const char *) wp->data;
     size_t cubin_size = fbh->headerSize + fbh->fatSize;
 
-    uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct __cudaRegisterFatBinaryArg) + cubin_size;
+    bool cached = TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size);
+    uint32_t cubin_uid = 0;
+
+    size_t msg_len;
+    if (!cached) {
+        msg_len = sizeof(MessageHeader_t) + sizeof(__cudaRegisterFatBinaryArg) + cubin_size;
+    } else {
+        msg_len = sizeof(MessageHeader_t) + sizeof(__cudaRegisterFatBinaryArg);
+        cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+    }
 
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFatBinary(fatCubin);
@@ -88,8 +97,12 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
             header->client_id = TallyClient::client->client_id;
 
             auto request = (__cudaRegisterFatBinaryArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-            request->cached = false;
-            memcpy(request->data, wp->data, cubin_size);
+            request->cached = cached;
+            request->cubin_uid = cubin_uid;
+
+            if (!cached) {
+                memcpy(request->data, wp->data, cubin_size);
+            }
 
             TallyClient::client->iox_client->send(header).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
@@ -99,25 +112,30 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     std::map<std::string, std::vector<uint32_t>> kernel_args;
     std::string tmp_elf_file;
 
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const char*>(responsePayload);
-            
-            tmp_elf_file = std::string(response);
-    
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {}
+    if (cached) {
+        kernel_args = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
+    } else {
 
-    kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
+        while(!TallyClient::client->iox_client->take()
+            .and_then([&](const auto& responsePayload) {
+                auto response = static_cast<const char*>(responsePayload);
+                
+                tmp_elf_file = std::string(response);
+        
+                TallyClient::client->iox_client->releaseResponse(responsePayload);
+            }))
+        {}
+
+        kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
+
+        std::remove(tmp_elf_file.c_str());
+    }
 
     for (auto &pair : kernel_args) {
         auto &kernel_name = pair.first;
         auto &param_sizes = pair.second;
         TallyClient::client->_kernel_name_to_args[kernel_name] = param_sizes;
     }
-
-    std::remove(tmp_elf_file.c_str());
 
     return l__cudaRegisterFatBinary(fatCubin);
 
@@ -3165,7 +3183,17 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
     const char *cubin_data = (const char *) image;
     size_t cubin_size = fbh->headerSize + fbh->fatSize;
 
-    size_t msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleLoadDataArg) + cubin_size;
+    bool cached = TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size);
+    uint32_t cubin_uid = 0;
+
+    size_t msg_len;
+
+    if (!cached) {
+        msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleLoadDataArg) + cubin_size;
+    } else {
+        msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleLoadDataArg);
+        cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+    }
 
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
@@ -3176,8 +3204,12 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
             
             auto request = (cuModuleLoadDataArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
 			
-            request->cached = false;
-            memcpy(request->image, image, cubin_size);
+            request->cached = cached;
+            request->cubin_uid = cubin_uid;
+
+            if (!cached) {
+                memcpy(request->image, image, cubin_size);
+            }
 
             TallyClient::client->iox_client->send(header).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
@@ -3192,14 +3224,23 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
             auto response = static_cast<const cuModuleLoadDataResponse*>(responsePayload);
 			
             *module = response->module;
-            tmp_elf_file = std::string(response->tmp_elf_file);
+            if (!cached) {
+                tmp_elf_file = std::string(response->tmp_elf_file);
+            }
 
             err = response->err;
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
 
-    kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
+    if (cached) {
+        kernel_args = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
+    } else {
+        kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
+
+        // Delete elf file
+        std::remove(tmp_elf_file.c_str());
+    }
 
     for (auto &pair : kernel_args) {
         auto &kernel_name = pair.first;

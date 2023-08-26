@@ -298,6 +298,10 @@ static std::ostream& operator<<(std::ostream& os, const CudaLaunchKeyConfigPairR
 class CubinData
 {
 public:
+
+    // Unique id of this cubin data
+    uint32_t cubin_uid;
+
     // a cubin file
     std::string cubin_data;
 
@@ -307,9 +311,6 @@ public:
     // All the original PTX files and fatbin
     std::vector<std::pair<std::string, std::string>> original_data;
 
-    // All the sliced PTX files and fatbin
-    std::vector<std::pair<std::string, std::string>> sliced_data;
-
     // All the PTB PTX files and fatbin
     std::vector<std::pair<std::string, std::string>> ptb_data;
 };
@@ -317,6 +318,8 @@ public:
 class CubinCache
 {
 public:
+    uint32_t uid_counter = 0;
+
     // Cubin size : Cubin data
     std::map<size_t, std::vector<CubinData>> cubin_map;
 
@@ -355,14 +358,6 @@ public:
         return transform_data->original_data;
     }
 
-    std::vector<std::pair<std::string, std::string>>
-    get_sliced_data(const char* cubin_data, size_t cubin_size)
-    {
-        auto transform_data = find_transform_data(cubin_data, cubin_size);
-        assert(transform_data);
-        return transform_data->sliced_data;
-    }
-
     std::map<std::string, std::vector<uint32_t>>
     get_kernel_args(const char* cubin_data, size_t cubin_size)
     {
@@ -371,18 +366,54 @@ public:
         return transform_data->kernel_args;
     }
 
-    std::string *get_cubin_data_ptr(const char* cubin_data, size_t cubin_size)
+    const char *get_cubin_data_ptr(const char* cubin_data, size_t cubin_size)
     {
         auto transform_data = find_transform_data(cubin_data, cubin_size);
         assert(transform_data);
-        return &(transform_data->cubin_data);
+        return transform_data->cubin_data.c_str();
     }
 
-    std::string get_cubin_data_str(const char* cubin_data, size_t cubin_size)
+    std::string get_cubin_data_str_from_cubin_uid(uint32_t cubin_uid)
+    {
+        std::shared_lock lock(mutex_);
+
+        for (auto &pair : cubin_map) {
+            auto &cubin_data_vec = pair.second;
+
+            for (auto &data : cubin_data_vec) {
+                if (data.cubin_uid == cubin_uid) {
+                    return data.cubin_data;
+                }
+            }
+        }
+
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Fail to find cubin str from uid.");
+        return "";
+    }
+
+    const char *get_cubin_data_str_ptr_from_cubin_uid(uint32_t cubin_uid)
+    {
+        std::shared_lock lock(mutex_);
+
+        for (auto &pair : cubin_map) {
+            auto &cubin_data_vec = pair.second;
+
+            for (auto &data : cubin_data_vec) {
+                if (data.cubin_uid == cubin_uid) {
+                    return data.cubin_data.c_str();
+                }
+            }
+        }
+
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Fail to find cubin str ptr from uid.");
+        return nullptr;
+    }
+
+    uint32_t get_cubin_data_uid(const char* cubin_data, size_t cubin_size)
     {
         auto transform_data = find_transform_data(cubin_data, cubin_size);
         assert(transform_data);
-        return transform_data->cubin_data;
+        return transform_data->cubin_uid;
     }
 
     void add_data(
@@ -390,12 +421,12 @@ public:
         std::string &cubin_str,
         std::map<std::string, std::vector<uint32_t>> &kernel_args,
         std::vector<std::pair<std::string, std::string>> &original_data,
-        std::vector<std::pair<std::string, std::string>> &sliced_data,
         std::vector<std::pair<std::string, std::string>> &ptb_data
     )
     {
         std::unique_lock lock(mutex_);
-        cubin_map[cubin_size].push_back( CubinData { cubin_str, kernel_args, original_data, sliced_data, ptb_data } );
+        cubin_map[cubin_size].push_back( CubinData { uid_counter, cubin_str, kernel_args, original_data, ptb_data } );
+        uid_counter++;
     }
 };
 

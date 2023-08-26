@@ -48,6 +48,7 @@ public:
     unsigned long long* fatbin_data = nullptr;
     uint32_t fatBinSize;
     bool cubin_registered = false;
+	uint32_t cubin_uid = 0;
     std::vector<std::pair<void *, std::string>> register_queue;
 
 	// Following are used at runtime:
@@ -95,8 +96,8 @@ public:
 	folly::ConcurrentHashMap<std::pair<std::string, size_t>, const void *> demangled_kernel_name_and_cubin_hash_to_host_func_map;
 
 	// Use cubin as unique id of a kernel
-	// { Cubin str ptr: { Kernel Name: host func addr } }
-	std::map<const void *, folly::ConcurrentHashMap<std::string, const void *>> cubin_to_kernel_name_to_host_func_map;
+	// { Cubin uid: { Kernel Name: host func addr } }
+	std::map<uint32_t, folly::ConcurrentHashMap<std::string, const void *>> cubin_to_kernel_name_to_host_func_map;
 
 	// Register original and transformed kernels here
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> original_kernel_map;

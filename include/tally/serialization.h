@@ -98,16 +98,17 @@ void serialize(Archive & ar, CudaLaunchKeyConfigPairResult & g, const unsigned i
 template<class Archive>
 void serialize(Archive & ar, CubinData & g, const unsigned int version)
 {
+    ar & g.cubin_uid;
     ar & g.cubin_data;
     ar & g.kernel_args;
     ar & g.original_data;
-    ar & g.sliced_data;
     ar & g.ptb_data;
 }
 
 template<class Archive>
 void serialize(Archive & ar, CubinCache & g, const unsigned int version)
 {
+    ar & g.uid_counter;
     ar & g.cubin_map;
 }
 

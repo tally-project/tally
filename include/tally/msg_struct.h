@@ -20,6 +20,7 @@ struct __align__(8) fatBinaryHeader
 
 struct __cudaRegisterFatBinaryArg {
     bool cached;
+    uint32_t cubin_uid;
     char data[];
 };
 
@@ -886,6 +887,7 @@ struct cudnnCreateResponse {
 
 struct cuModuleLoadDataArg {
     bool cached;
+    uint32_t cubin_uid;
     char image[];
 };
 
