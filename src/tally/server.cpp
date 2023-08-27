@@ -111,6 +111,9 @@ void TallyServer::start_worker_server(int32_t client_id) {
 
     spdlog::info("Tally worker server is up ...");
 
+    auto process_name = get_process_name(client_id);
+    spdlog::info("Client process: " + process_name);
+
     auto worker_server = worker_servers[client_id];
 
     while (!iox::posix::hasTerminationRequested())
@@ -2391,7 +2394,7 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
     uint32_t cubin_uid = 0;
     size_t msg_len = sizeof(cuModuleLoadDataResponse);
 
-    size_t cubin_size;
+    size_t cubin_size = 0;
     const char *cubin_data;
     
     if (!cached) {
@@ -2410,21 +2413,20 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuModuleLoadDataResponse*>(responsePayload);
 
-            response->err = cuModuleLoadData(&(response->module), args->image);
-
-            const char *cubin_data_str_ptr;
-
             if (!cached) {
                 memcpy(response->tmp_elf_file, tmp_elf_file.c_str(), tmp_elf_file.size());
                 response->tmp_elf_file[tmp_elf_file.size()] = '\0';
 
-                cubin_data_str_ptr = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
+                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
             } else {
-                cubin_data_str_ptr = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+                cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
             }
 
+            response->err = cuModuleLoadData(&(response->module), cubin_data);
+
             jit_module_to_cubin_map.insert(response->module, std::make_pair<const char *, size_t>(
-                std::move(cubin_data_str_ptr),
+                std::move(cubin_data),
                 std::move(cubin_size)
             ));
 

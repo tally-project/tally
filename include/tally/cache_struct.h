@@ -363,6 +363,10 @@ public:
     {
         auto transform_data = find_transform_data(cubin_data, cubin_size);
         assert(transform_data);
+
+        if (!transform_data) {
+            std::cout << "!transform_data" << std::endl;
+        }
         return transform_data->kernel_args;
     }
 
@@ -407,6 +411,24 @@ public:
 
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Fail to find cubin str ptr from uid.");
         return nullptr;
+    }
+
+    size_t get_cubin_size_from_cubin_uid(uint32_t cubin_uid)
+    {
+        std::shared_lock lock(mutex_);
+
+        for (auto &pair : cubin_map) {
+            auto &cubin_data_vec = pair.second;
+
+            for (auto &data : cubin_data_vec) {
+                if (data.cubin_uid == cubin_uid) {
+                    return pair.first;
+                }
+            }
+        }
+
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Fail to find cubin size from uid.");
+        return -1;
     }
 
     uint32_t get_cubin_data_uid(const char* cubin_data, size_t cubin_size)

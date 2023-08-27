@@ -10,7 +10,11 @@
         "--cicc-cmdline", \
         "/usr/bin/ld", \
         "-opt=", \
-        "--64" \
+        "--64", \
+        "/usr/bin/gcc", \
+        "as-I", \
+        "--fatbin", \
+        "ptxas" \
     };
 
 #endif // TALLY_CONSTS_H

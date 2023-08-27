@@ -26,7 +26,7 @@ start_event = torch.cuda.Event(enable_timing=True)
 end_event = torch.cuda.Event(enable_timing=True)
 torch.cuda.synchronize()
 start_event.record()
-for _ in range(100000):
+for _ in range(100):
     y = model_opt(x)
 end_event.record()
 torch.cuda.synchronize()
