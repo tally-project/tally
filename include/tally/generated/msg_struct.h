@@ -352,6 +352,12 @@ struct cuModuleGetLoadingModeResponse {
 	CUresult err;
 };
 
+struct cuMemsetD8_v2Arg {
+	CUdeviceptr  dstDevice;
+	unsigned char  uc;
+	size_t  N;
+};
+
 struct cuMemAllocFromPoolAsyncArg {
 	CUdeviceptr * dptr;
 	size_t  bytesize;

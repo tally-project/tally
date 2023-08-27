@@ -2186,7 +2186,42 @@ CUresult cuMemcpy3DPeerAsync(const CUDA_MEMCPY3D_PEER * pCopy, CUstream  hStream
 CUresult cuMemsetD8_v2(CUdeviceptr  dstDevice, unsigned char  uc, size_t  N)
 {
 	TALLY_LOG("cuMemsetD8_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemsetD8_v2(dstDevice, uc, N);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemsetD8_v2Arg), alignof(cuMemsetD8_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMSETD8_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemsetD8_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dstDevice = dstDevice;
+			request->uc = uc;
+			request->N = N;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemsetD8_v2);
+	return err;
 }
 
 CUresult cuMemsetD16_v2(CUdeviceptr  dstDevice, unsigned short  us, size_t  N)

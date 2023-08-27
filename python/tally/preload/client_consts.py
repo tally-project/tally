@@ -152,6 +152,10 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <nvrtc.h>
 #include <cublasLt.h>
 
+#include "spdlog/spdlog.h"
+
+#include <folly/concurrency/ConcurrentHashMap.h>
+
 #include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
 #include "iceoryx_posh/popo/untyped_server.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
@@ -176,6 +180,7 @@ public:
     unsigned long long* fatbin_data = nullptr;
     uint32_t fatBinSize;
     bool cubin_registered = false;
+	uint32_t cubin_uid = 0;
     std::vector<std::pair<void *, std::string>> register_queue;
 
 	// Following are used at runtime:
@@ -191,6 +196,8 @@ public:
 	CUresult err;
 
     cudaStream_t default_stream = nullptr;
+
+	std::atomic<bool> has_exit = false;
 };
 
 class TallyServer {
@@ -204,37 +211,31 @@ public:
 	// ================== Per-client state ===================
 	std::map<int32_t, ClientData> client_data_all;
     std::map<int32_t, iox::popo::UntypedServer *> worker_servers;
-	std::map<int32_t, std::thread> worker_threads;
+	std::map<int32_t, std::atomic<bool>> threads_running_map;
     
 	// ==================== Global state =====================
-	std::map<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
-	std::unordered_map<CUfunction, std::vector<uint32_t>> _jit_kernel_addr_to_args;
-	std::unordered_map<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, iox::popo::UntypedServer *, const void* const)>> cuda_api_handler_map;
+
+	folly::ConcurrentHashMap<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
+	folly::ConcurrentHashMap<CUfunction, std::vector<uint32_t>> _jit_kernel_addr_to_args;
+	folly::ConcurrentHashMap<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	
 	// Map func addr to kernel name and cubin hash
-	std::map<const void *, std::string> host_func_to_demangled_kernel_name_map;
-	std::map<const void *, size_t> host_func_to_cubin_hash_map;
+	folly::ConcurrentHashMap<const void *, std::string> host_func_to_demangled_kernel_name_map;
+	folly::ConcurrentHashMap<const void *, uint32_t> host_func_to_cubin_uid_map;
 
 	// Map kernel name and cubin hash to a host func
-	std::map<std::pair<std::string, size_t>, const void *> demangled_kernel_name_and_cubin_hash_to_host_func_map;
+	folly::ConcurrentHashMap<std::pair<std::string, uint32_t>, const void *> demangled_kernel_name_and_cubin_uid_to_host_func_map;
 
 	// Use cubin as unique id of a kernel
-	// { Cubin str ptr: { Kernel Name: host func addr } }
-	std::map<const void *, std::map<std::string, const void *>> cubin_to_kernel_name_to_host_func_map;
-
-	std::vector<CudaGraphCall*> cuda_graph_vec;
-
-	// Dedicated stream for cuda graph
-    cudaStream_t cuda_graph_stream;
+	// { Cubin uid: { Kernel Name: host func addr } }
+	std::map<uint32_t, folly::ConcurrentHashMap<std::string, const void *>> cubin_to_kernel_name_to_host_func_map;
 
 	// Register original and transformed kernels here
-	std::unordered_map<const void *, WrappedCUfunction> original_kernel_map;
-    std::unordered_map<const void *, WrappedCUfunction> sliced_kernel_map;
-    std::unordered_map<const void *, WrappedCUfunction> ptb_kernel_map;
+	folly::ConcurrentHashMap<const void *, WrappedCUfunction> original_kernel_map;
+    folly::ConcurrentHashMap<const void *, WrappedCUfunction> ptb_kernel_map;
 
-	std::unordered_map<CUfunction, CUfunction> jit_sliced_kernel_map;
-    std::unordered_map<CUfunction, CUfunction> jit_ptb_kernel_map;
+    folly::ConcurrentHashMap<CUfunction, CUfunction> jit_ptb_kernel_map;
 
 	// Performance cache to use at runtime
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
@@ -285,7 +286,10 @@ public:
     TallyServer();
     ~TallyServer();
 
+	// Scheduler options
+	void run_naive_scheduler();
 	void run_profile_scheduler();
+
     void register_api_handler();
     void load_cache();
 
@@ -479,6 +483,7 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cuMemsetD8_v2",
     "cuEventDestroy_v2",
     "cuStreamWaitEvent",
     "cuEventRecord",

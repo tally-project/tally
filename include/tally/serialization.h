@@ -27,7 +27,7 @@ void serialize(Archive & ar, CudaLaunchKey & g, const unsigned int version)
     ar & g.kernel_name;
     ar & g.gridDim;
     ar & g.blockDim;
-    ar & g.cubin_hash;
+    ar & g.cubin_uid;
 }
 
 template<class Archive>

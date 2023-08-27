@@ -52,7 +52,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per
         
         // There is no point going over the total num of blocks
         // But we will keep the (_num_blocks_per_sm == 1) case
-        if (_num_blocks_per_sm > 1 && _num_blocks_per_sm * CUDA_NUM_SM > num_blocks) {
+        if (_num_blocks_per_sm > 1 && (_num_blocks_per_sm - 1) * CUDA_NUM_SM > num_blocks) {
             break;
         }
 

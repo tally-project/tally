@@ -1,5 +1,4 @@
 
-
 #ifndef TALLY_CUDA_API_H
 #define TALLY_CUDA_API_H
 

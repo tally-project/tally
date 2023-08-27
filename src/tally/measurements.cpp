@@ -254,8 +254,8 @@ void TallyServer::save_performance_cache()
 CudaLaunchCall TallyServer::convert_key_to_call(CudaLaunchKey key)
 {
 
-    auto host_func = demangled_kernel_name_and_cubin_hash_to_host_func_map[
-        std::make_pair<std::string, size_t>(std::move(key.kernel_name), std::move(key.cubin_hash))
+    auto host_func = demangled_kernel_name_and_cubin_uid_to_host_func_map[
+        std::make_pair<std::string, size_t>(std::move(key.kernel_name), std::move(key.cubin_uid))
     ];
 
     return CudaLaunchCall(
@@ -271,7 +271,7 @@ CudaLaunchKey TallyServer::convert_call_to_key(CudaLaunchCall call)
         host_func_to_demangled_kernel_name_map[call.func],
         call.gridDim,
         call.blockDim,
-        host_func_to_cubin_hash_map[call.func]
+        host_func_to_cubin_uid_map[call.func]
     );
 }
 

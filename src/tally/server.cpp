@@ -287,15 +287,13 @@ void TallyServer::load_cache()
                     _kernel_addr_to_args.insert(kernel_server_addr, param_sizes);
                     host_func_to_demangled_kernel_name_map.insert(kernel_server_addr, demangled_kernel_name);
 
-                    std::hash<std::string> hasher;
-                    size_t cubin_hash = hasher(cubin_data.cubin_data);
-                    host_func_to_cubin_hash_map.insert(kernel_server_addr, cubin_hash);
+                    host_func_to_cubin_uid_map.insert(kernel_server_addr, cubin_uid);
 
                     cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(kernel_name, kernel_server_addr);
                     cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(demangled_kernel_name, kernel_server_addr);
 
-                    demangled_kernel_name_and_cubin_hash_to_host_func_map.insert(
-                        std::make_pair<std::string, size_t>(std::move(demangled_kernel_name), std::move(cubin_hash)),
+                    demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
+                        std::make_pair<std::string, size_t>(std::move(demangled_kernel_name), std::move(cubin_uid)),
                         kernel_server_addr
                     );
                 }
@@ -422,15 +420,13 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
                 host_func_to_demangled_kernel_name_map.insert(kernel_server_addr, demangled_kernel_name);
                 _kernel_addr_to_args.insert(kernel_server_addr, param_sizes);
 
-                std::hash<std::string> hasher;
-                size_t cubin_hash = hasher(cubin_str);
-                host_func_to_cubin_hash_map.insert(kernel_server_addr, cubin_hash);
+                host_func_to_cubin_uid_map.insert(kernel_server_addr, cubin_uid);
 
                 cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(demangled_kernel_name, kernel_server_addr);
                 cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(kernel_name, kernel_server_addr);
 
-                demangled_kernel_name_and_cubin_hash_to_host_func_map.insert(
-                    std::make_pair<std::string, size_t>(std::move(demangled_kernel_name), std::move(cubin_hash)),
+                demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
+                    std::make_pair<std::string, size_t>(std::move(demangled_kernel_name), std::move(cubin_uid)),
                     kernel_server_addr
                 );
             }
