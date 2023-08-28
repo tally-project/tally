@@ -44,6 +44,52 @@ __global__ void matrixMultiplyPTB(float *A, float *B, float *C, int width, dim3 
     }
 }
 
+__device__ volatile bool retreat = 0;
+__device__ unsigned int global_idx = 0;
+
+__global__ void matrixMultiplyPTB_dynamic(float *A, float *B, float *C, int width, dim3 original_gridSize) {
+
+    const bool leader = (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0);
+    const uint32_t num_thread_blocks = original_gridSize.x * original_gridSize.y * original_gridSize.z;
+    const uint32_t xy_tbs = original_gridSize.x * original_gridSize.y;
+
+    __shared__ volatile unsigned int curr_idx;
+
+    while (true) {
+
+        if (leader) {
+            if (retreat) {
+                curr_idx = num_thread_blocks + 1;
+            } else {
+                curr_idx = atomicAdd(&global_idx, 1);
+            }
+        }
+
+        __syncthreads();
+
+        if (curr_idx > num_thread_blocks) {
+            break;
+        }
+
+        dim3 newBlockIdx(0, 0, 0);
+
+        newBlockIdx.z = curr_idx / xy_tbs;
+        newBlockIdx.y = (curr_idx - newBlockIdx.z * xy_tbs) / original_gridSize.x;
+        newBlockIdx.x = (curr_idx - newBlockIdx.z * xy_tbs) - newBlockIdx.y * original_gridSize.x;
+
+        int row = newBlockIdx.y * blockDim.y + threadIdx.y;
+        int col = newBlockIdx.x * blockDim.x + threadIdx.x;
+
+        if (row < width && col < width) {
+            float sum = 0.0f;
+            for (int k = 0; k < width; ++k) {
+                sum += A[row * width + k] * B[k * width + col];
+            }
+            C[row * width + col] = sum;
+        }
+    }
+}
+
 __host__ void runmatrixMultiply(float *h_A, float *h_B, float *h_C, int width, bool ptb)
 {
     int size = width * width * sizeof(float);
@@ -68,6 +114,18 @@ __host__ void runmatrixMultiply(float *h_A, float *h_B, float *h_C, int width, b
 
     // Depend on number of PTBs/SM
     dim3 PTB_grid_dim(82 * 4);
+
+    void *global_idx_devptr;
+    cudaGetSymbolAddress(&global_idx_devptr, global_idx);
+
+    void *retreat_devptr;
+    cudaGetSymbolAddress(&retreat_devptr, retreat);
+
+    cudaStream_t kernel_stream;
+    cudaStreamCreate(&kernel_stream);
+
+    cudaStream_t new_stream;
+    cudaStreamCreate(&new_stream);
  
     // warmup
     if (ptb) {
@@ -85,7 +143,28 @@ __host__ void runmatrixMultiply(float *h_A, float *h_B, float *h_C, int width, b
 
     // Launch the kernel
     if (ptb) {
-        matrixMultiplyPTB<<<PTB_grid_dim, PTB_block_dim>>>(d_A, d_B, d_C, width, gridSize);
+        // matrixMultiplyPTB<<<PTB_grid_dim, PTB_block_dim>>>(d_A, d_B, d_C, width, gridSize);
+
+        cudaMemset(retreat_devptr, 0, sizeof(bool));
+        cudaMemset(global_idx_devptr, 0, sizeof(int));
+
+        matrixMultiplyPTB_dynamic<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(d_A, d_B, d_C, width, gridSize);
+
+        // cudaMemsetAsync(retreat_devptr, 1, sizeof(bool), new_stream);
+
+        // int progress = 0;
+        // cudaMemcpy(&progress, global_idx_devptr, sizeof(int), cudaMemcpyDeviceToHost);
+
+        // // std::cout << "progress: " << progress << std::endl; 
+
+        // cudaMemsetAsync(retreat_devptr, 0, sizeof(bool), new_stream);
+
+        // matrixMultiplyPTB_dynamic<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(d_A, d_B, d_C, width, gridSize);
+
+        // cudaMemcpy(&progress, global_idx_devptr, sizeof(int), cudaMemcpyDeviceToHost);
+
+        // std::cout << "progress: " << progress << std::endl; 
+
     } else {
         matrixMultiply<<<gridSize, blockSize>>>(d_A, d_B, d_C, width);
     }
@@ -125,7 +204,7 @@ void runmatrixMultiplyCpu(float *h_A, float *h_B, float *h_C, int width)
 
 int main()
 {
-    bool ptb = false;
+    bool ptb = true;
     int width = 1024;
     float* arr_a = new float[width * width];
     float* arr_b = new float[width * width];
