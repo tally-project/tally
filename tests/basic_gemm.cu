@@ -51,6 +51,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <chrono>
 
 // Helper methods to check for errors
 #include "cutlass-helper.h"
@@ -351,21 +352,45 @@ cudaError_t TestCutlassGemm(int M, int N, int K, float alpha, float beta) {
   // Launch CUTLASS GEMM.
   //
 
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < 1; i++) {
     result = CutlassSgemmNN(M, N, K, alpha, A, lda, B, ldb, beta, C_cutlass, ldc);
   }
 
-  if (result != cudaSuccess) {
-      std::cerr << "CUTLASS GEMM kernel failed: "
-      << cudaGetErrorString(result) << std::endl;
+  // std::cout << "start" << std::endl;
+  // double dur_seconds = 60;
+  // int count = 0;
+  // uint64_t elapsed_ns = 0;
+  // auto startTime = std::chrono::steady_clock::now();
 
-      cudaFree(C_reference);
-      cudaFree(C_cutlass);
-      cudaFree(B);
-      cudaFree(A);
+  // while (true) {
 
-      return result;
-  }
+  //   // Perform your steps here
+  //   result = CutlassSgemmNN(M, N, K, alpha, A, lda, B, ldb, beta, C_cutlass, ldc);
+  //   count++;
+      
+  //   cudaDeviceSynchronize();
+
+  //   auto currentTime = std::chrono::steady_clock::now();
+  //   elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
+  //   if (((double) elapsed_ns) / 1e9 >= dur_seconds) {
+  //       break;
+  //   }
+  // }
+
+  // std::cout << "elapsed_ns: " << elapsed_ns << std::endl;
+  // std::cout << "count: " << count << std::endl;
+
+  // if (result != cudaSuccess) {
+  //     std::cerr << "CUTLASS GEMM kernel failed: "
+  //     << cudaGetErrorString(result) << std::endl;
+
+  //     cudaFree(C_reference);
+  //     cudaFree(C_cutlass);
+  //     cudaFree(B);
+  //     cudaFree(A);
+
+  //     return result;
+  // }
 
   //
   // Verify.
@@ -434,6 +459,12 @@ cudaError_t TestCutlassGemm(int M, int N, int K, float alpha, float beta) {
   if (host_cutlass != host_reference) {
     std::cerr << "CUTLASS results incorrect." << std::endl;
 
+    for (int i = 0; i < host_cutlass.size(); i++) {
+      if (host_cutlass[i] != host_reference[i]) {
+        std::cout << "i: " << i << " host_cutlass[i]: " << host_cutlass[i] << " " << "host_reference[i]: " << host_reference[i] << std::endl;
+      }
+    }
+
     return cudaErrorUnknown;
   }
 
@@ -455,7 +486,7 @@ int main(int argc, const char *arg[]) {
   //
 
   // GEMM problem dimensions.
-  int problem[3] = { 5120, 4096, 4096 };
+  int problem[3] = { 5120, 5120, 5120 };
 
   for (int i = 1; i < argc && i < 4; ++i) {
     std::stringstream ss(arg[i]);

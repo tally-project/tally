@@ -21,16 +21,12 @@ std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config)
     os << "CudaLaunchConfig: ";
     if (config.use_original) {
         os << "original";
-    } else if (config.use_sliced) {
-        os << "sliced: use_cuda_graph: ";
-        if (config.use_cuda_graph) {
-            os << "true ";
-        } else {
-            os << "false ";
-        }
-        os << "threads_per_slice: " << config.threads_per_slice;
     } else if (config.use_ptb) {
         os << "PTB: num_blocks_per_sm: " << config.num_blocks_per_sm;
+    } else if (config.use_dynamic_ptb) {
+        os << "Dynamic PTB: num_blocks_per_sm: " << config.num_blocks_per_sm;
+    } else if (config.use_preemptive_ptb) {
+        os << "Preemptive PTB: num_blocks_per_sm: " << config.num_blocks_per_sm;
     }
     return os;
 }
@@ -56,7 +52,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per
             break;
         }
 
-        CudaLaunchConfig config(false, false, true, false, 0, _num_blocks_per_sm);
+        CudaLaunchConfig config(false, true, false, false, _num_blocks_per_sm);
         configs.push_back(config);
         _num_blocks_per_sm++;
     }
@@ -67,22 +63,22 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per
 
 // Instantiate template
 template
-CUresult CudaLaunchConfig::repeat_launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, float, float *, float *, int32_t);
+CUresult CudaLaunchConfig::repeat_launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, float, uint32_t *, bool *, float *, float *, int32_t);
 
 template
-CUresult CudaLaunchConfig::repeat_launch<CUfunction>(CUfunction, dim3, dim3, void **, size_t, cudaStream_t, float, float *, float *, int32_t);
+CUresult CudaLaunchConfig::repeat_launch<CUfunction>(CUfunction, dim3, dim3, void **, size_t, cudaStream_t, float, uint32_t *, bool *, float *, float *, int32_t);
 
 // return (time, iterations)
 template <typename T>
 CUresult CudaLaunchConfig::repeat_launch(
     T func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
-    float dur_seconds, float *time_ms, float *iters, int32_t max_count)
+    float dur_seconds, uint32_t *global_idx, bool *retreat, float *time_ms, float *iters, int32_t max_count)
 {
     float _time_ms;
     CUresult err;
 
     // get a rough estimate of the kernel duration
-    err = launch(func, gridDim, blockDim, args, sharedMem, stream, true, &_time_ms);
+    err = launch(func, gridDim, blockDim, args, sharedMem, stream, global_idx, retreat, true, &_time_ms);
 
     uint64_t sync_interval = std::max((uint64_t)((dur_seconds * 1000.) / _time_ms) / 100, 1ul);
 
@@ -94,7 +90,7 @@ CUresult CudaLaunchConfig::repeat_launch(
     while (true) {
 
         // Perform your steps here
-        err = launch(func, gridDim, blockDim, args, sharedMem, stream);
+        err = launch(func, gridDim, blockDim, args, sharedMem, stream, global_idx, retreat);
         count++;
         ckpt_count++;
 
@@ -122,19 +118,19 @@ CUresult CudaLaunchConfig::repeat_launch(
 
 // Instantiate template
 template
-CUresult CudaLaunchConfig::launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, bool, float *);
+CUresult CudaLaunchConfig::launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, uint32_t *, bool *, bool, float *);
 
 template
-CUresult CudaLaunchConfig::launch<CUfunction>(CUfunction, dim3, dim3, void **, size_t, cudaStream_t, bool, float *);
+CUresult CudaLaunchConfig::launch<CUfunction>(CUfunction, dim3, dim3, void **, size_t, cudaStream_t, uint32_t *, bool *, bool, float *);
 
 void checkCudaErrors(CUresult err) {
-  assert(err == CUDA_SUCCESS);
+    assert(err == CUDA_SUCCESS);
 }
 
 template <typename T>
 CUresult CudaLaunchConfig::launch(
     T func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
-    bool run_profile, float *elapsed_time_ms)
+    uint32_t *global_idx, bool *retreat, bool run_profile, float *elapsed_time_ms)
 {
     cudaEvent_t _start, _stop;
 
@@ -182,7 +178,7 @@ CUresult CudaLaunchConfig::launch(
             num_args = TallyServer::server->ptb_kernel_map[func].num_args;
         } else if constexpr (std::is_same<T, CUfunction>::value) {
             cu_func = TallyServer::server->jit_ptb_kernel_map[func];
-            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size();
+            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size() + 1;
         } else {
             throw std::runtime_error("Unsupported typename");
         }
@@ -219,6 +215,107 @@ CUresult CudaLaunchConfig::launch(
 
         return err;
         
+    } else if (use_dynamic_ptb) {
+
+        assert(global_idx);
+        
+        CUfunction cu_func;
+        size_t num_args;
+
+        if (std::is_same<T, const void *>::value) {
+            cu_func = TallyServer::server->dynamic_ptb_kernel_map[func].func;
+            num_args = TallyServer::server->dynamic_ptb_kernel_map[func].num_args;
+        } else if constexpr (std::is_same<T, CUfunction>::value) {
+            cu_func = TallyServer::server->jit_dynamic_ptb_kernel_map[func];
+            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size() + 2;
+        } else {
+            throw std::runtime_error("Unsupported typename");
+        }
+        
+        assert(cu_func);
+
+        // Depend on number of PTBs/SM
+        dim3 PTB_grid_dim(82 * num_blocks_per_sm);
+
+        void *KernelParams[num_args];
+        for (size_t i = 0; i < num_args - 2; i++) {
+            KernelParams[i] = args[i];
+        }
+        KernelParams[num_args - 2] = &gridDim;
+        KernelParams[num_args - 1] = &global_idx;
+
+        if (run_profile) {
+            cudaEventCreate(&_start);
+            cudaEventCreate(&_stop);
+            cudaStreamSynchronize(stream);
+
+            cudaEventRecord(_start);
+        }
+
+        auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
+                              blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
+
+        if (run_profile) {
+            cudaEventRecord(_stop);
+            cudaEventSynchronize(_stop);
+            cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
+            cudaEventDestroy(_start);
+            cudaEventDestroy(_stop);
+        }
+
+        return err;
+
+    } else if (use_preemptive_ptb) { 
+        assert(global_idx);
+        assert(retreat);
+        
+        CUfunction cu_func;
+        size_t num_args;
+
+        if (std::is_same<T, const void *>::value) {
+            cu_func = TallyServer::server->preemptive_ptb_kernel_map[func].func;
+            num_args = TallyServer::server->preemptive_ptb_kernel_map[func].num_args;
+        } else if constexpr (std::is_same<T, CUfunction>::value) {
+            cu_func = TallyServer::server->jit_preemptive_ptb_kernel_map[func];
+            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size() + 3;
+        } else {
+            throw std::runtime_error("Unsupported typename");
+        }
+        
+        assert(cu_func);
+
+        // Depend on number of PTBs/SM
+        dim3 PTB_grid_dim(82 * num_blocks_per_sm);
+
+        void *KernelParams[num_args];
+        for (size_t i = 0; i < num_args - 3; i++) {
+            KernelParams[i] = args[i];
+        }
+        KernelParams[num_args - 3] = &gridDim;
+        KernelParams[num_args - 2] = &global_idx;
+        KernelParams[num_args - 1] = &retreat;
+
+        if (run_profile) {
+            cudaEventCreate(&_start);
+            cudaEventCreate(&_stop);
+            cudaStreamSynchronize(stream);
+
+            cudaEventRecord(_start);
+        }
+
+        auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
+                              blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
+
+        if (run_profile) {
+            cudaEventRecord(_stop);
+            cudaEventSynchronize(_stop);
+            cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
+            cudaEventDestroy(_start);
+            cudaEventDestroy(_stop);
+        }
+
+        return err;
+
     } else {
         throw std::runtime_error("Invalid launch config.");
     }

@@ -143,5 +143,6 @@ target_link_libraries(tally_server PUBLIC
     folly
 )
 
+add_subdirectory(scripts)
 add_subdirectory(tests)
 add_subdirectory(third_party/cudnn-frontend)

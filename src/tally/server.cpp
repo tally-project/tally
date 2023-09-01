@@ -109,6 +109,12 @@ void TallyServer::start_worker_server(int32_t client_id) {
 
     implicit_init_cuda_ctx();
 
+    auto &client_meta = client_data_all[client_id];
+
+    CHECK_CUDA_ERROR(cudaStreamCreate(&client_meta.default_stream));
+    CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.global_idx, sizeof(uint32_t)));
+    CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.retreat, sizeof(bool)));
+
     spdlog::info("Tally worker server is up ...");
 
     auto process_name = get_process_name(client_id);
@@ -147,12 +153,16 @@ void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_si
 
     auto original_data = TallyCache::cache->cubin_cache.get_original_data(cubin_data, cubin_size);
     auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
+    auto dynamic_ptb_data = TallyCache::cache->cubin_cache.get_dynamic_ptb_data(cubin_data, cubin_size);
+    auto preemptive_ptb_data = TallyCache::cache->cubin_cache.get_preemptive_ptb_data(cubin_data, cubin_size);
 
     auto cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
     auto &kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_uid];
 
     register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(original_data, kernel_name_to_host_func_map, original_kernel_map);
     register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(ptb_data, kernel_name_to_host_func_map, ptb_kernel_map);
+    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(dynamic_ptb_data, kernel_name_to_host_func_map, dynamic_ptb_kernel_map);
+    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(preemptive_ptb_data, kernel_name_to_host_func_map, preemptive_ptb_kernel_map);
 }
 
 void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -320,9 +330,9 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
 
     auto &client_meta = client_data_all[client_uid];
 
-    if (client_meta.default_stream == nullptr) {
-        cudaStreamCreate(&client_meta.default_stream);
-    }
+    // if (client_meta.default_stream == nullptr) {
+    //     cudaStreamCreate(&client_meta.default_stream);
+    // }
 
     client_meta.cubin_registered = args->cached;
     client_meta.cubin_uid = args->cubin_uid;
@@ -2452,6 +2462,8 @@ void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedSer
     auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
 
     auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
+    auto dynamic_ptb_data = TallyCache::cache->cubin_cache.get_dynamic_ptb_data(cubin_data, cubin_size);
+    auto preemptive_ptb_data = TallyCache::cache->cubin_cache.get_preemptive_ptb_data(cubin_data, cubin_size);
 
     iox_server->loan(requestHeader, sizeof(cuModuleGetFunctionResponse), alignof(cuModuleGetFunctionResponse))
         .and_then([&](auto& responsePayload) {
@@ -2461,6 +2473,8 @@ void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedSer
             _jit_kernel_addr_to_args.insert(response->hfunc, param_sizes);
 
             register_jit_kernel_from_ptx_fatbin<folly::ConcurrentHashMap<CUfunction, CUfunction>>(ptb_data, response->hfunc, kernel_name, jit_ptb_kernel_map);
+            register_jit_kernel_from_ptx_fatbin<folly::ConcurrentHashMap<CUfunction, CUfunction>>(dynamic_ptb_data, response->hfunc, kernel_name, jit_dynamic_ptb_kernel_map);
+            register_jit_kernel_from_ptx_fatbin<folly::ConcurrentHashMap<CUfunction, CUfunction>>(preemptive_ptb_data, response->hfunc, kernel_name, jit_preemptive_ptb_kernel_map);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2579,11 +2593,13 @@ void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedSe
     const void *server_func_addr = client_data_all[client_uid]._kernel_client_addr_mapping[args->func];
     auto cu_func = original_kernel_map[server_func_addr].func;
     auto cu_func_ptb = ptb_kernel_map[server_func_addr].func;
+    auto cu_func_dynamic_ptb = dynamic_ptb_kernel_map[server_func_addr].func;
 
     auto cu_attr = convert_func_attribute(args->attr);
 
     cuFuncSetAttribute(cu_func, cu_attr, args->value);
     cuFuncSetAttribute(cu_func_ptb, cu_attr, args->value);
+    cuFuncSetAttribute(cu_func_dynamic_ptb, cu_attr, args->value);
 
     std::string set_attr_log = "Setting attribute " + get_func_attr_str(cu_attr) + " to value " + std::to_string(args->value);
     TALLY_SPD_LOG(set_attr_log);

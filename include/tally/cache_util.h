@@ -39,6 +39,8 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
     std::map<std::string, std::vector<uint32_t>> kernel_args;
     std::vector<std::pair<std::string, std::string>> original_data;
     std::vector<std::pair<std::string, std::string>> ptb_data;
+    std::vector<std::pair<std::string, std::string>> dynamic_ptb_data;
+    std::vector<std::pair<std::string, std::string>> preemptive_ptb_data;
 
     // Parse arguments info from elf code
     kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file_name);
@@ -57,11 +59,19 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
         auto ptb_fatbin_str = get_fatbin_str_from_ptx_str(ptb_ptx_str);
         ptb_data.push_back(std::make_pair(ptb_ptx_str, ptb_fatbin_str));
 
+        auto dynamic_ptb_ptx_str = gen_dynamic_ptb_ptx(ptx_file_name);
+        auto dynamic_ptb_fatbin_str = get_fatbin_str_from_ptx_str(dynamic_ptb_ptx_str);
+        dynamic_ptb_data.push_back(std::make_pair(dynamic_ptb_ptx_str, dynamic_ptb_fatbin_str));
+
+        auto preemptive_ptb_ptx_str = gen_preemptive_ptb_ptx(ptx_file_name);
+        auto preemptive_ptb_fatbin_str = get_fatbin_str_from_ptx_str(preemptive_ptb_ptx_str);
+        preemptive_ptb_data.push_back(std::make_pair(preemptive_ptb_ptx_str, preemptive_ptb_fatbin_str));
+
         // Delete ptx
         std::remove(ptx_file_name.c_str());
     }
 
-    TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args, original_data, ptb_data);
+    TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args, original_data, ptb_data, dynamic_ptb_data, preemptive_ptb_data);
     TallyCache::cache->save_transform_cache();
 }
 

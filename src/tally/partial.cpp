@@ -16,15 +16,15 @@
 #define MAXIMUM_ARG_COUNT 50
 
 template
-std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)>
+std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
 TallyServer::cudaLaunchKernel_Partial<const void *>(const void *, dim3, dim3, size_t, cudaStream_t, char *);
 
 template
-std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)>
+std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
 TallyServer::cudaLaunchKernel_Partial<CUfunction>(CUfunction, dim3, dim3, size_t, cudaStream_t, char *);
 
 template <typename T>
-std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)>
+std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
 TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
 {
 
@@ -56,6 +56,8 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
 
     return [func, gridDim, blockDim, __args_arr, sharedMem, stream] (
                 CudaLaunchConfig config,
+                uint32_t *global_idx,
+                bool *retreat,
                 bool repeat,
                 float dur_seconds,
                 float *time_ms,
@@ -66,9 +68,9 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
         CUresult err;
 
         if (repeat) {
-            err = config.repeat_launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, dur_seconds, time_ms, iters, total_iters);
+            err = config.repeat_launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, dur_seconds, global_idx, retreat, time_ms, iters, total_iters);
         } else {
-            err = config.launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream);
+            err = config.launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, global_idx, retreat);
         }
 
         if (err) {

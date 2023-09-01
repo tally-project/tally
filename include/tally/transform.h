@@ -29,4 +29,10 @@ std::string gen_sliced_ptx(std::string ptx_path);
 // Generating PTB version of a PTX file
 std::string gen_ptb_ptx(std::string ptx_path);
 
+// Generating dynamic PTB version of a PTX file
+std::string gen_dynamic_ptb_ptx(std::string ptx_path);
+
+// Generating preemptive PTB version of a PTX file
+std::string gen_preemptive_ptb_ptx(std::string ptx_path);
+
 #endif // TALLY_TRANSFORM_H

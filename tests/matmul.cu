@@ -44,30 +44,30 @@ __global__ void matrixMultiplyPTB(float *A, float *B, float *C, int width, dim3 
     }
 }
 
-__device__ volatile bool retreat = 0;
-__device__ unsigned int global_idx = 0;
-
-__global__ void matrixMultiplyPTB_dynamic(float *A, float *B, float *C, int width, dim3 original_gridSize) {
+__global__ void matrixMultiplyPTB_dynamic(float *A, float *B, float *C, int width, dim3 original_gridSize, int *global_idx, volatile bool *retreat) {
 
     const bool leader = (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0);
     const uint32_t num_thread_blocks = original_gridSize.x * original_gridSize.y * original_gridSize.z;
     const uint32_t xy_tbs = original_gridSize.x * original_gridSize.y;
 
-    __shared__ volatile unsigned int curr_idx;
+    __shared__ volatile unsigned int volatile_curr_idx;
+    uint32_t curr_idx;
 
     while (true) {
 
         if (leader) {
-            if (retreat) {
+            if (*retreat) {
                 curr_idx = num_thread_blocks + 1;
             } else {
-                curr_idx = atomicAdd(&global_idx, 1);
+                curr_idx = atomicAdd(global_idx, 1);
             }
         }
 
         __syncthreads();
 
-        if (curr_idx > num_thread_blocks) {
+        curr_idx = volatile_curr_idx;
+
+        if (curr_idx >= num_thread_blocks) {
             break;
         }
 
@@ -115,11 +115,11 @@ __host__ void runmatrixMultiply(float *h_A, float *h_B, float *h_C, int width, b
     // Depend on number of PTBs/SM
     dim3 PTB_grid_dim(82 * 4);
 
-    void *global_idx_devptr;
-    cudaGetSymbolAddress(&global_idx_devptr, global_idx);
+    bool *retreat;
+    cudaMalloc((void**)&retreat, sizeof(bool));
 
-    void *retreat_devptr;
-    cudaGetSymbolAddress(&retreat_devptr, retreat);
+    int *global_idx;
+    cudaMalloc((void**)&global_idx, sizeof(int));
 
     cudaStream_t kernel_stream;
     cudaStreamCreate(&kernel_stream);
@@ -145,23 +145,23 @@ __host__ void runmatrixMultiply(float *h_A, float *h_B, float *h_C, int width, b
     if (ptb) {
         // matrixMultiplyPTB<<<PTB_grid_dim, PTB_block_dim>>>(d_A, d_B, d_C, width, gridSize);
 
-        cudaMemset(retreat_devptr, 0, sizeof(bool));
-        cudaMemset(global_idx_devptr, 0, sizeof(int));
+        cudaMemset(retreat, 0, sizeof(bool));
+        cudaMemset(global_idx, 0, sizeof(int));
 
-        matrixMultiplyPTB_dynamic<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(d_A, d_B, d_C, width, gridSize);
+        matrixMultiplyPTB_dynamic<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(d_A, d_B, d_C, width, gridSize, global_idx, retreat);
 
-        // cudaMemsetAsync(retreat_devptr, 1, sizeof(bool), new_stream);
+        cudaMemsetAsync(retreat, 1, sizeof(bool), new_stream);
 
-        // int progress = 0;
-        // cudaMemcpy(&progress, global_idx_devptr, sizeof(int), cudaMemcpyDeviceToHost);
+        int progress = 0;
+        cudaMemcpy(&progress, global_idx, sizeof(int), cudaMemcpyDeviceToHost);
 
-        // // std::cout << "progress: " << progress << std::endl; 
+        // std::cout << "progress: " << progress << std::endl; 
 
-        // cudaMemsetAsync(retreat_devptr, 0, sizeof(bool), new_stream);
+        cudaMemsetAsync(retreat, 0, sizeof(bool), new_stream);
 
-        // matrixMultiplyPTB_dynamic<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(d_A, d_B, d_C, width, gridSize);
+        matrixMultiplyPTB_dynamic<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(d_A, d_B, d_C, width, gridSize, global_idx, retreat);
 
-        // cudaMemcpy(&progress, global_idx_devptr, sizeof(int), cudaMemcpyDeviceToHost);
+        // cudaMemcpy(&progress, global_idx, sizeof(int), cudaMemcpyDeviceToHost);
 
         // std::cout << "progress: " << progress << std::endl; 
 
@@ -204,7 +204,7 @@ void runmatrixMultiplyCpu(float *h_A, float *h_B, float *h_C, int width)
 
 int main()
 {
-    bool ptb = true;
+    bool ptb = false;
     int width = 1024;
     float* arr_a = new float[width * width];
     float* arr_b = new float[width * width];
@@ -237,3 +237,91 @@ int main()
 
     return 0;
 }
+
+// #include <iostream>
+// #include <cuda_runtime.h>
+
+// const int TILE_SIZE = 16;
+
+// // Kernel to perform matrix multiplication with tiling
+// __global__ void matrixMulTiled(float* A, float* B, float* C, int N) {
+//     int row = blockIdx.y * TILE_SIZE + threadIdx.y;
+//     int col = blockIdx.x * TILE_SIZE + threadIdx.x;
+
+//     __shared__ float tileA[TILE_SIZE][TILE_SIZE];
+//     __shared__ float tileB[TILE_SIZE][TILE_SIZE];
+
+//     float result = 0.0f;
+
+//     for (int i = 0; i < N / TILE_SIZE; ++i) {
+//         tileA[threadIdx.y][threadIdx.x] = A[row * N + (i * TILE_SIZE + threadIdx.x)];
+//         tileB[threadIdx.y][threadIdx.x] = B[(i * TILE_SIZE + threadIdx.y) * N + col];
+
+//         __syncthreads();
+
+//         for (int k = 0; k < TILE_SIZE; ++k) {
+//             result += tileA[threadIdx.y][k] * tileB[k][threadIdx.x];
+//         }
+
+//         __syncthreads();
+//     }
+
+//     C[row * N + col] = result;
+// }
+
+// int main() {
+//     int N = 1024; // Matrix size NxN
+
+//     // Allocate memory for matrices A, B, and C on the host
+//     float* h_A = new float[N * N];
+//     float* h_B = new float[N * N];
+//     float* h_C = new float[N * N];
+//     float* res_cpu = new float[N * N];
+
+//     // Initialize matrices h_A and h_B (fill with your data)
+//     for (int i = 0; i < N * N; ++i) {
+//         h_A[i] = static_cast<float>(std::rand()) / RAND_MAX;
+//         h_A[i] = static_cast<float>(std::rand()) / RAND_MAX;
+//     }
+
+//     // Allocate memory for matrices A, B, and C on the device
+//     float* d_A, *d_B, *d_C;
+//     cudaMalloc((void**)&d_A, N * N * sizeof(float));
+//     cudaMalloc((void**)&d_B, N * N * sizeof(float));
+//     cudaMalloc((void**)&d_C, N * N * sizeof(float));
+
+//     // Copy matrices A and B from host to device
+//     cudaMemcpy(d_A, h_A, N * N * sizeof(float), cudaMemcpyHostToDevice);
+//     cudaMemcpy(d_B, h_B, N * N * sizeof(float), cudaMemcpyHostToDevice);
+
+//     // Define grid and block dimensions
+//     dim3 blockDim(TILE_SIZE, TILE_SIZE);
+//     dim3 gridDim((N + TILE_SIZE - 1) / TILE_SIZE, (N + TILE_SIZE - 1) / TILE_SIZE);
+
+//     // Launch the CUDA kernel
+//     matrixMulTiled<<<gridDim, blockDim>>>(d_A, d_B, d_C, N);
+
+//     // Copy the result matrix C from device to host
+//     cudaMemcpy(h_C, d_C, N * N * sizeof(float), cudaMemcpyDeviceToHost);
+
+//     // Free device memory
+//     cudaFree(d_A);
+//     cudaFree(d_B);
+//     cudaFree(d_C);
+
+//     runmatrixMultiplyCpu(h_A, h_B, res_cpu, N);
+
+//     for (int i = 0; i < N * N; ++i) {
+//         if (abs(h_C[i] - res_cpu[i]) > 0.001) {
+//             std::cerr << "result mismatch: h_C[i]: " << h_C[i] << " " << "res_cpu[i]: " << res_cpu[i] << std::endl;
+//             exit(1);
+//         }
+//     }
+
+//     // Free host memory
+//     delete[] h_A;
+//     delete[] h_B;
+//     delete[] h_C;
+
+//     return 0;
+// }

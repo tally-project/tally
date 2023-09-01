@@ -46,6 +46,7 @@ fp32 data by using NVIDIA Ampere architecture.
 */
 
 #include <iostream>
+#include <chrono>
 
 #include "cutlass/cutlass.h"
 #include "cutlass/gemm/device/gemm.h"
@@ -101,7 +102,7 @@ struct Options {
   
   Options():
     help(false),
-    problem_size({5120, 4096, 4096}),
+    problem_size({5120, 5120, 5120}),
     batch_count(1),
     reference_check(true),
     iterations(1000),
@@ -342,6 +343,31 @@ int run(Options &options) {
     status = gemm_op();
     CUTLASS_CHECK(status);
   }
+
+  // std::cout << "start" << std::endl;
+  // double dur_seconds = 60;
+  // int count = 0;
+  // uint64_t elapsed_ns = 0;
+  // auto startTime = std::chrono::steady_clock::now();
+
+  // while (true) {
+
+  //   // Perform your steps here
+  //   gemm_op();
+  //   count++;
+      
+  //   cudaDeviceSynchronize();
+
+  //   auto currentTime = std::chrono::steady_clock::now();
+  //   elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
+  //   if (((double) elapsed_ns) / 1e9 >= dur_seconds) {
+  //       break;
+  //   }
+  // }
+
+  // std::cout << "elapsed_ns: " << elapsed_ns << std::endl;
+  // std::cout << "count: " << count << std::endl;
+
 
   //
   // Stop profiling loop

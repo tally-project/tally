@@ -313,6 +313,12 @@ public:
 
     // All the PTB PTX files and fatbin
     std::vector<std::pair<std::string, std::string>> ptb_data;
+
+    // All the dynamic PTB PTX files and fatbin
+    std::vector<std::pair<std::string, std::string>> dynamic_ptb_data;
+
+    // All the preemptive  PTB PTX files and fatbin
+    std::vector<std::pair<std::string, std::string>> preemptive_ptb_data;
 };
 
 class CubinCache
@@ -348,6 +354,22 @@ public:
         auto transform_data = find_transform_data(cubin_data, cubin_size);
         assert(transform_data);
         return transform_data->ptb_data;
+    }
+
+    std::vector<std::pair<std::string, std::string>>
+    get_dynamic_ptb_data(const char* cubin_data, size_t cubin_size)
+    {
+        auto transform_data = find_transform_data(cubin_data, cubin_size);
+        assert(transform_data);
+        return transform_data->dynamic_ptb_data;
+    }
+
+    std::vector<std::pair<std::string, std::string>>
+    get_preemptive_ptb_data(const char* cubin_data, size_t cubin_size)
+    {
+        auto transform_data = find_transform_data(cubin_data, cubin_size);
+        assert(transform_data);
+        return transform_data->preemptive_ptb_data;
     }
 
     std::vector<std::pair<std::string, std::string>>
@@ -443,11 +465,13 @@ public:
         std::string &cubin_str,
         std::map<std::string, std::vector<uint32_t>> &kernel_args,
         std::vector<std::pair<std::string, std::string>> &original_data,
-        std::vector<std::pair<std::string, std::string>> &ptb_data
+        std::vector<std::pair<std::string, std::string>> &ptb_data,
+        std::vector<std::pair<std::string, std::string>> &dynamic_ptb_data,
+        std::vector<std::pair<std::string, std::string>> &preemptive_ptb_data
     )
     {
         std::unique_lock lock(mutex_);
-        cubin_map[cubin_size].push_back( CubinData { uid_counter, cubin_str, kernel_args, original_data, ptb_data } );
+        cubin_map[cubin_size].push_back( CubinData { uid_counter, cubin_str, kernel_args, original_data, ptb_data, dynamic_ptb_data, preemptive_ptb_data } );
         uid_counter++;
     }
 };

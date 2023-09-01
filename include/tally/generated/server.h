@@ -56,11 +56,14 @@ public:
 	std::vector<DeviceMemoryKey> dev_addr_map;
 
 	std::unordered_map<const void *, const void *> _kernel_client_addr_mapping;
-	std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> *kernel_to_dispatch = nullptr;
+	std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> *kernel_to_dispatch = nullptr;
 	std::atomic<bool> has_kernel = false;
 	CudaLaunchCall launch_call;
 	int dynamic_shmem_size_bytes = 0;
 	CUresult err;
+
+	uint32_t *global_idx;
+	bool *retreat;
 
     cudaStream_t default_stream = nullptr;
 
@@ -101,8 +104,12 @@ public:
 	// Register original and transformed kernels here
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> original_kernel_map;
     folly::ConcurrentHashMap<const void *, WrappedCUfunction> ptb_kernel_map;
+	folly::ConcurrentHashMap<const void *, WrappedCUfunction> dynamic_ptb_kernel_map;
+	folly::ConcurrentHashMap<const void *, WrappedCUfunction> preemptive_ptb_kernel_map;
 
     folly::ConcurrentHashMap<CUfunction, CUfunction> jit_ptb_kernel_map;
+	folly::ConcurrentHashMap<CUfunction, CUfunction> jit_dynamic_ptb_kernel_map;
+	folly::ConcurrentHashMap<CUfunction, CUfunction> jit_preemptive_ptb_kernel_map;
 
 	// Performance cache to use at runtime
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
@@ -169,7 +176,7 @@ public:
     void start_worker_server(int32_t client_id);
 
 	template<typename T>
-    std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
+    std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
 
 	void handle_cuArrayGetPlane(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
 	void handle_cudaGraphNodeGetEnabled(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);

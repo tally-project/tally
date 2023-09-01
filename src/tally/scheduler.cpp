@@ -29,6 +29,8 @@ void TallyServer::run_naive_scheduler()
 {
     spdlog::info("Running naive scheduler ...");
 
+    CudaLaunchConfig config(false, false, false, true, 4);
+
     while (!iox::posix::hasTerminationRequested()) {
 
         for (auto &pair : client_data_all) {
@@ -42,10 +44,15 @@ void TallyServer::run_naive_scheduler()
             }
 
             if (client_data.has_kernel) {
-                client_data.err = (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, false, 0, nullptr, nullptr, -1);
+                cudaMemset(client_data.retreat, 0, sizeof(uint32_t));
+                cudaMemset(client_data.global_idx, 0, sizeof(uint32_t));
+                cudaDeviceSynchronize();
+                
+                client_data.err = (*client_data.kernel_to_dispatch)(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
                 client_data.has_kernel = false;
-            }
 
+                cudaDeviceSynchronize();
+            }
         }
     }
 }
@@ -81,7 +88,7 @@ void TallyServer::run_profile_scheduler()
 
                     // Add some randomness to shuffle the kernel pairs
                     if (random_skip) {
-                        client_data.err = (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, false, 0, nullptr, nullptr, -1);
+                        client_data.err = (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1);
                         client_data.has_kernel = false;
                         kernel_count--;
                     }
@@ -104,7 +111,7 @@ void TallyServer::run_profile_scheduler()
         for (auto &pair : client_data_all) {
             auto &client_data = pair.second;
             float time_elapsed;
-            (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, true, 1000, &time_elapsed, nullptr, 1);
+            (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
 
             profile_duration = std::max(profile_duration, (100 * time_elapsed) / 1000.f);
         }
@@ -115,8 +122,9 @@ void TallyServer::run_profile_scheduler()
         // Maybe don't exceed 1 minute;
         profile_duration = std::min(profile_duration, 60.f);
 
+        uint32_t *global_idices[2];
         CudaLaunchCall launch_calls[2];
-        std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> kernel_partials[2];
+        std::function<CUresult(CudaLaunchConfig, uint32_t*, bool*, bool, float, float*, float*, int32_t)> kernel_partials[2];
         std::string kernel_names[2];
 
         // Kernel Metadata (num registers, shared memory, etc.)
@@ -127,6 +135,9 @@ void TallyServer::run_profile_scheduler()
         for (auto &pair : client_data_all) {
 
             auto &client_data = pair.second;
+
+            global_idices[index] = client_data.global_idx;
+            
             launch_calls[index] = client_data.launch_call; 
             kernel_partials[index] = *client_data.kernel_to_dispatch;
             kernel_names[index] = host_func_to_demangled_kernel_name_map[client_data.launch_call.func];
@@ -151,15 +162,15 @@ void TallyServer::run_profile_scheduler()
         auto k2_configs = CudaLaunchConfig::get_configs(k2_blockDim.x * k2_blockDim.y * k2_blockDim.z, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
         auto k1_k2_configs = std::vector<std::vector<CudaLaunchConfig>> {k1_configs, k2_configs};
 
-        auto launch_kernel_func = [kernel_partials](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, CUresult *err, int32_t total_iters) {
-            *err = (kernel_partials[idx])(config, true, dur_seconds, time_elapsed, iters, total_iters);
+        auto launch_kernel_func = [kernel_partials, global_idices](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, CUresult *err, int32_t total_iters) {
+            *err = (kernel_partials[idx])(config, global_idices[idx], nullptr, true, dur_seconds, time_elapsed, iters, total_iters);
         };
 
         CUresult errs[2];
 
         // Launch once, in case all results are cached already
-        errs[0] = (kernel_partials[0])(CudaLaunchConfig::default_config, false, 0, nullptr, nullptr, -1);
-        errs[1] = (kernel_partials[1])(CudaLaunchConfig::default_config, false, 0, nullptr, nullptr, -1);
+        errs[0] = (kernel_partials[0])(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1);
+        errs[1] = (kernel_partials[1])(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1);
 
         // We will be collecting two things:
         //    1. single-kernel performance under different launch configs

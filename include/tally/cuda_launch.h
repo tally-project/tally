@@ -151,12 +151,9 @@ public:
 
     // Choose which kernel version to launch
     bool use_original = true;
-    bool use_sliced = false;
     bool use_ptb = false;
-    
-    // Specific to use_sliced
-    bool use_cuda_graph = false;
-    uint32_t threads_per_slice = 0;
+    bool use_dynamic_ptb = false;
+    bool use_preemptive_ptb = false;
 
     // Specific to use_ptb
     uint32_t num_blocks_per_sm = 0;
@@ -165,20 +162,23 @@ public:
     static CudaLaunchConfig tune(const void *, dim3, dim3, void **, size_t, cudaStream_t);
     static std::vector<CudaLaunchConfig> get_configs(uint32_t threads_per_block, uint32_t num_blocks);
 
-    CudaLaunchConfig(bool use_original=true, bool use_sliced=false, bool use_ptb=false, bool use_cuda_graph=false,
-                 uint32_t threads_per_slice=0, uint32_t num_blocks_per_sm=0) :
-        use_original(use_original), use_sliced(use_sliced), use_ptb(use_ptb), use_cuda_graph(use_cuda_graph),
-        threads_per_slice(threads_per_slice), num_blocks_per_sm(num_blocks_per_sm)
+    CudaLaunchConfig(
+        bool use_original=true, bool use_ptb=false,
+        bool use_dynamic_ptb=false, bool use_preemptive_ptb=false, uint32_t num_blocks_per_sm=0) :
+        use_original(use_original),
+        use_ptb(use_ptb),
+        use_dynamic_ptb(use_dynamic_ptb),
+        use_preemptive_ptb(use_preemptive_ptb),
+        num_blocks_per_sm(num_blocks_per_sm)
     {}
 
     bool operator==(const CudaLaunchConfig &other) const
     {
         return (
             use_original == other.use_original &&
-            use_sliced == other.use_sliced &&
             use_ptb == other.use_ptb &&
-            use_cuda_graph == other.use_cuda_graph &&
-            threads_per_slice == other.threads_per_slice &&
+            use_dynamic_ptb == other.use_dynamic_ptb &&
+            use_preemptive_ptb == other.use_preemptive_ptb &&
             num_blocks_per_sm == other.num_blocks_per_sm
         );
     }
@@ -188,6 +188,8 @@ public:
         return nlohmann::json({
             {"use_original", use_original},
             {"use_ptb", use_ptb},
+            {"use_dynamic_ptb", use_dynamic_ptb},
+            {"use_preemptive_ptb", use_preemptive_ptb},
             {"num_blocks_per_sm", num_blocks_per_sm},
         });
     }
@@ -198,6 +200,10 @@ public:
             return "original";
         } else if (use_ptb) {
             return "PTB_num_blocks_per_sm_" + std::to_string(num_blocks_per_sm);
+        } else if (use_dynamic_ptb) {
+            return "Dynamic PTB_num_blocks_per_sm_" + std::to_string(num_blocks_per_sm);
+        } else if (use_preemptive_ptb) {
+            return "Preemptive PTB_num_blocks_per_sm_" + std::to_string(num_blocks_per_sm);
         } else {
             return "";
         }
@@ -206,10 +212,10 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config);
     
     template <typename T>
-    CUresult launch(T, dim3, dim3, void **, size_t, cudaStream_t, bool run_profile=false, float *elapsed_time_ms=nullptr);
+    CUresult launch(T, dim3, dim3, void **, size_t, cudaStream_t, uint32_t *global_idx=nullptr, bool *retreat=nullptr, bool run_profile=false, float *elapsed_time_ms=nullptr);
     
     template <typename T>
-    CUresult repeat_launch(T, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1);
+    CUresult repeat_launch(T, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, uint32_t *global_idx=nullptr, bool *retreat=nullptr, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1);
 };
 
 struct CudaLaunchCallConfig {
