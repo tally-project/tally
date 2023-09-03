@@ -198,6 +198,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
     client_data_all[client_uid].dynamic_shmem_size_bytes = args->sharedMem;
     client_data_all[client_uid].launch_call = CudaLaunchCall(server_func_addr, args->gridDim, args->blockDim);
     client_data_all[client_uid].kernel_to_dispatch = &partial;
+    client_data_all[client_uid].launch_stream = stream;
     client_data_all[client_uid].has_kernel = true;
 
     while (client_data_all[client_uid].has_kernel) {}
@@ -249,6 +250,7 @@ void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *
     while (client_data_all[client_uid].has_kernel) {}
 
     client_data_all[client_uid].launch_call = CudaLaunchCall(0, 0, 0);
+    client_data_all[client_uid].launch_stream = stream;
     client_data_all[client_uid].kernel_to_dispatch = &partial;
     client_data_all[client_uid].has_kernel = true;
 
@@ -2594,12 +2596,14 @@ void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedSe
     auto cu_func = original_kernel_map[server_func_addr].func;
     auto cu_func_ptb = ptb_kernel_map[server_func_addr].func;
     auto cu_func_dynamic_ptb = dynamic_ptb_kernel_map[server_func_addr].func;
+    auto cu_func_preemptive_ptb = preemptive_ptb_kernel_map[server_func_addr].func;
 
     auto cu_attr = convert_func_attribute(args->attr);
 
     cuFuncSetAttribute(cu_func, cu_attr, args->value);
     cuFuncSetAttribute(cu_func_ptb, cu_attr, args->value);
     cuFuncSetAttribute(cu_func_dynamic_ptb, cu_attr, args->value);
+    cuFuncSetAttribute(cu_func_preemptive_ptb, cu_attr, args->value);
 
     std::string set_attr_log = "Setting attribute " + get_func_attr_str(cu_attr) + " to value " + std::to_string(args->value);
     TALLY_SPD_LOG(set_attr_log);

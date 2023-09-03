@@ -44,14 +44,20 @@ void TallyServer::run_naive_scheduler()
             }
 
             if (client_data.has_kernel) {
-                cudaMemset(client_data.retreat, 0, sizeof(uint32_t));
-                cudaMemset(client_data.global_idx, 0, sizeof(uint32_t));
-                cudaDeviceSynchronize();
+
+                auto launch_call = client_data.launch_call;
+                auto meta = preemptive_ptb_kernel_map[client_data.launch_call.func].meta_data;
+                std::cout << meta << std::endl;
+
+                if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
+                    // Make Sure the previous kernel has finished
+                    cudaStreamSynchronize(client_data.launch_stream);
+                    cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), client_data.launch_stream);
+                    cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), client_data.launch_stream);
+                }
                 
                 client_data.err = (*client_data.kernel_to_dispatch)(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
                 client_data.has_kernel = false;
-
-                cudaDeviceSynchronize();
             }
         }
     }

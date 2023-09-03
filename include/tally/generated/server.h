@@ -62,11 +62,12 @@ public:
 	int dynamic_shmem_size_bytes = 0;
 	CUresult err;
 
+
 	uint32_t *global_idx;
 	bool *retreat;
 
     cudaStream_t default_stream = nullptr;
-
+	cudaStream_t launch_stream = nullptr;
 	std::atomic<bool> has_exit = false;
 };
 
