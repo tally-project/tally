@@ -2756,7 +2756,11 @@ void TallyServer::handle_cuMemAllocAsync(void *__args, iox::popo::UntypedServer 
 
     iox_server->loan(requestHeader, sizeof(cuMemAllocAsyncResponse), alignof(cuMemAllocAsyncResponse))
         .and_then([&](auto& responsePayload) {
+            
             auto response = static_cast<cuMemAllocAsyncResponse*>(responsePayload);
+
+            while (client_data_all[client_uid].has_kernel) {}
+
             response->err = cuMemAllocAsync(
 				&(response->dptr),
 				args->bytesize,

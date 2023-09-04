@@ -1,5 +1,23 @@
+import random
+import numpy as np
+
 import hidet
 import torch
+
+# def set_deterministic(seed=42):
+#     random.seed(seed)
+#     np.random.seed(seed)
+#     torch.manual_seed(seed)
+#     torch.cuda.manual_seed(seed)
+#     torch.cuda.manual_seed_all(seed) 
+
+#     torch.backends.cudnn.deterministic = True
+#     torch.backends.cudnn.benchmark = False
+#     torch.backends.cudnn.enabled = False
+#     pass
+
+# seed = 42 # any number 
+# set_deterministic(seed=seed)
 
 # disable CUDA Graph
 hidet.torch.dynamo_config.use_cuda_graph(False)
