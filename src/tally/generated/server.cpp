@@ -1961,11 +1961,17 @@ void TallyServer::handle_cuDevicePrimaryCtxGetState(void *__args, iox::popo::Unt
 {
 	TALLY_SPD_LOG("Received request: cuDevicePrimaryCtxGetState");
 	auto args = (struct cuDevicePrimaryCtxGetStateArg *) __args;
+
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+	auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
 
     iox_server->loan(requestHeader, sizeof(cuDevicePrimaryCtxGetStateResponse), alignof(cuDevicePrimaryCtxGetStateResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuDevicePrimaryCtxGetStateResponse*>(responsePayload);
+
+			while (client_data_all[client_uid].has_kernel) {}
+
             response->err = cuDevicePrimaryCtxGetState(
 				args->dev,
 				(args->flags ? &(response->flags) : NULL),

@@ -472,9 +472,10 @@ void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_
     iox_server->loan(requestHeader, sizeof(cudaMallocResponse), alignof(cudaMallocResponse))
         .and_then([&](auto& responsePayload) {
 
-            while (client_data_all[client_uid].has_kernel) {}
+            // while (client_data_all[client_uid].has_kernel) {}
 
             auto response = static_cast<cudaMallocResponse*>(responsePayload);
+            
             response->err = cudaMalloc(&(response->devPtr), args->size);
 
             // Keep track that this addr is device memory
@@ -503,7 +504,7 @@ void TallyServer::handle_cudaFree(void *__args, iox::popo::UntypedServer *iox_se
 
             auto response = static_cast<cudaError_t*>(responsePayload);
 
-            while (client_data_all[client_uid].has_kernel) {}
+            // while (client_data_all[client_uid].has_kernel) {}
 
             *response = cudaFree(args->devPtr);
 
