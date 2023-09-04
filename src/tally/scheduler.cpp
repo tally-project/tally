@@ -29,9 +29,12 @@ void TallyServer::run_naive_scheduler()
 {
     spdlog::info("Running naive scheduler ...");
 
-    CudaLaunchConfig config(false, false, false, true, 4);
+    // CudaLaunchConfig config(false, false, false, true, 4);
+    CudaLaunchConfig config = CudaLaunchConfig::default_config;
 
     while (!iox::posix::hasTerminationRequested()) {
+
+        // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
         for (auto &pair : client_data_all) {
 
@@ -47,7 +50,6 @@ void TallyServer::run_naive_scheduler()
 
                 auto launch_call = client_data.launch_call;
                 auto meta = preemptive_ptb_kernel_map[client_data.launch_call.func].meta_data;
-                std::cout << meta << std::endl;
 
                 if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
                     // Make Sure the previous kernel has finished
@@ -56,7 +58,8 @@ void TallyServer::run_naive_scheduler()
                     cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), client_data.launch_stream);
                 }
                 
-                client_data.err = (*client_data.kernel_to_dispatch)(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
+                // std::cout << "Launching kernel ..." << std::endl;
+                client_data.err = client_data.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
                 client_data.has_kernel = false;
             }
         }
@@ -94,7 +97,7 @@ void TallyServer::run_profile_scheduler()
 
                     // Add some randomness to shuffle the kernel pairs
                     if (random_skip) {
-                        client_data.err = (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1);
+                        client_data.err = client_data.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1);
                         client_data.has_kernel = false;
                         kernel_count--;
                     }
@@ -117,7 +120,7 @@ void TallyServer::run_profile_scheduler()
         for (auto &pair : client_data_all) {
             auto &client_data = pair.second;
             float time_elapsed;
-            (*client_data.kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
+            client_data.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
 
             profile_duration = std::max(profile_duration, (100 * time_elapsed) / 1000.f);
         }
@@ -145,7 +148,7 @@ void TallyServer::run_profile_scheduler()
             global_idices[index] = client_data.global_idx;
             
             launch_calls[index] = client_data.launch_call; 
-            kernel_partials[index] = *client_data.kernel_to_dispatch;
+            kernel_partials[index] = client_data.kernel_to_dispatch;
             kernel_names[index] = host_func_to_demangled_kernel_name_map[client_data.launch_call.func];
 
             launch_calls_meta_original[index] = original_kernel_map[client_data.launch_call.func].meta_data;

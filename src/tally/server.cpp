@@ -197,25 +197,30 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
 
     client_data_all[client_uid].dynamic_shmem_size_bytes = args->sharedMem;
     client_data_all[client_uid].launch_call = CudaLaunchCall(server_func_addr, args->gridDim, args->blockDim);
-    client_data_all[client_uid].kernel_to_dispatch = &partial;
+    client_data_all[client_uid].kernel_to_dispatch = partial;
     client_data_all[client_uid].launch_stream = stream;
     client_data_all[client_uid].has_kernel = true;
 
-    while (client_data_all[client_uid].has_kernel) {}
+    // while (client_data_all[client_uid].has_kernel) {}
 
-    cudaError_t err;
+    // cudaError_t err;
 
-    if (client_data_all[client_uid].err == CUDA_SUCCESS) {
-        err = cudaSuccess;
-    } else {
-        err = cudaErrorInvalidValue;
-    }
+    // if (client_data_all[client_uid].err == CUDA_SUCCESS) {
+    //     err = cudaSuccess;
+    // } else {
+    //     err = cudaErrorInvalidValue;
+    // }
     
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudaError_t*>(responsePayload);
-            *response = err;
+            // *response = err;
+
+            int device;
+            cudaGetDevice(&device);
+
+            *response = cudaSuccess;
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -251,20 +256,21 @@ void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *
 
     client_data_all[client_uid].launch_call = CudaLaunchCall(0, 0, 0);
     client_data_all[client_uid].launch_stream = stream;
-    client_data_all[client_uid].kernel_to_dispatch = &partial;
+    client_data_all[client_uid].kernel_to_dispatch = partial;
     client_data_all[client_uid].has_kernel = true;
 
-    while (client_data_all[client_uid].has_kernel) {}
+    // while (client_data_all[client_uid].has_kernel) {}
     
     iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<CUresult*>(responsePayload);
-            *response = client_data_all[client_uid].err;
+            // *response = client_data_all[client_uid].err;
 
-            if (*response) {
-                std::cout << "culaunchkernel failed" << std::endl;
-            }
+            int device;
+            cudaGetDevice(&device);
+
+            *response = CUDA_SUCCESS;
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -331,10 +337,6 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
     int32_t client_uid = msg_header->client_id;
 
     auto &client_meta = client_data_all[client_uid];
-
-    // if (client_meta.default_stream == nullptr) {
-    //     cudaStreamCreate(&client_meta.default_stream);
-    // }
 
     client_meta.cubin_registered = args->cached;
     client_meta.cubin_uid = args->cubin_uid;
@@ -470,6 +472,8 @@ void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_
     iox_server->loan(requestHeader, sizeof(cudaMallocResponse), alignof(cudaMallocResponse))
         .and_then([&](auto& responsePayload) {
 
+            while (client_data_all[client_uid].has_kernel) {}
+
             auto response = static_cast<cudaMallocResponse*>(responsePayload);
             response->err = cudaMalloc(&(response->devPtr), args->size);
 
@@ -498,6 +502,9 @@ void TallyServer::handle_cudaFree(void *__args, iox::popo::UntypedServer *iox_se
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudaError_t*>(responsePayload);
+
+            while (client_data_all[client_uid].has_kernel) {}
+
             *response = cudaFree(args->devPtr);
 
             if (*response == cudaSuccess) {
@@ -529,9 +536,14 @@ void TallyServer::handle_cudaMemcpy(void *__args, iox::popo::UntypedServer *iox_
     }
 
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
     iox_server->loan(requestHeader, res_size, alignof(cudaMemcpyResponse))
         .and_then([&](auto& responsePayload) {
             auto res = static_cast<cudaMemcpyResponse*>(responsePayload);
+
+            while (client_data_all[client_uid].has_kernel) {}
 
             if (args->kind == cudaMemcpyHostToDevice) {
                 res->err = cudaMemcpy(args->dst, args->data, args->count, args->kind);
@@ -582,6 +594,8 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args, iox::popo::UntypedServer 
         .and_then([&](auto& responsePayload) {
             auto res = static_cast<cudaMemcpyAsyncResponse*>(responsePayload);
 
+            while (client_data_all[client_uid].has_kernel) {}
+
             if (args->kind == cudaMemcpyHostToDevice) {
                 res->err = cudaMemcpyAsync(args->dst, args->data, args->count, args->kind, stream);
             } else if (args->kind == cudaMemcpyDeviceToHost){
@@ -608,8 +622,13 @@ void TallyServer::handle_cublasSgemm_v2(void *__args, iox::popo::UntypedServer *
     const float beta = args->beta;
 
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
     iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
         .and_then([&](auto& responsePayload) {
+
+            while (client_data_all[client_uid].has_kernel) {}
 
             auto response = static_cast<cublasStatus_t*>(responsePayload);
             *response = cublasSgemm_v2(
@@ -656,6 +675,9 @@ void TallyServer::handle_cublasLtMatmul(void *__args, iox::popo::UntypedServer *
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cublasStatus_t*>(responsePayload);
+
+            while (client_data_all[client_uid].has_kernel) {}
+
             *response = cublasLtMatmul(
                 args->lightHandle,
                 args->computeDesc,
@@ -2042,8 +2064,6 @@ void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
     auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
     int32_t client_uid = msg_header->client_id;
 
-    assert(client_data_all[client_uid]._kernel_client_addr_mapping.find(args->func) != client_data_all[client_uid]._kernel_client_addr_mapping.end());
-
     iox_server->loan(requestHeader, sizeof(cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse), alignof(cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse))
         .and_then([&](auto& responsePayload) {
 
@@ -2245,8 +2265,13 @@ void TallyServer::handle_cudaThreadSynchronize(void *__args, iox::popo::UntypedS
 	TALLY_SPD_LOG("Received request: cudaThreadSynchronize");
 
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
+
+            while (client_data_all[client_uid].has_kernel) {}
 
             auto response = static_cast<cudaError_t*>(responsePayload);
             *response = cudaThreadSynchronize();
@@ -2278,6 +2303,8 @@ void TallyServer::handle_cudaEventRecord(void *__args, iox::popo::UntypedServer 
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaError_t*>(responsePayload);
 
+            while (client_data_all[client_uid].has_kernel) {}
+
             *response = cudaEventRecord(
 				args->event,
 				stream
@@ -2295,10 +2322,16 @@ void TallyServer::handle_cudaDeviceSynchronize(void *__args, iox::popo::UntypedS
 	TALLY_SPD_LOG("Received request: cudaDeviceSynchronize");
     
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudaError_t*>(responsePayload);
+
+            while (client_data_all[client_uid].has_kernel) {}
+            
             *response = cudaDeviceSynchronize();
 
             if ((*response)) {
@@ -2331,6 +2364,8 @@ void TallyServer::handle_cudaStreamSynchronize(void *__args, iox::popo::UntypedS
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaError_t*>(responsePayload);
+
+            while (client_data_all[client_uid].has_kernel) {}
 
             *response = cudaStreamSynchronize(
 				stream

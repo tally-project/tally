@@ -13,6 +13,9 @@
 #include <tally/generated/msg_struct.h>
 #include <tally/generated/server.h>
 
+uint32_t params_local_bytes = 0;
+char *params_local = nullptr;
+
 #define MAXIMUM_ARG_COUNT 50
 
 template
@@ -43,13 +46,21 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
     }
 
     auto argc = arg_sizes.size();
+    auto args_bytes = std::reduce(arg_sizes.begin(), arg_sizes.end());
+
+    if (!params_local || (params_local_bytes < args_bytes)) {
+        params_local = (char *) malloc(args_bytes);
+        params_local_bytes = args_bytes;
+    }
+
+    memcpy(params_local, params, args_bytes);
 
     void *__args_arr[MAXIMUM_ARG_COUNT];
     int __args_idx = 0;
     int offset = 0;
 
     for (size_t i = 0; i < argc; i++) {
-        __args_arr[__args_idx] = (void *) (params + offset);
+        __args_arr[__args_idx] = (void *) (params_local + offset);
         ++__args_idx;
         offset += arg_sizes[i];
     }

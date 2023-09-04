@@ -56,7 +56,7 @@ public:
 	std::vector<DeviceMemoryKey> dev_addr_map;
 
 	std::unordered_map<const void *, const void *> _kernel_client_addr_mapping;
-	std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> *kernel_to_dispatch = nullptr;
+	std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> kernel_to_dispatch;
 	std::atomic<bool> has_kernel = false;
 	CudaLaunchCall launch_call;
 	int dynamic_shmem_size_bytes = 0;
