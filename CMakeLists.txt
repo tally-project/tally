@@ -23,6 +23,7 @@ add_subdirectory(third_party/spdlog)
 add_subdirectory(third_party/iceoryx/iceoryx_meta)
 add_subdirectory(third_party/json)
 add_subdirectory(third_party/folly)
+add_subdirectory(third_party/readerwriterqueue)
 
 include(GNUInstallDirs)
 
@@ -141,6 +142,7 @@ target_link_libraries(tally_server PUBLIC
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
     iceoryx_posh::iceoryx_posh
     folly
+    readerwriterqueue
 )
 
 add_subdirectory(scripts)

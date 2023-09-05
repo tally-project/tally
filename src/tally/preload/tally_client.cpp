@@ -3,7 +3,6 @@
 #include <sys/time.h>
 #include <time.h>
 #include <iostream>
-#include <iostream>
 #include <cstdlib>
 #include <cassert>
 #include <map>

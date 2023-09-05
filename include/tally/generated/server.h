@@ -19,6 +19,8 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 
+#include <readerwriterqueue.h>
+
 #include "spdlog/spdlog.h"
 
 #include <folly/concurrency/ConcurrentHashMap.h>
@@ -39,10 +41,31 @@ static void __exit_wrapper(int signal) {
     __exit(signal);
 }
 
+typedef std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> kernel_partial_t;
+
+
+class KernelLaunchWrapper {
+
+public:
+	// Callable to launch kernel
+	kernel_partial_t kernel_to_dispatch;
+
+	// whether it is blackbox kernel from nvidia libraries
+	bool is_library_call;
+
+	// unique identification of the kernel
+	CudaLaunchCall launch_call;
+
+	// Stream to launch to
+	cudaStream_t launch_stream;
+
+	// Useful info
+	int dynamic_shmem_size_bytes = 0;
+};
+
 class ClientData {
 
 public:
-
 	// For registering kernels at the start:
     unsigned long long* fatbin_data = nullptr;
     uint32_t fatBinSize;
@@ -56,18 +79,14 @@ public:
 	std::vector<DeviceMemoryKey> dev_addr_map;
 
 	std::unordered_map<const void *, const void *> _kernel_client_addr_mapping;
-	std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> kernel_to_dispatch;
-	std::atomic<bool> has_kernel = false;
-	CudaLaunchCall launch_call;
-	int dynamic_shmem_size_bytes = 0;
-	CUresult err;
 
+	moodycamel::ReaderWriterQueue<KernelLaunchWrapper> kernel_dispatch_queue;
+	std::atomic<uint32_t> queue_size = 0;
 
 	uint32_t *global_idx;
 	bool *retreat;
 
     cudaStream_t default_stream = nullptr;
-	cudaStream_t launch_stream = nullptr;
 	std::atomic<bool> has_exit = false;
 };
 
@@ -175,6 +194,8 @@ public:
     void start_scheduler();
     void start_main_server();
     void start_worker_server(int32_t client_id);
+
+	void wait_until_launch_queue_empty(int32_t client_uid);
 
 	template<typename T>
     std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>

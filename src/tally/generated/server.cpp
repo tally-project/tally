@@ -5841,7 +5841,7 @@ void TallyServer::handle_cudaMemset(void *__args, iox::popo::UntypedServer *iox_
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaError_t*>(responsePayload);
 
-			while (client_data_all[client_uid].has_kernel) {}
+			wait_until_launch_queue_empty(client_uid);
 			
             *response = cudaMemset(
 				args->devPtr,
