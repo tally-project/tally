@@ -22,7 +22,7 @@ __attribute__((__constructor__)) void init_client()
             return;
         }
     }
-	
+
     TallyClient::client = new TallyClient;
 }
 

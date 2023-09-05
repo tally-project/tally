@@ -2356,10 +2356,10 @@ void TallyServer::handle_cudaStreamSynchronize(void *__args, iox::popo::UntypedS
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
-            auto response = static_cast<cudaError_t*>(responsePayload);
 
             wait_until_launch_queue_empty(client_uid);
-
+            
+            auto response = static_cast<cudaError_t*>(responsePayload);
             *response = cudaStreamSynchronize(
 				stream
             );
@@ -2789,6 +2789,32 @@ void TallyServer::handle_cuMemFree_v2(void *__args, iox::popo::UntypedServer *io
                 free_dev_addr(client_data_all[client_uid].dev_addr_map, (void *)args->dptr);
             }
 
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cudaMemset(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaMemset");
+	auto args = (struct cudaMemsetArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+	auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
+        .and_then([&](auto& responsePayload) {
+
+            wait_until_launch_queue_empty(client_uid);
+
+            auto response = static_cast<cudaError_t*>(responsePayload);			
+            *response = cudaMemset(
+				args->devPtr,
+				args->value,
+				args->count
+            );
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
