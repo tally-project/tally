@@ -177,7 +177,11 @@ public:
     void start_worker_server(int32_t client_id);
 
 	template<typename T>
-    std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
+    std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
+	cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
+
+	std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
+	cublasSgemm_v2_Partial(cublasSgemm_v2Arg *args);
 
 	void handle_cuArrayGetPlane(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
 	void handle_cudaGraphNodeGetEnabled(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);

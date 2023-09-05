@@ -34,7 +34,7 @@ void TallyServer::run_naive_scheduler()
 
     while (!iox::posix::hasTerminationRequested()) {
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         for (auto &pair : client_data_all) {
 

@@ -600,37 +600,24 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args, iox::popo::UntypedServer 
 void TallyServer::handle_cublasSgemm_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasSgemm_v2");
-    auto args = (struct cublasSgemm_v2Arg *) __args;
-
-    const float alpha = args->alpha;
-    const float beta = args->beta;
+    auto args = (cublasSgemm_v2Arg *) __args;
 
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
     auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
     int32_t client_uid = msg_header->client_id;
 
+    auto partial = cublasSgemm_v2_Partial(args);
+
+    while (client_data_all[client_uid].has_kernel) {}
+
+    client_data_all[client_uid].kernel_to_dispatch = partial;
+    client_data_all[client_uid].has_kernel = true;
+
     iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
         .and_then([&](auto& responsePayload) {
 
-            while (client_data_all[client_uid].has_kernel) {}
-
             auto response = static_cast<cublasStatus_t*>(responsePayload);
-            *response = cublasSgemm_v2(
-                args->handle,
-                args->transa,
-                args->transb,
-                args->m,
-                args->n,
-                args->k,
-                &alpha,
-                args->A,
-                args->lda,
-                args->B,
-                args->ldb,
-                &beta,
-                args->C,
-                args->ldc
-            );
+            *response = CUBLAS_STATUS_SUCCESS;
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
