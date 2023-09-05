@@ -1963,15 +1963,10 @@ void TallyServer::handle_cuDevicePrimaryCtxGetState(void *__args, iox::popo::Unt
 	auto args = (struct cuDevicePrimaryCtxGetStateArg *) __args;
 
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
-	auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
-    int32_t client_uid = msg_header->client_id;
 
     iox_server->loan(requestHeader, sizeof(cuDevicePrimaryCtxGetStateResponse), alignof(cuDevicePrimaryCtxGetStateResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuDevicePrimaryCtxGetStateResponse*>(responsePayload);
-
-			while (client_data_all[client_uid].has_kernel) {}
-
             response->err = cuDevicePrimaryCtxGetState(
 				args->dev,
 				(args->flags ? &(response->flags) : NULL),
@@ -4464,6 +4459,7 @@ void TallyServer::handle_cudaDeviceGetStreamPriorityRange(void *__args, iox::pop
     iox_server->loan(requestHeader, sizeof(cudaDeviceGetStreamPriorityRangeResponse), alignof(cudaDeviceGetStreamPriorityRangeResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaDeviceGetStreamPriorityRangeResponse*>(responsePayload);
+
             response->err = cudaDeviceGetStreamPriorityRange(
 				(args->leastPriority ? &(response->leastPriority) : NULL),
 				(args->greatestPriority ? &(response->greatestPriority) : NULL)
@@ -4763,9 +4759,13 @@ void TallyServer::handle_cudaGetLastError(void *__args, iox::popo::UntypedServer
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaError_t*>(responsePayload);
+
             *response = cudaGetLastError(
 
             );
+
+			*response = cudaSuccess;
+
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
@@ -4810,10 +4810,13 @@ void TallyServer::handle_cudaGetDeviceProperties_v2(void *__args, iox::popo::Unt
 	TALLY_SPD_LOG("Received request: cudaGetDeviceProperties_v2");
 	auto args = (struct cudaGetDeviceProperties_v2Arg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+	auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
 
     iox_server->loan(requestHeader, sizeof(cudaGetDeviceProperties_v2Response), alignof(cudaGetDeviceProperties_v2Response))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaGetDeviceProperties_v2Response*>(responsePayload);
+
             response->err = cudaGetDeviceProperties_v2(
 				(args->prop ? &(response->prop) : NULL),
 				args->device
@@ -5345,6 +5348,7 @@ void TallyServer::handle_cudaStreamIsCapturing(void *__args, iox::popo::UntypedS
     iox_server->loan(requestHeader, sizeof(cudaStreamIsCapturingResponse), alignof(cudaStreamIsCapturingResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaStreamIsCapturingResponse*>(responsePayload);
+
             response->err = cudaStreamIsCapturing(
 				__stream,
 				(args->pCaptureStatus ? &(response->pCaptureStatus) : NULL)
@@ -5830,10 +5834,15 @@ void TallyServer::handle_cudaMemset(void *__args, iox::popo::UntypedServer *iox_
 	TALLY_SPD_LOG("Received request: cudaMemset");
 	auto args = (struct cudaMemsetArg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+	auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaError_t*>(responsePayload);
+
+			while (client_data_all[client_uid].has_kernel) {}
+			
             *response = cudaMemset(
 				args->devPtr,
 				args->value,
@@ -9250,9 +9259,13 @@ void TallyServer::handle_cublasSetWorkspace_v2(void *__args, iox::popo::UntypedS
 	auto args = (struct cublasSetWorkspace_v2Arg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
 
+	auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
     iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cublasStatus_t*>(responsePayload);
+
             *response = cublasSetWorkspace_v2(
 				args->handle,
 				args->workspace,
@@ -9283,6 +9296,7 @@ void TallyServer::handle_cublasSetStream_v2(void *__args, iox::popo::UntypedServ
     iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cublasStatus_t*>(responsePayload);
+
             *response = cublasSetStream_v2(
 				args->handle,
 				__stream
@@ -9372,10 +9386,13 @@ void TallyServer::handle_cublasSetMathMode(void *__args, iox::popo::UntypedServe
 	TALLY_SPD_LOG("Received request: cublasSetMathMode");
 	auto args = (struct cublasSetMathModeArg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+	auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
 
     iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cublasStatus_t*>(responsePayload);
+
             *response = cublasSetMathMode(
 				args->handle,
 				args->mode

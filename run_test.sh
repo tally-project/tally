@@ -40,6 +40,7 @@ test_list=(
     "python3 ./tests/pytorch_samples/train.py"
     "python3 ./tests/pytorch_samples/run-triton.py"
     "python3 ./tests/pytorch_samples/run-torch-compile.py"
+    "python3 ./tests/pytorch_samples/run-imagenet.py"
     "python3 ./tests/hidet_samples/run-hidet.py"
     "./tests/cudnn_samples_v8/RNN/RNN"
     "./tests/cudnn_samples_v8/RNN_v8.0/RNN"

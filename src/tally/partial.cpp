@@ -13,9 +13,6 @@
 #include <tally/generated/msg_struct.h>
 #include <tally/generated/server.h>
 
-uint32_t params_local_bytes = 0;
-char *params_local = nullptr;
-
 #define MAXIMUM_ARG_COUNT 50
 
 template
@@ -48,11 +45,7 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
     auto argc = arg_sizes.size();
     auto args_bytes = std::reduce(arg_sizes.begin(), arg_sizes.end());
 
-    if (!params_local || (params_local_bytes < args_bytes)) {
-        params_local = (char *) malloc(args_bytes);
-        params_local_bytes = args_bytes;
-    }
-
+    auto params_local = (char *) malloc(args_bytes);
     memcpy(params_local, params, args_bytes);
 
     void *__args_arr[MAXIMUM_ARG_COUNT];
@@ -65,7 +58,7 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
         offset += arg_sizes[i];
     }
 
-    return [func, gridDim, blockDim, __args_arr, sharedMem, stream] (
+    return [func, gridDim, blockDim, __args_arr, sharedMem, stream, params_local] (
                 CudaLaunchConfig config,
                 uint32_t *global_idx,
                 bool *retreat,
@@ -83,6 +76,8 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
         } else {
             err = config.launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, global_idx, retreat);
         }
+
+        free(params_local);
 
         if (err) {
             char *str;
