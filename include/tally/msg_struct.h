@@ -1006,4 +1006,10 @@ struct cuMemFree_v2Arg {
 	CUdeviceptr  dptr;
 };
 
+struct cudaMemsetArg {
+	void * devPtr;
+	int  value;
+	size_t  count;
+};
+
 #endif // TALLY_DEF_H

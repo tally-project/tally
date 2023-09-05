@@ -3,7 +3,6 @@
 #include <sys/time.h>
 #include <time.h>
 #include <iostream>
-#include <iostream>
 #include <cstdlib>
 #include <cassert>
 #include <map>
@@ -4338,6 +4337,47 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuMemFree_v2);
+	return err;
+}
+
+cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
+{
+	TALLY_LOG("cudaMemset hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaMemset(devPtr, value, count);
+#else
+
+    cudaError_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaMemsetArg), alignof(cudaMemsetArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAMEMSET;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaMemsetArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->devPtr = devPtr;
+			request->value = value;
+			request->count = count;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudaError_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaMemset);
 	return err;
 }
 

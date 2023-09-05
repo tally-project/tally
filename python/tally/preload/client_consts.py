@@ -152,6 +152,8 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <nvrtc.h>
 #include <cublasLt.h>
 
+#include <readerwriterqueue.h>
+
 #include "spdlog/spdlog.h"
 
 #include <folly/concurrency/ConcurrentHashMap.h>
@@ -172,10 +174,31 @@ static void __exit_wrapper(int signal) {
     __exit(signal);
 }
 
+typedef std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> kernel_partial_t;
+
+
+class KernelLaunchWrapper {
+
+public:
+	// Callable to launch kernel
+	kernel_partial_t kernel_to_dispatch;
+
+	// whether it is blackbox kernel from nvidia libraries
+	bool is_library_call;
+
+	// unique identification of the kernel
+	CudaLaunchCall launch_call;
+
+	// Stream to launch to
+	cudaStream_t launch_stream;
+
+	// Useful info
+	int dynamic_shmem_size_bytes = 0;
+};
+
 class ClientData {
 
 public:
-
 	// For registering kernels at the start:
     unsigned long long* fatbin_data = nullptr;
     uint32_t fatBinSize;
@@ -189,14 +212,14 @@ public:
 	std::vector<DeviceMemoryKey> dev_addr_map;
 
 	std::unordered_map<const void *, const void *> _kernel_client_addr_mapping;
-	std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> *kernel_to_dispatch = nullptr;
-	std::atomic<bool> has_kernel = false;
-	CudaLaunchCall launch_call;
-	int dynamic_shmem_size_bytes = 0;
-	CUresult err;
+
+	moodycamel::ReaderWriterQueue<KernelLaunchWrapper> kernel_dispatch_queue;
+	std::atomic<uint32_t> queue_size = 0;
+
+	uint32_t *global_idx;
+	bool *retreat;
 
     cudaStream_t default_stream = nullptr;
-
 	std::atomic<bool> has_exit = false;
 };
 
@@ -234,8 +257,12 @@ public:
 	// Register original and transformed kernels here
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> original_kernel_map;
     folly::ConcurrentHashMap<const void *, WrappedCUfunction> ptb_kernel_map;
+	folly::ConcurrentHashMap<const void *, WrappedCUfunction> dynamic_ptb_kernel_map;
+	folly::ConcurrentHashMap<const void *, WrappedCUfunction> preemptive_ptb_kernel_map;
 
     folly::ConcurrentHashMap<CUfunction, CUfunction> jit_ptb_kernel_map;
+	folly::ConcurrentHashMap<CUfunction, CUfunction> jit_dynamic_ptb_kernel_map;
+	folly::ConcurrentHashMap<CUfunction, CUfunction> jit_preemptive_ptb_kernel_map;
 
 	// Performance cache to use at runtime
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
@@ -301,9 +328,15 @@ public:
     void start_main_server();
     void start_worker_server(int32_t client_id);
 
-	template<typename T>
-    std::function<CUresult(CudaLaunchConfig, bool, float, float*, float*, int32_t)> cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
+	void wait_until_launch_queue_empty(int32_t client_uid);
 
+	template<typename T>
+    std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
+	cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
+
+	std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
+	cublasSgemm_v2_Partial(cublasSgemm_v2Arg *args);
+    
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
@@ -402,6 +435,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaMemset",
     "cuMemFree_v2",
     "cuMemAllocAsync",
     "cuMemcpyAsync",
@@ -514,7 +548,6 @@ FORWARD_API_CALLS = [
     "cudnnOpsInferVersionCheck",
     "cudaMemPoolTrimTo"
     "cudaFreeArray",
-    "cudaMemset",
     "cudnnSetAttnDescriptor",
     "cudnnSetDropoutDescriptor",
     "cudnnDestroySeqDataDescriptor",

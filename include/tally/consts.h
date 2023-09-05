@@ -14,7 +14,9 @@
         "/usr/bin/gcc", \
         "as-I", \
         "--fatbin", \
-        "ptxas" \
+        "ptxas", \
+        "whichnvcc", \
+        "g++" \
     };
 
 #endif // TALLY_CONSTS_H

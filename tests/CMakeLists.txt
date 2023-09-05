@@ -6,7 +6,7 @@ string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
 string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
 message(CUDA_ARCH_LIST="${CUDA_ARCH_LIST}")
 
-add_executable(elementwise elementwise.cu)
+add_executable(elementwise cuda_samples_basic/elementwise.cu)
 
 set_target_properties(elementwise PROPERTIES
     CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
@@ -18,7 +18,7 @@ target_link_libraries(elementwise
     cudart
 )
 
-add_executable(add_driver_api add_driver_api.cu)
+add_executable(add_driver_api cuda_samples_basic/add_driver_api.cu)
 
 set_target_properties(add_driver_api PROPERTIES
     CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
@@ -29,21 +29,21 @@ target_link_libraries(add_driver_api
     cuda
 )
 
-add_executable(matmul matmul.cu)
+add_executable(matmul cuda_samples_basic/matmul.cu)
 
 set_target_properties(matmul PROPERTIES
     CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 
-add_executable(max_pool max_pool.cu)
+add_executable(max_pool cuda_samples_basic/max_pool.cu)
 
 set_target_properties(max_pool PROPERTIES
     CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
 
-add_executable(cublas_test cublas.cu)
+add_executable(cublas_test cuda_samples_basic/cublas.cu)
 
 target_link_libraries(cublas_test
     cuda
@@ -56,7 +56,7 @@ set_target_properties(cublas_test PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
 )
 
-add_executable(cublasLt_test cublasLt.cu)
+add_executable(cublasLt_test cuda_samples_basic/cublasLt.cu)
 
 target_link_libraries(cublasLt_test
     cuda
@@ -70,7 +70,7 @@ set_target_properties(cublasLt_test PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
 )
 
-add_executable(cudnn_test cudnn_test.cu)
+add_executable(cudnn_test cuda_samples_basic/cudnn_test.cu)
 
 target_link_libraries(cudnn_test
     cuda
@@ -83,7 +83,7 @@ set_target_properties(cudnn_test PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
 )
 
-add_executable(test-sync test-sync.cu)
+add_executable(test-sync cuda_samples_basic/test-sync.cu)
 
 target_link_libraries(test-sync
     cuda
@@ -96,18 +96,7 @@ set_target_properties(test-sync PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
 )
 
-add_executable(test-jit test-jit.cpp)
-
-target_link_libraries(test-jit
-    cuda
-    cudart
-)
-
-target_include_directories(test-jit
-    PUBLIC  /usr/local/cuda/include
-)
-
-add_executable(basic_gemm basic_gemm.cu)
+add_executable(basic_gemm cuda_samples_basic/basic_gemm.cu)
 
 target_link_libraries(basic_gemm
     cuda
@@ -124,7 +113,7 @@ target_include_directories(basic_gemm
     PUBLIC  ${PROJECT_SOURCE_DIR}/tests
 )
 
-add_executable(turing_tensorop_gemm turing_tensorop_gemm.cu)
+add_executable(turing_tensorop_gemm cuda_samples_basic/turing_tensorop_gemm.cu)
 
 target_link_libraries(turing_tensorop_gemm
     cuda
@@ -142,7 +131,7 @@ target_include_directories(turing_tensorop_gemm
     PUBLIC  ${PROJECT_SOURCE_DIR}/tests
 )
 
-add_executable(ampere_tf32_tensorop_gemm ampere_tf32_tensorop_gemm.cu)
+add_executable(ampere_tf32_tensorop_gemm cuda_samples_basic/ampere_tf32_tensorop_gemm.cu)
 
 target_link_libraries(ampere_tf32_tensorop_gemm
     cuda

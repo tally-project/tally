@@ -827,12 +827,6 @@ struct cudaMemGetInfoResponse {
 	cudaError_t err;
 };
 
-struct cudaMemsetArg {
-	void * devPtr;
-	int  value;
-	size_t  count;
-};
-
 struct cudaMemsetAsyncArg {
 	void * devPtr;
 	int  value;
