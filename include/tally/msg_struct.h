@@ -32,6 +32,7 @@ struct __cudaRegisterFunctionArg {
 
 struct HandshakeMessgae {
     int32_t client_id;
+    int32_t priority;
 };
 
 struct HandshakeResponse {

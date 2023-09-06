@@ -61,11 +61,16 @@ public:
 
 	// Useful info
 	int dynamic_shmem_size_bytes = 0;
+
+	// For query the status of the kernel
+	cudaEvent_t event = nullptr;
 };
 
 class ClientData {
 
 public:
+	int32_t client_id;
+
 	// For registering kernels at the start:
     unsigned long long* fatbin_data = nullptr;
     uint32_t fatBinSize;
@@ -90,6 +95,21 @@ public:
 	std::atomic<bool> has_exit = false;
 };
 
+struct ClientPriority {
+
+	int32_t client_id;
+	int32_t priority;
+
+	bool operator<(const ClientPriority& other) const {
+        return priority < other.priority;
+    }
+
+	bool operator>(const ClientPriority& other) const {
+        return priority > other.priority;
+    }
+
+};
+
 class TallyServer {
 
 public:
@@ -100,6 +120,8 @@ public:
 
 	// ================== Per-client state ===================
 	std::map<int32_t, ClientData> client_data_all;
+	std::map<ClientPriority, int32_t, std::greater<ClientPriority>> client_priority_map;
+
     std::map<int32_t, iox::popo::UntypedServer *> worker_servers;
 	std::map<int32_t, std::atomic<bool>> threads_running_map;
     
@@ -182,6 +204,7 @@ public:
 
 	// Scheduler options
 	void run_naive_scheduler();
+	void run_priority_scheduler();
 	void run_profile_scheduler();
 
     void register_api_handler();
@@ -195,7 +218,7 @@ public:
     void start_main_server();
     void start_worker_server(int32_t client_id);
 
-	void wait_until_launch_queue_empty(int32_t client_uid);
+	void wait_until_launch_queue_empty(int32_t client_id);
 
 	template<typename T>
     std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
