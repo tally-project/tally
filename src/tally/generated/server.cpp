@@ -5274,6 +5274,9 @@ void TallyServer::handle_cudaStreamBeginCapture(void *__args, iox::popo::Untyped
 
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
+
+			wait_until_launch_queue_empty(client_uid);
+
             auto response = static_cast<cudaError_t*>(responsePayload);
             *response = cudaStreamBeginCapture(
 				__stream,
