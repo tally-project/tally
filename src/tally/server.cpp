@@ -120,6 +120,8 @@ void TallyServer::start_worker_server(int32_t client_id) {
     CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.global_idx, sizeof(uint32_t)));
     CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.retreat, sizeof(bool)));
 
+   client_meta.streams.push_back(client_meta.default_stream);
+
     spdlog::info("Tally worker server is up ...");
 
     auto process_name = get_process_name(client_id);
@@ -2329,11 +2331,16 @@ void TallyServer::handle_cudaDeviceSynchronize(void *__args, iox::popo::UntypedS
             auto response = static_cast<cudaError_t*>(responsePayload);
 
             wait_until_launch_queue_empty(client_id);
-            
-            *response = cudaDeviceSynchronize();
 
-            if ((*response)) {
-                throw std::runtime_error("cudaDeviceSynchronize fails");
+            // Instead of calling cudaDeviceSynchronize, only synchronize all streams of the client
+            auto &client_streams = client_data_all[client_id].streams;
+            
+            for (auto &stream : client_streams) {
+                *response = cudaStreamSynchronize(stream);
+
+                if ((*response)) {
+                    throw std::runtime_error("cudaDeviceSynchronize fails");
+                }
             }
 
             iox_server->send(response).or_else(
@@ -2820,6 +2827,144 @@ void TallyServer::handle_cudaMemset(void *__args, iox::popo::UntypedServer *iox_
 				args->value,
 				args->count
             );
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cudaStreamCreate(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaStreamCreate");
+	auto args = (struct cudaStreamCreateArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(cudaStreamCreateResponse), alignof(cudaStreamCreateResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaStreamCreateResponse*>(responsePayload);
+            response->err = cudaStreamCreate(
+				(args->pStream ? &(response->pStream) : NULL)
+			);
+
+            // Bookkeep the newly created stream
+            client_data_all[client_uid].streams.push_back(response->pStream);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cudaStreamCreateWithFlags(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaStreamCreateWithFlags");
+	auto args = (struct cudaStreamCreateWithFlagsArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(cudaStreamCreateWithFlagsResponse), alignof(cudaStreamCreateWithFlagsResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaStreamCreateWithFlagsResponse*>(responsePayload);
+            response->err = cudaStreamCreateWithFlags(
+				(args->pStream ? &(response->pStream) : NULL),
+				args->flags
+			);
+
+            // Bookkeep the newly created stream
+            client_data_all[client_uid].streams.push_back(response->pStream);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cudaStreamCreateWithPriority(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaStreamCreateWithPriority");
+	auto args = (struct cudaStreamCreateWithPriorityArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(cudaStreamCreateWithPriorityResponse), alignof(cudaStreamCreateWithPriorityResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaStreamCreateWithPriorityResponse*>(responsePayload);
+            response->err = cudaStreamCreateWithPriority(
+				(args->pStream ? &(response->pStream) : NULL),
+				args->flags,
+				args->priority
+			);
+
+            // Bookkeep the newly created stream
+            client_data_all[client_uid].streams.push_back(response->pStream);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cudaStreamBeginCapture(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaStreamBeginCapture");
+	auto args = (struct cudaStreamBeginCaptureArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    cudaStream_t __stream = args->stream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
+        .and_then([&](auto& responsePayload) {
+
+			wait_until_launch_queue_empty(client_uid);
+
+            auto response = static_cast<cudaError_t*>(responsePayload);
+            *response = cudaStreamBeginCapture(
+				__stream,
+				args->mode
+            );
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuStreamCreateWithPriority(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuStreamCreateWithPriority");
+	auto args = (struct cuStreamCreateWithPriorityArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(cuStreamCreateWithPriorityResponse), alignof(cuStreamCreateWithPriorityResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuStreamCreateWithPriorityResponse*>(responsePayload);
+            response->err = cuStreamCreateWithPriority(
+				(args->phStream ? &(response->phStream) : NULL),
+				args->flags,
+				args->priority
+			);
+
+            // Bookkeep the newly created stream
+            client_data_all[client_uid].streams.push_back(response->phStream);
+
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })

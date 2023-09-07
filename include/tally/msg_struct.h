@@ -1013,4 +1013,50 @@ struct cudaMemsetArg {
 	size_t  count;
 };
 
+struct cudaStreamCreateArg {
+	cudaStream_t * pStream;
+};
+
+struct cudaStreamCreateResponse {
+	cudaStream_t  pStream;
+	cudaError_t err;
+};
+
+struct cudaStreamCreateWithFlagsArg {
+	cudaStream_t * pStream;
+	unsigned int  flags;
+};
+
+struct cudaStreamCreateWithFlagsResponse {
+	cudaStream_t  pStream;
+	cudaError_t err;
+};
+
+struct cudaStreamCreateWithPriorityArg {
+	cudaStream_t * pStream;
+	unsigned int  flags;
+	int  priority;
+};
+
+struct cudaStreamCreateWithPriorityResponse {
+	cudaStream_t  pStream;
+	cudaError_t err;
+};
+
+struct cudaStreamBeginCaptureArg {
+	cudaStream_t  stream;
+	enum cudaStreamCaptureMode  mode;
+};
+
+struct cuStreamCreateWithPriorityArg {
+	CUstream * phStream;
+	unsigned int  flags;
+	int  priority;
+};
+
+struct cuStreamCreateWithPriorityResponse {
+	CUstream  phStream;
+	CUresult err;
+};
+
 #endif // TALLY_DEF_H

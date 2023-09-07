@@ -31,10 +31,12 @@ void TallyServer::run_naive_scheduler()
 {
     spdlog::info("Running naive scheduler ...");
 
-    // CudaLaunchConfig config(false, false, false, true, 4);
     CudaLaunchConfig config = CudaLaunchConfig::default_config;
 
     KernelLaunchWrapper kernel_wrapper;
+
+    cudaStream_t retreat_stream;
+    cudaStreamCreate(&retreat_stream);
 
     while (!iox::posix::hasTerminationRequested()) {
 
@@ -63,6 +65,7 @@ void TallyServer::run_naive_scheduler()
                 }
 
                 kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
+                
                 client_data.queue_size--;
             }
         }
@@ -88,8 +91,6 @@ void TallyServer::run_priority_scheduler()
 
     while (!iox::posix::hasTerminationRequested()) {
 
-        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
         bool is_highest_priority = true;
 
         for (auto &pair : client_priority_map) {
@@ -97,8 +98,6 @@ void TallyServer::run_priority_scheduler()
             auto &client_priority = pair.first;
             auto client_id = client_priority.client_id;
             auto &client_data = client_data_all[client_id];
-
-            // std::cout << "client_id: " << client_id << std::endl;
 
             if (client_data.has_exit) {
                 client_data_all.erase(client_id);
@@ -109,34 +108,23 @@ void TallyServer::run_priority_scheduler()
             // First check whether this client already has a kernel running
             if (in_progress_kernels.find(client_priority) != in_progress_kernels.end()) {
 
-                // std::cout << "Found in progress kernel from client_id: " << client_id << std::endl;
-
                 auto &in_progress_kernel_wrapper = in_progress_kernels[client_priority].first;
                 auto running = in_progress_kernels[client_priority].second;
 
                 // is running
                 if (running) {
 
-                    // std::cout << "Found running kernel from client_id: " << client_id << std::endl;
-
                     // Check whether has finished
                     if (cudaEventQuery(in_progress_kernel_wrapper.event) == cudaSuccess) {
 
-                        // std::cout << "Found finished kernel from client_id: " << client_id << std::endl;
-
                         // Erase if finished
                         in_progress_kernels.erase(client_priority);
-
                         client_data.queue_size--;
 
-                    } else {
-                        // std::cout << "Found unfinished kernel from client_id: " << client_id << std::endl;
                     }
 
                 // is stopped
                 } else {
-
-                    // std::cout << "Found stopped kernel from client_id: " << client_id << std::endl;
 
                     CudaLaunchConfig config = original_config;
 
@@ -154,7 +142,7 @@ void TallyServer::run_priority_scheduler()
                     in_progress_kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
 
                     // Monitor the launched kernel
-                    cudaEventRecord(in_progress_kernel_wrapper.event);
+                    cudaEventRecord(in_progress_kernel_wrapper.event, in_progress_kernel_wrapper.launch_stream);
 
                     // Flip the flag
                     in_progress_kernels[client_priority].second = true;
@@ -166,16 +154,12 @@ void TallyServer::run_priority_scheduler()
 
             }
 
-            // std::cout << "Did not find in progress kernel from client_id: " << client_id << std::endl;
-
             // If this client does not have a kernel in progress, try fetching from the queue
             KernelLaunchWrapper kernel_wrapper;
             bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
 
             // Successfully fetched a kernel from the launch queue
             if (succeeded) {
-
-                // std::cout << "Successfully dequeued kernel from client_id: " << client_id << std::endl;
 
                 // Stop any running kernel
                 for (auto &in_progress_kernel : in_progress_kernels) {
@@ -189,8 +173,6 @@ void TallyServer::run_priority_scheduler()
                     auto in_progress_client_id = in_progress_kernel.first.client_id;
                     auto &in_progress_kernel_wrapper = in_progress_kernel.second.first;
                     auto &in_progress_client_data = client_data_all[in_progress_client_id];
-
-                    // std::cout << "Try to stop running kernel from client_id: " << in_progress_client_id << std::endl;
 
                     // Set retreat flag
                     cudaMemsetAsync(in_progress_client_data.retreat, 1, sizeof(bool), retreat_stream);
@@ -207,14 +189,11 @@ void TallyServer::run_priority_scheduler()
 
                     if (progress >= num_thread_blocks) {
 
-                        // std::cout << "Target kernel already finished" << std::endl;
-
                         // Remove from bookkeeping
                         in_progress_kernels.erase(in_progress_kernel.first);
                         in_progress_client_data.queue_size--;
-                    } else {
 
-                        // std::cout << "Target kernel is stopped by us" << std::endl;
+                    } else {
 
                         // Mark as stopped
                         in_progress_kernel.second.second = false;
@@ -229,6 +208,7 @@ void TallyServer::run_priority_scheduler()
                 CudaLaunchConfig config = original_config;
 
                 if (!is_highest_priority) {
+
                     // set retreat ang global_idx to 0
                     cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
                     cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
@@ -241,20 +221,15 @@ void TallyServer::run_priority_scheduler()
                 // Create a event to monitor the kernel execution
                 cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming);
 
-                // Launch the kernel again
                 kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
 
-                cudaEventRecord(kernel_wrapper.event);
+                cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream);
 
                 // Bookkeep this kernel launch
                 in_progress_kernels[client_priority].first = kernel_wrapper;
                 in_progress_kernels[client_priority].second = true;
 
                 break;
-            }
-            
-            else {
-                // std::cout << "Did not successfully dequeued kernel from client_id: " << client_id << std::endl;
             }
 
             // Did not fetch a kernel

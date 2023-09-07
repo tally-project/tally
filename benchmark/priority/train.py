@@ -1,37 +1,16 @@
-import time
-
 import hidet
 import torch
+import time
 
-# disable CUDA Graph
-hidet.torch.dynamo_config.use_cuda_graph(False)
-
-hidet.torch.dynamo_config.use_tensor_core(True)
-hidet.torch.dynamo_config.use_fp16(flag=True)
-# hidet.torch.dynamo_config.search_space(level=2)
-
-x = torch.randn(64, 3, 224, 224).cuda()
-model = torch.hub.load(
-    'pytorch/vision:v0.9.0', 'resnet50', pretrained=True, verbose=False
-)
-model = model.cuda().eval()
-
-# optimize the model with 'hidet' backend
-model_opt = torch.compile(model, backend='hidet')
-
-# run the optimized model
-y1 = model_opt(x)
-
-print("Start training")
-
-# benchmark the performance
+a = hidet.randn([5120, 5120], device='cuda')
+b = hidet.randn([5120, 5120], device='cuda')
 
 start_time = time.time()
 iters = 0
 
-for _ in range(10000):
+for i in range(10000):
 
-    y = model_opt(x)
+    d = hidet.ops.matmul(a, b)
     torch.cuda.synchronize()
 
     iters += 1
@@ -42,5 +21,3 @@ for _ in range(10000):
         print(f"Throughput: {iters / time_elapsed}iters/s")
         iters = 0
         start_time = time.time()
-
-print("End training")
