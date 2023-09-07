@@ -23,6 +23,8 @@ void __attribute__((constructor)) register_env_vars()
                 SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::NAIVE; 
             } else if (policy_str == "profile") {
                 SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::PROFILE; 
+            } else if (policy_str == "priority") {
+                SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::PRIORITY; 
             } else {
                 SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::NAIVE;
             }

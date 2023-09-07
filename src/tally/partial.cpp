@@ -78,7 +78,7 @@ TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, siz
             err = config.launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, global_idx, retreat);
         }
 
-        free(params_local);
+        // free(params_local);
 
         if (err) {
             char *str;
@@ -117,7 +117,7 @@ TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *__args)
             args->ldc
         );
 
-        free(args);
+        // free(args);
 
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 

@@ -370,17 +370,6 @@ struct cuMemAllocFromPoolAsyncResponse {
 	CUresult err;
 };
 
-struct cuStreamCreateWithPriorityArg {
-	CUstream * phStream;
-	unsigned int  flags;
-	int  priority;
-};
-
-struct cuStreamCreateWithPriorityResponse {
-	CUstream  phStream;
-	CUresult err;
-};
-
 struct cuStreamWaitEventArg {
 	CUstream  hStream;
 	CUevent  hEvent;
@@ -671,36 +660,6 @@ struct cudaGetDeviceFlagsResponse {
 	cudaError_t err;
 };
 
-struct cudaStreamCreateArg {
-	cudaStream_t * pStream;
-};
-
-struct cudaStreamCreateResponse {
-	cudaStream_t  pStream;
-	cudaError_t err;
-};
-
-struct cudaStreamCreateWithFlagsArg {
-	cudaStream_t * pStream;
-	unsigned int  flags;
-};
-
-struct cudaStreamCreateWithFlagsResponse {
-	cudaStream_t  pStream;
-	cudaError_t err;
-};
-
-struct cudaStreamCreateWithPriorityArg {
-	cudaStream_t * pStream;
-	unsigned int  flags;
-	int  priority;
-};
-
-struct cudaStreamCreateWithPriorityResponse {
-	cudaStream_t  pStream;
-	cudaError_t err;
-};
-
 struct cudaStreamGetPriorityArg {
 	cudaStream_t  hStream;
 	int * priority;
@@ -741,11 +700,6 @@ struct cudaStreamWaitEventArg {
 
 struct cudaStreamQueryArg {
 	cudaStream_t  stream;
-};
-
-struct cudaStreamBeginCaptureArg {
-	cudaStream_t  stream;
-	enum cudaStreamCaptureMode  mode;
 };
 
 struct cudaStreamEndCaptureArg {

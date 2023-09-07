@@ -121,6 +121,9 @@ public:
         signal(SIGHUP  , __exit_wrapper);
 
 #ifndef RUN_LOCALLY
+
+        int32_t priority = std::getenv("PRIORITY") ? std::stoi(std::getenv("PRIORITY")) : 1;
+
         auto app_name_str_base = std::string("tally-client-app");
         auto app_name_str = app_name_str_base + std::to_string(client_id);
 
@@ -137,6 +140,7 @@ public:
 
                 auto request = static_cast<HandshakeMessgae*>(requestPayload);
                 request->client_id = client_id;
+                request->priority = priority;
 
                 client_handshake.send(request).or_else(
                     [&](auto& error) { std::cout << "Could not send Request! Error: " << error << std::endl; });

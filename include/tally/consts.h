@@ -15,7 +15,7 @@
         "as-I", \
         "--fatbin", \
         "ptxas", \
-        "whichnvcc", \
+        "nvcc", \
         "g++" \
     };
 
