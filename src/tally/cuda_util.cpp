@@ -13,7 +13,7 @@
 std::string get_fatbin_str_from_ptx_str(std::string ptx_str)
 {
     write_str_to_file("/tmp/output.ptx", ptx_str);
-    std::string compile_cmd = "nvcc /tmp/output.ptx --fatbin -arch sm_" +
+    std::string compile_cmd = "nvcc -Xptxas -O3 /tmp/output.ptx --fatbin -arch sm_" +
                               std::string(CUDA_COMPUTE_VERSION) +
                               " -o /tmp/output.fatbin";
     auto res = exec(compile_cmd);

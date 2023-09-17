@@ -63,7 +63,7 @@ cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
 sleep 5
 
 # Launch tally server in the background
-SCHEDULER_POLICY=priority ./start_server.sh &
+./start_server.sh &
 
 echo wait for server to start ...
 sleep 5
