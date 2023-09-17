@@ -20,7 +20,8 @@ static uint32_t CUDA_MAX_NUM_THREADS_PER_SM = 1536;
 static uint32_t CUDA_MAX_NUM_REGISTERS_PER_SM = 64 * 1024;
 static uint32_t CUDA_MAX_SHM_BYTES_PER_SM = 100 * 1024;
 
-static uint32_t PTB_MAX_NUM_THREADS_PER_SM = 1024;
+// These can be tuned
+static uint32_t PTB_MAX_NUM_THREADS_PER_SM = CUDA_MAX_NUM_THREADS_PER_SM;
 
 extern bool TALLY_INITIALIZED;
 

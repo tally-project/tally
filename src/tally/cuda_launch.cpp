@@ -31,7 +31,7 @@ std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config)
     return os;
 }
 
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per_block, uint32_t num_blocks)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(uint32_t threads_per_block, uint32_t num_blocks)
 {
     std::vector<CudaLaunchConfig> configs;
 
@@ -42,7 +42,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per
     while(true) {
 
         // One kernel should not take all the thread slots
-        if (_num_blocks_per_sm * threads_per_block >= PTB_MAX_NUM_THREADS_PER_SM) {
+        if (_num_blocks_per_sm * threads_per_block > PTB_MAX_NUM_THREADS_PER_SM) {
             break;
         }
         
@@ -52,8 +52,19 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_configs(uint32_t threads_per
             break;
         }
 
-        CudaLaunchConfig config(false, true, false, false, _num_blocks_per_sm);
-        configs.push_back(config);
+        // regular PTB
+        CudaLaunchConfig ptb_config(false, true, false, false, _num_blocks_per_sm);
+
+        // dynamic PTB
+        CudaLaunchConfig dynamic_ptb_config(false, false, true, false, _num_blocks_per_sm);
+
+        // preemptive PTB
+        CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
+
+        configs.push_back(ptb_config);
+        configs.push_back(dynamic_ptb_config);
+        configs.push_back(preemptive_ptb_config);
+
         _num_blocks_per_sm++;
     }
     
@@ -77,6 +88,13 @@ CUresult CudaLaunchConfig::repeat_launch(
     float _time_ms;
     CUresult err;
 
+    if (use_dynamic_ptb || use_preemptive_ptb) {
+        // Make Sure the previous kernel has finished
+        cudaStreamSynchronize(stream);
+        cudaMemsetAsync(retreat, 0, sizeof(bool), stream);
+        cudaMemsetAsync(global_idx, 0, sizeof(uint32_t), stream);
+    }
+
     // get a rough estimate of the kernel duration
     err = launch(func, gridDim, blockDim, args, sharedMem, stream, global_idx, retreat, true, &_time_ms);
 
@@ -88,6 +106,14 @@ CUresult CudaLaunchConfig::repeat_launch(
     uint64_t elapsed_ns = 0;
 
     while (true) {
+
+        // if (use_dynamic_ptb || use_preemptive_ptb) {
+        if (1) {
+            // Make Sure the previous kernel has finished
+            cudaStreamSynchronize(stream);
+            cudaMemsetAsync(retreat, 0, sizeof(bool), stream);
+            cudaMemsetAsync(global_idx, 0, sizeof(uint32_t), stream);
+        }
 
         // Perform your steps here
         err = launch(func, gridDim, blockDim, args, sharedMem, stream, global_idx, retreat);
@@ -185,8 +211,15 @@ CUresult CudaLaunchConfig::launch(
 
         assert(cu_func);
 
+        dim3 PTB_grid_dim;
+        
+        uint32_t total_blocks = blockDim.x * blockDim.y * blockDim.z;
         // Depend on number of PTBs/SM
-        dim3 PTB_grid_dim(82 * num_blocks_per_sm);
+        if (total_blocks < CUDA_NUM_SM) {
+            PTB_grid_dim = dim3(total_blocks);
+        } else {
+            PTB_grid_dim = dim3(CUDA_NUM_SM * num_blocks_per_sm);
+        }
 
         void *KernelParams[num_args];
         for (size_t i = 0; i < num_args - 1; i++) {
@@ -234,8 +267,15 @@ CUresult CudaLaunchConfig::launch(
         
         assert(cu_func);
 
+        dim3 PTB_grid_dim;
+        
+        uint32_t total_blocks = blockDim.x * blockDim.y * blockDim.z;
         // Depend on number of PTBs/SM
-        dim3 PTB_grid_dim(82 * num_blocks_per_sm);
+        if (total_blocks < CUDA_NUM_SM) {
+            PTB_grid_dim = dim3(total_blocks);
+        } else {
+            PTB_grid_dim = dim3(CUDA_NUM_SM * num_blocks_per_sm);
+        }
 
         void *KernelParams[num_args];
         for (size_t i = 0; i < num_args - 2; i++) {
@@ -284,8 +324,15 @@ CUresult CudaLaunchConfig::launch(
         
         assert(cu_func);
 
+        dim3 PTB_grid_dim;
+        
+        uint32_t total_blocks = blockDim.x * blockDim.y * blockDim.z;
         // Depend on number of PTBs/SM
-        dim3 PTB_grid_dim(82 * num_blocks_per_sm);
+        if (total_blocks < CUDA_NUM_SM) {
+            PTB_grid_dim = dim3(total_blocks);
+        } else {
+            PTB_grid_dim = dim3(CUDA_NUM_SM * num_blocks_per_sm);
+        }
 
         void *KernelParams[num_args];
         for (size_t i = 0; i < num_args - 3; i++) {

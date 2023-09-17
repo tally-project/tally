@@ -6,7 +6,7 @@
 
 int main() {
 
-    auto transformed = gen_preemptive_ptb_ptx("elementwise.1.sm_86.ptx");
+    auto transformed = gen_ptb_ptx("a.1.sm_86.ptx");
     std::cout << transformed << std::endl;
 
     return 0;

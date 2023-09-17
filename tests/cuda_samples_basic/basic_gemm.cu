@@ -352,7 +352,7 @@ cudaError_t TestCutlassGemm(int M, int N, int K, float alpha, float beta) {
   // Launch CUTLASS GEMM.
   //
 
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < 100; i++) {
     result = CutlassSgemmNN(M, N, K, alpha, A, lda, B, ldb, beta, C_cutlass, ldc);
   }
 

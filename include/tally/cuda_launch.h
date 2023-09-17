@@ -160,7 +160,7 @@ public:
 
     // Static function - return the best config for a cuda launch
     static CudaLaunchConfig tune(const void *, dim3, dim3, void **, size_t, cudaStream_t);
-    static std::vector<CudaLaunchConfig> get_configs(uint32_t threads_per_block, uint32_t num_blocks);
+    static std::vector<CudaLaunchConfig> get_profile_configs(uint32_t threads_per_block, uint32_t num_blocks);
 
     CudaLaunchConfig(
         bool use_original=true, bool use_ptb=false,
