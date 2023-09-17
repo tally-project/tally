@@ -50,6 +50,10 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
     int32_t brace_encountered = false;
     std::string kernel_name;
 
+    bool use_BlockIdx_x = false;
+    bool use_BlockIdx_y = false;
+    bool use_BlockIdx_z = false;
+
     uint32_t num_additional_b16 = 0;
     uint32_t num_additional_b32 = 0;
     uint32_t num_additional_b64 = 0;
@@ -99,6 +103,9 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
             num_additional_pred_regs = 0;
             brace_counter = 0;
             brace_encountered = false;
+            use_BlockIdx_x = false;
+            use_BlockIdx_y = false;
+            use_BlockIdx_z = false;
             kernel_lines.clear();
         }
         
@@ -139,6 +146,19 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
 
         if (boost::regex_search(line, matches, pred_reg_decl_pattern)) {
             num_pred_regs = std::stoi(matches[1]);
+            continue;
+        }
+
+        if (boost::regex_search(line, matches, block_idx_pattern)) {
+            std::string block_idx_match_dim = matches[2];
+            if (block_idx_match_dim == "x") {
+                use_BlockIdx_x = true;
+            } else if (block_idx_match_dim == "y") {
+                use_BlockIdx_y = true;
+            } else if (block_idx_match_dim == "z") {
+                use_BlockIdx_z = true;
+            }
+
             continue;
         }
 
@@ -364,18 +384,50 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
 
                     ptb_ptx_code += "\n";
 
-                    // newBlockIdx.z
-                    ptb_ptx_code += "div.u32 " + newBlockIdx_z_reg + ", " + curr_idx_reg + ", " + xy_tbs_reg + ";\n";
-                    // newBlockIdx.z * xy_tbs
-                    ptb_ptx_code += "mul.lo.u32 " + newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_z_reg + ", " + xy_tbs_reg + ";\n";
-                    // tb_idx - newBlockIdx.z * xy_tbs
-                    ptb_ptx_code += "sub.u32 " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + curr_idx_reg + ", " + newBlockIdx_z_mul_xy_tbs_reg + ";\n";
-                    // newBlockIdx.y
-                    ptb_ptx_code += "div.u32 " + newBlockIdx_y_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + origGridDim_x_reg + ";\n";
-                    // newBlockIdx.y * origGridDim.x
-                    ptb_ptx_code += "mul.lo.u32 " + newBlockIdx_y_mul_origGridDim_x_reg + ", " + newBlockIdx_y_reg + ", " + origGridDim_x_reg + ";\n";
-                    // newBlockIdx.x
-                    ptb_ptx_code += "sub.u32 " + newBlockIdx_x_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_y_mul_origGridDim_x_reg + ";\n";
+                     // newBlockIdx.z
+                    if (use_BlockIdx_z) {
+                        ptb_ptx_code += "div.u32 " + newBlockIdx_z_reg + ", " + curr_idx_reg + ", " + xy_tbs_reg + ";\n";
+                    }
+                    
+                    if (use_BlockIdx_y) {
+                        if (use_BlockIdx_z) {
+                            // newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_z_reg + ", " + xy_tbs_reg + ";\n";
+                            // tb_idx - newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "sub.s32 " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + curr_idx_reg + ", " + newBlockIdx_z_mul_xy_tbs_reg + ";\n";
+                            // newBlockIdx.y
+                            ptb_ptx_code += "div.u32 " + newBlockIdx_y_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + origGridDim_x_reg + ";\n";
+                        } else {
+                            // newBlockIdx.y
+                            ptb_ptx_code += "div.u32 " + newBlockIdx_y_reg + ", " + curr_idx_reg + ", " + origGridDim_x_reg + ";\n";
+                        }
+                    }
+
+                    if (use_BlockIdx_x) {
+                        if (use_BlockIdx_y) {
+                            // newBlockIdx.y * origGridDim.x
+                            ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_y_mul_origGridDim_x_reg + ", " + newBlockIdx_y_reg + ", " + origGridDim_x_reg + ";\n";
+                            
+                            if (use_BlockIdx_z) {
+                                // newBlockIdx.x
+                                ptb_ptx_code += "sub.s32 " + newBlockIdx_x_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_y_mul_origGridDim_x_reg + ";\n";
+                            } else {
+                                 // newBlockIdx.x
+                                ptb_ptx_code += "sub.s32 " + newBlockIdx_x_reg + ", " + curr_idx_reg + ", " + newBlockIdx_y_mul_origGridDim_x_reg + ";\n";
+                            }
+                        } else if (use_BlockIdx_z) {
+                            // newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_z_reg + ", " + xy_tbs_reg + ";\n";
+                            // tb_idx - newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "sub.s32 " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + curr_idx_reg + ", " + newBlockIdx_z_mul_xy_tbs_reg + ";\n";
+                            // newBlockIdx.x
+                            ptb_ptx_code += "mov.u32 " + newBlockIdx_x_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ";\n";
+                        } else {
+                            // newBlockIdx.x
+                            ptb_ptx_code += "mov.u32 " + newBlockIdx_x_reg + ", " + curr_idx_reg + ";\n";
+                        }
+                    }
+                    
                     // Branch to MAIN block
                     ptb_ptx_code += "bra.uni $" + PTB_MAIN_BLOCK_NAME + ";\n";
 
@@ -438,6 +490,10 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
     int32_t brace_encountered = false;
     std::string kernel_name;
 
+    bool use_BlockIdx_x = false;
+    bool use_BlockIdx_y = false;
+    bool use_BlockIdx_z = false;
+
     uint32_t num_additional_b32 = 0;
     uint32_t num_additional_b64 = 0;
     uint32_t num_additional_pred_regs = 0;
@@ -478,6 +534,9 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
             num_additional_pred_regs = 0;
             brace_counter = 0;
             brace_encountered = false;
+            use_BlockIdx_x = false;
+            use_BlockIdx_y = false;
+            use_BlockIdx_z = false;
             kernel_lines.clear();
         }
         
@@ -513,6 +572,19 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
 
         if (boost::regex_search(line, matches, pred_reg_decl_pattern)) {
             num_pred_regs = std::stoi(matches[1]);
+            continue;
+        }
+
+        if (boost::regex_search(line, matches, block_idx_pattern)) {
+            std::string block_idx_match_dim = matches[2];
+            if (block_idx_match_dim == "x") {
+                use_BlockIdx_x = true;
+            } else if (block_idx_match_dim == "y") {
+                use_BlockIdx_y = true;
+            } else if (block_idx_match_dim == "z") {
+                use_BlockIdx_z = true;
+            }
+
             continue;
         }
 
@@ -702,17 +774,49 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += "\n";
 
                     // newBlockIdx.z
-                    ptb_ptx_code += "div.u32 " + newBlockIdx_z_reg + ", " + curr_idx_reg + ", " + xy_tbs_reg + ";\n";
-                    // newBlockIdx.z * xy_tbs
-                    ptb_ptx_code += "mul.lo.u32 " + newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_z_reg + ", " + xy_tbs_reg + ";\n";
-                    // tb_idx - newBlockIdx.z * xy_tbs
-                    ptb_ptx_code += "sub.u32 " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + curr_idx_reg + ", " + newBlockIdx_z_mul_xy_tbs_reg + ";\n";
-                    // newBlockIdx.y
-                    ptb_ptx_code += "div.u32 " + newBlockIdx_y_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + origGridDim_x_reg + ";\n";
-                    // newBlockIdx.y * origGridDim.x
-                    ptb_ptx_code += "mul.lo.u32 " + newBlockIdx_y_mul_origGridDim_x_reg + ", " + newBlockIdx_y_reg + ", " + origGridDim_x_reg + ";\n";
-                    // newBlockIdx.x
-                    ptb_ptx_code += "sub.u32 " + newBlockIdx_x_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_y_mul_origGridDim_x_reg + ";\n";
+                    if (use_BlockIdx_z) {
+                        ptb_ptx_code += "div.u32 " + newBlockIdx_z_reg + ", " + curr_idx_reg + ", " + xy_tbs_reg + ";\n";
+                    }
+                    
+                    if (use_BlockIdx_y) {
+                        if (use_BlockIdx_z) {
+                            // newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_z_reg + ", " + xy_tbs_reg + ";\n";
+                            // tb_idx - newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "sub.s32 " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + curr_idx_reg + ", " + newBlockIdx_z_mul_xy_tbs_reg + ";\n";
+                            // newBlockIdx.y
+                            ptb_ptx_code += "div.u32 " + newBlockIdx_y_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + origGridDim_x_reg + ";\n";
+                        } else {
+                            // newBlockIdx.y
+                            ptb_ptx_code += "div.u32 " + newBlockIdx_y_reg + ", " + curr_idx_reg + ", " + origGridDim_x_reg + ";\n";
+                        }
+                    }
+
+                    if (use_BlockIdx_x) {
+                        if (use_BlockIdx_y) {
+                            // newBlockIdx.y * origGridDim.x
+                            ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_y_mul_origGridDim_x_reg + ", " + newBlockIdx_y_reg + ", " + origGridDim_x_reg + ";\n";
+                            
+                            if (use_BlockIdx_z) {
+                                // newBlockIdx.x
+                                ptb_ptx_code += "sub.s32 " + newBlockIdx_x_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_y_mul_origGridDim_x_reg + ";\n";
+                            } else {
+                                 // newBlockIdx.x
+                                ptb_ptx_code += "sub.s32 " + newBlockIdx_x_reg + ", " + curr_idx_reg + ", " + newBlockIdx_y_mul_origGridDim_x_reg + ";\n";
+                            }
+                        } else if (use_BlockIdx_z) {
+                            // newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_z_reg + ", " + xy_tbs_reg + ";\n";
+                            // tb_idx - newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "sub.s32 " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + curr_idx_reg + ", " + newBlockIdx_z_mul_xy_tbs_reg + ";\n";
+                            // newBlockIdx.x
+                            ptb_ptx_code += "mov.u32 " + newBlockIdx_x_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ";\n";
+                        } else {
+                            // newBlockIdx.x
+                            ptb_ptx_code += "mov.u32 " + newBlockIdx_x_reg + ", " + curr_idx_reg + ";\n";
+                        }
+                    }
+                    
                     // Branch to MAIN block
                     ptb_ptx_code += "bra.uni $" + PTB_MAIN_BLOCK_NAME + ";\n";
 
@@ -772,6 +876,10 @@ std::string gen_ptb_ptx(std::string ptx_path)
     int32_t brace_encountered = false;
     std::string kernel_name;
 
+    bool use_BlockIdx_x = false;
+    bool use_BlockIdx_y = false;
+    bool use_BlockIdx_z = false;
+
     uint32_t num_additional_b32 = 15;
     uint32_t num_additional_pred_regs = 2;
 
@@ -790,6 +898,9 @@ std::string gen_ptb_ptx(std::string ptx_path)
             num_pred_regs = 0;
             brace_counter = 0;
             brace_encountered = false;
+            use_BlockIdx_x = false;
+            use_BlockIdx_y = false;
+            use_BlockIdx_z = false;
             kernel_lines.clear();
         }
         
@@ -820,6 +931,19 @@ std::string gen_ptb_ptx(std::string ptx_path)
 
         if (boost::regex_search(line, matches, pred_reg_decl_pattern)) {
             num_pred_regs = std::stoi(matches[1]);
+            continue;
+        }
+
+        if (boost::regex_search(line, matches, block_idx_pattern)) {
+            std::string block_idx_match_dim = matches[2];
+            if (block_idx_match_dim == "x") {
+                use_BlockIdx_x = true;
+            } else if (block_idx_match_dim == "y") {
+                use_BlockIdx_y = true;
+            } else if (block_idx_match_dim == "z") {
+                use_BlockIdx_z = true;
+            }
+
             continue;
         }
 
@@ -887,10 +1011,6 @@ std::string gen_ptb_ptx(std::string ptx_path)
                     //     ptb_ptx_code += ".maxnreg 100\n";
                     // }
 
-                    // if (kernel_name == "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::hardswish_backward_kernel(at::TensorIterator&)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float, float)#1}, at::detail::Array<char*, 3> >(int, at::native::(anonymous namespace)::hardswish_backward_kernel(at::TensorIterator&)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float, float)#1}, at::detail::Array<char*, 3>)") {
-                    //     ptb_ptx_code += ".maxnreg 194\n";
-                    // }
-
                     ptb_ptx_code += kernel_line + "\n";
     
                     brace_encountered = true;
@@ -928,17 +1048,48 @@ std::string gen_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += "$" + PTB_LOOP_BLOCK_NAME + ":\n";
                     
                     // newBlockIdx.z
-                    ptb_ptx_code += "div.u32 " + newBlockIdx_z_reg + ", " + tb_idx_reg + ", " + xy_tbs_reg + ";\n";
-                    // newBlockIdx.z * xy_tbs
-                    ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_z_reg + ", " + xy_tbs_reg + ";\n";
-                    // tb_idx - newBlockIdx.z * xy_tbs
-                    ptb_ptx_code += "sub.s32 " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + tb_idx_reg + ", " + newBlockIdx_z_mul_xy_tbs_reg + ";\n";
-                    // newBlockIdx.y
-                    ptb_ptx_code += "div.u32 " + newBlockIdx_y_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + origGridDim_x_reg + ";\n";
-                    // newBlockIdx.y * origGridDim.x
-                    ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_y_mul_origGridDim_x_reg + ", " + newBlockIdx_y_reg + ", " + origGridDim_x_reg + ";\n";
-                    // newBlockIdx.x
-                    ptb_ptx_code += "sub.s32 " + newBlockIdx_x_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_y_mul_origGridDim_x_reg + ";\n";
+                    if (use_BlockIdx_z) {
+                        ptb_ptx_code += "div.u32 " + newBlockIdx_z_reg + ", " + tb_idx_reg + ", " + xy_tbs_reg + ";\n";
+                    }
+                    
+                    if (use_BlockIdx_y) {
+                        if (use_BlockIdx_z) {
+                            // newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_z_reg + ", " + xy_tbs_reg + ";\n";
+                            // tb_idx - newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "sub.s32 " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + tb_idx_reg + ", " + newBlockIdx_z_mul_xy_tbs_reg + ";\n";
+                            // newBlockIdx.y
+                            ptb_ptx_code += "div.u32 " + newBlockIdx_y_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + origGridDim_x_reg + ";\n";
+                        } else {
+                            // newBlockIdx.y
+                            ptb_ptx_code += "div.u32 " + newBlockIdx_y_reg + ", " + tb_idx_reg + ", " + origGridDim_x_reg + ";\n";
+                        }
+                    }
+
+                    if (use_BlockIdx_x) {
+                        if (use_BlockIdx_y) {
+                            // newBlockIdx.y * origGridDim.x
+                            ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_y_mul_origGridDim_x_reg + ", " + newBlockIdx_y_reg + ", " + origGridDim_x_reg + ";\n";
+                            
+                            if (use_BlockIdx_z) {
+                                // newBlockIdx.x
+                                ptb_ptx_code += "sub.s32 " + newBlockIdx_x_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_y_mul_origGridDim_x_reg + ";\n";
+                            } else {
+                                 // newBlockIdx.x
+                                ptb_ptx_code += "sub.s32 " + newBlockIdx_x_reg + ", " + tb_idx_reg + ", " + newBlockIdx_y_mul_origGridDim_x_reg + ";\n";
+                            }
+                        } else if (use_BlockIdx_z) {
+                            // newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "mul.lo.s32 " + newBlockIdx_z_mul_xy_tbs_reg + ", " + newBlockIdx_z_reg + ", " + xy_tbs_reg + ";\n";
+                            // tb_idx - newBlockIdx.z * xy_tbs
+                            ptb_ptx_code += "sub.s32 " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ", " + tb_idx_reg + ", " + newBlockIdx_z_mul_xy_tbs_reg + ";\n";
+                            // newBlockIdx.x
+                            ptb_ptx_code += "mov.u32 " + newBlockIdx_x_reg + ", " + tb_idx_sub_newBlockIdx_z_mul_xy_tbs_reg + ";\n";
+                        } else {
+                            // newBlockIdx.x
+                            ptb_ptx_code += "mov.u32 " + newBlockIdx_x_reg + ", " + tb_idx_reg + ";\n";
+                        }
+                    }
 
                     continue;
                 }
