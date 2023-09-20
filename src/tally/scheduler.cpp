@@ -21,6 +21,10 @@ void TallyServer::start_scheduler()
         run_profile_scheduler();
     } else if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
         run_priority_scheduler();
+    } else if (policy == TALLY_SCHEDULER_POLICY::WORKLOAD_AGNOSTIC_SHARING) {
+        run_workload_agnostic_sharing_scheduler();
+    } else if (policy == TALLY_SCHEDULER_POLICY::WORKLOAD_AWARE_SHARING) {
+        run_workload_aware_sharing_scheduler();
     } else {
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unknown policy enum.");
     }
@@ -66,11 +70,135 @@ void TallyServer::run_naive_scheduler()
                 }
 
                 kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
-                
                 client_data.queue_size--;
             }
         }
     }
+}
+
+// Launch PTB-based kernel to always allow sharing
+// Does not consider pair-wise performance
+// simply launch the single-kernel best config
+void TallyServer::run_workload_agnostic_sharing_scheduler()
+{
+    spdlog::info("Running workload agnostic sharing scheduler ...");
+
+    KernelLaunchWrapper kernel_wrapper;
+
+    while (!iox::posix::hasTerminationRequested()) {
+        for (auto &pair : client_data_all) {
+
+            auto &client_data = pair.second;
+
+            if (client_data.has_exit) {
+                auto client_id = pair.first;
+                client_data_all.erase(client_id);
+                break;
+            }
+
+            // Try fetch kernel from queue
+            bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
+
+            if (succeeded) {
+
+                auto launch_call = kernel_wrapper.launch_call;
+
+                // Look up cache for best-performance config
+                bool found_in_cache;
+                auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
+
+                if (!found_in_cache) {
+
+                    auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
+
+                    spdlog::info("Launch config not found for: " + kernel_name + "_" + launch_call.dim_str());
+
+                    auto start = std::chrono::high_resolution_clock::now();
+
+                    // Otherwise tune and look for best config
+                    auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
+                    auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+                    auto configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
+
+                    // Measure single-run time
+                    float time_elapsed;
+                    float iters;
+
+                    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
+
+                    // In seconds
+                    float profile_duration = (100 * time_elapsed) / 1000.f;
+
+                    // At least run for 0.1 sec
+                    profile_duration = std::max(profile_duration, 0.1f);
+
+                    // Maybe don't exceed 1 minute;
+                    profile_duration = std::min(profile_duration, 60.f);
+
+                    // Run default config first
+                    CudaLaunchConfig base_config = CudaLaunchConfig::default_config;
+
+                    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1);
+
+                    float base_latency_ms = time_elapsed / iters;
+
+                    // Save result to cache
+                    set_single_kernel_perf(launch_call, base_config, original_kernel_map[launch_call.func].meta_data, 1., base_latency_ms, iters);
+
+                    CudaLaunchConfig best_config;
+                    float best_latency_ms = FLT_MAX;
+
+                    for (auto &config : configs) {
+
+                        kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, true, profile_duration, &time_elapsed, &iters, -1);
+
+                        float latency_ms = time_elapsed / iters;
+
+                        if (latency_ms < best_latency_ms) {
+                            best_config = config;
+                            best_latency_ms = latency_ms;
+                        }
+
+                        float norm_speed = base_latency_ms / latency_ms;
+
+                        set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, base_latency_ms, iters);
+                    }
+
+                    float best_norm_speed = base_latency_ms / best_latency_ms;
+                    if (best_norm_speed < 0.5) {
+                        best_config = base_config;
+                        best_norm_speed = 1.;
+                    }
+
+                    res = get_single_kernel_perf(launch_call, best_config, &found_in_cache);
+                    set_single_kernel_best_config(launch_call, res);
+
+                    auto end = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double, std::milli> elapsed = end - start;
+
+                    spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Launch config: " + best_config.str() + ". Norm speed: " + std::to_string(best_norm_speed));
+                }
+
+                auto config = res.config;
+
+                if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
+                    // Make Sure the previous kernel has finished
+                    cudaStreamSynchronize(kernel_wrapper.launch_stream);
+                    cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
+                    cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
+                }
+
+                kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
+                client_data.queue_size--;
+            }
+        }
+    }
+}
+
+// Always launch kernel pairs of the best config
+void TallyServer::run_workload_aware_sharing_scheduler()
+{
+    spdlog::info("Running workload aware sharing scheduler ...");
 }
 
 // Always prioritize to execute kernels from high-priority job.

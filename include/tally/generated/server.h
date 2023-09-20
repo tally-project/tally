@@ -208,6 +208,8 @@ public:
 	void run_naive_scheduler();
 	void run_priority_scheduler();
 	void run_profile_scheduler();
+	void run_workload_agnostic_sharing_scheduler();
+	void run_workload_aware_sharing_scheduler();
 
     void register_api_handler();
     void load_cache();
