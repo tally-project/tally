@@ -493,13 +493,13 @@ public:
         single_kernel_perf_map[key_config] = res;
         write_single_kernel_perf_to_file();
 
-        std::cout << "=============== Single Kernel Profile Result ===============" << std::endl;
+        // std::cout << "=============== Single Kernel Profile Result ===============" << std::endl;
 
-        std::cout << launch_key << std::endl;
-        std::cout << launch_config << std::endl;
-        std::cout << res.meta_data << std::endl;
-        std::cout << res << std::endl;
-        std::cout << "\n" << std::endl;
+        // std::cout << launch_key << std::endl;
+        // std::cout << launch_config << std::endl;
+        // std::cout << res.meta_data << std::endl;
+        // std::cout << res << std::endl;
+        // std::cout << "\n" << std::endl;
     }
 
     void set_single_kernel_best_config(CudaLaunchKey &launch_key, CudaLaunchKeyConfigResult &res)
@@ -507,13 +507,13 @@ public:
         single_kernel_best_config_map[launch_key] = res;
         write_single_kernel_best_config_to_file();
 
-        std::cout << "=============== Single Kernel Best Result ===============" << std::endl;
+        // std::cout << "=============== Single Kernel Best Result ===============" << std::endl;
 
-        std::cout << launch_key << std::endl;
-        std::cout << res.config << std::endl;
-        std::cout << res.meta_data << std::endl;
-        std::cout << res << std::endl;
-        std::cout << "\n" << std::endl;
+        // std::cout << launch_key << std::endl;
+        // std::cout << res.config << std::endl;
+        // std::cout << res.meta_data << std::endl;
+        // std::cout << res << std::endl;
+        // std::cout << "\n" << std::endl;
     }
 
     void set_kernel_pair_perf(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, 
@@ -531,16 +531,16 @@ public:
 
         write_kernel_pair_perf_to_file();
 
-        std::cout << "=============== Kernel Pair Profile Result ===============" << std::endl;
+        // std::cout << "=============== Kernel Pair Profile Result ===============" << std::endl;
 
-        std::cout << launch_key_1 << std::endl;
-        std::cout << launch_config_1 << std::endl;
-        std::cout << res.config_key_meta_data_1.second << std::endl;
-        std::cout << launch_key_2 << std::endl;
-        std::cout << launch_config_2 << std::endl;
-        std::cout << res.config_key_meta_data_2.second << std::endl;
-        std::cout << res << std::endl;
-        std::cout << "\n" << std::endl;
+        // std::cout << launch_key_1 << std::endl;
+        // std::cout << launch_config_1 << std::endl;
+        // std::cout << res.config_key_meta_data_1.second << std::endl;
+        // std::cout << launch_key_2 << std::endl;
+        // std::cout << launch_config_2 << std::endl;
+        // std::cout << res.config_key_meta_data_2.second << std::endl;
+        // std::cout << res << std::endl;
+        // std::cout << "\n" << std::endl;
     }
 
     void set_kernel_pair_best_config(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, CudaLaunchKeyConfigPairResult &res)
@@ -550,19 +550,19 @@ public:
 
         write_kernel_pair_best_config_to_file();
 
-        std::cout << "=============== Kernel Pair Best Result ===============" << std::endl;
+        // std::cout << "=============== Kernel Pair Best Result ===============" << std::endl;
 
-        auto launch_config_1 = res.config_key_norm_speed_1.first.config;
-        auto launch_config_2 = res.config_key_norm_speed_2.first.config;
+        // auto launch_config_1 = res.config_key_norm_speed_1.first.config;
+        // auto launch_config_2 = res.config_key_norm_speed_2.first.config;
 
-        std::cout << launch_key_1 << std::endl;
-        std::cout << launch_config_1 << std::endl;
-        std::cout << res.config_key_meta_data_1.second << std::endl;
-        std::cout << launch_key_2 << std::endl;
-        std::cout << launch_config_2 << std::endl;
-        std::cout << res.config_key_meta_data_2.second << std::endl;
-        std::cout << res << std::endl;
-        std::cout << "\n" << std::endl;
+        // std::cout << launch_key_1 << std::endl;
+        // std::cout << launch_config_1 << std::endl;
+        // std::cout << res.config_key_meta_data_1.second << std::endl;
+        // std::cout << launch_key_2 << std::endl;
+        // std::cout << launch_config_2 << std::endl;
+        // std::cout << res.config_key_meta_data_2.second << std::endl;
+        // std::cout << res << std::endl;
+        // std::cout << "\n" << std::endl;
     }
 
     void write_single_kernel_perf_to_file() const

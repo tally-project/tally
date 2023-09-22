@@ -19,12 +19,16 @@ void __attribute__((constructor)) register_env_vars()
 
         if (std::getenv("SCHEDULER_POLICY")) {
             auto policy_str = std::string(std::getenv("SCHEDULER_POLICY"));
-            if (policy_str == "naive") {
+            if (policy_str == "NAIVE") {
                 SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::NAIVE; 
-            } else if (policy_str == "profile") {
+            } else if (policy_str == "PROFILE") {
                 SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::PROFILE; 
-            } else if (policy_str == "priority") {
+            } else if (policy_str == "PRIORITY") {
                 SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::PRIORITY; 
+            } else if (policy_str == "WORKLOAD_AGNOSTIC_SHARING") {
+                SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::WORKLOAD_AGNOSTIC_SHARING; 
+            } else if (policy_str == "WORKLOAD_AWARE_SHARING") {
+                SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::WORKLOAD_AWARE_SHARING; 
             } else {
                 SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::NAIVE;
             }

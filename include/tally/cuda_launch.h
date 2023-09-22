@@ -12,6 +12,14 @@
 
 #include <tally/env.h>
 
+inline std::string get_dim3_str(dim3 dim)
+{
+    std::string dim_str = "(" + std::to_string(dim.x) + ", " + 
+                                std::to_string(dim.y) + ", " +
+                                std::to_string(dim.z) + ")";
+    return dim_str;
+}
+
 struct CudaLaunchMetadata {
     int max_threads_per_block;
     int static_shmem_size_bytes;
@@ -58,6 +66,10 @@ struct CudaLaunchCall {
         gridDim(gridDim),
         blockDim(blockDim)
     {}
+
+    std::string dim_str() {
+        return get_dim3_str(gridDim) + "_" + get_dim3_str(blockDim);
+    }
 
     bool operator==(const CudaLaunchCall &other) const
     {
@@ -159,8 +171,8 @@ public:
     uint32_t num_blocks_per_sm = 0;
 
     // Static function - return the best config for a cuda launch
-    static CudaLaunchConfig tune(const void *, dim3, dim3, void **, size_t, cudaStream_t);
     static std::vector<CudaLaunchConfig> get_profile_configs(uint32_t threads_per_block, uint32_t num_blocks);
+    static std::vector<CudaLaunchConfig> get_workload_agnostic_sharing_configs(uint32_t threads_per_block, uint32_t num_blocks);
 
     CudaLaunchConfig(
         bool use_original=true, bool use_ptb=false,
@@ -199,11 +211,11 @@ public:
         if (use_original) {
             return "original";
         } else if (use_ptb) {
-            return "PTB_num_blocks_per_sm_" + std::to_string(num_blocks_per_sm);
+            return "PTB num_blocks_per_sm: " + std::to_string(num_blocks_per_sm);
         } else if (use_dynamic_ptb) {
-            return "Dynamic PTB_num_blocks_per_sm_" + std::to_string(num_blocks_per_sm);
+            return "Dynamic PTB num_blocks_per_sm: " + std::to_string(num_blocks_per_sm);
         } else if (use_preemptive_ptb) {
-            return "Preemptive PTB_num_blocks_per_sm_" + std::to_string(num_blocks_per_sm);
+            return "Preemptive PTB num_blocks_per_sm: " + std::to_string(num_blocks_per_sm);
         } else {
             return "";
         }
