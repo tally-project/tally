@@ -4586,4 +4586,58 @@ CUresult cuStreamCreateWithPriority(CUstream * phStream, unsigned int  flags, in
 	return err;
 }
 
+cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+	TALLY_LOG("cublasGemmEx hooked");
+    TALLY_CLIENT_PROFILE_START;
+
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasGemmExArg);
+
+#if defined(RUN_LOCALLY)
+    auto err = lcublasGemmEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc, computeType, algo);
+
+#else
+    cublasStatus_t err;
+
+    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
+    .and_then([&](auto& requestPayload) {
+        auto header = static_cast<MessageHeader_t*>(requestPayload);
+        header->api_id = CUDA_API_ENUM::CUBLASGEMMEX;
+        header->client_id = TallyClient::client->client_id;
+        
+        auto request = (cublasGemmExArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+        request->handle = handle;
+        request->transa = transa;
+        request->transb = transb;
+        request->m = m;
+        request->n = n;
+        request->k = k;
+        request->alpha = *((uint64_t *) alpha);
+        request->A = const_cast<void*>(A);
+        request->Atype = Atype;
+        request->lda = lda;
+        request->B = const_cast<void*>(B);
+        request->Btype = Btype;
+        request->ldb = ldb;
+        request->beta = *((uint64_t *) beta);
+        request->C = C;
+        request->Ctype = Ctype;
+        request->ldc = ldc;
+        request->computeType = computeType;
+        request->algo = algo;
+
+        TallyClient::client->iox_client->send(header).or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+    })
+    .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+#endif
+
+    TALLY_CLIENT_PROFILE_END;
+    TALLY_CLIENT_TRACE_API_CALL(cublasGemmEx);
+    
+    return err;
+}
+
 }

@@ -1636,6 +1636,16 @@ struct cublasSetPointerMode_v2Arg {
 	cublasPointerMode_t  mode;
 };
 
+struct cublasGetMathModeArg {
+	cublasHandle_t  handle;
+	cublasMath_t*  mode;
+};
+
+struct cublasGetMathModeResponse {
+	cublasMath_t mode;
+	cublasStatus_t err;
+};
+
 struct cublasSetMathModeArg {
 	cublasHandle_t  handle;
 	cublasMath_t  mode;

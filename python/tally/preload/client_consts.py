@@ -132,6 +132,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_TOP = """
+
 #ifndef TALLY_SERVER_H
 #define TALLY_SERVER_H
 
@@ -226,6 +227,8 @@ public:
 
     cudaStream_t default_stream = nullptr;
 	std::atomic<bool> has_exit = false;
+
+	std::vector<cudaStream_t> streams;
 };
 
 struct ClientPriority {
@@ -339,6 +342,8 @@ public:
 	void run_naive_scheduler();
 	void run_priority_scheduler();
 	void run_profile_scheduler();
+	void run_workload_agnostic_sharing_scheduler();
+	void run_workload_aware_sharing_scheduler();
 
     void register_api_handler();
     void load_cache();
@@ -458,6 +463,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasGemmEx",
     "cuStreamCreateWithPriority",
     "cudaStreamCreate",
     "cudaStreamCreateWithFlags",
@@ -740,6 +746,7 @@ UNSUPPORTED_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
+    "cublasGetMathMode",
     "cuStreamEndCapture",
     "cudaStreamEndCapture",
     "cudnnGetRNNBiasMode",

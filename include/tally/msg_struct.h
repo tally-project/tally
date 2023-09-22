@@ -422,6 +422,28 @@ struct cublasSgemmExArg {
     int  ldc;
 };
 
+struct cublasGemmExArg {
+    cublasHandle_t  handle;
+    cublasOperation_t  transa;
+    cublasOperation_t  transb;
+    int  m;
+    int  n;
+    int  k;
+    uint64_t  alpha;
+    void*  A;
+    cudaDataType  Atype;
+    int  lda;
+    void*  B;
+    cudaDataType  Btype;
+    int  ldb;
+    uint64_t  beta;
+    void*  C;
+    cudaDataType  Ctype;
+    int  ldc;
+    cublasComputeType_t  computeType;
+    cublasGemmAlgo_t  algo;
+};
+
 struct cudnnSetSeqDataDescriptorArg {
     cudnnSeqDataDescriptor_t  seqDataDesc;
     cudnnDataType_t  dataType;

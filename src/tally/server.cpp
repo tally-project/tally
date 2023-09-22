@@ -116,7 +116,8 @@ void TallyServer::start_worker_server(int32_t client_id) {
 
     auto &client_meta = client_data_all[client_id];
 
-    CHECK_CUDA_ERROR(cudaStreamCreate(&client_meta.default_stream));
+    CHECK_CUDA_ERROR(cudaStreamCreateWithFlags(&client_meta.default_stream, cudaStreamNonBlocking));
+    // CHECK_CUDA_ERROR(cudaStreamCreate(&client_meta.default_stream));
     CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.global_idx, sizeof(uint32_t)));
     CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.retreat, sizeof(bool)));
 
@@ -1438,6 +1439,45 @@ void TallyServer::handle_cublasSgemmEx(void *__args, iox::popo::UntypedServer *i
                 args->C,
                 args->Ctype,
                 args->ldc
+            );
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cublasGemmEx(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+    TALLY_SPD_LOG("Received request: cublasGemmEx");
+    auto args = (struct cublasGemmExArg *) __args;
+
+    auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
+        .and_then([&](auto& responsePayload) {
+
+            auto response = static_cast<cublasStatus_t*>(responsePayload);
+            *response = cublasGemmEx(
+                args->handle,
+                args->transa,
+                args->transb,
+                args->m,
+                args->n,
+                args->k,
+                &(args->alpha),
+                args->A,
+                args->Atype,
+                args->lda,
+                args->B,
+                args->Btype,
+                args->ldb,
+                &(args->beta),
+                args->C,
+                args->Ctype,
+                args->ldc,
+                args->computeType,
+                args->algo
             );
 
             iox_server->send(response).or_else(

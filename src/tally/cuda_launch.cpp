@@ -105,8 +105,8 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
         CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
 
         configs.push_back(ptb_config);
-        configs.push_back(dynamic_ptb_config);
-        configs.push_back(preemptive_ptb_config);
+        // configs.push_back(dynamic_ptb_config);
+        // configs.push_back(preemptive_ptb_config);
 
         _num_blocks_per_sm++;
     }
