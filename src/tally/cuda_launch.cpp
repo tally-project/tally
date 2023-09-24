@@ -161,18 +161,6 @@ CUresult CudaLaunchConfig::repeat_launch(
     float _time_ms;
     CUresult err;
 
-    if (use_dynamic_ptb || use_preemptive_ptb) {
-        // Make Sure the previous kernel has finished
-        cudaStreamSynchronize(stream);
-        cudaMemsetAsync(retreat, 0, sizeof(bool), stream);
-        cudaMemsetAsync(global_idx, 0, sizeof(uint32_t), stream);
-    }
-
-    // get a rough estimate of the kernel duration
-    err = launch(func, gridDim, blockDim, args, sharedMem, stream, global_idx, retreat, true, &_time_ms);
-
-    uint64_t sync_interval = std::max((uint64_t)((dur_seconds * 1000.) / _time_ms) / 100, 1ul);
-
     auto startTime = std::chrono::steady_clock::now();
     uint64_t ckpt_count = 0;
     uint64_t count = 0;
@@ -180,9 +168,10 @@ CUresult CudaLaunchConfig::repeat_launch(
 
     while (true) {
 
+        cudaStreamSynchronize(stream);
+
         if (use_dynamic_ptb || use_preemptive_ptb) {
             // Make Sure the previous kernel has finished
-            cudaStreamSynchronize(stream);
             cudaMemsetAsync(retreat, 0, sizeof(bool), stream);
             cudaMemsetAsync(global_idx, 0, sizeof(uint32_t), stream);
         }
@@ -192,14 +181,9 @@ CUresult CudaLaunchConfig::repeat_launch(
         count++;
         ckpt_count++;
 
-        // Avoid launching too many kernels
-        if (ckpt_count == sync_interval) {
-            cudaStreamSynchronize(stream);
-            ckpt_count = 0;
-        }
-
         auto currentTime = std::chrono::steady_clock::now();
         elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
+
         if ((max_count > 0 && count >= max_count) || ((double) elapsed_ns) / 1e9 >= dur_seconds) {
             cudaStreamSynchronize(stream);
             auto currentTime = std::chrono::steady_clock::now();

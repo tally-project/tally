@@ -60,8 +60,15 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
         // Check if kernel is already launched
         if (kernel.launched) {
+
+            // Only preemptive kernel can be re-launched
             if (!kernel.config.use_preemptive_ptb) {
                 throw std::runtime_error("Trying to launch a kernel which has been launched non-preemptively");
+            }
+
+            // Same exact config, simply return
+            if (kernel.config == config) {
+                return;
             }
 
             // Set retreat flag
@@ -72,12 +79,17 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
             // Wait for kernel to stop
             cudaStreamSynchronize(kernel_wrapper.launch_stream);
+        
+        // If never launched before, set global_idx to 0
+        } else {
+            if (config.use_preemptive_ptb) {
+                cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
+            }
         }
 
+        // Always set retreat to 0 before launch preemptive kernel
         if (config.use_preemptive_ptb) {
-            // cudaStreamSynchronize(kernel_wrapper.launch_stream);
             cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
-            cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
         }
 
         // Create a event to monitor the kernel execution
@@ -100,6 +112,8 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
         for (auto &pair : client_data_all) {
 
+            // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
             auto client_id = pair.first;
             auto &client_data = pair.second;
 
@@ -112,6 +126,9 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             bool fetch_new_kernel = false;
 
             bool has_kernel = in_progress_kernels.find(client_id) != in_progress_kernels.end();
+
+            // std::cout << "has_kernel: " << has_kernel << std::endl;
+
             if (has_kernel) {
 
                 auto &kernel_wrapper = in_progress_kernels[client_id].kernel_wrapper;
@@ -124,6 +141,8 @@ void TallyServer::run_workload_aware_sharing_scheduler()
                     client_data.queue_size--;
                     fetch_new_kernel = true;
                     has_change = true;
+
+                    // std::cout << "erased kernel" << std::endl;
                 }
             } else {
                 fetch_new_kernel = true;
@@ -142,7 +161,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             
         }
 
-        if (!has_change ) {
+        if (!has_change) {
             continue;
         }
 
