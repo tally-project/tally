@@ -50,8 +50,13 @@ set(TALLY_SERVER_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/tally/server.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/generated/server.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/partial.cpp
-    ${PROJECT_SOURCE_DIR}/src/tally/scheduler.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/cuda_launch.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/scheduler/scheduler.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/scheduler/naive.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/scheduler/priority.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/scheduler/profile.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/scheduler/workload_agnostic.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/scheduler/workload_aware.cpp
 )
 
 set(TALLY_CLIENT_SRC_FILES

@@ -154,6 +154,233 @@ void TallyServer::start_worker_server(int32_t client_id) {
     spdlog::info("Tally worker server has exited ...");
 }
 
+void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> &configs)
+{
+    auto &launch_call = kernel_wrapper.launch_call;
+    auto &client_data = client_data_all[client_id];
+    auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
+
+    spdlog::info("Launch config not found for: " + kernel_name + "_" + launch_call.dim_str());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // Otherwise tune and look for best config
+    auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
+    auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+
+    // Measure single-run time
+    float time_elapsed;
+    float iters;
+
+    cudaDeviceSynchronize();
+
+    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
+
+    // In seconds
+    float profile_duration = (100 * time_elapsed) / 1000.f;
+
+    // At least run for 0.1 sec
+    profile_duration = std::max(profile_duration, 0.5f);
+
+    // Maybe don't exceed 1 minute;
+    profile_duration = std::min(profile_duration, 60.f);
+
+    // Run default config first
+    CudaLaunchConfig base_config = CudaLaunchConfig::default_config;
+
+    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1);
+
+    float base_latency_ms = time_elapsed / iters;
+
+    // Save result to cache
+    set_single_kernel_perf(launch_call, base_config, original_kernel_map[launch_call.func].meta_data, 1., base_latency_ms, iters);
+
+    CudaLaunchConfig best_config;
+    float best_latency_ms = FLT_MAX;
+
+    for (auto &config : configs) {
+
+        kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, true, profile_duration, &time_elapsed, &iters, -1);
+
+        float latency_ms = time_elapsed / iters;
+
+        if (latency_ms < best_latency_ms) {
+            best_config = config;
+            best_latency_ms = latency_ms;
+        }
+
+        float norm_speed = base_latency_ms / latency_ms;
+
+        set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, base_latency_ms, iters);
+    }
+
+    float best_norm_speed = base_latency_ms / best_latency_ms;
+    if (best_norm_speed < 0.5) {
+        best_config = base_config;
+        best_norm_speed = 1.;
+    }
+
+    bool found_in_cache;
+    auto res = get_single_kernel_perf(launch_call, best_config, &found_in_cache);
+    set_single_kernel_best_config(launch_call, res);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+
+    spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Launch config: " + best_config.str() + ". Norm speed: " + std::to_string(best_norm_speed));
+}
+
+void TallyServer::tune_kernel_pair_launch(
+    KernelLaunchWrapper &first_kernel_wrapper, KernelLaunchWrapper &second_kernel_wrapper,
+    int32_t first_client_id, int32_t second_client_id
+)
+{
+    KernelLaunchWrapper kernel_wrappers[2] { first_kernel_wrapper, second_kernel_wrapper };
+    int32_t client_ids[2] { first_client_id, second_client_id };
+    CudaLaunchCall launch_calls[2];
+    float base_latency_ms[2];
+    std::string kernel_names[2];
+
+    float profile_duration = 0.;
+    float time_elapsed;
+
+    cudaDeviceSynchronize();
+
+    for (int i = 0; i < 2; i++) {
+        // Run one time of kernel
+        kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
+        profile_duration = std::max(profile_duration, (30 * time_elapsed) / 1000.f);
+
+        launch_calls[i] = kernel_wrappers[i].launch_call;
+
+        bool found_in_cache = false;
+        auto res = get_single_kernel_perf(launch_calls[i], CudaLaunchConfig::default_config, &found_in_cache);
+        if (!found_in_cache) {
+            throw std::runtime_error("should have profiled single kernel performance");
+        }
+
+        auto metrics = res.metrics;
+        base_latency_ms[i] = metrics.latency_ms;
+
+        kernel_names[i] = host_func_to_demangled_kernel_name_map[launch_calls[i].func];
+    }
+
+    spdlog::info("Launch config not found for: \n\t" +
+                  kernel_names[0] + "_" + launch_calls[0].dim_str() + "\n\t" +
+                  kernel_names[1] + "_" + launch_calls[1].dim_str());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // At least run for 0.5 sec
+    profile_duration = std::max(profile_duration, 0.5f);
+
+    // Maybe don't exceed 5 sec;
+    profile_duration = std::min(profile_duration, 5.f);
+
+    auto k1_blockDim = launch_calls[0].blockDim;
+    auto k2_blockDim = launch_calls[1].blockDim;
+
+    auto k1_gridDim = launch_calls[0].gridDim;
+    auto k2_gridDim = launch_calls[1].gridDim;
+
+    auto k1_block_size = k1_blockDim.x * k1_blockDim.y * k1_blockDim.z;
+    auto k2_block_size = k2_blockDim.x * k2_blockDim.y * k2_blockDim.z;
+
+    auto k1_configs = CudaLaunchConfig::get_preemptive_configs(k1_block_size, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
+    auto k2_configs = CudaLaunchConfig::get_preemptive_configs(k2_block_size, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
+    
+    auto k1_k2_configs = std::vector<std::vector<CudaLaunchConfig>> {k1_configs, k2_configs};
+
+    auto launch_kernel_func = [this, kernel_wrappers, client_ids](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, int32_t total_iters) {
+        auto &client_data = client_data_all[client_ids[idx]];
+        (kernel_wrappers[idx].kernel_to_dispatch)(config, client_data.global_idx, client_data.retreat, true, dur_seconds, time_elapsed, iters, total_iters);
+    };
+
+    CudaLaunchMetadata null_metadata;
+
+    // Step 3: get the kernel pair performance for various configs
+    float best_sum_norm_speed = -1.;
+    CudaLaunchCallConfigPairResult best_pair_config;
+
+    for (auto &k1_config : k1_configs) {
+        for (auto &k2_config : k2_configs) {
+
+            if (k1_config.use_preemptive_ptb && k2_config.use_preemptive_ptb) {
+                auto k1_threads_per_sm = k1_block_size * k1_config.num_blocks_per_sm;
+                auto k2_threads_per_sm = k2_block_size * k2_config.num_blocks_per_sm;
+                
+                // Prune config pairs that exceed the thread limit
+                if ((k1_threads_per_sm + k2_threads_per_sm) > CUDA_MAX_NUM_THREADS_PER_SM) {
+                    continue;
+                }
+            }
+
+            // First experiment - Get colocated latency and norm speed for each kernel
+            cudaDeviceSynchronize();
+
+            float iters[2];
+            float time_elapsed[2];
+
+            std::thread launch_t_1(launch_kernel_func, 0, k1_config, profile_duration, &(time_elapsed[0]), &(iters[0]), -1);
+            std::thread launch_t_2(launch_kernel_func, 1, k2_config, profile_duration, &(time_elapsed[1]), &(iters[1]), -1);
+
+            launch_t_1.join();
+            launch_t_2.join();
+
+            if (std::abs(time_elapsed[0] - time_elapsed[1]) > 0.03 * std::min(time_elapsed[0], time_elapsed[1])) {
+                std::cerr << "Warning: two jobs do not finish at around the same time" << "\n";
+                std::cerr << "time_elapsed_1: " << time_elapsed[0] << " time_elapsed_2: " << time_elapsed[1] << std::endl;
+            }
+
+            float k1_latency_ms = time_elapsed[0] / iters[0];
+            float k2_latency_ms = time_elapsed[1] / iters[1];
+
+            float k1_norm_speed = base_latency_ms[0] / k1_latency_ms;
+            float k2_norm_speed = base_latency_ms[1] / k2_latency_ms;
+
+            // Save the results
+            set_kernel_pair_perf(
+                launch_calls[0], launch_calls[1], k1_config, k2_config, null_metadata, null_metadata,
+                k1_norm_speed, k2_norm_speed, k1_latency_ms, k2_latency_ms, 0, 0, 0, 0
+            );
+
+            bool found_in_cache;
+            auto res = get_kernel_pair_perf(launch_calls[0], launch_calls[1], k1_config, k2_config, &found_in_cache);
+            assert(found_in_cache);
+
+            float sum_norm_speed = res.get_sum_norm_speed();
+            if (sum_norm_speed > best_sum_norm_speed) {
+                best_sum_norm_speed = sum_norm_speed;
+                best_pair_config = res;
+            }
+        }
+    }
+
+    set_kernel_pair_best_config(launch_calls[0], launch_calls[1], best_pair_config);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+
+    bool found_in_cache;
+    auto res = get_kernel_pair_best_config(launch_calls[0], launch_calls[1], &found_in_cache);
+    auto launch_configs = res.get_configs(launch_calls[0], launch_calls[1]);
+
+    bool time_share = std::get<2>(launch_configs);
+
+    if (time_share) {
+        spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Chosen config: time share");
+    } else {
+
+        auto config_1 = std::get<0>(launch_configs);
+        auto config_2 = std::get<1>(launch_configs);
+
+        spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms).\n" + 
+                     "\tChosen config_1: " + config_1.str() + " config_2: " + config_2.str() + "\n" + 
+                     "\tSum norm speed: " + std::to_string(best_sum_norm_speed)
+        );
+    }
+}
+
 void TallyServer::wait_until_launch_queue_empty(int32_t client_id)
 {
     while (client_data_all[client_id].queue_size > 0) {

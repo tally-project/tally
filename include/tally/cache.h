@@ -24,6 +24,8 @@ public:
     CubinCache cubin_cache;
     PerformanceCache performance_cache;
 
+    bool perf_cache_changed = false;
+
     std::string cubin_cache_file;
     std::string cubin_cache_file_client;
     std::string performance_cache_file;
@@ -52,7 +54,17 @@ public:
     }
 
     void save_performance_cache() {
-        save_cache_to_file<PerformanceCache>(performance_cache_file, performance_cache);
+        if (perf_cache_changed) {
+            std::cout << "Saving performance cache ..." << std::endl;
+            
+            save_cache_to_file<PerformanceCache>(performance_cache_file, performance_cache);
+            performance_cache.write_single_kernel_perf_to_file();
+            performance_cache.write_single_kernel_best_config_to_file();
+            performance_cache.write_kernel_pair_perf_to_file();
+            performance_cache.write_kernel_pair_best_config_to_file();
+
+            perf_cache_changed = false;
+        }
     }
 
     void load_cache() {

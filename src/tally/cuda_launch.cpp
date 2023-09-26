@@ -114,6 +114,37 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
     return configs;
 }
 
+// =================== Used by Workload Aware Sharing Scheduler ===========================
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(uint32_t threads_per_block, uint32_t num_blocks)
+{
+    std::vector<CudaLaunchConfig> configs;
+
+    // some PTB configs
+    uint32_t _num_blocks_per_sm = 1;
+    while(true) {
+
+        // One kernel should not take all the thread slots
+        if (_num_blocks_per_sm * threads_per_block > PTB_MAX_NUM_THREADS_PER_SM) {
+            break;
+        }
+        
+        // There is no point going over the total num of blocks
+        // But we will keep the (_num_blocks_per_sm == 1) case
+        if (_num_blocks_per_sm > 1 && (_num_blocks_per_sm - 1) * CUDA_NUM_SM > num_blocks) {
+            break;
+        }
+
+        // preemptive PTB
+        CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
+        configs.push_back(preemptive_ptb_config);
+
+        _num_blocks_per_sm++;
+    }
+    
+    return configs;
+}
+
+
 // Instantiate template
 template
 CUresult CudaLaunchConfig::repeat_launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, float, uint32_t *, bool *, float *, float *, int32_t);
@@ -130,18 +161,6 @@ CUresult CudaLaunchConfig::repeat_launch(
     float _time_ms;
     CUresult err;
 
-    if (use_dynamic_ptb || use_preemptive_ptb) {
-        // Make Sure the previous kernel has finished
-        cudaStreamSynchronize(stream);
-        cudaMemsetAsync(retreat, 0, sizeof(bool), stream);
-        cudaMemsetAsync(global_idx, 0, sizeof(uint32_t), stream);
-    }
-
-    // get a rough estimate of the kernel duration
-    err = launch(func, gridDim, blockDim, args, sharedMem, stream, global_idx, retreat, true, &_time_ms);
-
-    uint64_t sync_interval = std::max((uint64_t)((dur_seconds * 1000.) / _time_ms) / 100, 1ul);
-
     auto startTime = std::chrono::steady_clock::now();
     uint64_t ckpt_count = 0;
     uint64_t count = 0;
@@ -149,9 +168,10 @@ CUresult CudaLaunchConfig::repeat_launch(
 
     while (true) {
 
+        cudaStreamSynchronize(stream);
+
         if (use_dynamic_ptb || use_preemptive_ptb) {
             // Make Sure the previous kernel has finished
-            cudaStreamSynchronize(stream);
             cudaMemsetAsync(retreat, 0, sizeof(bool), stream);
             cudaMemsetAsync(global_idx, 0, sizeof(uint32_t), stream);
         }
@@ -161,14 +181,9 @@ CUresult CudaLaunchConfig::repeat_launch(
         count++;
         ckpt_count++;
 
-        // Avoid launching too many kernels
-        if (ckpt_count == sync_interval) {
-            cudaStreamSynchronize(stream);
-            ckpt_count = 0;
-        }
-
         auto currentTime = std::chrono::steady_clock::now();
         elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
+
         if ((max_count > 0 && count >= max_count) || ((double) elapsed_ns) / 1e9 >= dur_seconds) {
             cudaStreamSynchronize(stream);
             auto currentTime = std::chrono::steady_clock::now();

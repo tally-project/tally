@@ -21,10 +21,10 @@ inline std::string get_dim3_str(dim3 dim)
 }
 
 struct CudaLaunchMetadata {
-    int max_threads_per_block;
-    int static_shmem_size_bytes;
-    int num_regs;
-    int max_dynamic_shmem_size_bytes;
+    int max_threads_per_block = 0;
+    int static_shmem_size_bytes = 0;
+    int num_regs = 0;
+    int max_dynamic_shmem_size_bytes = 0;
 
     // runtime passed in through cudaLaunchKernel
     int dynamic_shmem_size_bytes = 0;
@@ -173,6 +173,7 @@ public:
     // Static function - return the best config for a cuda launch
     static std::vector<CudaLaunchConfig> get_profile_configs(uint32_t threads_per_block, uint32_t num_blocks);
     static std::vector<CudaLaunchConfig> get_workload_agnostic_sharing_configs(uint32_t threads_per_block, uint32_t num_blocks);
+    static std::vector<CudaLaunchConfig> get_preemptive_configs(uint32_t threads_per_block, uint32_t num_blocks);
 
     CudaLaunchConfig(
         bool use_original=true, bool use_ptb=false,
@@ -325,6 +326,29 @@ struct CudaLaunchCallConfigPairResult {
 
     float get_sum_norm_speed() {
         return call_config_norm_speed_1.second.norm_speed + call_config_norm_speed_2.second.norm_speed;
+    }
+
+    // Get corresponding config for each launch call
+    // The bool indicated whether the two kernels should be run time-shared
+    std::tuple<CudaLaunchConfig, CudaLaunchConfig, bool> get_configs(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2)
+    {
+        CudaLaunchConfig config_1;
+        CudaLaunchConfig config_2;
+        bool time_share = false;
+
+        if (launch_call_1 == call_config_norm_speed_1.first.call) {
+            config_1 = call_config_norm_speed_1.first.config;
+            config_2 = call_config_norm_speed_2.first.config;
+        } else {
+            config_1 = call_config_norm_speed_2.first.config;
+            config_2 = call_config_norm_speed_1.first.config;
+        }
+
+        if (get_sum_norm_speed() < 0.8) {
+            time_share = true;
+        }
+
+        return std::make_tuple<CudaLaunchConfig, CudaLaunchConfig, bool>(std::move(config_1), std::move(config_2), std::move(time_share));
     }
 };
 

@@ -491,7 +491,7 @@ public:
     {
         CudaLaunchKeyConfig key_config(launch_key,launch_config);
         single_kernel_perf_map[key_config] = res;
-        write_single_kernel_perf_to_file();
+        // write_single_kernel_perf_to_file();
 
         // std::cout << "=============== Single Kernel Profile Result ===============" << std::endl;
 
@@ -505,7 +505,7 @@ public:
     void set_single_kernel_best_config(CudaLaunchKey &launch_key, CudaLaunchKeyConfigResult &res)
     {
         single_kernel_best_config_map[launch_key] = res;
-        write_single_kernel_best_config_to_file();
+        // write_single_kernel_best_config_to_file();
 
         // std::cout << "=============== Single Kernel Best Result ===============" << std::endl;
 
@@ -529,7 +529,7 @@ public:
 
         kernel_pair_perf_map[key_pair][key_config_pair] = res;
 
-        write_kernel_pair_perf_to_file();
+        // write_kernel_pair_perf_to_file();
 
         // std::cout << "=============== Kernel Pair Profile Result ===============" << std::endl;
 
@@ -548,7 +548,7 @@ public:
         CudaLaunchKeyPair key_pair(launch_key_1, launch_key_2);
         kernel_pair_best_config_map[key_pair] = res;
 
-        write_kernel_pair_best_config_to_file();
+        // write_kernel_pair_best_config_to_file();
 
         // std::cout << "=============== Kernel Pair Best Result ===============" << std::endl;
 
