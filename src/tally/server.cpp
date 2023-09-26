@@ -172,13 +172,15 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     float time_elapsed;
     float iters;
 
+    cudaDeviceSynchronize();
+
     kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
 
     // In seconds
     float profile_duration = (100 * time_elapsed) / 1000.f;
 
     // At least run for 0.1 sec
-    profile_duration = std::max(profile_duration, 0.1f);
+    profile_duration = std::max(profile_duration, 0.5f);
 
     // Maybe don't exceed 1 minute;
     profile_duration = std::min(profile_duration, 60.f);
@@ -197,8 +199,6 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     float best_latency_ms = FLT_MAX;
 
     for (auto &config : configs) {
-
-        cudaDeviceSynchronize();
 
         kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, true, profile_duration, &time_elapsed, &iters, -1);
 
@@ -244,10 +244,12 @@ void TallyServer::tune_kernel_pair_launch(
     float profile_duration = 0.;
     float time_elapsed;
 
+    cudaDeviceSynchronize();
+
     for (int i = 0; i < 2; i++) {
         // Run one time of kernel
         kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
-        profile_duration = std::max(profile_duration, (100 * time_elapsed) / 1000.f);
+        profile_duration = std::max(profile_duration, (30 * time_elapsed) / 1000.f);
 
         launch_calls[i] = kernel_wrappers[i].launch_call;
 
@@ -269,11 +271,11 @@ void TallyServer::tune_kernel_pair_launch(
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    // At least run for 1 sec
-    profile_duration = std::max(profile_duration, 1.f);
+    // At least run for 0.5 sec
+    profile_duration = std::max(profile_duration, 0.5f);
 
-    // Maybe don't exceed 1 minute;
-    profile_duration = std::min(profile_duration, 60.f);
+    // Maybe don't exceed 5 sec;
+    profile_duration = std::min(profile_duration, 5.f);
 
     auto k1_blockDim = launch_calls[0].blockDim;
     auto k2_blockDim = launch_calls[1].blockDim;
@@ -281,12 +283,11 @@ void TallyServer::tune_kernel_pair_launch(
     auto k1_gridDim = launch_calls[0].gridDim;
     auto k2_gridDim = launch_calls[1].gridDim;
 
-    auto k1_configs = CudaLaunchConfig::get_preemptive_configs(k1_blockDim.x * k1_blockDim.y * k1_blockDim.z, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
-    auto k2_configs = CudaLaunchConfig::get_preemptive_configs(k2_blockDim.x * k2_blockDim.y * k2_blockDim.z, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
-    
-    // Include the default config too
-    k1_configs.push_back(CudaLaunchConfig::default_config);
-    k2_configs.push_back(CudaLaunchConfig::default_config);
+    auto k1_block_size = k1_blockDim.x * k1_blockDim.y * k1_blockDim.z;
+    auto k2_block_size = k2_blockDim.x * k2_blockDim.y * k2_blockDim.z;
+
+    auto k1_configs = CudaLaunchConfig::get_preemptive_configs(k1_block_size, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
+    auto k2_configs = CudaLaunchConfig::get_preemptive_configs(k2_block_size, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
     
     auto k1_k2_configs = std::vector<std::vector<CudaLaunchConfig>> {k1_configs, k2_configs};
 
@@ -301,11 +302,18 @@ void TallyServer::tune_kernel_pair_launch(
     float best_sum_norm_speed = -1.;
     CudaLaunchCallConfigPairResult best_pair_config;
 
-    float best_sum_norm_speed_with_original = -1.;
-    CudaLaunchCallConfigPairResult best_pair_config_with_original;
-
     for (auto &k1_config : k1_configs) {
         for (auto &k2_config : k2_configs) {
+
+            if (k1_config.use_preemptive_ptb && k2_config.use_preemptive_ptb) {
+                auto k1_threads_per_sm = k1_block_size * k1_config.num_blocks_per_sm;
+                auto k2_threads_per_sm = k2_block_size * k2_config.num_blocks_per_sm;
+                
+                // Prune config pairs that exceed the thread limit
+                if ((k1_threads_per_sm + k2_threads_per_sm) > CUDA_MAX_NUM_THREADS_PER_SM) {
+                    continue;
+                }
+            }
 
             // First experiment - Get colocated latency and norm speed for each kernel
             cudaDeviceSynchronize();
@@ -335,38 +343,20 @@ void TallyServer::tune_kernel_pair_launch(
                 launch_calls[0], launch_calls[1], k1_config, k2_config, null_metadata, null_metadata,
                 k1_norm_speed, k2_norm_speed, k1_latency_ms, k2_latency_ms, 0, 0, 0, 0
             );
-            
+
             bool found_in_cache;
             auto res = get_kernel_pair_perf(launch_calls[0], launch_calls[1], k1_config, k2_config, &found_in_cache);
             assert(found_in_cache);
 
             float sum_norm_speed = res.get_sum_norm_speed();
-
-            // Differentiate between with original and without original
-            if (k1_config.use_original || k2_config.use_original) {
-                if (sum_norm_speed > best_sum_norm_speed_with_original) {
-                    best_sum_norm_speed_with_original = sum_norm_speed;
-                    best_pair_config_with_original = res;
-                }
-            } else {
-                if (sum_norm_speed > best_sum_norm_speed) {
-                    best_sum_norm_speed = sum_norm_speed;
-                    best_pair_config = res;
-                }
+            if (sum_norm_speed > best_sum_norm_speed) {
+                best_sum_norm_speed = sum_norm_speed;
+                best_pair_config = res;
             }
         }
     }
 
-    auto config_1 = CudaLaunchConfig::default_config;
-    auto config_2 = CudaLaunchConfig::default_config;
-
-    // If the preemptive pair works ok, use it
-    if (best_sum_norm_speed > 1) {
-        set_kernel_pair_best_config(launch_calls[0], launch_calls[1], best_pair_config);
-    // Otherwise, set best to without original
-    } else {
-        set_kernel_pair_best_config(launch_calls[0], launch_calls[1], best_pair_config_with_original);
-    }
+    set_kernel_pair_best_config(launch_calls[0], launch_calls[1], best_pair_config);
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = end - start;
@@ -386,10 +376,9 @@ void TallyServer::tune_kernel_pair_launch(
 
         spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms).\n" + 
                      "\tChosen config_1: " + config_1.str() + " config_2: " + config_2.str() + "\n" + 
-                     "\tSum norm speed: " + std::to_string(std::max(best_sum_norm_speed, best_sum_norm_speed_with_original))
+                     "\tSum norm speed: " + std::to_string(best_sum_norm_speed)
         );
     }
-        
 }
 
 void TallyServer::wait_until_launch_queue_empty(int32_t client_id)

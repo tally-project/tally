@@ -32,7 +32,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
     CudaLaunchConfig preemptive_config(false, false, false, true, 4);
     CudaLaunchConfig original_config = CudaLaunchConfig::default_config;
 
-    auto get_single_kernel_config = [this](KernelLaunchWrapper &kernel_wrapper, int32_t client_id) {
+    auto get_single_kernel_result = [this](KernelLaunchWrapper &kernel_wrapper, int32_t client_id) {
         auto &launch_call = kernel_wrapper.launch_call;
 
         // Look up cache for best-performance config
@@ -46,11 +46,38 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
             tune_kernel_launch(kernel_wrapper, client_id, configs);
             res = get_single_kernel_best_config(launch_call, &found_in_cache);
+
+            // Check the latency of this kernel, if it is short, then we fall back to the non-preemtive version
+            auto latency_ms = res.metrics.latency_ms;
+            if (latency_ms < 1) {
+                auto non_preemptive_ptb_configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
+                tune_kernel_launch(kernel_wrapper, client_id, non_preemptive_ptb_configs);
+                res = get_single_kernel_best_config(launch_call, &found_in_cache);
+            }
         }
 
-        auto config = res.config;
+        return res;
+    };
 
-        return config;
+    auto send_preempt_signal_to_kernel = [this, retreat_stream](KernelInProgress &kernel, CudaLaunchConfig const &new_config, int32_t client_id) {
+        auto &client_data = client_data_all[client_id];
+        auto &kernel_wrapper = kernel.kernel_wrapper;
+
+        // Check if kernel is already launched
+        if (kernel.launched) {
+            // Only preemptive kernel can be re-launched
+            if (!kernel.config.use_preemptive_ptb) {
+                throw std::runtime_error("Trying to launch a kernel which has been launched non-preemptively");
+            }
+
+            // Same exact config, no need to preempt
+            if (kernel.config == new_config) {
+                return;
+            }
+
+            // Set retreat flag
+            cudaMemsetAsync(client_data.retreat, 1, sizeof(bool), retreat_stream);
+        }
     };
 
     auto launch_kernel_with_config = [this, retreat_stream](KernelInProgress &kernel, CudaLaunchConfig const &config, int32_t client_id) {
@@ -71,14 +98,20 @@ void TallyServer::run_workload_aware_sharing_scheduler()
                 return;
             }
 
-            // Set retreat flag
-            cudaMemsetAsync(client_data.retreat, 1, sizeof(bool), retreat_stream);
-            
+            // Fetch the progress
             uint32_t progress = 0;
             cudaMemcpyAsync(&progress, client_data.global_idx, sizeof(uint32_t), cudaMemcpyDeviceToHost, kernel_wrapper.launch_stream);
 
+            // Use this to check whether kernel has finished
+            auto &launch_call = kernel_wrapper.launch_call;
+            auto num_thread_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+
             // Wait for kernel to stop
             cudaStreamSynchronize(kernel_wrapper.launch_stream);
+
+            if (progress >= num_thread_blocks) {
+                return;
+            }
         
         // If never launched before, set global_idx to 0
         } else {
@@ -105,14 +138,23 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         kernel.config = config;
     };
 
+    auto start_time = std::chrono::high_resolution_clock::now();
+    auto write_to_cache_interval = std::chrono::seconds(60);
+
     while (!iox::posix::hasTerminationRequested()) {
+
+        auto curr_time = std::chrono::high_resolution_clock::now();
+        auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(curr_time - start_time);
+
+        if (elapsed_time >= write_to_cache_interval) {
+            save_performance_cache();
+            start_time = curr_time;
+        }
 
         // Flag indicating whether there is new activity
         bool has_change = false;
 
         for (auto &pair : client_data_all) {
-
-            // std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
             auto client_id = pair.first;
             auto &client_data = pair.second;
@@ -127,8 +169,6 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
             bool has_kernel = in_progress_kernels.find(client_id) != in_progress_kernels.end();
 
-            // std::cout << "has_kernel: " << has_kernel << std::endl;
-
             if (has_kernel) {
 
                 auto &kernel_wrapper = in_progress_kernels[client_id].kernel_wrapper;
@@ -141,8 +181,6 @@ void TallyServer::run_workload_aware_sharing_scheduler()
                     client_data.queue_size--;
                     fetch_new_kernel = true;
                     has_change = true;
-
-                    // std::cout << "erased kernel" << std::endl;
                 }
             } else {
                 fetch_new_kernel = true;
@@ -183,7 +221,8 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
             if (!kernel.launched) {
                 auto &kernel_wrapper = kernel.kernel_wrapper;
-                auto config = get_single_kernel_config(kernel_wrapper, client_id);
+                auto res = get_single_kernel_result(kernel_wrapper, client_id);
+                auto config = res.config;
                 launch_kernel_with_config(kernel, config, client_id);
             }
         }
@@ -208,42 +247,26 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             auto &second_kernel_wrapper = second_kernel.kernel_wrapper;
             auto &second_launch_call = second_kernel_wrapper.launch_call;
 
-            // auto first_kernel_best_config = get_single_kernel_config(first_kernel_wrapper, first_client_id);
-            // auto second_kernel_best_config = get_single_kernel_config(second_kernel_wrapper, second_client_id);
+            auto first_kernel_best_res = get_single_kernel_result(first_kernel_wrapper, first_client_id);
+            auto second_kernel_best_res = get_single_kernel_result(second_kernel_wrapper, second_client_id);
 
-            // First, check whether any of the two kernels has already been launched with original config
-            // Then there is nothing we can do much
-            bool found_original_launch = false;
+            auto first_kernel_best_config = first_kernel_best_res.config;
+            auto second_kernel_best_config = second_kernel_best_res.config;
 
-            if ((first_kernel.launched && first_kernel.config.use_original) ||
-                (second_kernel.launched && second_kernel.config.use_original))
+            // 1. check whether any of the two kernels has already been launched with non-preemptive config
+            // 2. check whether any of the kernel's best config is not preemptive
+            //    that happens when either 1. PTB performance is really bad 2. it is short, so best config is non-preemptive
+            bool skip_workload_aware_launch = false;
+
+            if ((first_kernel.launched && !first_kernel.config.use_preemptive_ptb) ||
+                (second_kernel.launched && !second_kernel.config.use_preemptive_ptb) ||
+                !first_kernel_best_config.use_preemptive_ptb ||
+                !second_kernel_best_config.use_preemptive_ptb)
             {
-                found_original_launch = true;
+                skip_workload_aware_launch = true;
             }
 
-            if (found_original_launch) {
-
-                // Launch both kernels if not launched already
-                if (!first_kernel.launched) {
-                    auto best_config = get_single_kernel_config(first_kernel_wrapper, first_client_id);
-                    launch_kernel_with_config(first_kernel, best_config, first_client_id);
-                }
-
-                if (!second_kernel.launched) {
-                    auto best_config = get_single_kernel_config(second_kernel_wrapper, second_client_id);
-                    launch_kernel_with_config(second_kernel, best_config, second_client_id);
-                }
-
-                continue;
-            }
-
-            // Then, check whether any of the kernel has original config
-            // that is, the performance of preemptive-PTB is really bad
-
-            auto first_kernel_best_config = get_single_kernel_config(first_kernel_wrapper, first_client_id);
-            auto second_kernel_best_config = get_single_kernel_config(second_kernel_wrapper, second_client_id);
-
-            if (first_kernel_best_config.use_original || second_kernel_best_config.use_original) {
+            if (skip_workload_aware_launch) {
 
                 // Launch both kernels if not launched already
                 if (!first_kernel.launched) {
@@ -257,7 +280,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
                 continue;
             }
 
-            // Now, we know both kernels 
+            // Now, we know both kernels have reasonably good performance with preemptive-PTB
             // Try to find kernel pair best config
             bool found_in_cache;
             auto res = get_kernel_pair_best_config(first_launch_call, second_launch_call, &found_in_cache);
@@ -272,10 +295,12 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             // Check whether time-share
             bool time_share = std::get<2>(pair_launch_config);
             if (time_share) {
-                // Choose one of the two kernels to launch
-                int index = rand() % 2;
 
-                if (index == 0) {
+                // Choose the shorter kernel to launch with the original config
+                auto first_kernel_latency = first_kernel_best_res.metrics.latency_ms;
+                auto second_kernel_latency = second_kernel_best_res.metrics.latency_ms;
+
+                if (first_kernel_latency < second_kernel_latency) {
                     launch_kernel_with_config(first_kernel, CudaLaunchConfig::default_config, first_client_id);
                     cudaStreamSynchronize(first_kernel_wrapper.launch_stream);
                 } else {
@@ -290,6 +315,11 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             auto config_1 = std::get<0>(pair_launch_config);
             auto config_2 = std::get<1>(pair_launch_config);
 
+            // set retreat signal
+            send_preempt_signal_to_kernel(first_kernel, config_1, first_client_id);
+            send_preempt_signal_to_kernel(second_kernel, config_2, second_client_id);
+
+            // Launch with the best pair-wise config
             launch_kernel_with_config(first_kernel, config_1, first_client_id);
             launch_kernel_with_config(second_kernel, config_2, second_client_id);
         }
@@ -298,4 +328,6 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             throw std::runtime_error("not supported for more than 2 kernels at a time.");
         }
     }
+
+    save_performance_cache();
 }

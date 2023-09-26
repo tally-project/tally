@@ -344,7 +344,7 @@ struct CudaLaunchCallConfigPairResult {
             config_2 = call_config_norm_speed_1.first.config;
         }
 
-        if (get_sum_norm_speed() < 1) {
+        if (get_sum_norm_speed() < 0.8) {
             time_share = true;
         }
 

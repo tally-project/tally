@@ -127,7 +127,8 @@ void TallyServer::set_single_kernel_perf(
     );
 
     TallyCache::cache->performance_cache.set_single_kernel_perf(launch_key, launch_config, cache_res);
-    save_performance_cache();
+    TallyCache::cache->perf_cache_changed = true;
+    // save_performance_cache();
 }
 
 CudaLaunchCallConfigResult TallyServer::get_single_kernel_best_config(CudaLaunchCall &launch_call, bool *found)
@@ -155,7 +156,8 @@ void TallyServer::set_single_kernel_best_config(CudaLaunchCall &launch_call, Cud
     );
 
     TallyCache::cache->performance_cache.set_single_kernel_best_config(launch_key, cache_res);
-    save_performance_cache();
+    TallyCache::cache->perf_cache_changed = true;
+    // save_performance_cache();
 }
 
 CudaLaunchCallConfigPairResult
@@ -213,7 +215,8 @@ void TallyServer::set_kernel_pair_perf(
     CudaLaunchKeyConfigPairResult cache_res = convert_pair_res_to_cache_res(result);
 
     TallyCache::cache->performance_cache.set_kernel_pair_perf(launch_key_1, launch_key_2, launch_config_1, launch_config_2, cache_res);
-    save_performance_cache();
+    TallyCache::cache->perf_cache_changed = true;
+    // save_performance_cache();
 }
 
 CudaLaunchCallConfigPairResult TallyServer::get_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, bool *found)
@@ -241,7 +244,8 @@ void TallyServer::set_kernel_pair_best_config(CudaLaunchCall &launch_call_1, Cud
     CudaLaunchKeyConfigPairResult cache_res = convert_pair_res_to_cache_res(best_config);
 
     TallyCache::cache->performance_cache.set_kernel_pair_best_config(launch_key_1, launch_key_2, cache_res);
-    save_performance_cache();
+    TallyCache::cache->perf_cache_changed = true;
+    // save_performance_cache();
 }
 
 void TallyServer::save_performance_cache()

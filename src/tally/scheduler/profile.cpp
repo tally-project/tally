@@ -17,7 +17,18 @@ void TallyServer::run_profile_scheduler()
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 1);
 
+    auto start_time = std::chrono::high_resolution_clock::now();
+    auto write_to_cache_interval = std::chrono::seconds(60);
+
     while (!iox::posix::hasTerminationRequested()) {
+
+        auto curr_time = std::chrono::high_resolution_clock::now();
+        auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(curr_time - start_time);
+
+        if (elapsed_time >= write_to_cache_interval) {
+            save_performance_cache();
+            start_time = curr_time;
+        }
 
         // Wait until there are two kernels from two clients
         while (!iox::posix::hasTerminationRequested()) {
@@ -389,4 +400,6 @@ void TallyServer::run_profile_scheduler()
             client_data.queue_size--;
         }
     }
+
+    save_performance_cache();
 }
