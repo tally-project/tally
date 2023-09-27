@@ -429,6 +429,17 @@ struct cuFuncGetAttributeResponse {
 	CUresult err;
 };
 
+struct cuFuncSetAttributeArg {
+	CUfunction  hfunc;
+	CUfunction_attribute  attrib;
+	int  value;
+};
+
+struct cuFuncSetCacheConfigArg {
+	CUfunction  hfunc;
+	CUfunc_cache  config;
+};
+
 struct cuGraphInstantiateWithFlagsArg {
 	CUgraphExec * phGraphExec;
 	CUgraph  hGraph;

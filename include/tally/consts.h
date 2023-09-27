@@ -16,7 +16,9 @@
         "--fatbin", \
         "ptxas", \
         "nvcc", \
-        "g++" \
+        "g++", \
+        "gcc", \
+        "fatbinary" \
     };
 
 #endif // TALLY_CONSTS_H

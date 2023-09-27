@@ -133,6 +133,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 
 TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 
+
 #ifndef TALLY_SERVER_H
 #define TALLY_SERVER_H
 
@@ -144,6 +145,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <functional>
 #include <memory>
 #include <atomic>
+#include <cfloat>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -177,8 +179,7 @@ static void __exit_wrapper(int signal) {
 
 typedef std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> kernel_partial_t;
 
-
-class KernelLaunchWrapper {
+struct KernelLaunchWrapper {
 
 public:
 	// Callable to launch kernel
@@ -308,12 +309,14 @@ public:
 														CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
 														bool *found);
 	
-	void set_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
-							  CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
-							  CudaLaunchMetadata meta_data_1, CudaLaunchMetadata meta_data_2,
-							  float norm_speed_1, float norm_speed_2, float latency_1, float latency_2,
-							  float fixed_workload_latency, float fixed_workload_speedup,
-							  float unfair_workload_latency, float unfair_workload_speedup);
+	void set_kernel_pair_perf(
+		CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
+		CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
+		CudaLaunchMetadata meta_data_1, CudaLaunchMetadata meta_data_2,
+		float norm_speed_1, float norm_speed_2, float latency_1, float latency_2,
+		float fixed_workload_latency, float fixed_workload_speedup,
+		float unfair_workload_latency, float unfair_workload_speedup
+	);
 
 	CudaLaunchCallConfigPairResult get_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, bool *found);
 	void set_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchCallConfigPairResult best_config);
@@ -337,6 +340,13 @@ public:
 
     TallyServer();
     ~TallyServer();
+
+	void tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> &configs);
+	void tune_kernel_pair_launch(
+		KernelLaunchWrapper &first_kernel_wrapper, KernelLaunchWrapper &second_kernel_wrapper,
+		int32_t first_client_id, int32_t second_client_id
+	);
+
 
 	// Scheduler options
 	void run_naive_scheduler();
@@ -397,6 +407,9 @@ __attribute__((__constructor__)) void init_client()
             return;
         }
     }
+
+    std::string log_msg = "process_name: " + process_name;
+	TALLY_LOG(log_msg);
 
     TallyClient::client = new TallyClient;
 }
@@ -551,6 +564,8 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cuFuncSetAttribute",
+    "cuFuncSetCacheConfig",
     "cuMemsetD8_v2",
     "cuEventDestroy_v2",
     "cuStreamWaitEvent",
