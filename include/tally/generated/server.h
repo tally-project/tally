@@ -236,12 +236,35 @@ public:
 
 	void wait_until_launch_queue_empty(int32_t client_id);
 
-    std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-	cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
+	using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>;
 
-	std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-	cublasSgemm_v2_Partial(cublasSgemm_v2Arg *args);
-    
+	// Return a partial function to be scheduled by scheduler
+    partial_t cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
+	partial_t cublasSgemm_v2_Partial(cublasSgemm_v2Arg *);
+	partial_t cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *);
+	partial_t cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *);
+    partial_t cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *);
+	partial_t cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDataArg *);
+	partial_t cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *);
+	partial_t cublasSgemmEx_Partial(cublasSgemmExArg *);
+	partial_t cudnnTransformTensor_Partial(cudnnTransformTensorArg *);
+	partial_t cublasSgemv_v2_Partial(cublasSgemv_v2Arg *);
+	partial_t cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg *);
+	partial_t cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *);
+	partial_t cudnnAddTensor_Partial(cudnnAddTensorArg *);
+	partial_t cublasLtMatmul_Partial(cublasLtMatmulArg *);
+	partial_t cudnnActivationForward_Partial(cudnnActivationForwardArg *);
+	partial_t cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *);
+	partial_t cudnnPoolingForward_Partial(cudnnPoolingForwardArg *);
+	partial_t cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwardWeightsArg *);
+	partial_t cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *);
+	partial_t cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormalizationForwardTrainingExArg *);
+	partial_t cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBackwardExArg *);
+	partial_t cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *);
+	partial_t cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *);
+	partial_t cudnnRNNForward_Partial(cudnnRNNForwardArg *);
+	partial_t cudnnBackendExecute_Partial(cudnnBackendExecuteArg *, cudnnStatus_t *err);
+
 	void handle_cudaGraphKernelNodeSetAttribute(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
 	void handle_cublasSger_v2(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
 	void handle_cublasHSHgemvStridedBatched_64(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);

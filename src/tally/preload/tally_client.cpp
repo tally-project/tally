@@ -920,7 +920,7 @@ cudnnStatus_t cudnnActivationForward(cudnnHandle_t  handle, cudnnActivationDescr
 	TALLY_LOG("cudnnActivationForward hooked");
     TALLY_CLIENT_PROFILE_START;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnActivationForwardArg);
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cudnnActivationForwardArg);
 
 #if defined(RUN_LOCALLY)
     auto err = lcudnnActivationForward(handle, activationDesc, alpha, xDesc, x, beta, yDesc, y);
@@ -1085,7 +1085,7 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t  handle, const void * alpha,
 	TALLY_LOG("cudnnConvolutionForward hooked");
     TALLY_CLIENT_PROFILE_START;
     
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnConvolutionForwardArg);
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cudnnConvolutionForwardArg);
 
 #if defined(RUN_LOCALLY)
     auto err = lcudnnConvolutionForward(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
@@ -1277,7 +1277,7 @@ cudnnStatus_t cudnnAddTensor(cudnnHandle_t  handle, const void * alpha, const cu
     TALLY_LOG("cudnnAddTensor hooked");
     TALLY_CLIENT_PROFILE_START;
 
-	uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnAddTensorArg);
+	uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cudnnAddTensorArg);
     
 #if defined(RUN_LOCALLY)
     auto err = lcudnnAddTensor(handle, alpha, aDesc, A, beta, cDesc, C);
@@ -1590,7 +1590,7 @@ cudnnStatus_t cudnnSoftmaxForward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t
 	TALLY_LOG("cudnnSoftmaxForward hooked");
     TALLY_CLIENT_PROFILE_START;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnSoftmaxForwardArg);
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cudnnSoftmaxForwardArg);
 
 #if defined(RUN_LOCALLY)
     auto err = lcudnnSoftmaxForward(handle, algo, mode, alpha, xDesc, x, beta, yDesc, y);
@@ -2252,7 +2252,7 @@ cudnnStatus_t cudnnRNNBackwardData(cudnnHandle_t  handle, const cudnnRNNDescript
 	TALLY_LOG("cudnnRNNBackwardData hooked");
     TALLY_CLIENT_PROFILE_START;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnRNNBackwardDataArg) + sizeof(cudnnTensorDescriptor_t) * seqLength * 3;
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cudnnRNNBackwardDataArg) + sizeof(cudnnTensorDescriptor_t) * seqLength * 3;
 
 #if defined(RUN_LOCALLY)
     auto err = lcudnnRNNBackwardData(handle, rnnDesc, seqLength, yDesc, y, dyDesc, dy, dhyDesc, dhy, dcyDesc, dcy, wDesc, w, hxDesc, hx, cxDesc, cx, dxDesc, dx, dhxDesc, dhx, dcxDesc, dcx, workSpace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
