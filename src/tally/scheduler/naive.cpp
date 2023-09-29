@@ -24,9 +24,6 @@ void TallyServer::run_naive_scheduler()
 
     while (!iox::posix::hasTerminationRequested()) {
 
-        // Simulate some delay in the scheduler
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
         for (auto &pair : client_data_all) {
 
             auto &client_data = pair.second;

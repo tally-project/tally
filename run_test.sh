@@ -79,3 +79,5 @@ echo All tests passed!
 
 kill_tally_server
 kill_iox_server
+
+rm result.txt 2> /dev/null

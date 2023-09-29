@@ -144,18 +144,9 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(uint32_t 
     return configs;
 }
 
-
-// Instantiate template
-template
-CUresult CudaLaunchConfig::repeat_launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, float, uint32_t *, bool *, float *, float *, int32_t);
-
-template
-CUresult CudaLaunchConfig::repeat_launch<CUfunction>(CUfunction, dim3, dim3, void **, size_t, cudaStream_t, float, uint32_t *, bool *, float *, float *, int32_t);
-
 // return (time, iterations)
-template <typename T>
 CUresult CudaLaunchConfig::repeat_launch(
-    T func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
+    const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
     float dur_seconds, uint32_t *global_idx, bool *retreat, float *time_ms, float *iters, int32_t max_count)
 {
     float _time_ms;
@@ -198,20 +189,8 @@ CUresult CudaLaunchConfig::repeat_launch(
     return err;
 }
 
-// Instantiate template
-template
-CUresult CudaLaunchConfig::launch<const void *>(const void *, dim3, dim3, void **, size_t, cudaStream_t, uint32_t *, bool *, bool, float *);
-
-template
-CUresult CudaLaunchConfig::launch<CUfunction>(CUfunction, dim3, dim3, void **, size_t, cudaStream_t, uint32_t *, bool *, bool, float *);
-
-void checkCudaErrors(CUresult err) {
-    assert(err == CUDA_SUCCESS);
-}
-
-template <typename T>
 CUresult CudaLaunchConfig::launch(
-    T func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
+    const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
     uint32_t *global_idx, bool *retreat, bool run_profile, float *elapsed_time_ms)
 {
     cudaEvent_t _start, _stop;
@@ -226,15 +205,7 @@ CUresult CudaLaunchConfig::launch(
             cudaEventRecord(_start);
         }
 
-        CUfunction cu_func;
-
-        if constexpr (std::is_same<T, const void *>::value) {
-            cu_func = TallyServer::server->original_kernel_map[func].func;
-        } else if constexpr (std::is_same<T, CUfunction>::value) {
-            cu_func = func;
-        } else {
-            throw std::runtime_error("Unsupported typename");
-        }
+        CUfunction cu_func = TallyServer::server->original_kernel_map[func].func;
 
         assert(cu_func);
 
@@ -252,18 +223,8 @@ CUresult CudaLaunchConfig::launch(
         return err;
     } else if (use_ptb) {
 
-        CUfunction cu_func;
-        size_t num_args;
-
-        if (std::is_same<T, const void *>::value) {
-            cu_func = TallyServer::server->ptb_kernel_map[func].func;
-            num_args = TallyServer::server->ptb_kernel_map[func].num_args;
-        } else if constexpr (std::is_same<T, CUfunction>::value) {
-            cu_func = TallyServer::server->jit_ptb_kernel_map[func];
-            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size() + 1;
-        } else {
-            throw std::runtime_error("Unsupported typename");
-        }
+        CUfunction cu_func = TallyServer::server->ptb_kernel_map[func].func;
+        size_t num_args = TallyServer::server->ptb_kernel_map[func].num_args;
 
         assert(cu_func);
 
@@ -307,19 +268,9 @@ CUresult CudaLaunchConfig::launch(
     } else if (use_dynamic_ptb) {
 
         assert(global_idx);
-        
-        CUfunction cu_func;
-        size_t num_args;
 
-        if (std::is_same<T, const void *>::value) {
-            cu_func = TallyServer::server->dynamic_ptb_kernel_map[func].func;
-            num_args = TallyServer::server->dynamic_ptb_kernel_map[func].num_args;
-        } else if constexpr (std::is_same<T, CUfunction>::value) {
-            cu_func = TallyServer::server->jit_dynamic_ptb_kernel_map[func];
-            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size() + 2;
-        } else {
-            throw std::runtime_error("Unsupported typename");
-        }
+        CUfunction cu_func = TallyServer::server->dynamic_ptb_kernel_map[func].func;
+        size_t num_args = TallyServer::server->dynamic_ptb_kernel_map[func].num_args;
         
         assert(cu_func);
 
@@ -365,19 +316,9 @@ CUresult CudaLaunchConfig::launch(
         assert(global_idx);
         assert(retreat);
         
-        CUfunction cu_func;
-        size_t num_args;
+        CUfunction cu_func = TallyServer::server->preemptive_ptb_kernel_map[func].func;
+        size_t num_args = TallyServer::server->preemptive_ptb_kernel_map[func].num_args;
 
-        if (std::is_same<T, const void *>::value) {
-            cu_func = TallyServer::server->preemptive_ptb_kernel_map[func].func;
-            num_args = TallyServer::server->preemptive_ptb_kernel_map[func].num_args;
-        } else if constexpr (std::is_same<T, CUfunction>::value) {
-            cu_func = TallyServer::server->jit_preemptive_ptb_kernel_map[func];
-            num_args = TallyServer::server->_jit_kernel_addr_to_args[func].size() + 3;
-        } else {
-            throw std::runtime_error("Unsupported typename");
-        }
-        
         assert(cu_func);
 
         dim3 PTB_grid_dim;

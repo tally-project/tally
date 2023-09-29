@@ -132,10 +132,16 @@ public:
 	// ==================== Global state =====================
 	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, iox::popo::UntypedServer *, const void* const)>> cuda_api_handler_map;
 
+	// Map CUfunction to host func, similar to _kernel_client_addr_mapping
+	folly::ConcurrentHashMap<CUfunction, const void *> cu_func_addr_mapping;
+
 	folly::ConcurrentHashMap<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
-	folly::ConcurrentHashMap<CUfunction, std::vector<uint32_t>> _jit_kernel_addr_to_args;
 	folly::ConcurrentHashMap<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	
+	// Map CUfunction to kernel name and cubin hash
+	folly::ConcurrentHashMap<CUfunction, std::string> cu_func_to_kernel_name_map;
+	folly::ConcurrentHashMap<CUfunction, uint32_t> cu_func_to_cubin_uid_map;
+
 	// Map func addr to kernel name and cubin hash
 	folly::ConcurrentHashMap<const void *, std::string> host_func_to_demangled_kernel_name_map;
 	folly::ConcurrentHashMap<const void *, uint32_t> host_func_to_cubin_uid_map;
@@ -152,10 +158,6 @@ public:
     folly::ConcurrentHashMap<const void *, WrappedCUfunction> ptb_kernel_map;
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> dynamic_ptb_kernel_map;
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> preemptive_ptb_kernel_map;
-
-    folly::ConcurrentHashMap<CUfunction, CUfunction> jit_ptb_kernel_map;
-	folly::ConcurrentHashMap<CUfunction, CUfunction> jit_dynamic_ptb_kernel_map;
-	folly::ConcurrentHashMap<CUfunction, CUfunction> jit_preemptive_ptb_kernel_map;
 
 	// Performance cache to use at runtime
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
@@ -214,7 +216,6 @@ public:
 		int32_t first_client_id, int32_t second_client_id
 	);
 
-
 	// Scheduler options
 	void run_naive_scheduler();
 	void run_priority_scheduler();
@@ -235,9 +236,8 @@ public:
 
 	void wait_until_launch_queue_empty(int32_t client_id);
 
-	template<typename T>
     std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-	cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
+	cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
 
 	std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
 	cublasSgemm_v2_Partial(cublasSgemm_v2Arg *args);

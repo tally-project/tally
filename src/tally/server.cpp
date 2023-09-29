@@ -417,6 +417,9 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
     auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
     int32_t client_id = msg_header->client_id;
     
+    // Make sure what is called on the default stream has finished
+    cudaStreamSynchronize(NULL);
+
     cudaStream_t stream = args->stream;
 
     // If client submits to default stream, set to a re-assigned stream
@@ -481,19 +484,29 @@ void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *
         stream = client_data_all[client_id].default_stream;
     }
 
+    assert(cu_func_addr_mapping.find(args->f) != cu_func_addr_mapping.end());
+    if (cu_func_addr_mapping.find(args->f) == cu_func_addr_mapping.end()) {
+        throw std::runtime_error("cu_func_addr_mapping.find(args->f) == cu_func_addr_mapping.end()");
+    }
+
+    const void *server_func_addr = cu_func_addr_mapping[args->f];
+
+    auto kernel_name = host_func_to_demangled_kernel_name_map[server_func_addr];
+    TALLY_SPD_LOG(kernel_name);
+
     dim3 gridDim(args->gridDimX, args->gridDimY, args->gridDimZ);
     dim3 blockDim(args->blockDimX, args->blockDimY, args->blockDimZ);
 
     assert(args->f);
 
-    auto partial = cudaLaunchKernel_Partial(args->f, gridDim, blockDim, args->sharedMemBytes, stream, args->kernelParams);
+    auto partial = cudaLaunchKernel_Partial(server_func_addr, gridDim, blockDim, args->sharedMemBytes, stream, args->kernelParams);
 
     client_data_all[client_id].queue_size++;
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial,
             false,
-            CudaLaunchCall(0, 0, 0),
+            CudaLaunchCall(server_func_addr, gridDim, blockDim),
             stream,
             args->sharedMemBytes
         )
@@ -776,7 +789,10 @@ void TallyServer::handle_cudaMemcpy(void *__args, iox::popo::UntypedServer *iox_
         .and_then([&](auto& responsePayload) {
             auto res = static_cast<cudaMemcpyResponse*>(responsePayload);
 
+            // Make sure all kernels have been dispatched
             wait_until_launch_queue_empty(client_id);
+            // Make sure all kernels have been finished, because cudaMemset is synchronous
+            cudaStreamSynchronize(client_data_all[client_id].default_stream);
 
             if (args->kind == cudaMemcpyHostToDevice) {
                 res->err = cudaMemcpy(args->dst, args->data, args->count, args->kind);
@@ -2766,25 +2782,53 @@ void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedSer
     auto cubin_data_size = jit_module_to_cubin_map[args->hmod];
     auto cubin_data = cubin_data_size.first;
     auto cubin_size = cubin_data_size.second;
+    auto cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
 
     auto kernel_names_and_param_sizes = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
     auto kernel_name = std::string(args->name);
     auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
 
+    auto original_data = TallyCache::cache->cubin_cache.get_original_data(cubin_data, cubin_size);
     auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
     auto dynamic_ptb_data = TallyCache::cache->cubin_cache.get_dynamic_ptb_data(cubin_data, cubin_size);
     auto preemptive_ptb_data = TallyCache::cache->cubin_cache.get_preemptive_ptb_data(cubin_data, cubin_size);
 
+    if (cubin_to_kernel_name_to_host_func_map[cubin_uid].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_uid].end()) {
+        void *kernel_server_addr = malloc(8);
+        cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(kernel_name, kernel_server_addr);
+
+        host_func_to_demangled_kernel_name_map.insert(kernel_server_addr, kernel_name);
+        _kernel_addr_to_args.insert(kernel_server_addr, param_sizes);
+
+        host_func_to_cubin_uid_map.insert(kernel_server_addr, cubin_uid);
+
+        auto kernel_name_copy = kernel_name;
+        auto cubin_uid_copy = cubin_uid;
+
+        demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
+            std::make_pair<std::string, size_t>(std::move(kernel_name_copy), std::move(cubin_uid_copy)),
+            kernel_server_addr
+        );
+    }
+
+    using KERNEL_NAME_MAP_TYPE = folly::ConcurrentHashMap<std::string, const void *>;
+    using KERNEL_MAP_TYPE = folly::ConcurrentHashMap<const void*, WrappedCUfunction>;
+
+    auto &kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_uid];
+
+    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(original_data, kernel_name_to_host_func_map, original_kernel_map);
+    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(ptb_data, kernel_name_to_host_func_map, ptb_kernel_map);
+    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(dynamic_ptb_data, kernel_name_to_host_func_map, dynamic_ptb_kernel_map);
+    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(preemptive_ptb_data, kernel_name_to_host_func_map, preemptive_ptb_kernel_map);
+    
     iox_server->loan(requestHeader, sizeof(cuModuleGetFunctionResponse), alignof(cuModuleGetFunctionResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuModuleGetFunctionResponse*>(responsePayload);
 
             response->err = cuModuleGetFunction(&(response->hfunc), args->hmod, args->name);
-            _jit_kernel_addr_to_args.insert(response->hfunc, param_sizes);
 
-            register_jit_kernel_from_ptx_fatbin<folly::ConcurrentHashMap<CUfunction, CUfunction>>(ptb_data, response->hfunc, kernel_name, jit_ptb_kernel_map);
-            register_jit_kernel_from_ptx_fatbin<folly::ConcurrentHashMap<CUfunction, CUfunction>>(dynamic_ptb_data, response->hfunc, kernel_name, jit_dynamic_ptb_kernel_map);
-            register_jit_kernel_from_ptx_fatbin<folly::ConcurrentHashMap<CUfunction, CUfunction>>(preemptive_ptb_data, response->hfunc, kernel_name, jit_preemptive_ptb_kernel_map);
+            // Map CUFunction to host func
+            cu_func_addr_mapping.insert(response->hfunc, cubin_to_kernel_name_to_host_func_map[cubin_uid][kernel_name]);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3086,7 +3130,10 @@ void TallyServer::handle_cudaMemset(void *__args, iox::popo::UntypedServer *iox_
     iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
         .and_then([&](auto& responsePayload) {
 
+            // Make sure all kernels have been dispatched
             wait_until_launch_queue_empty(client_id);
+            // Make sure all kernels have been finished, because cudaMemset is synchronous
+            cudaStreamSynchronize(client_data_all[client_id].default_stream);
 
             auto response = static_cast<cudaError_t*>(responsePayload);			
             *response = cudaMemset(

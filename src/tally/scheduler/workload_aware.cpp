@@ -34,25 +34,30 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
     auto get_single_kernel_result = [this](KernelLaunchWrapper &kernel_wrapper, int32_t client_id) {
         auto &launch_call = kernel_wrapper.launch_call;
+        CudaLaunchCallConfigResult res;
 
-        // Look up cache for best-performance config
-        bool found_in_cache;
-        auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
-
-        if (!found_in_cache) {
-            auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
-            auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
-            auto configs = CudaLaunchConfig::get_preemptive_configs(threads_per_block, num_blocks);
-
-            tune_kernel_launch(kernel_wrapper, client_id, configs);
+        if (kernel_wrapper.is_library_call) {
+            res.config = CudaLaunchConfig::default_config;
+        } else {
+            // Look up cache for best-performance config
+            bool found_in_cache;
             res = get_single_kernel_best_config(launch_call, &found_in_cache);
 
-            // Check the latency of this kernel, if it is short, then we fall back to the non-preemtive version
-            auto latency_ms = res.metrics.latency_ms;
-            if (latency_ms < 1) {
-                auto non_preemptive_ptb_configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
-                tune_kernel_launch(kernel_wrapper, client_id, non_preemptive_ptb_configs);
+            if (!found_in_cache) {
+                auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
+                auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+                auto configs = CudaLaunchConfig::get_preemptive_configs(threads_per_block, num_blocks);
+
+                tune_kernel_launch(kernel_wrapper, client_id, configs);
                 res = get_single_kernel_best_config(launch_call, &found_in_cache);
+
+                // Check the latency of this kernel, if it is short, then we fall back to the non-preemtive version
+                auto latency_ms = res.metrics.latency_ms;
+                if (latency_ms < 1) {
+                    auto non_preemptive_ptb_configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
+                    tune_kernel_launch(kernel_wrapper, client_id, non_preemptive_ptb_configs);
+                    res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                }
             }
         }
 

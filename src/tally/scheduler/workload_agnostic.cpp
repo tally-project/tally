@@ -46,30 +46,35 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
 
             if (succeeded) {
 
-                auto launch_call = kernel_wrapper.launch_call;
+                CudaLaunchConfig config = CudaLaunchConfig::default_config;
 
-                // Look up cache for best-performance config
-                bool found_in_cache;
-                auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                if (!kernel_wrapper.is_library_call) {
+                    
+                    auto launch_call = kernel_wrapper.launch_call;
 
-                if (!found_in_cache) {
+                    // Look up cache for best-performance config
+                    bool found_in_cache;
+                    auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
 
-                    auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
-                    auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
-                    auto configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
+                    if (!found_in_cache) {
 
-                    tune_kernel_launch(kernel_wrapper, client_id, configs);
-                    res = get_single_kernel_best_config(launch_call, &found_in_cache);
-                    assert(found_in_cache);
-                }
+                        auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
+                        auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+                        auto configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
 
-                auto config = res.config;
+                        tune_kernel_launch(kernel_wrapper, client_id, configs);
+                        res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                        assert(found_in_cache);
+                    }
 
-                if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
-                    // Make Sure the previous kernel has finished
-                    cudaStreamSynchronize(kernel_wrapper.launch_stream);
-                    cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
-                    cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
+                    config = res.config;
+
+                    if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
+                        // Make Sure the previous kernel has finished
+                        cudaStreamSynchronize(kernel_wrapper.launch_stream);
+                        cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
+                        cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
+                    }
                 }
 
                 kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);

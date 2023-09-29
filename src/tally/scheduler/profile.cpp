@@ -87,6 +87,7 @@ void TallyServer::run_profile_scheduler()
         // This makes sure the measurement error is within 1%
         // This is in seconds
         float profile_duration = 0.;
+        bool found_library_call = false;
 
         // Launch both kernel - to warm up and in case all experiments are cached already
         for (auto &pair : client_data_all) {
@@ -100,6 +101,11 @@ void TallyServer::run_profile_scheduler()
 
             float time_elapsed;
             kernel_wrappers[index].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
+
+            if (kernel_wrappers[index].is_library_call) {
+                found_library_call = true;
+                break;
+            }
 
             global_idices[index] = client_data.global_idx;
             retreats[index] = client_data.retreat;
@@ -118,6 +124,10 @@ void TallyServer::run_profile_scheduler()
             profile_duration = std::max(profile_duration, (100 * time_elapsed) / 1000.f);
 
             index++;
+        }
+
+        if (found_library_call) {
+            continue;
         }
 
         // At least run for 1 sec

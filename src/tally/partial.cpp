@@ -25,32 +25,14 @@
     float *iters, \
     int32_t total_iters
 
-template
 std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudaLaunchKernel_Partial<const void *>(const void *, dim3, dim3, size_t, cudaStream_t, char *);
-
-template
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudaLaunchKernel_Partial<CUfunction>(CUfunction, dim3, dim3, size_t, cudaStream_t, char *);
-
-template <typename T>
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudaLaunchKernel_Partial(T func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
+TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
 {
 
     assert(func);
+    assert(_kernel_addr_to_args.find(func) != _kernel_addr_to_args.end());
 
-    std::vector<uint32_t> arg_sizes;
-
-    if constexpr (std::is_same<T, const void *>::value) {
-        assert(_kernel_addr_to_args.find(func) != _kernel_addr_to_args.end());
-        arg_sizes = _kernel_addr_to_args[func];
-    } else if constexpr (std::is_same<T, CUfunction>::value) {
-        assert(_jit_kernel_addr_to_args.find(func) != _jit_kernel_addr_to_args.end());
-        arg_sizes = _jit_kernel_addr_to_args[func];
-    } else {
-        throw std::runtime_error("Unsupported typename");
-    }
+    std::vector<uint32_t> arg_sizes = _kernel_addr_to_args[func];
 
     auto argc = arg_sizes.size();
     auto args_bytes = std::reduce(arg_sizes.begin(), arg_sizes.end());

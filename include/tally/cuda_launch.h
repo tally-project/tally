@@ -224,11 +224,8 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config);
     
-    template <typename T>
-    CUresult launch(T, dim3, dim3, void **, size_t, cudaStream_t, uint32_t *global_idx=nullptr, bool *retreat=nullptr, bool run_profile=false, float *elapsed_time_ms=nullptr);
-    
-    template <typename T>
-    CUresult repeat_launch(T, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, uint32_t *global_idx=nullptr, bool *retreat=nullptr, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1);
+    CUresult launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, uint32_t *global_idx=nullptr, bool *retreat=nullptr, bool run_profile=false, float *elapsed_time_ms=nullptr);
+    CUresult repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, uint32_t *global_idx=nullptr, bool *retreat=nullptr, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1);
 };
 
 struct CudaLaunchCallConfig {
