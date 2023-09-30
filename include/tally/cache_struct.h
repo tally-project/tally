@@ -590,8 +590,7 @@ public:
             json[key_str]["Results"].push_back(entry);
         }
 
-        std::ofstream file("single_kernel_perf.json");
-        file << std::setw(4) << json << std::endl;
+        write_json_to_file(json, "single_kernel_perf.json");
     }
 
     void write_single_kernel_best_config_to_file() const
@@ -618,8 +617,7 @@ public:
             json[key_str]["Results"].push_back(entry);
         }
 
-        std::ofstream file("single_kernel_best_config.json");
-        file << std::setw(4) << json << std::endl;
+        write_json_to_file(json, "single_kernel_best_config.json");
     }
 
     void write_kernel_pair_perf_to_file() const
@@ -665,8 +663,7 @@ public:
             }
         }
 
-        std::ofstream file("kernel_pair_perf.json");
-        file << std::setw(4) << json << std::endl;
+        write_json_to_file(json, "kernel_pair_perf.json");
     }
 
     void write_kernel_pair_best_config_to_file() const
@@ -704,10 +701,39 @@ public:
             json[group_name]["Results"].push_back(entry);
         }
 
-        std::ofstream file("kernel_pair_best_config.json");
-        file << std::setw(4) << json << std::endl;
+        write_json_to_file(json, "kernel_pair_best_config.json");
     }
 
+    void write_json_to_file(nlohmann::json &json, std::string file_name) const
+    {
+        auto perf_dir = std::filesystem::path("perf_results");
+        if (!std::filesystem::is_directory(perf_dir)) {
+            std::filesystem::create_directory(perf_dir);
+        }
+
+        auto policy = SCHEDULER_POLICY;
+        std::string policy_str;
+
+        if (policy == TALLY_SCHEDULER_POLICY::PROFILE) {
+            policy_str = "profile";
+        } else if (policy == TALLY_SCHEDULER_POLICY::WORKLOAD_AGNOSTIC_SHARING) {
+            policy_str = "workload_agnostic";
+        } else if (policy == TALLY_SCHEDULER_POLICY::WORKLOAD_AWARE_SHARING) {
+            policy_str = "workload_aware";
+        } else {
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unknown policy enum.");
+        }
+
+        auto policy_perf_dir = perf_dir / policy_str;
+        if (!std::filesystem::is_directory(policy_perf_dir)) {
+            std::filesystem::create_directory(policy_perf_dir);
+        }
+
+        auto result_path = policy_perf_dir / file_name;
+
+        std::ofstream file(result_path);
+        file << std::setw(4) << json << std::endl;
+    }
 };
 
 #endif // TALLY_CACHE_STRUCT_H

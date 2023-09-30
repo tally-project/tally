@@ -38,12 +38,6 @@
 #include <tally/cuda_util.h>
 #include <tally/cache_struct.h>
 
-static std::function<void(int)> __exit;
-
-static void __exit_wrapper(int signal) {
-    __exit(signal);
-}
-
 typedef std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> kernel_partial_t;
 
 struct KernelLaunchWrapper {
@@ -119,8 +113,6 @@ class TallyServer {
 public:
 
     static TallyServer *server;
-
-	std::atomic<bool> is_quit__ {false};
 
 	// ================== Per-client state ===================
 	std::map<int32_t, ClientData> client_data_all;

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCHEDULER_POLICY=""
+
 kill_iox_server() {
     # stop server
     pid=$(ps -ef | grep iox-roudi | grep -v grep | awk '{print $2}')
@@ -63,7 +65,7 @@ cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
 sleep 5
 
 # Launch tally server in the background
-./start_server.sh &
+SCHEDULER_POLICY=$SCHEDULER_POLICY ./start_server.sh &
 
 echo wait for server to start ...
 sleep 5

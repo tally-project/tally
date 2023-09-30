@@ -21,23 +21,6 @@ TallyServer *TallyServer::server = new TallyServer();
 TallyServer::TallyServer()
 {
     register_api_handler();
-
-    __exit = [&](int sig_num) {
-        is_quit__.store(true, std::memory_order_release);
-
-        if (sig_num == SIGSEGV) {
-            spdlog::info("Tally server received segfault signal.");
-        }
-
-        spdlog::info("Tally server shutting down ...");
-        exit(0);
-    };
-
-    signal(SIGINT  , __exit_wrapper);
-    signal(SIGABRT , __exit_wrapper);
-    signal(SIGSEGV , __exit_wrapper);
-    signal(SIGTERM , __exit_wrapper);
-    signal(SIGHUP  , __exit_wrapper);
 }
 
 TallyServer::~TallyServer(){}

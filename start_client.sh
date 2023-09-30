@@ -1,16 +1,16 @@
 #!/bin/bash
 
-TALLY_CACHE=.tally_cache
-TALLY_CACHE_CLIENT=.tally_cache_client
+TALLY_CACHE=$HOME/.cache/tally/.tally_cache
+TALLY_CACHE_CLIENT=$HOME/.cache/tally/.tally_cache_client
 
 # Copy cache if not already exists
 if [ -e "$TALLY_CACHE" ]; then
     if [ -e "$TALLY_CACHE_CLIENT" ]; then
         if ! cmp -s "$TALLY_CACHE" "$TALLY_CACHE_CLIENT"; then
-            cp .tally_cache .tally_cache_client
+            cp $TALLY_CACHE $TALLY_CACHE_CLIENT
         fi
     else
-        cp .tally_cache .tally_cache_client
+        cp $TALLY_CACHE $TALLY_CACHE_CLIENT
     fi
 fi
 

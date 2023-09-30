@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <filesystem>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -12,6 +13,7 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/string.hpp>
 
+#include <tally/env.h>
 #include <tally/util.h>
 #include <tally/cache_struct.h>
 #include <tally/serialization.h>
@@ -78,11 +80,29 @@ public:
 #endif
     }
 
-    TallyCache() :
-        cubin_cache_file(".tally_cache"),
-        cubin_cache_file_client(".tally_cache_client"),
-        performance_cache_file(".tally_perf_cache")
+    TallyCache()
     {
+        register_env_vars();
+
+        auto policy = SCHEDULER_POLICY;
+
+        auto home_path = std::filesystem::path(getenv("HOME"));
+        auto cache_path = home_path / ".cache/tally";
+        if (!std::filesystem::is_directory(cache_path)) {
+            std::filesystem::create_directory(cache_path);
+        }
+
+        cubin_cache_file = (cache_path / ".tally_cache").string();
+        cubin_cache_file_client = (cache_path / ".tally_cache_client").string();
+
+        if (policy == TALLY_SCHEDULER_POLICY::PROFILE) {
+            performance_cache_file = (cache_path / ".tally_perf_cache_profile").string();
+        } else if (policy == TALLY_SCHEDULER_POLICY::WORKLOAD_AGNOSTIC_SHARING) {
+            performance_cache_file = (cache_path / ".tally_perf_cache_workload_agnostic").string();
+        } else if (policy == TALLY_SCHEDULER_POLICY::WORKLOAD_AWARE_SHARING) {
+            performance_cache_file = (cache_path / ".tally_perf_cache_workload_aware").string();
+        }
+
         load_cache();
     }
 
