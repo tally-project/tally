@@ -3,7 +3,6 @@
 #include <memory>
 #include <vector>
 
-#include "tally/log.h"
 #include <tally/util.h>
 #include <tally/client.h>
 #include <tally/consts.h>
@@ -23,9 +22,6 @@ __attribute__((__constructor__)) void init_client()
             return;
         }
     }
-
-	std::string log_msg = "process_name: " + process_name;
-	TALLY_LOG(log_msg);
 
     TallyClient::client = new TallyClient;
 }

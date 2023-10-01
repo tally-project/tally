@@ -42,6 +42,8 @@ test_list=(
     "python3 ./tests/pytorch_samples/train.py"
     "python3 ./tests/pytorch_samples/run-triton.py"
     "python3 ./tests/pytorch_samples/run-torch-compile.py"
+    "python3 ./tests/pytorch_samples/resnet50-compiled-1.py"
+    "python3 ./tests/pytorch_samples/resnet50-compiled-2.py"
     "python3 ./tests/pytorch_samples/run-imagenet.py"
     "python3 ./tests/hidet_samples/run-hidet.py"
     "./tests/cudnn_samples_v8/RNN/RNN"

@@ -1081,4 +1081,26 @@ struct cuStreamCreateWithPriorityResponse {
 	CUresult err;
 };
 
+struct cuFuncGetAttributeArg {
+	int * pi;
+	CUfunction_attribute  attrib;
+	CUfunction  hfunc;
+};
+
+struct cuFuncGetAttributeResponse {
+	int  pi;
+	CUresult err;
+};
+
+struct cuFuncSetAttributeArg {
+	CUfunction  hfunc;
+	CUfunction_attribute  attrib;
+	int  value;
+};
+
+struct cuFuncSetCacheConfigArg {
+	CUfunction  hfunc;
+	CUfunc_cache  config;
+};
+
 #endif // TALLY_DEF_H

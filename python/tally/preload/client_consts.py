@@ -132,8 +132,6 @@ CLIENT_PRELOAD_TEMPLATE = """
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_TOP = """
-
-
 #ifndef TALLY_SERVER_H
 #define TALLY_SERVER_H
 
@@ -170,12 +168,6 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <tally/msg_struct.h>
 #include <tally/cuda_util.h>
 #include <tally/cache_struct.h>
-
-static std::function<void(int)> __exit;
-
-static void __exit_wrapper(int signal) {
-    __exit(signal);
-}
 
 typedef std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> kernel_partial_t;
 
@@ -253,8 +245,6 @@ public:
 
     static TallyServer *server;
 
-	std::atomic<bool> is_quit__ {false};
-
 	// ================== Per-client state ===================
 	std::map<int32_t, ClientData> client_data_all;
 	std::map<ClientPriority, int32_t, std::greater<ClientPriority>> client_priority_map;
@@ -265,10 +255,16 @@ public:
 	// ==================== Global state =====================
 	std::unordered_map<CUDA_API_ENUM, std::function<void(void *, iox::popo::UntypedServer *, const void* const)>> cuda_api_handler_map;
 
+	// Map CUfunction to host func, similar to _kernel_client_addr_mapping
+	folly::ConcurrentHashMap<CUfunction, const void *> cu_func_addr_mapping;
+
 	folly::ConcurrentHashMap<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
-	folly::ConcurrentHashMap<CUfunction, std::vector<uint32_t>> _jit_kernel_addr_to_args;
 	folly::ConcurrentHashMap<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	
+	// Map CUfunction to kernel name and cubin hash
+	folly::ConcurrentHashMap<CUfunction, std::string> cu_func_to_kernel_name_map;
+	folly::ConcurrentHashMap<CUfunction, uint32_t> cu_func_to_cubin_uid_map;
+
 	// Map func addr to kernel name and cubin hash
 	folly::ConcurrentHashMap<const void *, std::string> host_func_to_demangled_kernel_name_map;
 	folly::ConcurrentHashMap<const void *, uint32_t> host_func_to_cubin_uid_map;
@@ -285,10 +281,6 @@ public:
     folly::ConcurrentHashMap<const void *, WrappedCUfunction> ptb_kernel_map;
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> dynamic_ptb_kernel_map;
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> preemptive_ptb_kernel_map;
-
-    folly::ConcurrentHashMap<CUfunction, CUfunction> jit_ptb_kernel_map;
-	folly::ConcurrentHashMap<CUfunction, CUfunction> jit_dynamic_ptb_kernel_map;
-	folly::ConcurrentHashMap<CUfunction, CUfunction> jit_preemptive_ptb_kernel_map;
 
 	// Performance cache to use at runtime
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
@@ -347,7 +339,6 @@ public:
 		int32_t first_client_id, int32_t second_client_id
 	);
 
-
 	// Scheduler options
 	void run_naive_scheduler();
 	void run_priority_scheduler();
@@ -368,12 +359,34 @@ public:
 
 	void wait_until_launch_queue_empty(int32_t client_id);
 
-	template<typename T>
-    std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-	cudaLaunchKernel_Partial(T, dim3, dim3, size_t, cudaStream_t, char *);
+	using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>;
 
-	std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-	cublasSgemm_v2_Partial(cublasSgemm_v2Arg *args);
+	// Return a partial function to be scheduled by scheduler
+    partial_t cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
+	partial_t cublasSgemm_v2_Partial(cublasSgemm_v2Arg *);
+	partial_t cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *);
+	partial_t cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *);
+    partial_t cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *);
+	partial_t cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDataArg *);
+	partial_t cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *);
+	partial_t cublasSgemmEx_Partial(cublasSgemmExArg *);
+	partial_t cudnnTransformTensor_Partial(cudnnTransformTensorArg *);
+	partial_t cublasSgemv_v2_Partial(cublasSgemv_v2Arg *);
+	partial_t cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg *);
+	partial_t cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *);
+	partial_t cudnnAddTensor_Partial(cudnnAddTensorArg *);
+	partial_t cublasLtMatmul_Partial(cublasLtMatmulArg *);
+	partial_t cudnnActivationForward_Partial(cudnnActivationForwardArg *);
+	partial_t cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *);
+	partial_t cudnnPoolingForward_Partial(cudnnPoolingForwardArg *);
+	partial_t cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwardWeightsArg *);
+	partial_t cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *);
+	partial_t cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormalizationForwardTrainingExArg *);
+	partial_t cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBackwardExArg *);
+	partial_t cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *);
+	partial_t cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *);
+	partial_t cudnnRNNForward_Partial(cudnnRNNForwardArg *);
+	partial_t cudnnBackendExecute_Partial(cudnnBackendExecuteArg *, cudnnStatus_t *err);
     
 """
 
@@ -407,9 +420,6 @@ __attribute__((__constructor__)) void init_client()
             return;
         }
     }
-
-    std::string log_msg = "process_name: " + process_name;
-	TALLY_LOG(log_msg);
 
     TallyClient::client = new TallyClient;
 }
@@ -556,6 +566,9 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "cudnnBatchNormalizationForwardTrainingEx",
     "cudnnBatchNormalizationBackwardEx",
     "cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags",
+    "cuFuncSetAttribute",
+    "cuFuncSetCacheConfig",
+    "cuFuncGetAttribute",
     "__cudaRegisterFunction",
     "__cudaRegisterFatBinary",
     "__cudaRegisterFatBinaryEnd"
@@ -564,8 +577,6 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
-    "cuFuncSetAttribute",
-    "cuFuncSetCacheConfig",
     "cuMemsetD8_v2",
     "cuEventDestroy_v2",
     "cuStreamWaitEvent",
@@ -688,7 +699,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cuEventCreate",
     "cuGraphInstantiateWithFlags",
     "cuModuleGetLoadingMode",
-    "cuFuncGetAttribute",
     "cudaGraphInstantiateWithFlags",
     "cublasGetLoggerCallback",
     "cudnnCreateOpTensorDescriptor",

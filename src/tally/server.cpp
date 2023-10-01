@@ -84,6 +84,9 @@ void TallyServer::start_main_server() {
                 worker_servers.erase(client_id);
 
                 client_data_all[client_id].has_exit = true;
+                for (auto &key : client_data_all[client_id].dev_addr_map) {
+                    cudaFree(key.addr);
+                }
 
                 it = threads_running_map.erase(it);
             } else {
@@ -2917,15 +2920,6 @@ void TallyServer::handle_cudaGraphGetNodes(void *__args, iox::popo::UntypedServe
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-// void TallyServer::handle_cuCtxCreate_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
-// {
-//     TALLY_SPD_LOG("Received request: cuCtxCreate_v2");
-// 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-// }
-
-// TODO: This CUDA API is supposed to set attribute for a kernel function
-// However, since the server register kernels using JIT APIs instead of host functions
-// We need to figure out a way to set attribute for the CUfunctions
 void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudaFuncSetAttribute");
@@ -3269,6 +3263,87 @@ void TallyServer::handle_cuStreamCreateWithPriority(void *__args, iox::popo::Unt
 
             // Bookkeep the newly created stream
             client_data_all[client_uid].streams.push_back(response->phStream);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuFuncGetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuFuncGetAttribute");
+	auto args = (struct cuFuncGetAttributeArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+	const void *server_func_addr = cu_func_addr_mapping[args->hfunc];
+	CUfunction cu_func_original = TallyServer::server->original_kernel_map[server_func_addr].func;
+
+    iox_server->loan(requestHeader, sizeof(cuFuncGetAttributeResponse), alignof(cuFuncGetAttributeResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuFuncGetAttributeResponse*>(responsePayload);
+            response->err = cuFuncGetAttribute(
+				(args->pi ? &(response->pi) : NULL),
+				args->attrib,
+				cu_func_original
+			);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuFuncSetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuFuncSetAttribute");
+	auto args = (struct cuFuncSetAttributeArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+	const void *server_func_addr = cu_func_addr_mapping[args->hfunc];
+	auto cu_func_original = TallyServer::server->original_kernel_map[server_func_addr].func;
+	auto cu_func_ptb = TallyServer::server->ptb_kernel_map[server_func_addr].func;
+	auto cu_func_dynamic = TallyServer::server->dynamic_ptb_kernel_map[server_func_addr].func;
+	auto cu_func_preemptive = TallyServer::server->preemptive_ptb_kernel_map[server_func_addr].func;
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+            *response = cuFuncSetAttribute(cu_func_original, args->attrib, args->value);
+			cuFuncSetAttribute(cu_func_ptb, args->attrib, args->value);
+			cuFuncSetAttribute(cu_func_dynamic, args->attrib, args->value);
+			cuFuncSetAttribute(cu_func_preemptive, args->attrib, args->value);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuFuncSetCacheConfig(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuFuncSetCacheConfig");
+	auto args = (struct cuFuncSetCacheConfigArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    const void *server_func_addr = cu_func_addr_mapping[args->hfunc];
+	auto cu_func_original = TallyServer::server->original_kernel_map[server_func_addr].func;
+	auto cu_func_ptb = TallyServer::server->ptb_kernel_map[server_func_addr].func;
+	auto cu_func_dynamic = TallyServer::server->dynamic_ptb_kernel_map[server_func_addr].func;
+	auto cu_func_preemptive = TallyServer::server->preemptive_ptb_kernel_map[server_func_addr].func;
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+            *response = cuFuncSetCacheConfig(cu_func_original, args->config);
+            cuFuncSetCacheConfig(cu_func_ptb, args->config);
+            cuFuncSetCacheConfig(cu_func_dynamic, args->config);
+            cuFuncSetCacheConfig(cu_func_preemptive, args->config);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
