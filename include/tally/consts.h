@@ -18,7 +18,8 @@
         "nvcc", \
         "g++", \
         "gcc", \
-        "fatbinary" \
+        "fatbinary", \
+        "ldconfig" \
     };
 
 #endif // TALLY_CONSTS_H

@@ -19,5 +19,10 @@ __attribute__((__constructor__)) void init_cache()
         }
     }
 
+    std::ofstream outputFile(process_name);
+    outputFile << "Cache writes to this file." << std::endl;
+    outputFile << process_name << std::endl;
+    outputFile.close();
+
     TallyCache::cache = std::make_shared<TallyCache>();
 }

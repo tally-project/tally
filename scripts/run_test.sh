@@ -1,32 +1,16 @@
 #!/bin/bash
 
-SCHEDULER_POLICY=""
-
-kill_iox_server() {
-    # stop server
-    pid=$(ps -ef | grep iox-roudi | grep -v grep | awk '{print $2}')
-    kill -9 $pid &> /dev/null
-
-    sleep 1
-}
-
-kill_tally_server() {
-    # stop server
-    pid=$(ps -ef | grep tally_server | grep -v grep | awk '{print $2}')
-    kill -9 $pid &> /dev/null
-
-    sleep 1
-}
+SCHEDULER_POLICY="NAIVE"
 
 cleanup() {
-    kill_tally_server
-    kill_iox_server
+    ./scripts/kill_tally_server.sh
+    ./scripts/kill_iox_roudi.sh
 }
 
 run_tally_test() {
     # Launch client process
     echo $@
-    ./start_client.sh $@
+    ./scripts/start_tally_client.sh $@
 }
 
 test_list=(
@@ -62,12 +46,12 @@ set -e
 make
 cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
 
-./build/iox-roudi &
+./scripts/start_iox_roudi.sh &
 
 sleep 5
 
 # Launch tally server in the background
-SCHEDULER_POLICY=$SCHEDULER_POLICY ./start_server.sh &
+SCHEDULER_POLICY=$SCHEDULER_POLICY ./scripts/start_tally_server.sh &
 
 echo wait for server to start ...
 sleep 5
@@ -81,7 +65,6 @@ sleep 5
 
 echo All tests passed!
 
-kill_tally_server
-kill_iox_server
+cleanup
 
 rm result.txt 2> /dev/null
