@@ -18,18 +18,7 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
 
     KernelLaunchWrapper kernel_wrapper;
 
-    auto start_time = std::chrono::high_resolution_clock::now();
-    auto write_to_cache_interval = std::chrono::seconds(60);
-
     while (!iox::posix::hasTerminationRequested()) {
-
-        auto curr_time = std::chrono::high_resolution_clock::now();
-        auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(curr_time - start_time);
-
-        if (elapsed_time >= write_to_cache_interval) {
-            save_performance_cache();
-            start_time = curr_time;
-        }
         
         for (auto &pair : client_data_all) {
 
@@ -82,6 +71,4 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
             }
         }
     }
-
-    save_performance_cache();
 }

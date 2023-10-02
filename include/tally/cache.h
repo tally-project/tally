@@ -18,6 +18,8 @@
 #include <tally/cache_struct.h>
 #include <tally/serialization.h>
 
+static std::shared_mutex cache_mutex;
+
 class TallyCache
 {
 public:
@@ -26,6 +28,7 @@ public:
     CubinCache cubin_cache;
     PerformanceCache performance_cache;
 
+    bool transform_cache_changed = false;
     bool perf_cache_changed = false;
 
     std::string cubin_cache_file;
@@ -52,11 +55,18 @@ public:
     }
 
     void save_transform_cache() {
-        save_cache_to_file<CubinCache>(cubin_cache_file, cubin_cache);
+        if (transform_cache_changed) {
+            std::unique_lock lock(mutex_);
+            std::cout << "Saving transform cache ..." << std::endl;
+            
+            save_cache_to_file<CubinCache>(cubin_cache_file, cubin_cache);
+            transform_cache_changed = false;
+        }
     }
 
     void save_performance_cache() {
         if (perf_cache_changed) {
+            std::unique_lock lock(mutex_);
             std::cout << "Saving performance cache ..." << std::endl;
             
             save_cache_to_file<PerformanceCache>(performance_cache_file, performance_cache);

@@ -72,7 +72,7 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
     }
 
     TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args, original_data, ptb_data, dynamic_ptb_data, preemptive_ptb_data);
-    TallyCache::cache->save_transform_cache();
+    TallyCache::cache->transform_cache_changed = true;
 }
 
 #endif // TALLY_CACHE_UTIL_H

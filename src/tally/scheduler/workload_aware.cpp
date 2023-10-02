@@ -143,18 +143,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         kernel.config = config;
     };
 
-    auto start_time = std::chrono::high_resolution_clock::now();
-    auto write_to_cache_interval = std::chrono::seconds(60);
-
     while (!iox::posix::hasTerminationRequested()) {
-
-        auto curr_time = std::chrono::high_resolution_clock::now();
-        auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(curr_time - start_time);
-
-        if (elapsed_time >= write_to_cache_interval) {
-            save_performance_cache();
-            start_time = curr_time;
-        }
 
         // Flag indicating whether there is new activity
         bool has_change = false;
@@ -333,6 +322,4 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             throw std::runtime_error("not supported for more than 2 kernels at a time.");
         }
     }
-
-    save_performance_cache();
 }

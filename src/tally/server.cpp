@@ -36,6 +36,8 @@ void TallyServer::start_main_server() {
 
     spdlog::info("Tally server is up ...");
 
+    std::vector<std::thread> worker_threads;
+
     while (!iox::posix::hasTerminationRequested())
     {
         //! [take request]
@@ -53,8 +55,10 @@ void TallyServer::start_main_server() {
             strcpy(channel_desc, channel_desc_str.c_str()); 
 
             worker_servers[client_id] = new iox::popo::UntypedServer({channel_desc, "tally", "tally"});
+
             std::thread t(&TallyServer::start_worker_server, TallyServer::server, client_id);
-            t.detach();
+            worker_threads.push_back(std::move(t));
+            
             threads_running_map[client_id] = true;
 
             auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
@@ -94,6 +98,12 @@ void TallyServer::start_main_server() {
             }
         }
     }
+
+    for (auto &t : worker_threads) {
+        t.join();
+    }
+
+    TallyCache::cache->save_transform_cache();
 }
 
 void TallyServer::start_worker_server(int32_t client_id) {
@@ -136,7 +146,6 @@ void TallyServer::start_worker_server(int32_t client_id) {
     }
 
     threads_running_map[client_id] = false;
-
     spdlog::info("Tally worker server has exited ...");
 }
 

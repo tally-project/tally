@@ -28,4 +28,6 @@ void TallyServer::start_scheduler()
     } else {
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unknown policy enum.");
     }
+
+    save_performance_cache();
 }
