@@ -8,6 +8,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include <tally/log.h>
 #include <tally/transform.h>
 #include <tally/util.h>
 #include <tally/cuda_util.h>
@@ -15,11 +16,6 @@
 
 static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_filename=-1)
 {
-    // If already exists, do nothing
-    if (TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size)) {
-        return;
-    }
-
     // Write cubin data to file
     std::string cubin_tmp_path = get_tmp_file_path(".cubin");
     write_binary_to_file(cubin_tmp_path, cubin_data, cubin_size);
@@ -27,6 +23,15 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
     // Extract elf code from cubin file
     std::string tmp_elf_file_name = get_tmp_file_path(".elf", elf_filename);
     exec("cuobjdump " + cubin_tmp_path + " -elf > " + tmp_elf_file_name);
+
+    // If already exists, return early
+    if (TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size)) {
+
+        // Delete cubin file
+        std::remove(cubin_tmp_path.c_str());
+
+        return;
+    }
 
     // Extract PTX code from cubin file
     auto ptx_file_names = gen_ptx_from_cubin(cubin_tmp_path);
@@ -50,6 +55,8 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
 
     // Generate transformed version from the PTX code
     for (const auto& ptx_file_name : ptx_file_names) {
+
+        spdlog::info("Generating transformed code for " + ptx_file_name + " ...");
 
         auto original_ptx_str = gen_original_ptx(ptx_file_name);
         auto original_fatbin_str = get_fatbin_str_from_ptx_str(original_ptx_str);

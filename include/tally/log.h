@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 
+#include "spdlog/spdlog.h"
+
 #ifdef ENABLE_LOGGING
     #define TALLY_LOG(msg) \
         std::cout << msg << std::endl

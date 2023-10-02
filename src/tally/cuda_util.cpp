@@ -163,8 +163,8 @@ std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_fr
 {
     std::ifstream elf_file(elf_path);
     if (!elf_file.is_open()) {
-        std::cerr << elf_path << " not found." << std::endl;
-        throw std::runtime_error("file not found");
+        std::cerr << elf_path << " not found in get_kernel_names_and_param_sizes_from_elf" << std::endl;
+        throw std::runtime_error("get_kernel_names_and_param_sizes_from_elf file not found");
     }
     
     std::string elf_code_str((std::istreambuf_iterator<char>(elf_file)), std::istreambuf_iterator<char>());

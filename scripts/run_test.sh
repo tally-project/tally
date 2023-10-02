@@ -3,14 +3,14 @@
 SCHEDULER_POLICY="NAIVE"
 
 cleanup() {
-    ./scripts/kill_tally_server.sh
-    ./scripts/kill_iox_roudi.sh
+    ./scripts/kill_server.sh
+    ./scripts/kill_iox.sh
 }
 
 run_tally_test() {
     # Launch client process
     echo $@
-    ./scripts/start_tally_client.sh $@
+    ./scripts/start_client.sh $@
 }
 
 test_list=(
@@ -46,22 +46,16 @@ set -e
 make
 cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
 
-./scripts/start_iox_roudi.sh &
-
+./scripts/start_iox.sh &
 sleep 5
 
 # Launch tally server in the background
-SCHEDULER_POLICY=$SCHEDULER_POLICY ./scripts/start_tally_server.sh &
-
-echo wait for server to start ...
-sleep 5
+SCHEDULER_POLICY=$SCHEDULER_POLICY ./scripts/start_server.sh &
 
 # Run tests
 for item in "${test_list[@]}"; do
     run_tally_test $item
 done
-
-sleep 5
 
 echo All tests passed!
 

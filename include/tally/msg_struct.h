@@ -1103,4 +1103,30 @@ struct cuFuncSetCacheConfigArg {
 	CUfunc_cache  config;
 };
 
+struct cublasGemmStridedBatchedExArg {
+    cublasHandle_t  handle;
+    cublasOperation_t  transa;
+    cublasOperation_t  transb;
+    int  m;
+    int  n;
+    int  k;
+    uint64_t alpha;
+    void*  A;
+    cudaDataType  Atype;
+    int  lda;
+    long long int  strideA;
+    void*  B;
+    cudaDataType  Btype;
+    int  ldb;
+    long long int  strideB;
+    uint64_t  beta;
+    void*  C;
+    cudaDataType  Ctype;
+    int  ldc;
+    long long int  strideC;
+    int  batchCount;
+    cublasComputeType_t  computeType;
+    cublasGemmAlgo_t  algo;
+};
+
 #endif // TALLY_DEF_H

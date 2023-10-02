@@ -1,5 +1,6 @@
 #include <thread>
 
+#include "tally/log.h"
 #include "tally/generated/server.h"
 
 int main(int argc, char ** argv) {

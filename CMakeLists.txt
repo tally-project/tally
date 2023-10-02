@@ -104,6 +104,7 @@ target_link_libraries(tally_client PUBLIC
     PUBLIC Boost::serialization 
     PUBLIC Boost::regex
     iceoryx_posh::iceoryx_posh
+    spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
 )
 
 target_compile_definitions(tally_client PRIVATE IS_CLIENT="TRUE")

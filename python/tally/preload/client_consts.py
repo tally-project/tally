@@ -387,6 +387,8 @@ public:
 	partial_t cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *);
 	partial_t cudnnRNNForward_Partial(cudnnRNNForwardArg *);
 	partial_t cudnnBackendExecute_Partial(cudnnBackendExecuteArg *, cudnnStatus_t *err);
+	partial_t cublasGemmEx_Partial(cublasGemmExArg *);
+	partial_t cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *);
     
 """
 
@@ -486,6 +488,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasGemmStridedBatchedEx",
     "cublasGemmEx",
     "cuStreamCreateWithPriority",
     "cudaStreamCreate",

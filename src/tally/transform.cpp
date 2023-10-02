@@ -14,7 +14,6 @@
 // Generating preemptive PTB version of a PTX file
 std::string gen_preemptive_ptb_ptx(std::string ptx_path)
 {
-    std::cout << "Generating preemptive version of " << ptx_path << std::endl;
     std::ifstream t(ptx_path);
     if (!t.is_open()) {
         std::cerr << ptx_path << " not found." << std::endl;
@@ -85,9 +84,9 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
 
     std::string ptb_ptx_code = "";
 
-    boost::timer::progress_display progress(ptx_code_str.size());
+    // boost::timer::progress_display progress(ptx_code_str.size());
     while (std::getline(ss, line, '\n')) {
-        progress += line.size() + 1;
+        // progress += line.size() + 1;
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
@@ -457,7 +456,6 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
 // Generating dynamic PTB version of a PTX file
 std::string gen_dynamic_ptb_ptx(std::string ptx_path)
 {
-    std::cout << "Generating dynamic version of " << ptx_path << std::endl;
     std::ifstream t(ptx_path);
     if (!t.is_open()) {
         std::cerr << ptx_path << " not found." << std::endl;
@@ -518,9 +516,9 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
 
     std::string ptb_ptx_code = "";
 
-    boost::timer::progress_display progress(ptx_code_str.size());
+    // boost::timer::progress_display progress(ptx_code_str.size());
     while (std::getline(ss, line, '\n')) {
-        progress += line.size() + 1;
+        // progress += line.size() + 1;
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
@@ -846,7 +844,6 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
 
 std::string gen_ptb_ptx(std::string ptx_path)
 {
-    std::cout << "Generating PTB version of " << ptx_path << std::endl;
     std::ifstream t(ptx_path);
     if (!t.is_open()) {
         std::cerr << ptx_path << " not found." << std::endl;
@@ -885,10 +882,10 @@ std::string gen_ptb_ptx(std::string ptx_path)
 
     std::string ptb_ptx_code = "";
 
-    boost::timer::progress_display progress(ptx_code_str.size());
+    // boost::timer::progress_display progress(ptx_code_str.size());
     while (std::getline(ss, line, '\n')) {
 
-        progress += line.size() + 1;
+        // progress += line.size() + 1;
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
@@ -1148,7 +1145,6 @@ std::string gen_ptb_ptx(std::string ptx_path)
 
 std::string gen_original_ptx(std::string ptx_path)
 {
-    std::cout << "Generating original version of " << ptx_path << std::endl;
     std::ifstream t(ptx_path);
     if (!t.is_open()) {
         std::cerr << ptx_path << " not found." << std::endl;
@@ -1161,7 +1157,6 @@ std::string gen_original_ptx(std::string ptx_path)
 
 std::string gen_sliced_ptx(std::string ptx_path)
 {
-    std::cout << "Generating sliced version of " << ptx_path << std::endl;
     std::ifstream t(ptx_path);
     if (!t.is_open()) {
         std::cerr << ptx_path << " not found." << std::endl;
@@ -1187,10 +1182,10 @@ std::string gen_sliced_ptx(std::string ptx_path)
     int32_t brace_encountered = false;
     std::string kernel_name;
 
-    boost::timer::progress_display progress(ptx_code_str.size());
+    // boost::timer::progress_display progress(ptx_code_str.size());
 
     while (std::getline(ss, line, '\n')) {
-        progress += line.size() + 1;
+        // progress += line.size() + 1;
 
         boost::smatch matches;
         if (boost::regex_search(line, matches, kernel_name_pattern)) {

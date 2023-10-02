@@ -1018,3 +1018,93 @@ TallyServer::cudnnBackendExecute_Partial(cudnnBackendExecuteArg *__args, cudnnSt
         }
     };
 }
+
+std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
+TallyServer::cublasGemmEx_Partial(cublasGemmExArg *__args)
+{
+    size_t args_len = sizeof(cublasGemmExArg);
+    auto args = (cublasGemmExArg *) malloc(args_len);
+    memcpy(args, __args, args_len);
+
+    return [args] (PARTIAL_ARGUMENTS) {
+
+        auto err = cublasGemmEx(
+            args->handle,
+            args->transa,
+            args->transb,
+            args->m,
+            args->n,
+            args->k,
+            &(args->alpha),
+            args->A,
+            args->Atype,
+            args->lda,
+            args->B,
+            args->Btype,
+            args->ldb,
+            &(args->beta),
+            args->C,
+            args->Ctype,
+            args->ldc,
+            args->computeType,
+            args->algo
+        );
+
+        // free(args);
+
+        CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
+
+        if (!err) {
+            return CUDA_SUCCESS;
+        } else {
+            return CUDA_ERROR_INVALID_VALUE;
+        }
+    };
+}
+
+std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
+TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *__args)
+{
+    size_t args_len = sizeof(cublasGemmStridedBatchedExArg);
+    auto args = (cublasGemmStridedBatchedExArg *) malloc(args_len);
+    memcpy(args, __args, args_len);
+
+    return [args] (PARTIAL_ARGUMENTS) {
+
+        auto err = cublasGemmStridedBatchedEx(
+            args->handle,
+            args->transa,
+            args->transb,
+            args->m,
+            args->n,
+            args->k,
+            &(args->alpha),
+            args->A,
+            args->Atype,
+            args->lda,
+            args->strideA,
+            args->B,
+            args->Btype,
+            args->ldb,
+            args->strideB,
+            &(args->beta),
+            args->C,
+            args->Ctype,
+            args->ldc,
+            args->strideC,
+            args->batchCount,
+            args->computeType,
+            args->algo
+        );
+
+        // free(args);
+
+        CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
+
+        if (!err) {
+            return CUDA_SUCCESS;
+        } else {
+            return CUDA_ERROR_INVALID_VALUE;
+        }
+    };
+}
