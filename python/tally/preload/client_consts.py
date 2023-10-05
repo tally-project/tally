@@ -488,6 +488,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuMemsetD8_v2",
     "cublasGemmStridedBatchedEx",
     "cublasGemmEx",
     "cuStreamCreateWithPriority",
@@ -580,7 +581,6 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
-    "cuMemsetD8_v2",
     "cuEventDestroy_v2",
     "cuStreamWaitEvent",
     "cuEventRecord",

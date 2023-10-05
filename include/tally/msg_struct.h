@@ -1129,4 +1129,10 @@ struct cublasGemmStridedBatchedExArg {
     cublasGemmAlgo_t  algo;
 };
 
+struct cuMemsetD8_v2Arg {
+	CUdeviceptr  dstDevice;
+	unsigned char  uc;
+	size_t  N;
+};
+
 #endif // TALLY_DEF_H

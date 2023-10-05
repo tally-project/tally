@@ -413,6 +413,8 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
     int32_t client_id = msg_header->client_id;
     
     // Make sure what is called on the default stream has finished
+    // For some reason it will cause some process to wait for no event, don't know why
+    // Therefore, I will try to make sure no one uses the default stream.
     cudaStreamSynchronize(NULL);
 
     cudaStream_t stream = args->stream;
@@ -786,18 +788,19 @@ void TallyServer::handle_cudaMemcpy(void *__args, iox::popo::UntypedServer *iox_
 
             // Make sure all kernels have been dispatched
             wait_until_launch_queue_empty(client_id);
-            // Make sure all kernels have been finished, because cudaMemset is synchronous
-            cudaStreamSynchronize(client_data_all[client_id].default_stream);
 
             if (args->kind == cudaMemcpyHostToDevice) {
-                res->err = cudaMemcpy(args->dst, args->data, args->count, args->kind);
+                res->err = cudaMemcpyAsync(args->dst, args->data, args->count, args->kind, client_data_all[client_id].default_stream);
             } else if (args->kind == cudaMemcpyDeviceToHost){
-                res->err = cudaMemcpy(res->data, args->src, args->count, args->kind);
+                res->err = cudaMemcpyAsync(res->data, args->src, args->count, args->kind, client_data_all[client_id].default_stream);
             } else if (args->kind == cudaMemcpyDeviceToDevice) {
-                res->err = cudaMemcpy(args->dst, args->src, args->count, args->kind);
+                res->err = cudaMemcpyAsync(args->dst, args->src, args->count, args->kind, client_data_all[client_id].default_stream);
             } else {
                 throw std::runtime_error("Unknown memcpy kind!");
             }
+
+            // Make sure wait until cudaMemcpy complete, because cudaMemcpy is synchronous
+            cudaStreamSynchronize(client_data_all[client_id].default_stream);
 
             iox_server->send(res).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2990,11 +2993,17 @@ void TallyServer::handle_cuMemcpy(void *__args, iox::popo::UntypedServer *iox_se
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuMemcpyResponse*>(responsePayload);
 
-            response->err = cuMemcpy(
+            wait_until_launch_queue_empty(client_id);
+
+            response->err = cuMemcpyAsync(
 				is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst) ? args->dst : (CUdeviceptr) response->data,
 				is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->src) ? args->src : (CUdeviceptr) args->data,
-				args->ByteCount
+				args->ByteCount,
+                client_data_all[client_id].default_stream
             );
+
+            // Make sure wait until cudaMemcpy complete, because cudaMemcpy is synchronous
+            cudaStreamSynchronize(client_data_all[client_id].default_stream);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3123,15 +3132,18 @@ void TallyServer::handle_cudaMemset(void *__args, iox::popo::UntypedServer *iox_
 
             // Make sure all kernels have been dispatched
             wait_until_launch_queue_empty(client_id);
-            // Make sure all kernels have been finished, because cudaMemset is synchronous
-            cudaStreamSynchronize(client_data_all[client_id].default_stream);
 
             auto response = static_cast<cudaError_t*>(responsePayload);			
-            *response = cudaMemset(
+            *response = cudaMemsetAsync(
 				args->devPtr,
 				args->value,
-				args->count
+				args->count,
+                client_data_all[client_id].default_stream
             );
+
+            // Make sure wait util cudaMemset finished, because cudaMemset is synchronous
+            cudaStreamSynchronize(client_data_all[client_id].default_stream);
+
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
@@ -3386,6 +3398,38 @@ void TallyServer::handle_cublasGemmStridedBatchedEx(void *__args, iox::popo::Unt
 
             auto response = static_cast<cublasStatus_t*>(responsePayload);
             *response = CUBLAS_STATUS_SUCCESS;
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemsetD8_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemsetD8_v2");
+	auto args = (struct cuMemsetD8_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+
+            // Make sure all kernels have been dispatched
+            wait_until_launch_queue_empty(client_id);
+
+            auto response = static_cast<CUresult*>(responsePayload);
+            *response = cuMemsetD8Async(
+				args->dstDevice,
+				args->uc,
+				args->N,
+                client_data_all[client_id].default_stream
+            );
+
+            // Make sure cuMemset is finished, because cuMemset is synchronous
+            cudaStreamSynchronize(client_data_all[client_id].default_stream);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });

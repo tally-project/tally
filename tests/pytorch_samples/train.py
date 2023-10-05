@@ -41,7 +41,7 @@ class Net(nn.Module):
 # Define hyperparameters
 learning_rate = 0.001
 batch_size = 64
-num_epochs = 10
+num_epochs = 1
 
 # Load the CIFAR-10 dataset
 train_dataset = datasets.CIFAR10(root='./data', train=True, transform=transforms.ToTensor(), download=True)
