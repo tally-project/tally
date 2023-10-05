@@ -46,12 +46,14 @@ extern "C" {
 
 void *dlopen(const char *filename, int flag)
 {
-    std::string client_preload_path;
+    std::filesystem::path client_preload_path;
     if (std::getenv("TALLY_HOME")) {
-        client_preload_path = std::string(std::getenv("TALLY_HOME")) + "/build/libtally_client.so";
+        client_preload_path = std::filesystem::path(std::string(std::getenv("TALLY_HOME"))) / "build/libtally_client.so";
     } else {
-        client_preload_path = std::string(std::getenv("HOME")) + "tally/build/libtally_client.so";
+        client_preload_path = std::filesystem::path(std::string(std::getenv("HOME"))) / "tally/build/libtally_client.so";
     }
+
+    auto preload_str = client_preload_path.string();
 
     static void* (*ldlopen) (const char *, int );
     if (!ldlopen) {
@@ -63,7 +65,7 @@ void *dlopen(const char *filename, int flag)
         std::string f_name(filename);
 
         if (f_name == "libcuda.so.1" || f_name == "libnvrtc.so.12") {
-            return ldlopen(client_preload_path.c_str(), flag);
+            return ldlopen(preload_str.c_str(), flag);
         }
     }
 
