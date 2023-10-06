@@ -415,7 +415,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
     // Make sure what is called on the default stream has finished
     // For some reason it will cause some process to wait for no event, don't know why
     // Therefore, I will try to make sure no one uses the default stream.
-    cudaStreamSynchronize(NULL);
+    // cudaStreamSynchronize(NULL);
 
     cudaStream_t stream = args->stream;
 
