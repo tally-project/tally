@@ -18,6 +18,9 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
 
     KernelLaunchWrapper kernel_wrapper;
 
+    cudaStream_t retreat_stream;
+    cudaStreamCreate(&retreat_stream);
+
     while (!iox::posix::hasTerminationRequested()) {
         
         for (auto &pair : client_data_all) {
