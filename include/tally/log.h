@@ -23,7 +23,9 @@
 #define CHECK_ERR_LOG_AND_EXIT(ERR, MSG) \
     if (ERR) { \
         std::cerr << MSG << " " << std::string(__FILE__) + ":" + std::to_string(__LINE__) << std::endl; \
-        exit(1); \
+        pid_t pid = getpid(); \
+        int sig_num = SIGTERM; \
+        kill(pid, sig_num); \
     }
 
 
