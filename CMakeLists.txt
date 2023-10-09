@@ -4,7 +4,7 @@ enable_language(CUDA)
 
 set(CMAKE_CUDA_COMPILER nvcc)
 set(CMAKE_CXX_STANDARD 20)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-comment -Wno-deprecated -Wno-maybe-uninitialized")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-deprecated-declarations -Wno-comment -Wno-deprecated -Wno-maybe-uninitialized")
 
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
@@ -107,7 +107,25 @@ target_link_libraries(tally_client PUBLIC
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
 )
 
-target_compile_definitions(tally_client PRIVATE IS_CLIENT="TRUE")
+add_library(tally_client_offline SHARED
+    ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_client_offline.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/client_offline.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/measurements_client.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/cuda_launch_client.cpp
+    ${TALLY_SRC_FILES}
+)
+
+target_include_directories(tally_client_offline
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+    PUBLIC  /usr/local/cuda/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
+)
+
+target_link_libraries(tally_client_offline PUBLIC
+    PUBLIC Boost::serialization 
+    PUBLIC Boost::regex
+    spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
+)
 
 add_library(tally_profile_cpu SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_profile_cpu.cpp)
 

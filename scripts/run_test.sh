@@ -1,7 +1,5 @@
 #!/bin/bash
 
-SCHEDULER_POLICY="NAIVE"
-
 cleanup() {
     ./scripts/kill_server.sh
     ./scripts/kill_iox.sh
@@ -50,15 +48,21 @@ cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
 sleep 5
 
 # Launch tally server in the background
-SCHEDULER_POLICY=$SCHEDULER_POLICY ./scripts/start_server.sh &
+./scripts/start_server.sh &
 
-# Run tests
+# Run tests with tally-server-client
 for item in "${test_list[@]}"; do
     run_tally_test $item
 done
 
-echo All tests passed!
+# cleanup
 
-cleanup
+# Run tests with offline client 
+for item in "${test_list[@]}"; do
+    echo $item
+    SCHEDULER_POLICY=WORKLOAD_AGNOSTIC_SHARING ./scripts/start_client.sh $item
+done
+
+echo All tests passed!
 
 rm result.txt 2> /dev/null

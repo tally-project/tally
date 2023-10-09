@@ -240,7 +240,7 @@ struct CudaLaunchKeyConfigPairResult {
         uint64_t sum_threads = num_threads_1 + num_threads_2;
 
         if (sum_threads > CUDA_MAX_NUM_THREADS_PER_SM) {
-            return std::make_pair<bool, std::string>(true, 
+            return std::pair<bool, std::string>(true, 
                 std::string("Exceeding threads per SM limit.") + 
                 std::string(" Limit: ") + std::to_string(CUDA_MAX_NUM_THREADS_PER_SM) +
                 std::string(" Total threads: ") + std::to_string(sum_threads));
@@ -249,7 +249,7 @@ struct CudaLaunchKeyConfigPairResult {
         uint64_t sum_regs = num_threads_1 * meta_data_1.num_regs + num_threads_2 * meta_data_2.num_regs;
 
         if (sum_regs > CUDA_MAX_NUM_REGISTERS_PER_SM) {
-            return std::make_pair<bool, std::string>(true, 
+            return std::pair<bool, std::string>(true, 
                 std::string("Exceeding registers per SM limit.") + 
                 std::string(" Limit: ") + std::to_string(CUDA_MAX_NUM_REGISTERS_PER_SM) +
                 std::string(" Total regitsers: ") + std::to_string(sum_regs));
@@ -260,13 +260,13 @@ struct CudaLaunchKeyConfigPairResult {
                                   num_blocks_2 * (meta_data_2.static_shmem_size_bytes + meta_data_2.dynamic_shmem_size_bytes);
 
         if (total_shm_size > CUDA_MAX_SHM_BYTES_PER_SM) {
-            return std::make_pair<bool, std::string>(true, 
+            return std::pair<bool, std::string>(true, 
                 std::string("Exceeding shared memory per SM limit.") + 
                 std::string(" Limit: ") + std::to_string(CUDA_MAX_SHM_BYTES_PER_SM) +
                 std::string(" Total shm size: ") + std::to_string(total_shm_size));
         }
 
-        return std::make_pair<bool, std::string>(false, "");
+        return std::pair<bool, std::string>(false, "");
     }
 };
 

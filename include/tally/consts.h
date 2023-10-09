@@ -19,7 +19,8 @@
         "g++", \
         "gcc", \
         "fatbinary", \
-        "ldconfig" \
+        "ldconfig", \
+        "cuobjdump" \
     };
 
 #endif // TALLY_CONSTS_H

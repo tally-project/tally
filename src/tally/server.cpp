@@ -562,7 +562,7 @@ void TallyServer::load_cache()
                     cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(demangled_kernel_name, kernel_server_addr);
 
                     demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
-                        std::make_pair<std::string, size_t>(std::move(demangled_kernel_name), std::move(cubin_uid)),
+                        std::make_pair(demangled_kernel_name, cubin_uid),
                         kernel_server_addr
                     );
                 }
@@ -661,7 +661,7 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
         cubin_uid = client_meta.cubin_uid;
     }
     
-    auto cubin_str = TallyCache::cache->cubin_cache.get_cubin_data_str_from_cubin_uid(cubin_uid);
+    // auto cubin_str = TallyCache::cache->cubin_cache.get_cubin_data_str_from_cubin_uid(cubin_uid);
 
     for (auto &kernel_pair : client_meta.register_queue) {
         auto &client_addr = kernel_pair.first;
@@ -691,7 +691,7 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
                 cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(kernel_name, kernel_server_addr);
 
                 demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
-                    std::make_pair<std::string, size_t>(std::move(demangled_kernel_name), std::move(cubin_uid)),
+                    std::make_pair(demangled_kernel_name, cubin_uid),
                     kernel_server_addr
                 );
             }
@@ -2764,9 +2764,9 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
 
             response->err = cuModuleLoadData(&(response->module), cubin_data);
 
-            jit_module_to_cubin_map.insert(response->module, std::make_pair<const char *, size_t>(
-                std::move(cubin_data),
-                std::move(cubin_size)
+            jit_module_to_cubin_map.insert(response->module, std::make_pair(
+                cubin_data,
+                cubin_size
             ));
 
             iox_server->send(response).or_else(
@@ -2809,7 +2809,7 @@ void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedSer
         auto cubin_uid_copy = cubin_uid;
 
         demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
-            std::make_pair<std::string, size_t>(std::move(kernel_name_copy), std::move(cubin_uid_copy)),
+            std::make_pair(kernel_name_copy, cubin_uid_copy),
             kernel_server_addr
         );
     }
