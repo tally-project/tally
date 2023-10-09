@@ -199,10 +199,10 @@ void TallyServer::set_kernel_pair_perf(
     CudaLaunchCallConfigPair call_config_pair(call_config_1, call_config_2);
 
     CudaLaunchCallConfigPairResult result(
-        std::make_pair<CudaLaunchCallConfig, KernelProfileMetrics>(std::move(call_config_1), KernelProfileMetrics(latency_1, norm_speed_1)),
-        std::make_pair<CudaLaunchCallConfig, KernelProfileMetrics>(std::move(call_config_2), KernelProfileMetrics(latency_2, norm_speed_2)),
-        std::make_pair<CudaLaunchCallConfig, CudaLaunchMetadata>(std::move(call_config_1), std::move(meta_data_1)),
-        std::make_pair<CudaLaunchCallConfig, CudaLaunchMetadata>(std::move(call_config_2), std::move(meta_data_2)),
+        std::make_pair(call_config_1, KernelProfileMetrics(latency_1, norm_speed_1)),
+        std::make_pair(call_config_2, KernelProfileMetrics(latency_2, norm_speed_2)),
+        std::make_pair(call_config_1, meta_data_1),
+        std::make_pair(call_config_2, meta_data_2),
         WorkloadPerformance(fixed_workload_latency, fixed_workload_speedup),
         WorkloadPerformance(unfair_workload_latency, unfair_workload_speedup)
     );
@@ -259,7 +259,7 @@ CudaLaunchCall TallyServer::convert_key_to_call(CudaLaunchKey key)
 {
 
     auto host_func = demangled_kernel_name_and_cubin_uid_to_host_func_map[
-        std::make_pair<std::string, size_t>(std::move(key.kernel_name), std::move(key.cubin_uid))
+        std::make_pair(key.kernel_name, key.cubin_uid)
     ];
 
     return CudaLaunchCall(
@@ -325,10 +325,10 @@ CudaLaunchCallConfigPairResult TallyServer::convert_pair_res_to_runtime_res(Cuda
     CudaLaunchCallConfig call_config_2 = convert_key_config_to_call_config(res.config_key_norm_speed_2.first);
     
     CudaLaunchCallConfigPairResult runtime_res(
-        std::make_pair<CudaLaunchCallConfig, KernelProfileMetrics>(std::move(call_config_1), std::move(res.config_key_norm_speed_1.second)),
-        std::make_pair<CudaLaunchCallConfig, KernelProfileMetrics>(std::move(call_config_2), std::move(res.config_key_norm_speed_2.second)),
-        std::make_pair<CudaLaunchCallConfig, CudaLaunchMetadata>(std::move(call_config_1), std::move(res.config_key_meta_data_1.second)),
-        std::make_pair<CudaLaunchCallConfig, CudaLaunchMetadata>(std::move(call_config_2), std::move(res.config_key_meta_data_2.second)),
+        std::make_pair(call_config_1, res.config_key_norm_speed_1.second),
+        std::make_pair(call_config_2, res.config_key_norm_speed_2.second),
+        std::make_pair(call_config_1, res.config_key_meta_data_1.second),
+        std::make_pair(call_config_2, res.config_key_meta_data_2.second),
         res.fixed_workload_perf,
         res.unfair_workload_perf
     );
@@ -342,10 +342,10 @@ CudaLaunchKeyConfigPairResult TallyServer::convert_pair_res_to_cache_res(CudaLau
     CudaLaunchKeyConfig key_config_2 = convert_call_config_to_key_config(res.call_config_norm_speed_2.first);
     
     CudaLaunchKeyConfigPairResult cache_res(
-        std::make_pair<CudaLaunchKeyConfig, KernelProfileMetrics>(std::move(key_config_1), std::move(res.call_config_norm_speed_1.second)),
-        std::make_pair<CudaLaunchKeyConfig, KernelProfileMetrics>(std::move(key_config_2), std::move(res.call_config_norm_speed_2.second)),
-        std::make_pair<CudaLaunchKeyConfig, CudaLaunchMetadata>(std::move(key_config_1), std::move(res.call_config_meta_data_1.second)),
-        std::make_pair<CudaLaunchKeyConfig, CudaLaunchMetadata>(std::move(key_config_2), std::move(res.call_config_meta_data_2.second)),
+        std::make_pair(key_config_1, res.call_config_norm_speed_1.second),
+        std::make_pair(key_config_2, res.call_config_norm_speed_2.second),
+        std::make_pair(key_config_1, res.call_config_meta_data_1.second),
+        std::make_pair(key_config_2, res.call_config_meta_data_2.second),
         res.fixed_workload_perf,
         res.unfair_workload_perf
     );

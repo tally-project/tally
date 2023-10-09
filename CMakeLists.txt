@@ -110,6 +110,8 @@ target_link_libraries(tally_client PUBLIC
 add_library(tally_client_offline SHARED
     ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_client_offline.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/client_offline.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/measurements_client.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/cuda_launch_client.cpp
     ${TALLY_SRC_FILES}
 )
 
