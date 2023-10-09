@@ -661,7 +661,7 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
         cubin_uid = client_meta.cubin_uid;
     }
     
-    auto cubin_str = TallyCache::cache->cubin_cache.get_cubin_data_str_from_cubin_uid(cubin_uid);
+    // auto cubin_str = TallyCache::cache->cubin_cache.get_cubin_data_str_from_cubin_uid(cubin_uid);
 
     for (auto &kernel_pair : client_meta.register_queue) {
         auto &client_addr = kernel_pair.first;
