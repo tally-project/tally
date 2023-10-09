@@ -55,7 +55,7 @@ for item in "${test_list[@]}"; do
     run_tally_test $item
 done
 
-# cleanup
+cleanup
 
 # Run tests with offline client 
 for item in "${test_list[@]}"; do
