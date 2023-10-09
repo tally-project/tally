@@ -71,8 +71,6 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
     auto config = res.config;
 
-    config = CudaLaunchConfig::default_config;
-
     auto err = TallyClientOffline::client_offline->launch_kernel(config, func, gridDim, blockDim, args, sharedMem, stream);
     if (!err) {
         return cudaSuccess;
