@@ -107,6 +107,8 @@ target_link_libraries(tally_client PUBLIC
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
 )
 
+target_compile_definitions(tally_client PRIVATE IS_CLIENT="TRUE")
+
 add_library(tally_client_offline SHARED
     ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_client_offline.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/client_offline.cpp

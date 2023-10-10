@@ -117,8 +117,10 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     __cubin_data = (const char *) wp->data;
     __cubin_size = fbh->headerSize + fbh->fatSize;
 
-    // cache fatbin
-    cache_cubin_data(__cubin_data, __cubin_size);
+    // cache fatbin is not exists
+    if (!TallyCache::cache->cubin_cache.contains(__cubin_data, __cubin_size)) {
+        cache_cubin_data(__cubin_data, __cubin_size);
+    }
 
     __cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(__cubin_data, __cubin_size);
     cubin_register_queue.push_back(__cubin_uid);
