@@ -13,6 +13,7 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/string.hpp>
 
+#include <tally/log.h>
 #include <tally/env.h>
 #include <tally/util.h>
 #include <tally/cache_struct.h>
@@ -57,7 +58,7 @@ public:
     void save_transform_cache() {
         if (transform_cache_changed) {
             std::unique_lock lock(mutex_);
-            std::cout << "Saving transform cache ..." << std::endl;
+            // spdlog::info("Saving transform cache ...");
             
             save_cache_to_file<CubinCache>(cubin_cache_file, cubin_cache);
             transform_cache_changed = false;
@@ -67,7 +68,7 @@ public:
     void save_performance_cache() {
         if (perf_cache_changed) {
             std::unique_lock lock(mutex_);
-            std::cout << "Saving performance cache ..." << std::endl;
+            // spdlog::info("Saving performance cache ...");
             
             save_cache_to_file<PerformanceCache>(performance_cache_file, performance_cache);
             performance_cache.write_single_kernel_perf_to_file();

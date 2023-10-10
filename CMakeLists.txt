@@ -73,6 +73,7 @@ target_include_directories(tally
 target_link_libraries(tally PUBLIC
     iceoryx_posh::iceoryx_posh
     dl
+    spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
 )
 
 add_library(tally_client SHARED
