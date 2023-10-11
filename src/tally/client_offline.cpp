@@ -1,16 +1,18 @@
 #include <tally/client_offline.h>
 #include <tally/cuda_launch.h>
 
-// std::unique_ptr<TallyClientOffline> TallyClientOffline::client_offline;
-
 TallyClientOffline *TallyClientOffline::client_offline;
+
+void segfaultHandler(int signal) {
+    delete TallyClientOffline::client_offline;
+    std::cerr << "Segmentation fault occurred (signal " << signal << ")" << std::endl;
+    exit(1);
+}
 
 bool done = false;
 
 __attribute__((__constructor__)) void init_client()
 {
-    // TallyClientOffline::client_offline = std::make_unique<TallyClientOffline>();
-
     TallyClientOffline::client_offline =  new TallyClientOffline();
 }
 
@@ -20,6 +22,7 @@ void TallyClientOffline::set_exit()
 
     if (!set) {
         std::atexit([]{ delete TallyClientOffline::client_offline;  });
+        signal(SIGSEGV, segfaultHandler);
         set = true;
     }
 }
