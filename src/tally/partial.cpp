@@ -23,10 +23,12 @@
     float dur_seconds, \
     float *time_ms, \
     float *iters, \
-    int32_t total_iters
+    int32_t total_iters, \
+    bool exit_if_fail \
+    
+using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t, bool)>;
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
+partial_t TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
 {
 
     assert(func);
@@ -62,20 +64,20 @@ TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim, dim3  blo
 
         // free(params_local);
 
-        if (err) {
+        if (exit_if_fail && err) {
             char *str;
             cuGetErrorString(err, (const char **)&str);
             std::cout << str << std::endl;
-        }
+            std::cout << config.str() << std::endl;
 
-        CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
+            CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
+        }
 
         return err;
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *__args)
+partial_t TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *__args)
 {
     auto args = (cublasSgemm_v2Arg *) malloc(sizeof(cublasSgemm_v2Arg));
     memcpy(args, __args, sizeof(cublasSgemm_v2Arg));
@@ -111,8 +113,7 @@ TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *__args)
+partial_t TallyServer::cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *__args)
 {
     size_t args_len = sizeof(cudnnRNNBackwardWeightsArg) + sizeof(cudnnTensorDescriptor_t) * __args->seqLength * 2;
     auto args = (cudnnRNNBackwardWeightsArg *) malloc(args_len);
@@ -150,8 +151,7 @@ TallyServer::cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *__args)
+partial_t TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *__args)
 {
     size_t args_len = sizeof(cudnnRNNBackwardDataArg) + sizeof(cudnnTensorDescriptor_t) * __args->seqLength * 3;
     auto args = (cudnnRNNBackwardDataArg *) malloc(args_len);
@@ -201,8 +201,7 @@ TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *__args)
+partial_t TallyServer::cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *__args)
 {
     size_t args_len = sizeof(cudnnRNNForwardTrainingArg) + sizeof(cudnnTensorDescriptor_t) * __args->seqLength * 2;
     auto args = (cudnnRNNForwardTrainingArg *) malloc(args_len);
@@ -246,8 +245,7 @@ TallyServer::cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDataArg *__args)
+partial_t TallyServer::cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDataArg *__args)
 {
     size_t args_len = sizeof(cudnnMultiHeadAttnBackwardDataArg) + sizeof(int) * __args->winIdxLen * 2;
     auto args = (cudnnMultiHeadAttnBackwardDataArg *) malloc(args_len);
@@ -293,8 +291,7 @@ TallyServer::cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDa
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *__args)
+partial_t TallyServer::cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnMultiHeadAttnForwardArg) + sizeof(int) * __args->winIdxLen * 2;
     auto args = (cudnnMultiHeadAttnForwardArg *) malloc(args_len);
@@ -339,8 +336,7 @@ TallyServer::cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *__a
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg *__args)
+partial_t TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg *__args)
 {
     size_t args_len = sizeof(struct cublasSgemmExArg);
     auto args = (cublasSgemmExArg *) malloc(args_len);
@@ -380,8 +376,7 @@ TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnTransformTensor_Partial(cudnnTransformTensorArg *__args)
+partial_t TallyServer::cudnnTransformTensor_Partial(cudnnTransformTensorArg *__args)
 {
     size_t args_len = sizeof(cudnnTransformTensorArg);
     auto args = (cudnnTransformTensorArg *) malloc(args_len);
@@ -411,8 +406,7 @@ TallyServer::cudnnTransformTensor_Partial(cudnnTransformTensorArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2Arg *__args)
+partial_t TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2Arg *__args)
 {
     size_t args_len = sizeof(cublasSgemv_v2Arg);
     auto args = (cublasSgemv_v2Arg *) malloc(args_len);
@@ -447,8 +441,7 @@ TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2Arg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg *__args)
+partial_t TallyServer::cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnLRNCrossChannelForwardArg);
     auto args = (cudnnLRNCrossChannelForwardArg *) malloc(args_len);
@@ -480,8 +473,7 @@ TallyServer::cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg 
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *__args)
+partial_t TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnSoftmaxForwardArg);
     auto args = (cudnnSoftmaxForwardArg *) malloc(args_len);
@@ -513,8 +505,7 @@ TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnAddTensor_Partial(cudnnAddTensorArg *__args)
+partial_t TallyServer::cudnnAddTensor_Partial(cudnnAddTensorArg *__args)
 {
     size_t args_len = sizeof(cudnnAddTensorArg);
     auto args = (cudnnAddTensorArg *) malloc(args_len);
@@ -544,8 +535,7 @@ TallyServer::cudnnAddTensor_Partial(cudnnAddTensorArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *__args)
+partial_t TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *__args)
 {
     size_t args_len = sizeof(cublasLtMatmulArg);
     auto args = (cublasLtMatmulArg *) malloc(args_len);
@@ -584,8 +574,7 @@ TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnActivationForward_Partial(cudnnActivationForwardArg *__args)
+partial_t TallyServer::cudnnActivationForward_Partial(cudnnActivationForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnActivationForwardArg);
     auto args = (cudnnActivationForwardArg *) malloc(args_len);
@@ -616,8 +605,7 @@ TallyServer::cudnnActivationForward_Partial(cudnnActivationForwardArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *__args)
+partial_t TallyServer::cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnConvolutionForwardArg);
     auto args = (cudnnConvolutionForwardArg *) malloc(args_len);
@@ -653,8 +641,7 @@ TallyServer::cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnPoolingForward_Partial(cudnnPoolingForwardArg *__args)
+partial_t TallyServer::cudnnPoolingForward_Partial(cudnnPoolingForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnPoolingForwardArg);
     auto args = (cudnnPoolingForwardArg *) malloc(args_len);
@@ -685,8 +672,7 @@ TallyServer::cudnnPoolingForward_Partial(cudnnPoolingForwardArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwardWeightsArg *__args)
+partial_t TallyServer::cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwardWeightsArg *__args)
 {
     size_t args_len = sizeof(cudnnMultiHeadAttnBackwardWeightsArg);
     auto args = (cudnnMultiHeadAttnBackwardWeightsArg *) malloc(args_len);
@@ -727,8 +713,7 @@ TallyServer::cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwar
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *__args)
+partial_t TallyServer::cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *__args)
 {
     size_t args_len = sizeof(cudnnReorderFilterAndBiasArg);
     auto args = (cudnnReorderFilterAndBiasArg *) malloc(args_len);
@@ -759,8 +744,7 @@ TallyServer::cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *__a
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormalizationForwardTrainingExArg *__args)
+partial_t TallyServer::cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormalizationForwardTrainingExArg *__args)
 {
     size_t args_len = sizeof(cudnnBatchNormalizationForwardTrainingExArg);
     auto args = (cudnnBatchNormalizationForwardTrainingExArg *) malloc(args_len);
@@ -808,8 +792,7 @@ TallyServer::cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormaliz
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBackwardExArg *__args)
+partial_t TallyServer::cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBackwardExArg *__args)
 {
     size_t args_len = sizeof(cudnnBatchNormalizationBackwardExArg);
     auto args = (cudnnBatchNormalizationBackwardExArg *) malloc(args_len);
@@ -862,8 +845,7 @@ TallyServer::cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBa
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *__args)
+partial_t TallyServer::cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *__args)
 {
     size_t args_len = sizeof(cudnnRNNBackwardWeights_v8Arg);
     auto args = (cudnnRNNBackwardWeights_v8Arg *) malloc(args_len);
@@ -902,8 +884,7 @@ TallyServer::cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *_
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *__args)
+partial_t TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *__args)
 {
     size_t args_len = sizeof(cudnnRNNBackwardData_v8Arg);
     auto args = (cudnnRNNBackwardData_v8Arg *) malloc(args_len);
@@ -948,8 +929,7 @@ TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnRNNForward_Partial(cudnnRNNForwardArg *__args)
+partial_t TallyServer::cudnnRNNForward_Partial(cudnnRNNForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnRNNForwardArg);
     auto args = (cudnnRNNForwardArg *) malloc(args_len);
@@ -992,8 +972,7 @@ TallyServer::cudnnRNNForward_Partial(cudnnRNNForwardArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cudnnBackendExecute_Partial(cudnnBackendExecuteArg *__args, cudnnStatus_t *err)
+partial_t TallyServer::cudnnBackendExecute_Partial(cudnnBackendExecuteArg *__args, cudnnStatus_t *err)
 {
     size_t args_len = sizeof(cudnnBackendExecuteArg);
     auto args = (cudnnBackendExecuteArg *) malloc(args_len);
@@ -1019,8 +998,7 @@ TallyServer::cudnnBackendExecute_Partial(cudnnBackendExecuteArg *__args, cudnnSt
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cublasGemmEx_Partial(cublasGemmExArg *__args)
+partial_t TallyServer::cublasGemmEx_Partial(cublasGemmExArg *__args)
 {
     size_t args_len = sizeof(cublasGemmExArg);
     auto args = (cublasGemmExArg *) malloc(args_len);
@@ -1062,8 +1040,7 @@ TallyServer::cublasGemmEx_Partial(cublasGemmExArg *__args)
     };
 }
 
-std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>
-TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *__args)
+partial_t TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *__args)
 {
     size_t args_len = sizeof(cublasGemmStridedBatchedExArg);
     auto args = (cublasGemmStridedBatchedExArg *) malloc(args_len);

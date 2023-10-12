@@ -36,13 +36,13 @@
 #include <tally/cuda_util.h>
 #include <tally/cache_struct.h>
 
-typedef std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> kernel_partial_t;
+using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t, bool)>;
 
 struct KernelLaunchWrapper {
 
 public:
 	// Callable to launch kernel
-	kernel_partial_t kernel_to_dispatch;
+	partial_t kernel_to_dispatch;
 
 	// whether it is blackbox kernel from nvidia libraries
 	bool is_library_call;
@@ -225,8 +225,6 @@ public:
     void start_worker_server(int32_t client_id);
 
 	void wait_until_launch_queue_empty(int32_t client_id);
-
-	using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>;
 
 	// Return a partial function to be scheduled by scheduler
     partial_t cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);

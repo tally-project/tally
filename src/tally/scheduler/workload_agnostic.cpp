@@ -69,7 +69,7 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
                     }
                 }
 
-                kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
+                kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1, true);
                 client_data.queue_size--;
             }
         }

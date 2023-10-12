@@ -46,16 +46,29 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             if (!found_in_cache) {
                 auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
                 auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
-                auto configs = CudaLaunchConfig::get_preemptive_configs(threads_per_block, num_blocks);
-
-                tune_kernel_launch(kernel_wrapper, client_id, configs);
-                res = get_single_kernel_best_config(launch_call, &found_in_cache);
 
                 // Check the latency of this kernel, if it is short, then we fall back to the non-preemtive version
-                auto latency_ms = res.metrics.latency_ms;
-                if (latency_ms < 1) {
+                float latency_ms;
+                kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &latency_ms, nullptr, 1, true);
+
+                auto &client_data = client_data_all[client_id];
+
+                // Some preemptive kernel launch fails with 'invalid argument', fall back to the non-preemtive version for those
+                CudaLaunchConfig preemptive_config(false, false, false, true, 4);
+                auto err = kernel_wrapper.kernel_to_dispatch(preemptive_config, client_data.global_idx, client_data.retreat, true, 1000, nullptr, nullptr, 1, false);
+
+                if (err) {
+                    auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
+                    spdlog::info("Fail to launch preemptive version of kernel " + kernel_name + ". Falling back to non-preemptive versions");
+                }
+
+                if (latency_ms < 1 || err) {
                     auto non_preemptive_ptb_configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
                     tune_kernel_launch(kernel_wrapper, client_id, non_preemptive_ptb_configs);
+                    res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                } else {
+                    auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(threads_per_block, num_blocks);
+                    tune_kernel_launch(kernel_wrapper, client_id, preemptive_ptb_configs);
                     res = get_single_kernel_best_config(launch_call, &found_in_cache);
                 }
             }
@@ -134,7 +147,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming);
 
         // Launch the kernel again
-        kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
+        kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1, true);
 
         // Monitor the launched kernel
         cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream);

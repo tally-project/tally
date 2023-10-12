@@ -169,7 +169,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     cudaDeviceSynchronize();
 
-    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
+    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
 
     // In seconds
     float profile_duration = (100 * time_elapsed) / 1000.f;
@@ -183,7 +183,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     // Run default config first
     CudaLaunchConfig base_config = CudaLaunchConfig::default_config;
 
-    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1);
+    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1, true);
 
     float base_latency_ms = time_elapsed / iters;
 
@@ -195,7 +195,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     for (auto &config : configs) {
 
-        kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, true, profile_duration, &time_elapsed, &iters, -1);
+        kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, true, profile_duration, &time_elapsed, &iters, -1, true);
 
         float latency_ms = time_elapsed / iters;
 
@@ -243,7 +243,7 @@ void TallyServer::tune_kernel_pair_launch(
 
     for (int i = 0; i < 2; i++) {
         // Run one time of kernel
-        kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
+        kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
         profile_duration = std::max(profile_duration, (30 * time_elapsed) / 1000.f);
 
         launch_calls[i] = kernel_wrappers[i].launch_call;
@@ -288,7 +288,7 @@ void TallyServer::tune_kernel_pair_launch(
 
     auto launch_kernel_func = [this, kernel_wrappers, client_ids](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, int32_t total_iters) {
         auto &client_data = client_data_all[client_ids[idx]];
-        (kernel_wrappers[idx].kernel_to_dispatch)(config, client_data.global_idx, client_data.retreat, true, dur_seconds, time_elapsed, iters, total_iters);
+        (kernel_wrappers[idx].kernel_to_dispatch)(config, client_data.global_idx, client_data.retreat, true, dur_seconds, time_elapsed, iters, total_iters, true);
     };
 
     CudaLaunchMetadata null_metadata;
@@ -378,8 +378,16 @@ void TallyServer::tune_kernel_pair_launch(
 
 void TallyServer::wait_until_launch_queue_empty(int32_t client_id)
 {
+    int attempt = 0;
     while (client_data_all[client_id].queue_size > 0) {
         std::this_thread::sleep_for(std::chrono::microseconds(1));
+        attempt++;
+
+        if (attempt == 100000000) {
+            if (iox::posix::hasTerminationRequested()) {
+                break;
+            }
+        }
     }
 }
 

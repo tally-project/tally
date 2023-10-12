@@ -46,7 +46,7 @@ void TallyServer::run_profile_scheduler()
                             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": try_dequeue failed.");
                         }
 
-                        kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1);
+                        kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
                         client_data.queue_size--;
                         kernel_count--;
                     }
@@ -89,7 +89,7 @@ void TallyServer::run_profile_scheduler()
             }
 
             float time_elapsed;
-            kernel_wrappers[index].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1);
+            kernel_wrappers[index].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
 
             if (kernel_wrappers[index].is_library_call) {
                 found_library_call = true;
@@ -137,14 +137,14 @@ void TallyServer::run_profile_scheduler()
         auto k1_k2_configs = std::vector<std::vector<CudaLaunchConfig>> {k1_configs, k2_configs};
 
         auto launch_kernel_func = [kernel_wrappers, global_idices, retreats](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, CUresult *err, int32_t total_iters) {
-            *err = (kernel_wrappers[idx].kernel_to_dispatch)(config, global_idices[idx], retreats[idx], true, dur_seconds, time_elapsed, iters, total_iters);
+            *err = (kernel_wrappers[idx].kernel_to_dispatch)(config, global_idices[idx], retreats[idx], true, dur_seconds, time_elapsed, iters, total_iters, true);
         };
 
         CUresult errs[2];
 
         // Launch once, in case all results are cached already
-        errs[0] = (kernel_wrappers[0].kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1);
-        errs[1] = (kernel_wrappers[1].kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1);
+        errs[0] = (kernel_wrappers[0].kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+        errs[1] = (kernel_wrappers[1].kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
 
         // We will be collecting two things:
         //    1. single-kernel performance under different launch configs

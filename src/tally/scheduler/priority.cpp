@@ -76,7 +76,7 @@ void TallyServer::run_priority_scheduler()
                     cudaEventCreateWithFlags(&in_progress_kernel_wrapper.event, cudaEventDisableTiming);
 
                     // Launch the kernel again
-                    in_progress_kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
+                    in_progress_kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1, true);
 
                     // Monitor the launched kernel
                     cudaEventRecord(in_progress_kernel_wrapper.event, in_progress_kernel_wrapper.launch_stream);
@@ -157,7 +157,7 @@ void TallyServer::run_priority_scheduler()
                 // Create a event to monitor the kernel execution
                 cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming);
 
-                kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1);
+                kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1, true);
 
                 cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream);
 
