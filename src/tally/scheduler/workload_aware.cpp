@@ -335,4 +335,6 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             throw std::runtime_error("not supported for more than 2 kernels at a time.");
         }
     }
+
+    spdlog::info("Workload aware sharing scheduler has exited.");
 }

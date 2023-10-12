@@ -383,7 +383,7 @@ void TallyServer::wait_until_launch_queue_empty(int32_t client_id)
         std::this_thread::sleep_for(std::chrono::microseconds(1));
         attempt++;
 
-        if (attempt == 100000000) {
+        if (attempt == 100000) {
             if (iox::posix::hasTerminationRequested()) {
                 break;
             }
@@ -733,6 +733,13 @@ void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_
             // Keep track that this addr is device memory
             if (response->err == cudaSuccess) {
                 client_data_all[client_id].dev_addr_map.push_back( DeviceMemoryKey(response->devPtr, args->size) );
+            }
+
+            if (response->err == cudaErrorMemoryAllocation) {
+                std::cerr << "Encountered cudaErrorMemoryAllocation " << std::string(__FILE__) + ":" + std::to_string(__LINE__) << std::endl; \
+                pid_t pid = getpid(); \
+                int sig_num = SIGTERM; \
+                kill(pid, sig_num); \
             }
             
             iox_server->send(response).or_else(
