@@ -112,6 +112,8 @@ public:
 
     static TallyServer *server;
 
+	bool signal_exit = false;
+
 	// ================== Per-client state ===================
 	std::map<int32_t, ClientData> client_data_all;
 	std::map<ClientPriority, int32_t, std::greater<ClientPriority>> client_priority_map;

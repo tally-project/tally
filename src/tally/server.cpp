@@ -154,8 +154,9 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     auto &launch_call = kernel_wrapper.launch_call;
     auto &client_data = client_data_all[client_id];
     auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
+    auto cubin_uid = host_func_to_cubin_uid_map[launch_call.func];
 
-    spdlog::info("Launch config not found for: " + kernel_name + "_" + launch_call.dim_str());
+    spdlog::info("Launch config not found for: " + kernel_name + "_" + launch_call.dim_str() + "_" + std::to_string(cubin_uid));
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -195,7 +196,11 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     for (auto &config : configs) {
 
-        kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, true, profile_duration, &time_elapsed, &iters, -1, true);
+        auto err = kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, true, profile_duration, &time_elapsed, &iters, -1, true);
+
+        if (err) {
+            return;
+        }
 
         float latency_ms = time_elapsed / iters;
 
@@ -384,7 +389,7 @@ void TallyServer::wait_until_launch_queue_empty(int32_t client_id)
         attempt++;
 
         if (attempt == 100000) {
-            if (iox::posix::hasTerminationRequested()) {
+            if (iox::posix::hasTerminationRequested() || signal_exit) {
                 break;
             }
         }

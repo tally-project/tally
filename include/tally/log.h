@@ -26,6 +26,7 @@
         pid_t pid = getpid(); \
         int sig_num = SIGTERM; \
         kill(pid, sig_num); \
+        signal_exit = true; \
     }
 
 

@@ -40,24 +40,24 @@ __global__ void elementwiseAdditionPTB(float* a, float* b, float* c, int size, d
     }
 }
 
-__global__ void elementwiseAdditionPTB_dynamic(float* a, float* b, float* c, int size, dim3 original_gridSize, uint32_t *global_idx) {
+__global__ void elementwiseAdditionPTB_dynamic(float* a, float* b, float* c, int size, dim3 original_gridSize, uint32_t *global_idx, uint32_t *curr_idx_arr) {
 
     const bool leader = (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0);
     const uint32_t num_thread_blocks = original_gridSize.x * original_gridSize.y * original_gridSize.z;
     const uint32_t xy_tbs = original_gridSize.x * original_gridSize.y;
 
-    __shared__ volatile uint32_t volatile_curr_idx;
     uint32_t curr_idx;
 
     while (true) {
 
         if (leader) {
-            volatile_curr_idx = atomicAdd(global_idx, 1);
+            curr_idx = atomicAdd(global_idx, 1);
+            curr_idx_arr[blockIdx.x] = curr_idx;
         }
 
         __syncthreads();
 
-        curr_idx = volatile_curr_idx;
+        curr_idx = curr_idx_arr[blockIdx.x];
 
         if (curr_idx >= num_thread_blocks) {
             break;
@@ -162,6 +162,9 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
     uint32_t *global_idx;
     cudaMalloc((void**)&global_idx, sizeof(uint32_t));
 
+    uint32_t *curr_idx_arr;
+    cudaMalloc((void**)&curr_idx_arr, sizeof(uint32_t) * 82 * 20);
+
     cudaStream_t kernel_stream;
     cudaStreamCreate(&kernel_stream);
 
@@ -172,7 +175,7 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
     if (ptb) {
         cudaMemset(retreat, 0, sizeof(bool));
         cudaMemset(global_idx, 0, sizeof(uint32_t));
-        elementwiseAdditionPTB_dynamic_retreat<<<PTB_grid_dim, PTB_block_dim>>>(deviceA, deviceB, deviceC, size, grid_dim, global_idx, retreat);
+        elementwiseAdditionPTB_dynamic<<<PTB_grid_dim, PTB_block_dim>>>(deviceA, deviceB, deviceC, size, grid_dim, global_idx, curr_idx_arr);
     } else {
         elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
     }
@@ -186,32 +189,10 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
 
     // Launch the kernel
     if (ptb) {
-        // elementwiseAdditionPTB<<<PTB_grid_dim, PTB_block_dim>>>(deviceA, deviceB, deviceC, size, grid_dim);
-
         cudaMemset(retreat, 0, sizeof(bool));
         cudaMemset(global_idx, 0, sizeof(uint32_t));
 
-        elementwiseAdditionPTB_dynamic_retreat<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(deviceA, deviceB, deviceC, size, grid_dim, global_idx, retreat);
-
-        // // Sleep for 100 us
-        // usleep(1);
-
-        // Stop the kernel
-        cudaMemsetAsync(retreat, 1, sizeof(bool), new_stream);
-
-        // Fetch the progress
-        uint32_t progress = 0;
-        cudaMemcpy(&progress, global_idx, sizeof(uint32_t), cudaMemcpyDeviceToHost);
-
-        // std::cout << "progress: " << progress << std::endl; 
-
-        // Reset retreat
-        cudaMemsetAsync(retreat, 0, sizeof(bool), new_stream);
-
-        elementwiseAdditionPTB_dynamic_retreat<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(deviceA, deviceB, deviceC, size, grid_dim, global_idx, retreat);
-
-        // cudaMemcpy(&progress, global_idx, sizeof(uint32_t), cudaMemcpyDeviceToHost);
-        // std::cout << "progress: " << progress << std::endl; 
+        elementwiseAdditionPTB_dynamic<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(deviceA, deviceB, deviceC, size, grid_dim, global_idx, curr_idx_arr);
 
     } else {
         elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
@@ -245,7 +226,7 @@ void runElementwiseAdditionCpu(float* arr_a, float* arr_b, float* arr_c, int siz
 int main()
 {
     int size = 16777216;
-    bool ptb = false;
+    bool ptb = true;
     
     // Allocate memory on the host (CPU)
     float* arr_a = new float[size];

@@ -60,7 +60,16 @@ void TallyServer::run_workload_aware_sharing_scheduler()
                 if (err) {
                     auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
                     spdlog::info("Fail to launch preemptive version of kernel " + kernel_name + ". Falling back to non-preemptive versions");
+                
+                    auto dynamic_shmem_size_bytes = kernel_wrapper.dynamic_shmem_size_bytes;
+                    auto static_shmem_size_bytes = preemptive_ptb_kernel_map[launch_call.func].meta_data.static_shmem_size_bytes;
+
+                    spdlog::info("Dynamic shared mem: " + std::to_string(dynamic_shmem_size_bytes));
+                    spdlog::info("Static shared mem: " + std::to_string(static_shmem_size_bytes));
+
                 }
+
+                // auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
 
                 if (latency_ms < 1 || err) {
                     auto non_preemptive_ptb_configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
@@ -156,7 +165,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         kernel.config = config;
     };
 
-    while (!iox::posix::hasTerminationRequested()) {
+    while (!iox::posix::hasTerminationRequested() && !signal_exit) {
 
         // Flag indicating whether there is new activity
         bool has_change = false;
@@ -179,15 +188,25 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             if (has_kernel) {
 
                 auto &kernel_wrapper = in_progress_kernels[client_id].kernel_wrapper;
+                auto query_err = cudaEventQuery(kernel_wrapper.event);
 
                 // Check whether has finished
-                if (cudaEventQuery(kernel_wrapper.event) == cudaSuccess) {
+                if (query_err == cudaSuccess) {
 
                     // Erase if finished
                     in_progress_kernels.erase(client_id);
                     client_data.queue_size--;
                     fetch_new_kernel = true;
                     has_change = true;
+
+                } else {
+                    if (query_err !=  cudaErrorNotReady) {
+                        CHECK_ERR_LOG_AND_EXIT(query_err, "cudaEventQuery fails");
+                    }
+
+                    if (signal_exit) {
+                        break;
+                    }
                 }
             } else {
                 fetch_new_kernel = true;
@@ -204,6 +223,10 @@ void TallyServer::run_workload_aware_sharing_scheduler()
                 }
             }
             
+        }
+
+        if (signal_exit) {
+            break;
         }
 
         if (!has_change) {

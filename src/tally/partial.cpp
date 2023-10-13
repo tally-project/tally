@@ -52,7 +52,7 @@ partial_t TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim,
         offset += arg_sizes[i];
     }
 
-    return [func, gridDim, blockDim, __args_arr, sharedMem, stream, params_local] (PARTIAL_ARGUMENTS) {
+    return [this, func, gridDim, blockDim, __args_arr, sharedMem, stream, params_local] (PARTIAL_ARGUMENTS) {
 
         CUresult err;
 
@@ -65,8 +65,12 @@ partial_t TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim,
         // free(params_local);
 
         if (exit_if_fail && err) {
+
+            auto kernel_name = host_func_to_demangled_kernel_name_map[func];
+
             char *str;
             cuGetErrorString(err, (const char **)&str);
+            std::cout << kernel_name << std::endl;
             std::cout << str << std::endl;
             std::cout << config.str() << std::endl;
 
@@ -82,7 +86,7 @@ partial_t TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *__args)
     auto args = (cublasSgemm_v2Arg *) malloc(sizeof(cublasSgemm_v2Arg));
     memcpy(args, __args, sizeof(cublasSgemm_v2Arg));
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemm_v2(
             args->handle,
@@ -119,7 +123,7 @@ partial_t TallyServer::cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsAr
     auto args = (cudnnRNNBackwardWeightsArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardWeights(
             args->handle,
@@ -157,7 +161,7 @@ partial_t TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *__a
     auto args = (cudnnRNNBackwardDataArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardData(
             args->handle,
@@ -207,7 +211,7 @@ partial_t TallyServer::cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingAr
     auto args = (cudnnRNNForwardTrainingArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNForwardTraining(
             args->handle,
@@ -251,7 +255,7 @@ partial_t TallyServer::cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttn
     auto args = (cudnnMultiHeadAttnBackwardDataArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnMultiHeadAttnBackwardData(
             args->handle,
@@ -297,7 +301,7 @@ partial_t TallyServer::cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwa
     auto args = (cudnnMultiHeadAttnForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnMultiHeadAttnForward(
             args->handle,
@@ -342,7 +346,7 @@ partial_t TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg *__args)
     auto args = (cublasSgemmExArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemmEx(
             args->handle,
@@ -382,7 +386,7 @@ partial_t TallyServer::cudnnTransformTensor_Partial(cudnnTransformTensorArg *__a
     auto args = (cudnnTransformTensorArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnTransformTensor(
             args->handle,
@@ -412,7 +416,7 @@ partial_t TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2Arg *__args)
     auto args = (cublasSgemv_v2Arg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemv_v2(
             args->handle,
@@ -447,7 +451,7 @@ partial_t TallyServer::cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelF
     auto args = (cudnnLRNCrossChannelForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnLRNCrossChannelForward(
             args->handle,
@@ -479,7 +483,7 @@ partial_t TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *__arg
     auto args = (cudnnSoftmaxForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnSoftmaxForward(
             args->handle,
@@ -511,7 +515,7 @@ partial_t TallyServer::cudnnAddTensor_Partial(cudnnAddTensorArg *__args)
     auto args = (cudnnAddTensorArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnAddTensor(
             args->handle,
@@ -541,7 +545,7 @@ partial_t TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *__args)
     auto args = (cublasLtMatmulArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasLtMatmul(
             args->lightHandle,
@@ -580,7 +584,7 @@ partial_t TallyServer::cudnnActivationForward_Partial(cudnnActivationForwardArg 
     auto args = (cudnnActivationForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnActivationForward(
             args->handle,
@@ -611,7 +615,7 @@ partial_t TallyServer::cudnnConvolutionForward_Partial(cudnnConvolutionForwardAr
     auto args = (cudnnConvolutionForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnConvolutionForward(
             args->handle,
@@ -647,7 +651,7 @@ partial_t TallyServer::cudnnPoolingForward_Partial(cudnnPoolingForwardArg *__arg
     auto args = (cudnnPoolingForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnPoolingForward(
             args->handle,
@@ -678,7 +682,7 @@ partial_t TallyServer::cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadA
     auto args = (cudnnMultiHeadAttnBackwardWeightsArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnMultiHeadAttnBackwardWeights(
             args->handle,
@@ -719,7 +723,7 @@ partial_t TallyServer::cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBi
     auto args = (cudnnReorderFilterAndBiasArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnReorderFilterAndBias(
             args->handle,
@@ -750,7 +754,7 @@ partial_t TallyServer::cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBat
     auto args = (cudnnBatchNormalizationForwardTrainingExArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnBatchNormalizationForwardTrainingEx(
             args->handle,
@@ -798,7 +802,7 @@ partial_t TallyServer::cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNorma
     auto args = (cudnnBatchNormalizationBackwardExArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnBatchNormalizationBackwardEx(
             args->handle,
@@ -851,7 +855,7 @@ partial_t TallyServer::cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeight
     auto args = (cudnnRNNBackwardWeights_v8Arg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardWeights_v8(
             args->handle,
@@ -890,7 +894,7 @@ partial_t TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Ar
     auto args = (cudnnRNNBackwardData_v8Arg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardData_v8(
             args->handle,
@@ -935,7 +939,7 @@ partial_t TallyServer::cudnnRNNForward_Partial(cudnnRNNForwardArg *__args)
     auto args = (cudnnRNNForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNForward(
             args->handle,
@@ -1004,7 +1008,7 @@ partial_t TallyServer::cublasGemmEx_Partial(cublasGemmExArg *__args)
     auto args = (cublasGemmExArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasGemmEx(
             args->handle,
@@ -1046,7 +1050,7 @@ partial_t TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatch
     auto args = (cublasGemmStridedBatchedExArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args] (PARTIAL_ARGUMENTS) {
+    return [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasGemmStridedBatchedEx(
             args->handle,
