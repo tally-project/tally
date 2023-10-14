@@ -49,13 +49,13 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
                 // Check the latency of this kernel, if it is short, then we fall back to the non-preemtive version
                 float latency_ms;
-                kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &latency_ms, nullptr, 1, true);
+                kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &latency_ms, nullptr, 1, true);
 
                 auto &client_data = client_data_all[client_id];
 
                 // Some preemptive kernel launch fails with 'invalid argument', fall back to the non-preemtive version for those
                 CudaLaunchConfig preemptive_config(false, false, false, true, 4);
-                auto err = kernel_wrapper.kernel_to_dispatch(preemptive_config, client_data.global_idx, client_data.retreat, true, 1000, nullptr, nullptr, 1, false);
+                auto err = kernel_wrapper.kernel_to_dispatch(preemptive_config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, true, 1000, nullptr, nullptr, 1, false);
 
                 if (err) {
                     auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
@@ -156,7 +156,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming);
 
         // Launch the kernel again
-        kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, false, 0, nullptr, nullptr, -1, true);
+        kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
 
         // Monitor the launched kernel
         cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream);

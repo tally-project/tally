@@ -147,7 +147,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(uint32_t 
 // return (time, iterations)
 CUresult CudaLaunchConfig::repeat_launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
-    float dur_seconds, uint32_t *global_idx, bool *retreat, float *time_ms, float *iters, int32_t max_count)
+    float dur_seconds, uint32_t *global_idx, bool *retreat, uint32_t *curr_idx_arr, float *time_ms, float *iters, int32_t max_count)
 {
     float _time_ms;
     CUresult err;
@@ -168,7 +168,7 @@ CUresult CudaLaunchConfig::repeat_launch(
         }
 
         // Perform your steps here
-        err = launch(func, gridDim, blockDim, args, sharedMem, stream, global_idx, retreat);
+        err = launch(func, gridDim, blockDim, args, sharedMem, stream, global_idx, retreat, curr_idx_arr);
         count++;
         ckpt_count++;
 
@@ -191,7 +191,7 @@ CUresult CudaLaunchConfig::repeat_launch(
 
 CUresult CudaLaunchConfig::launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
-    uint32_t *global_idx, bool *retreat, bool run_profile, float *elapsed_time_ms)
+    uint32_t *global_idx, bool *retreat, uint32_t *curr_idx_arr, bool run_profile, float *elapsed_time_ms)
 {
     cudaEvent_t _start, _stop;
 
@@ -285,11 +285,12 @@ CUresult CudaLaunchConfig::launch(
         }
 
         void *KernelParams[num_args];
-        for (size_t i = 0; i < num_args - 2; i++) {
+        for (size_t i = 0; i < num_args - 3; i++) {
             KernelParams[i] = args[i];
         }
-        KernelParams[num_args - 2] = &gridDim;
-        KernelParams[num_args - 1] = &global_idx;
+        KernelParams[num_args - 3] = &gridDim;
+        KernelParams[num_args - 2] = &global_idx;
+        KernelParams[num_args - 1] = &curr_idx_arr;
 
         if (run_profile) {
             cudaEventCreate(&_start);
@@ -315,7 +316,8 @@ CUresult CudaLaunchConfig::launch(
     } else if (use_preemptive_ptb) { 
         assert(global_idx);
         assert(retreat);
-        
+        assert(curr_idx_arr);
+
         CUfunction cu_func = TallyServer::server->preemptive_ptb_kernel_map[func].func;
         size_t num_args = TallyServer::server->preemptive_ptb_kernel_map[func].num_args;
 
@@ -332,12 +334,13 @@ CUresult CudaLaunchConfig::launch(
         }
 
         void *KernelParams[num_args];
-        for (size_t i = 0; i < num_args - 3; i++) {
+        for (size_t i = 0; i < num_args - 4; i++) {
             KernelParams[i] = args[i];
         }
-        KernelParams[num_args - 3] = &gridDim;
-        KernelParams[num_args - 2] = &global_idx;
-        KernelParams[num_args - 1] = &retreat;
+        KernelParams[num_args - 4] = &gridDim;
+        KernelParams[num_args - 3] = &global_idx;
+        KernelParams[num_args - 2] = &retreat;
+        KernelParams[num_args - 1] = &curr_idx_arr;
 
         if (run_profile) {
             cudaEventCreate(&_start);

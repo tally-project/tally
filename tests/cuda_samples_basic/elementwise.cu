@@ -80,28 +80,28 @@ __global__ void elementwiseAdditionPTB_dynamic(float* a, float* b, float* c, int
 // __device__ volatile bool retreat = 0;
 // __device__ unsigned int global_idx = 0;
 
-__global__ void elementwiseAdditionPTB_dynamic_retreat(float* a, float* b, float* c, int size, dim3 original_gridSize, uint32_t *global_idx, volatile bool *retreat) {
+__global__ void elementwiseAdditionPTB_dynamic_retreat(float* a, float* b, float* c, int size, dim3 original_gridSize, uint32_t *global_idx, volatile bool *retreat, uint32_t *curr_idx_arr) {
 
     const bool leader = (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0);
     const uint32_t num_thread_blocks = original_gridSize.x * original_gridSize.y * original_gridSize.z;
     const uint32_t xy_tbs = original_gridSize.x * original_gridSize.y;
 
-    __shared__ volatile uint32_t volatile_curr_idx;
     uint32_t curr_idx;
 
     while (true) {
 
         if (leader) {
             if (*retreat) {
-                volatile_curr_idx = num_thread_blocks + 1;
+                curr_idx_arr[blockIdx.x] = num_thread_blocks + 1;
             } else {
-                volatile_curr_idx = atomicAdd(global_idx, 1);
+                curr_idx = atomicAdd(global_idx, 1);
+                curr_idx_arr[blockIdx.x] = curr_idx;
             }
         }
 
         __syncthreads();
 
-        curr_idx = volatile_curr_idx;
+        curr_idx = curr_idx_arr[blockIdx.x];
 
         if (curr_idx >= num_thread_blocks) {
             break;
@@ -175,7 +175,7 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
     if (ptb) {
         cudaMemset(retreat, 0, sizeof(bool));
         cudaMemset(global_idx, 0, sizeof(uint32_t));
-        elementwiseAdditionPTB_dynamic<<<PTB_grid_dim, PTB_block_dim>>>(deviceA, deviceB, deviceC, size, grid_dim, global_idx, curr_idx_arr);
+        elementwiseAdditionPTB_dynamic_retreat<<<PTB_grid_dim, PTB_block_dim>>>(deviceA, deviceB, deviceC, size, grid_dim, global_idx, retreat, curr_idx_arr);
     } else {
         elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
     }
@@ -192,7 +192,7 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
         cudaMemset(retreat, 0, sizeof(bool));
         cudaMemset(global_idx, 0, sizeof(uint32_t));
 
-        elementwiseAdditionPTB_dynamic<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(deviceA, deviceB, deviceC, size, grid_dim, global_idx, curr_idx_arr);
+        elementwiseAdditionPTB_dynamic_retreat<<<PTB_grid_dim, PTB_block_dim, 0, kernel_stream>>>(deviceA, deviceB, deviceC, size, grid_dim, global_idx, retreat, curr_idx_arr);
 
     } else {
         elementwiseAddition<<<grid_dim, block_dim>>>(deviceA, deviceB, deviceC, size);
@@ -226,7 +226,7 @@ void runElementwiseAdditionCpu(float* arr_a, float* arr_b, float* arr_c, int siz
 int main()
 {
     int size = 16777216;
-    bool ptb = true;
+    bool ptb = false;
     
     // Allocate memory on the host (CPU)
     float* arr_a = new float[size];

@@ -11,7 +11,7 @@
 #include <boost/timer/progress_display.hpp>
 #include <boost/regex.hpp>
 
-// Generating preemptive PTB version of a PTX file
+// Generating preemptive using no shmem PTB version of a PTX file
 std::string gen_preemptive_ptb_ptx(std::string ptx_path)
 {
     std::ifstream t(ptx_path);
@@ -19,6 +19,7 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
         std::cerr << ptx_path << " not found." << std::endl;
         return "";
     }
+
     std::string ptx_code_str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
     std::stringstream ss(ptx_code_str);
     std::string line;
@@ -171,7 +172,6 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
             }
 
             // Now must be at end of kernel
-            std::string curr_idx_var_name = kernel_name + "__tally_curr_idx";
 
             // 16-bit registers
             std::string retreat_val_reg = "%rs" + std::to_string(allocate_new_b16_reg());
@@ -181,6 +181,10 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
             std::string global_idx_reg = "%rd" + std::to_string(allocate_new_b64_reg());
             std::string retreat_param_reg = "%rd" + std::to_string(allocate_new_b64_reg());
             std::string retreat_reg = "%rd" + std::to_string(allocate_new_b64_reg());
+            std::string curr_idx_arr_param_reg = "%rd" + std::to_string(allocate_new_b64_reg());
+            std::string curr_idx_arr_reg = "%rd" + std::to_string(allocate_new_b64_reg());
+            std::string curr_idx_addr_offset_reg = "%rd" + std::to_string(allocate_new_b64_reg());
+            std::string curr_idx_addr_reg = "%rd" + std::to_string(allocate_new_b64_reg());
 
             // 32-bit registers
             std::string origGridDim_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
@@ -205,6 +209,7 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
             std::string newBlockIdx_y_reg = "%r" + std::to_string(allocate_new_b32_reg());
             std::string newBlockIdx_y_mul_origGridDim_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
             std::string newBlockIdx_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
+            std::string blockIdx_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
 
             std::string atomic_add_res_reg = "%r" + std::to_string(allocate_new_b32_reg());
             std::string curr_idx_reg = "%r" + std::to_string(allocate_new_b32_reg());
@@ -236,7 +241,8 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += kernel_line + ",\n";
                     ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
                     ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + ",\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + "\n";
+                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + ",\n";
+                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 3) + "\n";
                     continue;
                 }
 
@@ -257,8 +263,6 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += ".reg .b64 %rd<" + std::to_string(num_b64_regs + num_additional_b64) + ">;\n";
                     ptb_ptx_code += ".reg .pred %p<" + std::to_string(num_pred_regs + num_additional_pred_regs) + ">;\n";
 
-                    ptb_ptx_code += ".shared .align 4 .u32 " + curr_idx_var_name + ";\n";
-
                     // Load origGridDim.x
                     ptb_ptx_code += "ld.param.u32 " + origGridDim_x_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "];\n";
                     // Load origGridDim.y
@@ -269,11 +273,15 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += "ld.param.u64 " + global_idx_param_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params + 1) + "];\n";
                     // Load retreat param
                     ptb_ptx_code += "ld.param.u64 " + retreat_param_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params + 2) + "];\n";
+                    // Load curr_idx_arr param
+                    ptb_ptx_code += "ld.param.u64 " + curr_idx_arr_param_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params + 3) + "];\n";
 
                     // Convert addr for global_idx param
                     ptb_ptx_code += "cvta.to.global.u64 " + global_idx_reg + ", " + global_idx_param_reg + ";\n";
                     // Convert addr for retreat param
                     ptb_ptx_code += "cvta.to.global.u64 " + retreat_reg + ", " + retreat_param_reg + ";\n";
+                    // Convert addr for curr_idx_arr param
+                    ptb_ptx_code += "cvta.to.global.u64 " + curr_idx_arr_reg + ", " + curr_idx_arr_param_reg + ";\n";
 
                     // threadIdx.x
                     ptb_ptx_code += "mov.u32 " + threadIdx_x_reg + ", %tid.x;\n";
@@ -291,6 +299,13 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += "mul.lo.s32 " + xy_tbs_reg + ", " + origGridDim_x_reg + ", " + origGridDim_y_reg + ";\n";
                     // num_thread_blocks = origGridDim.x * origGridDim.y * origGridDim.z
                     ptb_ptx_code += "mul.lo.s32 " + num_thread_blocks_reg + ", " + origGridDim_z_reg + ", " + xy_tbs_reg + ";\n";
+
+                    // load blockIdx.x as threads's index to curr_idx arr
+                    ptb_ptx_code += "mov.u32 " + blockIdx_x_reg + ", %ctaid.x;\n";
+                    // offset = blockIdx.x * 4
+                    ptb_ptx_code += "mul.wide.u32 " + curr_idx_addr_offset_reg + ", " + blockIdx_x_reg + ", 4;\n";
+                    // addr = curr_idx_arr + offset
+                    ptb_ptx_code += "add.s64 " + curr_idx_addr_reg + ", " + curr_idx_arr_reg + ", " + curr_idx_addr_offset_reg + ";\n";
 
                     // Always branch to CHECK LEADER BLOCK first
                     ptb_ptx_code += "bra.uni $" + PTB_CHECK_LEADER_BLOCK_NAME + ";\n";
@@ -355,7 +370,7 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
                     // Compute num_thread_blocks + 1
                     ptb_ptx_code += "add.s32 " + num_thread_blocks_plus_1_reg + ", " + num_thread_blocks_reg + ", 1;\n";
                     // Store volatile_curr_idx = num_thread_blocks + 1
-                    ptb_ptx_code += "st.volatile.shared.u32 [" + curr_idx_var_name + "], " + num_thread_blocks_plus_1_reg + ";\n";
+                    ptb_ptx_code += "st.global.u32 [" + curr_idx_addr_reg + "], " + num_thread_blocks_plus_1_reg + ";\n";
                     // Branch to check index block
                     ptb_ptx_code += "bra.uni $" + PTB_CHECK_INDEX_BLOCK_NAME + ";\n";
 
@@ -366,7 +381,7 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
                     // curr_idx = atomicAdd(global_idx, 1);
                     ptb_ptx_code += "atom.global.add.u32 " + atomic_add_res_reg + ", [" + global_idx_reg + "], 1;\n";
                     // store curr_idx
-                    ptb_ptx_code += "st.volatile.shared.u32 [" + curr_idx_var_name + "], " + atomic_add_res_reg + ";\n";
+                    ptb_ptx_code += "st.global.u32 [" + curr_idx_addr_reg + "], " + atomic_add_res_reg + ";\n";
 
                     ptb_ptx_code += "\n";
 
@@ -375,7 +390,7 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
                     // __syncthreads();
                     ptb_ptx_code += "bar.sync 0;\n";
                     // load curr_idx from volatile mem
-                    ptb_ptx_code += "ld.volatile.shared.u32 " + curr_idx_reg + ", [" + curr_idx_var_name + "];\n";
+                    ptb_ptx_code += "ld.global.u32 " + curr_idx_reg + ", [" + curr_idx_addr_reg + "];\n";
                     // if curr_idx > num_thread_blocks
                     ptb_ptx_code += "setp.ge.u32 " + check_index_pred_reg + ", " + curr_idx_reg + ", " + num_thread_blocks_reg + ";\n";
                     // return if curr_idx > num_thread_blocks
@@ -596,11 +611,14 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
             }
 
             // Now must be at end of kernel
-            std::string curr_idx_var_name = kernel_name + "__tally_curr_idx";
 
             // 64-bit registers
             std::string global_idx_param_reg = "%rd" + std::to_string(allocate_new_b64_reg());
             std::string global_idx_reg = "%rd" + std::to_string(allocate_new_b64_reg());
+            std::string curr_idx_arr_param_reg = "%rd" + std::to_string(allocate_new_b64_reg());
+            std::string curr_idx_arr_reg = "%rd" + std::to_string(allocate_new_b64_reg());
+            std::string curr_idx_addr_offset_reg = "%rd" + std::to_string(allocate_new_b64_reg());
+            std::string curr_idx_addr_reg = "%rd" + std::to_string(allocate_new_b64_reg());
 
             // 32-bit registers
             std::string origGridDim_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
@@ -624,6 +642,7 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
             std::string newBlockIdx_y_reg = "%r" + std::to_string(allocate_new_b32_reg());
             std::string newBlockIdx_y_mul_origGridDim_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
             std::string newBlockIdx_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
+            std::string blockIdx_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
 
             std::string atomic_add_res_reg = "%r" + std::to_string(allocate_new_b32_reg());
             std::string curr_idx_reg = "%r" + std::to_string(allocate_new_b32_reg());
@@ -653,7 +672,8 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
                 if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
                     ptb_ptx_code += kernel_line + ",\n";
                     ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + "\n";
+                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + ",\n";
+                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + "\n";
                     continue;
                 }
 
@@ -673,8 +693,6 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += ".reg .b64 %rd<" + std::to_string(num_b64_regs + num_additional_b64) + ">;\n";
                     ptb_ptx_code += ".reg .pred %p<" + std::to_string(num_pred_regs + num_additional_pred_regs) + ">;\n";
 
-                    ptb_ptx_code += ".shared .align 4 .u32 " + curr_idx_var_name + ";\n";
-
                     // Load origGridDim.x
                     ptb_ptx_code += "ld.param.u32 " + origGridDim_x_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "];\n";
                     // Load origGridDim.y
@@ -683,9 +701,13 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += "ld.param.u32 " + origGridDim_z_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+8];\n";
                     // Load global_idx param
                     ptb_ptx_code += "ld.param.u64 " + global_idx_param_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params + 1) + "];\n";
+                    // Load curr_idx_arr param
+                    ptb_ptx_code += "ld.param.u64 " + curr_idx_arr_param_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params + 2) + "];\n";
 
                     // Convert addr for global_idx param
                     ptb_ptx_code += "cvta.to.global.u64 " + global_idx_reg + ", " + global_idx_param_reg + ";\n";
+                    // Convert addr for retreat param
+                    ptb_ptx_code += "cvta.to.global.u64 " + curr_idx_arr_reg + ", " + curr_idx_arr_param_reg + ";\n";
 
                     // threadIdx.x
                     ptb_ptx_code += "mov.u32 " + threadIdx_x_reg + ", %tid.x;\n";
@@ -703,6 +725,13 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
                     ptb_ptx_code += "mul.lo.s32 " + xy_tbs_reg + ", " + origGridDim_x_reg + ", " + origGridDim_y_reg + ";\n";
                     // num_thread_blocks = origGridDim.x * origGridDim.y * origGridDim.z
                     ptb_ptx_code += "mul.lo.s32 " + num_thread_blocks_reg + ", " + origGridDim_z_reg + ", " + xy_tbs_reg + ";\n";
+
+                    // load blockIdx.x as threads's index to curr_idx arr
+                    ptb_ptx_code += "mov.u32 " + blockIdx_x_reg + ", %ctaid.x;\n";
+                    // offset = blockIdx.x * 4
+                    ptb_ptx_code += "mul.wide.u32 " + curr_idx_addr_offset_reg + ", " + blockIdx_x_reg + ", 4;\n";
+                    // addr = curr_idx_arr + offset
+                    ptb_ptx_code += "add.s64 " + curr_idx_addr_reg + ", " + curr_idx_arr_reg + ", " + curr_idx_addr_offset_reg + ";\n";
 
                     // Always branch to CHECK LEADER BLOCK first
                     ptb_ptx_code += "bra.uni $" + PTB_CHECK_LEADER_BLOCK_NAME + ";\n";
@@ -754,7 +783,7 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
                     // curr_idx = atomicAdd(global_idx, 1);
                     ptb_ptx_code += "atom.global.add.u32 " + atomic_add_res_reg + ", [" + global_idx_reg + "], 1;\n";
                     // store curr_idx
-                    ptb_ptx_code += "st.volatile.shared.u32 [" + curr_idx_var_name + "], " + atomic_add_res_reg + ";\n";
+                    ptb_ptx_code += "st.global.u32 [" + curr_idx_addr_reg + "], " + atomic_add_res_reg + ";\n";
 
                     ptb_ptx_code += "\n";
 
@@ -763,7 +792,7 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
                     // __syncthreads();
                     ptb_ptx_code += "bar.sync 0;\n";
                     // load curr_idx from volatile mem
-                    ptb_ptx_code += "ld.volatile.shared.u32 " + curr_idx_reg + ", [" + curr_idx_var_name + "];\n";
+                    ptb_ptx_code += "ld.global.u32 " + curr_idx_reg + ", [" + curr_idx_addr_reg + "];\n";
                     // if curr_idx > num_thread_blocks
                     ptb_ptx_code += "setp.ge.u32 " + check_index_pred_reg + ", " + curr_idx_reg + ", " + num_thread_blocks_reg + ";\n";
                     // return if curr_idx > num_thread_blocks
