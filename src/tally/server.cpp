@@ -386,10 +386,9 @@ void TallyServer::wait_until_launch_queue_empty(int32_t client_id)
 {
     int attempt = 0;
     while (client_data_all[client_id].queue_size > 0) {
-        std::this_thread::sleep_for(std::chrono::microseconds(1));
         attempt++;
 
-        if (attempt == 100000) {
+        if (attempt == 10000000) {
             if (iox::posix::hasTerminationRequested() || signal_exit) {
                 break;
             }
