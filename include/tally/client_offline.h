@@ -34,6 +34,9 @@ public:
 
     static TallyClientOffline *client_offline;
 
+    uint32_t *global_idx = nullptr;
+    uint32_t *curr_idx_arr = nullptr;
+
     std::unordered_map<const void *, std::string> host_func_to_demangled_kernel_name_map;
     std::unordered_map<const void *, uint32_t> host_func_to_cubin_uid_map;
 

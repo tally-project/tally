@@ -158,6 +158,35 @@ CUresult TallyClientOffline::launch_kernel(CudaLaunchConfig config, const void *
         auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
                             blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
         return err;
+
+    } else if (config.use_dynamic_ptb) {
+
+        CUfunction cu_func = dynamic_ptb_kernel_map[func].func;
+        size_t num_args = dynamic_ptb_kernel_map[func].num_args;
+        assert(cu_func);
+
+        dim3 PTB_grid_dim;
+        
+        uint32_t total_blocks = blockDim.x * blockDim.y * blockDim.z;
+        // Depend on number of PTBs/SM
+        if (total_blocks < CUDA_NUM_SM) {
+            PTB_grid_dim = dim3(total_blocks);
+        } else {
+            PTB_grid_dim = dim3(CUDA_NUM_SM * config.num_blocks_per_sm);
+        }
+
+        void *KernelParams[num_args];
+        for (size_t i = 0; i < num_args - 3; i++) {
+            KernelParams[i] = args[i];
+        }
+        KernelParams[num_args - 3] = &gridDim;
+        KernelParams[num_args - 2] = &global_idx;
+        KernelParams[num_args - 1] = &curr_idx_arr;
+
+        auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
+                            blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
+        return err;
+        
     } else {
         throw std::runtime_error("Invalid launch config.");
     }
@@ -179,6 +208,10 @@ CUresult TallyClientOffline::launch_kernel_repeat(
     while (true) {
 
         cudaStreamSynchronize(stream);
+
+        if (config.use_dynamic_ptb) {
+            cudaMemsetAsync(global_idx, 0, sizeof(uint32_t), stream);
+        }
 
         // Perform your steps here
         err = launch_kernel(config, func, gridDim, blockDim, args, sharedMem, stream);

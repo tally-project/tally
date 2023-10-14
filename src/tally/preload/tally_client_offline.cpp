@@ -44,6 +44,11 @@ void register_kernels()
 
         TallyClientOffline::client_offline->register_measurements();
     }
+
+    if (!TallyClientOffline::client_offline->curr_idx_arr) {
+        cudaMalloc((void **)&(TallyClientOffline::client_offline->global_idx), sizeof(uint32_t));
+        cudaMalloc((void **)&(TallyClientOffline::client_offline->curr_idx_arr), sizeof(uint32_t) * CUDA_NUM_SM * 20);
+    }
 }
 
 extern "C" { 
@@ -70,6 +75,11 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     }
 
     auto config = res.config;
+
+    if (config.use_dynamic_ptb) {
+        cudaStreamSynchronize(stream);
+        cudaMemsetAsync(TallyClientOffline::client_offline->global_idx, 0, sizeof(uint32_t), stream);
+    }
 
     auto err = TallyClientOffline::client_offline->launch_kernel(config, func, gridDim, blockDim, args, sharedMem, stream);
     if (!err) {
