@@ -82,6 +82,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     }
 
     auto err = TallyClientOffline::client_offline->launch_kernel(config, func, gridDim, blockDim, args, sharedMem, stream);
+    
     if (!err) {
         return cudaSuccess;
     } else {
@@ -114,6 +115,11 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
     }
 
     auto config = res.config;
+
+    if (config.use_dynamic_ptb) {
+        cudaStreamSynchronize(hStream);
+        cudaMemsetAsync(TallyClientOffline::client_offline->global_idx, 0, sizeof(uint32_t), hStream);
+    }
 
     auto err = TallyClientOffline::client_offline->launch_kernel(config, func, gridDim, blockDim, kernelParams, sharedMemBytes, hStream);
 
@@ -243,8 +249,9 @@ CUresult cuFuncSetAttribute(CUfunction  hfunc, CUfunction_attribute  attrib, int
     auto cu_func_dynamic_ptb = TallyClientOffline::client_offline->dynamic_ptb_kernel_map[func].func;
     auto cu_func_preemptive_ptb = TallyClientOffline::client_offline->preemptive_ptb_kernel_map[func].func;
 
-    auto err = lcuFuncSetAttribute(cu_func, attrib, value);
+    auto err = lcuFuncSetAttribute(hfunc, attrib, value);
 
+    lcuFuncSetAttribute(cu_func, attrib, value);
     lcuFuncSetAttribute(cu_func_ptb, attrib, value);
     lcuFuncSetAttribute(cu_func_dynamic_ptb, attrib, value);
     lcuFuncSetAttribute(cu_func_preemptive_ptb, attrib, value);

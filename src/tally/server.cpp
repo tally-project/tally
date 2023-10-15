@@ -741,10 +741,7 @@ void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_
             }
 
             if (response->err == cudaErrorMemoryAllocation) {
-                std::cerr << "Encountered cudaErrorMemoryAllocation " << std::string(__FILE__) + ":" + std::to_string(__LINE__) << std::endl; \
-                pid_t pid = getpid(); \
-                int sig_num = SIGTERM; \
-                kill(pid, sig_num); \
+                std::cerr << "Encountered cudaErrorMemoryAllocation " << std::string(__FILE__) + ":" + std::to_string(__LINE__) << std::endl;
             }
             
             iox_server->send(response).or_else(

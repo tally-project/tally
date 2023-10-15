@@ -442,7 +442,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
     auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
     
-    CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
+    // CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
 #else
     assert(TallyClient::client->_kernel_addr_to_args.find(func) != TallyClient::client->_kernel_addr_to_args.end());
