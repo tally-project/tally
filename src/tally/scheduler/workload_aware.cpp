@@ -142,7 +142,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         
         // If never launched before, set global_idx to 0
         } else {
-            if (config.use_preemptive_ptb) {
+            if (config.use_preemptive_ptb || config.use_dynamic_ptb) {
                 cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
             }
         }
