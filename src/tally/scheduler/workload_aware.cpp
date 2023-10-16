@@ -153,13 +153,13 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         }
 
         // Create a event to monitor the kernel execution
-        cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming);
+        CHECK_CUDA_ERROR(cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming));
 
         // Launch the kernel again
         kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
 
         // Monitor the launched kernel
-        cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream);
+        CHECK_CUDA_ERROR(cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream));
 
         kernel.launched = true;
         kernel.config = config;
@@ -188,26 +188,41 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             if (has_kernel) {
 
                 auto &kernel_wrapper = in_progress_kernels[client_id].kernel_wrapper;
-                auto query_err = cudaEventQuery(kernel_wrapper.event);
 
-                // Check whether has finished
-                if (query_err == cudaSuccess) {
+                // In the case of time share, only one kernel will be launched
+                // So kernel_wrapper.event is likely to be NULL
+                if (kernel_wrapper.event) {
 
-                    // Erase if finished
-                    in_progress_kernels.erase(client_id);
-                    client_data.queue_size--;
-                    fetch_new_kernel = true;
-                    has_change = true;
+                    auto query_err = cudaEventQuery(kernel_wrapper.event);
 
+                    // Check whether has finished
+                    if (query_err == cudaSuccess) {
+
+                        // Erase if finished
+                        in_progress_kernels.erase(client_id);
+                        client_data.queue_size--;
+                        fetch_new_kernel = true;
+                        has_change = true;
+
+                    } else {
+                        if (query_err !=  cudaErrorNotReady) {
+                            std::cout << "cudaEvent: " << (void *) kernel_wrapper.event << std::endl;
+                            auto msg = cudaGetErrorString(query_err);
+                            std::cout << msg << std::endl;
+                            CHECK_ERR_LOG_AND_EXIT(query_err, "cudaEventQuery fails");
+                        }
+
+                        if (signal_exit) {
+                            break;
+                        }
+                    }
                 } else {
-                    if (query_err !=  cudaErrorNotReady) {
-                        CHECK_ERR_LOG_AND_EXIT(query_err, "cudaEventQuery fails");
-                    }
 
-                    if (signal_exit) {
-                        break;
-                    }
+                    // Set has_change if kernel has not been launched
+                    has_change = true;
+                    
                 }
+
             } else {
                 fetch_new_kernel = true;
             }
