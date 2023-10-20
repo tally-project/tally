@@ -1135,4 +1135,30 @@ struct cuMemsetD8_v2Arg {
 	size_t  N;
 };
 
+struct cuStreamCreateArg {
+	CUstream * phStream;
+	unsigned int  Flags;
+};
+
+struct cuStreamCreateResponse {
+	CUstream  phStream;
+	CUresult err;
+};
+
+struct cuMemAlloc_v2Arg {
+	CUdeviceptr * dptr;
+	size_t  bytesize;
+};
+
+struct cuMemAlloc_v2Response {
+	CUdeviceptr  dptr;
+	CUresult err;
+};
+
+struct cuMemsetD32_v2Arg {
+	CUdeviceptr  dstDevice;
+	unsigned int  ui;
+	size_t  N;
+};
+
 #endif // TALLY_DEF_H

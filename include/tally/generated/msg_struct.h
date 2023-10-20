@@ -352,6 +352,17 @@ struct cuModuleGetLoadingModeResponse {
 	CUresult err;
 };
 
+struct cuMemGetInfo_v2Arg {
+	size_t * free;
+	size_t * total;
+};
+
+struct cuMemGetInfo_v2Response {
+	size_t  free;
+	size_t  total;
+	CUresult err;
+};
+
 struct cuMemAllocFromPoolAsyncArg {
 	CUdeviceptr * dptr;
 	size_t  bytesize;

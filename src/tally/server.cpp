@@ -176,7 +176,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     // In seconds
     float profile_duration = (100 * time_elapsed) / 1000.f;
 
-    // At least run for 0.1 sec
+    // At least run for 0.5 sec
     profile_duration = std::max(profile_duration, 0.5f);
 
     // Maybe don't exceed 1 minute;
@@ -216,7 +216,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     }
 
     float best_norm_speed = base_latency_ms / best_latency_ms;
-    if (best_norm_speed < 0.5) {
+    if (best_norm_speed < USE_PTB_THRESHOLD) {
         best_config = base_config;
         best_norm_speed = 1.;
     }
@@ -3441,6 +3441,88 @@ void TallyServer::handle_cuMemsetD8_v2(void *__args, iox::popo::UntypedServer *i
             *response = cuMemsetD8Async(
 				args->dstDevice,
 				args->uc,
+				args->N,
+                client_data_all[client_id].default_stream
+            );
+
+            // Make sure cuMemset is finished, because cuMemset is synchronous
+            cudaStreamSynchronize(client_data_all[client_id].default_stream);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuStreamCreate(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuStreamCreate");
+	auto args = (struct cuStreamCreateArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(cuStreamCreateResponse), alignof(cuStreamCreateResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuStreamCreateResponse*>(responsePayload);
+            response->err = cuStreamCreate(
+				(args->phStream ? &(response->phStream) : NULL),
+				args->Flags
+			);
+
+            // Bookkeep the newly created stream
+            client_data_all[client_uid].streams.push_back(response->phStream);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemAlloc_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemAlloc_v2");
+	auto args = (struct cuMemAlloc_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(cuMemAlloc_v2Response), alignof(cuMemAlloc_v2Response))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuMemAlloc_v2Response*>(responsePayload);
+            response->err = cuMemAlloc_v2(
+				(args->dptr ? &(response->dptr) : NULL),
+				args->bytesize
+			);
+
+            // Keep track that this addr is device memory
+            if (response->err == CUDA_SUCCESS) {
+                client_data_all[client_id].dev_addr_map.push_back( DeviceMemoryKey((void *)response->dptr, args->bytesize) );
+            }
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemsetD32_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemsetD32_v2");
+	auto args = (struct cuMemsetD32_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+            *response = cuMemsetD32Async(
+				args->dstDevice,
+				args->ui,
 				args->N,
                 client_data_all[client_id].default_stream
             );

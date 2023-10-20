@@ -21,6 +21,11 @@ static uint32_t CUDA_MAX_SHM_BYTES_PER_SM = 100 * 1024;
 // These can be tuned
 static uint32_t PTB_MAX_NUM_THREADS_PER_SM = 1024;
 
+// Time share Threshold
+static uint32_t TIME_SHARE_THRESHOLD = 1;
+static uint32_t USE_PTB_THRESHOLD = 0.5;
+static uint32_t USE_PREEMPTIVE_LATENCY_THRESHOLD = 0.5;
+
 extern bool TALLY_INITIALIZED;
 
 enum TALLY_SCHEDULER_POLICY {

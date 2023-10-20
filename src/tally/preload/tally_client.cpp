@@ -53,6 +53,9 @@ void *dlopen(const char *filename, int flag)
         client_preload_path = std::filesystem::path(std::string(std::getenv("HOME"))) / "tally/build/libtally_client.so";
     }
 
+    std::cout << "dlopen" << std::endl;
+    std::cout << filename << std::endl;
+
     auto preload_str = client_preload_path.string();
 
     static void* (*ldlopen) (const char *, int );
@@ -61,11 +64,25 @@ void *dlopen(const char *filename, int flag)
     }
     assert(ldlopen);
 
+    std::vector<std::string> preload_libs {
+        "libcuda.so.1",
+//         // "/usr/lib/x86_64-linux-gnu/libcuda.so.1",
+//         // "libnvrtc.so.12",
+//         // "/usr/local/cuda/lib64/libcudart.so",
+//         // "/usr/local/cuda/lib64/libcudnn.so",
+//         // "/usr/local/cuda/lib64/libcublas.so",
+//         // "/usr/local/cuda/lib64/libcublasLt.so"
+    };
+
     if (filename) {
         std::string f_name(filename);
 
-        if (f_name == "libcuda.so.1" || f_name == "libnvrtc.so.12") {
-            return ldlopen(preload_str.c_str(), flag);
+        if(std::find(preload_libs.begin(), preload_libs.end(), f_name) != preload_libs.end()) {
+            std::cout << "preloaded" << std::endl;
+            std::cout << preload_str << std::endl;
+            auto res = ldlopen(preload_str.c_str(), flag);
+            std::cout << res << std::endl;
+            return res;
         }
     }
 
@@ -4869,6 +4886,134 @@ CUresult cuMemsetD8_v2(CUdeviceptr  dstDevice, unsigned char  uc, size_t  N)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuMemsetD8_v2);
+	return err;
+}
+
+
+CUresult cuStreamCreate(CUstream * phStream, unsigned int  Flags)
+{
+	TALLY_LOG("cuStreamCreate hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuStreamCreate(phStream, Flags);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamCreateArg), alignof(cuStreamCreateArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUSTREAMCREATE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuStreamCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->phStream = phStream;
+			request->Flags = Flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuStreamCreateResponse*>(responsePayload);
+			if (phStream) { *phStream = response->phStream; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuStreamCreate);
+	return err;
+}
+
+CUresult cuMemAlloc_v2(CUdeviceptr * dptr, size_t  bytesize)
+{
+	TALLY_LOG("cuMemAlloc_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemAlloc_v2(dptr, bytesize);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemAlloc_v2Arg), alignof(cuMemAlloc_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMALLOC_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemAlloc_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dptr = dptr;
+			request->bytesize = bytesize;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuMemAlloc_v2Response*>(responsePayload);
+			if (dptr) { *dptr = response->dptr; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    if (err == CUDA_SUCCESS) {
+        dev_addr_map.push_back( DeviceMemoryKey(*dptr, bytesize) );
+    }
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemAlloc_v2);
+	return err;
+}
+
+CUresult cuMemsetD32_v2(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N)
+{
+	TALLY_LOG("cuMemsetD32_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemsetD32_v2(dstDevice, ui, N);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemsetD32_v2Arg), alignof(cuMemsetD32_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMSETD32_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemsetD32_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dstDevice = dstDevice;
+			request->ui = ui;
+			request->N = N;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemsetD32_v2);
 	return err;
 }
 

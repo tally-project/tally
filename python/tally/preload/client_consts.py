@@ -169,13 +169,13 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <tally/cuda_util.h>
 #include <tally/cache_struct.h>
 
-typedef std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> kernel_partial_t;
+using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, uint32_t *, bool, float, float*, float*, int32_t, bool)>;
 
 struct KernelLaunchWrapper {
 
 public:
 	// Callable to launch kernel
-	kernel_partial_t kernel_to_dispatch;
+	partial_t kernel_to_dispatch;
 
 	// whether it is blackbox kernel from nvidia libraries
 	bool is_library_call;
@@ -217,6 +217,7 @@ public:
 
 	uint32_t *global_idx;
 	bool *retreat;
+	uint32_t *curr_idx_arr;
 
     cudaStream_t default_stream = nullptr;
 	std::atomic<bool> has_exit = false;
@@ -244,6 +245,8 @@ class TallyServer {
 public:
 
     static TallyServer *server;
+
+	bool signal_exit = false;
 
 	// ================== Per-client state ===================
 	std::map<int32_t, ClientData> client_data_all;
@@ -359,8 +362,6 @@ public:
 
 	void wait_until_launch_queue_empty(int32_t client_id);
 
-	using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>;
-
 	// Return a partial function to be scheduled by scheduler
     partial_t cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
 	partial_t cublasSgemm_v2_Partial(cublasSgemm_v2Arg *);
@@ -467,6 +468,7 @@ KERNEL_LAUNCH_CALLS = [
 
 # let the client call the APIs directly
 DIRECT_CALLS = [
+    "cuDeviceGetPCIBusId",
     "cuCtxDestroy_v2",
     "cuInit",
     "cuDeviceGetName",
@@ -488,6 +490,9 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuMemsetD32_v2",
+    "cuMemAlloc_v2",
+    "cuStreamCreate",
     "cuMemsetD8_v2",
     "cublasGemmStridedBatchedEx",
     "cublasGemmEx",
@@ -804,6 +809,7 @@ CUDA_GET_2_3_PARAM_FUNCS = [
 ]
 
 CUDA_GET_1_2_PARAM_FUNCS = [
+    "cuMemGetInfo_v2",
     "cudaDeviceGetStreamPriorityRange",
     "cuDeviceGetLuid",
     "cuDeviceComputeCapability",

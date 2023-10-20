@@ -1940,13 +1940,43 @@ CUresult cuKernelSetCacheConfig(CUkernel  kernel, CUfunc_cache  config, CUdevice
 CUresult cuMemGetInfo_v2(size_t * free, size_t * total)
 {
 	TALLY_LOG("cuMemGetInfo_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemGetInfo_v2(free, total);
+#else
 
-CUresult cuMemAlloc_v2(CUdeviceptr * dptr, size_t  bytesize)
-{
-	TALLY_LOG("cuMemAlloc_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemGetInfo_v2Arg), alignof(cuMemGetInfo_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMGETINFO_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemGetInfo_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->free = free;
+			request->total = total;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuMemGetInfo_v2Response*>(responsePayload);
+			if (free) { *free = response->free; }
+			if (total) { *total = response->total; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemGetInfo_v2);
+	return err;
 }
 
 CUresult cuMemAllocPitch_v2(CUdeviceptr * dptr, size_t * pPitch, size_t  WidthInBytes, size_t  Height, unsigned int  ElementSizeBytes)
@@ -2006,7 +2036,8 @@ CUresult cuDeviceGetByPCIBusId(CUdevice * dev, const char * pciBusId)
 CUresult cuDeviceGetPCIBusId(char * pciBusId, int  len, CUdevice  dev)
 {
 	TALLY_LOG("cuDeviceGetPCIBusId hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	CUresult res = 		lcuDeviceGetPCIBusId(pciBusId, len, dev);
+	return res;
 }
 
 CUresult cuIpcGetEventHandle(CUipcEventHandle * pHandle, CUevent  event)
@@ -2186,12 +2217,6 @@ CUresult cuMemcpy3DPeerAsync(const CUDA_MEMCPY3D_PEER * pCopy, CUstream  hStream
 CUresult cuMemsetD16_v2(CUdeviceptr  dstDevice, unsigned short  us, size_t  N)
 {
 	TALLY_LOG("cuMemsetD16_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuMemsetD32_v2(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N)
-{
-	TALLY_LOG("cuMemsetD32_v2 hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -2613,12 +2638,6 @@ CUresult cuPointerSetAttribute(const void * value, CUpointer_attribute  attribut
 CUresult cuPointerGetAttributes(unsigned int  numAttributes, CUpointer_attribute * attributes, void ** data, CUdeviceptr  ptr)
 {
 	TALLY_LOG("cuPointerGetAttributes hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuStreamCreate(CUstream * phStream, unsigned int  Flags)
-{
-	TALLY_LOG("cuStreamCreate hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
