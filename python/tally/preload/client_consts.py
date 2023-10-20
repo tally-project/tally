@@ -468,6 +468,7 @@ KERNEL_LAUNCH_CALLS = [
 
 # let the client call the APIs directly
 DIRECT_CALLS = [
+    "cuMemHostAlloc",
     "cuDeviceGetPCIBusId",
     "cuCtxDestroy_v2",
     "cuInit",
@@ -490,6 +491,12 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuModuleGetGlobal_v2",
+    "cuMemcpyDtoDAsync_v2",
+    "cuModuleLoadFatBinary",
+    "cuMemsetD32Async",
+    "cuMemcpyDtoHAsync_v2",
+    "cuMemcpyHtoDAsync_v2",
     "cuMemsetD32_v2",
     "cuMemAlloc_v2",
     "cuStreamCreate",
@@ -586,6 +593,10 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cuGraphExecDestroy",
+    "cuGraphDestroy",
+    "cuEventSynchronize",
+    "cuEventQuery",
     "cuEventDestroy_v2",
     "cuStreamWaitEvent",
     "cuEventRecord",
@@ -704,6 +715,7 @@ FORWARD_API_CALLS = [
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cuEventElapsedTime",
     "cuEventCreate",
     "cuGraphInstantiateWithFlags",
     "cuModuleGetLoadingMode",
@@ -779,6 +791,7 @@ UNSUPPORTED_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
+    "cuStreamIsCapturing",
     "cublasGetMathMode",
     "cuStreamEndCapture",
     "cudaStreamEndCapture",
@@ -846,6 +859,7 @@ CUDA_GET_2_3_4_PARAM_FUNCS = [
 ]
 
 CUDA_GET_3_PARAM_FUNCS = [
+    "cuGraphExecUpdate_v2",
     "cudnnGetRNNWeightSpaceSize",
     "cudnnGetRNNForwardInferenceAlgorithmMaxCount"
 ]

@@ -1161,4 +1161,38 @@ struct cuMemsetD32_v2Arg {
 	size_t  N;
 };
 
+struct cuMemcpyHtoDAsync_v2Arg {
+	CUdeviceptr  dstDevice;
+    void * srcHost;
+    size_t  ByteCount;
+    CUstream  hStream;
+    char data[];
+};
+
+struct cuMemcpyDtoHAsync_v2Arg {
+	void * dstHost;
+    CUdeviceptr  srcDevice;
+    size_t  ByteCount;
+    CUstream  hStream;
+};
+
+struct cuMemcpyDtoHAsync_v2Response {
+    CUresult err;
+    char data[];
+};
+
+struct cuMemsetD32AsyncArg {
+	CUdeviceptr  dstDevice;
+    unsigned int  ui;
+    size_t  N;
+    CUstream  hStream;
+};
+
+struct cuMemcpyDtoDAsync_v2Arg {
+	CUdeviceptr  dstDevice;
+	CUdeviceptr  srcDevice;
+	size_t  ByteCount;
+	CUstream  hStream;
+};
+
 #endif // TALLY_DEF_H

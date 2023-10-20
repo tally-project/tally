@@ -396,6 +396,16 @@ struct cuStreamEndCaptureResponse {
 	CUresult err;
 };
 
+struct cuStreamIsCapturingArg {
+	CUstream  hStream;
+	CUstreamCaptureStatus * captureStatus;
+};
+
+struct cuStreamIsCapturingResponse {
+	CUstreamCaptureStatus  captureStatus;
+	CUresult err;
+};
+
 struct cuStreamSynchronizeArg {
 	CUstream  hStream;
 };
@@ -415,8 +425,27 @@ struct cuEventRecordArg {
 	CUstream  hStream;
 };
 
+struct cuEventQueryArg {
+	CUevent  hEvent;
+};
+
+struct cuEventSynchronizeArg {
+	CUevent  hEvent;
+};
+
 struct cuEventDestroy_v2Arg {
 	CUevent  hEvent;
+};
+
+struct cuEventElapsedTimeArg {
+	float * pMilliseconds;
+	CUevent  hStart;
+	CUevent  hEnd;
+};
+
+struct cuEventElapsedTimeResponse {
+	float  pMilliseconds;
+	CUresult err;
 };
 
 struct cuDestroyExternalMemoryArg {
@@ -437,6 +466,25 @@ struct cuGraphInstantiateWithFlagsResponse {
 struct cuGraphLaunchArg {
 	CUgraphExec  hGraphExec;
 	CUstream  hStream;
+};
+
+struct cuGraphExecDestroyArg {
+	CUgraphExec  hGraphExec;
+};
+
+struct cuGraphDestroyArg {
+	CUgraph  hGraph;
+};
+
+struct cuGraphExecUpdate_v2Arg {
+	CUgraphExec  hGraphExec;
+	CUgraph  hGraph;
+	CUgraphExecUpdateResultInfo * resultInfo;
+};
+
+struct cuGraphExecUpdate_v2Response {
+	CUgraphExecUpdateResultInfo  resultInfo;
+	CUresult err;
 };
 
 struct cudaDeviceResetArg {

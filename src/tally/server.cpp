@@ -3057,6 +3057,8 @@ void TallyServer::handle_cuMemcpyAsync(void *__args, iox::popo::UntypedServer *i
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuMemcpyAsyncResponse*>(responsePayload);
 
+            wait_until_launch_queue_empty(client_id);
+
             response->err = cuMemcpyAsync(
 				is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst) ? args->dst : (CUdeviceptr) response->data,
 				is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->src) ? args->src : (CUdeviceptr) args->data,
@@ -3535,4 +3537,159 @@ void TallyServer::handle_cuMemsetD32_v2(void *__args, iox::popo::UntypedServer *
         })
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemcpyHtoDAsync_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemcpyHtoDAsync_v2");
+	auto args = (struct cuMemcpyHtoDAsync_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    CUstream  stream = args->hStream;
+
+    if (stream == nullptr) {
+        stream = client_data_all[client_id].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(cuMemcpyResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_id);
+
+            *response = cuMemcpyHtoDAsync_v2(
+				args->dstDevice,
+				args->data,
+				args->ByteCount,
+                stream
+            );
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemcpyDtoHAsync_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemcpyDtoHAsync_v2");
+	auto args = (struct cuMemcpyDtoHAsync_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_id].default_stream;
+    }
+
+    size_t res_size = sizeof(cuMemcpyDtoHAsync_v2Response) + args->ByteCount;
+
+    iox_server->loan(requestHeader, res_size, alignof(cuMemcpyDtoHAsync_v2Response))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuMemcpyDtoHAsync_v2Response*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_id);
+
+            response->err = cuMemcpyDtoHAsync_v2(
+				response->data,
+				args->srcDevice,
+				args->ByteCount,
+				__stream
+            );
+            
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemsetD32Async(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemsetD32Async");
+	auto args = (struct cuMemsetD32AsyncArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_id].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+
+            // Make sure all kernels have been dispatched
+            wait_until_launch_queue_empty(client_id);
+
+            auto response = static_cast<CUresult*>(responsePayload);
+            *response = cuMemsetD32Async(
+				args->dstDevice,
+				args->ui,
+				args->N,
+                __stream
+            );
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuModuleLoadFatBinary(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuModuleLoadFatBinary");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cuMemcpyDtoDAsync_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemcpyDtoDAsync_v2");
+	auto args = (struct cuMemcpyDtoDAsync_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_uid);
+
+            *response = cuMemcpyDtoDAsync_v2(
+				args->dstDevice,
+				args->srcDevice,
+				args->ByteCount,
+				__stream
+            );
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuModuleGetGlobal_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuModuleGetGlobal_v2");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }

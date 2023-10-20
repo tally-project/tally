@@ -24,6 +24,8 @@
 #include <cublasLt.h>
 #include <fatbinary_section.h>
 
+#include <elf.h>
+// #include "tally/elf.h"
 #include "tally/log.h"
 #include "tally/util.h"
 #include "tally/cuda_util.h"
@@ -53,9 +55,6 @@ void *dlopen(const char *filename, int flag)
         client_preload_path = std::filesystem::path(std::string(std::getenv("HOME"))) / "tally/build/libtally_client.so";
     }
 
-    std::cout << "dlopen" << std::endl;
-    std::cout << filename << std::endl;
-
     auto preload_str = client_preload_path.string();
 
     static void* (*ldlopen) (const char *, int );
@@ -64,25 +63,11 @@ void *dlopen(const char *filename, int flag)
     }
     assert(ldlopen);
 
-    std::vector<std::string> preload_libs {
-        "libcuda.so.1",
-//         // "/usr/lib/x86_64-linux-gnu/libcuda.so.1",
-//         // "libnvrtc.so.12",
-//         // "/usr/local/cuda/lib64/libcudart.so",
-//         // "/usr/local/cuda/lib64/libcudnn.so",
-//         // "/usr/local/cuda/lib64/libcublas.so",
-//         // "/usr/local/cuda/lib64/libcublasLt.so"
-    };
-
     if (filename) {
         std::string f_name(filename);
 
-        if(std::find(preload_libs.begin(), preload_libs.end(), f_name) != preload_libs.end()) {
-            std::cout << "preloaded" << std::endl;
-            std::cout << preload_str << std::endl;
-            auto res = ldlopen(preload_str.c_str(), flag);
-            std::cout << res << std::endl;
-            return res;
+        if (f_name == "libcuda.so.1") {
+            return ldlopen(preload_str.c_str(), flag);
         }
     }
 
@@ -91,7 +76,7 @@ void *dlopen(const char *filename, int flag)
 
 void** __cudaRegisterFatBinary( void *fatCubin ) {
 
-    TALLY_LOG("__cudaRegisterFatBinary hooked");
+    // TALLY_LOG("__cudaRegisterFatBinary hooked");
 
     auto wp = (__fatBinC_Wrapper_t *) fatCubin;
     auto fbh = (struct fatBinaryHeader *) wp->data;
@@ -507,6 +492,8 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
 {
 	TALLY_LOG("cuLaunchKernel hooked");
 	TALLY_CLIENT_PROFILE_START;
+
+    std::cout << f << std::endl;
 
 #if defined(RUN_LOCALLY)
 	auto err = lcuLaunchKernel(f, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, sharedMemBytes, hStream, kernelParams, extra);
@@ -3196,6 +3183,55 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
 	TALLY_LOG("cuModuleLoadData hooked");
 	TALLY_CLIENT_PROFILE_START;
 
+    // Parse the ptr into a string
+    std::string image_str((char *)image);
+
+    std::cout << "strlen(image): " << strlen((const char*)image) << std::endl;
+
+    if (containsSubstring(image_str, ".target")) {
+        TALLY_LOG("Detected PTX code");
+    } else {
+        auto fbh = (struct fatBinaryHeader *) image;
+        size_t cubin_size = fbh->headerSize + fbh->fatSize;
+        if (cubin_size == image_str.size()) {
+            TALLY_LOG("Detected Fatbin code");
+        } else {
+            TALLY_LOG("Cannot detect file type");
+            auto size = image_str.size();
+            std::cout << "size: " << size << std::endl;
+
+            std::string cubin_tmp_path = get_tmp_file_path(".cubin");
+            write_binary_to_file(cubin_tmp_path, (char *)image, size);
+            
+            std::cout << "cubin_tmp_path: " << cubin_tmp_path << std::endl;
+
+            // elf_load_file((void *)image);
+
+            Elf64_Ehdr *hdr = (Elf64_Ehdr *) image;
+
+            if (hdr->e_ident[EI_MAG0] != ELFMAG0 || hdr->e_ident[EI_MAG1] != ELFMAG1 ||
+                hdr->e_ident[EI_MAG2] != ELFMAG2 || hdr->e_ident[EI_MAG3] != ELFMAG3) {
+                std::cerr << "Not a valid ELF file." << std::endl;
+            }
+
+            std::cerr << "Valid ELF file." << std::endl;
+
+            switch(hdr->e_type) {
+                case ET_EXEC:
+                    std::cout << "ET_EXEC" << std::endl;
+                    break;
+                case ET_REL:
+                    std::cout << "ET_REL" << std::endl;
+                    break;
+            }
+
+            std::cout << "e_shoff: " << hdr->e_shoff << std::endl;
+
+
+            // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Cannot identify module type.");
+        }
+    }
+
 #if defined(RUN_LOCALLY)
 	auto err = lcuModuleLoadData(module, image);
 #else
@@ -3285,13 +3321,17 @@ CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * na
 	TALLY_LOG("cuModuleGetFunction hooked");
 	TALLY_CLIENT_PROFILE_START;
 
+    std::string kernel_name(name);
+    TALLY_LOG(kernel_name);
+
 #if defined(RUN_LOCALLY)
 	auto err = lcuModuleGetFunction(hfunc, hmod, name);
+
+    std::cout << "Addr: " << *hfunc << std::endl;
 #else
 
     CUresult err;
 
-    std::string kernel_name(name);
     size_t kernel_name_size = kernel_name.size() + 1;
     size_t msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleGetFunctionArg) + kernel_name_size * sizeof(char);
 
@@ -4118,7 +4158,11 @@ CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion,
     std::string symbol_str(symbol);
     TALLY_LOG("cuGetProcAddress symbol: " + symbol_str);
 
+    std::cout << "call" << std::endl;
+
     CUresult res = lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
+
+    std::cout << "done" << std::endl;
 
     if (res) {
         TALLY_LOG("cuGetProcAddress failed");
@@ -4126,6 +4170,7 @@ CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion,
 
     if (symbol_str == "") {
         // do nothing
+        std::cout << "This branch" << std::endl;
         return res;
     }
     else if (symbol_str == "cuGetProcAddress") {
@@ -4149,6 +4194,7 @@ CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion,
         return lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
     }
     else {
+        std::cout << "here???" << std::endl;
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented cuGetProcAddress_v2 lookup.");
     }
 
@@ -5014,6 +5060,195 @@ CUresult cuMemsetD32_v2(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuMemsetD32_v2);
+	return err;
+}
+
+CUresult cuMemcpyHtoDAsync_v2(CUdeviceptr  dstDevice, const void * srcHost, size_t  ByteCount, CUstream  hStream)
+{
+	TALLY_LOG("cuMemcpyHtoDAsync_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemcpyHtoDAsync_v2(dstDevice, srcHost, ByteCount, hStream);
+#else
+
+    CUresult err;
+
+    uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(cuMemcpyHtoDAsync_v2) + ByteCount;
+
+    TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMCPYHTODASYNC_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemcpyHtoDAsync_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dstDevice = dstDevice;
+			request->srcHost = srcHost;
+			request->ByteCount = ByteCount;
+			request->hStream = hStream;
+            memcpy(request->data, srcHost, ByteCount);
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(CUresult);
+
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemcpyHtoDAsync_v2);
+	return err;
+}
+
+CUresult cuMemcpyDtoHAsync_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  ByteCount, CUstream  hStream)
+{
+	TALLY_LOG("cuMemcpyDtoHAsync_v2 hooked");
+    TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemcpyDtoHAsync_v2(dstHost, srcDevice, ByteCount, hStream);
+#else
+
+    CUresult err;
+
+    uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(cuMemcpyDtoHAsync_v2);
+
+    TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMCPYDTOHASYNC_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemcpyDtoHAsync_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dstHost = dstHost;
+			request->srcDevice = srcDevice;
+			request->ByteCount = ByteCount;
+			request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cuMemcpyDtoHAsync_v2Response*>(responsePayload);
+            err = response->err;
+
+            if (err = CUDA_SUCCESS) {
+                memcpy(dstHost, response->data, ByteCount);
+            }
+
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemcpyDtoHAsync_v2);
+	return err;
+}
+
+CUresult cuMemsetD32Async(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N, CUstream  hStream)
+{
+	TALLY_LOG("cuMemsetD32Async hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemsetD32Async(dstDevice, ui, N, hStream);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemsetD32AsyncArg), alignof(cuMemsetD32AsyncArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMSETD32ASYNC;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemsetD32AsyncArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dstDevice = dstDevice;
+			request->ui = ui;
+			request->N = N;
+            request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(CUresult);
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemsetD32Async);
+	return err;
+}
+
+CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
+{
+	TALLY_LOG("cuModuleLoadFatBinary hooked");
+
+    CUresult err;
+
+#if defined(RUN_LOCALLY)
+    err = lcuModuleLoadFatBinary(module, fatCubin);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+
+    return err;
+}
+
+CUresult cuModuleGetGlobal_v2(CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod, const char * name)
+{
+	TALLY_LOG("cuModuleGetGlobal_v2 hooked");
+
+    CUresult err;
+
+#if defined(RUN_LOCALLY)
+    err = lcuModuleGetGlobal_v2(dptr, bytes, hmod, name);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+
+    return err;
+}
+
+CUresult cuMemcpyDtoDAsync_v2(CUdeviceptr  dstDevice, CUdeviceptr  srcDevice, size_t  ByteCount, CUstream  hStream)
+{
+	TALLY_LOG("cuMemcpyDtoDAsync_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemcpyDtoDAsync_v2(dstDevice, srcDevice, ByteCount, hStream);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemcpyDtoDAsync_v2Arg), alignof(cuMemcpyDtoDAsync_v2Arg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMCPYDTODASYNC_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemcpyDtoDAsync_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dstDevice = dstDevice;
+			request->srcDevice = srcDevice;
+			request->ByteCount = ByteCount;
+			request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(CUresult);
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemcpyDtoDAsync_v2);
 	return err;
 }
 
