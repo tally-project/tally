@@ -3227,6 +3227,17 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
 
             std::cout << "e_shoff: " << hdr->e_shoff << std::endl;
 
+            auto elf_size = hdr->e_phoff + hdr->e_phentsize * hdr->e_phnum;
+            auto elf_size2 = hdr->e_shoff + hdr->e_shentsize * hdr->e_shnum;
+
+            std::cout << "elf_size: " << elf_size << std::endl;
+            std::cout << "elf_size2: " << elf_size2 << std::endl;
+
+            std::string elf_tmp_path = get_tmp_file_path(".elf");
+            write_binary_to_file(elf_tmp_path, (char *)image, elf_size);
+
+            std::cout << "elf_tmp_path: " << elf_tmp_path << std::endl;
+
 
             // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Cannot identify module type.");
         }
@@ -5193,6 +5204,26 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
 
     CUresult err;
 
+    auto fbh = (struct fatBinaryHeader *) fatCubin;
+    size_t cubin_size = fbh->headerSize + fbh->fatSize;
+    auto cubin_data = (const char *) fatCubin;
+
+    std::cout << "cubin_size: " << cubin_size << std::endl; 
+
+    static bool has_write = false;
+
+    if (!has_write) {
+
+        std::string cubin_tmp_path = "temp.fatbin";
+        write_binary_to_file(cubin_tmp_path, cubin_data, cubin_size);
+        std::cout << "cubin_size: " << cubin_size << std::endl; 
+
+        std::cout << "cubin_tmp_path: " << cubin_tmp_path << std::endl; 
+
+        has_write = true;
+    }
+
+
 #if defined(RUN_LOCALLY)
     err = lcuModuleLoadFatBinary(module, fatCubin);
 #else
@@ -5210,6 +5241,80 @@ CUresult cuModuleGetGlobal_v2(CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod
 
 #if defined(RUN_LOCALLY)
     err = lcuModuleGetGlobal_v2(dptr, bytes, hmod, name);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+
+    return err;
+}
+
+CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int  numOptions, CUjit_option * options, void ** optionValues)
+{
+	TALLY_LOG("cuModuleLoadDataEx hooked");
+	CUresult err;
+
+    // Parse the ptr into a string
+    std::string image_str((char *)image);
+
+    std::cout << "strlen(image): " << strlen((const char*)image) << std::endl;
+
+    if (containsSubstring(image_str, ".target")) {
+        TALLY_LOG("Detected PTX code");
+    } else {
+        auto fbh = (struct fatBinaryHeader *) image;
+        size_t cubin_size = fbh->headerSize + fbh->fatSize;
+        if (cubin_size == image_str.size()) {
+            TALLY_LOG("Detected Fatbin code");
+        } else {
+            TALLY_LOG("Cannot detect file type");
+            auto size = image_str.size();
+            std::cout << "size: " << size << std::endl;
+
+            std::string cubin_tmp_path = get_tmp_file_path(".cubin");
+            write_binary_to_file(cubin_tmp_path, (char *)image, size);
+            
+            std::cout << "cubin_tmp_path: " << cubin_tmp_path << std::endl;
+
+            // elf_load_file((void *)image);
+
+            Elf64_Ehdr *hdr = (Elf64_Ehdr *) image;
+
+            if (hdr->e_ident[EI_MAG0] != ELFMAG0 || hdr->e_ident[EI_MAG1] != ELFMAG1 ||
+                hdr->e_ident[EI_MAG2] != ELFMAG2 || hdr->e_ident[EI_MAG3] != ELFMAG3) {
+                std::cerr << "Not a valid ELF file." << std::endl;
+            }
+
+            std::cerr << "Valid ELF file." << std::endl;
+
+            switch(hdr->e_type) {
+                case ET_EXEC:
+                    std::cout << "ET_EXEC" << std::endl;
+                    break;
+                case ET_REL:
+                    std::cout << "ET_REL" << std::endl;
+                    break;
+            }
+
+            std::cout << "e_shoff: " << hdr->e_shoff << std::endl;
+
+            auto elf_size = hdr->e_phoff + hdr->e_phentsize * hdr->e_phnum;
+            auto elf_size2 = hdr->e_shoff + hdr->e_shentsize * hdr->e_shnum;
+
+            std::cout << "elf_size: " << elf_size << std::endl;
+            std::cout << "elf_size2: " << elf_size2 << std::endl;
+
+            std::string elf_tmp_path = get_tmp_file_path(".elf");
+            write_binary_to_file(elf_tmp_path, (char *)image, elf_size);
+
+            std::cout << "elf_tmp_path: " << elf_tmp_path << std::endl;
+
+
+            // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Cannot identify module type.");
+        }
+    }
+
+#if defined(RUN_LOCALLY)
+    err = lcuModuleLoadDataEx(module, image, numOptions, options, optionValues);
 #else
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif

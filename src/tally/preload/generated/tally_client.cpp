@@ -1726,12 +1726,6 @@ CUresult cuModuleLoad(CUmodule * module, const char * fname)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int  numOptions, CUjit_option * options, void ** optionValues)
-{
-	TALLY_LOG("cuModuleLoadDataEx hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 CUresult cuModuleUnload(CUmodule  hmod)
 {
 	TALLY_LOG("cuModuleUnload hooked");

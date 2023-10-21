@@ -3693,3 +3693,9 @@ void TallyServer::handle_cuModuleGetGlobal_v2(void *__args, iox::popo::UntypedSe
 	TALLY_SPD_LOG("Received request: cuModuleGetGlobal_v2");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
+
+void TallyServer::handle_cuModuleLoadDataEx(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuModuleLoadDataEx");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}

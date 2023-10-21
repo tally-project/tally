@@ -491,6 +491,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuModuleLoadDataEx",
     "cuModuleGetGlobal_v2",
     "cuMemcpyDtoDAsync_v2",
     "cuModuleLoadFatBinary",
