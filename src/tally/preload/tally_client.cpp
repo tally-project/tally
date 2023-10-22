@@ -25,7 +25,6 @@
 #include <fatbinary_section.h>
 
 #include <elf.h>
-// #include "tally/elf.h"
 #include "tally/log.h"
 #include "tally/util.h"
 #include "tally/cuda_util.h"
@@ -3182,75 +3181,51 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
 {
 	TALLY_LOG("cuModuleLoadData hooked");
 	TALLY_CLIENT_PROFILE_START;
-
-    // Parse the ptr into a string
-    std::string image_str((char *)image);
-
-    std::cout << "strlen(image): " << strlen((const char*)image) << std::endl;
-
-    if (containsSubstring(image_str, ".target")) {
-        TALLY_LOG("Detected PTX code");
-    } else {
-        auto fbh = (struct fatBinaryHeader *) image;
-        size_t cubin_size = fbh->headerSize + fbh->fatSize;
-        if (cubin_size == image_str.size()) {
-            TALLY_LOG("Detected Fatbin code");
-        } else {
-            TALLY_LOG("Cannot detect file type");
-            auto size = image_str.size();
-            std::cout << "size: " << size << std::endl;
-
-            std::string cubin_tmp_path = get_tmp_file_path(".cubin");
-            write_binary_to_file(cubin_tmp_path, (char *)image, size);
-            
-            std::cout << "cubin_tmp_path: " << cubin_tmp_path << std::endl;
-
-            // elf_load_file((void *)image);
-
-            Elf64_Ehdr *hdr = (Elf64_Ehdr *) image;
-
-            if (hdr->e_ident[EI_MAG0] != ELFMAG0 || hdr->e_ident[EI_MAG1] != ELFMAG1 ||
-                hdr->e_ident[EI_MAG2] != ELFMAG2 || hdr->e_ident[EI_MAG3] != ELFMAG3) {
-                std::cerr << "Not a valid ELF file." << std::endl;
-            }
-
-            std::cerr << "Valid ELF file." << std::endl;
-
-            switch(hdr->e_type) {
-                case ET_EXEC:
-                    std::cout << "ET_EXEC" << std::endl;
-                    break;
-                case ET_REL:
-                    std::cout << "ET_REL" << std::endl;
-                    break;
-            }
-
-            std::cout << "e_shoff: " << hdr->e_shoff << std::endl;
-
-            auto elf_size = hdr->e_phoff + hdr->e_phentsize * hdr->e_phnum;
-            auto elf_size2 = hdr->e_shoff + hdr->e_shentsize * hdr->e_shnum;
-
-            std::cout << "elf_size: " << elf_size << std::endl;
-            std::cout << "elf_size2: " << elf_size2 << std::endl;
-
-            std::string elf_tmp_path = get_tmp_file_path(".elf");
-            write_binary_to_file(elf_tmp_path, (char *)image, elf_size);
-
-            std::cout << "elf_tmp_path: " << elf_tmp_path << std::endl;
-
-
-            // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Cannot identify module type.");
-        }
-    }
-
+    
 #if defined(RUN_LOCALLY)
 	auto err = lcuModuleLoadData(module, image);
 #else
 
     CUresult err;
 
-    // For now, assume `image` is a fatbin file
-    // TODO: figure how to distinguish between different data format (e.g. fatbin, cubin)
+
+    auto mod_type = get_cuda_module_type(image);
+    if (mod_type == CUDA_MODULE_TYPE::PTX_STRING) {
+        std::cout << "Detect PTX code" << std::endl;
+    } else if (mod_type == CUDA_MODULE_TYPE::FATBIN) {
+        std::cout << "Detect fatbin code" << std::endl;
+        is_fatbin = true;
+    } else if (mod_type == CUDA_MODULE_TYPE::ELF) {
+        std::cout << "Detect in-memory elf" << std::endl;
+        is_elf = true;
+    }
+
+    if (is_elf) {
+
+        auto hdr = (Elf64_Ehdr *) image;
+
+        // Compute elf size from last program header and last section header          
+        auto elf_size_ph = hdr->e_phoff + hdr->e_phentsize * hdr->e_phnum;
+        auto elf_size_sh = hdr->e_shoff + hdr->e_shentsize * hdr->e_shnum;
+
+        auto elf_size = std::max(elf_size_ph, elf_size_sh);
+
+        std::string elf_tmp_path = "temp.elf";
+        write_binary_to_file(elf_tmp_path, (char *) image, elf_size);
+    }
+
+    if (is_fatbin) {
+        auto fbh = (struct fatBinaryHeader *) image;
+        const char *cubin_data = (const char *) image;
+        size_t cubin_size = fbh->headerSize + fbh->fatSize;
+
+        std::string fatbin_tmp_path = "temp.fatbin";
+        write_binary_to_file(fatbin_tmp_path, (char *) image, cubin_size);
+    }
+
+
+
+
     auto fbh = (struct fatBinaryHeader *) image;
     const char *cubin_data = (const char *) image;
     size_t cubin_size = fbh->headerSize + fbh->fatSize;
@@ -5253,64 +5228,13 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
 	TALLY_LOG("cuModuleLoadDataEx hooked");
 	CUresult err;
 
-    // Parse the ptr into a string
-    std::string image_str((char *)image);
-
-    std::cout << "strlen(image): " << strlen((const char*)image) << std::endl;
-
-    if (containsSubstring(image_str, ".target")) {
-        TALLY_LOG("Detected PTX code");
-    } else {
-        auto fbh = (struct fatBinaryHeader *) image;
-        size_t cubin_size = fbh->headerSize + fbh->fatSize;
-        if (cubin_size == image_str.size()) {
-            TALLY_LOG("Detected Fatbin code");
-        } else {
-            TALLY_LOG("Cannot detect file type");
-            auto size = image_str.size();
-            std::cout << "size: " << size << std::endl;
-
-            std::string cubin_tmp_path = get_tmp_file_path(".cubin");
-            write_binary_to_file(cubin_tmp_path, (char *)image, size);
-            
-            std::cout << "cubin_tmp_path: " << cubin_tmp_path << std::endl;
-
-            // elf_load_file((void *)image);
-
-            Elf64_Ehdr *hdr = (Elf64_Ehdr *) image;
-
-            if (hdr->e_ident[EI_MAG0] != ELFMAG0 || hdr->e_ident[EI_MAG1] != ELFMAG1 ||
-                hdr->e_ident[EI_MAG2] != ELFMAG2 || hdr->e_ident[EI_MAG3] != ELFMAG3) {
-                std::cerr << "Not a valid ELF file." << std::endl;
-            }
-
-            std::cerr << "Valid ELF file." << std::endl;
-
-            switch(hdr->e_type) {
-                case ET_EXEC:
-                    std::cout << "ET_EXEC" << std::endl;
-                    break;
-                case ET_REL:
-                    std::cout << "ET_REL" << std::endl;
-                    break;
-            }
-
-            std::cout << "e_shoff: " << hdr->e_shoff << std::endl;
-
-            auto elf_size = hdr->e_phoff + hdr->e_phentsize * hdr->e_phnum;
-            auto elf_size2 = hdr->e_shoff + hdr->e_shentsize * hdr->e_shnum;
-
-            std::cout << "elf_size: " << elf_size << std::endl;
-            std::cout << "elf_size2: " << elf_size2 << std::endl;
-
-            std::string elf_tmp_path = get_tmp_file_path(".elf");
-            write_binary_to_file(elf_tmp_path, (char *)image, elf_size);
-
-            std::cout << "elf_tmp_path: " << elf_tmp_path << std::endl;
-
-
-            // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Cannot identify module type.");
-        }
+    auto mod_type = get_cuda_module_type(image);
+    if (mod_type == CUDA_MODULE_TYPE::PTX_STRING) {
+        std::cout << "Detect PTX code" << std::endl;
+    } else if (mod_type == CUDA_MODULE_TYPE::FATBIN) {
+        std::cout << "Detect fatbin code" << std::endl;
+    } else if (mod_type == CUDA_MODULE_TYPE::ELF) {
+        std::cout << "Detect in-memory elf" << std::endl;
     }
 
 #if defined(RUN_LOCALLY)

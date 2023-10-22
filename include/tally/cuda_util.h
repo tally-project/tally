@@ -7,13 +7,17 @@
 #include <unordered_map>
 #include <cassert>
 #include <map>
+#include <elf.h>
 
+#include <tally/util.h>
+#include <tally/msg_struct.h>
 #include <tally/cuda_launch.h>
 #include <tally/generated/cuda_api.h>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cudnn.h>
+#include <fatbinary_section.h>
 
 struct DeviceMemoryKey {
     void *addr;
@@ -26,6 +30,36 @@ inline void implicit_init_cuda_ctx()
     float *arr;
     cudaMalloc(&arr, sizeof(float));
     cudaFree(arr);
+}
+
+enum CUDA_MODULE_TYPE {
+    PTX_STRING,
+    FATBIN,
+    ELF
+};
+
+inline CUDA_MODULE_TYPE get_cuda_module_type(const void * image)
+{
+    // Test if it is fatbin
+    auto fbh = (fatBinaryHeader *) image;
+    if (fbh->magic == FATBIN_MAGIC_NUMBER) {
+        return CUDA_MODULE_TYPE::FATBIN;
+    }
+
+    // Test if it is in-memory elf format
+    auto hdr = (Elf64_Ehdr *) image;
+    if (hdr->e_ident[EI_MAG0] == ELFMAG0 && hdr->e_ident[EI_MAG1] == ELFMAG1 ||
+        hdr->e_ident[EI_MAG2] == ELFMAG2 && hdr->e_ident[EI_MAG3] == ELFMAG3) {
+        return CUDA_MODULE_TYPE::ELF;
+    }
+
+    // Test if it is ptx string
+    std::string image_str((char *)image);
+    if (containsSubstring(image_str, ".target")) {
+        return CUDA_MODULE_TYPE::PTX_STRING;
+    }
+
+    throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Cannot identify cuda module.");
 }
 
 inline CUfunction_attribute convert_func_attribute(cudaFuncAttribute attr) {

@@ -611,9 +611,9 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
     client_meta.register_queue.clear();
 
     if (!client_meta.cubin_registered) {
-        struct fatBinaryHeader *header = (struct fatBinaryHeader *) args->data;
+        auto header = (struct fatBinaryHeader *) args->data;
         size_t cubin_size = header->headerSize + header->fatSize;
-        const char *cubin_data = (const char *) args->data;
+        auto cubin_data = (const char *) args->data;
 
         // Load necessary data into cache if not exists
         cache_cubin_data(cubin_data, cubin_size, client_id);
