@@ -3882,3 +3882,68 @@ void TallyServer::handle_cuModuleGetGlobal_v2(void *__args, iox::popo::UntypedSe
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cuCtxSynchronize(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuCtxSynchronize");
+	auto args = (struct cuCtxSynchronizeArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_id);
+
+            // Instead of calling cudaDeviceSynchronize, only synchronize all streams of the client
+            auto &client_streams = client_data_all[client_id].streams;
+            
+            for (auto &stream : client_streams) {
+                auto err = cudaStreamSynchronize(stream);
+                CHECK_CUDA_ERROR(err);
+            }
+
+            *response = CUDA_SUCCESS;
+            
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuStreamSynchronize(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuStreamSynchronize");
+	auto args = (struct cuStreamSynchronizeArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+			wait_until_launch_queue_empty(client_uid);
+
+            *response = cuStreamSynchronize(
+				__stream
+            );
+            CHECK_CUDA_ERROR(*response);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}

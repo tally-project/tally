@@ -247,9 +247,6 @@ struct cuCtxGetFlagsResponse {
 	CUresult err;
 };
 
-struct cuCtxSynchronizeArg {
-};
-
 struct cuCtxSetLimitArg {
 	CUlimit  limit;
 	size_t  value;
@@ -404,10 +401,6 @@ struct cuStreamIsCapturingArg {
 struct cuStreamIsCapturingResponse {
 	CUstreamCaptureStatus  captureStatus;
 	CUresult err;
-};
-
-struct cuStreamSynchronizeArg {
-	CUstream  hStream;
 };
 
 struct cuEventCreateArg {

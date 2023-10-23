@@ -1230,4 +1230,10 @@ struct cuModuleGetGlobal_v2Response {
     CUresult err;
 };
 
+struct cuCtxSynchronizeArg {};
+
+struct cuStreamSynchronizeArg {
+	CUstream  hStream;
+};
+
 #endif // TALLY_DEF_H

@@ -494,6 +494,8 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuCtxSynchronize",
+    "cuStreamSynchronize",
     "cuModuleLoadDataEx",
     "cuModuleGetGlobal_v2",
     "cuMemcpyDtoDAsync_v2",
@@ -606,7 +608,6 @@ FORWARD_API_CALLS = [
     "cuEventRecord",
     "cuGraphLaunch",
     "cuStreamBeginCapture_v2",
-    "cuStreamSynchronize",
     "cudaGraphUpload",
     "cudaGraphLaunch",
     "cudaGraphExecDestroy",
@@ -677,7 +678,6 @@ FORWARD_API_CALLS = [
     "cublasLtDestroy",
     "cuCtxPushCurrent_v2",
     "cuCtxSetCurrent",
-    "cuCtxSynchronize",
     "cuCtxSetLimit",
     "cuCtxSetCacheConfig",
     "cuCtxSetSharedMemConfig",

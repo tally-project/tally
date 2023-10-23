@@ -4258,6 +4258,9 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
 			request->hStream = hStream;
 
             if (!is_dev_addr(dev_addr_map, (const void*) src)) {
+
+                std::cout << "memcpy(request->data, (const void*) src, ByteCount);" << std::endl;
+
                 memcpy(request->data, (const void*) src, ByteCount);
             }
 
@@ -5101,7 +5104,7 @@ CUresult cuMemcpyDtoHAsync_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  By
             auto response = static_cast<const cuMemcpyDtoHAsync_v2Response*>(responsePayload);
             err = response->err;
 
-            if (err = CUDA_SUCCESS) {
+            if (err == CUDA_SUCCESS) {
                 memcpy(dstHost, response->data, ByteCount);
             }
 
@@ -5430,6 +5433,69 @@ CUresult cuMemcpyDtoDAsync_v2(CUdeviceptr  dstDevice, CUdeviceptr  srcDevice, si
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuMemcpyDtoDAsync_v2);
+	return err;
+}
+
+CUresult cuStreamSynchronize(CUstream  hStream)
+{
+	TALLY_LOG("cuStreamSynchronize hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuStreamSynchronize(hStream);
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamSynchronizeArg), alignof(cuStreamSynchronizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUSTREAMSYNCHRONIZE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuStreamSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(CUresult);
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuStreamSynchronize);
+	return err;
+}
+
+CUresult cuCtxSynchronize()
+{
+	TALLY_LOG("cuCtxSynchronize hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuCtxSynchronize();
+#else
+
+    CUresult err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSynchronizeArg), alignof(cuCtxSynchronizeArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUCTXSYNCHRONIZE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuCtxSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(CUresult);
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuCtxSynchronize);
 	return err;
 }
 
