@@ -890,6 +890,8 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args, iox::popo::UntypedServer 
                 throw std::runtime_error("Unknown memcpy kind!");
             }
 
+            cudaStreamSynchronize(stream);
+
             iox_server->send(res).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
@@ -2337,6 +2339,9 @@ void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args, iox::po
 void TallyServer::handle_cublasSgemmStridedBatched(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasSgemmStridedBatched");
+
+    throw std::runtime_error("Need to implement partial for this kernel launch");
+
     auto args = (struct cublasSgemmStridedBatchedArg *) __args;
 
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
@@ -2392,6 +2397,7 @@ void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
                 args->dynamicSMemSize,
                 args->flags
             );
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2414,6 +2420,7 @@ void TallyServer::handle_cudaChooseDevice(void *__args, iox::popo::UntypedServer
                 &response->device,
                 &args->prop
             );
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2576,6 +2583,8 @@ void TallyServer::handle_cudnnBackendExecute(void *__args, iox::popo::UntypedSer
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
 
             *response = err;
+            CHECK_CUDA_ERROR(*response);
+
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
@@ -2598,6 +2607,7 @@ void TallyServer::handle_cudaThreadSynchronize(void *__args, iox::popo::UntypedS
 
             auto response = static_cast<cudaError_t*>(responsePayload);
             *response = cudaThreadSynchronize();
+            CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2632,6 +2642,7 @@ void TallyServer::handle_cudaEventRecord(void *__args, iox::popo::UntypedServer 
 				args->event,
 				stream
             );
+            CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2660,10 +2671,7 @@ void TallyServer::handle_cudaDeviceSynchronize(void *__args, iox::popo::UntypedS
             
             for (auto &stream : client_streams) {
                 *response = cudaStreamSynchronize(stream);
-
-                if ((*response)) {
-                    throw std::runtime_error("cudaDeviceSynchronize fails");
-                }
+                CHECK_CUDA_ERROR(*response);
             }
 
             iox_server->send(response).or_else(
@@ -2698,6 +2706,7 @@ void TallyServer::handle_cudaStreamSynchronize(void *__args, iox::popo::UntypedS
             *response = cudaStreamSynchronize(
 				stream
             );
+            CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2721,6 +2730,7 @@ void TallyServer::handle_cublasCreate_v2(void *__args, iox::popo::UntypedServer 
             auto response = static_cast<cublasCreate_v2Response*>(responsePayload);
 
             response->err = cublasCreate_v2(&(response->handle));
+            CHECK_CUDA_ERROR(response->err);
 
             // set stream to client's default stream
             cublasSetStream_v2(response->handle, client_meta.default_stream);
@@ -2746,6 +2756,7 @@ void TallyServer::handle_cudnnCreate(void *__args, iox::popo::UntypedServer *iox
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudnnCreateResponse*>(responsePayload);
             response->err = cudnnCreate(&(response->handle));
+            CHECK_CUDA_ERROR(response->err);
 
             // set stream to client's default stream
             cudnnSetStream(response->handle, client_meta.default_stream);
@@ -2855,6 +2866,7 @@ void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedSer
             auto response = static_cast<cuModuleGetFunctionResponse*>(responsePayload);
 
             response->err = cuModuleGetFunction(&(response->hfunc), args->hmod, args->name);
+            CHECK_CUDA_ERROR(response->err);
 
             // Map CUFunction to host func
             cu_func_addr_mapping.insert(response->hfunc, cubin_to_kernel_name_to_host_func_map[cubin_uid][kernel_name]);
@@ -2878,6 +2890,7 @@ void TallyServer::handle_cuPointerGetAttribute(void *__args, iox::popo::UntypedS
             auto response = static_cast<cuPointerGetAttributeResponse*>(responsePayload);
 
             response->err = cuPointerGetAttribute(response->data, args->attribute, args->ptr);
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2913,6 +2926,7 @@ void TallyServer::handle_cudaStreamGetCaptureInfo_v2(void *__args, iox::popo::Un
 				(args->dependencies_out ? ((CUgraphNode_st* const**) &(response->dependencies_out)) : NULL),
 				(args->numDependencies_out ? &(response->numDependencies_out) : NULL)
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2947,6 +2961,7 @@ void TallyServer::handle_cudaGraphGetNodes(void *__args, iox::popo::UntypedServe
 				args->nodes ? response->nodes : NULL,
                 &response->numNodes
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3027,6 +3042,7 @@ void TallyServer::handle_cuMemcpy(void *__args, iox::popo::UntypedServer *iox_se
 				args->ByteCount,
                 client_data_all[client_id].default_stream
             );
+            CHECK_CUDA_ERROR(response->err);
 
             // Make sure wait until cudaMemcpy complete, because cudaMemcpy is synchronous
             cudaStreamSynchronize(client_data_all[client_id].default_stream);
@@ -3074,6 +3090,9 @@ void TallyServer::handle_cuMemcpyAsync(void *__args, iox::popo::UntypedServer *i
 				args->ByteCount,
 				__stream
             );
+            CHECK_CUDA_ERROR(response->err);
+
+            cudaStreamSynchronize(__stream);
             
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3108,6 +3127,7 @@ void TallyServer::handle_cuMemAllocAsync(void *__args, iox::popo::UntypedServer 
 				args->bytesize,
 				__stream
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Keep track that this addr is device memory
             if (response->err == CUDA_SUCCESS) {
@@ -3135,6 +3155,7 @@ void TallyServer::handle_cuMemFree_v2(void *__args, iox::popo::UntypedServer *io
             *response = cuMemFree_v2(
 				args->dptr
             );
+            CHECK_CUDA_ERROR(*response);
 
             if (*response == CUDA_SUCCESS) {
                 free_dev_addr(client_data_all[client_id].dev_addr_map, (void *)args->dptr);
@@ -3168,6 +3189,7 @@ void TallyServer::handle_cudaMemset(void *__args, iox::popo::UntypedServer *iox_
 				args->count,
                 client_data_all[client_id].default_stream
             );
+            CHECK_CUDA_ERROR(*response);
 
             // Make sure wait util cudaMemset finished, because cudaMemset is synchronous
             cudaStreamSynchronize(client_data_all[client_id].default_stream);
@@ -3193,6 +3215,7 @@ void TallyServer::handle_cudaStreamCreate(void *__args, iox::popo::UntypedServer
             response->err = cudaStreamCreate(
 				(args->pStream ? &(response->pStream) : NULL)
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
             client_data_all[client_uid].streams.push_back(response->pStream);
@@ -3219,6 +3242,7 @@ void TallyServer::handle_cudaStreamCreateWithFlags(void *__args, iox::popo::Unty
 				(args->pStream ? &(response->pStream) : NULL),
 				args->flags
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
             client_data_all[client_uid].streams.push_back(response->pStream);
@@ -3246,6 +3270,7 @@ void TallyServer::handle_cudaStreamCreateWithPriority(void *__args, iox::popo::U
 				args->flags,
 				args->priority
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
             client_data_all[client_uid].streams.push_back(response->pStream);
@@ -3283,6 +3308,8 @@ void TallyServer::handle_cudaStreamBeginCapture(void *__args, iox::popo::Untyped
 				__stream,
 				args->mode
             );
+            CHECK_CUDA_ERROR(*response);
+
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
@@ -3306,6 +3333,7 @@ void TallyServer::handle_cuStreamCreateWithPriority(void *__args, iox::popo::Unt
 				args->flags,
 				args->priority
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
             client_data_all[client_uid].streams.push_back(response->phStream);
@@ -3334,6 +3362,7 @@ void TallyServer::handle_cuFuncGetAttribute(void *__args, iox::popo::UntypedServ
 				args->attrib,
 				cu_func_original
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3362,6 +3391,7 @@ void TallyServer::handle_cuFuncSetAttribute(void *__args, iox::popo::UntypedServ
 			cuFuncSetAttribute(cu_func_ptb, args->attrib, args->value);
 			cuFuncSetAttribute(cu_func_dynamic, args->attrib, args->value);
 			cuFuncSetAttribute(cu_func_preemptive, args->attrib, args->value);
+            CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3455,6 +3485,7 @@ void TallyServer::handle_cuMemsetD8_v2(void *__args, iox::popo::UntypedServer *i
 				args->N,
                 client_data_all[client_id].default_stream
             );
+            CHECK_CUDA_ERROR(*response);
 
             // Make sure cuMemset is finished, because cuMemset is synchronous
             cudaStreamSynchronize(client_data_all[client_id].default_stream);
@@ -3481,6 +3512,7 @@ void TallyServer::handle_cuStreamCreate(void *__args, iox::popo::UntypedServer *
 				(args->phStream ? &(response->phStream) : NULL),
 				args->Flags
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
             client_data_all[client_uid].streams.push_back(response->phStream);
@@ -3507,6 +3539,7 @@ void TallyServer::handle_cuMemAlloc_v2(void *__args, iox::popo::UntypedServer *i
 				(args->dptr ? &(response->dptr) : NULL),
 				args->bytesize
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Keep track that this addr is device memory
             if (response->err == CUDA_SUCCESS) {
@@ -3537,6 +3570,7 @@ void TallyServer::handle_cuMemsetD32_v2(void *__args, iox::popo::UntypedServer *
 				args->N,
                 client_data_all[client_id].default_stream
             );
+            CHECK_CUDA_ERROR(*response);
 
             // Make sure cuMemset is finished, because cuMemset is synchronous
             cudaStreamSynchronize(client_data_all[client_id].default_stream);
@@ -3574,6 +3608,9 @@ void TallyServer::handle_cuMemcpyHtoDAsync_v2(void *__args, iox::popo::UntypedSe
 				args->ByteCount,
                 stream
             );
+            CHECK_CUDA_ERROR(*response);
+
+            cudaStreamSynchronize(stream);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3600,7 +3637,7 @@ void TallyServer::handle_cuMemcpyDtoHAsync_v2(void *__args, iox::popo::UntypedSe
 
     size_t res_size = sizeof(cuMemcpyDtoHAsync_v2Response) + args->ByteCount;
 
-    iox_server->loan(requestHeader, res_size, alignof(cuMemcpyDtoHAsync_v2Response))
+    iox_server->loan(requestHeader, res_size, alignof(MessageHeader_t))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuMemcpyDtoHAsync_v2Response*>(responsePayload);
 
@@ -3612,6 +3649,9 @@ void TallyServer::handle_cuMemcpyDtoHAsync_v2(void *__args, iox::popo::UntypedSe
 				args->ByteCount,
 				__stream
             );
+            CHECK_CUDA_ERROR(response->err);
+
+            cudaStreamSynchronize(__stream);
             
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3648,6 +3688,7 @@ void TallyServer::handle_cuMemsetD32Async(void *__args, iox::popo::UntypedServer
 				args->N,
                 __stream
             );
+            CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3684,6 +3725,8 @@ void TallyServer::handle_cuMemcpyDtoDAsync_v2(void *__args, iox::popo::UntypedSe
 				args->ByteCount,
 				__stream
             );
+            CHECK_CUDA_ERROR(*response);
+
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
@@ -3830,6 +3873,8 @@ void TallyServer::handle_cuModuleGetGlobal_v2(void *__args, iox::popo::UntypedSe
 				args->hmod,
                 args->name
             );
+
+            CHECK_CUDA_ERROR(response->err);
             
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });

@@ -1066,6 +1066,9 @@ CUresult cuCtxSetCurrent(CUcontext  ctx)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetCurrent);
+
+    std::cout << "cuCtxSetCurrent done" << std::endl;
+
 	return err;
 }
 
@@ -3009,9 +3012,6 @@ CUresult cuEventQuery(CUevent  hEvent)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuEventQuery);
-
-    std::cout << "cuEventQuery done" << std::endl;
-
 	return err;
 }
 

@@ -148,3 +148,15 @@ target_include_directories(ampere_tf32_tensorop_gemm
     PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
     PUBLIC  ${PROJECT_SOURCE_DIR}/tests
 )
+
+add_executable(cuda-memcpy-test cuda_samples_basic/cuda-memcpy-test.cu)
+
+target_link_libraries(cuda-memcpy-test
+    cuda
+    cudart
+)
+
+set_target_properties(cuda-memcpy-test PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)

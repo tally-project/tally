@@ -261,6 +261,8 @@ public:
 	// Map CUfunction to host func, similar to _kernel_client_addr_mapping
 	folly::ConcurrentHashMap<CUfunction, const void *> cu_func_addr_mapping;
 
+	folly::ConcurrentHashMap<uint32_t, CUmodule> cubin_to_cu_module;
+
 	folly::ConcurrentHashMap<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
 	folly::ConcurrentHashMap<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
 	
@@ -352,6 +354,7 @@ public:
     void register_api_handler();
     void load_cache();
 
+	void register_cu_modules(uint32_t cubin_uid);
 	void register_kernels();
     void register_measurements();
     void register_ptx_transform(const char* cubin_data, size_t cubin_size);

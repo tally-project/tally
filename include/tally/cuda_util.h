@@ -169,7 +169,7 @@ void check(T err, const char* const func, const char* const file, const int line
         if constexpr (std::is_same<T, cudaError_t>::value) {
             std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
         } else if constexpr (std::is_same<T, CUresult>::value) {
-            char *err_msg;
+            const char *err_msg;
             cuGetErrorString(err, &err_msg);
             std::cerr << err_msg << " " << func << std::endl;
         }

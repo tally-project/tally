@@ -163,6 +163,7 @@ def gen_server_handler(func_sig):
                 handler += "\n\t\t\t);\n"
 
         handler += f"""
+            {"CHECK_CUDA_ERROR(response->err);" if "eventquery" not in func_name.lower() else ""}
             iox_server->send(response).or_else(
                 [&](auto& error) {{ LOG_ERR_AND_EXIT("Could not send Response: ", error); }});
         }})
@@ -206,6 +207,7 @@ def gen_server_handler(func_sig):
 
         handler += f"""
             );
+            {"CHECK_CUDA_ERROR(*response);" if "eventquery" not in func_name.lower() else ""}
             iox_server->send(response).or_else(
                 [&](auto& error) {{ LOG_ERR_AND_EXIT("Could not send Response: ", error); }});
         }})
