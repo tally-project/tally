@@ -1195,4 +1195,39 @@ struct cuMemcpyDtoDAsync_v2Arg {
 	CUstream  hStream;
 };
 
+struct cuModuleLoadDataExArg {
+    bool cached;
+    uint32_t cubin_uid;
+    char image[];
+};
+
+struct cuModuleLoadDataExResponse {
+    CUresult err;
+    CUmodule module;
+    char tmp_elf_file[];
+};
+
+struct cuModuleLoadFatBinaryArg {
+    bool cached;
+    uint32_t cubin_uid;
+    char image[];
+};
+
+struct cuModuleLoadFatBinaryResponse {
+    CUresult err;
+    CUmodule module;
+    char tmp_elf_file[];
+};
+
+struct cuModuleGetGlobal_v2Arg {
+    CUmodule  hmod;
+    char name[];
+};
+
+struct cuModuleGetGlobal_v2Response {
+    CUdeviceptr dptr;
+    size_t bytes;
+    CUresult err;
+};
+
 #endif // TALLY_DEF_H

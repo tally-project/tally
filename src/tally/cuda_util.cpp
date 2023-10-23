@@ -10,13 +10,18 @@
 #include <tally/cuda_launch.h>
 #include <tally/generated/cuda_api.h>
 
-std::string get_fatbin_str_from_ptx_str(std::string ptx_str)
+std::string get_fatbin_str_from_ptx_str(std::string &ptx_str)
 {
     write_str_to_file("/tmp/output.ptx", ptx_str);
 
-    std::string compile_cmd = "nvcc -Xptxas -O3 /tmp/output.ptx --fatbin -arch sm_" +
-                              std::string(CUDA_COMPUTE_VERSION) +
-                              " -o /tmp/output.fatbin";
+    std::string compute_cap = std::string(CUDA_COMPUTE_VERSION);
+
+    std::string virtual_arch = "-gencode arch=compute_" + compute_cap + ",code=compute_" + compute_cap;
+    std::string real_arch = "-gencode arch=compute_" + compute_cap + ",code=sm_" + compute_cap;
+
+    std::string compile_cmd = "nvcc /tmp/output.ptx --fatbin " + virtual_arch + " " +
+                              real_arch + " -o /tmp/output.fatbin";
+                            
     auto res = exec(compile_cmd);
 
     if (res.second != 0) {

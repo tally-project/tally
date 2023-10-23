@@ -100,10 +100,8 @@ void serialize(Archive & ar, CubinData & g, const unsigned int version)
     ar & g.cubin_uid;
     ar & g.cubin_data;
     ar & g.kernel_args;
-    ar & g.original_data;
-    ar & g.ptb_data;
-    ar & g.dynamic_ptb_data;
-    ar & g.preemptive_ptb_data;
+    ar & g.ptx_str;
+    ar & g.fatbin_str;
 }
 
 template<class Archive>

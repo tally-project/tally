@@ -52,6 +52,7 @@ public:
 	std::unordered_map<const void *, WrappedCUfunction> dynamic_ptb_kernel_map;
 	std::unordered_map<const void *, WrappedCUfunction> preemptive_ptb_kernel_map;
 
+    std::unordered_map<uint32_t, CUmodule> cubin_to_cu_module;
     std::unordered_map<uint32_t, std::unordered_map<std::string, const void *>> cubin_to_kernel_name_to_host_func_map;
 
     // Performance cache to use at runtime

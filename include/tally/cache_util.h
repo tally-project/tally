@@ -53,32 +53,22 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
     // elf will be deleted by the client side
     // std::remove(tmp_elf_file_name.c_str());
 
-    // Generate transformed version from the PTX code
-    for (const auto& ptx_file_name : ptx_file_names) {
-
-        spdlog::info("Generating transformed code for " + ptx_file_name + " ...");
-
-        auto original_ptx_str = gen_original_ptx(ptx_file_name);
-        auto original_fatbin_str = get_fatbin_str_from_ptx_str(original_ptx_str);
-        original_data.push_back(std::make_pair(original_ptx_str, original_fatbin_str));
-
-        auto ptb_ptx_str = gen_ptb_ptx(ptx_file_name);
-        auto ptb_fatbin_str = get_fatbin_str_from_ptx_str(ptb_ptx_str);
-        ptb_data.push_back(std::make_pair(ptb_ptx_str, ptb_fatbin_str));
-
-        auto dynamic_ptb_ptx_str = gen_dynamic_ptb_ptx(ptx_file_name);
-        auto dynamic_ptb_fatbin_str = get_fatbin_str_from_ptx_str(dynamic_ptb_ptx_str);
-        dynamic_ptb_data.push_back(std::make_pair(dynamic_ptb_ptx_str, dynamic_ptb_fatbin_str));
-
-        auto preemptive_ptb_ptx_str = gen_preemptive_ptb_ptx(ptx_file_name);
-        auto preemptive_ptb_fatbin_str = get_fatbin_str_from_ptx_str(preemptive_ptb_ptx_str);
-        preemptive_ptb_data.push_back(std::make_pair(preemptive_ptb_ptx_str, preemptive_ptb_fatbin_str));
-
-        // Delete ptx
-        std::remove(ptx_file_name.c_str());
+    if (ptx_file_names.size() > 1) {
+        throw std::runtime_error("Assuming one fatbin only contains one ptx file");
     }
 
-    TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args, original_data, ptb_data, dynamic_ptb_data, preemptive_ptb_data);
+    auto ptx_file_name = ptx_file_names[0];
+
+    // Generate transformed version from the PTX code
+    spdlog::info("Generating transformed code for " + ptx_file_name + " ...");
+
+    auto transform_ptx_str = gen_transform_ptx(ptx_file_name);
+    auto transform_fatbin_str = get_fatbin_str_from_ptx_str(transform_ptx_str);
+
+    // Delete ptx
+    std::remove(ptx_file_name.c_str());
+
+    TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args, transform_ptx_str, transform_fatbin_str);
     TallyCache::cache->transform_cache_changed = true;
 }
 

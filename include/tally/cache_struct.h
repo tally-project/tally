@@ -302,23 +302,17 @@ public:
     // Unique id of this cubin data
     uint32_t cubin_uid;
 
-    // a cubin file
+    // Original fatbin data
     std::string cubin_data;
 
     // Key: kernel name, value: vector of the sizes of arguments in ordinal order
     std::map<std::string, std::vector<uint32_t>> kernel_args;
 
-    // All the original PTX files and fatbin
-    std::vector<std::pair<std::string, std::string>> original_data;
+    // Ptx string including original, PTB, dynamic PTB, and preemptive PTB kernels
+    std::string ptx_str;
 
-    // All the PTB PTX files and fatbin
-    std::vector<std::pair<std::string, std::string>> ptb_data;
-
-    // All the dynamic PTB PTX files and fatbin
-    std::vector<std::pair<std::string, std::string>> dynamic_ptb_data;
-
-    // All the preemptive  PTB PTX files and fatbin
-    std::vector<std::pair<std::string, std::string>> preemptive_ptb_data;
+    // Fatbin data in a string with all the transform kernels
+    std::string fatbin_str;
 };
 
 class CubinCache
@@ -344,40 +338,7 @@ public:
                 }
             }
         }
-
         return nullptr;
-    }
-
-    std::vector<std::pair<std::string, std::string>>
-    get_ptb_data(const char* cubin_data, size_t cubin_size)
-    {
-        auto transform_data = find_transform_data(cubin_data, cubin_size);
-        assert(transform_data);
-        return transform_data->ptb_data;
-    }
-
-    std::vector<std::pair<std::string, std::string>>
-    get_dynamic_ptb_data(const char* cubin_data, size_t cubin_size)
-    {
-        auto transform_data = find_transform_data(cubin_data, cubin_size);
-        assert(transform_data);
-        return transform_data->dynamic_ptb_data;
-    }
-
-    std::vector<std::pair<std::string, std::string>>
-    get_preemptive_ptb_data(const char* cubin_data, size_t cubin_size)
-    {
-        auto transform_data = find_transform_data(cubin_data, cubin_size);
-        assert(transform_data);
-        return transform_data->preemptive_ptb_data;
-    }
-
-    std::vector<std::pair<std::string, std::string>>
-    get_original_data(const char* cubin_data, size_t cubin_size)
-    {
-        auto transform_data = find_transform_data(cubin_data, cubin_size);
-        assert(transform_data);
-        return transform_data->original_data;
     }
 
     std::map<std::string, std::vector<uint32_t>>
@@ -390,6 +351,28 @@ public:
             std::cout << "!transform_data" << std::endl;
         }
         return transform_data->kernel_args;
+    }
+
+    std::string &get_transform_ptx_str(const char* cubin_data, size_t cubin_size)
+    {
+        auto transform_data = find_transform_data(cubin_data, cubin_size);
+        assert(transform_data);
+
+        if (!transform_data) {
+            std::cout << "!transform_data" << std::endl;
+        }
+        return transform_data->ptx_str;
+    }
+
+    std::string &get_transform_fatbin_str(const char* cubin_data, size_t cubin_size)
+    {
+        auto transform_data = find_transform_data(cubin_data, cubin_size);
+        assert(transform_data);
+
+        if (!transform_data) {
+            std::cout << "!transform_data" << std::endl;
+        }
+        return transform_data->fatbin_str;
     }
 
     const char *get_cubin_data_ptr(const char* cubin_data, size_t cubin_size)
@@ -464,14 +447,12 @@ public:
         size_t cubin_size,
         std::string &cubin_str,
         std::map<std::string, std::vector<uint32_t>> &kernel_args,
-        std::vector<std::pair<std::string, std::string>> &original_data,
-        std::vector<std::pair<std::string, std::string>> &ptb_data,
-        std::vector<std::pair<std::string, std::string>> &dynamic_ptb_data,
-        std::vector<std::pair<std::string, std::string>> &preemptive_ptb_data
+        std::string &ptx_str,
+        std::string &fatbin_str
     )
     {
         std::unique_lock lock(mutex_);
-        cubin_map[cubin_size].push_back( CubinData { uid_counter, cubin_str, kernel_args, original_data, ptb_data, dynamic_ptb_data, preemptive_ptb_data } );
+        cubin_map[cubin_size].push_back( CubinData { uid_counter, cubin_str, kernel_args, ptx_str, fatbin_str } );
         uid_counter++;
     }
 };

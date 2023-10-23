@@ -20,19 +20,16 @@
 #include <tally/cuda_launch.h>
 #include <tally/generated/cuda_api.h>
 
-// Generating original version of a PTX file
-std::string gen_original_ptx(std::string ptx_path);
-
-// Generating sliced version of a PTX file
-std::string gen_sliced_ptx(std::string ptx_path);
-
 // Generating PTB version of a PTX file
-std::string gen_ptb_ptx(std::string ptx_path);
+std::string gen_ptb_ptx(std::string &ptx_str);
 
 // Generating dynamic PTB version of a PTX file
-std::string gen_dynamic_ptb_ptx(std::string ptx_path);
+std::string gen_dynamic_ptb_ptx(std::string &ptx_str);
 
 // Generating preemptive PTB version of a PTX file
-std::string gen_preemptive_ptb_ptx(std::string ptx_path);
+std::string gen_preemptive_ptb_ptx(std::string &ptx_str);
+
+// Generating combined version of a PTX file
+std::string gen_transform_ptx(std::string &ptx_path);
 
 #endif // TALLY_TRANSFORM_H
