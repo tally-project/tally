@@ -163,10 +163,16 @@ inline void free_dev_addr(std::vector<DeviceMemoryKey> &dev_addr_map, void *addr
 template <typename T>
 void check(T err, const char* const func, const char* const file, const int line)
 {
-    if (err != cudaSuccess)
+    if (err)
     {
-        std::cerr << "CUDA Runtime Error at: " << file << ":" << line << std::endl;
-        std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
+        std::cerr << "CUDA Error at: " << file << ":" << line << std::endl;
+        if constexpr (std::is_same<T, cudaError_t>::value) {
+            std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
+        } else if constexpr (std::is_same<T, CUresult>::value) {
+            char *err_msg;
+            cuGetErrorString(err, &err_msg);
+            std::cerr << err_msg << " " << func << std::endl;
+        }
     }
 }
 

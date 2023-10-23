@@ -57,19 +57,34 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
         throw std::runtime_error("Assuming one fatbin only contains one ptx file");
     }
 
-    auto ptx_file_name = ptx_file_names[0];
+    if (ptx_file_names.size() > 0) {
 
-    // Generate transformed version from the PTX code
-    spdlog::info("Generating transformed code for " + ptx_file_name + " ...");
+        auto ptx_file_name = ptx_file_names[0];
 
-    auto transform_ptx_str = gen_transform_ptx(ptx_file_name);
-    auto transform_fatbin_str = get_fatbin_str_from_ptx_str(transform_ptx_str);
+        // Generate transformed version from the PTX code
+        spdlog::info("Generating transformed code for " + ptx_file_name + " ...");
 
-    // Delete ptx
-    std::remove(ptx_file_name.c_str());
+        auto transform_ptx_str = gen_transform_ptx(ptx_file_name);
+        auto transform_fatbin_str = get_fatbin_str_from_ptx_str(transform_ptx_str);
 
-    TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args, transform_ptx_str, transform_fatbin_str);
-    TallyCache::cache->transform_cache_changed = true;
+        // Delete ptx
+        std::remove(ptx_file_name.c_str());
+
+        TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args, transform_ptx_str, transform_fatbin_str);
+        TallyCache::cache->transform_cache_changed = true;
+    } else {
+
+        spdlog::warn("No PTX file found in fatbin data.");
+
+        std::string transform_ptx_str = "";
+        std::string transform_fatbin_str = "";
+
+        TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args, transform_ptx_str, transform_fatbin_str);
+        TallyCache::cache->transform_cache_changed = true;
+
+    }
+
+    TallyCache::cache->save_transform_cache();
 }
 
 #endif // TALLY_CACHE_UTIL_H

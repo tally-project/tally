@@ -730,10 +730,13 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
         }
     }
 
+    register_cu_modules(cubin_uid);
+
     // Load the transformed PTX and register them as callable functions
     if (!client_meta.cubin_registered) {
         register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
     }
+
 }
 
 void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
