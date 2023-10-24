@@ -658,6 +658,7 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
 void TallyServer::handle___cudaRegisterFunction(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: __cudaRegisterFunction");
+
     auto args = (struct __cudaRegisterFunctionArg *) __args;
 
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
@@ -2788,7 +2789,6 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
         auto header = (struct fatBinaryHeader *) args->image;
         cubin_size = header->headerSize + header->fatSize;
         cubin_data = (const char *) args->image;
-
         cache_cubin_data(cubin_data, cubin_size, client_id);
         tmp_elf_file = get_tmp_file_path(".elf", client_id);
         msg_len += tmp_elf_file.size() + 1;

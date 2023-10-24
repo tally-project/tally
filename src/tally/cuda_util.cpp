@@ -31,8 +31,8 @@ std::string get_fatbin_str_from_ptx_str(std::string &ptx_str)
     std::ifstream ifs("/tmp/output.fatbin", std::ios::binary);
     auto fatbin_str = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 
-    std::remove("/tmp/output.ptx");
-    std::remove("/tmp/output.fatbin");
+    // std::remove("/tmp/output.ptx");
+    // std::remove("/tmp/output.fatbin");
 
     return fatbin_str;
 }

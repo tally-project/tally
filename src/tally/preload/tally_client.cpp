@@ -3212,18 +3212,20 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
 
     auto mod_type = get_cuda_module_type(image);
     if (mod_type == CUDA_MODULE_TYPE::PTX_STRING) {
-        
+
         std::string ptx_str((char *)image);
         fatbin_str = get_fatbin_str_from_ptx_str(ptx_str);
         fatbin_data = (char *) fatbin_str.c_str();
         fatbin_size = fatbin_str.size();
 
     } else if (mod_type == CUDA_MODULE_TYPE::FATBIN) {
+
         auto fbh = (struct fatBinaryHeader *) image;
         fatbin_data = (char *) image;
         fatbin_size = fbh->headerSize + fbh->fatSize;
 
     } else if (mod_type == CUDA_MODULE_TYPE::ELF) {
+
         auto hdr = (Elf64_Ehdr *) image;
 
         // Compute elf size from last program header and last section header          
@@ -3260,7 +3262,7 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
             request->cubin_uid = cubin_uid;
 
             if (!cached) {
-                memcpy(request->image, image, fatbin_size);
+                memcpy(request->image, fatbin_data, fatbin_size);
             }
 
             TallyClient::client->iox_client->send(header).or_else(
@@ -4277,9 +4279,6 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
 			request->hStream = hStream;
 
             if (!is_dev_addr(dev_addr_map, (const void*) src)) {
-
-                std::cout << "memcpy(request->data, (const void*) src, ByteCount);" << std::endl;
-
                 memcpy(request->data, (const void*) src, ByteCount);
             }
 
@@ -5373,7 +5372,7 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
             request->cubin_uid = cubin_uid;
 
             if (!cached) {
-                memcpy(request->image, image, fatbin_size);
+                memcpy(request->image, fatbin_data, fatbin_size);
             }
 
             TallyClient::client->iox_client->send(header).or_else(
