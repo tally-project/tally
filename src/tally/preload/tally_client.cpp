@@ -56,6 +56,17 @@ void *dlopen(const char *filename, int flag)
 
     auto preload_str = client_preload_path.string();
 
+    std::ofstream outputFile;
+    outputFile.open("tally-client.txt", std::ios::app);
+
+    if (!outputFile.is_open()) {
+        std::cerr << "Failed to open the file." << std::endl;
+    }
+
+    outputFile << filename << std::endl;
+
+    outputFile.close();
+
     static void* (*ldlopen) (const char *, int );
     if (!ldlopen) {
         ldlopen = (void* (*) (const char *, int  )) dlsym(RTLD_NEXT, "dlopen");
@@ -65,7 +76,15 @@ void *dlopen(const char *filename, int flag)
     if (filename) {
         std::string f_name(filename);
 
-        if (f_name == "libcuda.so.1") {
+        if (f_name == "libcuda.so.1" ||
+            f_name == "libcudart.so.12" ||
+            f_name == "libcublas.so.12" ||
+            f_name == "libcublasLt.so.12" ||
+            f_name == "libcufft.so.11" ||
+            f_name == "libcusolver.so.11" ||
+            f_name == "libcusparse.so.12" ||
+            f_name == "libcudnn.so.8"
+        ) {
             return ldlopen(preload_str.c_str(), flag);
         }
     }

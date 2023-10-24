@@ -2080,9 +2080,12 @@ void TallyServer::handle_cuCtxSetCurrent(void *__args, iox::popo::UntypedServer 
     iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<CUresult*>(responsePayload);
-            *response = cuCtxSetCurrent(
-				args->ctx
-            );
+            // *response = cuCtxSetCurrent(
+			// 	args->ctx
+            // );
+
+			*response = CUDA_SUCCESS;
+
             CHECK_CUDA_ERROR(*response);
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
