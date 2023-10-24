@@ -494,6 +494,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuModuleUnload",
     "cuCtxSynchronize",
     "cuStreamSynchronize",
     "cuModuleLoadDataEx",
@@ -683,7 +684,6 @@ FORWARD_API_CALLS = [
     "cuCtxSetSharedMemConfig",
     "cuCtxResetPersistingL2Cache",
     "cuCtxDetach",
-    "cuModuleUnload",
     "cudnnDestroy",
     "cudnnSetStream",
     "cudnnSetTensor4dDescriptor",
@@ -1016,3 +1016,16 @@ def get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type):
         .or_else([](auto& error) {{ LOG_ERR_AND_EXIT("Could not allocate Request: ", error); }});
 """
     return func_preload_builder
+
+
+def should_check_cuda_err(ret_type, func_name):
+    if ret_type not in ["cudaError_t", "CUresult", "cudnnStatus_t", "cublasStatus_t"]:
+        return False
+    
+    if "eventquery" in func_name.lower():
+        return False
+    
+    if func_name == "cudnnBackendFinalize":
+        return False
+    
+    return True

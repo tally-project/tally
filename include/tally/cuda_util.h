@@ -379,8 +379,11 @@ inline size_t get_cupointer_attribute_size(CUpointer_attribute attribute)
         case CU_POINTER_ATTRIBUTE_DEVICE_POINTER:
             attr_size = sizeof(CUdeviceptr);
             break;
+        case CU_POINTER_ATTRIBUTE_DEVICE_ORDINAL:
+            attr_size = sizeof(int);
+            break;
         default:
-            throw std::runtime_error("unknown type: " + std::to_string(attribute));
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "unknown type: " + std::to_string(attribute));
     }
 
     return attr_size;

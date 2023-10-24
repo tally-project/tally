@@ -407,13 +407,15 @@ void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_si
     auto cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
     auto &kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_uid];
 
-    CUmodule tranform_module = cubin_to_cu_module[cubin_uid];
+    if (cubin_to_cu_module.find(cubin_uid) != cubin_to_cu_module.end()) {
+        CUmodule tranform_module = cubin_to_cu_module[cubin_uid];
 
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(
-        tranform_module, transform_ptx_str, transform_fatbin_str,
-        kernel_name_to_host_func_map, original_kernel_map,
-        ptb_kernel_map, dynamic_ptb_kernel_map, preemptive_ptb_kernel_map
-    );
+        register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(
+            tranform_module, transform_ptx_str, transform_fatbin_str,
+            kernel_name_to_host_func_map, original_kernel_map,
+            ptb_kernel_map, dynamic_ptb_kernel_map, preemptive_ptb_kernel_map
+        );
+    }
 }
 
 void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -551,8 +553,14 @@ void TallyServer::register_cu_modules(uint32_t cubin_uid)
         auto &transform_fatbin_str = TallyCache::cache->cubin_cache.get_transform_fatbin_str(cubin_data, cubin_size);
 
         CUmodule transform_module;
-        cuModuleLoadData(&transform_module, transform_fatbin_str.c_str());
-        cubin_to_cu_module.insert(cubin_uid, transform_module);
+        auto err = cuModuleLoadData(&transform_module, transform_fatbin_str.c_str());
+        CHECK_CUDA_ERROR(err);
+
+        if (!err) {
+            cubin_to_cu_module.insert(cubin_uid, transform_module);
+        } else {
+            spdlog::warn("Fail to load module for cubin id: " + std::to_string(cubin_uid));
+        }
     }
 }
 
@@ -2814,6 +2822,10 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
             // Register cu module for this cubin
             register_cu_modules(cubin_uid);
 
+            if (cubin_to_cu_module.find(cubin_uid) == cubin_to_cu_module.end()) {
+                throw std::runtime_error("Cannot find cu module");
+            }
+
             response->module = cubin_to_cu_module[cubin_uid];
             response->err = CUDA_SUCCESS;
 
@@ -3839,6 +3851,10 @@ void TallyServer::handle_cuModuleLoadDataEx(void *__args, iox::popo::UntypedServ
             // Register cu module for this cubin
             register_cu_modules(cubin_uid);
 
+            if (cubin_to_cu_module.find(cubin_uid) == cubin_to_cu_module.end()) {
+                throw std::runtime_error("Cannot find cu module");
+            }
+
             response->module = cubin_to_cu_module[cubin_uid];
             response->err = CUDA_SUCCESS;
 
@@ -3941,6 +3957,29 @@ void TallyServer::handle_cuStreamSynchronize(void *__args, iox::popo::UntypedSer
             );
             CHECK_CUDA_ERROR(*response);
 
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuModuleUnload(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuModuleUnload");
+	auto args = (struct cuModuleUnloadArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+            // *response = cuModuleUnload(
+			// 	args->hmod
+            // );
+
+            *response = CUDA_SUCCESS;
+
+            CHECK_CUDA_ERROR(*response);
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })

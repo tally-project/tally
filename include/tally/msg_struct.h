@@ -1236,4 +1236,8 @@ struct cuStreamSynchronizeArg {
 	CUstream  hStream;
 };
 
+struct cuModuleUnloadArg {
+	CUmodule  hmod;
+};
+
 #endif // TALLY_DEF_H

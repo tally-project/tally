@@ -336,10 +336,6 @@ struct cuCtxDetachArg {
 	CUcontext  ctx;
 };
 
-struct cuModuleUnloadArg {
-	CUmodule  hmod;
-};
-
 struct cuModuleGetLoadingModeArg {
 	CUmoduleLoadingMode * mode;
 };

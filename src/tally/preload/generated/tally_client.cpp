@@ -1688,45 +1688,6 @@ CUresult cuModuleLoad(CUmodule * module, const char * fname)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuModuleUnload(CUmodule  hmod)
-{
-	TALLY_LOG("cuModuleUnload hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcuModuleUnload(hmod);
-#else
-
-    CUresult err;
-
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuModuleUnloadArg), alignof(cuModuleUnloadArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUMODULEUNLOAD;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuModuleUnloadArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->hmod = hmod;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const CUresult*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuModuleUnload);
-	return err;
-}
-
 CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
 {
 	TALLY_LOG("cuModuleGetLoadingMode hooked");
@@ -16114,8 +16075,10 @@ unsigned cublasLtDisableCpuInstructionsSetMask(unsigned  mask)
 
 cublasStatus_t cublasLtMatrixTransform(cublasLtHandle_t  lightHandle, cublasLtMatrixTransformDesc_t  transformDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  beta, const void*  B, cublasLtMatrixLayout_t  Bdesc, void*  C, cublasLtMatrixLayout_t  Cdesc, cudaStream_t  stream)
 {
-	TALLY_LOG("cublasLtMatrixTransform hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	// TALLY_LOG("cublasLtMatrixTransform hooked");
+	// throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    return lcublasLtMatrixTransform(lightHandle, transformDesc, alpha, A,  Adesc, beta,  B,   Bdesc, C,  Cdesc,  stream);
 }
 
 cublasStatus_t cublasLtMatrixLayoutInit_internal(cublasLtMatrixLayout_t  matLayout, size_t  size, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)
@@ -16314,20 +16277,26 @@ cublasStatus_t cublasLtMatrixTransformDescInit_internal(cublasLtMatrixTransformD
 
 cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t*  transformDesc, cudaDataType  scaleType)
 {
-	TALLY_LOG("cublasLtMatrixTransformDescCreate hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	// TALLY_LOG("cublasLtMatrixTransformDescCreate hooked");
+	// throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    return lcublasLtMatrixTransformDescCreate(transformDesc, scaleType);
 }
 
 cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t  transformDesc)
 {
-	TALLY_LOG("cublasLtMatrixTransformDescDestroy hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	// TALLY_LOG("cublasLtMatrixTransformDescDestroy hooked");
+	// throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    return lcublasLtMatrixTransformDescDestroy(transformDesc);
 }
 
 cublasStatus_t cublasLtMatrixTransformDescSetAttribute(cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
 {
-	TALLY_LOG("cublasLtMatrixTransformDescSetAttribute hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	// TALLY_LOG("cublasLtMatrixTransformDescSetAttribute hooked");
+	// throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    return lcublasLtMatrixTransformDescSetAttribute(transformDesc, attr, buf, sizeInBytes);
 }
 
 cublasStatus_t cublasLtMatrixTransformDescGetAttribute(cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
