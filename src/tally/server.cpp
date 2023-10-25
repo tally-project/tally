@@ -3989,3 +3989,73 @@ void TallyServer::handle_cuModuleUnload(void *__args, iox::popo::UntypedServer *
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cudaStreamEndCapture(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaStreamEndCapture");
+	auto args = (struct cudaStreamEndCaptureArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    cudaStream_t __stream = args->stream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cudaStreamEndCaptureResponse), alignof(cudaStreamEndCaptureResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaStreamEndCaptureResponse*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_uid);
+
+            response->err = cudaStreamEndCapture(
+				__stream,
+				(args->pGraph ? &(response->pGraph) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuStreamEndCapture(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuStreamEndCapture");
+	auto args = (struct cuStreamEndCaptureArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cuStreamEndCaptureResponse), alignof(cuStreamEndCaptureResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuStreamEndCaptureResponse*>(responsePayload);
+
+			wait_until_launch_queue_empty(client_uid);
+
+            response->err = cuStreamEndCapture(
+				__stream,
+				(args->phGraph ? &(response->phGraph) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}

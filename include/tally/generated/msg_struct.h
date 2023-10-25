@@ -379,16 +379,6 @@ struct cuStreamBeginCapture_v2Arg {
 	CUstreamCaptureMode  mode;
 };
 
-struct cuStreamEndCaptureArg {
-	CUstream  hStream;
-	CUgraph * phGraph;
-};
-
-struct cuStreamEndCaptureResponse {
-	CUgraph  phGraph;
-	CUresult err;
-};
-
 struct cuStreamIsCapturingArg {
 	CUstream  hStream;
 	CUstreamCaptureStatus * captureStatus;
@@ -731,16 +721,6 @@ struct cudaStreamWaitEventArg {
 
 struct cudaStreamQueryArg {
 	cudaStream_t  stream;
-};
-
-struct cudaStreamEndCaptureArg {
-	cudaStream_t  stream;
-	cudaGraph_t * pGraph;
-};
-
-struct cudaStreamEndCaptureResponse {
-	cudaGraph_t  pGraph;
-	cudaError_t err;
 };
 
 struct cudaStreamIsCapturingArg {

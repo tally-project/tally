@@ -494,6 +494,8 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaStreamEndCapture",
+    "cuStreamEndCapture",
     "cuModuleUnload",
     "cuCtxSynchronize",
     "cuStreamSynchronize",
@@ -797,8 +799,6 @@ UNSUPPORTED_FUNCS = [
 CUDA_GET_2_PARAM_FUNCS = [
     "cuStreamIsCapturing",
     "cublasGetMathMode",
-    "cuStreamEndCapture",
-    "cudaStreamEndCapture",
     "cudnnGetRNNBiasMode",
     "cudnnGetRNNMatrixMathType",
     "cublasGetSmCountTarget",

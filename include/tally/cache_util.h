@@ -68,7 +68,7 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
         auto transform_fatbin_str = get_fatbin_str_from_ptx_str(transform_ptx_str);
 
         // Delete ptx
-        // std::remove(ptx_file_name.c_str());
+        std::remove(ptx_file_name.c_str());
 
         TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args, transform_ptx_str, transform_fatbin_str);
         TallyCache::cache->transform_cache_changed = true;

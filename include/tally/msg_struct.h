@@ -1240,4 +1240,24 @@ struct cuModuleUnloadArg {
 	CUmodule  hmod;
 };
 
+struct cuStreamEndCaptureArg {
+	CUstream  hStream;
+	CUgraph * phGraph;
+};
+
+struct cuStreamEndCaptureResponse {
+	CUgraph  phGraph;
+	CUresult err;
+};
+
+struct cudaStreamEndCaptureArg {
+	cudaStream_t  stream;
+	cudaGraph_t * pGraph;
+};
+
+struct cudaStreamEndCaptureResponse {
+	cudaGraph_t  pGraph;
+	cudaError_t err;
+};
+
 #endif // TALLY_DEF_H
