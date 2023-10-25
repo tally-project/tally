@@ -3843,6 +3843,7 @@ void TallyServer::handle_cuModuleLoadDataEx(void *__args, iox::popo::UntypedServ
                 response->tmp_elf_file[tmp_elf_file.size()] = '\0';
 
                 cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
+                cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
             } else {
                 cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
                 cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
@@ -3857,6 +3858,8 @@ void TallyServer::handle_cuModuleLoadDataEx(void *__args, iox::popo::UntypedServ
 
             response->module = cubin_to_cu_module[cubin_uid];
             response->err = CUDA_SUCCESS;
+
+            std::cout << "Registered cubin_uid: " << cubin_uid << " at module: " << (void *) response->module << std::endl;
 
             jit_module_to_cubin_map.insert(response->module, std::make_pair(
                 cubin_data,

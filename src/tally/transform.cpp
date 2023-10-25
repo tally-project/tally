@@ -24,7 +24,7 @@ std::string gen_preemptive_ptb_ptx(std::string &kernel_ptx_str)
     boost::regex b64_reg_decl_pattern("\\.reg \\.b64 %rd<(\\d+)>;");
     boost::regex pred_reg_decl_pattern("\\.reg \\.pred %p<(\\d+)>;");
     boost::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
-    boost::regex kernel_param_pattern("^placeholder$");
+    boost::regex kernel_param_pattern("^\\.param");
 
     std::string PTB_MAIN_BLOCK_NAME = "L__PTB_MAIN";
     std::string PTB_CHECK_LEADER_BLOCK_NAME = "L__PTB_CHECK_LEADER";
@@ -84,7 +84,6 @@ std::string gen_preemptive_ptb_ptx(std::string &kernel_ptx_str)
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
-            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b16_regs = 0;
             num_b32_regs = 0;
@@ -219,8 +218,8 @@ std::string gen_preemptive_ptb_ptx(std::string &kernel_ptx_str)
 
             brace_counter = 0;
             brace_encountered = false;
-            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
-        
+            int count_num_params = 0;
+            
             for (auto &kernel_line : kernel_lines) {
 
                 int32_t numLeftBrace = countLeftBrace(kernel_line);
@@ -230,12 +229,21 @@ std::string gen_preemptive_ptb_ptx(std::string &kernel_ptx_str)
                 brace_counter -= numRightBrace;
                 assert(brace_counter >= 0);
 
-                if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
-                    ptb_ptx_code += kernel_line + ",\n";
-                    ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + ",\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + ",\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 3) + "\n";
+                if (boost::regex_search(kernel_line, matches, kernel_param_pattern)) {
+                    count_num_params += 1;
+
+                    if (count_num_params == num_params) {
+                        ptb_ptx_code += kernel_line + ",\n";
+                        ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
+                        ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + ",\n";
+                        ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + ",\n";
+                        ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 3) + "\n";
+                        count_num_params = 0;
+                        continue;
+                    }
+
+                    ptb_ptx_code += kernel_line + "\n";
+
                     continue;
                 }
 
@@ -479,7 +487,7 @@ std::string gen_dynamic_ptb_ptx(std::string &kernel_ptx_str)
     boost::regex b64_reg_decl_pattern("\\.reg \\.b64 %rd<(\\d+)>;");
     boost::regex pred_reg_decl_pattern("\\.reg \\.pred %p<(\\d+)>;");
     boost::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
-    boost::regex kernel_param_pattern("^placeholder$");
+    boost::regex kernel_param_pattern("^\\.param");
 
     std::string PTB_MAIN_BLOCK_NAME = "L__PTB_MAIN";
     std::string PTB_CHECK_LEADER_BLOCK_NAME = "L__PTB_CHECK_LEADER";
@@ -530,7 +538,6 @@ std::string gen_dynamic_ptb_ptx(std::string &kernel_ptx_str)
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
-            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b32_regs = 0;
             num_b64_regs = 0;
@@ -651,8 +658,8 @@ std::string gen_dynamic_ptb_ptx(std::string &kernel_ptx_str)
 
             brace_counter = 0;
             brace_encountered = false;
-            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
-        
+            int count_num_params = 0;
+            
             for (auto &kernel_line : kernel_lines) {
 
                 int32_t numLeftBrace = countLeftBrace(kernel_line);
@@ -662,11 +669,20 @@ std::string gen_dynamic_ptb_ptx(std::string &kernel_ptx_str)
                 brace_counter -= numRightBrace;
                 assert(brace_counter >= 0);
 
-                if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
-                    ptb_ptx_code += kernel_line + ",\n";
-                    ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + ",\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + "\n";
+                if (boost::regex_search(kernel_line, matches, kernel_param_pattern)) {
+                    count_num_params += 1;
+
+                    if (count_num_params == num_params) {
+                        ptb_ptx_code += kernel_line + ",\n";
+                        ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
+                        ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + ",\n";
+                        ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + "\n";
+                        count_num_params = 0;
+                        continue;
+                    }
+
+                    ptb_ptx_code += kernel_line + "\n";
+
                     continue;
                 }
 
@@ -880,7 +896,7 @@ std::string gen_ptb_ptx(std::string &kernel_ptx_str)
     boost::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
     boost::regex pred_reg_decl_pattern("\\.reg \\.pred %p<(\\d+)>;");
     boost::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
-    boost::regex kernel_param_pattern("^placeholder$");
+    boost::regex kernel_param_pattern("^\\.param");
 
     std::string PTB_RETURN_BLOCK_NAME = "L__PTB_RETURN";
     std::string PTB_LOOP_BLOCK_NAME = "L__PTB_LOOP";
@@ -911,7 +927,6 @@ std::string gen_ptb_ptx(std::string &kernel_ptx_str)
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
-            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b32_regs = 0;
             num_pred_regs = 0;
@@ -1002,7 +1017,7 @@ std::string gen_ptb_ptx(std::string &kernel_ptx_str)
 
             brace_counter = 0;
             brace_encountered = false;
-            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
+            int count_num_params = 0;
 
             for (auto &kernel_line : kernel_lines) {
 
@@ -1013,9 +1028,18 @@ std::string gen_ptb_ptx(std::string &kernel_ptx_str)
                 brace_counter -= numRightBrace;
                 assert(brace_counter >= 0);
 
-                if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
-                    ptb_ptx_code += kernel_line + ",\n";
-                    ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12]\n";
+                if (boost::regex_search(kernel_line, matches, kernel_param_pattern)) {
+                    count_num_params += 1;
+
+                    if (count_num_params == num_params) {
+                        ptb_ptx_code += kernel_line + ",\n";
+                        ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12]\n";
+                        count_num_params = 0;
+                        continue;
+                    }
+
+                    ptb_ptx_code += kernel_line + "\n";
+
                     continue;
                 }
 
@@ -1025,10 +1049,6 @@ std::string gen_ptb_ptx(std::string &kernel_ptx_str)
                         ptb_ptx_code += kernel_line + "\n";
                         continue;
                     }
-
-                    // if (kernel_name == "void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel<float, unsigned int>(at::GenericPackedTensorAccessor<float, 4ul, at::DefaultPtrTraits, int>, at::GenericPackedTensorAccessor<float, 4ul, at::DefaultPtrTraits, int>, at::GenericPackedTensorAccessor<float, 4ul, at::DefaultPtrTraits, int>, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)") {
-                    //     ptb_ptx_code += ".maxnreg 100\n";
-                    // }
 
                     ptb_ptx_code += kernel_line + "\n";
     
@@ -1184,9 +1204,6 @@ std::string gen_transform_ptx(std::string &ptx_path)
     std::string line;
 
     boost::regex kernel_name_pattern("(\\.visible\\s+)?\\.entry (\\w+)");
-    boost::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
-    boost::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
-    boost::regex kernel_param_pattern("^placeholder$");
 
     bool record_kernel = false;
     int32_t brace_counter = 0;

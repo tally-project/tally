@@ -5177,58 +5177,41 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
 	TALLY_CLIENT_PROFILE_START;
     
 #if defined(RUN_LOCALLY)
+	auto err = lcuModuleLoadFatBinary(module, fatCubin);
+#else
 
-    size_t elf_size;
+    std::string fatbin_str;
+    char *fatbin_data = nullptr;
+    size_t fatbin_size = -1;
 
     auto mod_type = get_cuda_module_type(fatCubin);
-
     if (mod_type == CUDA_MODULE_TYPE::PTX_STRING) {
-        std::cout << "PTX_STRING" << std::endl;
+
+        std::string ptx_str((char *)fatCubin);
+        fatbin_str = get_fatbin_str_from_ptx_str(ptx_str);
+        fatbin_data = (char *) fatbin_str.c_str();
+        fatbin_size = fatbin_str.size();
 
     } else if (mod_type == CUDA_MODULE_TYPE::FATBIN) {
 
-        std::cout << "FATBIN" << std::endl;
+        auto fbh = (struct fatBinaryHeader *) fatCubin;
+        fatbin_data = (char *) fatCubin;
+        fatbin_size = fbh->headerSize + fbh->fatSize;
 
     } else if (mod_type == CUDA_MODULE_TYPE::ELF) {
-
-        std::cout << "ELF" << std::endl;
 
         auto hdr = (Elf64_Ehdr *) fatCubin;
 
         // Compute elf size from last program header and last section header          
         auto elf_size_ph = hdr->e_phoff + hdr->e_phentsize * hdr->e_phnum;
         auto elf_size_sh = hdr->e_shoff + hdr->e_shentsize * hdr->e_shnum;
-        elf_size = std::max(elf_size_ph, elf_size_sh);
+        auto elf_size = std::max(elf_size_ph, elf_size_sh);
 
-        std::cout << "elf_size: " << elf_size << std::endl;
+        // Leave it unhandled at this moment
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Handling elf file is yet unimplemented.");
     }
 
-    auto fbh = (struct fatBinaryHeader *) fatCubin;
-    auto fatbin_data = (char *) fatCubin;
-    auto fatbin_size = fbh->headerSize + fbh->fatSize;
-
-    std::cout << "fatbin_size: " << fatbin_size << std::endl;
-
-    std::string cubin_tmp_path = get_tmp_file_path(".cubin");
-    write_binary_to_file(cubin_tmp_path, fatbin_data, elf_size);
-
-    std::cout << "Written to " << cubin_tmp_path << std::endl;
-
-    exit(0);
-
-	auto err = lcuModuleLoadFatBinary(module, fatCubin);
-#else
-
     CUresult err;
-
-    auto fbh = (struct fatBinaryHeader *) fatCubin;
-    auto fatbin_data = (char *) fatCubin;
-    auto fatbin_size = fbh->headerSize + fbh->fatSize;
-
-    std::string cubin_tmp_path = get_tmp_file_path(".cubin");
-    write_binary_to_file(cubin_tmp_path, fatbin_data, fatbin_size);
-
-    std::cout << "Written to " << cubin_tmp_path << std::endl;
 
     bool cached = TallyCache::cache->cubin_cache.contains(fatbin_data, fatbin_size);
     uint32_t cubin_uid = 0;
@@ -5401,10 +5384,6 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
         msg_len += fatbin_size;
     } else {
         cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
-    }
-
-    if (cubin_uid == 269) {
-        std::cout << "Found cubin_uid == 269" << std::endl;
     }
 
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
