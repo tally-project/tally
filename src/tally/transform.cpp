@@ -1212,41 +1212,43 @@ std::string gen_transform_ptx(std::string &ptx_path)
     std::string final_ptx_str = "";
     std::string kernel_func_str = "";
 
-    // Iterate ptx file, and extract each kernel function
-    while (std::getline(ss, line, '\n')) {
+    final_ptx_str = ptx_code_str;
 
-        boost::smatch matches;
-        if (boost::regex_search(line, matches, kernel_name_pattern)) {
-            record_kernel = true;
-        }
+    // // Iterate ptx file, and extract each kernel function
+    // while (std::getline(ss, line, '\n')) {
 
-        if (record_kernel) {
-            kernel_func_str += line + "\n";
-        } else {
-            final_ptx_str += line + '\n';
-        }
+    //     boost::smatch matches;
+    //     if (boost::regex_search(line, matches, kernel_name_pattern)) {
+    //         record_kernel = true;
+    //     }
 
-        int32_t numLeftBrace = countLeftBrace(line);
-        int32_t numRightBrace = countRightBrace(line);
+    //     if (record_kernel) {
+    //         kernel_func_str += line + "\n";
+    //     } else {
+    //         final_ptx_str += line + '\n';
+    //     }
 
-        brace_counter += numLeftBrace;
-        brace_counter -= numRightBrace;
-        if (!brace_encountered && numLeftBrace > 0) {
-            brace_encountered = true;
-        }
+    //     int32_t numLeftBrace = countLeftBrace(line);
+    //     int32_t numRightBrace = countRightBrace(line);
 
-        if (record_kernel && brace_encountered && brace_counter == 0) {
-            record_kernel = false;
-            brace_encountered = false;
+    //     brace_counter += numLeftBrace;
+    //     brace_counter -= numRightBrace;
+    //     if (!brace_encountered && numLeftBrace > 0) {
+    //         brace_encountered = true;
+    //     }
 
-            final_ptx_str += kernel_func_str + "\n";
-            final_ptx_str += gen_ptb_ptx(kernel_func_str) + "\n";
-            final_ptx_str += gen_dynamic_ptb_ptx(kernel_func_str) + "\n";
-            final_ptx_str += gen_preemptive_ptb_ptx(kernel_func_str) + "\n";
+    //     if (record_kernel && brace_encountered && brace_counter == 0) {
+    //         record_kernel = false;
+    //         brace_encountered = false;
 
-            kernel_func_str = "";
-        }
-    }
+    //         final_ptx_str += kernel_func_str + "\n";
+    //         final_ptx_str += gen_ptb_ptx(kernel_func_str) + "\n";
+    //         final_ptx_str += gen_dynamic_ptb_ptx(kernel_func_str) + "\n";
+    //         final_ptx_str += gen_preemptive_ptb_ptx(kernel_func_str) + "\n";
+
+    //         kernel_func_str = "";
+    //     }
+    // }
 
     return final_ptx_str;
 }

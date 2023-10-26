@@ -8,7 +8,7 @@
 
 #ifdef ENABLE_LOGGING
     #define TALLY_LOG(msg) \
-        std::cout << "Thread ID: " << std::this_thread::get_id() << ": " << msg << std::endl
+        std::cout << msg << std::endl
 #else
     #define TALLY_LOG(msg)
 #endif

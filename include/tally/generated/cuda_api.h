@@ -11,6 +11,11 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 
+extern cudaError_t (*l__cudaPopCallConfiguration) (dim3*,
+  dim3         *,
+  size_t       *,
+  void         *);
+
 extern CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuGetErrorName) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuInit) (unsigned int  Flags);

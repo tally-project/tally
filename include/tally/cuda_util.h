@@ -476,9 +476,9 @@ void register_kernels_from_ptx_fatbin(
 
             std::vector<std::string> transform_kernel_names {
                 kernel_name,
-                kernel_name + "_tally_ptb",
-                kernel_name + "_tally_dynamic_ptb",
-                kernel_name + "_tally_preemptive_ptb"
+                // kernel_name + "_tally_ptb",
+                // kernel_name + "_tally_dynamic_ptb",
+                // kernel_name + "_tally_preemptive_ptb"
             };
    
             for (int i = 0; i < transform_kernel_names.size(); i++) {

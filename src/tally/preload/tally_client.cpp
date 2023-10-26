@@ -43,18 +43,32 @@ std::unordered_map<cudnnSeqDataDescriptor_t, int> seq_desc_to_seq_len_map;
 // Used to check whether an address points to device memory
 std::vector<DeviceMemoryKey> dev_addr_map;
 
+CUfunction main_kernel_f;
+
+std::map<std::string, void *> lib_name_to_lib_handle;
+void *tally_handle = nullptr;
+
+std::vector<std::string> preload_libs {
+    "libcuda.so.1",
+    "libcudart.so.12",
+    "libcublas.so.12",
+    "libcublasLt.so.12",
+    "libcufft.so.11",
+    "libcusolver.so.11",
+    "libcusparse.so.12",
+    "libcudnn.so.8"
+};
+
 extern "C" {
 
 void *dlopen(const char *filename, int flag)
 {
-    std::filesystem::path client_preload_path;
-    if (std::getenv("TALLY_HOME")) {
-        client_preload_path = std::filesystem::path(std::string(std::getenv("TALLY_HOME"))) / "build/libtally_client.so";
-    } else {
-        client_preload_path = std::filesystem::path(std::string(std::getenv("HOME"))) / "tally/build/libtally_client.so";
+    
+    static void* (*ldlopen) (const char *, int );
+    if (!ldlopen) {
+        ldlopen = (void* (*) (const char *, int  )) dlsym(RTLD_NEXT, "dlopen");
     }
-
-    auto preload_str = client_preload_path.string();
+    assert(ldlopen);
 
     std::ofstream outputFile;
     outputFile.open("tally-client.txt", std::ios::app);
@@ -64,57 +78,101 @@ void *dlopen(const char *filename, int flag)
     }
 
     outputFile << filename << std::endl;
-
     outputFile.close();
-
-    static void* (*ldlopen) (const char *, int );
-    if (!ldlopen) {
-        ldlopen = (void* (*) (const char *, int  )) dlsym(RTLD_NEXT, "dlopen");
-    }
-    assert(ldlopen);
 
     if (filename) {
         std::string f_name(filename);
 
-        if (f_name == "libcuda.so.1" ||
-            f_name == "libcudart.so.12" ||
-            f_name == "libcublas.so.12" ||
-            f_name == "libcublasLt.so.12" ||
-            f_name == "libcufft.so.11" ||
-            f_name == "libcusolver.so.11" ||
-            f_name == "libcusparse.so.12" ||
-            f_name == "libcudnn.so.8"
-        ) {
-            return ldlopen(preload_str.c_str(), flag);
+        std::cout << f_name << std::endl;
+
+        if (std::find(preload_libs.begin(), preload_libs.end(), f_name) != preload_libs.end()) {
+
+            if (!tally_handle) {
+                std::filesystem::path client_preload_path;
+                if (std::getenv("TALLY_HOME")) {
+                    client_preload_path = std::filesystem::path(std::string(std::getenv("TALLY_HOME"))) / "build/libtally_client.so";
+                } else {
+                    client_preload_path = std::filesystem::path(std::string(std::getenv("HOME"))) / "tally/build/libtally_client.so";
+                }
+
+                auto preload_str = client_preload_path.string();
+
+                tally_handle = ldlopen(preload_str.c_str(), flag); 
+            } 
+
+            if (lib_name_to_lib_handle.find(f_name) == lib_name_to_lib_handle.end()) {
+                void *lib_handle = ldlopen(filename, flag);
+                lib_name_to_lib_handle[f_name] = lib_handle;
+            }
+
+            return tally_handle;
         }
     }
 
     return ldlopen(filename, flag);
 }
 
+void *dlsym(void * handle, const char * symbol)
+{
+    static void* (*ldlsym) (void * , const char *);
+    if (!ldlsym) {
+        ldlsym = (void* (*) (void * , const char *)) dlvsym(RTLD_NEXT, "dlsym", "GLIBC_2.2.5");
+    }
+    assert(ldlsym);
+
+    std::string symbol_str(symbol);
+    std::cout << "dlsym hooked symbol_str: " << symbol_str << std::endl;
+
+    if (handle == tally_handle) {
+        std::cout << "Found tally_preload_handle" << std::endl;
+    }
+
+    auto res = ldlsym(handle, symbol);
+
+    if (!res) {
+        std::cout << "Fail to find symbol" << std::endl;
+        
+        if (handle == tally_handle) {
+            for (auto &lib_name : preload_libs) {
+                auto lib_handle = lib_name_to_lib_handle[lib_name];
+
+                res = ldlsym(lib_handle, symbol); 
+            
+                if (res) {
+                    std::cout << "Resolve to the original lib from " << lib_name << std::endl;
+                    break;
+                }
+            }
+        }
+    } else {
+        std::cout << "Success to find symbol. res: " << res << std::endl;
+    }
+
+    return res;
+}
+
 void** __cudaRegisterFatBinary( void *fatCubin ) {
 
-    // TALLY_LOG("__cudaRegisterFatBinary hooked");
+    TALLY_LOG("__cudaRegisterFatBinary hooked");
 
-    auto wp = (__fatBinC_Wrapper_t *) fatCubin;
-    auto fbh = (struct fatBinaryHeader *) wp->data;
-    const char *cubin_data = (const char *) wp->data;
-    size_t cubin_size = fbh->headerSize + fbh->fatSize;
+    // auto wp = (__fatBinC_Wrapper_t *) fatCubin;
+    // auto fbh = (struct fatBinaryHeader *) wp->data;
+    // const char *cubin_data = (const char *) wp->data;
+    // size_t cubin_size = fbh->headerSize + fbh->fatSize;
 
-    bool cached = TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size);
-    uint32_t cubin_uid = 0;
+    // bool cached = TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size);
+    // uint32_t cubin_uid = 0;
 
-    size_t msg_len;
-    if (!cached) {
-        msg_len = sizeof(MessageHeader_t) + sizeof(__cudaRegisterFatBinaryArg) + cubin_size;
-    } else {
-        msg_len = sizeof(MessageHeader_t) + sizeof(__cudaRegisterFatBinaryArg);
-        cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
-    }
+    // size_t msg_len;
+    // if (!cached) {
+    //     msg_len = sizeof(MessageHeader_t) + sizeof(__cudaRegisterFatBinaryArg) + cubin_size;
+    // } else {
+    //     msg_len = sizeof(MessageHeader_t) + sizeof(__cudaRegisterFatBinaryArg);
+    //     cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+    // }
 
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFatBinary(fatCubin);
-
 #else
 
     
@@ -180,10 +238,10 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
     auto demangled_kernel_name = demangleFunc(deviceFunName);
     TallyClient::client->host_func_to_demangled_kernel_name_map[hostFun] = demangled_kernel_name;
     
-    TALLY_LOG(demangled_kernel_name);
+    // TALLY_LOG(demangled_kernel_name);
     
-    uint32_t kernel_func_len = deviceFunName.size();
-    uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct __cudaRegisterFunctionArg) + kernel_func_len * sizeof(char);
+    // uint32_t kernel_func_len = deviceFunName.size();
+    // uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct __cudaRegisterFunctionArg) + kernel_func_len * sizeof(char);
 
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
@@ -209,7 +267,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 #endif
 
-    TallyClient::client->_kernel_addr_to_args[hostFun] = TallyClient::client->_kernel_name_to_args[deviceFunName];
+    // TallyClient::client->_kernel_addr_to_args[hostFun] = TallyClient::client->_kernel_name_to_args[deviceFunName];
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
 }
 
@@ -342,6 +400,11 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
     TALLY_LOG("cudaMemcpy hooked");
     TALLY_CLIENT_PROFILE_START;
 
+#if defined(RUN_LOCALLY)
+    auto err = lcudaMemcpy(dst, src, count, kind);
+
+#else
+
     uint32_t msg_len;
 
     if (kind == cudaMemcpyHostToDevice) {
@@ -352,12 +415,7 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
         throw std::runtime_error("Unknown memcpy kind!");
     }
 
-#if defined(RUN_LOCALLY)
-    auto err = lcudaMemcpy(dst, src, count, kind);
-
-#else
     cudaError_t err;
-
     
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
@@ -404,6 +462,11 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
     TALLY_LOG("cudaMemcpyAsync hooked");
     TALLY_CLIENT_PROFILE_START;
 
+#if defined(RUN_LOCALLY)
+    auto err = lcudaMemcpyAsync(dst, src, count, kind, stream);
+
+#else
+
     uint32_t msg_len;
     
     if (kind == cudaMemcpyHostToDevice) {
@@ -414,13 +477,8 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
         throw std::runtime_error("Unknown memcpy kind!");
     }
 
-#if defined(RUN_LOCALLY)
-    auto err = lcudaMemcpyAsync(dst, src, count, kind, stream);
-
-#else
     cudaError_t err;
 
-    
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
@@ -475,6 +533,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     TALLY_LOG(kernel_name);
 
     auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
+
+    // auto err = cudaSuccess;
     
     // CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
@@ -528,6 +588,13 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
 	TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
+
+    if (f == main_kernel_f) {
+        
+    }
+
+    // auto err = CUDA_SUCCESS;
+
 	auto err = lcuLaunchKernel(f, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, sharedMemBytes, hStream, kernelParams, extra);
 #else
     assert(TallyClient::client->_jit_kernel_addr_to_args.find(f) != TallyClient::client->_jit_kernel_addr_to_args.end());
@@ -3392,7 +3459,12 @@ CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * na
     TALLY_LOG(kernel_name);
 
 #if defined(RUN_LOCALLY)
+
 	auto err = lcuModuleGetFunction(hfunc, hmod, name);
+
+    if (kernel_name == "main_kernel") {
+        main_kernel_f = *hfunc;
+    }
 #else
 
     CUresult err;
@@ -5064,6 +5136,11 @@ CUresult cuMemAlloc_v2(CUdeviceptr * dptr, size_t  bytesize)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemAlloc_v2(dptr, bytesize);
+
+    // cuMemsetD8_v2(*dptr, 0, bytesize);
+
+    std::cout << "dptr: " << (void *)*dptr << std::endl;
+    std::cout << "bytesize: " << bytesize << std::endl;
 #else
 
     CUresult err;
@@ -5109,6 +5186,13 @@ CUresult cuMemsetD32_v2(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N)
 	TALLY_LOG("cuMemsetD32_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
+
+    std::cout << "dstDevice: " << (void *) dstDevice << std::endl;
+
+    std::cout << "ui: " << ui << std::endl;
+
+    std::cout << "N: " << N << std::endl;
+
 	auto err = lcuMemsetD32_v2(dstDevice, ui, N);
 #else
 
@@ -5151,6 +5235,16 @@ CUresult cuMemcpyHtoDAsync_v2(CUdeviceptr  dstDevice, const void * srcHost, size
 	TALLY_LOG("cuMemcpyHtoDAsync_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
+
+    float *arr = (float *) srcHost;
+
+    std::cout << "ByteCount: " << ByteCount << std::endl;
+    std::cout << "dstDevice: " << (void *) dstDevice << std::endl;
+
+    for (int i = 0; i < ByteCount / 4; i++) {
+        std::cout << arr[i] << std::endl;
+    }
+
 	auto err = lcuMemcpyHtoDAsync_v2(dstDevice, srcHost, ByteCount, hStream);
 #else
 
@@ -5191,6 +5285,10 @@ CUresult cuMemcpyDtoHAsync_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  By
 	TALLY_LOG("cuMemcpyDtoHAsync_v2 hooked");
     TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
+
+    std::cout << "srcDevice: " << (void *) srcDevice << std::endl;
+    std::cout << "cuMemcpyDtoHAsync_v2: ByteCount: " << ByteCount << std::endl;
+
 	auto err = lcuMemcpyDtoHAsync_v2(dstHost, srcDevice, ByteCount, hStream);
 #else
     CUresult err;
