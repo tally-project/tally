@@ -1260,4 +1260,9 @@ struct cudaStreamEndCaptureResponse {
 	cudaError_t err;
 };
 
+struct cuGraphLaunchArg {
+	CUgraphExec  hGraphExec;
+	CUstream  hStream;
+};
+
 #endif // TALLY_DEF_H

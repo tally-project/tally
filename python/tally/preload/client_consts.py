@@ -495,6 +495,7 @@ DIRECT_CALLS = [
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "cudaStreamEndCapture",
+    "cuGraphLaunch",
     "cuStreamEndCapture",
     "cuModuleUnload",
     "cuCtxSynchronize",
@@ -609,7 +610,6 @@ FORWARD_API_CALLS = [
     "cuEventDestroy_v2",
     "cuStreamWaitEvent",
     "cuEventRecord",
-    "cuGraphLaunch",
     "cuStreamBeginCapture_v2",
     "cudaGraphUpload",
     "cudaGraphLaunch",
@@ -991,7 +991,8 @@ def get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type):
     func_preload_builder = f"""
     {ret_type} err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof({func_name}Arg), alignof({func_name}Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof({func_name}Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {{
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);

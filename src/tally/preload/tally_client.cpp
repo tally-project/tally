@@ -117,6 +117,8 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
 
 #else
 
+    
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
 
@@ -187,6 +189,8 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
 
 #else
+    
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
 
@@ -217,6 +221,8 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
     return l__cudaRegisterFatBinaryEnd(fatCubinHandle);
 
 #else
+    
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t), alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
 
@@ -246,6 +252,8 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 #else
     cudaError_t err;
 
+    
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
 
@@ -299,6 +307,8 @@ cudaError_t cudaFree(void * devPtr)
 #else
     cudaError_t err;
 
+    
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
 
@@ -348,6 +358,8 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
 #else
     cudaError_t err;
 
+    
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -408,6 +420,8 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
 #else
     cudaError_t err;
 
+    
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -473,6 +487,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     
     cudaError_t err;
 
+    
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -526,6 +542,7 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
     
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -576,6 +593,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -628,6 +646,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -680,6 +699,7 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -720,6 +740,7 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -759,6 +780,7 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -798,6 +820,7 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -851,6 +874,7 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -898,6 +922,7 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -957,6 +982,7 @@ cudnnStatus_t cudnnActivationForward(cudnnHandle_t  handle, cudnnActivationDescr
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1000,6 +1026,7 @@ cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1040,6 +1067,7 @@ cudnnStatus_t cudnnSetConvolutionNdDescriptor(cudnnConvolutionDescriptor_t  conv
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1082,6 +1110,7 @@ cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1122,6 +1151,7 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t  handle, const void * alpha,
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1170,6 +1200,7 @@ cudnnStatus_t cudnnGetConvolutionNdForwardOutputDim(const cudnnConvolutionDescri
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1216,6 +1247,7 @@ cudnnStatus_t cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle_t  handle, cons
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1265,6 +1297,7 @@ cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(cudnnHandle_t  handle, const 
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1314,6 +1347,7 @@ cudnnStatus_t cudnnAddTensor(cudnnHandle_t  handle, const void * alpha, const cu
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1356,6 +1390,7 @@ cudnnStatus_t cudnnSetPoolingNdDescriptor(cudnnPoolingDescriptor_t  poolingDesc,
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1399,6 +1434,7 @@ cudnnStatus_t cudnnGetPoolingNdDescriptor(const cudnnPoolingDescriptor_t  poolin
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1448,6 +1484,7 @@ cudnnStatus_t cudnnGetPoolingNdForwardOutputDim(const cudnnPoolingDescriptor_t  
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1493,6 +1530,7 @@ cudnnStatus_t cudnnPoolingForward(cudnnHandle_t  handle, const cudnnPoolingDescr
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1536,6 +1574,7 @@ cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1583,6 +1622,7 @@ cudnnStatus_t cudnnLRNCrossChannelForward(cudnnHandle_t  handle, cudnnLRNDescrip
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1627,6 +1667,7 @@ cudnnStatus_t cudnnSoftmaxForward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1671,6 +1712,7 @@ cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, co
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1713,6 +1755,7 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1772,6 +1815,7 @@ cudnnStatus_t cudnnSetSeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc, c
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1815,6 +1859,7 @@ cudnnStatus_t cudnnGetSeqDataDescriptor(const cudnnSeqDataDescriptor_t  seqDataD
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1875,6 +1920,7 @@ cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDe
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1937,6 +1983,7 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnA
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1997,6 +2044,7 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cud
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2050,6 +2098,7 @@ cudnnStatus_t cudnnReorderFilterAndBias(cudnnHandle_t  handle, const cudnnFilter
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2093,6 +2142,7 @@ cudnnStatus_t cudnnGetRNNWorkspaceSize(cudnnHandle_t  handle, const cudnnRNNDesc
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2139,6 +2189,7 @@ cudnnStatus_t cudnnGetRNNTrainingReserveSize(cudnnHandle_t  handle, const cudnnR
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2185,6 +2236,7 @@ cudnnStatus_t cudnnGetFilterNdDescriptor(const cudnnFilterDescriptor_t  filterDe
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2232,6 +2284,7 @@ cudnnStatus_t cudnnRNNForwardTraining(cudnnHandle_t  handle, const cudnnRNNDescr
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2289,6 +2342,7 @@ cudnnStatus_t cudnnRNNBackwardData(cudnnHandle_t  handle, const cudnnRNNDescript
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2352,6 +2406,7 @@ cudnnStatus_t cudnnRNNBackwardWeights(cudnnHandle_t  handle, const cudnnRNNDescr
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2403,6 +2458,7 @@ cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, c
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2447,6 +2503,7 @@ cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t  tensorDe
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2494,6 +2551,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t  handle, cu
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2555,6 +2613,7 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx(cudnnHandle_t  handle, cudnnBatc
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2620,6 +2679,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2672,6 +2732,7 @@ cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBloc
 #else
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2719,6 +2780,7 @@ cudaError_t cudaChooseDevice(int * device, const struct cudaDeviceProp * prop)
 #else
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2759,6 +2821,7 @@ cudaError_t cudaSetDevice(int  device)
 
 #ifndef RUN_LOCALLY
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaSetDeviceArg), alignof(cudaSetDeviceArg))
         .and_then([&](auto& requestPayload) {
 
@@ -2800,6 +2863,7 @@ cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescript
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnRNNBackwardWeights_v8Arg), alignof(cudnnRNNBackwardWeights_v8Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -2849,6 +2913,7 @@ cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnRNNBackwardData_v8Arg), alignof(cudnnRNNBackwardData_v8Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -2904,6 +2969,7 @@ cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 #else
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnRNNForwardArg), alignof(cudnnRNNForwardArg))
         .and_then([&](auto& requestPayload) {
 
@@ -2956,6 +3022,7 @@ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_
 
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBackendExecuteArg), alignof(cudnnBackendExecuteArg))
         .and_then([&](auto& requestPayload) {
 
@@ -2991,6 +3058,7 @@ cudaError_t cudaThreadSynchronize()
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t), alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
 
@@ -3021,6 +3089,7 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventRecordArg), alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
 
@@ -3061,6 +3130,7 @@ cudaError_t cudaDeviceSynchronize()
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t), alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
 
@@ -3091,6 +3161,7 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamSynchronizeArg), alignof(cudaStreamSynchronizeArg))
         .and_then([&](auto& requestPayload) {
 
@@ -3124,6 +3195,7 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasCreate_v2Arg), alignof(cublasCreate_v2Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -3164,6 +3236,7 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
 
     cudnnStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -3249,6 +3322,7 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
         cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
     }
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -3326,6 +3400,7 @@ CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * na
     size_t kernel_name_size = kernel_name.size() + 1;
     size_t msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleGetFunctionArg) + kernel_name_size * sizeof(char);
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -3372,6 +3447,7 @@ cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCap
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamGetCaptureInfo_v2Arg), alignof(cudaStreamGetCaptureInfo_v2Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -3422,6 +3498,7 @@ CUresult cuPointerGetAttribute(void * data, CUpointer_attribute  attribute, CUde
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuPointerGetAttributeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -3468,6 +3545,7 @@ cudaError_t cudaGraphGetNodes(cudaGraph_t  graph, cudaGraphNode_t * nodes, size_
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphGetNodesArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -3518,6 +3596,7 @@ cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaFuncSetAttributeArg), alignof(cudaFuncSetAttributeArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4206,6 +4285,7 @@ CUresult cuMemcpy(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount)
         msg_len = sizeof(MessageHeader_t) + sizeof(cudaMemcpyArg) + ByteCount;
     }
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -4265,6 +4345,7 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
         msg_len = sizeof(MessageHeader_t) + sizeof(cuMemcpyAsyncArg) + ByteCount;
     }
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -4316,6 +4397,7 @@ CUresult cuMemAllocAsync(CUdeviceptr * dptr, size_t  bytesize, CUstream  hStream
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemAllocAsyncArg), alignof(cuMemAllocAsyncArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4364,6 +4446,7 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemFree_v2Arg), alignof(cuMemFree_v2Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -4407,6 +4490,7 @@ cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaMemsetArg), alignof(cudaMemsetArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4448,6 +4532,7 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamCreateArg), alignof(cudaStreamCreateArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4488,6 +4573,7 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamCreateWithFlagsArg), alignof(cudaStreamCreateWithFlagsArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4529,6 +4615,7 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamCreateWithPriorityArg), alignof(cudaStreamCreateWithPriorityArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4571,6 +4658,7 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamBeginCaptureArg), alignof(cudaStreamBeginCaptureArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4611,6 +4699,7 @@ CUresult cuStreamCreateWithPriority(CUstream * phStream, unsigned int  flags, in
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamCreateWithPriorityArg), alignof(cuStreamCreateWithPriorityArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4656,6 +4745,7 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4707,6 +4797,7 @@ CUresult cuFuncGetAttribute(int * pi, CUfunction_attribute  attrib, CUfunction  
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuFuncGetAttributeArg), alignof(cuFuncGetAttributeArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4749,6 +4840,7 @@ CUresult cuFuncSetAttribute(CUfunction  hfunc, CUfunction_attribute  attrib, int
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuFuncSetAttributeArg), alignof(cuFuncSetAttributeArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4790,6 +4882,7 @@ CUresult cuFuncSetCacheConfig(CUfunction  hfunc, CUfunc_cache  config)
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuFuncSetCacheConfigArg), alignof(cuFuncSetCacheConfigArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4833,6 +4926,7 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
 #else
     cublasStatus_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4889,6 +4983,7 @@ CUresult cuMemsetD8_v2(CUdeviceptr  dstDevice, unsigned char  uc, size_t  N)
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemsetD8_v2Arg), alignof(cuMemsetD8_v2Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -4931,6 +5026,7 @@ CUresult cuStreamCreate(CUstream * phStream, unsigned int  Flags)
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamCreateArg), alignof(cuStreamCreateArg))
         .and_then([&](auto& requestPayload) {
 
@@ -4972,6 +5068,7 @@ CUresult cuMemAlloc_v2(CUdeviceptr * dptr, size_t  bytesize)
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemAlloc_v2Arg), alignof(cuMemAlloc_v2Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -5017,6 +5114,7 @@ CUresult cuMemsetD32_v2(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N)
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemsetD32_v2Arg), alignof(cuMemsetD32_v2Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -5060,6 +5158,7 @@ CUresult cuMemcpyHtoDAsync_v2(CUdeviceptr  dstDevice, const void * srcHost, size
 
     uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(cuMemcpyHtoDAsync_v2Arg) + ByteCount;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -5098,6 +5197,7 @@ CUresult cuMemcpyDtoHAsync_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  By
 
     uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(cuMemcpyDtoHAsync_v2Arg);
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -5146,6 +5246,7 @@ CUresult cuMemsetD32Async(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N, C
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemsetD32AsyncArg), alignof(cuMemsetD32AsyncArg))
         .and_then([&](auto& requestPayload) {
 
@@ -5225,6 +5326,7 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
         cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
     }
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -5300,6 +5402,7 @@ CUresult cuModuleGetGlobal_v2(CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod
 
     size_t msg_len = sizeof(cuModuleGetGlobal_v2Arg) + name_str.size() + 1;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(cuModuleGetGlobal_v2Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -5386,6 +5489,7 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
         cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
     }
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -5456,6 +5560,7 @@ CUresult cuMemcpyDtoDAsync_v2(CUdeviceptr  dstDevice, CUdeviceptr  srcDevice, si
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemcpyDtoDAsync_v2Arg), alignof(cuMemcpyDtoDAsync_v2Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -5491,6 +5596,7 @@ CUresult cuStreamSynchronize(CUstream  hStream)
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamSynchronizeArg), alignof(cuStreamSynchronizeArg))
         .and_then([&](auto& requestPayload) {
 
@@ -5523,6 +5629,7 @@ CUresult cuCtxSynchronize()
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSynchronizeArg), alignof(cuCtxSynchronizeArg))
         .and_then([&](auto& requestPayload) {
 
@@ -5554,6 +5661,7 @@ CUresult cuModuleUnload(CUmodule  hmod)
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuModuleUnloadArg), alignof(cuModuleUnloadArg))
         .and_then([&](auto& requestPayload) {
 
@@ -5593,6 +5701,7 @@ CUresult cuStreamEndCapture(CUstream  hStream, CUgraph * phGraph)
 
     CUresult err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamEndCaptureArg), alignof(cuStreamEndCaptureArg))
         .and_then([&](auto& requestPayload) {
 
@@ -5634,6 +5743,7 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 
     cudaError_t err;
 
+    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamEndCaptureArg), alignof(cudaStreamEndCaptureArg))
         .and_then([&](auto& requestPayload) {
 
@@ -5662,6 +5772,47 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamEndCapture);
+	return err;
+}
+
+CUresult cuGraphLaunch(CUgraphExec  hGraphExec, CUstream  hStream)
+{
+	TALLY_LOG("cuGraphLaunch hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuGraphLaunch(hGraphExec, hStream);
+#else
+
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphLaunchArg), alignof(cuGraphLaunchArg))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUGRAPHLAUNCH;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuGraphLaunchArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hGraphExec = hGraphExec;
+			request->hStream = hStream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuGraphLaunch);
 	return err;
 }
 

@@ -50,6 +50,8 @@ public:
 
     int32_t client_id;
 
+    std::mutex iox_mtx;
+
     // For performance measurements
     std::vector<const void *> _profile_kernel_seq;
     std::vector<std::pair<time_point_t, time_point_t>> _profile_cpu_timestamps;

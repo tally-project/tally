@@ -442,11 +442,6 @@ struct cuGraphInstantiateWithFlagsResponse {
 	CUresult err;
 };
 
-struct cuGraphLaunchArg {
-	CUgraphExec  hGraphExec;
-	CUstream  hStream;
-};
-
 struct cuGraphExecDestroyArg {
 	CUgraphExec  hGraphExec;
 };
