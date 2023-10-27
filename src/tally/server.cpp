@@ -952,6 +952,11 @@ void TallyServer::handle_cublasLtMatmul(void *__args, iox::popo::UntypedServer *
     auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
     int32_t client_id = msg_header->client_id;
 
+    // If client submits to default stream, set to a re-assigned stream
+    if (args->stream == nullptr) {
+        args->stream = client_data_all[client_id].default_stream;
+    }
+
     auto partial = cublasLtMatmul_Partial(args);
 
     client_data_all[client_id].queue_size++;
@@ -964,11 +969,6 @@ void TallyServer::handle_cublasLtMatmul(void *__args, iox::popo::UntypedServer *
             0
         )
     );
-
-    // If client submits to default stream, set to a re-assigned stream
-    if (args->stream == nullptr) {
-        args->stream = client_data_all[client_id].default_stream;
-    }
 
     wait_until_launch_queue_empty(client_id);
 
