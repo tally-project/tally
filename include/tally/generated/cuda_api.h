@@ -46,6 +46,7 @@ extern CUresult (*lcuCtxCreate_v2) (CUcontext * pctx, unsigned int  flags, CUdev
 extern CUresult (*lcuCtxCreate_v3) (CUcontext * pctx, CUexecAffinityParam * paramsArray, int  numParams, unsigned int  flags, CUdevice  dev);
 extern CUresult (*lcuCtxDestroy_v2) (CUcontext  ctx);
 extern CUresult (*lcuCtxPushCurrent_v2) (CUcontext  ctx);
+extern CUresult (*lcuCtxPushCurrent) (CUcontext  ctx);
 extern CUresult (*lcuCtxPopCurrent_v2) (CUcontext * pctx);
 extern CUresult (*lcuCtxSetCurrent) (CUcontext  ctx);
 extern CUresult (*lcuCtxGetCurrent) (CUcontext * pctx);

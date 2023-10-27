@@ -109,6 +109,9 @@ CUresult (*lcuCtxDestroy_v2) (CUcontext  ctx) =
 CUresult (*lcuCtxPushCurrent_v2) (CUcontext  ctx) =
 	(CUresult (*) (CUcontext  ctx)) dlsym(cuda_handle, "cuCtxPushCurrent_v2");
 
+CUresult (*lcuCtxPushCurrent) (CUcontext  ctx) =
+	(CUresult (*) (CUcontext  ctx)) dlsym(cuda_handle, "cuCtxPushCurrent");
+
 CUresult (*lcuCtxPopCurrent_v2) (CUcontext * pctx) =
 	(CUresult (*) (CUcontext * pctx)) dlsym(cuda_handle, "cuCtxPopCurrent_v2");
 
