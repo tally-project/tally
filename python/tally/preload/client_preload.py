@@ -20,6 +20,7 @@ from tally.preload.client_consts import (
     DIRECT_CALLS,
     get_preload_func_template_iox,
     is_get_param_func,
+    should_check_cuda_err,
     get_param_group
 )
 from tally.preload.preload_util import (
@@ -163,6 +164,7 @@ def gen_server_handler(func_sig):
                 handler += "\n\t\t\t);\n"
 
         handler += f"""
+            {"CHECK_CUDA_ERROR(response->err);" if should_check_cuda_err(ret_type, func_name) else ""}
             iox_server->send(response).or_else(
                 [&](auto& error) {{ LOG_ERR_AND_EXIT("Could not send Response: ", error); }});
         }})
@@ -206,6 +208,7 @@ def gen_server_handler(func_sig):
 
         handler += f"""
             );
+            {"CHECK_CUDA_ERROR(*response);" if should_check_cuda_err(ret_type, func_name) else ""}
             iox_server->send(response).or_else(
                 [&](auto& error) {{ LOG_ERR_AND_EXIT("Could not send Response: ", error); }});
         }})

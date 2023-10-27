@@ -247,9 +247,6 @@ struct cuCtxGetFlagsResponse {
 	CUresult err;
 };
 
-struct cuCtxSynchronizeArg {
-};
-
 struct cuCtxSetLimitArg {
 	CUlimit  limit;
 	size_t  value;
@@ -339,16 +336,23 @@ struct cuCtxDetachArg {
 	CUcontext  ctx;
 };
 
-struct cuModuleUnloadArg {
-	CUmodule  hmod;
-};
-
 struct cuModuleGetLoadingModeArg {
 	CUmoduleLoadingMode * mode;
 };
 
 struct cuModuleGetLoadingModeResponse {
 	CUmoduleLoadingMode  mode;
+	CUresult err;
+};
+
+struct cuMemGetInfo_v2Arg {
+	size_t * free;
+	size_t * total;
+};
+
+struct cuMemGetInfo_v2Response {
+	size_t  free;
+	size_t  total;
 	CUresult err;
 };
 
@@ -375,18 +379,14 @@ struct cuStreamBeginCapture_v2Arg {
 	CUstreamCaptureMode  mode;
 };
 
-struct cuStreamEndCaptureArg {
+struct cuStreamIsCapturingArg {
 	CUstream  hStream;
-	CUgraph * phGraph;
+	CUstreamCaptureStatus * captureStatus;
 };
 
-struct cuStreamEndCaptureResponse {
-	CUgraph  phGraph;
+struct cuStreamIsCapturingResponse {
+	CUstreamCaptureStatus  captureStatus;
 	CUresult err;
-};
-
-struct cuStreamSynchronizeArg {
-	CUstream  hStream;
 };
 
 struct cuEventCreateArg {
@@ -404,8 +404,27 @@ struct cuEventRecordArg {
 	CUstream  hStream;
 };
 
+struct cuEventQueryArg {
+	CUevent  hEvent;
+};
+
+struct cuEventSynchronizeArg {
+	CUevent  hEvent;
+};
+
 struct cuEventDestroy_v2Arg {
 	CUevent  hEvent;
+};
+
+struct cuEventElapsedTimeArg {
+	float * pMilliseconds;
+	CUevent  hStart;
+	CUevent  hEnd;
+};
+
+struct cuEventElapsedTimeResponse {
+	float  pMilliseconds;
+	CUresult err;
 };
 
 struct cuDestroyExternalMemoryArg {
@@ -423,9 +442,23 @@ struct cuGraphInstantiateWithFlagsResponse {
 	CUresult err;
 };
 
-struct cuGraphLaunchArg {
+struct cuGraphExecDestroyArg {
 	CUgraphExec  hGraphExec;
-	CUstream  hStream;
+};
+
+struct cuGraphDestroyArg {
+	CUgraph  hGraph;
+};
+
+struct cuGraphExecUpdate_v2Arg {
+	CUgraphExec  hGraphExec;
+	CUgraph  hGraph;
+	CUgraphExecUpdateResultInfo * resultInfo;
+};
+
+struct cuGraphExecUpdate_v2Response {
+	CUgraphExecUpdateResultInfo  resultInfo;
+	CUresult err;
 };
 
 struct cudaDeviceResetArg {
@@ -683,16 +716,6 @@ struct cudaStreamWaitEventArg {
 
 struct cudaStreamQueryArg {
 	cudaStream_t  stream;
-};
-
-struct cudaStreamEndCaptureArg {
-	cudaStream_t  stream;
-	cudaGraph_t * pGraph;
-};
-
-struct cudaStreamEndCaptureResponse {
-	cudaGraph_t  pGraph;
-	cudaError_t err;
 };
 
 struct cudaStreamIsCapturingArg {

@@ -6,7 +6,8 @@
 
 int main() {
 
-    auto transformed = gen_ptb_ptx("a.1.sm_86.ptx");
+    auto ptx_file = std::string("tmp_910508.1.sm_86.ptx");
+    auto transformed = gen_transform_ptx(ptx_file);
     std::cout << transformed << std::endl;
 
     return 0;

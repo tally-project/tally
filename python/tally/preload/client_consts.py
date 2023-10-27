@@ -11,7 +11,9 @@ API_ENUM_TEMPLATE_BUTTOM = """
 API_SPECIAL_ENUM = [
     "__CUDAREGISTERFUNCTION",
     "__CUDAREGISTERFATBINARY",
-    "__CUDAREGISTERFATBINARYEND"
+    "__CUDAREGISTERFATBINARYEND",
+    "__CUDAPUSHCALLCONFIGURATION",
+    "__CUDAPOPCALLCONFIGURATION"
 ]
 
 API_DECL_TEMPLATE_TOP = """
@@ -34,6 +36,8 @@ API_DECL_TEMPLATE_BUTTOM = """
 extern void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);
 extern void** (*l__cudaRegisterFatBinary) (void *);
 extern void (*l__cudaRegisterFatBinaryEnd) (void **);
+extern unsigned (*l__cudaPushCallConfiguration)(dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream);
+extern cudaError_t (*l__cudaPopCallConfiguration)(dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream);
 
 #endif // TALLY_CUDA_API_H
 
@@ -54,11 +58,20 @@ API_DEF_TEMPLATE_TOP = """
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
 
-void *cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
-void *cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
-void *cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
-void *cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
-void *cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
+void *cuda_handle;
+void *cudart_handle;
+void *cudnn_handle;
+void *cublas_handle;
+void *cublasLt_handle;
+
+void __attribute__((constructor)) register_cuda_handles()
+{
+	cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
+	cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
+	cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
+	cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
+	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
+}
 
 """
 
@@ -73,6 +86,12 @@ void** (*l__cudaRegisterFatBinary) (void *) =
 void (*l__cudaRegisterFatBinaryEnd) (void **) =
 	(void (*) (void **)) dlsym(cudart_handle, "__cudaRegisterFatBinaryEnd");
 
+unsigned (*l__cudaPushCallConfiguration)(dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream) = 
+	(unsigned (*) (dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream)) dlsym(cudart_handle, "__cudaPushCallConfiguration");
+
+cudaError_t (*l__cudaPopCallConfiguration)(dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream) = 
+	(cudaError_t (*) (dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream)) dlsym(cudart_handle, "__cudaPopCallConfiguration");
+    
 """
 
 MSG_STRUCT_TEMPLATE_TOP = """
@@ -169,13 +188,13 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <tally/cuda_util.h>
 #include <tally/cache_struct.h>
 
-typedef std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)> kernel_partial_t;
+using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, uint32_t *, bool, float, float*, float*, int32_t, bool)>;
 
 struct KernelLaunchWrapper {
 
 public:
 	// Callable to launch kernel
-	kernel_partial_t kernel_to_dispatch;
+	partial_t kernel_to_dispatch;
 
 	// whether it is blackbox kernel from nvidia libraries
 	bool is_library_call;
@@ -217,6 +236,7 @@ public:
 
 	uint32_t *global_idx;
 	bool *retreat;
+	uint32_t *curr_idx_arr;
 
     cudaStream_t default_stream = nullptr;
 	std::atomic<bool> has_exit = false;
@@ -245,6 +265,8 @@ public:
 
     static TallyServer *server;
 
+	bool signal_exit = false;
+
 	// ================== Per-client state ===================
 	std::map<int32_t, ClientData> client_data_all;
 	std::map<ClientPriority, int32_t, std::greater<ClientPriority>> client_priority_map;
@@ -258,9 +280,16 @@ public:
 	// Map CUfunction to host func, similar to _kernel_client_addr_mapping
 	folly::ConcurrentHashMap<CUfunction, const void *> cu_func_addr_mapping;
 
-	folly::ConcurrentHashMap<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
+	folly::ConcurrentHashMap<uint32_t, CUmodule> cubin_to_cu_module;
+
+	// CUmodule: { cubin_data_ptr, cubin_size, cubin_uid }
+	folly::ConcurrentHashMap<CUmodule, std::tuple<const char *, size_t, uint32_t>> jit_module_to_cubin_map;
+
+	// CUmodule : 
+	std::unordered_map<CUmodule, std::unordered_map<std::string, CUfunction>> jit_module_to_function_map;
+
 	folly::ConcurrentHashMap<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
-	
+
 	// Map CUfunction to kernel name and cubin hash
 	folly::ConcurrentHashMap<CUfunction, std::string> cu_func_to_kernel_name_map;
 	folly::ConcurrentHashMap<CUfunction, uint32_t> cu_func_to_cubin_uid_map;
@@ -349,6 +378,7 @@ public:
     void register_api_handler();
     void load_cache();
 
+	void register_cu_modules(uint32_t cubin_uid);
 	void register_kernels();
     void register_measurements();
     void register_ptx_transform(const char* cubin_data, size_t cubin_size);
@@ -358,8 +388,6 @@ public:
     void start_worker_server(int32_t client_id);
 
 	void wait_until_launch_queue_empty(int32_t client_id);
-
-	using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, bool, float, float*, float*, int32_t)>;
 
 	// Return a partial function to be scheduled by scheduler
     partial_t cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
@@ -467,6 +495,8 @@ KERNEL_LAUNCH_CALLS = [
 
 # let the client call the APIs directly
 DIRECT_CALLS = [
+    "cuMemHostAlloc",
+    "cuDeviceGetPCIBusId",
     "cuCtxDestroy_v2",
     "cuInit",
     "cuDeviceGetName",
@@ -488,6 +518,22 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaStreamEndCapture",
+    "cuGraphLaunch",
+    "cuStreamEndCapture",
+    "cuModuleUnload",
+    "cuCtxSynchronize",
+    "cuStreamSynchronize",
+    "cuModuleLoadDataEx",
+    "cuModuleGetGlobal_v2",
+    "cuMemcpyDtoDAsync_v2",
+    "cuModuleLoadFatBinary",
+    "cuMemsetD32Async",
+    "cuMemcpyDtoHAsync_v2",
+    "cuMemcpyHtoDAsync_v2",
+    "cuMemsetD32_v2",
+    "cuMemAlloc_v2",
+    "cuStreamCreate",
     "cuMemsetD8_v2",
     "cublasGemmStridedBatchedEx",
     "cublasGemmEx",
@@ -581,12 +627,14 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cuGraphExecDestroy",
+    "cuGraphDestroy",
+    "cuEventSynchronize",
+    "cuEventQuery",
     "cuEventDestroy_v2",
     "cuStreamWaitEvent",
     "cuEventRecord",
-    "cuGraphLaunch",
     "cuStreamBeginCapture_v2",
-    "cuStreamSynchronize",
     "cudaGraphUpload",
     "cudaGraphLaunch",
     "cudaGraphExecDestroy",
@@ -657,13 +705,11 @@ FORWARD_API_CALLS = [
     "cublasLtDestroy",
     "cuCtxPushCurrent_v2",
     "cuCtxSetCurrent",
-    "cuCtxSynchronize",
     "cuCtxSetLimit",
     "cuCtxSetCacheConfig",
     "cuCtxSetSharedMemConfig",
     "cuCtxResetPersistingL2Cache",
     "cuCtxDetach",
-    "cuModuleUnload",
     "cudnnDestroy",
     "cudnnSetStream",
     "cudnnSetTensor4dDescriptor",
@@ -699,6 +745,7 @@ FORWARD_API_CALLS = [
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cuEventElapsedTime",
     "cuEventCreate",
     "cuGraphInstantiateWithFlags",
     "cuModuleGetLoadingMode",
@@ -774,9 +821,8 @@ UNSUPPORTED_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
+    "cuStreamIsCapturing",
     "cublasGetMathMode",
-    "cuStreamEndCapture",
-    "cudaStreamEndCapture",
     "cudnnGetRNNBiasMode",
     "cudnnGetRNNMatrixMathType",
     "cublasGetSmCountTarget",
@@ -804,6 +850,7 @@ CUDA_GET_2_3_PARAM_FUNCS = [
 ]
 
 CUDA_GET_1_2_PARAM_FUNCS = [
+    "cuMemGetInfo_v2",
     "cudaDeviceGetStreamPriorityRange",
     "cuDeviceGetLuid",
     "cuDeviceComputeCapability",
@@ -840,6 +887,7 @@ CUDA_GET_2_3_4_PARAM_FUNCS = [
 ]
 
 CUDA_GET_3_PARAM_FUNCS = [
+    "cuGraphExecUpdate_v2",
     "cudnnGetRNNWeightSpaceSize",
     "cudnnGetRNNForwardInferenceAlgorithmMaxCount"
 ]
@@ -967,7 +1015,8 @@ def get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type):
     func_preload_builder = f"""
     {ret_type} err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof({func_name}Arg), alignof({func_name}Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof({func_name}Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {{
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -992,3 +1041,16 @@ def get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type):
         .or_else([](auto& error) {{ LOG_ERR_AND_EXIT("Could not allocate Request: ", error); }});
 """
     return func_preload_builder
+
+
+def should_check_cuda_err(ret_type, func_name):
+    if ret_type not in ["cudaError_t", "CUresult", "cudnnStatus_t", "cublasStatus_t"]:
+        return False
+    
+    if "eventquery" in func_name.lower():
+        return False
+    
+    if func_name == "cudnnBackendFinalize":
+        return False
+    
+    return True

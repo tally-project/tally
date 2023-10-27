@@ -16,8 +16,11 @@
 #ifdef ENABLE_LOGGING
     #define TALLY_SPD_LOG(msg) \
         spdlog::info(msg);
+    #define TALLY_SPD_WARN(msg) \
+        spdlog::warn(msg);
 #else
     #define TALLY_SPD_LOG(msg)
+    #define TALLY_SPD_WARN(msg)
 #endif
 
 #define CHECK_ERR_LOG_AND_EXIT(ERR, MSG) \

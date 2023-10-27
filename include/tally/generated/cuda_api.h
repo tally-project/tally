@@ -1554,6 +1554,8 @@ extern cublasStatus_t (*lcublasLtLoggerForceDisable) ();
 extern void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);
 extern void** (*l__cudaRegisterFatBinary) (void *);
 extern void (*l__cudaRegisterFatBinaryEnd) (void **);
+extern unsigned (*l__cudaPushCallConfiguration)(dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream);
+extern cudaError_t (*l__cudaPopCallConfiguration)(dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream);
 
 #endif // TALLY_CUDA_API_H
 

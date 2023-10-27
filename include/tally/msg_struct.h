@@ -1135,4 +1135,134 @@ struct cuMemsetD8_v2Arg {
 	size_t  N;
 };
 
+struct cuStreamCreateArg {
+	CUstream * phStream;
+	unsigned int  Flags;
+};
+
+struct cuStreamCreateResponse {
+	CUstream  phStream;
+	CUresult err;
+};
+
+struct cuMemAlloc_v2Arg {
+	CUdeviceptr * dptr;
+	size_t  bytesize;
+};
+
+struct cuMemAlloc_v2Response {
+	CUdeviceptr  dptr;
+	CUresult err;
+};
+
+struct cuMemsetD32_v2Arg {
+	CUdeviceptr  dstDevice;
+	unsigned int  ui;
+	size_t  N;
+};
+
+struct cuMemcpyHtoDAsync_v2Arg {
+	CUdeviceptr  dstDevice;
+    void * srcHost;
+    size_t  ByteCount;
+    CUstream  hStream;
+    char data[];
+};
+
+struct cuMemcpyDtoHAsync_v2Arg {
+	void * dstHost;
+    CUdeviceptr  srcDevice;
+    size_t  ByteCount;
+    CUstream  hStream;
+};
+
+struct cuMemcpyDtoHAsync_v2Response {
+    CUresult err;
+    char data[];
+};
+
+struct cuMemsetD32AsyncArg {
+	CUdeviceptr  dstDevice;
+    unsigned int  ui;
+    size_t  N;
+    CUstream  hStream;
+};
+
+struct cuMemcpyDtoDAsync_v2Arg {
+	CUdeviceptr  dstDevice;
+	CUdeviceptr  srcDevice;
+	size_t  ByteCount;
+	CUstream  hStream;
+};
+
+struct cuModuleLoadDataExArg {
+    bool cached;
+    uint32_t cubin_uid;
+    char image[];
+};
+
+struct cuModuleLoadDataExResponse {
+    CUresult err;
+    CUmodule module;
+    char tmp_elf_file[];
+};
+
+struct cuModuleLoadFatBinaryArg {
+    bool cached;
+    uint32_t cubin_uid;
+    char image[];
+};
+
+struct cuModuleLoadFatBinaryResponse {
+    CUresult err;
+    CUmodule module;
+    char tmp_elf_file[];
+};
+
+struct cuModuleGetGlobal_v2Arg {
+    CUmodule  hmod;
+    char name[];
+};
+
+struct cuModuleGetGlobal_v2Response {
+    CUdeviceptr dptr;
+    size_t bytes;
+    CUresult err;
+};
+
+struct cuCtxSynchronizeArg {};
+
+struct cuStreamSynchronizeArg {
+	CUstream  hStream;
+};
+
+struct cuModuleUnloadArg {
+	CUmodule  hmod;
+};
+
+struct cuStreamEndCaptureArg {
+	CUstream  hStream;
+	CUgraph * phGraph;
+};
+
+struct cuStreamEndCaptureResponse {
+	CUgraph  phGraph;
+	CUresult err;
+};
+
+struct cudaStreamEndCaptureArg {
+	cudaStream_t  stream;
+	cudaGraph_t * pGraph;
+};
+
+struct cudaStreamEndCaptureResponse {
+	cudaGraph_t  pGraph;
+	cudaError_t err;
+};
+
+struct cuGraphLaunchArg {
+	CUgraphExec  hGraphExec;
+	CUstream  hStream;
+};
+
 #endif // TALLY_DEF_H

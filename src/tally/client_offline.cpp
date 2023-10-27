@@ -109,18 +109,19 @@ void TallyClientOffline::register_ptx_transform(const char* cubin_data, size_t c
     using KERNEL_NAME_MAP_TYPE = std::unordered_map<std::string, const void *>;
     using KERNEL_MAP_TYPE = std::unordered_map<const void*, WrappedCUfunction>;
 
-    auto original_data = TallyCache::cache->cubin_cache.get_original_data(cubin_data, cubin_size);
-    auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
-    auto dynamic_ptb_data = TallyCache::cache->cubin_cache.get_dynamic_ptb_data(cubin_data, cubin_size);
-    auto preemptive_ptb_data = TallyCache::cache->cubin_cache.get_preemptive_ptb_data(cubin_data, cubin_size);
+    auto transform_ptx_str = TallyCache::cache->cubin_cache.get_transform_ptx_str(cubin_data, cubin_size);
+    auto transform_fatbin_str = TallyCache::cache->cubin_cache.get_transform_fatbin_str(cubin_data, cubin_size);
 
     auto cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
     auto &kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_uid];
+    
+    CUmodule tranform_module = cubin_to_cu_module[cubin_uid];
 
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(original_data, kernel_name_to_host_func_map, original_kernel_map);
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(ptb_data, kernel_name_to_host_func_map, ptb_kernel_map);
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(dynamic_ptb_data, kernel_name_to_host_func_map, dynamic_ptb_kernel_map);
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(preemptive_ptb_data, kernel_name_to_host_func_map, preemptive_ptb_kernel_map);
+    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(
+        tranform_module, transform_ptx_str, transform_fatbin_str,
+        kernel_name_to_host_func_map, original_kernel_map,
+        ptb_kernel_map, dynamic_ptb_kernel_map, preemptive_ptb_kernel_map
+    );
 }
 
 CUresult TallyClientOffline::launch_kernel(CudaLaunchConfig config, const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
@@ -137,6 +138,7 @@ CUresult TallyClientOffline::launch_kernel(CudaLaunchConfig config, const void *
 
         CUfunction cu_func = ptb_kernel_map[func].func;
         size_t num_args = ptb_kernel_map[func].num_args;
+
         assert(cu_func);
 
         dim3 PTB_grid_dim;

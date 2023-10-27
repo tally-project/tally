@@ -40,12 +40,6 @@
     #define TALLY_CLIENT_TRACE_KERNEL_CALL(FUNC)
 #endif
 
-static std::function<void(int)> __exit;
-
-static void __exit_wrapper(int signal) {
-    __exit(signal);
-}
-
 class TallyClient {
 
 typedef std::chrono::time_point<std::chrono::system_clock> time_point_t;
@@ -55,6 +49,8 @@ public:
     static TallyClient *client;
 
     int32_t client_id;
+
+    std::mutex iox_mtx;
 
     // For performance measurements
     std::vector<const void *> _profile_kernel_seq;
@@ -105,20 +101,6 @@ public:
     {
         client_id = getpid();
         register_profile_kernel_map();
-
-        __exit = [&](int sig_num) {
-
-            if (sig_num == SIGSEGV) {
-                std::cout << "Encountered segfault. Shutting down... " << std::endl;
-            }
-            exit(0);
-        };
-
-        signal(SIGINT  , __exit_wrapper);
-        signal(SIGABRT , __exit_wrapper);
-        signal(SIGSEGV , __exit_wrapper);
-        signal(SIGTERM , __exit_wrapper);
-        signal(SIGHUP  , __exit_wrapper);
 
 #ifndef RUN_LOCALLY
 

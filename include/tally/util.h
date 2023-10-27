@@ -41,4 +41,17 @@ inline std::string get_process_name(int pid) {
     return buffer.str();
 }
 
+inline std::string replace_substring(std::string& input, const std::string& oldStr, const std::string& newStr) {
+
+    std::string res = input;
+
+    size_t startPos = 0;
+    while ((startPos = res.find(oldStr, startPos)) != std::string::npos) {
+        res.replace(startPos, oldStr.length(), newStr);
+        startPos += newStr.length();
+    }
+
+    return res;
+}
+
 #endif // TALLY_UTIL_H

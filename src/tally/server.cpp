@@ -176,7 +176,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     // In seconds
     float profile_duration = (100 * time_elapsed) / 1000.f;
 
-    // At least run for 0.1 sec
+    // At least run for 0.5 sec
     profile_duration = std::max(profile_duration, 0.5f);
 
     // Maybe don't exceed 1 minute;
@@ -216,7 +216,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     }
 
     float best_norm_speed = base_latency_ms / best_latency_ms;
-    if (best_norm_speed < 0.5) {
+    if (best_norm_speed < USE_PTB_THRESHOLD) {
         best_config = base_config;
         best_norm_speed = 1.;
     }
@@ -401,18 +401,21 @@ void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_si
     using KERNEL_NAME_MAP_TYPE = folly::ConcurrentHashMap<std::string, const void *>;
     using KERNEL_MAP_TYPE = folly::ConcurrentHashMap<const void*, WrappedCUfunction>;
 
-    auto original_data = TallyCache::cache->cubin_cache.get_original_data(cubin_data, cubin_size);
-    auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
-    auto dynamic_ptb_data = TallyCache::cache->cubin_cache.get_dynamic_ptb_data(cubin_data, cubin_size);
-    auto preemptive_ptb_data = TallyCache::cache->cubin_cache.get_preemptive_ptb_data(cubin_data, cubin_size);
+    auto &transform_ptx_str = TallyCache::cache->cubin_cache.get_transform_ptx_str(cubin_data, cubin_size);
+    auto &transform_fatbin_str = TallyCache::cache->cubin_cache.get_transform_fatbin_str(cubin_data, cubin_size);
 
     auto cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
     auto &kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_uid];
 
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(original_data, kernel_name_to_host_func_map, original_kernel_map);
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(ptb_data, kernel_name_to_host_func_map, ptb_kernel_map);
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(dynamic_ptb_data, kernel_name_to_host_func_map, dynamic_ptb_kernel_map);
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(preemptive_ptb_data, kernel_name_to_host_func_map, preemptive_ptb_kernel_map);
+    if (cubin_to_cu_module.find(cubin_uid) != cubin_to_cu_module.end()) {
+        CUmodule tranform_module = cubin_to_cu_module[cubin_uid];
+
+        register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(
+            tranform_module, transform_ptx_str, transform_fatbin_str,
+            kernel_name_to_host_func_map, original_kernel_map,
+            ptb_kernel_map, dynamic_ptb_kernel_map, preemptive_ptb_kernel_map
+        );
+    }
 }
 
 void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -540,6 +543,27 @@ void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
+void TallyServer::register_cu_modules(uint32_t cubin_uid)
+{
+    auto cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+    auto cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
+
+    if (cubin_to_cu_module.find(cubin_uid) == cubin_to_cu_module.end()) {
+
+        auto &transform_fatbin_str = TallyCache::cache->cubin_cache.get_transform_fatbin_str(cubin_data, cubin_size);
+
+        CUmodule transform_module;
+        auto err = cuModuleLoadData(&transform_module, transform_fatbin_str.c_str());
+        CHECK_CUDA_ERROR(err);
+
+        if (!err) {
+            cubin_to_cu_module.insert(cubin_uid, transform_module);
+        } else {
+            spdlog::warn("Fail to load module for cubin id: " + std::to_string(cubin_uid));
+        }
+    }
+}
+
 void TallyServer::load_cache()
 {
     auto &cubin_map = TallyCache::cache->cubin_cache.cubin_map;
@@ -551,14 +575,13 @@ void TallyServer::load_cache()
         for (auto &cubin_data : cubin_vec) {
 
             auto kernel_args = cubin_data.kernel_args;
+            auto cubin_uid = cubin_data.cubin_uid;
 
             for (auto &kernel_args_pair : cubin_data.kernel_args) {
 
                 auto &kernel_name = kernel_args_pair.first;
                 auto &param_sizes = kernel_args_pair.second;
                 auto demangled_kernel_name = demangleFunc(kernel_name);
-
-                auto cubin_uid = cubin_data.cubin_uid;
 
                 if (cubin_to_kernel_name_to_host_func_map[cubin_uid].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_uid].end()) {
 
@@ -580,6 +603,8 @@ void TallyServer::load_cache()
                     );
                 }
             }
+
+            register_cu_modules(cubin_uid);
 
             // Load the original and transformed PTX and register them as callable functions
             register_ptx_transform(cubin_data.cubin_data.c_str(), cubin_size);
@@ -611,9 +636,9 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
     client_meta.register_queue.clear();
 
     if (!client_meta.cubin_registered) {
-        struct fatBinaryHeader *header = (struct fatBinaryHeader *) args->data;
+        auto header = (struct fatBinaryHeader *) args->data;
         size_t cubin_size = header->headerSize + header->fatSize;
-        const char *cubin_data = (const char *) args->data;
+        auto cubin_data = (const char *) args->data;
 
         // Load necessary data into cache if not exists
         cache_cubin_data(cubin_data, cubin_size, client_id);
@@ -641,6 +666,7 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
 void TallyServer::handle___cudaRegisterFunction(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: __cudaRegisterFunction");
+
     auto args = (struct __cudaRegisterFunctionArg *) __args;
 
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
@@ -713,10 +739,13 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
         }
     }
 
+    register_cu_modules(cubin_uid);
+
     // Load the transformed PTX and register them as callable functions
     if (!client_meta.cubin_registered) {
         register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
     }
+
 }
 
 void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -869,6 +898,8 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args, iox::popo::UntypedServer 
             } else {
                 throw std::runtime_error("Unknown memcpy kind!");
             }
+
+            cudaStreamSynchronize(stream);
 
             iox_server->send(res).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2317,6 +2348,9 @@ void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args, iox::po
 void TallyServer::handle_cublasSgemmStridedBatched(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasSgemmStridedBatched");
+
+    throw std::runtime_error("Need to implement partial for this kernel launch");
+
     auto args = (struct cublasSgemmStridedBatchedArg *) __args;
 
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
@@ -2372,6 +2406,7 @@ void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
                 args->dynamicSMemSize,
                 args->flags
             );
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2394,6 +2429,7 @@ void TallyServer::handle_cudaChooseDevice(void *__args, iox::popo::UntypedServer
                 &response->device,
                 &args->prop
             );
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2556,6 +2592,8 @@ void TallyServer::handle_cudnnBackendExecute(void *__args, iox::popo::UntypedSer
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
 
             *response = err;
+            CHECK_CUDA_ERROR(*response);
+
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
@@ -2578,6 +2616,7 @@ void TallyServer::handle_cudaThreadSynchronize(void *__args, iox::popo::UntypedS
 
             auto response = static_cast<cudaError_t*>(responsePayload);
             *response = cudaThreadSynchronize();
+            CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2612,6 +2651,7 @@ void TallyServer::handle_cudaEventRecord(void *__args, iox::popo::UntypedServer 
 				args->event,
 				stream
             );
+            CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2640,10 +2680,7 @@ void TallyServer::handle_cudaDeviceSynchronize(void *__args, iox::popo::UntypedS
             
             for (auto &stream : client_streams) {
                 *response = cudaStreamSynchronize(stream);
-
-                if ((*response)) {
-                    throw std::runtime_error("cudaDeviceSynchronize fails");
-                }
+                CHECK_CUDA_ERROR(*response);
             }
 
             iox_server->send(response).or_else(
@@ -2678,6 +2715,7 @@ void TallyServer::handle_cudaStreamSynchronize(void *__args, iox::popo::UntypedS
             *response = cudaStreamSynchronize(
 				stream
             );
+            CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2701,6 +2739,7 @@ void TallyServer::handle_cublasCreate_v2(void *__args, iox::popo::UntypedServer 
             auto response = static_cast<cublasCreate_v2Response*>(responsePayload);
 
             response->err = cublasCreate_v2(&(response->handle));
+            CHECK_CUDA_ERROR(response->err);
 
             // set stream to client's default stream
             cublasSetStream_v2(response->handle, client_meta.default_stream);
@@ -2726,6 +2765,7 @@ void TallyServer::handle_cudnnCreate(void *__args, iox::popo::UntypedServer *iox
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudnnCreateResponse*>(responsePayload);
             response->err = cudnnCreate(&(response->handle));
+            CHECK_CUDA_ERROR(response->err);
 
             // set stream to client's default stream
             cudnnSetStream(response->handle, client_meta.default_stream);
@@ -2757,7 +2797,6 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
         auto header = (struct fatBinaryHeader *) args->image;
         cubin_size = header->headerSize + header->fatSize;
         cubin_data = (const char *) args->image;
-
         cache_cubin_data(cubin_data, cubin_size, client_id);
         tmp_elf_file = get_tmp_file_path(".elf", client_id);
         msg_len += tmp_elf_file.size() + 1;
@@ -2774,16 +2813,26 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
                 response->tmp_elf_file[tmp_elf_file.size()] = '\0';
 
                 cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
+                cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
             } else {
                 cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
                 cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
             }
 
-            response->err = cuModuleLoadData(&(response->module), cubin_data);
+            // Register cu module for this cubin
+            register_cu_modules(cubin_uid);
 
-            jit_module_to_cubin_map.insert(response->module, std::make_pair(
+            if (cubin_to_cu_module.find(cubin_uid) == cubin_to_cu_module.end()) {
+                throw std::runtime_error("Cannot find cu module");
+            }
+
+            response->module = cubin_to_cu_module[cubin_uid];
+            response->err = CUDA_SUCCESS;
+
+            jit_module_to_cubin_map.insert(response->module, std::make_tuple(
                 cubin_data,
-                cubin_size
+                cubin_size,
+                cubin_uid
             ));
 
             iox_server->send(response).or_else(
@@ -2796,59 +2845,63 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
 void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cuModuleGetFunction");
-	auto args = (struct cuModuleGetFunctionArg *) __args;
+    auto args = (struct cuModuleGetFunctionArg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
 
-    auto cubin_data_size = jit_module_to_cubin_map[args->hmod];
-    auto cubin_data = cubin_data_size.first;
-    auto cubin_size = cubin_data_size.second;
-    auto cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
-
-    auto kernel_names_and_param_sizes = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
+    bool cached = false;
     auto kernel_name = std::string(args->name);
-    auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
 
-    auto original_data = TallyCache::cache->cubin_cache.get_original_data(cubin_data, cubin_size);
-    auto ptb_data = TallyCache::cache->cubin_cache.get_ptb_data(cubin_data, cubin_size);
-    auto dynamic_ptb_data = TallyCache::cache->cubin_cache.get_dynamic_ptb_data(cubin_data, cubin_size);
-    auto preemptive_ptb_data = TallyCache::cache->cubin_cache.get_preemptive_ptb_data(cubin_data, cubin_size);
-
-    if (cubin_to_kernel_name_to_host_func_map[cubin_uid].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_uid].end()) {
-        void *kernel_server_addr = malloc(8);
-        cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(kernel_name, kernel_server_addr);
-
-        host_func_to_demangled_kernel_name_map.insert(kernel_server_addr, kernel_name);
-        _kernel_addr_to_args.insert(kernel_server_addr, param_sizes);
-
-        host_func_to_cubin_uid_map.insert(kernel_server_addr, cubin_uid);
-
-        auto kernel_name_copy = kernel_name;
-        auto cubin_uid_copy = cubin_uid;
-
-        demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
-            std::make_pair(kernel_name_copy, cubin_uid_copy),
-            kernel_server_addr
-        );
+    if (jit_module_to_function_map.find(args->hmod) != jit_module_to_function_map.end()) {
+        if (jit_module_to_function_map[args->hmod].find(kernel_name) != jit_module_to_function_map[args->hmod].end()) {
+            cached = true;
+        }
     }
 
-    using KERNEL_NAME_MAP_TYPE = folly::ConcurrentHashMap<std::string, const void *>;
-    using KERNEL_MAP_TYPE = folly::ConcurrentHashMap<const void*, WrappedCUfunction>;
+    uint32_t cubin_uid = 0;
 
-    auto &kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_uid];
+    if (!cached) {
+        auto cubin_data_size_id = jit_module_to_cubin_map[args->hmod];
+        auto cubin_data = std::get<0>(cubin_data_size_id);
+        auto cubin_size = std::get<1>(cubin_data_size_id);
+        cubin_uid = std::get<2>(cubin_data_size_id);
 
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(original_data, kernel_name_to_host_func_map, original_kernel_map);
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(ptb_data, kernel_name_to_host_func_map, ptb_kernel_map);
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(dynamic_ptb_data, kernel_name_to_host_func_map, dynamic_ptb_kernel_map);
-    register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(preemptive_ptb_data, kernel_name_to_host_func_map, preemptive_ptb_kernel_map);
-    
+        auto kernel_names_and_param_sizes = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
+        auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
+
+        if (cubin_to_kernel_name_to_host_func_map[cubin_uid].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_uid].end()) {
+            void *kernel_server_addr = malloc(8);
+            cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(kernel_name, kernel_server_addr);
+
+            host_func_to_demangled_kernel_name_map.insert(kernel_server_addr, kernel_name);
+            _kernel_addr_to_args.insert(kernel_server_addr, param_sizes);
+
+            host_func_to_cubin_uid_map.insert(kernel_server_addr, cubin_uid);
+
+            demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
+                std::make_pair(kernel_name, cubin_uid),
+                kernel_server_addr
+            );
+        }
+
+        register_ptx_transform(cubin_data, cubin_size);
+    }
+
     iox_server->loan(requestHeader, sizeof(cuModuleGetFunctionResponse), alignof(cuModuleGetFunctionResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuModuleGetFunctionResponse*>(responsePayload);
 
-            response->err = cuModuleGetFunction(&(response->hfunc), args->hmod, args->name);
+            if (!cached) {
+                response->err = cuModuleGetFunction(&(response->hfunc), args->hmod, args->name);
+                CHECK_CUDA_ERROR(response->err);
 
-            // Map CUFunction to host func
-            cu_func_addr_mapping.insert(response->hfunc, cubin_to_kernel_name_to_host_func_map[cubin_uid][kernel_name]);
+                jit_module_to_function_map[args->hmod][kernel_name] = response->hfunc;
+
+                // Map CUFunction to host func
+                cu_func_addr_mapping.insert(response->hfunc, cubin_to_kernel_name_to_host_func_map[cubin_uid][kernel_name]);
+            } else {
+                response->err = CUDA_SUCCESS;
+                response->hfunc = jit_module_to_function_map[args->hmod][kernel_name];
+            }
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2869,6 +2922,7 @@ void TallyServer::handle_cuPointerGetAttribute(void *__args, iox::popo::UntypedS
             auto response = static_cast<cuPointerGetAttributeResponse*>(responsePayload);
 
             response->err = cuPointerGetAttribute(response->data, args->attribute, args->ptr);
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2904,6 +2958,7 @@ void TallyServer::handle_cudaStreamGetCaptureInfo_v2(void *__args, iox::popo::Un
 				(args->dependencies_out ? ((CUgraphNode_st* const**) &(response->dependencies_out)) : NULL),
 				(args->numDependencies_out ? &(response->numDependencies_out) : NULL)
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2938,6 +2993,7 @@ void TallyServer::handle_cudaGraphGetNodes(void *__args, iox::popo::UntypedServe
 				args->nodes ? response->nodes : NULL,
                 &response->numNodes
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3018,6 +3074,7 @@ void TallyServer::handle_cuMemcpy(void *__args, iox::popo::UntypedServer *iox_se
 				args->ByteCount,
                 client_data_all[client_id].default_stream
             );
+            CHECK_CUDA_ERROR(response->err);
 
             // Make sure wait until cudaMemcpy complete, because cudaMemcpy is synchronous
             cudaStreamSynchronize(client_data_all[client_id].default_stream);
@@ -3057,12 +3114,17 @@ void TallyServer::handle_cuMemcpyAsync(void *__args, iox::popo::UntypedServer *i
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuMemcpyAsyncResponse*>(responsePayload);
 
+            wait_until_launch_queue_empty(client_id);
+
             response->err = cuMemcpyAsync(
 				is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst) ? args->dst : (CUdeviceptr) response->data,
 				is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->src) ? args->src : (CUdeviceptr) args->data,
 				args->ByteCount,
 				__stream
             );
+            CHECK_CUDA_ERROR(response->err);
+
+            cudaStreamSynchronize(__stream);
             
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3097,6 +3159,7 @@ void TallyServer::handle_cuMemAllocAsync(void *__args, iox::popo::UntypedServer 
 				args->bytesize,
 				__stream
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Keep track that this addr is device memory
             if (response->err == CUDA_SUCCESS) {
@@ -3124,6 +3187,7 @@ void TallyServer::handle_cuMemFree_v2(void *__args, iox::popo::UntypedServer *io
             *response = cuMemFree_v2(
 				args->dptr
             );
+            CHECK_CUDA_ERROR(*response);
 
             if (*response == CUDA_SUCCESS) {
                 free_dev_addr(client_data_all[client_id].dev_addr_map, (void *)args->dptr);
@@ -3157,6 +3221,7 @@ void TallyServer::handle_cudaMemset(void *__args, iox::popo::UntypedServer *iox_
 				args->count,
                 client_data_all[client_id].default_stream
             );
+            CHECK_CUDA_ERROR(*response);
 
             // Make sure wait util cudaMemset finished, because cudaMemset is synchronous
             cudaStreamSynchronize(client_data_all[client_id].default_stream);
@@ -3182,6 +3247,7 @@ void TallyServer::handle_cudaStreamCreate(void *__args, iox::popo::UntypedServer
             response->err = cudaStreamCreate(
 				(args->pStream ? &(response->pStream) : NULL)
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
             client_data_all[client_uid].streams.push_back(response->pStream);
@@ -3208,6 +3274,7 @@ void TallyServer::handle_cudaStreamCreateWithFlags(void *__args, iox::popo::Unty
 				(args->pStream ? &(response->pStream) : NULL),
 				args->flags
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
             client_data_all[client_uid].streams.push_back(response->pStream);
@@ -3235,6 +3302,7 @@ void TallyServer::handle_cudaStreamCreateWithPriority(void *__args, iox::popo::U
 				args->flags,
 				args->priority
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
             client_data_all[client_uid].streams.push_back(response->pStream);
@@ -3272,6 +3340,8 @@ void TallyServer::handle_cudaStreamBeginCapture(void *__args, iox::popo::Untyped
 				__stream,
 				args->mode
             );
+            CHECK_CUDA_ERROR(*response);
+
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
@@ -3295,6 +3365,7 @@ void TallyServer::handle_cuStreamCreateWithPriority(void *__args, iox::popo::Unt
 				args->flags,
 				args->priority
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
             client_data_all[client_uid].streams.push_back(response->phStream);
@@ -3323,6 +3394,7 @@ void TallyServer::handle_cuFuncGetAttribute(void *__args, iox::popo::UntypedServ
 				args->attrib,
 				cu_func_original
 			);
+            CHECK_CUDA_ERROR(response->err);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3351,6 +3423,7 @@ void TallyServer::handle_cuFuncSetAttribute(void *__args, iox::popo::UntypedServ
 			cuFuncSetAttribute(cu_func_ptb, args->attrib, args->value);
 			cuFuncSetAttribute(cu_func_dynamic, args->attrib, args->value);
 			cuFuncSetAttribute(cu_func_preemptive, args->attrib, args->value);
+            CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3444,10 +3517,599 @@ void TallyServer::handle_cuMemsetD8_v2(void *__args, iox::popo::UntypedServer *i
 				args->N,
                 client_data_all[client_id].default_stream
             );
+            CHECK_CUDA_ERROR(*response);
 
             // Make sure cuMemset is finished, because cuMemset is synchronous
             cudaStreamSynchronize(client_data_all[client_id].default_stream);
 
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuStreamCreate(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuStreamCreate");
+	auto args = (struct cuStreamCreateArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(cuStreamCreateResponse), alignof(cuStreamCreateResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuStreamCreateResponse*>(responsePayload);
+            response->err = cuStreamCreate(
+				(args->phStream ? &(response->phStream) : NULL),
+				args->Flags
+			);
+            CHECK_CUDA_ERROR(response->err);
+
+            // Bookkeep the newly created stream
+            client_data_all[client_uid].streams.push_back(response->phStream);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemAlloc_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemAlloc_v2");
+	auto args = (struct cuMemAlloc_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(cuMemAlloc_v2Response), alignof(cuMemAlloc_v2Response))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuMemAlloc_v2Response*>(responsePayload);
+            response->err = cuMemAlloc_v2(
+				(args->dptr ? &(response->dptr) : NULL),
+				args->bytesize
+			);
+            CHECK_CUDA_ERROR(response->err);
+
+            // Keep track that this addr is device memory
+            if (response->err == CUDA_SUCCESS) {
+                client_data_all[client_id].dev_addr_map.push_back( DeviceMemoryKey((void *)response->dptr, args->bytesize) );
+            }
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemsetD32_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemsetD32_v2");
+	auto args = (struct cuMemsetD32_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+            *response = cuMemsetD32Async(
+				args->dstDevice,
+				args->ui,
+				args->N,
+                client_data_all[client_id].default_stream
+            );
+            CHECK_CUDA_ERROR(*response);
+
+            // Make sure cuMemset is finished, because cuMemset is synchronous
+            cudaStreamSynchronize(client_data_all[client_id].default_stream);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemcpyHtoDAsync_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemcpyHtoDAsync_v2");
+	auto args = (struct cuMemcpyHtoDAsync_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    CUstream  stream = args->hStream;
+
+    if (stream == nullptr) {
+        stream = client_data_all[client_id].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(cuMemcpyResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_id);
+
+            *response = cuMemcpyHtoDAsync_v2(
+				args->dstDevice,
+				args->data,
+				args->ByteCount,
+                stream
+            );
+            CHECK_CUDA_ERROR(*response);
+
+            cudaStreamSynchronize(stream);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemcpyDtoHAsync_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemcpyDtoHAsync_v2");
+	auto args = (struct cuMemcpyDtoHAsync_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_id].default_stream;
+    }
+
+    size_t res_size = sizeof(cuMemcpyDtoHAsync_v2Response) + args->ByteCount;
+
+    iox_server->loan(requestHeader, res_size, alignof(MessageHeader_t))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuMemcpyDtoHAsync_v2Response*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_id);
+
+            response->err = cuMemcpyDtoHAsync_v2(
+				response->data,
+				args->srcDevice,
+				args->ByteCount,
+				__stream
+            );
+            CHECK_CUDA_ERROR(response->err);
+
+            cudaStreamSynchronize(__stream);
+            
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemsetD32Async(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemsetD32Async");
+	auto args = (struct cuMemsetD32AsyncArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_id].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+
+            // Make sure all kernels have been dispatched
+            wait_until_launch_queue_empty(client_id);
+
+            auto response = static_cast<CUresult*>(responsePayload);
+            *response = cuMemsetD32Async(
+				args->dstDevice,
+				args->ui,
+				args->N,
+                __stream
+            );
+            CHECK_CUDA_ERROR(*response);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuMemcpyDtoDAsync_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemcpyDtoDAsync_v2");
+	auto args = (struct cuMemcpyDtoDAsync_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_uid);
+
+            *response = cuMemcpyDtoDAsync_v2(
+				args->dstDevice,
+				args->srcDevice,
+				args->ByteCount,
+				__stream
+            );
+            CHECK_CUDA_ERROR(*response);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuModuleLoadFatBinary(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuModuleLoadFatBinary");
+	auto args = (struct cuModuleLoadFatBinaryArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    bool cached = args->cached;
+    std::string tmp_elf_file;
+    uint32_t cubin_uid = 0;
+    size_t msg_len = sizeof(cuModuleLoadFatBinaryResponse);
+
+    size_t cubin_size = 0;
+    const char *cubin_data;
+    
+    if (!cached) {
+        auto header = (struct fatBinaryHeader *) args->image;
+        cubin_size = header->headerSize + header->fatSize;
+        cubin_data = (const char *) args->image;
+
+        cache_cubin_data(cubin_data, cubin_size, client_id);
+        tmp_elf_file = get_tmp_file_path(".elf", client_id);
+        msg_len += tmp_elf_file.size() + 1;
+    } else {
+        cubin_uid = args->cubin_uid;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cuModuleLoadFatBinaryResponse), alignof(cuModuleLoadFatBinaryResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuModuleLoadFatBinaryResponse*>(responsePayload);
+
+            if (!cached) {
+                memcpy(response->tmp_elf_file, tmp_elf_file.c_str(), tmp_elf_file.size());
+                response->tmp_elf_file[tmp_elf_file.size()] = '\0';
+
+                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
+                cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+            } else {
+                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+                cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
+            }
+
+            // Register cu module for this cubin
+            register_cu_modules(cubin_uid);
+
+            response->module = cubin_to_cu_module[cubin_uid];
+            response->err = CUDA_SUCCESS;
+
+            jit_module_to_cubin_map.insert(response->module, std::make_tuple(
+                cubin_data,
+                cubin_size,
+                cubin_uid
+            ));
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuModuleLoadDataEx(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuModuleLoadDataEx");
+	auto args = (struct cuModuleLoadDataExArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    bool cached = args->cached;
+    std::string tmp_elf_file;
+    uint32_t cubin_uid = 0;
+    size_t msg_len = sizeof(cuModuleLoadDataExResponse);
+
+    size_t cubin_size = 0;
+    const char *cubin_data;
+
+    if (!cached) {
+        auto header = (struct fatBinaryHeader *) args->image;
+        cubin_size = header->headerSize + header->fatSize;
+        cubin_data = (const char *) args->image;
+
+        cache_cubin_data(cubin_data, cubin_size, client_id);
+        tmp_elf_file = get_tmp_file_path(".elf", client_id);
+        msg_len += tmp_elf_file.size() + 1;
+    } else {
+        cubin_uid = args->cubin_uid;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cuModuleLoadDataExResponse), alignof(cuModuleLoadDataExResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuModuleLoadDataExResponse*>(responsePayload);
+
+            if (!cached) {
+                memcpy(response->tmp_elf_file, tmp_elf_file.c_str(), tmp_elf_file.size());
+                response->tmp_elf_file[tmp_elf_file.size()] = '\0';
+
+                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
+                cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+            } else {
+                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+                cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
+            }
+
+            // Register cu module for this cubin
+            register_cu_modules(cubin_uid);
+
+            if (cubin_to_cu_module.find(cubin_uid) == cubin_to_cu_module.end()) {
+                throw std::runtime_error("Cannot find cu module");
+            }
+
+            response->module = cubin_to_cu_module[cubin_uid];
+            response->err = CUDA_SUCCESS;
+
+            jit_module_to_cubin_map.insert(response->module, std::make_tuple(
+                cubin_data,
+                cubin_size,
+                cubin_uid
+            ));
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuModuleGetGlobal_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuModuleGetGlobal_v2");
+	auto args = (struct cuModuleGetGlobal_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(cuModuleGetGlobal_v2Response), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+
+            auto response = static_cast<cuModuleGetGlobal_v2Response*>(responsePayload);
+
+            response->err = cuModuleGetGlobal_v2(
+				&response->dptr,
+				&response->bytes,
+				args->hmod,
+                args->name
+            );
+
+            CHECK_CUDA_ERROR(response->err);
+            
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuCtxSynchronize(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuCtxSynchronize");
+	auto args = (struct cuCtxSynchronizeArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_id);
+
+            // Instead of calling cudaDeviceSynchronize, only synchronize all streams of the client
+            auto &client_streams = client_data_all[client_id].streams;
+            
+            for (auto &stream : client_streams) {
+                auto err = cudaStreamSynchronize(stream);
+                CHECK_CUDA_ERROR(err);
+            }
+
+            *response = CUDA_SUCCESS;
+            
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuStreamSynchronize(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuStreamSynchronize");
+	auto args = (struct cuStreamSynchronizeArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+			wait_until_launch_queue_empty(client_uid);
+
+            *response = cuStreamSynchronize(
+				__stream
+            );
+            CHECK_CUDA_ERROR(*response);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuModuleUnload(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuModuleUnload");
+	auto args = (struct cuModuleUnloadArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+            // *response = cuModuleUnload(
+			// 	args->hmod
+            // );
+
+            *response = CUDA_SUCCESS;
+
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cudaStreamEndCapture(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaStreamEndCapture");
+	auto args = (struct cudaStreamEndCaptureArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    cudaStream_t __stream = args->stream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cudaStreamEndCaptureResponse), alignof(cudaStreamEndCaptureResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaStreamEndCaptureResponse*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_uid);
+
+            response->err = cudaStreamEndCapture(
+				__stream,
+				(args->pGraph ? &(response->pGraph) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuStreamEndCapture(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuStreamEndCapture");
+	auto args = (struct cuStreamEndCaptureArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cuStreamEndCaptureResponse), alignof(cuStreamEndCaptureResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuStreamEndCaptureResponse*>(responsePayload);
+
+			wait_until_launch_queue_empty(client_uid);
+
+            response->err = cuStreamEndCapture(
+				__stream,
+				(args->phGraph ? &(response->phGraph) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+// TODO: make graph launch a partial too
+void TallyServer::handle_cuGraphLaunch(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuGraphLaunch");
+	auto args = (struct cuGraphLaunchArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+
+            wait_until_launch_queue_empty(client_uid);
+			cudaDeviceSynchronize();
+
+            *response = cuGraphLaunch(
+				args->hGraphExec,
+				__stream
+            );
+            CHECK_CUDA_ERROR(*response);
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })

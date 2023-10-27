@@ -7,13 +7,17 @@
 #include <unordered_map>
 #include <cassert>
 #include <map>
+#include <elf.h>
 
+#include <tally/util.h>
+#include <tally/msg_struct.h>
 #include <tally/cuda_launch.h>
 #include <tally/generated/cuda_api.h>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cudnn.h>
+#include <fatbinary_section.h>
 
 struct DeviceMemoryKey {
     void *addr;
@@ -26,6 +30,36 @@ inline void implicit_init_cuda_ctx()
     float *arr;
     cudaMalloc(&arr, sizeof(float));
     cudaFree(arr);
+}
+
+enum CUDA_MODULE_TYPE {
+    PTX_STRING,
+    FATBIN,
+    ELF
+};
+
+inline CUDA_MODULE_TYPE get_cuda_module_type(const void * image)
+{
+    // Test if it is fatbin
+    auto fbh = (fatBinaryHeader *) image;
+    if (fbh->magic == FATBIN_MAGIC_NUMBER) {
+        return CUDA_MODULE_TYPE::FATBIN;
+    }
+
+    // Test if it is in-memory elf format
+    auto hdr = (Elf64_Ehdr *) image;
+    if (hdr->e_ident[EI_MAG0] == ELFMAG0 && hdr->e_ident[EI_MAG1] == ELFMAG1 ||
+        hdr->e_ident[EI_MAG2] == ELFMAG2 && hdr->e_ident[EI_MAG3] == ELFMAG3) {
+        return CUDA_MODULE_TYPE::ELF;
+    }
+
+    // Test if it is ptx string
+    std::string image_str((char *)image);
+    if (containsSubstring(image_str, ".target")) {
+        return CUDA_MODULE_TYPE::PTX_STRING;
+    }
+
+    throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Cannot identify cuda module.");
 }
 
 inline CUfunction_attribute convert_func_attribute(cudaFuncAttribute attr) {
@@ -129,10 +163,16 @@ inline void free_dev_addr(std::vector<DeviceMemoryKey> &dev_addr_map, void *addr
 template <typename T>
 void check(T err, const char* const func, const char* const file, const int line)
 {
-    if (err != cudaSuccess)
+    if (err)
     {
-        std::cerr << "CUDA Runtime Error at: " << file << ":" << line << std::endl;
-        std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
+        std::cerr << "CUDA Error at: " << file << ":" << line << std::endl;
+        if constexpr (std::is_same<T, cudaError_t>::value) {
+            std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
+        } else if constexpr (std::is_same<T, CUresult>::value) {
+            const char *err_msg;
+            cuGetErrorString(err, &err_msg);
+            std::cerr << err_msg << " " << func << std::endl;
+        }
     }
 }
 
@@ -237,6 +277,77 @@ inline size_t get_cudnn_attribute_size(cudnnBackendAttributeType_t type)
     return attr_size;
 }
 
+inline size_t get_CUjit_option_size(CUjit_option option)
+{
+    size_t option_size;
+    switch(option) {
+        case CU_JIT_MAX_REGISTERS:
+            option_size = sizeof(unsigned int);
+            break;
+        case CU_JIT_THREADS_PER_BLOCK:
+            option_size = sizeof(unsigned int);
+            break;
+        case CU_JIT_WALL_TIME:
+            option_size = sizeof(float);
+            break;
+        case CU_JIT_INFO_LOG_BUFFER:
+            throw std::runtime_error("Unsupported CUjit_option");
+            break;
+        case CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES:
+            option_size = sizeof(unsigned int);
+            break;
+        case CU_JIT_ERROR_LOG_BUFFER:
+            throw std::runtime_error("Unsupported CUjit_option");
+            break;
+        case CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES:
+            option_size = sizeof(unsigned int);
+            break;
+        case CU_JIT_OPTIMIZATION_LEVEL:
+            option_size = sizeof(unsigned int);
+            break;
+        case CU_JIT_TARGET_FROM_CUCONTEXT:
+            option_size = 0;
+            break;
+        case CU_JIT_TARGET:
+            option_size = sizeof(unsigned int);
+            break;
+        case CU_JIT_FALLBACK_STRATEGY:
+            option_size = sizeof(unsigned int);
+            break;
+        case CU_JIT_GENERATE_DEBUG_INFO:
+            option_size = sizeof(int);
+            break;
+        case CU_JIT_LOG_VERBOSE:
+            option_size = sizeof(int);
+            break;
+        case CU_JIT_GENERATE_LINE_INFO:
+            option_size = sizeof(int);
+            break;
+        case CU_JIT_CACHE_MODE:
+            option_size = sizeof(unsigned int);
+            break;
+        case CU_JIT_FAST_COMPILE:
+            throw std::runtime_error("Internal CUjit_option");
+            break;
+        case CU_JIT_GLOBAL_SYMBOL_NAMES:
+            throw std::runtime_error("Unsupported CUjit_option");
+            break;
+        case CU_JIT_GLOBAL_SYMBOL_ADDRESSES:
+            throw std::runtime_error("Unsupported CUjit_option");
+            break;
+        case CU_JIT_GLOBAL_SYMBOL_COUNT:
+            option_size = sizeof(unsigned int);
+            break;
+        case CU_JIT_POSITION_INDEPENDENT_CODE:
+            option_size = sizeof(int);
+            break;
+        default:
+            throw std::runtime_error("Unknown or deprecated CUjit_option");
+    }
+
+    return option_size;
+}
+
 // typedef enum CUpointer_attribute_enum {
 //     CU_POINTER_ATTRIBUTE_CONTEXT = 1,                     /**< The ::CUcontext on which a pointer was allocated or registered */
 //     CU_POINTER_ATTRIBUTE_MEMORY_TYPE = 2,                 /**< The ::CUmemorytype describing the physical location of a pointer */
@@ -268,8 +379,11 @@ inline size_t get_cupointer_attribute_size(CUpointer_attribute attribute)
         case CU_POINTER_ATTRIBUTE_DEVICE_POINTER:
             attr_size = sizeof(CUdeviceptr);
             break;
+        case CU_POINTER_ATTRIBUTE_DEVICE_ORDINAL:
+            attr_size = sizeof(int);
+            break;
         default:
-            throw std::runtime_error("unknown type: " + std::to_string(attribute));
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "unknown type: " + std::to_string(attribute));
     }
 
     return attr_size;
@@ -321,7 +435,7 @@ inline void print_arrayOfElements(cudnnBackendAttributeType_t  attributeType, in
 
 void write_cubin_to_file(const char *cubin_data, uint32_t cubin_size);
 
-std::string get_fatbin_str_from_ptx_str(std::string ptx_str);
+std::string get_fatbin_str_from_ptx_str(std::string &ptx_str);
 
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path);
 
@@ -329,36 +443,61 @@ std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_
 
 template <class KERNEL_NAME_MAP_TYPE, class KERNEL_MAP_TYPE>
 void register_kernels_from_ptx_fatbin(
-    std::vector<std::pair<std::string, std::string>> &ptx_fatbin_strs,
+    CUmodule cudaModule,
+    std::string &ptx_str,
+    std::string &fatbin_str,
     KERNEL_NAME_MAP_TYPE &kernel_name_map,
-    KERNEL_MAP_TYPE &kernel_map
+    KERNEL_MAP_TYPE &original_kernel_map,
+    KERNEL_MAP_TYPE &ptb_kernel_map,
+    KERNEL_MAP_TYPE &dynamic_ptb_kernel_map,
+    KERNEL_MAP_TYPE &preemptive_ptb_kernel_map
 )
 {
-    for (auto &ptx_fatbin_pair : ptx_fatbin_strs) {
-        
-        auto &ptx_str = ptx_fatbin_pair.first;
-        auto &fatbin_str = ptx_fatbin_pair.second;
+    std::vector<KERNEL_MAP_TYPE *> kernel_map_ptrs {
+        &original_kernel_map,
+        &ptb_kernel_map,
+        &dynamic_ptb_kernel_map,
+        &preemptive_ptb_kernel_map
+    };
 
-        CUmodule cudaModule;
-        lcuModuleLoadDataEx(&cudaModule, fatbin_str.c_str(), 0, 0, 0);
+    auto kernel_names_and_nparams = get_kernel_names_and_nparams_from_ptx(ptx_str);
+    
+    for (auto &name_and_nparams : kernel_names_and_nparams) {
 
-        auto kernel_names_and_nparams = get_kernel_names_and_nparams_from_ptx(ptx_str);
-        
-        for (auto &name_and_nparams : kernel_names_and_nparams) {
+        auto &kernel_name = name_and_nparams.first;
 
-            auto &kernel_name = name_and_nparams.first;
-            auto num_params = name_and_nparams.second;
+        if (kernel_name_map.find(kernel_name) == kernel_name_map.end()) {
+            continue;
+        }
 
-            if (kernel_name_map.find(kernel_name) == kernel_name_map.end()) {
-                continue;
-            }
+        auto host_func = kernel_name_map[kernel_name];
 
-            auto host_func = kernel_name_map[kernel_name];
+        if (original_kernel_map.find(host_func) == original_kernel_map.end()) {
 
-            if (kernel_map.find(host_func) == kernel_map.end()) {
+            std::vector<std::string> transform_kernel_names {
+                kernel_name,
+                kernel_name + "_tally_ptb",
+                kernel_name + "_tally_dynamic_ptb",
+                kernel_name + "_tally_preemptive_ptb"
+            };
+   
+            for (int i = 0; i < transform_kernel_names.size(); i++) {
+
+                uint32_t num_params = name_and_nparams.second;
+
+                auto transform_kernel_name = transform_kernel_names[i];
+                auto kernel_map_ptr = kernel_map_ptrs[i];
+
+                if (transform_kernel_name == kernel_name + "_tally_ptb") {
+                    num_params += 1;
+                } else if (transform_kernel_name == kernel_name + "_tally_dynamic_ptb") {
+                    num_params += 3;
+                } else if (transform_kernel_name == kernel_name + "_tally_preemptive_ptb") {
+                    num_params += 4;
+                }
 
                 CUfunction function;
-                lcuModuleGetFunction(&function, cudaModule, kernel_name.c_str());
+                lcuModuleGetFunction(&function, cudaModule, transform_kernel_name.c_str());
 
                 WrappedCUfunction wrapped_cu_func;
 
@@ -370,9 +509,9 @@ void register_kernels_from_ptx_fatbin(
                 lcuFuncGetAttribute (&(wrapped_cu_func.meta_data.max_dynamic_shmem_size_bytes), CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, function);
 
                 if constexpr (std::is_same<KERNEL_MAP_TYPE, std::unordered_map<const void*, WrappedCUfunction>>::value) {
-                    kernel_map[host_func] = wrapped_cu_func;
+                    (*kernel_map_ptr)[host_func] = wrapped_cu_func;
                 } else {
-                    kernel_map.insert(host_func, wrapped_cu_func);
+                    kernel_map_ptr->insert(host_func, wrapped_cu_func);
                 }
             }
         }

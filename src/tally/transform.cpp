@@ -12,16 +12,9 @@
 #include <boost/regex.hpp>
 
 // Generating preemptive using no shmem PTB version of a PTX file
-std::string gen_preemptive_ptb_ptx(std::string ptx_path)
+std::string gen_preemptive_ptb_ptx(std::string &kernel_ptx_str)
 {
-    std::ifstream t(ptx_path);
-    if (!t.is_open()) {
-        std::cerr << ptx_path << " not found." << std::endl;
-        return "";
-    }
-
-    std::string ptx_code_str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-    std::stringstream ss(ptx_code_str);
+    std::stringstream ss(kernel_ptx_str);
     std::string line;
     boost::smatch matches;
 
@@ -31,7 +24,7 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
     boost::regex b64_reg_decl_pattern("\\.reg \\.b64 %rd<(\\d+)>;");
     boost::regex pred_reg_decl_pattern("\\.reg \\.pred %p<(\\d+)>;");
     boost::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
-    boost::regex kernel_param_pattern("^placeholder$");
+    boost::regex kernel_param_pattern("^\\.param");
 
     std::string PTB_MAIN_BLOCK_NAME = "L__PTB_MAIN";
     std::string PTB_CHECK_LEADER_BLOCK_NAME = "L__PTB_CHECK_LEADER";
@@ -91,7 +84,6 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
-            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b16_regs = 0;
             num_b32_regs = 0;
@@ -120,13 +112,19 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
 
         brace_counter += numLeftBrace;
         brace_counter -= numRightBrace;
+
+        if (!brace_encountered && boost::regex_search(line, matches, kernel_param_pattern)) {
+            num_params += 1;
+
+            if (!brace_encountered && numLeftBrace > 0) {
+                brace_encountered = true;
+            }
+
+            continue;
+        }
+
         if (!brace_encountered && numLeftBrace > 0) {
             brace_encountered = true;
-        }
-        
-        if (boost::regex_search(line, matches, kernel_param_pattern)) {
-            num_params += 1;
-            continue;
         }
 
         if (boost::regex_search(line, matches, b16_reg_decl_pattern)) {
@@ -226,8 +224,9 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
 
             brace_counter = 0;
             brace_encountered = false;
-            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
-        
+            int count_num_params = 0;
+            bool found_all_params = false;
+            
             for (auto &kernel_line : kernel_lines) {
 
                 int32_t numLeftBrace = countLeftBrace(kernel_line);
@@ -237,12 +236,22 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
                 brace_counter -= numRightBrace;
                 assert(brace_counter >= 0);
 
-                if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
-                    ptb_ptx_code += kernel_line + ",\n";
-                    ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + ",\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + ",\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 3) + "\n";
+                if (!found_all_params && boost::regex_search(kernel_line, matches, kernel_param_pattern)) {
+                    count_num_params += 1;
+
+                    if (count_num_params == num_params) {
+                        ptb_ptx_code += kernel_line + ",\n";
+                        ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
+                        ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + ",\n";
+                        ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + ",\n";
+                        ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 3) + "\n";
+                        count_num_params = 0;
+                        found_all_params = true;
+                        continue;
+                    }
+
+                    ptb_ptx_code += kernel_line + "\n";
+
                     continue;
                 }
 
@@ -330,6 +339,12 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
                 }
 
                 if (boost::regex_search(kernel_line, matches, pred_reg_decl_pattern)) {
+                    continue;
+                }
+
+                if (boost::regex_search(kernel_line, matches, kernel_name_pattern)) {
+                    auto new_kernel_name = kernel_name + "_tally_preemptive_ptb";
+                    ptb_ptx_code += replace_substring(kernel_line, kernel_name, new_kernel_name) + "\n";
                     continue;
                 }
             
@@ -469,15 +484,9 @@ std::string gen_preemptive_ptb_ptx(std::string ptx_path)
 }
 
 // Generating dynamic PTB version of a PTX file
-std::string gen_dynamic_ptb_ptx(std::string ptx_path)
+std::string gen_dynamic_ptb_ptx(std::string &kernel_ptx_str)
 {
-    std::ifstream t(ptx_path);
-    if (!t.is_open()) {
-        std::cerr << ptx_path << " not found." << std::endl;
-        return "";
-    }
-    std::string ptx_code_str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-    std::stringstream ss(ptx_code_str);
+    std::stringstream ss(kernel_ptx_str);
     std::string line;
     boost::smatch matches;
 
@@ -486,7 +495,7 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
     boost::regex b64_reg_decl_pattern("\\.reg \\.b64 %rd<(\\d+)>;");
     boost::regex pred_reg_decl_pattern("\\.reg \\.pred %p<(\\d+)>;");
     boost::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
-    boost::regex kernel_param_pattern("^placeholder$");
+    boost::regex kernel_param_pattern("^\\.param");
 
     std::string PTB_MAIN_BLOCK_NAME = "L__PTB_MAIN";
     std::string PTB_CHECK_LEADER_BLOCK_NAME = "L__PTB_CHECK_LEADER";
@@ -537,7 +546,6 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
-            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b32_regs = 0;
             num_b64_regs = 0;
@@ -564,13 +572,19 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
 
         brace_counter += numLeftBrace;
         brace_counter -= numRightBrace;
+        
+        if (!brace_encountered && boost::regex_search(line, matches, kernel_param_pattern)) {
+            num_params += 1;
+
+            if (!brace_encountered && numLeftBrace > 0) {
+                brace_encountered = true;
+            }
+
+            continue;
+        }
+
         if (!brace_encountered && numLeftBrace > 0) {
             brace_encountered = true;
-        }
-        
-        if (boost::regex_search(line, matches, kernel_param_pattern)) {
-            num_params += 1;
-            continue;
         }
 
         if (boost::regex_search(line, matches, b32_reg_decl_pattern)) {
@@ -658,8 +672,9 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
 
             brace_counter = 0;
             brace_encountered = false;
-            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
-        
+            int count_num_params = 0;
+            bool found_all_params = false;
+            
             for (auto &kernel_line : kernel_lines) {
 
                 int32_t numLeftBrace = countLeftBrace(kernel_line);
@@ -669,11 +684,21 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
                 brace_counter -= numRightBrace;
                 assert(brace_counter >= 0);
 
-                if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
-                    ptb_ptx_code += kernel_line + ",\n";
-                    ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + ",\n";
-                    ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + "\n";
+                if (!found_all_params && boost::regex_search(kernel_line, matches, kernel_param_pattern)) {
+                    count_num_params += 1;
+
+                    if (count_num_params == num_params) {
+                        ptb_ptx_code += kernel_line + ",\n";
+                        ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
+                        ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 1) + ",\n";
+                        ptb_ptx_code += ".param .u64 " + kernel_name + "_param_" + std::to_string(num_params + 2) + "\n";
+                        count_num_params = 0;
+                        found_all_params = true;
+                        continue;
+                    }
+
+                    ptb_ptx_code += kernel_line + "\n";
+
                     continue;
                 }
 
@@ -752,6 +777,12 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
                 }
 
                 if (boost::regex_search(kernel_line, matches, pred_reg_decl_pattern)) {
+                    continue;
+                }
+
+                if (boost::regex_search(kernel_line, matches, kernel_name_pattern)) {
+                    auto new_kernel_name = kernel_name + "_tally_dynamic_ptb";
+                    ptb_ptx_code += replace_substring(kernel_line, kernel_name, new_kernel_name) + "\n";
                     continue;
                 }
             
@@ -871,15 +902,9 @@ std::string gen_dynamic_ptb_ptx(std::string ptx_path)
 }
 
 
-std::string gen_ptb_ptx(std::string ptx_path)
+std::string gen_ptb_ptx(std::string &kernel_ptx_str)
 {
-    std::ifstream t(ptx_path);
-    if (!t.is_open()) {
-        std::cerr << ptx_path << " not found." << std::endl;
-        return "";
-    }
-    std::string ptx_code_str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-    std::stringstream ss(ptx_code_str);
+    std::stringstream ss(kernel_ptx_str);
     std::string line;
     boost::smatch matches;
 
@@ -887,7 +912,7 @@ std::string gen_ptb_ptx(std::string ptx_path)
     boost::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
     boost::regex pred_reg_decl_pattern("\\.reg \\.pred %p<(\\d+)>;");
     boost::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
-    boost::regex kernel_param_pattern("^placeholder$");
+    boost::regex kernel_param_pattern("^\\.param");
 
     std::string PTB_RETURN_BLOCK_NAME = "L__PTB_RETURN";
     std::string PTB_LOOP_BLOCK_NAME = "L__PTB_LOOP";
@@ -918,7 +943,6 @@ std::string gen_ptb_ptx(std::string ptx_path)
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
-            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b32_regs = 0;
             num_pred_regs = 0;
@@ -941,13 +965,19 @@ std::string gen_ptb_ptx(std::string ptx_path)
 
         brace_counter += numLeftBrace;
         brace_counter -= numRightBrace;
+
+        if (!brace_encountered && boost::regex_search(line, matches, kernel_param_pattern)) {
+            num_params += 1;
+
+            if (!brace_encountered && numLeftBrace > 0) {
+                brace_encountered = true;
+            }
+
+            continue;
+        }
+
         if (!brace_encountered && numLeftBrace > 0) {
             brace_encountered = true;
-        }
-        
-        if (boost::regex_search(line, matches, kernel_param_pattern)) {
-            num_params += 1;
-            continue;
         }
 
         if (boost::regex_search(line, matches, b32_reg_decl_pattern)) {
@@ -1009,7 +1039,8 @@ std::string gen_ptb_ptx(std::string ptx_path)
 
             brace_counter = 0;
             brace_encountered = false;
-            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
+            int count_num_params = 0;
+            bool found_all_params = false;
 
             for (auto &kernel_line : kernel_lines) {
 
@@ -1020,9 +1051,19 @@ std::string gen_ptb_ptx(std::string ptx_path)
                 brace_counter -= numRightBrace;
                 assert(brace_counter >= 0);
 
-                if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
-                    ptb_ptx_code += kernel_line + ",\n";
-                    ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12]\n";
+                if (!found_all_params && boost::regex_search(kernel_line, matches, kernel_param_pattern)) {
+                    count_num_params += 1;
+
+                    if (count_num_params == num_params) {
+                        ptb_ptx_code += kernel_line + ",\n";
+                        ptb_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12]\n";
+                        count_num_params = 0;
+                        found_all_params = true;
+                        continue;
+                    }
+
+                    ptb_ptx_code += kernel_line + "\n";
+
                     continue;
                 }
 
@@ -1032,10 +1073,6 @@ std::string gen_ptb_ptx(std::string ptx_path)
                         ptb_ptx_code += kernel_line + "\n";
                         continue;
                     }
-
-                    // if (kernel_name == "void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel<float, unsigned int>(at::GenericPackedTensorAccessor<float, 4ul, at::DefaultPtrTraits, int>, at::GenericPackedTensorAccessor<float, 4ul, at::DefaultPtrTraits, int>, at::GenericPackedTensorAccessor<float, 4ul, at::DefaultPtrTraits, int>, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)") {
-                    //     ptb_ptx_code += ".maxnreg 100\n";
-                    // }
 
                     ptb_ptx_code += kernel_line + "\n";
     
@@ -1127,6 +1164,12 @@ std::string gen_ptb_ptx(std::string ptx_path)
                 if (boost::regex_search(kernel_line, matches, pred_reg_decl_pattern)) {
                     continue;
                 }
+
+                if (boost::regex_search(kernel_line, matches, kernel_name_pattern)) {
+                    auto new_kernel_name = kernel_name + "_tally_ptb";
+                    ptb_ptx_code += replace_substring(kernel_line, kernel_name, new_kernel_name) + "\n";
+                    continue;
+                }
             
                 // instead of return, branch to loop condition check
                 if (strip(kernel_line) == "ret;") {
@@ -1172,19 +1215,8 @@ std::string gen_ptb_ptx(std::string ptx_path)
     return ptb_ptx_code;
 }
 
-std::string gen_original_ptx(std::string ptx_path)
-{
-    std::ifstream t(ptx_path);
-    if (!t.is_open()) {
-        std::cerr << ptx_path << " not found." << std::endl;
-        return "";
-    }
-    std::string ptx_code_str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-
-    return ptx_code_str;
-}
-
-std::string gen_sliced_ptx(std::string ptx_path)
+// Generating combined version of a PTX file
+std::string gen_transform_ptx(std::string &ptx_path)
 {
     std::ifstream t(ptx_path);
     if (!t.is_open()) {
@@ -1194,48 +1226,28 @@ std::string gen_sliced_ptx(std::string ptx_path)
     std::string ptx_code_str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
     std::stringstream ss(ptx_code_str);
     std::string line;
-    
-    std::string sliced_ptx_code = "";
 
     boost::regex kernel_name_pattern("(\\.visible\\s+)?\\.entry (\\w+)");
-    boost::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
-    boost::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
-    boost::regex kernel_param_pattern("^placeholder$");
 
-    uint32_t num_params = 0;
-    uint32_t num_b32_regs = 0;
-    uint32_t num_additional_b32 = 9;
     bool record_kernel = false;
-    std::vector<std::string> kernel_lines;
     int32_t brace_counter = 0;
-    int32_t brace_encountered = false;
-    std::string kernel_name;
+    bool brace_encountered = false;
 
-    // boost::timer::progress_display progress(ptx_code_str.size());
+    std::string final_ptx_str = "";
+    std::string kernel_func_str = "";
 
+    // Iterate ptx file, and extract each kernel function
     while (std::getline(ss, line, '\n')) {
-        // progress += line.size() + 1;
 
         boost::smatch matches;
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
-            kernel_name = matches[2];
-
-            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
-            num_params = 0;
-            num_b32_regs = 0;
-            brace_counter = 0;
-            brace_encountered = false;
-            kernel_lines.clear();
-
-            kernel_lines.push_back(line);
-            continue;
         }
 
         if (record_kernel) {
-            kernel_lines.push_back(line);
+            kernel_func_str += line + "\n";
         } else {
-            sliced_ptx_code += line + "\n";
+            final_ptx_str += line + '\n';
         }
 
         int32_t numLeftBrace = countLeftBrace(line);
@@ -1247,110 +1259,18 @@ std::string gen_sliced_ptx(std::string ptx_path)
             brace_encountered = true;
         }
 
-        if (boost::regex_search(line, matches, kernel_param_pattern)) {
-            num_params += 1;
-            continue;
-        }
-
-        if (boost::regex_search(line, matches, b32_reg_decl_pattern)) {
-            num_b32_regs = std::stoi(matches[1]);
-            continue;
-        }
-
-        if (boost::regex_search(line, matches, block_idx_pattern)) {
-            std::string block_idx_match_dim = matches[2];
-            continue;
-        }
-
         if (record_kernel && brace_encountered && brace_counter == 0) {
-
             record_kernel = false;
-
-            // Ignore such kernels for now!
-            if (num_params == 0) {
-                continue;
-            }
-
             brace_encountered = false;
 
-            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
+            final_ptx_str += kernel_func_str + "\n";
+            final_ptx_str += gen_ptb_ptx(kernel_func_str) + "\n";
+            final_ptx_str += gen_dynamic_ptb_ptx(kernel_func_str) + "\n";
+            final_ptx_str += gen_preemptive_ptb_ptx(kernel_func_str) + "\n";
 
-            std::string blockOffset_x_reg = "%r" + std::to_string(num_b32_regs);
-            std::string blockOffset_y_reg = "%r" + std::to_string(num_b32_regs + 1);
-            std::string blockOffset_z_reg = "%r" + std::to_string(num_b32_regs + 2);
-
-            std::string blockIdx_x_reg = "%r" + std::to_string(num_b32_regs + 3);
-            std::string blockIdx_y_reg = "%r" + std::to_string(num_b32_regs + 4);
-            std::string blockIdx_z_reg = "%r" + std::to_string(num_b32_regs + 5);
-
-            std::string new_blockIdx_x_reg = "%r" + std::to_string(num_b32_regs + 6);
-            std::string new_blockIdx_y_reg = "%r" + std::to_string(num_b32_regs + 7);
-            std::string new_blockIdx_z_reg = "%r" + std::to_string(num_b32_regs + 8);
-
-            std::map<std::string, std::string> reg_replacement_rules;
-            reg_replacement_rules["%ctaid.x"] = new_blockIdx_x_reg;
-            reg_replacement_rules["%ctaid.y"] = new_blockIdx_y_reg;
-            reg_replacement_rules["%ctaid.z"] = new_blockIdx_z_reg;
-    
-            for (auto &kernel_line : kernel_lines) {
-
-                if (strip(kernel_line) == "{") {
-
-                    sliced_ptx_code += kernel_line + "\n";
-
-                    if (brace_encountered) {
-                        continue;
-                    }
-    
-                    brace_encountered = true;
-
-                    // Perform actions at the top
-                    sliced_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
-
-                    // Load blockOffset.x
-                    sliced_ptx_code += "ld.param.u32 " + blockOffset_x_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "];\n";
-                    // Load blockOffset.y
-                    sliced_ptx_code += "ld.param.u32 " + blockOffset_y_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+4];\n";
-                    // Load blockOffset.z
-                    sliced_ptx_code += "ld.param.u32 " + blockOffset_z_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+8];\n";
-
-                    // Load blockIdx.x
-                    sliced_ptx_code += "mov.u32 " + blockIdx_x_reg + ", %ctaid.x;\n";
-                    // Load blockIdx.y
-                    sliced_ptx_code += "mov.u32 " + blockIdx_y_reg + ", %ctaid.y;\n";
-                    // Load blockIdx.z
-                    sliced_ptx_code += "mov.u32 " + blockIdx_z_reg + ", %ctaid.z;\n";
-
-                    // new_blockIdx.x = blockIdx.x + blockOffset.x
-                    sliced_ptx_code += "add.u32 " + new_blockIdx_x_reg + ", " + blockIdx_x_reg + ", " + blockOffset_x_reg + ";\n";
-                    // new_blockIdx.y = blockIdx.y + blockOffset.y
-                    sliced_ptx_code += "add.u32 " + new_blockIdx_y_reg + ", " + blockIdx_y_reg + ", " + blockOffset_y_reg + ";\n";
-                    // new_blockIdx.x = blockIdx.x + blockOffset.x
-                    sliced_ptx_code += "add.u32 " + new_blockIdx_z_reg + ", " + blockIdx_z_reg + ", " + blockOffset_z_reg + ";\n";
-
-                    continue;
-                }
-
-                if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
-                    sliced_ptx_code += kernel_line + ",\n";
-                    sliced_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12]\n";
-                    continue;
-                }
-
-                if (boost::regex_search(kernel_line, matches, b32_reg_decl_pattern)) {
-                    continue;
-                }
-
-                for (const auto& pair : reg_replacement_rules) {
-                    boost::regex pattern(pair.first);
-                    kernel_line = boost::regex_replace(kernel_line, pattern, pair.second);
-                }
-
-                sliced_ptx_code += kernel_line + "\n";
-            }
-            continue;
+            kernel_func_str = "";
         }
     }
 
-    return sliced_ptx_code;
+    return final_ptx_str;
 }

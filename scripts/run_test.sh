@@ -21,6 +21,7 @@ test_list=(
     "./build/tests/basic_gemm"
     "./build/tests/turing_tensorop_gemm"
     "./build/tests/ampere_tf32_tensorop_gemm"
+    "python3 ./tests/tensorflow_samples/tf_basic.py"
     "python3 ./tests/pytorch_samples/train.py"
     "python3 ./tests/pytorch_samples/run-triton.py"
     "python3 ./tests/pytorch_samples/run-torch-compile.py"
@@ -45,10 +46,11 @@ make
 cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
 
 ./scripts/start_iox.sh &
-sleep 5
+sleep 10
 
 # Launch tally server in the background
 ./scripts/start_server.sh &
+sleep 5
 
 # Run tests with tally-server-client
 for item in "${test_list[@]}"; do

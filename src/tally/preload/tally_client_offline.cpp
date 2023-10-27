@@ -37,6 +37,16 @@ void register_kernels()
         for (auto cubin_uid : cubin_register_queue) {
             auto cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
             auto cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
+
+            if (TallyClientOffline::client_offline->cubin_to_cu_module.find(cubin_uid) == TallyClientOffline::client_offline->cubin_to_cu_module.end()) {
+
+                auto tranform_fatbin_str = TallyCache::cache->cubin_cache.get_transform_fatbin_str(cubin_data, cubin_size);
+                CUmodule tranform_module;
+                lcuModuleLoadData(&tranform_module, tranform_fatbin_str.c_str());
+      
+                TallyClientOffline::client_offline->cubin_to_cu_module[cubin_uid] = tranform_module;
+            }
+
             TallyClientOffline::client_offline->register_ptx_transform(cubin_data, cubin_size);
         }
 
@@ -177,14 +187,24 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
     cache_cubin_data(cubin_data, cubin_size);
 
     uint32_t cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
-    auto err = lcuModuleLoadData(module, image);
+   
+    if (TallyClientOffline::client_offline->cubin_to_cu_module.find(cubin_uid) == TallyClientOffline::client_offline->cubin_to_cu_module.end()) {
+
+        auto transform_fatbin_str = TallyCache::cache->cubin_cache.get_transform_fatbin_str(cubin_data, cubin_size);
+        CUmodule transform_module;
+        lcuModuleLoadData(&transform_module, transform_fatbin_str.c_str());
+
+        TallyClientOffline::client_offline->cubin_to_cu_module[cubin_uid] = transform_module;
+    }
+
+    *module = TallyClientOffline::client_offline->cubin_to_cu_module[cubin_uid];
 
     auto cached_cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
     auto cached_cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
 
     TallyClientOffline::client_offline->jit_module_to_cubin_map[*module] = std::make_pair(cached_cubin_data, cached_cubin_size);
 
-    return err;
+    return CUDA_SUCCESS;
 }
 
 CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * name)

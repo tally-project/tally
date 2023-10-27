@@ -66,7 +66,8 @@ CUresult cuDriverGetVersion(int * driverVersion)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDriverGetVersionArg), alignof(cuDriverGetVersionArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDriverGetVersionArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -106,7 +107,8 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetArg), alignof(cuDeviceGetArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -147,7 +149,8 @@ CUresult cuDeviceGetCount(int * count)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetCountArg), alignof(cuDeviceGetCountArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetCountArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -194,7 +197,8 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetUuidArg), alignof(cuDeviceGetUuidArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetUuidArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -235,7 +239,8 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetUuid_v2Arg), alignof(cuDeviceGetUuid_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetUuid_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -276,7 +281,8 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetLuidArg), alignof(cuDeviceGetLuidArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetLuidArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -319,7 +325,8 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceTotalMem_v2Arg), alignof(cuDeviceTotalMem_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceTotalMem_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -360,7 +367,8 @@ CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetTexture1DLinearMaxWidthArg), alignof(cuDeviceGetTexture1DLinearMaxWidthArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetTexture1DLinearMaxWidthArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -403,7 +411,8 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetAttributeArg), alignof(cuDeviceGetAttributeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetAttributeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -451,7 +460,8 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceSetMemPoolArg), alignof(cuDeviceSetMemPoolArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceSetMemPoolArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -491,7 +501,8 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetMemPoolArg), alignof(cuDeviceGetMemPoolArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetMemPoolArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -532,7 +543,8 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetDefaultMemPoolArg), alignof(cuDeviceGetDefaultMemPoolArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetDefaultMemPoolArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -573,7 +585,8 @@ CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUde
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetExecAffinitySupportArg), alignof(cuDeviceGetExecAffinitySupportArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetExecAffinitySupportArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -615,7 +628,8 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuFlushGPUDirectRDMAWritesArg), alignof(cuFlushGPUDirectRDMAWritesArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuFlushGPUDirectRDMAWritesArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -655,7 +669,8 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetPropertiesArg), alignof(cuDeviceGetPropertiesArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetPropertiesArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -696,7 +711,8 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceComputeCapabilityArg), alignof(cuDeviceComputeCapabilityArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceComputeCapabilityArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -739,7 +755,8 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxRetainArg), alignof(cuDevicePrimaryCtxRetainArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxRetainArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -780,7 +797,8 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxRelease_v2Arg), alignof(cuDevicePrimaryCtxRelease_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxRelease_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -819,7 +837,8 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxSetFlags_v2Arg), alignof(cuDevicePrimaryCtxSetFlags_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxSetFlags_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -859,7 +878,8 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxGetStateArg), alignof(cuDevicePrimaryCtxGetStateArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxGetStateArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -902,7 +922,8 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxReset_v2Arg), alignof(cuDevicePrimaryCtxReset_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxReset_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -961,7 +982,8 @@ CUresult cuCtxPushCurrent_v2(CUcontext  ctx)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxPushCurrent_v2Arg), alignof(cuCtxPushCurrent_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxPushCurrent_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1000,7 +1022,8 @@ CUresult cuCtxPopCurrent_v2(CUcontext * pctx)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxPopCurrent_v2Arg), alignof(cuCtxPopCurrent_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxPopCurrent_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1040,7 +1063,8 @@ CUresult cuCtxSetCurrent(CUcontext  ctx)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSetCurrentArg), alignof(cuCtxSetCurrentArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSetCurrentArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1079,7 +1103,8 @@ CUresult cuCtxGetCurrent(CUcontext * pctx)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetCurrentArg), alignof(cuCtxGetCurrentArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetCurrentArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1119,7 +1144,8 @@ CUresult cuCtxGetDevice(CUdevice * device)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetDeviceArg), alignof(cuCtxGetDeviceArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetDeviceArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1159,7 +1185,8 @@ CUresult cuCtxGetFlags(unsigned int * flags)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetFlagsArg), alignof(cuCtxGetFlagsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetFlagsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1201,44 +1228,6 @@ CUresult cuCtxGetId(CUcontext  ctx, unsigned long long * ctxId)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuCtxSynchronize()
-{
-	TALLY_LOG("cuCtxSynchronize hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcuCtxSynchronize();
-#else
-
-    CUresult err;
-
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSynchronizeArg), alignof(cuCtxSynchronizeArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUCTXSYNCHRONIZE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuCtxSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const CUresult*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxSynchronize);
-	return err;
-}
-
 CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
 {
 	TALLY_LOG("cuCtxSetLimit hooked");
@@ -1249,7 +1238,8 @@ CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSetLimitArg), alignof(cuCtxSetLimitArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSetLimitArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1289,7 +1279,8 @@ CUresult cuCtxGetLimit(size_t * pvalue, CUlimit  limit)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetLimitArg), alignof(cuCtxGetLimitArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetLimitArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1330,7 +1321,8 @@ CUresult cuCtxGetCacheConfig(CUfunc_cache * pconfig)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetCacheConfigArg), alignof(cuCtxGetCacheConfigArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetCacheConfigArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1370,7 +1362,8 @@ CUresult cuCtxSetCacheConfig(CUfunc_cache  config)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSetCacheConfigArg), alignof(cuCtxSetCacheConfigArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSetCacheConfigArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1409,7 +1402,8 @@ CUresult cuCtxGetSharedMemConfig(CUsharedconfig * pConfig)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetSharedMemConfigArg), alignof(cuCtxGetSharedMemConfigArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetSharedMemConfigArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1449,7 +1443,8 @@ CUresult cuCtxSetSharedMemConfig(CUsharedconfig  config)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSetSharedMemConfigArg), alignof(cuCtxSetSharedMemConfigArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxSetSharedMemConfigArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1488,7 +1483,8 @@ CUresult cuCtxGetApiVersion(CUcontext  ctx, unsigned int * version)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetApiVersionArg), alignof(cuCtxGetApiVersionArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetApiVersionArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1529,7 +1525,8 @@ CUresult cuCtxGetStreamPriorityRange(int * leastPriority, int * greatestPriority
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetStreamPriorityRangeArg), alignof(cuCtxGetStreamPriorityRangeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetStreamPriorityRangeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1571,7 +1568,8 @@ CUresult cuCtxResetPersistingL2Cache()
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxResetPersistingL2CacheArg), alignof(cuCtxResetPersistingL2CacheArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxResetPersistingL2CacheArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1609,7 +1607,8 @@ CUresult cuCtxGetExecAffinity(CUexecAffinityParam * pExecAffinity, CUexecAffinit
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetExecAffinityArg), alignof(cuCtxGetExecAffinityArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxGetExecAffinityArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1650,7 +1649,8 @@ CUresult cuCtxAttach(CUcontext * pctx, unsigned int  flags)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxAttachArg), alignof(cuCtxAttachArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxAttachArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1691,7 +1691,8 @@ CUresult cuCtxDetach(CUcontext  ctx)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxDetachArg), alignof(cuCtxDetachArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuCtxDetachArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1726,57 +1727,6 @@ CUresult cuModuleLoad(CUmodule * module, const char * fname)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int  numOptions, CUjit_option * options, void ** optionValues)
-{
-	TALLY_LOG("cuModuleLoadDataEx hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
-{
-	TALLY_LOG("cuModuleLoadFatBinary hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuModuleUnload(CUmodule  hmod)
-{
-	TALLY_LOG("cuModuleUnload hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcuModuleUnload(hmod);
-#else
-
-    CUresult err;
-
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuModuleUnloadArg), alignof(cuModuleUnloadArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUMODULEUNLOAD;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuModuleUnloadArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->hmod = hmod;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const CUresult*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuModuleUnload);
-	return err;
-}
-
 CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
 {
 	TALLY_LOG("cuModuleGetLoadingMode hooked");
@@ -1787,7 +1737,8 @@ CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuModuleGetLoadingModeArg), alignof(cuModuleGetLoadingModeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuModuleGetLoadingModeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -1815,12 +1766,6 @@ CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuModuleGetLoadingMode);
 	return err;
-}
-
-CUresult cuModuleGetGlobal_v2(CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod, const char * name)
-{
-	TALLY_LOG("cuModuleGetGlobal_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 CUresult cuLinkCreate_v2(unsigned int  numOptions, CUjit_option * options, void ** optionValues, CUlinkState * stateOut)
@@ -1940,13 +1885,44 @@ CUresult cuKernelSetCacheConfig(CUkernel  kernel, CUfunc_cache  config, CUdevice
 CUresult cuMemGetInfo_v2(size_t * free, size_t * total)
 {
 	TALLY_LOG("cuMemGetInfo_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuMemGetInfo_v2(free, total);
+#else
 
-CUresult cuMemAlloc_v2(CUdeviceptr * dptr, size_t  bytesize)
-{
-	TALLY_LOG("cuMemAlloc_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemGetInfo_v2Arg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUMEMGETINFO_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuMemGetInfo_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->free = free;
+			request->total = total;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuMemGetInfo_v2Response*>(responsePayload);
+			if (free) { *free = response->free; }
+			if (total) { *total = response->total; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuMemGetInfo_v2);
+	return err;
 }
 
 CUresult cuMemAllocPitch_v2(CUdeviceptr * dptr, size_t * pPitch, size_t  WidthInBytes, size_t  Height, unsigned int  ElementSizeBytes)
@@ -1976,7 +1952,8 @@ CUresult cuMemFreeHost(void * p)
 CUresult cuMemHostAlloc(void ** pp, size_t  bytesize, unsigned int  Flags)
 {
 	TALLY_LOG("cuMemHostAlloc hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	CUresult res = 		lcuMemHostAlloc(pp, bytesize, Flags);
+	return res;
 }
 
 CUresult cuMemHostGetDevicePointer_v2(CUdeviceptr * pdptr, void * p, unsigned int  Flags)
@@ -2006,7 +1983,8 @@ CUresult cuDeviceGetByPCIBusId(CUdevice * dev, const char * pciBusId)
 CUresult cuDeviceGetPCIBusId(char * pciBusId, int  len, CUdevice  dev)
 {
 	TALLY_LOG("cuDeviceGetPCIBusId hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	CUresult res = 		lcuDeviceGetPCIBusId(pciBusId, len, dev);
+	return res;
 }
 
 CUresult cuIpcGetEventHandle(CUipcEventHandle * pHandle, CUevent  event)
@@ -2135,24 +2113,6 @@ CUresult cuMemcpyPeerAsync(CUdeviceptr  dstDevice, CUcontext  dstContext, CUdevi
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuMemcpyHtoDAsync_v2(CUdeviceptr  dstDevice, const void * srcHost, size_t  ByteCount, CUstream  hStream)
-{
-	TALLY_LOG("cuMemcpyHtoDAsync_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuMemcpyDtoHAsync_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  ByteCount, CUstream  hStream)
-{
-	TALLY_LOG("cuMemcpyDtoHAsync_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuMemcpyDtoDAsync_v2(CUdeviceptr  dstDevice, CUdeviceptr  srcDevice, size_t  ByteCount, CUstream  hStream)
-{
-	TALLY_LOG("cuMemcpyDtoDAsync_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 CUresult cuMemcpyHtoAAsync_v2(CUarray  dstArray, size_t  dstOffset, const void * srcHost, size_t  ByteCount, CUstream  hStream)
 {
 	TALLY_LOG("cuMemcpyHtoAAsync_v2 hooked");
@@ -2189,12 +2149,6 @@ CUresult cuMemsetD16_v2(CUdeviceptr  dstDevice, unsigned short  us, size_t  N)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuMemsetD32_v2(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N)
-{
-	TALLY_LOG("cuMemsetD32_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 CUresult cuMemsetD2D8_v2(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned char  uc, size_t  Width, size_t  Height)
 {
 	TALLY_LOG("cuMemsetD2D8_v2 hooked");
@@ -2222,12 +2176,6 @@ CUresult cuMemsetD8Async(CUdeviceptr  dstDevice, unsigned char  uc, size_t  N, C
 CUresult cuMemsetD16Async(CUdeviceptr  dstDevice, unsigned short  us, size_t  N, CUstream  hStream)
 {
 	TALLY_LOG("cuMemsetD16Async hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuMemsetD32Async(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N, CUstream  hStream)
-{
-	TALLY_LOG("cuMemsetD32Async hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
@@ -2475,7 +2423,8 @@ CUresult cuMemAllocFromPoolAsync(CUdeviceptr * dptr, size_t  bytesize, CUmemoryP
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemAllocFromPoolAsyncArg), alignof(cuMemAllocFromPoolAsyncArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuMemAllocFromPoolAsyncArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2616,12 +2565,6 @@ CUresult cuPointerGetAttributes(unsigned int  numAttributes, CUpointer_attribute
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuStreamCreate(CUstream * phStream, unsigned int  Flags)
-{
-	TALLY_LOG("cuStreamCreate hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
 CUresult cuStreamGetPriority(CUstream  hStream, int * priority)
 {
 	TALLY_LOG("cuStreamGetPriority hooked");
@@ -2656,7 +2599,8 @@ CUresult cuStreamWaitEvent(CUstream  hStream, CUevent  hEvent, unsigned int  Fla
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamWaitEventArg), alignof(cuStreamWaitEventArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamWaitEventArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2703,7 +2647,8 @@ CUresult cuStreamBeginCapture_v2(CUstream  hStream, CUstreamCaptureMode  mode)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamBeginCapture_v2Arg), alignof(cuStreamBeginCapture_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamBeginCapture_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2739,26 +2684,27 @@ CUresult cuThreadExchangeStreamCaptureMode(CUstreamCaptureMode * mode)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuStreamEndCapture(CUstream  hStream, CUgraph * phGraph)
+CUresult cuStreamIsCapturing(CUstream  hStream, CUstreamCaptureStatus * captureStatus)
 {
-	TALLY_LOG("cuStreamEndCapture hooked");
+	TALLY_LOG("cuStreamIsCapturing hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	auto err = lcuStreamEndCapture(hStream, phGraph);
+	auto err = lcuStreamIsCapturing(hStream, captureStatus);
 #else
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamEndCaptureArg), alignof(cuStreamEndCaptureArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamIsCapturingArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUSTREAMENDCAPTURE;
+            header->api_id = CUDA_API_ENUM::CUSTREAMISCAPTURING;
             header->client_id = TallyClient::client->client_id;
             
-            auto request = (cuStreamEndCaptureArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+            auto request = (cuStreamIsCapturingArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
 			request->hStream = hStream;
-			request->phGraph = phGraph;
+			request->captureStatus = captureStatus;
 
             TallyClient::client->iox_client->send(header).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
@@ -2767,8 +2713,8 @@ CUresult cuStreamEndCapture(CUstream  hStream, CUgraph * phGraph)
 
     while(!TallyClient::client->iox_client->take()
         .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cuStreamEndCaptureResponse*>(responsePayload);
-			if (phGraph) { *phGraph = response->phGraph; }
+            auto response = static_cast<const cuStreamIsCapturingResponse*>(responsePayload);
+			if (captureStatus) { *captureStatus = response->captureStatus; }
 
             err = response->err;
             TallyClient::client->iox_client->releaseResponse(responsePayload);
@@ -2776,14 +2722,8 @@ CUresult cuStreamEndCapture(CUstream  hStream, CUgraph * phGraph)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamEndCapture);
+	TALLY_CLIENT_TRACE_API_CALL(cuStreamIsCapturing);
 	return err;
-}
-
-CUresult cuStreamIsCapturing(CUstream  hStream, CUstreamCaptureStatus * captureStatus)
-{
-	TALLY_LOG("cuStreamIsCapturing hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 CUresult cuStreamGetCaptureInfo_v2(CUstream  hStream, CUstreamCaptureStatus * captureStatus_out, cuuint64_t * id_out, CUgraph * graph_out, const CUgraphNode ** dependencies_out, size_t * numDependencies_out)
@@ -2808,45 +2748,6 @@ CUresult cuStreamQuery(CUstream  hStream)
 {
 	TALLY_LOG("cuStreamQuery hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-CUresult cuStreamSynchronize(CUstream  hStream)
-{
-	TALLY_LOG("cuStreamSynchronize hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcuStreamSynchronize(hStream);
-#else
-
-    CUresult err;
-
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamSynchronizeArg), alignof(cuStreamSynchronizeArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUSTREAMSYNCHRONIZE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuStreamSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->hStream = hStream;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const CUresult*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamSynchronize);
-	return err;
 }
 
 CUresult cuStreamDestroy_v2(CUstream  hStream)
@@ -2883,7 +2784,8 @@ CUresult cuEventCreate(CUevent * phEvent, unsigned int  Flags)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventCreateArg), alignof(cuEventCreateArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventCreateArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2924,7 +2826,8 @@ CUresult cuEventRecord(CUevent  hEvent, CUstream  hStream)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventRecordArg), alignof(cuEventRecordArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventRecordArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2963,13 +2866,81 @@ CUresult cuEventRecordWithFlags(CUevent  hEvent, CUstream  hStream, unsigned int
 CUresult cuEventQuery(CUevent  hEvent)
 {
 	TALLY_LOG("cuEventQuery hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuEventQuery(hEvent);
+#else
+
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventQueryArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUEVENTQUERY;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuEventQueryArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hEvent = hEvent;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuEventQuery);
+	return err;
 }
 
 CUresult cuEventSynchronize(CUevent  hEvent)
 {
 	TALLY_LOG("cuEventSynchronize hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuEventSynchronize(hEvent);
+#else
+
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventSynchronizeArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUEVENTSYNCHRONIZE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuEventSynchronizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hEvent = hEvent;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuEventSynchronize);
+	return err;
 }
 
 CUresult cuEventDestroy_v2(CUevent  hEvent)
@@ -2982,7 +2953,8 @@ CUresult cuEventDestroy_v2(CUevent  hEvent)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventDestroy_v2Arg), alignof(cuEventDestroy_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventDestroy_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -3014,7 +2986,44 @@ CUresult cuEventDestroy_v2(CUevent  hEvent)
 CUresult cuEventElapsedTime(float * pMilliseconds, CUevent  hStart, CUevent  hEnd)
 {
 	TALLY_LOG("cuEventElapsedTime hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuEventElapsedTime(pMilliseconds, hStart, hEnd);
+#else
+
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuEventElapsedTimeArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUEVENTELAPSEDTIME;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuEventElapsedTimeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->pMilliseconds = pMilliseconds;
+			request->hStart = hStart;
+			request->hEnd = hEnd;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuEventElapsedTimeResponse*>(responsePayload);
+			if (pMilliseconds) { *pMilliseconds = response->pMilliseconds; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuEventElapsedTime);
+	return err;
 }
 
 CUresult cuImportExternalMemory(CUexternalMemory * extMem_out, const CUDA_EXTERNAL_MEMORY_HANDLE_DESC * memHandleDesc)
@@ -3045,7 +3054,8 @@ CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDestroyExternalMemoryArg), alignof(cuDestroyExternalMemoryArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDestroyExternalMemoryArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -3534,7 +3544,8 @@ CUresult cuGraphInstantiateWithFlags(CUgraphExec * phGraphExec, CUgraph  hGraph,
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphInstantiateWithFlagsArg), alignof(cuGraphInstantiateWithFlagsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphInstantiateWithFlagsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -3650,26 +3661,26 @@ CUresult cuGraphUpload(CUgraphExec  hGraphExec, CUstream  hStream)
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-CUresult cuGraphLaunch(CUgraphExec  hGraphExec, CUstream  hStream)
+CUresult cuGraphExecDestroy(CUgraphExec  hGraphExec)
 {
-	TALLY_LOG("cuGraphLaunch hooked");
+	TALLY_LOG("cuGraphExecDestroy hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	auto err = lcuGraphLaunch(hGraphExec, hStream);
+	auto err = lcuGraphExecDestroy(hGraphExec);
 #else
 
     CUresult err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphLaunchArg), alignof(cuGraphLaunchArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphExecDestroyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUGRAPHLAUNCH;
+            header->api_id = CUDA_API_ENUM::CUGRAPHEXECDESTROY;
             header->client_id = TallyClient::client->client_id;
             
-            auto request = (cuGraphLaunchArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+            auto request = (cuGraphExecDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
 			request->hGraphExec = hGraphExec;
-			request->hStream = hStream;
 
             TallyClient::client->iox_client->send(header).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
@@ -3686,26 +3697,91 @@ CUresult cuGraphLaunch(CUgraphExec  hGraphExec, CUstream  hStream)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuGraphLaunch);
+	TALLY_CLIENT_TRACE_API_CALL(cuGraphExecDestroy);
 	return err;
-}
-
-CUresult cuGraphExecDestroy(CUgraphExec  hGraphExec)
-{
-	TALLY_LOG("cuGraphExecDestroy hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
 CUresult cuGraphDestroy(CUgraph  hGraph)
 {
 	TALLY_LOG("cuGraphDestroy hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuGraphDestroy(hGraph);
+#else
+
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphDestroyArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUGRAPHDESTROY;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuGraphDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hGraph = hGraph;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuGraphDestroy);
+	return err;
 }
 
 CUresult cuGraphExecUpdate_v2(CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphExecUpdateResultInfo * resultInfo)
 {
 	TALLY_LOG("cuGraphExecUpdate_v2 hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuGraphExecUpdate_v2(hGraphExec, hGraph, resultInfo);
+#else
+
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphExecUpdate_v2Arg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUGRAPHEXECUPDATE_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuGraphExecUpdate_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hGraphExec = hGraphExec;
+			request->hGraph = hGraph;
+			request->resultInfo = resultInfo;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuGraphExecUpdate_v2Response*>(responsePayload);
+			if (resultInfo) { *resultInfo = response->resultInfo; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuGraphExecUpdate_v2);
+	return err;
 }
 
 CUresult cuGraphKernelNodeCopyAttributes(CUgraphNode  dst, CUgraphNode  src)
@@ -4169,7 +4245,8 @@ cudaError_t cudaDeviceReset()
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceResetArg), alignof(cudaDeviceResetArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceResetArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4207,7 +4284,8 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceSetLimitArg), alignof(cudaDeviceSetLimitArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceSetLimitArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4247,7 +4325,8 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetLimitArg), alignof(cudaDeviceGetLimitArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetLimitArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4294,7 +4373,8 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetCacheConfigArg), alignof(cudaDeviceGetCacheConfigArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetCacheConfigArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4334,7 +4414,8 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetStreamPriorityRangeArg), alignof(cudaDeviceGetStreamPriorityRangeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetStreamPriorityRangeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4376,7 +4457,8 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceSetCacheConfigArg), alignof(cudaDeviceSetCacheConfigArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceSetCacheConfigArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4421,7 +4503,8 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceSetSharedMemConfigArg), alignof(cudaDeviceSetSharedMemConfigArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceSetSharedMemConfigArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4466,7 +4549,8 @@ cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetPCIBusIdArg), alignof(cudaDeviceGetPCIBusIdArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetPCIBusIdArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4508,7 +4592,8 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaIpcGetEventHandleArg), alignof(cudaIpcGetEventHandleArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaIpcGetEventHandleArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4549,7 +4634,8 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaIpcOpenEventHandleArg), alignof(cudaIpcOpenEventHandleArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaIpcOpenEventHandleArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4590,7 +4676,8 @@ cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaIpcGetMemHandleArg), alignof(cudaIpcGetMemHandleArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaIpcGetMemHandleArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4631,7 +4718,8 @@ cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, uns
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaIpcOpenMemHandleArg), alignof(cudaIpcOpenMemHandleArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaIpcOpenMemHandleArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4673,7 +4761,8 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaIpcCloseMemHandleArg), alignof(cudaIpcCloseMemHandleArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaIpcCloseMemHandleArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4712,7 +4801,8 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceFlushGPUDirectRDMAWritesArg), alignof(cudaDeviceFlushGPUDirectRDMAWritesArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceFlushGPUDirectRDMAWritesArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4752,7 +4842,8 @@ cudaError_t cudaThreadExit()
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaThreadExitArg), alignof(cudaThreadExitArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaThreadExitArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4790,7 +4881,8 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaThreadSetLimitArg), alignof(cudaThreadSetLimitArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaThreadSetLimitArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4830,7 +4922,8 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaThreadGetLimitArg), alignof(cudaThreadGetLimitArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaThreadGetLimitArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4871,7 +4964,8 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaThreadGetCacheConfigArg), alignof(cudaThreadGetCacheConfigArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaThreadGetCacheConfigArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4911,7 +5005,8 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaThreadSetCacheConfigArg), alignof(cudaThreadSetCacheConfigArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaThreadSetCacheConfigArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4950,7 +5045,8 @@ cudaError_t cudaGetLastError()
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetLastErrorArg), alignof(cudaGetLastErrorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetLastErrorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -4988,7 +5084,8 @@ cudaError_t cudaPeekAtLastError()
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaPeekAtLastErrorArg), alignof(cudaPeekAtLastErrorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaPeekAtLastErrorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5046,7 +5143,8 @@ cudaError_t cudaGetDeviceProperties_v2(struct cudaDeviceProp * prop, int  device
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetDeviceProperties_v2Arg), alignof(cudaGetDeviceProperties_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetDeviceProperties_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5087,7 +5185,8 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetAttributeArg), alignof(cudaDeviceGetAttributeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetAttributeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5129,7 +5228,8 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetDefaultMemPoolArg), alignof(cudaDeviceGetDefaultMemPoolArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetDefaultMemPoolArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5170,7 +5270,8 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceSetMemPoolArg), alignof(cudaDeviceSetMemPoolArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceSetMemPoolArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5210,7 +5311,8 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetMemPoolArg), alignof(cudaDeviceGetMemPoolArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetMemPoolArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5257,7 +5359,8 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetP2PAttributeArg), alignof(cudaDeviceGetP2PAttributeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaDeviceGetP2PAttributeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5319,7 +5422,8 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaSetDeviceFlagsArg), alignof(cudaSetDeviceFlagsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaSetDeviceFlagsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5358,7 +5462,8 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetDeviceFlagsArg), alignof(cudaGetDeviceFlagsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetDeviceFlagsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5398,7 +5503,8 @@ cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamGetPriorityArg), alignof(cudaStreamGetPriorityArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamGetPriorityArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5439,7 +5545,8 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamGetFlagsArg), alignof(cudaStreamGetFlagsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamGetFlagsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5486,7 +5593,8 @@ cudaError_t cudaCtxResetPersistingL2Cache()
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaCtxResetPersistingL2CacheArg), alignof(cudaCtxResetPersistingL2CacheArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaCtxResetPersistingL2CacheArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5524,7 +5632,8 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamCopyAttributesArg), alignof(cudaStreamCopyAttributesArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamCopyAttributesArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5576,7 +5685,8 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamDestroyArg), alignof(cudaStreamDestroyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamDestroyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5615,7 +5725,8 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamWaitEventArg), alignof(cudaStreamWaitEventArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamWaitEventArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5662,7 +5773,8 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamQueryArg), alignof(cudaStreamQueryArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamQueryArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5703,47 +5815,6 @@ cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mod
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 
-cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
-{
-	TALLY_LOG("cudaStreamEndCapture hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcudaStreamEndCapture(stream, pGraph);
-#else
-
-    cudaError_t err;
-
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamEndCaptureArg), alignof(cudaStreamEndCaptureArg))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDASTREAMENDCAPTURE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cudaStreamEndCaptureArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->stream = stream;
-			request->pGraph = pGraph;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cudaStreamEndCaptureResponse*>(responsePayload);
-			if (pGraph) { *pGraph = response->pGraph; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamEndCapture);
-	return err;
-}
-
 cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus)
 {
 	TALLY_LOG("cudaStreamIsCapturing hooked");
@@ -5754,7 +5825,8 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamIsCapturingArg), alignof(cudaStreamIsCapturingArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamIsCapturingArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5801,7 +5873,8 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventCreateArg), alignof(cudaEventCreateArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventCreateArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5841,7 +5914,8 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventCreateWithFlagsArg), alignof(cudaEventCreateWithFlagsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventCreateWithFlagsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5882,7 +5956,8 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventRecordWithFlagsArg), alignof(cudaEventRecordWithFlagsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventRecordWithFlagsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5923,7 +5998,8 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventQueryArg), alignof(cudaEventQueryArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventQueryArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -5962,7 +6038,8 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventSynchronizeArg), alignof(cudaEventSynchronizeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventSynchronizeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -6001,7 +6078,8 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventDestroyArg), alignof(cudaEventDestroyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventDestroyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -6040,7 +6118,8 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventElapsedTimeArg), alignof(cudaEventElapsedTimeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaEventElapsedTimeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -6331,7 +6410,8 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaMemGetInfoArg), alignof(cudaMemGetInfoArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaMemGetInfoArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -6499,7 +6579,8 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaMemsetAsyncArg), alignof(cudaMemsetAsyncArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaMemsetAsyncArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -6855,7 +6936,8 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphCreateArg), alignof(cudaGraphCreateArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphCreateArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7220,7 +7302,8 @@ cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t * pGraphExec, cudaGrap
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphInstantiateWithFlagsArg), alignof(cudaGraphInstantiateWithFlagsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphInstantiateWithFlagsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7364,7 +7447,8 @@ cudaError_t cudaGraphUpload(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphUploadArg), alignof(cudaGraphUploadArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphUploadArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7404,7 +7488,8 @@ cudaError_t cudaGraphLaunch(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphLaunchArg), alignof(cudaGraphLaunchArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphLaunchArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7444,7 +7529,8 @@ cudaError_t cudaGraphExecDestroy(cudaGraphExec_t  graphExec)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphExecDestroyArg), alignof(cudaGraphExecDestroyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphExecDestroyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7483,7 +7569,8 @@ cudaError_t cudaGraphDestroy(cudaGraph_t  graph)
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphDestroyArg), alignof(cudaGraphDestroyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphDestroyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7600,7 +7687,8 @@ size_t cudnnGetVersion()
 
     size_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetVersionArg), alignof(cudnnGetVersionArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetVersionArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7638,7 +7726,8 @@ size_t cudnnGetMaxDeviceVersion()
 
     size_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetMaxDeviceVersionArg), alignof(cudnnGetMaxDeviceVersionArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetMaxDeviceVersionArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7676,7 +7765,8 @@ size_t cudnnGetCudartVersion()
 
     size_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetCudartVersionArg), alignof(cudnnGetCudartVersionArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetCudartVersionArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7727,7 +7817,8 @@ cudnnStatus_t cudnnGetProperty(libraryPropertyType  type, int * value)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetPropertyArg), alignof(cudnnGetPropertyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetPropertyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7768,7 +7859,8 @@ cudnnStatus_t cudnnDestroy(cudnnHandle_t  handle)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyArg), alignof(cudnnDestroyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7807,7 +7899,8 @@ cudnnStatus_t cudnnSetStream(cudnnHandle_t  handle, cudaStream_t  streamId)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetStreamArg), alignof(cudnnSetStreamArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetStreamArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7847,7 +7940,8 @@ cudnnStatus_t cudnnGetStream(cudnnHandle_t  handle, cudaStream_t * streamId)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetStreamArg), alignof(cudnnGetStreamArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetStreamArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7888,7 +7982,8 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateTensorDescriptorArg), alignof(cudnnCreateTensorDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateTensorDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7928,7 +8023,8 @@ cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetTensor4dDescriptorArg), alignof(cudnnSetTensor4dDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetTensor4dDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -7973,7 +8069,8 @@ cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetTensor4dDescriptorExArg), alignof(cudnnSetTensor4dDescriptorExArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetTensor4dDescriptorExArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8021,7 +8118,8 @@ cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t  tensorDe
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetTensor4dDescriptorArg), alignof(cudnnGetTensor4dDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetTensor4dDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8084,7 +8182,8 @@ cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetTensorSizeInBytesArg), alignof(cudnnGetTensorSizeInBytesArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetTensorSizeInBytesArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8125,7 +8224,8 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyTensorDescriptorArg), alignof(cudnnDestroyTensorDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyTensorDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8164,7 +8264,8 @@ cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  tra
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnInitTransformDestArg), alignof(cudnnInitTransformDestArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnInitTransformDestArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8207,7 +8308,8 @@ cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescripto
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateTensorTransformDescriptorArg), alignof(cudnnCreateTensorTransformDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateTensorTransformDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8259,7 +8361,8 @@ cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescript
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyTensorTransformDescriptorArg), alignof(cudnnDestroyTensorTransformDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyTensorTransformDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8304,7 +8407,8 @@ cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t * opTensor
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateOpTensorDescriptorArg), alignof(cudnnCreateOpTensorDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateOpTensorDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8344,7 +8448,8 @@ cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetOpTensorDescriptorArg), alignof(cudnnSetOpTensorDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetOpTensorDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8386,7 +8491,8 @@ cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t  opTens
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetOpTensorDescriptorArg), alignof(cudnnGetOpTensorDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetOpTensorDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8497,7 +8603,8 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateFilterDescriptorArg), alignof(cudnnCreateFilterDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateFilterDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8537,7 +8644,8 @@ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetFilter4dDescriptorArg), alignof(cudnnSetFilter4dDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetFilter4dDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8588,7 +8696,8 @@ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetFilterSizeInBytesArg), alignof(cudnnGetFilterSizeInBytesArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetFilterSizeInBytesArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8635,7 +8744,8 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t  filterDesc)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyFilterDescriptorArg), alignof(cudnnDestroyFilterDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyFilterDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8674,7 +8784,8 @@ cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t * poolingDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreatePoolingDescriptorArg), alignof(cudnnCreatePoolingDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreatePoolingDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8732,7 +8843,8 @@ cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t  poolingDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyPoolingDescriptorArg), alignof(cudnnDestroyPoolingDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyPoolingDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8771,7 +8883,8 @@ cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t * acti
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateActivationDescriptorArg), alignof(cudnnCreateActivationDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateActivationDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8811,7 +8924,8 @@ cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t  activati
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetActivationDescriptorArg), alignof(cudnnSetActivationDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetActivationDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8871,7 +8985,8 @@ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t  acti
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyActivationDescriptorArg), alignof(cudnnDestroyActivationDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyActivationDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8910,7 +9025,8 @@ cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t * normDesc)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateLRNDescriptorArg), alignof(cudnnCreateLRNDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateLRNDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8950,7 +9066,8 @@ cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned  lr
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetLRNDescriptorArg), alignof(cudnnSetLRNDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetLRNDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -8999,7 +9116,8 @@ cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t  lrnDesc)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyLRNDescriptorArg), alignof(cudnnDestroyLRNDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyLRNDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9098,7 +9216,8 @@ cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateDropoutDescriptorArg), alignof(cudnnCreateDropoutDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateDropoutDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9138,7 +9257,8 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyDropoutDescriptorArg), alignof(cudnnDestroyDropoutDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyDropoutDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9177,7 +9297,8 @@ cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t  handle, size_t * sizeInBy
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDropoutGetStatesSizeArg), alignof(cudnnDropoutGetStatesSizeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDropoutGetStatesSizeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9224,7 +9345,8 @@ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetDropoutDescriptorArg), alignof(cudnnSetDropoutDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetDropoutDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9268,7 +9390,8 @@ cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnRestoreDropoutDescriptorArg), alignof(cudnnRestoreDropoutDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnRestoreDropoutDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9408,7 +9531,8 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnOpsInferVersionCheckArg), alignof(cudnnOpsInferVersionCheckArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnOpsInferVersionCheckArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9476,7 +9600,8 @@ cudnnStatus_t cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(cudnnHand
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg), alignof(cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9524,7 +9649,8 @@ cudnnStatus_t cudnnGetBatchNormalizationBackwardExWorkspaceSize(cudnnHandle_t  h
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg), alignof(cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9574,7 +9700,8 @@ cudnnStatus_t cudnnGetBatchNormalizationTrainingExReserveSpaceSize(cudnnHandle_t
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg), alignof(cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9679,7 +9806,8 @@ cudnnStatus_t cudnnOpsTrainVersionCheck()
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnOpsTrainVersionCheckArg), alignof(cudnnOpsTrainVersionCheckArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnOpsTrainVersionCheckArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9717,7 +9845,8 @@ cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t * rnnDesc)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateRNNDescriptorArg), alignof(cudnnCreateRNNDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateRNNDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9757,7 +9886,8 @@ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyRNNDescriptorArg), alignof(cudnnDestroyRNNDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyRNNDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9796,7 +9926,8 @@ cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAl
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetRNNDescriptor_v8Arg), alignof(cudnnSetRNNDescriptor_v8Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetRNNDescriptor_v8Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9855,7 +9986,8 @@ cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetRNNDescriptor_v6Arg), alignof(cudnnSetRNNDescriptor_v6Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetRNNDescriptor_v6Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9909,7 +10041,8 @@ cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetRNNMatrixMathTypeArg), alignof(cudnnSetRNNMatrixMathTypeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetRNNMatrixMathTypeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9949,7 +10082,8 @@ cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNMatrixMathTypeArg), alignof(cudnnGetRNNMatrixMathTypeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNMatrixMathTypeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -9990,7 +10124,8 @@ cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetRNNBiasModeArg), alignof(cudnnSetRNNBiasModeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetRNNBiasModeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10030,7 +10165,8 @@ cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNBiasModeArg), alignof(cudnnGetRNNBiasModeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNBiasModeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10071,7 +10207,8 @@ cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnRNNSetClip_v8Arg), alignof(cudnnRNNSetClip_v8Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnRNNSetClip_v8Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10120,7 +10257,8 @@ cudnnStatus_t cudnnRNNSetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnRNNSetClipArg), alignof(cudnnRNNSetClipArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnRNNSetClipArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10200,7 +10338,8 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBuildRNNDynamicArg), alignof(cudnnBuildRNNDynamicArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBuildRNNDynamicArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10241,7 +10380,8 @@ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescripto
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNTempSpaceSizesArg), alignof(cudnnGetRNNTempSpaceSizesArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNTempSpaceSizesArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10287,7 +10427,8 @@ cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescrip
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNParamsSizeArg), alignof(cudnnGetRNNParamsSizeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNParamsSizeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10331,7 +10472,8 @@ cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t  handle, cudnnRNNDescript
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNWeightSpaceSizeArg), alignof(cudnnGetRNNWeightSpaceSizeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNWeightSpaceSizeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10373,7 +10515,8 @@ cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnHandle_t  handle, const cudnn
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNLinLayerMatrixParamsArg), alignof(cudnnGetRNNLinLayerMatrixParamsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNLinLayerMatrixParamsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10421,7 +10564,8 @@ cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnHandle_t  handle, const cudnnRN
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNLinLayerBiasParamsArg), alignof(cudnnGetRNNLinLayerBiasParamsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNLinLayerBiasParamsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10469,7 +10613,8 @@ cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t  handle, cudnnRNNDescriptor_
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNWeightParamsArg), alignof(cudnnGetRNNWeightParamsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNWeightParamsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10537,7 +10682,8 @@ cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t * rnnDataDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateRNNDataDescriptorArg), alignof(cudnnCreateRNNDataDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateRNNDataDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10577,7 +10723,8 @@ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyRNNDataDescriptorArg), alignof(cudnnDestroyRNNDataDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyRNNDataDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10628,7 +10775,8 @@ cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDesc
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetRNNAlgorithmDescriptorArg), alignof(cudnnSetRNNAlgorithmDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetRNNAlgorithmDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10669,7 +10817,8 @@ cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNForwardInferenceAlgorithmMaxCountArg), alignof(cudnnGetRNNForwardInferenceAlgorithmMaxCountArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetRNNForwardInferenceAlgorithmMaxCountArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10717,7 +10866,8 @@ cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateSeqDataDescriptorArg), alignof(cudnnCreateSeqDataDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateSeqDataDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10757,7 +10907,8 @@ cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDes
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroySeqDataDescriptorArg), alignof(cudnnDestroySeqDataDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroySeqDataDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10796,7 +10947,8 @@ cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t * attnDesc)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateAttnDescriptorArg), alignof(cudnnCreateAttnDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateAttnDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10836,7 +10988,8 @@ cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyAttnDescriptorArg), alignof(cudnnDestroyAttnDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyAttnDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10875,7 +11028,8 @@ cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetAttnDescriptorArg), alignof(cudnnSetAttnDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetAttnDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10939,7 +11093,8 @@ cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t  handle, const cudnnAtt
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetMultiHeadAttnBuffersArg), alignof(cudnnGetMultiHeadAttnBuffersArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetMultiHeadAttnBuffersArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -10991,7 +11146,8 @@ cudnnStatus_t cudnnAdvInferVersionCheck()
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnAdvInferVersionCheckArg), alignof(cudnnAdvInferVersionCheckArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnAdvInferVersionCheckArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11155,7 +11311,8 @@ cudnnStatus_t cudnnAdvTrainVersionCheck()
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnAdvTrainVersionCheckArg), alignof(cudnnAdvTrainVersionCheckArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnAdvTrainVersionCheckArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11193,7 +11350,8 @@ cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * co
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateConvolutionDescriptorArg), alignof(cudnnCreateConvolutionDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateConvolutionDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11233,7 +11391,8 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t  co
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyConvolutionDescriptorArg), alignof(cudnnDestroyConvolutionDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyConvolutionDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11350,7 +11509,8 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t  handle, con
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetConvolutionForwardWorkspaceSizeArg), alignof(cudnnGetConvolutionForwardWorkspaceSizeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetConvolutionForwardWorkspaceSizeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11402,7 +11562,8 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  ha
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg), alignof(cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11461,7 +11622,8 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetConvolutionBackwardDataWorkspaceSizeArg), alignof(cudnnGetConvolutionBackwardDataWorkspaceSizeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetConvolutionBackwardDataWorkspaceSizeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11513,7 +11675,8 @@ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  han
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetFoldedConvBackwardDataDescriptorsArg), alignof(cudnnGetFoldedConvBackwardDataDescriptorsArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetFoldedConvBackwardDataDescriptorsArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11565,7 +11728,8 @@ cudnnStatus_t cudnnCnnInferVersionCheck()
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCnnInferVersionCheckArg), alignof(cudnnCnnInferVersionCheckArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCnnInferVersionCheckArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11603,7 +11767,8 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg), alignof(cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11752,7 +11917,8 @@ cudnnStatus_t cudnnCnnTrainVersionCheck()
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCnnTrainVersionCheckArg), alignof(cudnnCnnTrainVersionCheckArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCnnTrainVersionCheckArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11790,7 +11956,8 @@ cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t  descrip
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBackendCreateDescriptorArg), alignof(cudnnBackendCreateDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBackendCreateDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11831,7 +11998,8 @@ cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t  descriptor
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBackendDestroyDescriptorArg), alignof(cudnnBackendDestroyDescriptorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBackendDestroyDescriptorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11870,7 +12038,8 @@ cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t  descriptor)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBackendInitializeArg), alignof(cudnnBackendInitializeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBackendInitializeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11909,7 +12078,8 @@ cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t  descriptor)
 
     cudnnStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBackendFinalizeArg), alignof(cudnnBackendFinalizeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnBackendFinalizeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11948,7 +12118,8 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasDestroy_v2Arg), alignof(cublasDestroy_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasDestroy_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -11987,7 +12158,8 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetVersion_v2Arg), alignof(cublasGetVersion_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetVersion_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12028,7 +12200,8 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetPropertyArg), alignof(cublasGetPropertyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetPropertyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12069,7 +12242,8 @@ size_t cublasGetCudartVersion()
 
     size_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetCudartVersionArg), alignof(cublasGetCudartVersionArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetCudartVersionArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12107,7 +12281,8 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetWorkspace_v2Arg), alignof(cublasSetWorkspace_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetWorkspace_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12148,7 +12323,8 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetStream_v2Arg), alignof(cublasSetStream_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetStream_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12188,7 +12364,8 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetStream_v2Arg), alignof(cublasGetStream_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetStream_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12229,7 +12406,8 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetPointerMode_v2Arg), alignof(cublasGetPointerMode_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetPointerMode_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12270,7 +12448,8 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetPointerMode_v2Arg), alignof(cublasSetPointerMode_v2Arg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetPointerMode_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12322,7 +12501,8 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetMathModeArg), alignof(cublasGetMathModeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetMathModeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12363,7 +12543,8 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetMathModeArg), alignof(cublasSetMathModeArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetMathModeArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12403,7 +12584,8 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetSmCountTargetArg), alignof(cublasGetSmCountTargetArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetSmCountTargetArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12444,7 +12626,8 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetSmCountTargetArg), alignof(cublasSetSmCountTargetArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetSmCountTargetArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12502,7 +12685,8 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetLoggerCallbackArg), alignof(cublasSetLoggerCallbackArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetLoggerCallbackArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12541,7 +12725,8 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetLoggerCallbackArg), alignof(cublasGetLoggerCallbackArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetLoggerCallbackArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -12581,7 +12766,8 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetVectorArg), alignof(cublasSetVectorArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetVectorArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -15583,7 +15769,8 @@ cudaError_t cudaProfilerStart()
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaProfilerStartArg), alignof(cudaProfilerStartArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaProfilerStartArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -15621,7 +15808,8 @@ cudaError_t cudaProfilerStop()
 
     cudaError_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaProfilerStopArg), alignof(cudaProfilerStopArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaProfilerStopArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -15791,7 +15979,8 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtCreateArg), alignof(cublasLtCreateArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtCreateArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -15831,7 +16020,8 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtDestroyArg), alignof(cublasLtDestroyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtDestroyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -15882,7 +16072,8 @@ size_t cublasLtGetVersion()
 
     size_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtGetVersionArg), alignof(cublasLtGetVersionArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtGetVersionArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -15920,7 +16111,8 @@ size_t cublasLtGetCudartVersion()
 
     size_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtGetCudartVersionArg), alignof(cublasLtGetCudartVersionArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtGetCudartVersionArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -15994,7 +16186,8 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutCreateArg), alignof(cublasLtMatrixLayoutCreateArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutCreateArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -16038,7 +16231,8 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutDestroyArg), alignof(cublasLtMatrixLayoutDestroyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutDestroyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -16089,7 +16283,8 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescCreateArg), alignof(cublasLtMatmulDescCreateArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescCreateArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -16131,7 +16326,8 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescDestroyArg), alignof(cublasLtMatmulDescDestroyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescDestroyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -16212,7 +16408,8 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceCreateArg), alignof(cublasLtMatmulPreferenceCreateArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceCreateArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -16252,7 +16449,8 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceDestroyArg), alignof(cublasLtMatmulPreferenceDestroyArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceDestroyArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -16363,7 +16561,8 @@ cublasStatus_t cublasLtLoggerForceDisable()
 
     cublasStatus_t err;
 
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtLoggerForceDisableArg), alignof(cublasLtLoggerForceDisableArg))
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtLoggerForceDisableArg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
             auto header = static_cast<MessageHeader_t*>(requestPayload);
