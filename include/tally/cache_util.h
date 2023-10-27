@@ -84,7 +84,7 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
 
     }
 
-    TallyCache::cache->save_transform_cache();
+    // TallyCache::cache->save_transform_cache();
 }
 
 #endif // TALLY_CACHE_UTIL_H
