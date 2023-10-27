@@ -2844,8 +2844,6 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
 
 void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
-    auto start = std::chrono::high_resolution_clock::now();
-
 	TALLY_SPD_LOG("Received request: cuModuleGetFunction");
     auto args = (struct cuModuleGetFunctionArg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
@@ -2910,11 +2908,6 @@ void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedSer
         })
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> elapsed = end - start;
-
-    std::cout << "cuModuleGetFunction Time elapsed: " << elapsed.count() << " milliseconds" << std::endl;
 }
 
 void TallyServer::handle_cuPointerGetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -3837,8 +3830,6 @@ void TallyServer::handle_cuModuleLoadFatBinary(void *__args, iox::popo::UntypedS
 
 void TallyServer::handle_cuModuleLoadDataEx(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
-    auto start = std::chrono::high_resolution_clock::now();
-
 	TALLY_SPD_LOG("Received request: cuModuleLoadDataEx");
 	auto args = (struct cuModuleLoadDataExArg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
@@ -3901,11 +3892,6 @@ void TallyServer::handle_cuModuleLoadDataEx(void *__args, iox::popo::UntypedServ
         })
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> elapsed = end - start;
-
-    std::cout << "cuModuleLoadDataEx Time elapsed: " << elapsed.count() << " milliseconds" << std::endl;
 }
 
 void TallyServer::handle_cuModuleGetGlobal_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
