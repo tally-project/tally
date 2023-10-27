@@ -11,7 +11,9 @@ API_ENUM_TEMPLATE_BUTTOM = """
 API_SPECIAL_ENUM = [
     "__CUDAREGISTERFUNCTION",
     "__CUDAREGISTERFATBINARY",
-    "__CUDAREGISTERFATBINARYEND"
+    "__CUDAREGISTERFATBINARYEND",
+    "__CUDAPUSHCALLCONFIGURATION",
+    "__CUDAPOPCALLCONFIGURATION"
 ]
 
 API_DECL_TEMPLATE_TOP = """
@@ -34,6 +36,8 @@ API_DECL_TEMPLATE_BUTTOM = """
 extern void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);
 extern void** (*l__cudaRegisterFatBinary) (void *);
 extern void (*l__cudaRegisterFatBinaryEnd) (void **);
+extern unsigned (*l__cudaPushCallConfiguration)(dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream);
+extern cudaError_t (*l__cudaPopCallConfiguration)(dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream);
 
 #endif // TALLY_CUDA_API_H
 
@@ -54,11 +58,20 @@ API_DEF_TEMPLATE_TOP = """
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
 
-void *cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
-void *cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
-void *cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
-void *cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
-void *cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
+void *cuda_handle;
+void *cudart_handle;
+void *cudnn_handle;
+void *cublas_handle;
+void *cublasLt_handle;
+
+void __attribute__((constructor)) register_cuda_handles()
+{
+	cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
+	cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
+	cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
+	cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
+	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
+}
 
 """
 
@@ -73,6 +86,12 @@ void** (*l__cudaRegisterFatBinary) (void *) =
 void (*l__cudaRegisterFatBinaryEnd) (void **) =
 	(void (*) (void **)) dlsym(cudart_handle, "__cudaRegisterFatBinaryEnd");
 
+unsigned (*l__cudaPushCallConfiguration)(dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream) = 
+	(unsigned (*) (dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream)) dlsym(cudart_handle, "__cudaPushCallConfiguration");
+
+cudaError_t (*l__cudaPopCallConfiguration)(dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream) = 
+	(cudaError_t (*) (dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream)) dlsym(cudart_handle, "__cudaPopCallConfiguration");
+    
 """
 
 MSG_STRUCT_TEMPLATE_TOP = """
@@ -263,9 +282,14 @@ public:
 
 	folly::ConcurrentHashMap<uint32_t, CUmodule> cubin_to_cu_module;
 
-	folly::ConcurrentHashMap<CUmodule, std::pair<const char *, size_t>> jit_module_to_cubin_map;
+	// CUmodule: { cubin_data_ptr, cubin_size, cubin_uid }
+	folly::ConcurrentHashMap<CUmodule, std::tuple<const char *, size_t, uint32_t>> jit_module_to_cubin_map;
+
+	// CUmodule : 
+	std::unordered_map<CUmodule, std::unordered_map<std::string, CUfunction>> jit_module_to_function_map;
+
 	folly::ConcurrentHashMap<const void *, std::vector<uint32_t>> _kernel_addr_to_args;
-	
+
 	// Map CUfunction to kernel name and cubin hash
 	folly::ConcurrentHashMap<CUfunction, std::string> cu_func_to_kernel_name_map;
 	folly::ConcurrentHashMap<CUfunction, uint32_t> cu_func_to_cubin_uid_map;

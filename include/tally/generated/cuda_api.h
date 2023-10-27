@@ -11,11 +11,6 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 
-extern cudaError_t (*l__cudaPopCallConfiguration) (dim3*,
-  dim3         *,
-  size_t       *,
-  void         *);
-
 extern CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuGetErrorName) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuInit) (unsigned int  Flags);
@@ -46,7 +41,6 @@ extern CUresult (*lcuCtxCreate_v2) (CUcontext * pctx, unsigned int  flags, CUdev
 extern CUresult (*lcuCtxCreate_v3) (CUcontext * pctx, CUexecAffinityParam * paramsArray, int  numParams, unsigned int  flags, CUdevice  dev);
 extern CUresult (*lcuCtxDestroy_v2) (CUcontext  ctx);
 extern CUresult (*lcuCtxPushCurrent_v2) (CUcontext  ctx);
-extern CUresult (*lcuCtxPushCurrent) (CUcontext  ctx);
 extern CUresult (*lcuCtxPopCurrent_v2) (CUcontext * pctx);
 extern CUresult (*lcuCtxSetCurrent) (CUcontext  ctx);
 extern CUresult (*lcuCtxGetCurrent) (CUcontext * pctx);
@@ -1560,6 +1554,8 @@ extern cublasStatus_t (*lcublasLtLoggerForceDisable) ();
 extern void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);
 extern void** (*l__cudaRegisterFatBinary) (void *);
 extern void (*l__cudaRegisterFatBinaryEnd) (void **);
+extern unsigned (*l__cudaPushCallConfiguration)(dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream);
+extern cudaError_t (*l__cudaPopCallConfiguration)(dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream);
 
 #endif // TALLY_CUDA_API_H
 

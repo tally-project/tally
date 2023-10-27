@@ -13,11 +13,20 @@
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
 
-void *cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
-void *cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
-void *cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
-void *cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
-void *cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
+void *cuda_handle;
+void *cudart_handle;
+void *cudnn_handle;
+void *cublas_handle;
+void *cublasLt_handle;
+
+void __attribute__((constructor)) register_cuda_handles()
+{
+	cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
+	cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
+	cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
+	cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
+	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
+}
 
 CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr) =
 	(CUresult (*) (CUresult  error, const char ** pStr)) dlsym(cuda_handle, "cuGetErrorString");
@@ -108,9 +117,6 @@ CUresult (*lcuCtxDestroy_v2) (CUcontext  ctx) =
 
 CUresult (*lcuCtxPushCurrent_v2) (CUcontext  ctx) =
 	(CUresult (*) (CUcontext  ctx)) dlsym(cuda_handle, "cuCtxPushCurrent_v2");
-
-CUresult (*lcuCtxPushCurrent) (CUcontext  ctx) =
-	(CUresult (*) (CUcontext  ctx)) dlsym(cuda_handle, "cuCtxPushCurrent");
 
 CUresult (*lcuCtxPopCurrent_v2) (CUcontext * pctx) =
 	(CUresult (*) (CUcontext * pctx)) dlsym(cuda_handle, "cuCtxPopCurrent_v2");
@@ -4647,3 +4653,9 @@ void** (*l__cudaRegisterFatBinary) (void *) =
 void (*l__cudaRegisterFatBinaryEnd) (void **) =
 	(void (*) (void **)) dlsym(cudart_handle, "__cudaRegisterFatBinaryEnd");
 
+unsigned (*l__cudaPushCallConfiguration)(dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream) = 
+	(unsigned (*) (dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream)) dlsym(cudart_handle, "__cudaPushCallConfiguration");
+
+cudaError_t (*l__cudaPopCallConfiguration)(dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream) = 
+	(cudaError_t (*) (dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream)) dlsym(cudart_handle, "__cudaPopCallConfiguration");
+    

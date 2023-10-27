@@ -747,6 +747,31 @@ void *dlsym(void * handle, const char * symbol)
     return res;
 }
 
+cudaError_t CUDARTAPI __cudaPopCallConfiguration(dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream)
+{
+    TALLY_LOG("__cudaPopCallConfiguration hooked");
+
+#if defined(RUN_LOCALLY)
+    return l__cudaPopCallConfiguration(gridDim, blockDim, sharedMem, stream);
+#else
+    // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    return l__cudaPopCallConfiguration(gridDim, blockDim, sharedMem, stream);
+#endif
+    
+}
+
+unsigned __cudaPushCallConfiguration(dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream)
+{
+    TALLY_LOG("__cudaPushCallConfiguration hooked");
+
+#if defined(RUN_LOCALLY)
+    return l__cudaPushCallConfiguration(gridDim, blockDim, sharedMem, stream);
+#else
+    // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    return l__cudaPushCallConfiguration(gridDim, blockDim, sharedMem, stream);
+#endif
+}
+
 void** __cudaRegisterFatBinary( void *fatCubin ) {
 
     TALLY_LOG("__cudaRegisterFatBinary hooked");
@@ -833,15 +858,15 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
     auto demangled_kernel_name = demangleFunc(deviceFunName);
     TallyClient::client->host_func_to_demangled_kernel_name_map[hostFun] = demangled_kernel_name;
     
-    // TALLY_LOG(demangled_kernel_name);
-    
-    // uint32_t kernel_func_len = deviceFunName.size();
-    // uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct __cudaRegisterFunctionArg) + kernel_func_len * sizeof(char);
+    TALLY_LOG(demangled_kernel_name);
 
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
 
 #else
+
+    uint32_t kernel_func_len = deviceFunName.size();
+    uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct __cudaRegisterFunctionArg) + kernel_func_len * sizeof(char);
     
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
@@ -862,7 +887,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 #endif
 
-    // TallyClient::client->_kernel_addr_to_args[hostFun] = TallyClient::client->_kernel_name_to_args[deviceFunName];
+    TallyClient::client->_kernel_addr_to_args[hostFun] = TallyClient::client->_kernel_name_to_args[deviceFunName];
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
 }
 
@@ -897,15 +922,13 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 	TALLY_LOG("cudaMalloc hooked");
     TALLY_CLIENT_PROFILE_START;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudaMallocArg);
-
 #if defined(RUN_LOCALLY)
     auto err = lcudaMalloc(devPtr, size);
 
 #else
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudaMallocArg);
     cudaError_t err;
 
-    
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
@@ -952,15 +975,15 @@ cudaError_t cudaFree(void * devPtr)
 	TALLY_LOG("cudaFree hooked");
     TALLY_CLIENT_PROFILE_START;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudaFreeArg);
-
 #if defined(RUN_LOCALLY)
     auto err = lcudaFree(devPtr);
 
 #else
-    cudaError_t err;
 
-    
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudaFreeArg);
+
+    cudaError_t err;
+  
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
@@ -1113,7 +1136,6 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudaMemcpyAsync);
 
-    
     return err;
 }
 
@@ -1122,17 +1144,11 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     TALLY_LOG("cudaLaunchKernel hooked");
     TALLY_CLIENT_PROFILE_START;
 
-#if defined(RUN_LOCALLY)
-
     auto kernel_name = TallyClient::client->host_func_to_demangled_kernel_name_map[func];
     TALLY_LOG(kernel_name);
 
+#if defined(RUN_LOCALLY)
     auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
-
-    // auto err = cudaSuccess;
-    
-    // CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
-
 #else
     assert(TallyClient::client->_kernel_addr_to_args.find(func) != TallyClient::client->_kernel_addr_to_args.end());
 
@@ -1141,7 +1157,6 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct cudaLaunchKernelArg) + params_size;
     
     cudaError_t err;
-
     
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
@@ -1337,7 +1352,6 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmul);
 
-    
     return err;
 }
 
@@ -1346,12 +1360,12 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 	TALLY_LOG("cublasLtMatmulDescSetAttribute hooked");
     TALLY_CLIENT_PROFILE_START;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulDescSetAttributeArg) + sizeInBytes;
-
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
-
 #else
+
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulDescSetAttributeArg) + sizeInBytes;
+
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -1378,7 +1392,6 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescSetAttribute);
 
-    
     return err;
 }
 
@@ -1387,12 +1400,10 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 	TALLY_LOG("cublasLtMatrixLayoutSetAttribute hooked");
     TALLY_CLIENT_PROFILE_START;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatrixLayoutSetAttributeArg) + sizeInBytes;
-	
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatrixLayoutSetAttribute(matLayout, attr, buf, sizeInBytes);
-
 #else
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatrixLayoutSetAttributeArg) + sizeInBytes;
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -1620,7 +1631,7 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cudnnBackendGetAttribute);
-    // 
+
     return err;
 }
 
@@ -5122,11 +5133,6 @@ CUresult cuMemAlloc_v2(CUdeviceptr * dptr, size_t  bytesize)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemAlloc_v2(dptr, bytesize);
-
-    // cuMemsetD8_v2(*dptr, 0, bytesize);
-
-    std::cout << "dptr: " << (void *)*dptr << std::endl;
-    std::cout << "bytesize: " << bytesize << std::endl;
 #else
 
     CUresult err;
@@ -5172,13 +5178,6 @@ CUresult cuMemsetD32_v2(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N)
 	TALLY_LOG("cuMemsetD32_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-
-    std::cout << "dstDevice: " << (void *) dstDevice << std::endl;
-
-    std::cout << "ui: " << ui << std::endl;
-
-    std::cout << "N: " << N << std::endl;
-
 	auto err = lcuMemsetD32_v2(dstDevice, ui, N);
 #else
 
@@ -5220,17 +5219,8 @@ CUresult cuMemcpyHtoDAsync_v2(CUdeviceptr  dstDevice, const void * srcHost, size
 {
 	TALLY_LOG("cuMemcpyHtoDAsync_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
+
 #if defined(RUN_LOCALLY)
-
-    float *arr = (float *) srcHost;
-
-    std::cout << "ByteCount: " << ByteCount << std::endl;
-    std::cout << "dstDevice: " << (void *) dstDevice << std::endl;
-
-    for (int i = 0; i < ByteCount / 4; i++) {
-        std::cout << arr[i] << std::endl;
-    }
-
 	auto err = lcuMemcpyHtoDAsync_v2(dstDevice, srcHost, ByteCount, hStream);
 #else
 
@@ -5270,11 +5260,8 @@ CUresult cuMemcpyDtoHAsync_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  By
 {
 	TALLY_LOG("cuMemcpyDtoHAsync_v2 hooked");
     TALLY_CLIENT_PROFILE_START;
+
 #if defined(RUN_LOCALLY)
-
-    std::cout << "srcDevice: " << (void *) srcDevice << std::endl;
-    std::cout << "cuMemcpyDtoHAsync_v2: ByteCount: " << ByteCount << std::endl;
-
 	auto err = lcuMemcpyDtoHAsync_v2(dstHost, srcDevice, ByteCount, hStream);
 #else
     CUresult err;
