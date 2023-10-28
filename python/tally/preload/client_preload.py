@@ -48,12 +48,14 @@ def gen_client_func_decl_def(func_sig):
         handle = "cudnn_handle";
     elif "CUresult" in ret_type:
         handle = "cuda_handle"
-    elif "cudaError_t" in ret_type:
+    elif "cudaError_t" in ret_type or "cudaGetError" in func_name:
         handle = "cudart_handle"
     elif "cublaslt" in func_name.lower() or "cublaslt" in ret_type.lower():
         handle = "cublasLt_handle"
     elif "cublas" in func_name.lower() or "cublas" in ret_type.lower():
         handle = "cublas_handle"
+    elif "nvrtc" in func_name.lower():
+        handle = "nvrtc_handle"
 
     func_declaration = f"extern {ret_type} (*{preload_func_name}) ({args_str_no_val});\n"
 

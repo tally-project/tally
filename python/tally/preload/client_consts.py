@@ -63,6 +63,7 @@ void *cudart_handle;
 void *cudnn_handle;
 void *cublas_handle;
 void *cublasLt_handle;
+void *nvrtc_handle;
 
 void __attribute__((constructor)) register_cuda_handles()
 {
@@ -71,6 +72,7 @@ void __attribute__((constructor)) register_cuda_handles()
 	cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
 	cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
 	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
+    nvrtc_handle = dlopen(LIBNVRTC_PATH, RTLD_LAZY);
 }
 
 """
@@ -627,6 +629,7 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cublasLtMatrixTransformDescDestroy",
     "cuGraphExecDestroy",
     "cuGraphDestroy",
     "cuEventSynchronize",
@@ -745,6 +748,7 @@ FORWARD_API_CALLS = [
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cublasLtMatrixTransformDescCreate",
     "cuEventElapsedTime",
     "cuEventCreate",
     "cuGraphInstantiateWithFlags",

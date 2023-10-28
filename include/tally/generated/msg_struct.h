@@ -1751,6 +1751,20 @@ struct cublasLtMatmulDescDestroyArg {
 	cublasLtMatmulDesc_t  matmulDesc;
 };
 
+struct cublasLtMatrixTransformDescCreateArg {
+	cublasLtMatrixTransformDesc_t*  transformDesc;
+	cudaDataType  scaleType;
+};
+
+struct cublasLtMatrixTransformDescCreateResponse {
+	cublasLtMatrixTransformDesc_t transformDesc;
+	cublasStatus_t err;
+};
+
+struct cublasLtMatrixTransformDescDestroyArg {
+	cublasLtMatrixTransformDesc_t  transformDesc;
+};
+
 struct cublasLtMatmulPreferenceCreateArg {
 	cublasLtMatmulPreference_t*  pref;
 };

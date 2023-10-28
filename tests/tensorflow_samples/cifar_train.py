@@ -1,12 +1,15 @@
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-# Check that GPU is available: cf. https://colab.research.google.com/notebooks/gpu.ipynb
-print(tf.test.gpu_device_name())
+import random
+import numpy as np
+
 assert(tf.test.gpu_device_name())
 
-tf.keras.backend.clear_session()
-tf.config.optimizer.set_jit(False) # Start with XLA disabled.
+tf.keras.utils.set_random_seed(1)
+tf.random.set_seed(12)
+np.random.seed(12)
+random.seed(12)
 
 def load_data():
     result = tfds.load('cifar10', batch_size = -1)
@@ -51,9 +54,7 @@ model = generate_model()
 
 def compile_model(model):
     opt = tf.keras.optimizers.RMSprop(learning_rate=0.0001)
-    model.compile(loss='categorical_crossentropy',
-                    optimizer=opt,
-                    metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'], jit_compile=True)
     return model
 
 model = compile_model(model)
@@ -73,13 +74,3 @@ train_model(model, x_train, y_train, x_test, y_test, epochs=1)
 scores = model.evaluate(x_test, y_test, verbose=1)
 print('Test loss:', scores[0])
 print('Test accuracy:', scores[1])
-
-
-# # We need to clear the session to enable JIT in the middle of the program.
-# tf.keras.backend.clear_session()
-# tf.config.optimizer.set_jit(True) # Enable XLA.
-# model = compile_model(generate_model())
-# (x_train, y_train), (x_test, y_test) = load_data()
-
-# warmup(model, x_train, y_train, x_test, y_test)
-# train_model(model, x_train, y_train, x_test, y_test)

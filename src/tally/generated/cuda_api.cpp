@@ -18,6 +18,7 @@ void *cudart_handle;
 void *cudnn_handle;
 void *cublas_handle;
 void *cublasLt_handle;
+void *nvrtc_handle;
 
 void __attribute__((constructor)) register_cuda_handles()
 {
@@ -26,6 +27,7 @@ void __attribute__((constructor)) register_cuda_handles()
 	cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
 	cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
 	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
+    nvrtc_handle = dlopen(LIBNVRTC_PATH, RTLD_LAZY);
 }
 
 CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr) =
@@ -1295,10 +1297,10 @@ cudaError_t (*lcudaPeekAtLastError) () =
 	(cudaError_t (*) ()) dlsym(cudart_handle, "cudaPeekAtLastError");
 
 const char* (*lcudaGetErrorName) (cudaError_t  error) =
-	(const char* (*) (cudaError_t  error)) dlsym(RTLD_NEXT, "cudaGetErrorName");
+	(const char* (*) (cudaError_t  error)) dlsym(cudart_handle, "cudaGetErrorName");
 
 const char* (*lcudaGetErrorString) (cudaError_t  error) =
-	(const char* (*) (cudaError_t  error)) dlsym(RTLD_NEXT, "cudaGetErrorString");
+	(const char* (*) (cudaError_t  error)) dlsym(cudart_handle, "cudaGetErrorString");
 
 cudaError_t (*lcudaGetDeviceCount) (int * count) =
 	(cudaError_t (*) (int * count)) dlsym(cudart_handle, "cudaGetDeviceCount");
@@ -4451,61 +4453,61 @@ CUresult (*lcuProfilerStop) () =
 	(CUresult (*) ()) dlsym(cuda_handle, "cuProfilerStop");
 
 const char * (*lnvrtcGetErrorString) (nvrtcResult  result) =
-	(const char * (*) (nvrtcResult  result)) dlsym(RTLD_NEXT, "nvrtcGetErrorString");
+	(const char * (*) (nvrtcResult  result)) dlsym(nvrtc_handle, "nvrtcGetErrorString");
 
 nvrtcResult (*lnvrtcVersion) (int * major, int * minor) =
-	(nvrtcResult (*) (int * major, int * minor)) dlsym(RTLD_NEXT, "nvrtcVersion");
+	(nvrtcResult (*) (int * major, int * minor)) dlsym(nvrtc_handle, "nvrtcVersion");
 
 nvrtcResult (*lnvrtcGetNumSupportedArchs) (int*  numArchs) =
-	(nvrtcResult (*) (int*  numArchs)) dlsym(RTLD_NEXT, "nvrtcGetNumSupportedArchs");
+	(nvrtcResult (*) (int*  numArchs)) dlsym(nvrtc_handle, "nvrtcGetNumSupportedArchs");
 
 nvrtcResult (*lnvrtcGetSupportedArchs) (int*  supportedArchs) =
-	(nvrtcResult (*) (int*  supportedArchs)) dlsym(RTLD_NEXT, "nvrtcGetSupportedArchs");
+	(nvrtcResult (*) (int*  supportedArchs)) dlsym(nvrtc_handle, "nvrtcGetSupportedArchs");
 
 nvrtcResult (*lnvrtcCreateProgram) (nvrtcProgram * prog, const char * src, const char * name, int  numHeaders, const char * const * headers, const char * const * includeNames) =
-	(nvrtcResult (*) (nvrtcProgram * prog, const char * src, const char * name, int  numHeaders, const char * const * headers, const char * const * includeNames)) dlsym(RTLD_NEXT, "nvrtcCreateProgram");
+	(nvrtcResult (*) (nvrtcProgram * prog, const char * src, const char * name, int  numHeaders, const char * const * headers, const char * const * includeNames)) dlsym(nvrtc_handle, "nvrtcCreateProgram");
 
 nvrtcResult (*lnvrtcDestroyProgram) (nvrtcProgram * prog) =
-	(nvrtcResult (*) (nvrtcProgram * prog)) dlsym(RTLD_NEXT, "nvrtcDestroyProgram");
+	(nvrtcResult (*) (nvrtcProgram * prog)) dlsym(nvrtc_handle, "nvrtcDestroyProgram");
 
 nvrtcResult (*lnvrtcCompileProgram) (nvrtcProgram  prog, int  numOptions, const char * const * options) =
-	(nvrtcResult (*) (nvrtcProgram  prog, int  numOptions, const char * const * options)) dlsym(RTLD_NEXT, "nvrtcCompileProgram");
+	(nvrtcResult (*) (nvrtcProgram  prog, int  numOptions, const char * const * options)) dlsym(nvrtc_handle, "nvrtcCompileProgram");
 
 nvrtcResult (*lnvrtcGetPTXSize) (nvrtcProgram  prog, size_t * ptxSizeRet) =
-	(nvrtcResult (*) (nvrtcProgram  prog, size_t * ptxSizeRet)) dlsym(RTLD_NEXT, "nvrtcGetPTXSize");
+	(nvrtcResult (*) (nvrtcProgram  prog, size_t * ptxSizeRet)) dlsym(nvrtc_handle, "nvrtcGetPTXSize");
 
 nvrtcResult (*lnvrtcGetPTX) (nvrtcProgram  prog, char * ptx) =
-	(nvrtcResult (*) (nvrtcProgram  prog, char * ptx)) dlsym(RTLD_NEXT, "nvrtcGetPTX");
+	(nvrtcResult (*) (nvrtcProgram  prog, char * ptx)) dlsym(nvrtc_handle, "nvrtcGetPTX");
 
 nvrtcResult (*lnvrtcGetCUBINSize) (nvrtcProgram  prog, size_t * cubinSizeRet) =
-	(nvrtcResult (*) (nvrtcProgram  prog, size_t * cubinSizeRet)) dlsym(RTLD_NEXT, "nvrtcGetCUBINSize");
+	(nvrtcResult (*) (nvrtcProgram  prog, size_t * cubinSizeRet)) dlsym(nvrtc_handle, "nvrtcGetCUBINSize");
 
 nvrtcResult (*lnvrtcGetCUBIN) (nvrtcProgram  prog, char * cubin) =
-	(nvrtcResult (*) (nvrtcProgram  prog, char * cubin)) dlsym(RTLD_NEXT, "nvrtcGetCUBIN");
+	(nvrtcResult (*) (nvrtcProgram  prog, char * cubin)) dlsym(nvrtc_handle, "nvrtcGetCUBIN");
 
 nvrtcResult (*lnvrtcGetLTOIRSize) (nvrtcProgram  prog, size_t * LTOIRSizeRet) =
-	(nvrtcResult (*) (nvrtcProgram  prog, size_t * LTOIRSizeRet)) dlsym(RTLD_NEXT, "nvrtcGetLTOIRSize");
+	(nvrtcResult (*) (nvrtcProgram  prog, size_t * LTOIRSizeRet)) dlsym(nvrtc_handle, "nvrtcGetLTOIRSize");
 
 nvrtcResult (*lnvrtcGetLTOIR) (nvrtcProgram  prog, char * LTOIR) =
-	(nvrtcResult (*) (nvrtcProgram  prog, char * LTOIR)) dlsym(RTLD_NEXT, "nvrtcGetLTOIR");
+	(nvrtcResult (*) (nvrtcProgram  prog, char * LTOIR)) dlsym(nvrtc_handle, "nvrtcGetLTOIR");
 
 nvrtcResult (*lnvrtcGetOptiXIRSize) (nvrtcProgram  prog, size_t * optixirSizeRet) =
-	(nvrtcResult (*) (nvrtcProgram  prog, size_t * optixirSizeRet)) dlsym(RTLD_NEXT, "nvrtcGetOptiXIRSize");
+	(nvrtcResult (*) (nvrtcProgram  prog, size_t * optixirSizeRet)) dlsym(nvrtc_handle, "nvrtcGetOptiXIRSize");
 
 nvrtcResult (*lnvrtcGetOptiXIR) (nvrtcProgram  prog, char * optixir) =
-	(nvrtcResult (*) (nvrtcProgram  prog, char * optixir)) dlsym(RTLD_NEXT, "nvrtcGetOptiXIR");
+	(nvrtcResult (*) (nvrtcProgram  prog, char * optixir)) dlsym(nvrtc_handle, "nvrtcGetOptiXIR");
 
 nvrtcResult (*lnvrtcGetProgramLogSize) (nvrtcProgram  prog, size_t * logSizeRet) =
-	(nvrtcResult (*) (nvrtcProgram  prog, size_t * logSizeRet)) dlsym(RTLD_NEXT, "nvrtcGetProgramLogSize");
+	(nvrtcResult (*) (nvrtcProgram  prog, size_t * logSizeRet)) dlsym(nvrtc_handle, "nvrtcGetProgramLogSize");
 
 nvrtcResult (*lnvrtcGetProgramLog) (nvrtcProgram  prog, char * log) =
-	(nvrtcResult (*) (nvrtcProgram  prog, char * log)) dlsym(RTLD_NEXT, "nvrtcGetProgramLog");
+	(nvrtcResult (*) (nvrtcProgram  prog, char * log)) dlsym(nvrtc_handle, "nvrtcGetProgramLog");
 
 nvrtcResult (*lnvrtcAddNameExpression) (nvrtcProgram  prog, const char * const  name_expression) =
-	(nvrtcResult (*) (nvrtcProgram  prog, const char * const  name_expression)) dlsym(RTLD_NEXT, "nvrtcAddNameExpression");
+	(nvrtcResult (*) (nvrtcProgram  prog, const char * const  name_expression)) dlsym(nvrtc_handle, "nvrtcAddNameExpression");
 
 nvrtcResult (*lnvrtcGetLoweredName) (nvrtcProgram  prog, const char *const  name_expression, const char**  lowered_name) =
-	(nvrtcResult (*) (nvrtcProgram  prog, const char *const  name_expression, const char**  lowered_name)) dlsym(RTLD_NEXT, "nvrtcGetLoweredName");
+	(nvrtcResult (*) (nvrtcProgram  prog, const char *const  name_expression, const char**  lowered_name)) dlsym(nvrtc_handle, "nvrtcGetLoweredName");
 
 cublasStatus_t (*lcublasLtCreate) (cublasLtHandle_t*  lightHandle) =
 	(cublasStatus_t (*) (cublasLtHandle_t*  lightHandle)) dlsym(cublasLt_handle, "cublasLtCreate");
