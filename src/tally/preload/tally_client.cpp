@@ -37,6 +37,8 @@
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
 
+std::map<size_t, std::vector<std::pair<std::string, std::string>>> ptx_to_fatbin_map;
+
 // Used to keep track of seq length of a seq description
 std::unordered_map<cudnnSeqDataDescriptor_t, int> seq_desc_to_seq_len_map;
 
@@ -45,6 +47,40 @@ std::vector<DeviceMemoryKey> dev_addr_map;
 
 std::map<std::string, void *> lib_name_to_lib_handle;
 void *tally_handle = nullptr;
+
+std::pair<const char *, size_t> get_fatbin_from_ptx(std::string &ptx_str)
+{
+    size_t str_len = ptx_str.size();
+
+    if (ptx_to_fatbin_map.find(str_len) != ptx_to_fatbin_map.end()) {
+        for (auto &pair : ptx_to_fatbin_map[str_len]) {
+
+            auto &cached_ptx_str = pair.first;
+            auto &cached_fatbin_str = pair.second;
+
+            if (memcmp(ptx_str.c_str(), cached_ptx_str.c_str(), str_len) == 0) {
+                return std::make_pair(cached_fatbin_str.c_str(), cached_fatbin_str.size());
+            }
+        }
+    }
+
+    auto fatbin_str = get_fatbin_str_from_ptx_str(ptx_str);
+    ptx_to_fatbin_map[str_len].push_back(std::make_pair(ptx_str, fatbin_str));
+
+    if (ptx_to_fatbin_map.find(str_len) != ptx_to_fatbin_map.end()) {
+        for (auto &pair : ptx_to_fatbin_map[str_len]) {
+
+            auto &cached_ptx_str = pair.first;
+            auto &cached_fatbin_str = pair.second;
+
+            if (memcmp(ptx_str.c_str(), cached_ptx_str.c_str(), str_len) == 0) {
+                return std::make_pair(cached_fatbin_str.c_str(), cached_fatbin_str.size());
+            }
+        }
+    }
+
+    throw std::runtime_error("no way");
+}
 
 std::vector<std::string> preload_libs {
     "libcuda.so.1",
@@ -3946,16 +3982,16 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
 
     // For any type of image, convert to fatbin format
     std::string fatbin_str;
-    char *fatbin_data = nullptr;
+    const char *fatbin_data = nullptr;
     size_t fatbin_size = -1;
 
     auto mod_type = get_cuda_module_type(image);
     if (mod_type == CUDA_MODULE_TYPE::PTX_STRING) {
 
-        std::string ptx_str((char *)image);
-        fatbin_str = get_fatbin_str_from_ptx_str(ptx_str);
-        fatbin_data = (char *) fatbin_str.c_str();
-        fatbin_size = fatbin_str.size();
+        auto ptx_str = std::string((char *)image);
+        auto res = get_fatbin_from_ptx(ptx_str);
+        fatbin_data = res.first;
+        fatbin_size = res.second;
 
     } else if (mod_type == CUDA_MODULE_TYPE::FATBIN) {
 
@@ -5353,16 +5389,16 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
 #else
 
     std::string fatbin_str;
-    char *fatbin_data = nullptr;
+    const char *fatbin_data = nullptr;
     size_t fatbin_size = -1;
 
     auto mod_type = get_cuda_module_type(fatCubin);
     if (mod_type == CUDA_MODULE_TYPE::PTX_STRING) {
 
-        std::string ptx_str((char *)fatCubin);
-        fatbin_str = get_fatbin_str_from_ptx_str(ptx_str);
-        fatbin_data = (char *) fatbin_str.c_str();
-        fatbin_size = fatbin_str.size();
+        auto ptx_str = std::string((char *)fatCubin);
+        auto res = get_fatbin_from_ptx(ptx_str);
+        fatbin_data = res.first;
+        fatbin_size = res.second;
 
     } else if (mod_type == CUDA_MODULE_TYPE::FATBIN) {
 
@@ -5521,16 +5557,16 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
 
     // For any type of image, convert to fatbin format
     std::string fatbin_str;
-    char *fatbin_data = nullptr;
+    const char *fatbin_data = nullptr;
     size_t fatbin_size = -1;
 
     auto mod_type = get_cuda_module_type(image);
     if (mod_type == CUDA_MODULE_TYPE::PTX_STRING) {
         
-        std::string ptx_str((char *)image);
-        fatbin_str = get_fatbin_str_from_ptx_str(ptx_str);
-        fatbin_data = const_cast<char *>(fatbin_str.c_str());
-        fatbin_size = fatbin_str.size();
+        auto ptx_str = std::string((char *)image);
+        auto res = get_fatbin_from_ptx(ptx_str);
+        fatbin_data = res.first;
+        fatbin_size = res.second;
 
     } else if (mod_type == CUDA_MODULE_TYPE::FATBIN) {
         auto fbh = (struct fatBinaryHeader *) image;
@@ -5618,6 +5654,7 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
 
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuModuleLoadData);
+
 	return err;
 }
 
