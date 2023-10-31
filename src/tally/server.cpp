@@ -4139,3 +4139,23 @@ void TallyServer::handle_cublasSetMathMode(void *__args, iox::popo::UntypedServe
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cublasDestroy_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasDestroy_v2");
+	auto args = (struct cublasDestroy_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasStatus_t*>(responsePayload);
+            *response = cublasDestroy_v2(
+				args->handle
+            );
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}

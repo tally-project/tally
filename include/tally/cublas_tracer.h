@@ -45,6 +45,10 @@ public:
 		ctx.mode = mode;
 	}
 
+	void handle_cublasDestroy_v2(cublasHandle_t handle) {
+		handle_map.erase(handle);	
+	}
+
 	cublasCtx get_cublasCtx(cublasHandle_t handle) {
 		return handle_map[handle];
 	}

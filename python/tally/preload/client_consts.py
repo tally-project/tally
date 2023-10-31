@@ -189,7 +189,6 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <tally/msg_struct.h>
 #include <tally/cuda_util.h>
 #include <tally/cache_struct.h>
-#include <tally/cublas_tracer.h>
 
 using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, uint32_t *, bool, float, float*, float*, int32_t, bool)>;
 
@@ -271,7 +270,6 @@ public:
 	bool signal_exit = false;
 
 	// ================== Per-client state ===================
-	cublasTracer cublas_tracer;
 	std::map<int32_t, ClientData> client_data_all;
 	std::map<ClientPriority, int32_t, std::greater<ClientPriority>> client_priority_map;
 
@@ -422,7 +420,6 @@ public:
 	partial_t cublasGemmEx_Partial(cublasGemmExArg *);
 	partial_t cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *);
     
-
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
@@ -523,6 +520,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasDestroy_v2",
     "cublasSetMathMode",
     "cudaStreamEndCapture",
     "cuGraphLaunch",
@@ -696,7 +694,6 @@ FORWARD_API_CALLS = [
     "cudaStreamDestroy",
     "cudaStreamWaitEvent",
     "cudaStreamQuery",
-    "cublasDestroy_v2",
     "cublasGetCudartVersion",
     "cuDeviceSetMemPool",
     "cuFlushGPUDirectRDMAWrites",

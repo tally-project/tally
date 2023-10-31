@@ -1271,4 +1271,8 @@ struct cublasSetMathModeArg {
 	cublasMath_t  mode;
 };
 
+struct cublasDestroy_v2Arg {
+	cublasHandle_t  handle;
+};
+
 #endif // TALLY_DEF_H

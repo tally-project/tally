@@ -751,8 +751,6 @@ void *dlopen(const char *filename, int flag)
 
 void *dlsym(void * handle, const char * symbol)
 {
-    TALLY_SPD_LOG("dlsym!!!!");
-
     static void* (*ldlsym) (void * , const char *);
     if (!ldlsym) {
         ldlsym = (void* (*) (void * , const char *)) dlvsym(RTLD_NEXT, "dlsym", "GLIBC_2.2.5");
@@ -1306,6 +1304,8 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
 	return err;
 }
 
+#define IDX2C(i,j,ld) (((j)*(ld))+(i))
+
 cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasSgemm_v2 hooked");
@@ -1316,16 +1316,16 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 
 #else
     cublasStatus_t err;
+    bool launched = false;
 
 #if defined(REPLACE_CUBLAS)
-    load_tally_cutlass_lib();
 
-    cublasCtx ctx = cublas_tracer.get_cublasCtx(handle);
+    auto ctx = cublas_tracer.get_cublasCtx(handle);
 
-    if (ctx.mode == CUBLAS_DEFAULT_MATH) { 
+    if (ctx.mode == CUBLAS_DEFAULT_MATH && transa == CUBLAS_OP_N && transb == CUBLAS_OP_N) { 
 
-        TALLY_SPD_LOG("Detect cublasSgemm_v2. Replaced with CutlassSgemmNN");
-
+        TALLY_SPD_LOG("cublasSgemm_v2 replaced with CutlassSgemmNN");
+        load_tally_cutlass_lib();
         auto cuda_err = CutlassSgemmNN(m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, ctx.stream);
 
         if (!cuda_err) {
@@ -1333,44 +1333,45 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         } else {
             err = CUBLAS_STATUS_INVALID_VALUE;
         }
-    } else {
-        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Only CUBLAS_DEFAULT_MATH is supported now.");
+
+        launched = true;
+    }
+#endif
+
+    if (!launched) {
+        uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemm_v2Arg);
+
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
+            .and_then([&](auto& requestPayload) {
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASSGEMM_V2;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasSgemm_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->handle = handle;
+                request->transa = transa;
+                request->transb = transb;
+                request->m = m;
+                request->n = n;
+                request->k = k;
+                request->alpha = *alpha;
+                request->A = A;
+                request->lda = lda;
+                request->B = B;
+                request->ldb = ldb;
+                request->beta = *beta;
+                request->C = C;
+                request->ldc = ldc;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
     }
 
-#else
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemm_v2Arg);
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
-        .and_then([&](auto& requestPayload) {
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASSGEMM_V2;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasSgemm_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-            request->handle = handle;
-            request->transa = transa;
-            request->transb = transb;
-            request->m = m;
-            request->n = n;
-            request->k = k;
-            request->alpha = *alpha;
-            request->A = A;
-            request->lda = lda;
-            request->B = B;
-            request->ldb = ldb;
-            request->beta = *beta;
-            request->C = C;
-            request->ldc = ldc;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
-
-#endif // REPLACE_CUBLAS
 #endif // RUN_LOCALLY
 
     TALLY_CLIENT_PROFILE_END;
@@ -6011,6 +6012,49 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetMathMode);
+	return err;
+}
+
+cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
+{
+	TALLY_LOG("cublasDestroy_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcublasDestroy_v2(handle);
+#else
+
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasDestroy_v2Arg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASDESTROY_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasDestroy_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->handle = handle;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+
+            cublas_tracer.handle_cublasDestroy_v2(handle);
+
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasDestroy_v2);
 	return err;
 }
 

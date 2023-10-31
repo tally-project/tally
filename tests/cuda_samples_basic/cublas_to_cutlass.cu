@@ -14,43 +14,46 @@
 #define IDX2C(i,j,ld) (((j)*(ld))+(i))
 
 cudaError_t CutlassSgemmNN(
-  int M,
-  int N,
-  int K,
-  float alpha,
-  float const *A,
-  int lda,
-  float const *B,
-  int ldb,
-  float beta,
-  float *C,
-  int ldc) {
+    int M,
+    int N,
+    int K,
+    float alpha,
+    float const *A,
+    int lda,
+    float const *B,
+    int ldb,
+    float beta,
+    float *C,
+    int ldc,
+    cudaStream_t stream) {
 
-  using ColumnMajor = cutlass::layout::ColumnMajor;
+    using ColumnMajor = cutlass::layout::ColumnMajor;
 
-  using CutlassGemm = cutlass::gemm::device::Gemm<float,        // Data-type of A matrix
-                                                  ColumnMajor,  // Layout of A matrix
-                                                  float,        // Data-type of B matrix
-                                                  ColumnMajor,  // Layout of B matrix
-                                                  float,        // Data-type of C matrix
-                                                  ColumnMajor>; // Layout of C matrix
+    using CutlassGemm = cutlass::gemm::device::Gemm<float,        // Data-type of A matrix
+                                                    ColumnMajor,  // Layout of A matrix
+                                                    float,        // Data-type of B matrix
+                                                    ColumnMajor,  // Layout of B matrix
+                                                    float,        // Data-type of C matrix
+                                                    ColumnMajor>; // Layout of C matrix
 
-  CutlassGemm gemm_operator;
+    CutlassGemm gemm_operator;
 
-  CutlassGemm::Arguments args({M, N, K},  // Gemm Problem dimensions
-                              {A, lda},    // Tensor-ref for source matrix A
-                              {B, ldb},    // Tensor-ref for source matrix B
-                              {C, ldc},    // Tensor-ref for source matrix C
-                              {C, ldc},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
-                              {alpha, beta}); // Scalars used in the Epilogue
+    cutlass::Status status;
 
-  cutlass::Status status = gemm_operator(args);
+    CutlassGemm::Arguments args({M, N, K},  // Gemm Problem dimensions
+                                {A, lda},    // Tensor-ref for source matrix A
+                                {B, ldb},    // Tensor-ref for source matrix B
+                                {C, ldc},    // Tensor-ref for source matrix C
+                                {C, ldc},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
+                                {alpha, beta}); // Scalars used in the Epilogue
 
-  if (status != cutlass::Status::kSuccess) {
-    return cudaErrorUnknown;
-  }
+    status = gemm_operator(args, stream);
 
-  return cudaSuccess;
+    if (status != cutlass::Status::kSuccess) {
+        return cudaErrorUnknown;
+    }
+
+    return cudaSuccess;
 }
 
 int main()
@@ -108,15 +111,21 @@ int main()
     cublasDestroy(handle);
 
     // Run cutlass impl
-    CutlassSgemmNN(m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_cutlass, ldc);
+    CutlassSgemmNN(m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_cutlass, ldc, NULL);
 
     //
     cudaMemcpy(h_cutlass, d_cutlass, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
 
     for (int j = 0; j < n; j++) {
         for (int i = 0; i < m; i++) {
-            std::cout << h_cutlass[IDX2C(i, j, m)] << std::endl;
-            std::cout << h_cublas[IDX2C(i, j, m)] << std::endl;
+
+            if (abs(h_cutlass[IDX2C(i, j, m)] - h_cublas[IDX2C(i, j, m)]) > 0.001) {
+                std::cout << "Results do not match." << std::endl;
+                std::cout << "h_cutlass[IDX2C(i, j, m)]: " << h_cutlass[IDX2C(i, j, m)] << std::endl;
+                std::cout << "h_cublas[IDX2C(i, j, m)]: " << h_cublas[IDX2C(i, j, m)] << std::endl;
+                exit(1);
+            }
+
         }
     }
 

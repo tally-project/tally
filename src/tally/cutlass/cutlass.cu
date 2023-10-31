@@ -35,11 +35,7 @@ cudaError_t CutlassSgemmNN(
 
     CutlassGemm gemm_operator;
 
-    cutlass::Status status = gemm_operator(stream);
-
-    if (status != cutlass::Status::kSuccess) {
-        return cudaErrorUnknown;
-    }
+    cutlass::Status status;
 
     CutlassGemm::Arguments args({M, N, K},  // Gemm Problem dimensions
                                 {A, lda},    // Tensor-ref for source matrix A
@@ -48,7 +44,7 @@ cudaError_t CutlassSgemmNN(
                                 {C, ldc},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
                                 {alpha, beta}); // Scalars used in the Epilogue
 
-    status = gemm_operator(args);
+    status = gemm_operator(args, stream);
 
     if (status != cutlass::Status::kSuccess) {
         return cudaErrorUnknown;

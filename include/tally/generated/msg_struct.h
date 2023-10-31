@@ -1588,10 +1588,6 @@ struct cudnnBackendFinalizeArg {
 	cudnnBackendDescriptor_t  descriptor;
 };
 
-struct cublasDestroy_v2Arg {
-	cublasHandle_t  handle;
-};
-
 struct cublasGetVersion_v2Arg {
 	cublasHandle_t  handle;
 	int*  version;
