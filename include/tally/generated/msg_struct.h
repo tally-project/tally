@@ -776,6 +776,10 @@ struct cudaEventElapsedTimeResponse {
 	cudaError_t err;
 };
 
+struct cudaFreeArrayArg {
+	cudaArray_t  array;
+};
+
 struct cudaMemGetInfoArg {
 	size_t * free;
 	size_t * total;
@@ -792,6 +796,11 @@ struct cudaMemsetAsyncArg {
 	int  value;
 	size_t  count;
 	cudaStream_t  stream;
+};
+
+struct cudaMemPoolTrimToArg {
+	cudaMemPool_t  memPool;
+	size_t  minBytesToKeep;
 };
 
 struct cudaGraphCreateArg {
@@ -1650,11 +1659,6 @@ struct cublasGetMathModeArg {
 struct cublasGetMathModeResponse {
 	cublasMath_t mode;
 	cublasStatus_t err;
-};
-
-struct cublasSetMathModeArg {
-	cublasHandle_t  handle;
-	cublasMath_t  mode;
 };
 
 struct cublasGetSmCountTargetArg {

@@ -14,6 +14,7 @@ endif()
 option(ENABLE_LOGGING "Enable logging" OFF)
 option(ENABLE_PROFILING "Enable profiling" OFF)
 option(RUN_LOCALLY "Run client process locally" OFF)
+option(REPLACE_CUBLAS "Replace cublas calls with cutlass calls" ON)
 
 link_directories(/usr/local/cuda/lib64)
 
@@ -34,6 +35,17 @@ find_package(iceoryx_hoofs REQUIRED)
 include(IceoryxPackageHelper)
 include(IceoryxPlatform)
 include(IceoryxPlatformSettings)
+
+include(FindCUDA/select_compute_arch)
+CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
+string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
+string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
+message(CUDA_ARCH_LIST="${CUDA_ARCH_LIST}")
+
+set(TALLY_CUTLASS_SRC_FILES
+    ${PROJECT_SOURCE_DIR}/src/tally/cutlass/cutlass.cu
+)
 
 set(TALLY_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/tally/cache.cpp
@@ -61,6 +73,25 @@ set(TALLY_SERVER_SRC_FILES
 
 set(TALLY_CLIENT_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/tally/generated/client.cpp
+)
+
+add_library(tally_cutlass SHARED
+    ${TALLY_CUTLASS_SRC_FILES}
+)
+
+target_link_libraries(tally_cutlass
+    cuda
+    cudart
+)
+
+target_include_directories(tally_cutlass
+    PUBLIC  ${PROJECT_SOURCE_DIR}/include
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
+)
+
+set_target_properties(tally_cutlass PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
 )
 
 add_library(tally STATIC ${TALLY_SRC_FILES})
@@ -93,6 +124,10 @@ endif()
 
 if(RUN_LOCALLY)
     target_compile_definitions(tally_client PRIVATE RUN_LOCALLY=${RUN_LOCALLY})
+endif()
+
+if (REPLACE_CUBLAS)
+    target_compile_definitions(tally_client PRIVATE REPLACE_CUBLAS=${REPLACE_CUBLAS})
 endif()
 
 target_include_directories(tally_client

@@ -1,4 +1,3 @@
-
 include(FindCUDA/select_compute_arch)
 CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
 string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
@@ -94,6 +93,24 @@ target_link_libraries(test-sync
 set_target_properties(test-sync PROPERTIES
     CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
+)
+
+add_executable(cublas_to_cutlass cuda_samples_basic/cublas_to_cutlass.cu)
+
+target_link_libraries(cublas_to_cutlass
+    cuda
+    cudart
+    cublas
+)
+
+set_target_properties(cublas_to_cutlass PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_include_directories(cublas_to_cutlass
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
+    PUBLIC  ${PROJECT_SOURCE_DIR}/tests
 )
 
 add_executable(basic_gemm cuda_samples_basic/basic_gemm.cu)

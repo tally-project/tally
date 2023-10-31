@@ -189,6 +189,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <tally/msg_struct.h>
 #include <tally/cuda_util.h>
 #include <tally/cache_struct.h>
+#include <tally/cublas_tracer.h>
 
 using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, uint32_t *, bool, float, float*, float*, int32_t, bool)>;
 
@@ -270,6 +271,7 @@ public:
 	bool signal_exit = false;
 
 	// ================== Per-client state ===================
+	cublasTracer cublas_tracer;
 	std::map<int32_t, ClientData> client_data_all;
 	std::map<ClientPriority, int32_t, std::greater<ClientPriority>> client_priority_map;
 
@@ -391,7 +393,7 @@ public:
 
 	void wait_until_launch_queue_empty(int32_t client_id);
 
-	// Return a partial function to be scheduled by scheduler
+    // Return a partial function to be scheduled by scheduler
     partial_t cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
 	partial_t cublasSgemm_v2_Partial(cublasSgemm_v2Arg *);
 	partial_t cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *);
@@ -420,6 +422,7 @@ public:
 	partial_t cublasGemmEx_Partial(cublasGemmExArg *);
 	partial_t cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *);
     
+
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
@@ -520,6 +523,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasSetMathMode",
     "cudaStreamEndCapture",
     "cuGraphLaunch",
     "cuStreamEndCapture",
@@ -660,7 +664,7 @@ FORWARD_API_CALLS = [
     "cudnnAdvInferVersionCheck",
     "cudnnOpsTrainVersionCheck",
     "cudnnOpsInferVersionCheck",
-    "cudaMemPoolTrimTo"
+    "cudaMemPoolTrimTo",
     "cudaFreeArray",
     "cudnnSetAttnDescriptor",
     "cudnnSetDropoutDescriptor",
@@ -701,7 +705,6 @@ FORWARD_API_CALLS = [
     "cuDevicePrimaryCtxReset_v2",
     "cublasSetStream_v2",
     "cublasSetWorkspace_v2",
-    "cublasSetMathMode",
     "cublasLtMatmulDescDestroy",
     "cublasLtMatrixLayoutDestroy",
     "cublasLtMatmulPreferenceDestroy",

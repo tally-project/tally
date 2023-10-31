@@ -2739,6 +2739,7 @@ void TallyServer::handle_cublasCreate_v2(void *__args, iox::popo::UntypedServer 
             auto response = static_cast<cublasCreate_v2Response*>(responsePayload);
 
             response->err = cublasCreate_v2(&(response->handle));
+            response->stream = client_meta.default_stream;
             CHECK_CUDA_ERROR(response->err);
 
             // set stream to client's default stream
@@ -4109,6 +4110,28 @@ void TallyServer::handle_cuGraphLaunch(void *__args, iox::popo::UntypedServer *i
 				args->hGraphExec,
 				__stream
             );
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cublasSetMathMode(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasSetMathMode");
+	auto args = (struct cublasSetMathModeArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasStatus_t*>(responsePayload);
+            *response = cublasSetMathMode(
+				args->handle,
+				args->mode
+            );
+
             CHECK_CUDA_ERROR(*response);
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
