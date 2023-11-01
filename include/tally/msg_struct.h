@@ -896,6 +896,7 @@ struct cublasCreate_v2Arg {
 
 struct cublasCreate_v2Response {
 	cublasHandle_t handle;
+    cudaStream_t stream;
 	cublasStatus_t err;
 };
 
@@ -1263,6 +1264,15 @@ struct cudaStreamEndCaptureResponse {
 struct cuGraphLaunchArg {
 	CUgraphExec  hGraphExec;
 	CUstream  hStream;
+};
+
+struct cublasSetMathModeArg {
+	cublasHandle_t  handle;
+	cublasMath_t  mode;
+};
+
+struct cublasDestroy_v2Arg {
+	cublasHandle_t  handle;
 };
 
 #endif // TALLY_DEF_H

@@ -391,7 +391,7 @@ public:
 
 	void wait_until_launch_queue_empty(int32_t client_id);
 
-	// Return a partial function to be scheduled by scheduler
+    // Return a partial function to be scheduled by scheduler
     partial_t cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
 	partial_t cublasSgemm_v2_Partial(cublasSgemm_v2Arg *);
 	partial_t cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *);
@@ -520,6 +520,8 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasDestroy_v2",
+    "cublasSetMathMode",
     "cudaStreamEndCapture",
     "cuGraphLaunch",
     "cuStreamEndCapture",
@@ -660,7 +662,7 @@ FORWARD_API_CALLS = [
     "cudnnAdvInferVersionCheck",
     "cudnnOpsTrainVersionCheck",
     "cudnnOpsInferVersionCheck",
-    "cudaMemPoolTrimTo"
+    "cudaMemPoolTrimTo",
     "cudaFreeArray",
     "cudnnSetAttnDescriptor",
     "cudnnSetDropoutDescriptor",
@@ -692,7 +694,6 @@ FORWARD_API_CALLS = [
     "cudaStreamDestroy",
     "cudaStreamWaitEvent",
     "cudaStreamQuery",
-    "cublasDestroy_v2",
     "cublasGetCudartVersion",
     "cuDeviceSetMemPool",
     "cuFlushGPUDirectRDMAWrites",
@@ -701,7 +702,6 @@ FORWARD_API_CALLS = [
     "cuDevicePrimaryCtxReset_v2",
     "cublasSetStream_v2",
     "cublasSetWorkspace_v2",
-    "cublasSetMathMode",
     "cublasLtMatmulDescDestroy",
     "cublasLtMatrixLayoutDestroy",
     "cublasLtMatmulPreferenceDestroy",

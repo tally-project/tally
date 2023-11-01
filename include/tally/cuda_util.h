@@ -13,6 +13,7 @@
 #include <tally/msg_struct.h>
 #include <tally/cuda_launch.h>
 #include <tally/generated/cuda_api.h>
+#include <tally/cutlass/cutlass_struct.h>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -60,6 +61,20 @@ inline CUDA_MODULE_TYPE get_cuda_module_type(const void * image)
     }
 
     throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Cannot identify cuda module.");
+}
+
+inline cutlassOperation_t cublas_op_to_cutlass_op(cublasOperation_t op)
+{
+    switch(op) {
+        case CUBLAS_OP_N:
+            return cutlassOperation_t::CUTLASS_OP_N;
+        case CUBLAS_OP_T:
+            return cutlassOperation_t::CUTLASS_OP_T;
+        case CUBLAS_OP_C:
+            return cutlassOperation_t::CUTLASS_OP_C;
+        default:
+            throw std::runtime_error("unknown type");
+    }
 }
 
 inline CUfunction_attribute convert_func_attribute(cudaFuncAttribute attr) {

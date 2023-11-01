@@ -36,6 +36,9 @@
 #include "tally/client.h"
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
+#include <tally/cublas_tracer.h>
+
+cublasTracer cublas_tracer;
 
 std::map<size_t, std::vector<std::pair<std::string, std::string>>> ptx_to_fatbin_map;
 
@@ -80,6 +83,28 @@ std::pair<const char *, size_t> get_fatbin_from_ptx(std::string &ptx_str)
     }
 
     throw std::runtime_error("no way");
+}
+
+void *tally_cutlass_handle = nullptr;
+void (*tally_register_cutlass)() = nullptr;
+cudaError_t (*CutlassSgemmNN) (cutlassOperation_t transA, cutlassOperation_t transB, int M, int N,
+                               int K, float alpha, float const *A, int lda,float const *B, int ldb,
+                               float beta, float *C, int ldc, void *workSpace, cudaStream_t stream) = nullptr;
+
+
+
+void load_tally_cutlass_lib()
+{
+    if (!tally_cutlass_handle) {
+
+        spdlog::info("Enabling replacing cublas with cutlass");
+
+        tally_cutlass_handle = dlopen("/home/zhaowe58/tally/build/libtally_cutlass.so", RTLD_LAZY);
+        tally_register_cutlass = (void (*)()) dlsym(tally_cutlass_handle, "tally_register_cutlass");
+        CutlassSgemmNN = (cudaError_t (*) (cutlassOperation_t, cutlassOperation_t, int, int, int, float, float const *, int,
+                                           float const *, int, float, float *, int, void *, cudaStream_t))
+                                           dlsym(tally_cutlass_handle, "CutlassSgemmNN");
+    }
 }
 
 std::vector<std::string> preload_libs {
@@ -785,7 +810,7 @@ void *dlsym(void * handle, const char * symbol)
 
 cudaError_t CUDARTAPI __cudaPopCallConfiguration(dim3 *gridDim, dim3 *blockDim, size_t *sharedMem, void *stream)
 {
-    TALLY_LOG("__cudaPopCallConfiguration hooked");
+    TALLY_SPD_LOG("__cudaPopCallConfiguration hooked");
 
 #if defined(RUN_LOCALLY)
     return l__cudaPopCallConfiguration(gridDim, blockDim, sharedMem, stream);
@@ -798,7 +823,7 @@ cudaError_t CUDARTAPI __cudaPopCallConfiguration(dim3 *gridDim, dim3 *blockDim, 
 
 unsigned __cudaPushCallConfiguration(dim3 gridDim, dim3 blockDim, size_t sharedMem, struct CUstream_st *stream)
 {
-    TALLY_LOG("__cudaPushCallConfiguration hooked");
+    TALLY_SPD_LOG("__cudaPushCallConfiguration hooked");
 
 #if defined(RUN_LOCALLY)
     return l__cudaPushCallConfiguration(gridDim, blockDim, sharedMem, stream);
@@ -810,7 +835,7 @@ unsigned __cudaPushCallConfiguration(dim3 gridDim, dim3 blockDim, size_t sharedM
 
 void** __cudaRegisterFatBinary( void *fatCubin ) {
 
-    TALLY_LOG("__cudaRegisterFatBinary hooked");
+    TALLY_SPD_LOG("__cudaRegisterFatBinary hooked");
 
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFatBinary(fatCubin);
@@ -888,13 +913,13 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
 
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
-    TALLY_LOG("__cudaRegisterFunction hooked");
+    TALLY_SPD_LOG("__cudaRegisterFunction hooked");
 
     std::string deviceFunName (deviceFun);
     auto demangled_kernel_name = demangleFunc(deviceFunName);
     TallyClient::client->host_func_to_demangled_kernel_name_map[hostFun] = demangled_kernel_name;
     
-    TALLY_LOG(demangled_kernel_name);
+    TALLY_SPD_LOG(demangled_kernel_name);
 
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
@@ -929,7 +954,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 
 void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 {
-    TALLY_LOG("__cudaRegisterFatBinaryEnd hooked");
+    TALLY_SPD_LOG("__cudaRegisterFatBinaryEnd hooked");
 
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFatBinaryEnd(fatCubinHandle);
@@ -955,7 +980,7 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 
 cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 {
-	TALLY_LOG("cudaMalloc hooked");
+	TALLY_SPD_LOG("cudaMalloc hooked");
     TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -1008,7 +1033,7 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 
 cudaError_t cudaFree(void * devPtr)
 {
-	TALLY_LOG("cudaFree hooked");
+	TALLY_SPD_LOG("cudaFree hooked");
     TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -1051,7 +1076,7 @@ cudaError_t cudaFree(void * devPtr)
 
 cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind)
 {
-    TALLY_LOG("cudaMemcpy hooked");
+    TALLY_SPD_LOG("cudaMemcpy hooked");
     TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -1113,7 +1138,7 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
 
 cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
-    TALLY_LOG("cudaMemcpyAsync hooked");
+    TALLY_SPD_LOG("cudaMemcpyAsync hooked");
     TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -1177,11 +1202,11 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
 
 cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
-    TALLY_LOG("cudaLaunchKernel hooked");
+    TALLY_SPD_LOG("cudaLaunchKernel hooked");
     TALLY_CLIENT_PROFILE_START;
 
     auto kernel_name = TallyClient::client->host_func_to_demangled_kernel_name_map[func];
-    TALLY_LOG(kernel_name);
+    TALLY_SPD_LOG(kernel_name);
 
 #if defined(RUN_LOCALLY)
     auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
@@ -1230,7 +1255,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
 CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams, void ** extra)
 {
-	TALLY_LOG("cuLaunchKernel hooked");
+	TALLY_SPD_LOG("cuLaunchKernel hooked");
 	TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -1286,49 +1311,87 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
 	return err;
 }
 
+#define IDX2C(i,j,ld) (((j)*(ld))+(i))
+
 cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
 {
-	TALLY_LOG("cublasSgemm_v2 hooked");
+	TALLY_SPD_LOG("cublasSgemm_v2 hooked");
     TALLY_CLIENT_PROFILE_START;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemm_v2Arg);
-
-#if defined(RUN_LOCALLY)
-    auto err = lcublasSgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-
-#else
+    bool launched = false;
     cublasStatus_t err;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
-        .and_then([&](auto& requestPayload) {
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASSGEMM_V2;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasSgemm_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-            request->handle = handle;
-            request->transa = transa;
-            request->transb = transb;
-            request->m = m;
-            request->n = n;
-            request->k = k;
-            request->alpha = *alpha;
-            request->A = A;
-            request->lda = lda;
-            request->B = B;
-            request->ldb = ldb;
-            request->beta = *beta;
-            request->C = C;
-            request->ldc = ldc;
+#if defined(REPLACE_CUBLAS)
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+    auto ctx = cublas_tracer.get_cublasCtx(handle);
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    if (ctx.mode == CUBLAS_DEFAULT_MATH) { 
+
+        TALLY_SPD_LOG("cublasSgemm_v2 replaced with CutlassSgemmNN");
+        load_tally_cutlass_lib();
+
+        auto cutlass_transa = cublas_op_to_cutlass_op(transa);
+        auto cutlass_transb = cublas_op_to_cutlass_op(transb);
+
+        auto cuda_err = CutlassSgemmNN(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, nullptr, ctx.stream);
+
+        cudaDeviceSynchronize();
+
+        if (!cuda_err) {
+            err = CUBLAS_STATUS_SUCCESS;
+        } else {
+            err = CUBLAS_STATUS_INVALID_VALUE;
+        }
+
+        launched = true;
+    } 
+    
+    if (!launched) {
+        spdlog::warn("Fail to replace cublasSgemm_v2 with CutlassSgemmNN");
+    }
 #endif
+
+    if (!launched) {
+
+#if defined(RUN_LOCALLY)
+        auto err = lcublasSgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+#else
+   
+        uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemm_v2Arg);
+
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
+            .and_then([&](auto& requestPayload) {
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASSGEMM_V2;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasSgemm_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->handle = handle;
+                request->transa = transa;
+                request->transb = transb;
+                request->m = m;
+                request->n = n;
+                request->k = k;
+                request->alpha = *alpha;
+                request->A = A;
+                request->lda = lda;
+                request->B = B;
+                request->ldb = ldb;
+                request->beta = *beta;
+                request->C = C;
+                request->ldc = ldc;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+
+#endif // RUN_LOCALLY
+
+    }
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasSgemm_v2);
@@ -1341,7 +1404,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 // At some point need to keep track which pointers are fake and which are real
 cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)
 {
-	TALLY_LOG("cublasLtMatmul hooked");
+	TALLY_SPD_LOG("cublasLtMatmul hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulArg);
@@ -1393,7 +1456,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 
 cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
 {
-	TALLY_LOG("cublasLtMatmulDescSetAttribute hooked");
+	TALLY_SPD_LOG("cublasLtMatmulDescSetAttribute hooked");
     TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -1433,7 +1496,7 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 
 cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, const void*  buf, size_t  sizeInBytes)
 {
-	TALLY_LOG("cublasLtMatrixLayoutSetAttribute hooked");
+	TALLY_SPD_LOG("cublasLtMatrixLayoutSetAttribute hooked");
     TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -1471,7 +1534,7 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 
 cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
 {
-	TALLY_LOG("cublasLtMatmulPreferenceSetAttribute hooked");
+	TALLY_SPD_LOG("cublasLtMatmulPreferenceSetAttribute hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulPreferenceSetAttributeArg) + sizeInBytes;
@@ -1511,7 +1574,7 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 
 cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, cublasLtMatmulPreference_t  preference, int  requestedAlgoCount, cublasLtMatmulHeuristicResult_t  heuristicResultsArray[], int*  returnAlgoCount)
 {
-	TALLY_LOG("cublasLtMatmulAlgoGetHeuristic hooked");
+	TALLY_SPD_LOG("cublasLtMatmulAlgoGetHeuristic hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulAlgoGetHeuristicArg);
@@ -1564,7 +1627,7 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 
 cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cudnnBackendAttributeName_t  attributeName, cudnnBackendAttributeType_t  attributeType, int64_t  elementCount, const void * arrayOfElements)
 {
-	TALLY_LOG("cudnnBackendSetAttribute hooked");
+	TALLY_SPD_LOG("cudnnBackendSetAttribute hooked");
     TALLY_CLIENT_PROFILE_START;
 
     int32_t type_size = get_cudnn_attribute_size(attributeType);
@@ -1612,7 +1675,7 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
 
 cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descriptor, cudnnBackendAttributeName_t  attributeName, cudnnBackendAttributeType_t  attributeType, int64_t  requestedElementCount, int64_t * elementCount, void * arrayOfElements)
 {
-	TALLY_LOG("cudnnBackendGetAttribute hooked");
+	TALLY_SPD_LOG("cudnnBackendGetAttribute hooked");
     TALLY_CLIENT_PROFILE_START;
 
     int32_t type_size = get_cudnn_attribute_size(attributeType);
@@ -1673,7 +1736,7 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
 
 cudnnStatus_t cudnnActivationForward(cudnnHandle_t  handle, cudnnActivationDescriptor_t  activationDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
 {
-	TALLY_LOG("cudnnActivationForward hooked");
+	TALLY_SPD_LOG("cudnnActivationForward hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cudnnActivationForwardArg);
@@ -1717,7 +1780,7 @@ cudnnStatus_t cudnnActivationForward(cudnnHandle_t  handle, cudnnActivationDescr
 
 cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t  tensorDesc, cudnnDataType_t  dataType, int  nbDims, const int  dimA[], const int  strideA[])
 {
-    TALLY_LOG("cudnnSetTensorNdDescriptor hooked");
+    TALLY_SPD_LOG("cudnnSetTensorNdDescriptor hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnSetTensorNdDescriptorArg) + 2 * nbDims * sizeof(int);
@@ -1758,7 +1821,7 @@ cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 
 cudnnStatus_t cudnnSetConvolutionNdDescriptor(cudnnConvolutionDescriptor_t  convDesc, int  arrayLength, const int  padA[], const int  filterStrideA[], const int  dilationA[], cudnnConvolutionMode_t  mode, cudnnDataType_t  computeType)
 {
-	TALLY_LOG("cudnnSetConvolutionNdDescriptor hooked");
+	TALLY_SPD_LOG("cudnnSetConvolutionNdDescriptor hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnSetConvolutionNdDescriptorArg) + 3 * arrayLength * sizeof(int);
@@ -1801,7 +1864,7 @@ cudnnStatus_t cudnnSetConvolutionNdDescriptor(cudnnConvolutionDescriptor_t  conv
 
 cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  nbDims, const int  filterDimA[])
 {
-	TALLY_LOG("cudnnSetFilterNdDescriptor hooked");
+	TALLY_SPD_LOG("cudnnSetFilterNdDescriptor hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnSetFilterNdDescriptorArg) + nbDims * sizeof(int);
@@ -1842,7 +1905,7 @@ cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 
 cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnConvolutionDescriptor_t  convDesc, cudnnConvolutionFwdAlgo_t  algo, void * workSpace, size_t  workSpaceSizeInBytes, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
 {
-	TALLY_LOG("cudnnConvolutionForward hooked");
+	TALLY_SPD_LOG("cudnnConvolutionForward hooked");
     TALLY_CLIENT_PROFILE_START;
     
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cudnnConvolutionForwardArg);
@@ -1891,7 +1954,7 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t  handle, const void * alpha,
 
 cudnnStatus_t cudnnGetConvolutionNdForwardOutputDim(const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  inputTensorDesc, const cudnnFilterDescriptor_t  filterDesc, int  nbDims, int  tensorOuputDimA[])
 {
-	TALLY_LOG("cudnnGetConvolutionNdForwardOutputDim hooked");
+	TALLY_SPD_LOG("cudnnGetConvolutionNdForwardOutputDim hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnGetConvolutionNdForwardOutputDimArg);
@@ -1938,7 +2001,7 @@ cudnnStatus_t cudnnGetConvolutionNdForwardOutputDim(const cudnnConvolutionDescri
 
 cudnnStatus_t cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnFilterDescriptor_t  filterDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  destDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults)
 {
-	TALLY_LOG("cudnnGetConvolutionForwardAlgorithm_v7 hooked");
+	TALLY_SPD_LOG("cudnnGetConvolutionForwardAlgorithm_v7 hooked");
     TALLY_CLIENT_PROFILE_START;
 
 	uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnGetConvolutionForwardAlgorithm_v7Arg);
@@ -1988,7 +2051,7 @@ cudnnStatus_t cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle_t  handle, cons
 
 cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults)
 {
-	TALLY_LOG("cudnnFindConvolutionForwardAlgorithm hooked");
+	TALLY_SPD_LOG("cudnnFindConvolutionForwardAlgorithm hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnFindConvolutionForwardAlgorithmArg);
@@ -2038,7 +2101,7 @@ cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(cudnnHandle_t  handle, const 
 
 cudnnStatus_t cudnnAddTensor(cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  aDesc, const void * A, const void * beta, const cudnnTensorDescriptor_t  cDesc, void * C)
 {
-    TALLY_LOG("cudnnAddTensor hooked");
+    TALLY_SPD_LOG("cudnnAddTensor hooked");
     TALLY_CLIENT_PROFILE_START;
 
 	uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cudnnAddTensorArg);
@@ -2081,7 +2144,7 @@ cudnnStatus_t cudnnAddTensor(cudnnHandle_t  handle, const void * alpha, const cu
 
 cudnnStatus_t cudnnSetPoolingNdDescriptor(cudnnPoolingDescriptor_t  poolingDesc, const cudnnPoolingMode_t  mode, const cudnnNanPropagation_t  maxpoolingNanOpt, int  nbDims, const int  windowDimA[], const int  paddingA[], const int  strideA[])
 {
-	TALLY_LOG("cudnnSetPoolingNdDescriptor hooked");
+	TALLY_SPD_LOG("cudnnSetPoolingNdDescriptor hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnSetPoolingNdDescriptorArg) + 3 * nbDims * sizeof(int);
@@ -2125,7 +2188,7 @@ cudnnStatus_t cudnnSetPoolingNdDescriptor(cudnnPoolingDescriptor_t  poolingDesc,
 
 cudnnStatus_t cudnnGetPoolingNdDescriptor(const cudnnPoolingDescriptor_t  poolingDesc, int  nbDimsRequested, cudnnPoolingMode_t * mode, cudnnNanPropagation_t * maxpoolingNanOpt, int * nbDims, int  windowDimA[], int  paddingA[], int  strideA[])
 {
-	TALLY_LOG("cudnnGetPoolingNdDescriptor hooked");
+	TALLY_SPD_LOG("cudnnGetPoolingNdDescriptor hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnGetPoolingNdDescriptorArg);
@@ -2175,7 +2238,7 @@ cudnnStatus_t cudnnGetPoolingNdDescriptor(const cudnnPoolingDescriptor_t  poolin
 
 cudnnStatus_t cudnnGetPoolingNdForwardOutputDim(const cudnnPoolingDescriptor_t  poolingDesc, const cudnnTensorDescriptor_t  inputTensorDesc, int  nbDims, int  outputTensorDimA[])
 {
-	TALLY_LOG("cudnnGetPoolingNdForwardOutputDim hooked");
+	TALLY_SPD_LOG("cudnnGetPoolingNdForwardOutputDim hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnGetPoolingNdForwardOutputDimArg);
@@ -2221,7 +2284,7 @@ cudnnStatus_t cudnnGetPoolingNdForwardOutputDim(const cudnnPoolingDescriptor_t  
 
 cudnnStatus_t cudnnPoolingForward(cudnnHandle_t  handle, const cudnnPoolingDescriptor_t  poolingDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
 {
-    TALLY_LOG("cudnnPoolingForward hooked");
+    TALLY_SPD_LOG("cudnnPoolingForward hooked");
     TALLY_CLIENT_PROFILE_START;
 
 	uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnPoolingForwardArg);
@@ -2265,7 +2328,7 @@ cudnnStatus_t cudnnPoolingForward(cudnnHandle_t  handle, const cudnnPoolingDescr
 
 cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy)
 {
-	TALLY_LOG("cublasSgemv_v2 hooked");
+	TALLY_SPD_LOG("cublasSgemv_v2 hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemv_v2Arg);
@@ -2313,7 +2376,7 @@ cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 
 cudnnStatus_t cudnnLRNCrossChannelForward(cudnnHandle_t  handle, cudnnLRNDescriptor_t  normDesc, cudnnLRNMode_t  lrnMode, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
 {
-	TALLY_LOG("cudnnLRNCrossChannelForward hooked");
+	TALLY_SPD_LOG("cudnnLRNCrossChannelForward hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnLRNCrossChannelForwardArg);
@@ -2358,7 +2421,7 @@ cudnnStatus_t cudnnLRNCrossChannelForward(cudnnHandle_t  handle, cudnnLRNDescrip
 
 cudnnStatus_t cudnnSoftmaxForward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t  algo, cudnnSoftmaxMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
 {
-	TALLY_LOG("cudnnSoftmaxForward hooked");
+	TALLY_SPD_LOG("cudnnSoftmaxForward hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cudnnSoftmaxForwardArg);
@@ -2403,7 +2466,7 @@ cudnnStatus_t cudnnSoftmaxForward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t
 
 cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
 {
-	TALLY_LOG("cudnnTransformTensor hooked");
+	TALLY_SPD_LOG("cudnnTransformTensor hooked");
     TALLY_CLIENT_PROFILE_START;
 
 	uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnTransformTensorArg);
@@ -2446,7 +2509,7 @@ cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, co
 
 cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
-	TALLY_LOG("cublasSgemmEx hooked");
+	TALLY_SPD_LOG("cublasSgemmEx hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemmExArg);
@@ -2499,7 +2562,7 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 
 cudnnStatus_t cudnnSetSeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc, cudnnDataType_t  dataType, int  nbDims, const int  dimA[], const cudnnSeqDataAxis_t  axes[], size_t  seqLengthArraySize, const int  seqLengthArray[], void * paddingFill)
 {
-	TALLY_LOG("cudnnSetSeqDataDescriptor hooked");
+	TALLY_SPD_LOG("cudnnSetSeqDataDescriptor hooked");
     TALLY_CLIENT_PROFILE_START;
 
     int max_seq_len = -1;
@@ -2550,7 +2613,7 @@ cudnnStatus_t cudnnSetSeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc, c
 
 cudnnStatus_t cudnnGetSeqDataDescriptor(const cudnnSeqDataDescriptor_t  seqDataDesc, cudnnDataType_t * dataType, int * nbDims, int  nbDimsRequested, int  dimA[], cudnnSeqDataAxis_t  axes[], size_t * seqLengthArraySize, size_t  seqLengthSizeRequested, int  seqLengthArray[], void * paddingFill)
 {
-	TALLY_LOG("cudnnGetSeqDataDescriptor hooked");
+	TALLY_SPD_LOG("cudnnGetSeqDataDescriptor hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnGetSeqDataDescriptorArg);
@@ -2602,7 +2665,7 @@ cudnnStatus_t cudnnGetSeqDataDescriptor(const cudnnSeqDataDescriptor_t  seqDataD
 
 cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, int  currIdx, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsQO[], const int  devSeqLengthsKV[], const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const void * residuals, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  oDesc, void * out, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
 {
-	TALLY_LOG("cudnnMultiHeadAttnForward hooked");
+	TALLY_SPD_LOG("cudnnMultiHeadAttnForward hooked");
     TALLY_CLIENT_PROFILE_START;
 
     assert(seq_desc_to_seq_len_map.find(qDesc) != seq_desc_to_seq_len_map.end());
@@ -2671,7 +2734,7 @@ cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDe
 
 cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, const int  loWinIdx[], const int  hiWinIdx[], const int  devSeqLengthsDQDO[], const int  devSeqLengthsDKDV[], const cudnnSeqDataDescriptor_t  doDesc, const void * dout, const cudnnSeqDataDescriptor_t  dqDesc, void * dqueries, const void * queries, const cudnnSeqDataDescriptor_t  dkDesc, void * dkeys, const void * keys, const cudnnSeqDataDescriptor_t  dvDesc, void * dvalues, const void * values, size_t  weightSizeInBytes, const void * weights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
 {
-	TALLY_LOG("cudnnMultiHeadAttnBackwardData hooked");
+	TALLY_SPD_LOG("cudnnMultiHeadAttnBackwardData hooked");
     TALLY_CLIENT_PROFILE_START;
 
     assert(seq_desc_to_seq_len_map.find(dqDesc) != seq_desc_to_seq_len_map.end());
@@ -2735,7 +2798,7 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnA
 
 cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, cudnnWgradMode_t  addGrad, const cudnnSeqDataDescriptor_t  qDesc, const void * queries, const cudnnSeqDataDescriptor_t  kDesc, const void * keys, const cudnnSeqDataDescriptor_t  vDesc, const void * values, const cudnnSeqDataDescriptor_t  doDesc, const void * dout, size_t  weightSizeInBytes, const void * weights, void * dweights, size_t  workSpaceSizeInBytes, void * workSpace, size_t  reserveSpaceSizeInBytes, void * reserveSpace)
 {
-	TALLY_LOG("cudnnMultiHeadAttnBackwardWeights hooked");
+	TALLY_SPD_LOG("cudnnMultiHeadAttnBackwardWeights hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnMultiHeadAttnBackwardWeightsArg);
@@ -2789,7 +2852,7 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cud
 
 cudnnStatus_t cudnnReorderFilterAndBias(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, cudnnReorderType_t  reorderType, const void * filterData, void * reorderedFilterData, int  reorderBias, const void * biasData, void * reorderedBiasData)
 {
-	TALLY_LOG("cudnnReorderFilterAndBias hooked");
+	TALLY_SPD_LOG("cudnnReorderFilterAndBias hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnReorderFilterAndBiasArg);
@@ -2833,7 +2896,7 @@ cudnnStatus_t cudnnReorderFilterAndBias(cudnnHandle_t  handle, const cudnnFilter
 
 cudnnStatus_t cudnnGetRNNWorkspaceSize(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, size_t * sizeInBytes)
 {
-	TALLY_LOG("cudnnGetRNNWorkspaceSize hooked");
+	TALLY_SPD_LOG("cudnnGetRNNWorkspaceSize hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnGetRNNWorkspaceSizeArg) + sizeof(cudnnTensorDescriptor_t) * seqLength;
@@ -2880,7 +2943,7 @@ cudnnStatus_t cudnnGetRNNWorkspaceSize(cudnnHandle_t  handle, const cudnnRNNDesc
 
 cudnnStatus_t cudnnGetRNNTrainingReserveSize(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, size_t * sizeInBytes)
 {
-	TALLY_LOG("cudnnGetRNNTrainingReserveSize hooked");
+	TALLY_SPD_LOG("cudnnGetRNNTrainingReserveSize hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnGetRNNTrainingReserveSizeArg) + sizeof(cudnnTensorDescriptor_t) * seqLength;
@@ -2927,7 +2990,7 @@ cudnnStatus_t cudnnGetRNNTrainingReserveSize(cudnnHandle_t  handle, const cudnnR
 
 cudnnStatus_t cudnnGetFilterNdDescriptor(const cudnnFilterDescriptor_t  filterDesc, int  nbDimsRequested, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * nbDims, int  filterDimA[])
 {
-	TALLY_LOG("cudnnGetFilterNdDescriptor hooked");
+	TALLY_SPD_LOG("cudnnGetFilterNdDescriptor hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnGetFilterNdDescriptorArg);
@@ -2975,7 +3038,7 @@ cudnnStatus_t cudnnGetFilterNdDescriptor(const cudnnFilterDescriptor_t  filterDe
 
 cudnnStatus_t cudnnRNNForwardTraining(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
-	TALLY_LOG("cudnnRNNForwardTraining hooked");
+	TALLY_SPD_LOG("cudnnRNNForwardTraining hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnRNNForwardTrainingArg) + sizeof(cudnnTensorDescriptor_t) * seqLength * 2;
@@ -3033,7 +3096,7 @@ cudnnStatus_t cudnnRNNForwardTraining(cudnnHandle_t  handle, const cudnnRNNDescr
 
 cudnnStatus_t cudnnRNNBackwardData(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * yDesc, const void * y, const cudnnTensorDescriptor_t * dyDesc, const void * dy, const cudnnTensorDescriptor_t  dhyDesc, const void * dhy, const cudnnTensorDescriptor_t  dcyDesc, const void * dcy, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnTensorDescriptor_t * dxDesc, void * dx, const cudnnTensorDescriptor_t  dhxDesc, void * dhx, const cudnnTensorDescriptor_t  dcxDesc, void * dcx, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
-	TALLY_LOG("cudnnRNNBackwardData hooked");
+	TALLY_SPD_LOG("cudnnRNNBackwardData hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cudnnRNNBackwardDataArg) + sizeof(cudnnTensorDescriptor_t) * seqLength * 3;
@@ -3097,7 +3160,7 @@ cudnnStatus_t cudnnRNNBackwardData(cudnnHandle_t  handle, const cudnnRNNDescript
 
 cudnnStatus_t cudnnRNNBackwardWeights(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t * yDesc, const void * y, const void * workSpace, size_t  workSpaceSizeInBytes, const cudnnFilterDescriptor_t  dwDesc, void * dw, const void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
-	TALLY_LOG("cudnnRNNBackwardWeights hooked");
+	TALLY_SPD_LOG("cudnnRNNBackwardWeights hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnRNNBackwardWeightsArg) + sizeof(cudnnTensorDescriptor_t) * seqLength * 2;
@@ -3149,7 +3212,7 @@ cudnnStatus_t cudnnRNNBackwardWeights(cudnnHandle_t  handle, const cudnnRNNDescr
 
 cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, cudnnDataType_t  dataType, cudnnRNNDataLayout_t  layout, int  maxSeqLength, int  batchSize, int  vectorSize, const int  seqLengthArray[], void * paddingFill)
 {
-	TALLY_LOG("cudnnSetRNNDataDescriptor hooked");
+	TALLY_SPD_LOG("cudnnSetRNNDataDescriptor hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnSetRNNDataDescriptorArg) + batchSize * sizeof(int);
@@ -3194,7 +3257,7 @@ cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, c
 
 cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t  tensorDesc, int  nbDimsRequested, cudnnDataType_t * dataType, int * nbDims, int  dimA[], int  strideA[])
 {
-	TALLY_LOG("cudnnGetTensorNdDescriptor hooked");
+	TALLY_SPD_LOG("cudnnGetTensorNdDescriptor hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnGetTensorNdDescriptorArg);
@@ -3242,7 +3305,7 @@ cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t  tensorDe
 
 cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t  handle, cudnnBatchNormMode_t  mode, cudnnBatchNormOps_t  bnOps, const void * alpha, const void * beta, const cudnnTensorDescriptor_t  xDesc, const void * xData, const cudnnTensorDescriptor_t  zDesc, const void * zData, const cudnnTensorDescriptor_t  yDesc, void * yData, const cudnnTensorDescriptor_t  bnScaleBiasMeanVarDesc, const void * bnScale, const void * bnBias, double  exponentialAverageFactor, void * resultRunningMean, void * resultRunningVariance, double  epsilon, void * resultSaveMean, void * resultSaveInvVariance, cudnnActivationDescriptor_t  activationDesc, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
-	TALLY_LOG("cudnnBatchNormalizationForwardTrainingEx hooked");
+	TALLY_SPD_LOG("cudnnBatchNormalizationForwardTrainingEx hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnBatchNormalizationForwardTrainingExArg);
@@ -3304,7 +3367,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t  handle, cu
 
 cudnnStatus_t cudnnBatchNormalizationBackwardEx(cudnnHandle_t  handle, cudnnBatchNormMode_t  mode, cudnnBatchNormOps_t  bnOps, const void * alphaDataDiff, const void * betaDataDiff, const void * alphaParamDiff, const void * betaParamDiff, const cudnnTensorDescriptor_t  xDesc, const void * xData, const cudnnTensorDescriptor_t  yDesc, const void * yData, const cudnnTensorDescriptor_t  dyDesc, const void * dyData, const cudnnTensorDescriptor_t  dzDesc, void * dzData, const cudnnTensorDescriptor_t  dxDesc, void * dxData, const cudnnTensorDescriptor_t  dBnScaleBiasDesc, const void * bnScaleData, const void * bnBiasData, void * dBnScaleData, void * dBnBiasData, double  epsilon, const void * savedMean, const void * savedInvVariance, cudnnActivationDescriptor_t  activationDesc, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
-	TALLY_LOG("cudnnBatchNormalizationBackwardEx hooked");
+	TALLY_SPD_LOG("cudnnBatchNormalizationBackwardEx hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudnnBatchNormalizationBackwardExArg);
@@ -3370,7 +3433,7 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx(cudnnHandle_t  handle, cudnnBatc
 
 cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  B, int  ldb, long long int  strideB, const float*  beta, float*  C, int  ldc, long long int  strideC, int  batchCount)
 {
-	TALLY_LOG("cublasSgemmStridedBatched hooked");
+	TALLY_SPD_LOG("cublasSgemmStridedBatched hooked");
 	TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemmStridedBatchedArg);
@@ -3423,7 +3486,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 
 cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBlocks, const void * func, int  blockSize, size_t  dynamicSMemSize, unsigned int  flags)
 {
-	TALLY_LOG("cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags hooked");
+	TALLY_SPD_LOG("cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsArg);
@@ -3471,7 +3534,7 @@ cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBloc
 
 cudaError_t cudaChooseDevice(int * device, const struct cudaDeviceProp * prop)
 {
-	TALLY_LOG("cudaChooseDevice hooked");
+	TALLY_SPD_LOG("cudaChooseDevice hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudaChooseDeviceArg);
@@ -3514,7 +3577,7 @@ cudaError_t cudaChooseDevice(int * device, const struct cudaDeviceProp * prop)
 
 cudaError_t cudaSetDevice(int  device)
 {
-	TALLY_LOG("cudaSetDevice hooked");
+	TALLY_SPD_LOG("cudaSetDevice hooked");
 	TALLY_CLIENT_PROFILE_START;
 
     // Run this locally so local process know which device is being used
@@ -3556,7 +3619,7 @@ cudaError_t cudaSetDevice(int  device)
 
 cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnWgradMode_t  addGrad, const int32_t  devSeqLengths[], cudnnRNNDataDescriptor_t  xDesc, const void * x, cudnnTensorDescriptor_t  hDesc, const void * hx, cudnnRNNDataDescriptor_t  yDesc, const void * y, size_t  weightSpaceSize, void * dweightSpace, size_t  workSpaceSize, void * workSpace, size_t  reserveSpaceSize, void * reserveSpace)
 {
-	TALLY_LOG("cudnnRNNBackwardWeights_v8 hooked");
+	TALLY_SPD_LOG("cudnnRNNBackwardWeights_v8 hooked");
 	TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -3606,7 +3669,7 @@ cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescript
 
 cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, const int32_t  devSeqLengths[], cudnnRNNDataDescriptor_t  yDesc, const void * y, const void * dy, cudnnRNNDataDescriptor_t  xDesc, void * dx, cudnnTensorDescriptor_t  hDesc, const void * hx, const void * dhy, void * dhx, cudnnTensorDescriptor_t  cDesc, const void * cx, const void * dcy, void * dcx, size_t  weightSpaceSize, const void * weightSpace, size_t  workSpaceSize, void * workSpace, size_t  reserveSpaceSize, void * reserveSpace)
 {
-	TALLY_LOG("cudnnRNNBackwardData_v8 hooked");
+	TALLY_SPD_LOG("cudnnRNNBackwardData_v8 hooked");
 	TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -3662,7 +3725,7 @@ cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_
 
 cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fwdMode, const int32_t  devSeqLengths[], cudnnRNNDataDescriptor_t  xDesc, const void * x, cudnnRNNDataDescriptor_t  yDesc, void * y, cudnnTensorDescriptor_t  hDesc, const void * hx, void * hy, cudnnTensorDescriptor_t  cDesc, const void * cx, void * cy, size_t  weightSpaceSize, const void * weightSpace, size_t  workSpaceSize, void * workSpace, size_t  reserveSpaceSize, void * reserveSpace)
 {
-	TALLY_LOG("cudnnRNNForward hooked");
+	TALLY_SPD_LOG("cudnnRNNForward hooked");
 	TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -3716,7 +3779,7 @@ cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 
 cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_t  executionPlan, cudnnBackendDescriptor_t  variantPack)
 {
-	TALLY_LOG("cudnnBackendExecute hooked");
+	TALLY_SPD_LOG("cudnnBackendExecute hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendExecute(handle, executionPlan, variantPack);
@@ -3752,7 +3815,7 @@ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_
 
 cudaError_t cudaThreadSynchronize()
 {
-	TALLY_LOG("cudaThreadSynchronize hooked");
+	TALLY_SPD_LOG("cudaThreadSynchronize hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadSynchronize();
@@ -3783,7 +3846,7 @@ cudaError_t cudaThreadSynchronize()
 
 cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 {
-	TALLY_LOG("cudaEventRecord hooked");
+	TALLY_SPD_LOG("cudaEventRecord hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventRecord(event, stream);
@@ -3824,7 +3887,7 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
 
 cudaError_t cudaDeviceSynchronize()
 {
-	TALLY_LOG("cudaDeviceSynchronize hooked");
+	TALLY_SPD_LOG("cudaDeviceSynchronize hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSynchronize();
@@ -3855,7 +3918,7 @@ cudaError_t cudaDeviceSynchronize()
 
 cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 {
-	TALLY_LOG("cudaStreamSynchronize hooked");
+	TALLY_SPD_LOG("cudaStreamSynchronize hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamSynchronize(stream);
@@ -3889,7 +3952,7 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 
 cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 {
-	TALLY_LOG("cublasCreate_v2 hooked");
+	TALLY_SPD_LOG("cublasCreate_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasCreate_v2(handle);
@@ -3918,6 +3981,9 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
             auto response = static_cast<const cublasCreate_v2Response*>(responsePayload);
 			if (handle) { *handle = response->handle; }
 
+            cublas_tracer.handle_cublasCreate_v2(response->handle);
+            cublas_tracer.handle_cublasSetStream_v2(response->handle, response->stream);
+
             err = response->err;
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
@@ -3930,7 +3996,7 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 
 cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
 {
-	TALLY_LOG("cudnnCreate hooked");
+	TALLY_SPD_LOG("cudnnCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreate(handle);
@@ -3971,7 +4037,7 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
 
 CUresult cuModuleLoadData(CUmodule * module, const void * image)
 {
-	TALLY_LOG("cuModuleLoadData hooked");
+	TALLY_SPD_LOG("cuModuleLoadData hooked");
 	TALLY_CLIENT_PROFILE_START;
     
 #if defined(RUN_LOCALLY)
@@ -4087,11 +4153,11 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
 
 CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * name)
 {
-	TALLY_LOG("cuModuleGetFunction hooked");
+	TALLY_SPD_LOG("cuModuleGetFunction hooked");
 	TALLY_CLIENT_PROFILE_START;
 
     std::string kernel_name(name);
-    TALLY_LOG(kernel_name);
+    TALLY_SPD_LOG(kernel_name);
 
 #if defined(RUN_LOCALLY)
 	auto err = lcuModuleGetFunction(hfunc, hmod, name);
@@ -4141,7 +4207,7 @@ CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * na
 
 cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCaptureStatus * captureStatus_out, unsigned long long * id_out, cudaGraph_t * graph_out, const cudaGraphNode_t ** dependencies_out, size_t * numDependencies_out)
 {
-	TALLY_LOG("cudaStreamGetCaptureInfo_v2 hooked");
+	TALLY_SPD_LOG("cudaStreamGetCaptureInfo_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamGetCaptureInfo_v2(stream, captureStatus_out, id_out, graph_out, dependencies_out, numDependencies_out);
@@ -4191,7 +4257,7 @@ cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCap
 
 CUresult cuPointerGetAttribute(void * data, CUpointer_attribute  attribute, CUdeviceptr  ptr)
 {
-	TALLY_LOG("cuPointerGetAttribute hooked");
+	TALLY_SPD_LOG("cuPointerGetAttribute hooked");
 	TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -4238,7 +4304,7 @@ CUresult cuPointerGetAttribute(void * data, CUpointer_attribute  attribute, CUde
 
 cudaError_t cudaGraphGetNodes(cudaGraph_t  graph, cudaGraphNode_t * nodes, size_t * numNodes)
 {
-	TALLY_LOG("cudaGraphGetNodes hooked");
+	TALLY_SPD_LOG("cudaGraphGetNodes hooked");
 	TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -4290,7 +4356,7 @@ cudaError_t cudaGraphGetNodes(cudaGraph_t  graph, cudaGraphNode_t * nodes, size_
 
 cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr, int  value)
 {
-	TALLY_LOG("cudaFuncSetAttribute hooked");
+	TALLY_SPD_LOG("cudaFuncSetAttribute hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaFuncSetAttribute(func, attr, value);
@@ -4328,15 +4394,15 @@ cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr
 
 CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)
 {
-	TALLY_LOG("cuGetProcAddress_v2 hooked");
+	TALLY_SPD_LOG("cuGetProcAddress_v2 hooked");
 
     std::string symbol_str(symbol);
-    TALLY_LOG("cuGetProcAddress symbol: " + symbol_str);
+    TALLY_SPD_LOG("cuGetProcAddress symbol: " + symbol_str);
 
     CUresult res = lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
 
     if (res) {
-        TALLY_LOG("cuGetProcAddress failed");
+        TALLY_SPD_LOG("cuGetProcAddress failed");
     }
 
     if (symbol_str == "") {
@@ -4372,7 +4438,7 @@ CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion,
 
 CUresult cuMemcpy(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount)
 {
-	TALLY_LOG("cuMemcpy hooked");
+	TALLY_SPD_LOG("cuMemcpy hooked");
 	TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -4433,7 +4499,7 @@ CUresult cuMemcpy(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount)
 
 CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CUstream  hStream)
 {
-	TALLY_LOG("cuMemcpyAsync hooked");
+	TALLY_SPD_LOG("cuMemcpyAsync hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemcpyAsync(dst, src, ByteCount, hStream);
@@ -4494,7 +4560,7 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
 
 CUresult cuMemAllocAsync(CUdeviceptr * dptr, size_t  bytesize, CUstream  hStream)
 {
-	TALLY_LOG("cuMemAllocAsync hooked");
+	TALLY_SPD_LOG("cuMemAllocAsync hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemAllocAsync(dptr, bytesize, hStream);
@@ -4543,7 +4609,7 @@ CUresult cuMemAllocAsync(CUdeviceptr * dptr, size_t  bytesize, CUstream  hStream
 
 CUresult cuMemFree_v2(CUdeviceptr  dptr)
 {
-	TALLY_LOG("cuMemFree_v2 hooked");
+	TALLY_SPD_LOG("cuMemFree_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemFree_v2(dptr);
@@ -4587,7 +4653,7 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
 
 cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
 {
-	TALLY_LOG("cudaMemset hooked");
+	TALLY_SPD_LOG("cudaMemset hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaMemset(devPtr, value, count);
@@ -4629,7 +4695,7 @@ cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
 
 cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 {
-	TALLY_LOG("cudaStreamCreate hooked");
+	TALLY_SPD_LOG("cudaStreamCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCreate(pStream);
@@ -4670,7 +4736,7 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
 
 cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flags)
 {
-	TALLY_LOG("cudaStreamCreateWithFlags hooked");
+	TALLY_SPD_LOG("cudaStreamCreateWithFlags hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCreateWithFlags(pStream, flags);
@@ -4712,7 +4778,7 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
 
 cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  flags, int  priority)
 {
-	TALLY_LOG("cudaStreamCreateWithPriority hooked");
+	TALLY_SPD_LOG("cudaStreamCreateWithPriority hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCreateWithPriority(pStream, flags, priority);
@@ -4755,7 +4821,7 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
 
 cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureMode  mode)
 {
-	TALLY_LOG("cudaStreamBeginCapture hooked");
+	TALLY_SPD_LOG("cudaStreamBeginCapture hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamBeginCapture(stream, mode);
@@ -4796,7 +4862,7 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
 
 CUresult cuStreamCreateWithPriority(CUstream * phStream, unsigned int  flags, int  priority)
 {
-	TALLY_LOG("cuStreamCreateWithPriority hooked");
+	TALLY_SPD_LOG("cuStreamCreateWithPriority hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuStreamCreateWithPriority(phStream, flags, priority);
@@ -4839,7 +4905,7 @@ CUresult cuStreamCreateWithPriority(CUstream * phStream, unsigned int  flags, in
 
 cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
 {
-	TALLY_LOG("cublasGemmEx hooked");
+	TALLY_SPD_LOG("cublasGemmEx hooked");
     TALLY_CLIENT_PROFILE_START;
 
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasGemmExArg);
@@ -4894,7 +4960,7 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
 
 CUresult cuFuncGetAttribute(int * pi, CUfunction_attribute  attrib, CUfunction  hfunc)
 {
-	TALLY_LOG("cuFuncGetAttribute hooked");
+	TALLY_SPD_LOG("cuFuncGetAttribute hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuFuncGetAttribute(pi, attrib, hfunc);
@@ -4937,7 +5003,7 @@ CUresult cuFuncGetAttribute(int * pi, CUfunction_attribute  attrib, CUfunction  
 
 CUresult cuFuncSetAttribute(CUfunction  hfunc, CUfunction_attribute  attrib, int  value)
 {
-	TALLY_LOG("cuFuncSetAttribute hooked");
+	TALLY_SPD_LOG("cuFuncSetAttribute hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuFuncSetAttribute(hfunc, attrib, value);
@@ -4979,7 +5045,7 @@ CUresult cuFuncSetAttribute(CUfunction  hfunc, CUfunction_attribute  attrib, int
 
 CUresult cuFuncSetCacheConfig(CUfunction  hfunc, CUfunc_cache  config)
 {
-	TALLY_LOG("cuFuncSetCacheConfig hooked");
+	TALLY_SPD_LOG("cuFuncSetCacheConfig hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuFuncSetCacheConfig(hfunc, config);
@@ -5020,7 +5086,7 @@ CUresult cuFuncSetCacheConfig(CUfunction  hfunc, CUfunc_cache  config)
 
 cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, long long int  strideC, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
 {
-	TALLY_LOG("cublasGemmStridedBatchedEx hooked");
+	TALLY_SPD_LOG("cublasGemmStridedBatchedEx hooked");
     TALLY_CLIENT_PROFILE_START;
 
 	uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(cublasGemmStridedBatchedExArg);
@@ -5080,7 +5146,7 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
 
 CUresult cuMemsetD8_v2(CUdeviceptr  dstDevice, unsigned char  uc, size_t  N)
 {
-	TALLY_LOG("cuMemsetD8_v2 hooked");
+	TALLY_SPD_LOG("cuMemsetD8_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemsetD8_v2(dstDevice, uc, N);
@@ -5123,7 +5189,7 @@ CUresult cuMemsetD8_v2(CUdeviceptr  dstDevice, unsigned char  uc, size_t  N)
 
 CUresult cuStreamCreate(CUstream * phStream, unsigned int  Flags)
 {
-	TALLY_LOG("cuStreamCreate hooked");
+	TALLY_SPD_LOG("cuStreamCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuStreamCreate(phStream, Flags);
@@ -5165,7 +5231,7 @@ CUresult cuStreamCreate(CUstream * phStream, unsigned int  Flags)
 
 CUresult cuMemAlloc_v2(CUdeviceptr * dptr, size_t  bytesize)
 {
-	TALLY_LOG("cuMemAlloc_v2 hooked");
+	TALLY_SPD_LOG("cuMemAlloc_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemAlloc_v2(dptr, bytesize);
@@ -5211,7 +5277,7 @@ CUresult cuMemAlloc_v2(CUdeviceptr * dptr, size_t  bytesize)
 
 CUresult cuMemsetD32_v2(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N)
 {
-	TALLY_LOG("cuMemsetD32_v2 hooked");
+	TALLY_SPD_LOG("cuMemsetD32_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemsetD32_v2(dstDevice, ui, N);
@@ -5253,7 +5319,7 @@ CUresult cuMemsetD32_v2(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N)
 
 CUresult cuMemcpyHtoDAsync_v2(CUdeviceptr  dstDevice, const void * srcHost, size_t  ByteCount, CUstream  hStream)
 {
-	TALLY_LOG("cuMemcpyHtoDAsync_v2 hooked");
+	TALLY_SPD_LOG("cuMemcpyHtoDAsync_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -5294,7 +5360,7 @@ CUresult cuMemcpyHtoDAsync_v2(CUdeviceptr  dstDevice, const void * srcHost, size
 
 CUresult cuMemcpyDtoHAsync_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  ByteCount, CUstream  hStream)
 {
-	TALLY_LOG("cuMemcpyDtoHAsync_v2 hooked");
+	TALLY_SPD_LOG("cuMemcpyDtoHAsync_v2 hooked");
     TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -5345,7 +5411,7 @@ CUresult cuMemcpyDtoHAsync_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  By
 
 CUresult cuMemsetD32Async(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N, CUstream  hStream)
 {
-	TALLY_LOG("cuMemsetD32Async hooked");
+	TALLY_SPD_LOG("cuMemsetD32Async hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemsetD32Async(dstDevice, ui, N, hStream);
@@ -5381,7 +5447,7 @@ CUresult cuMemsetD32Async(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N, C
 
 CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
 {
-	TALLY_LOG("cuModuleLoadFatBinary hooked");
+	TALLY_SPD_LOG("cuModuleLoadFatBinary hooked");
 	TALLY_CLIENT_PROFILE_START;
     
 #if defined(RUN_LOCALLY)
@@ -5496,7 +5562,7 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
 
 CUresult cuModuleGetGlobal_v2(CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod, const char * name)
 {
-	TALLY_LOG("cuModuleGetGlobal_v2 hooked");
+	TALLY_SPD_LOG("cuModuleGetGlobal_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 
 #if defined(RUN_LOCALLY)
@@ -5546,7 +5612,7 @@ CUresult cuModuleGetGlobal_v2(CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod
 
 CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int  numOptions, CUjit_option * options, void ** optionValues)
 {
-	TALLY_LOG("cuModuleLoadDataEx hooked");
+	TALLY_SPD_LOG("cuModuleLoadDataEx hooked");
 	TALLY_CLIENT_PROFILE_START;
     
 #if defined(RUN_LOCALLY)
@@ -5660,7 +5726,7 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
 
 CUresult cuMemcpyDtoDAsync_v2(CUdeviceptr  dstDevice, CUdeviceptr  srcDevice, size_t  ByteCount, CUstream  hStream)
 {
-	TALLY_LOG("cuMemcpyDtoDAsync_v2 hooked");
+	TALLY_SPD_LOG("cuMemcpyDtoDAsync_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemcpyDtoDAsync_v2(dstDevice, srcDevice, ByteCount, hStream);
@@ -5696,7 +5762,7 @@ CUresult cuMemcpyDtoDAsync_v2(CUdeviceptr  dstDevice, CUdeviceptr  srcDevice, si
 
 CUresult cuStreamSynchronize(CUstream  hStream)
 {
-	TALLY_LOG("cuStreamSynchronize hooked");
+	TALLY_SPD_LOG("cuStreamSynchronize hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuStreamSynchronize(hStream);
@@ -5729,7 +5795,7 @@ CUresult cuStreamSynchronize(CUstream  hStream)
 
 CUresult cuCtxSynchronize()
 {
-	TALLY_LOG("cuCtxSynchronize hooked");
+	TALLY_SPD_LOG("cuCtxSynchronize hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxSynchronize();
@@ -5761,7 +5827,7 @@ CUresult cuCtxSynchronize()
 
 CUresult cuModuleUnload(CUmodule  hmod)
 {
-	TALLY_LOG("cuModuleUnload hooked");
+	TALLY_SPD_LOG("cuModuleUnload hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuModuleUnload(hmod);
@@ -5801,7 +5867,7 @@ CUresult cuModuleUnload(CUmodule  hmod)
 
 CUresult cuStreamEndCapture(CUstream  hStream, CUgraph * phGraph)
 {
-	TALLY_LOG("cuStreamEndCapture hooked");
+	TALLY_SPD_LOG("cuStreamEndCapture hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuStreamEndCapture(hStream, phGraph);
@@ -5843,7 +5909,7 @@ CUresult cuStreamEndCapture(CUstream  hStream, CUgraph * phGraph)
 
 cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 {
-	TALLY_LOG("cudaStreamEndCapture hooked");
+	TALLY_SPD_LOG("cudaStreamEndCapture hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamEndCapture(stream, pGraph);
@@ -5885,7 +5951,7 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
 
 CUresult cuGraphLaunch(CUgraphExec  hGraphExec, CUstream  hStream)
 {
-	TALLY_LOG("cuGraphLaunch hooked");
+	TALLY_SPD_LOG("cuGraphLaunch hooked");
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuGraphLaunch(hGraphExec, hStream);
@@ -5921,6 +5987,93 @@ CUresult cuGraphLaunch(CUgraphExec  hGraphExec, CUstream  hStream)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuGraphLaunch);
+	return err;
+}
+
+cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
+{
+	TALLY_SPD_LOG("cublasSetMathMode hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcublasSetMathMode(handle, mode);
+#else
+
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetMathModeArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSETMATHMODE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasSetMathModeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->handle = handle;
+			request->mode = mode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+
+            cublas_tracer.handle_cublasSetMathMode(handle, mode);
+
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasSetMathMode);
+	return err;
+}
+
+cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
+{
+	TALLY_LOG("cublasDestroy_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcublasDestroy_v2(handle);
+#else
+
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasDestroy_v2Arg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASDESTROY_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasDestroy_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->handle = handle;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cublasStatus_t*>(responsePayload);
+            err = *response;
+
+            cublas_tracer.handle_cublasDestroy_v2(handle);
+
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasDestroy_v2);
 	return err;
 }
 
