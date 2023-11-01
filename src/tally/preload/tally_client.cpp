@@ -87,16 +87,23 @@ std::pair<const char *, size_t> get_fatbin_from_ptx(std::string &ptx_str)
 
 void *tally_cutlass_handle = nullptr;
 void (*tally_register_cutlass)() = nullptr;
-cudaError_t (*CutlassSgemmNN) (int M, int N, int K, float alpha, float const *A, int lda,float const *B, int ldb, float beta, float *C, int ldc, cudaStream_t stream) = nullptr;
+cudaError_t (*CutlassSgemmNN) (cutlassOperation_t transA, cutlassOperation_t transB, int M, int N,
+                               int K, float alpha, float const *A, int lda,float const *B, int ldb,
+                               float beta, float *C, int ldc, void *workSpace, cudaStream_t stream) = nullptr;
+
+
 
 void load_tally_cutlass_lib()
 {
     if (!tally_cutlass_handle) {
+
+        spdlog::info("Enabling replacing cublas with cutlass");
+
         tally_cutlass_handle = dlopen("/home/zhaowe58/tally/build/libtally_cutlass.so", RTLD_LAZY);
-        
-        TALLY_SPD_LOG("Before dlsym(tally_cutlass_handle");
         tally_register_cutlass = (void (*)()) dlsym(tally_cutlass_handle, "tally_register_cutlass");
-        CutlassSgemmNN = (cudaError_t (*) (int, int, int, float, float const *, int, float const *, int, float, float *, int, cudaStream_t)) dlsym(tally_cutlass_handle, "CutlassSgemmNN");
+        CutlassSgemmNN = (cudaError_t (*) (cutlassOperation_t, cutlassOperation_t, int, int, int, float, float const *, int,
+                                           float const *, int, float, float *, int, void *, cudaStream_t))
+                                           dlsym(tally_cutlass_handle, "CutlassSgemmNN");
     }
 }
 
@@ -1311,22 +1318,24 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 	TALLY_SPD_LOG("cublasSgemm_v2 hooked");
     TALLY_CLIENT_PROFILE_START;
 
-#if defined(RUN_LOCALLY)
-    auto err = lcublasSgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-
-#else
-    cublasStatus_t err;
     bool launched = false;
+    cublasStatus_t err;
 
 #if defined(REPLACE_CUBLAS)
 
     auto ctx = cublas_tracer.get_cublasCtx(handle);
 
-    if (ctx.mode == CUBLAS_DEFAULT_MATH && transa == CUBLAS_OP_N && transb == CUBLAS_OP_N) { 
+    if (ctx.mode == CUBLAS_DEFAULT_MATH) { 
 
         TALLY_SPD_LOG("cublasSgemm_v2 replaced with CutlassSgemmNN");
         load_tally_cutlass_lib();
-        auto cuda_err = CutlassSgemmNN(m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, ctx.stream);
+
+        auto cutlass_transa = cublas_op_to_cutlass_op(transa);
+        auto cutlass_transb = cublas_op_to_cutlass_op(transb);
+
+        auto cuda_err = CutlassSgemmNN(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, nullptr, ctx.stream);
+
+        cudaDeviceSynchronize();
 
         if (!cuda_err) {
             err = CUBLAS_STATUS_SUCCESS;
@@ -1335,10 +1344,19 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         }
 
         launched = true;
+    } 
+    
+    if (!launched) {
+        spdlog::warn("Fail to replace cublasSgemm_v2 with CutlassSgemmNN");
     }
 #endif
 
     if (!launched) {
+
+#if defined(RUN_LOCALLY)
+        auto err = lcublasSgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+#else
+   
         uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemm_v2Arg);
 
         IOX_CLIENT_ACQUIRE_LOCK;
@@ -1370,9 +1388,10 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
             .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
         IOX_RECV_RETURN_STATUS(cublasStatus_t);
-    }
 
 #endif // RUN_LOCALLY
+
+    }
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasSgemm_v2);
