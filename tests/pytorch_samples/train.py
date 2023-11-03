@@ -75,7 +75,9 @@ for epoch in range(num_epochs):
 
         if (i+1) % 100 == 0:
             print(f"Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{len(train_loader)}], Loss: {loss.item():.4f}")
-            
+
+        # break
+     
 # Test the model
 model.eval()
 with torch.no_grad():

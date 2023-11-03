@@ -1611,17 +1611,6 @@ struct cublasGetPropertyResponse {
 struct cublasGetCudartVersionArg {
 };
 
-struct cublasSetWorkspace_v2Arg {
-	cublasHandle_t  handle;
-	void*  workspace;
-	size_t  workspaceSizeInBytes;
-};
-
-struct cublasSetStream_v2Arg {
-	cublasHandle_t  handle;
-	cudaStream_t  streamId;
-};
-
 struct cublasGetStream_v2Arg {
 	cublasHandle_t  handle;
 	cudaStream_t*  streamId;
@@ -1700,15 +1689,6 @@ struct cudaProfilerStartArg {
 struct cudaProfilerStopArg {
 };
 
-struct cublasLtCreateArg {
-	cublasLtHandle_t*  lightHandle;
-};
-
-struct cublasLtCreateResponse {
-	cublasLtHandle_t lightHandle;
-	cublasStatus_t err;
-};
-
 struct cublasLtDestroyArg {
 	cublasLtHandle_t  lightHandle;
 };
@@ -1719,32 +1699,8 @@ struct cublasLtGetVersionArg {
 struct cublasLtGetCudartVersionArg {
 };
 
-struct cublasLtMatrixLayoutCreateArg {
-	cublasLtMatrixLayout_t*  matLayout;
-	cudaDataType  type;
-	uint64_t  rows;
-	uint64_t  cols;
-	int64_t  ld;
-};
-
-struct cublasLtMatrixLayoutCreateResponse {
-	cublasLtMatrixLayout_t matLayout;
-	cublasStatus_t err;
-};
-
 struct cublasLtMatrixLayoutDestroyArg {
 	cublasLtMatrixLayout_t  matLayout;
-};
-
-struct cublasLtMatmulDescCreateArg {
-	cublasLtMatmulDesc_t*  matmulDesc;
-	cublasComputeType_t  computeType;
-	cudaDataType_t  scaleType;
-};
-
-struct cublasLtMatmulDescCreateResponse {
-	cublasLtMatmulDesc_t matmulDesc;
-	cublasStatus_t err;
 };
 
 struct cublasLtMatmulDescDestroyArg {
@@ -1763,15 +1719,6 @@ struct cublasLtMatrixTransformDescCreateResponse {
 
 struct cublasLtMatrixTransformDescDestroyArg {
 	cublasLtMatrixTransformDesc_t  transformDesc;
-};
-
-struct cublasLtMatmulPreferenceCreateArg {
-	cublasLtMatmulPreference_t*  pref;
-};
-
-struct cublasLtMatmulPreferenceCreateResponse {
-	cublasLtMatmulPreference_t pref;
-	cublasStatus_t err;
 };
 
 struct cublasLtMatmulPreferenceDestroyArg {

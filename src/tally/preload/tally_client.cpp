@@ -39,6 +39,10 @@
 #include <tally/cublas_tracer.h>
 
 cublasTracer cublas_tracer;
+cublasLtTracer cublasLt_tracer;
+cublasLtMatmulDescTracer cublasLtMatmulDesc_tracer;
+cublasLtMatrixLayoutTracer cublasLtMatrixLayout_tracer;
+cublasLtMatmulPreferenceTracer cublasLtMatmulPreference_tracer;
 
 std::map<size_t, std::vector<std::pair<std::string, std::string>>> ptx_to_fatbin_map;
 
@@ -91,629 +95,23 @@ cudaError_t (*CutlassSgemmNN) (cutlassOperation_t transA, cutlassOperation_t tra
                                int K, float alpha, float const *A, int lda,float const *B, int ldb,
                                float beta, float *C, int ldc, void *workSpace, cudaStream_t stream) = nullptr;
 
-
-
 void load_tally_cutlass_lib()
 {
     if (!tally_cutlass_handle) {
 
         spdlog::info("Enabling replacing cublas with cutlass");
 
-        tally_cutlass_handle = dlopen("/home/zhaowe58/tally/build/libtally_cutlass.so", RTLD_LAZY);
+        auto client_preload_dir = get_client_preload_dir();
+        auto tally_cutlass_lib_path = client_preload_dir / "libtally_cutlass.so";
+        auto preload_str = tally_cutlass_lib_path.string();
+
+        tally_cutlass_handle = dlopen(preload_str.c_str(), RTLD_LAZY);
         tally_register_cutlass = (void (*)()) dlsym(tally_cutlass_handle, "tally_register_cutlass");
         CutlassSgemmNN = (cudaError_t (*) (cutlassOperation_t, cutlassOperation_t, int, int, int, float, float const *, int,
                                            float const *, int, float, float *, int, void *, cudaStream_t))
                                            dlsym(tally_cutlass_handle, "CutlassSgemmNN");
     }
 }
-
-std::vector<std::string> preload_libs {
-    "libcuda.so.1",
-    "libcudart.so.12",
-    "libcublas.so.12",
-    "libcublasLt.so.12",
-    "libcufft.so.11",
-    "libcusolver.so.11",
-    "libcusparse.so.12",
-    "libcudnn.so.8"
-};
-
-const std::vector<std::string> cuGetProcAddress_funcs = {
-    "cuInit",
-    "cuMemcpy",
-    "cuMemcpyPeer",
-    "cuMemcpyHtoD",
-    "cuMemcpyDtoH",
-    "cuMemcpyDtoD",
-    "cuMemcpyDtoA",
-    "cuMemcpyAtoD",
-    "cuMemcpyHtoA",
-    "cuMemcpyAtoH",
-    "cuMemcpyAtoA",
-    "cuMemcpy3DPeer",
-    "cuMemcpyAsync",
-    "cuMemcpy3D",
-    "cuMemcpy2DUnaligned",
-    "cuMemcpy2D",
-    "cuMemcpyPeerAsync",
-    "cuMemcpyHtoDAsync",
-    "cuMemcpyDtoHAsync",
-    "cuMemcpyDtoDAsync",
-    "cuDeviceGet",
-    "cuDeviceGetName",
-    "cuDeviceGetCount",
-    "cuStreamBeginCapture_v2",
-    "cuGetProcAddress_v2",
-    "cuGetErrorString",
-    "cuGetErrorName",
-    "cuDriverGetVersion",
-    "cuDeviceGetUuid",
-    "cuDeviceGetUuid_v2",
-    "cuDeviceTotalMem_v2",
-    "cuDeviceGetTexture1DLinearMaxWidth",
-    "cuDeviceGetAttribute",
-    "cuDeviceGetNvSciSyncAttributes",
-    "cuDeviceSetMemPool",
-    "cuDeviceGetMemPool",
-    "cuDeviceGetDefaultMemPool",
-    "cuDeviceGetExecAffinitySupport",
-    "cuDeviceGetP2PAttribute",
-    "cuFlushGPUDirectRDMAWrites",
-    "cuDeviceGetProperties",
-    "cuDeviceComputeCapability",
-    "cuDevicePrimaryCtxRetain",
-    "cuDevicePrimaryCtxRelease_v2",
-    "cuDevicePrimaryCtxSetFlags_v2",
-    "cuDevicePrimaryCtxGetState",
-    "cuDevicePrimaryCtxReset_v2",
-    "cuCtxCreate_v2",
-    "cuCtxCreate_v3",
-    "cuCtxDestroy_v2",
-    "cuCtxPushCurrent_v2",
-    "cuCtxPopCurrent_v2",
-    "cuCtxSetCurrent",
-    "cuCtxGetCurrent",
-    "cuCtxGetDevice",
-    "cuCtxGetFlags",
-    "cuCtxSetFlags",
-    "cuCtxGetId",
-    "cuCtxSynchronize",
-    "cuCtxSetLimit",
-    "cuCtxGetLimit",
-    "cuCtxGetCacheConfig",
-    "cuCtxSetCacheConfig",
-    "cuCtxGetSharedMemConfig",
-    "cuCtxSetSharedMemConfig",
-    "cuCtxGetApiVersion",
-    "cuCtxGetStreamPriorityRange",
-    "cuCtxResetPersistingL2Cache",
-    "cuCtxGetExecAffinity",
-    "cuCtxAttach",
-    "cuCtxDetach",
-    "cuModuleLoad",
-    "cuModuleLoadData",
-    "cuModuleLoadDataEx",
-    "cuModuleLoadFatBinary",
-    "cuModuleUnload",
-    "cuModuleGetLoadingMode",
-    "cuModuleGetFunction",
-    "cuModuleGetGlobal_v2",
-    "cuLinkCreate_v2",
-    "cuLinkAddData_v2",
-    "cuLinkAddFile_v2",
-    "cuLinkComplete",
-    "cuLinkDestroy",
-    "cuModuleGetTexRef",
-    "cuModuleGetSurfRef",
-    "cuLibraryLoadData",
-    "cuLibraryLoadFromFile",
-    "cuLibraryUnload",
-    "cuLibraryGetKernel",
-    "cuLibraryGetModule",
-    "cuKernelGetFunction",
-    "cuLibraryGetGlobal",
-    "cuLibraryGetManaged",
-    "cuLibraryGetUnifiedFunction",
-    "cuKernelGetAttribute",
-    "cuKernelSetAttribute",
-    "cuKernelSetCacheConfig",
-    "cuMemGetInfo_v2",
-    "cuMemAlloc_v2",
-    "cuMemAllocPitch_v2",
-    "cuMemFree_v2",
-    "cuMemGetAddressRange_v2",
-    "cuMemAllocHost_v2",
-    "cuMemFreeHost",
-    "cuMemHostAlloc",
-    "cuMemHostGetDevicePointer_v2",
-    "cuMemHostGetFlags",
-    "cuMemAllocManaged",
-    "cuDeviceGetByPCIBusId",
-    "cuDeviceGetPCIBusId",
-    "cuIpcGetEventHandle",
-    "cuIpcOpenEventHandle",
-    "cuIpcGetMemHandle",
-    "cuIpcOpenMemHandle_v2",
-    "cuIpcCloseMemHandle",
-    "cuMemHostRegister_v2",
-    "cuMemHostUnregister",
-    "cuMemcpy",
-    "cuMemcpyPeer",
-    "cuMemcpyHtoD_v2",
-    "cuMemcpyDtoH_v2",
-    "cuMemcpyDtoD_v2",
-    "cuMemcpyDtoA_v2",
-    "cuMemcpyAtoD_v2",
-    "cuMemcpyHtoA_v2",
-    "cuMemcpyAtoH_v2",
-    "cuMemcpyAtoA_v2",
-    "cuMemcpy2D_v2",
-    "cuMemcpy2DUnaligned_v2",
-    "cuMemcpy3D_v2",
-    "cuMemcpy3DPeer",
-    "cuMemcpyAsync",
-    "cuMemcpyPeerAsync",
-    "cuMemcpyHtoDAsync_v2",
-    "cuMemcpyDtoHAsync_v2",
-    "cuMemcpyDtoDAsync_v2",
-    "cuMemcpyHtoAAsync_v2",
-    "cuMemcpyAtoHAsync_v2",
-    "cuMemcpy2DAsync_v2",
-    "cuMemcpy3DAsync_v2",
-    "cuMemcpy3DPeerAsync",
-    "cuMemsetD8_v2",
-    "cuMemsetD16_v2",
-    "cuMemsetD32_v2",
-    "cuMemsetD2D8_v2",
-    "cuMemsetD2D16_v2",
-    "cuMemsetD2D32_v2",
-    "cuMemsetD8Async",
-    "cuMemsetD16Async",
-    "cuMemsetD32Async",
-    "cuMemsetD2D8Async",
-    "cuMemsetD2D16Async",
-    "cuMemsetD2D32Async",
-    "cuArrayCreate_v2",
-    "cuArrayGetDescriptor_v2",
-    "cuArrayGetSparseProperties",
-    "cuMipmappedArrayGetSparseProperties",
-    "cuArrayGetMemoryRequirements",
-    "cuMipmappedArrayGetMemoryRequirements",
-    "cuArrayGetPlane",
-    "cuArrayDestroy",
-    "cuArray3DCreate_v2",
-    "cuArray3DGetDescriptor_v2",
-    "cuMipmappedArrayCreate",
-    "cuMipmappedArrayGetLevel",
-    "cuMipmappedArrayDestroy",
-    "cuMemGetHandleForAddressRange",
-    "cuMemAddressReserve",
-    "cuMemAddressFree",
-    "cuMemCreate",
-    "cuMemRelease",
-    "cuMemMap",
-    "cuMemMapArrayAsync",
-    "cuMemUnmap",
-    "cuMemSetAccess",
-    "cuMemGetAccess",
-    "cuMemExportToShareableHandle",
-    "cuMemImportFromShareableHandle",
-    "cuMemGetAllocationGranularity",
-    "cuMemGetAllocationPropertiesFromHandle",
-    "cuMemRetainAllocationHandle",
-    "cuMemFreeAsync",
-    "cuMemAllocAsync",
-    "cuMemPoolTrimTo",
-    "cuMemPoolSetAttribute",
-    "cuMemPoolGetAttribute",
-    "cuMemPoolSetAccess",
-    "cuMemPoolGetAccess",
-    "cuMemPoolCreate",
-    "cuMemPoolDestroy",
-    "cuMemAllocFromPoolAsync",
-    "cuMemPoolExportToShareableHandle",
-    "cuMemPoolImportFromShareableHandle",
-    "cuMemPoolExportPointer",
-    "cuMemPoolImportPointer",
-    "cuMulticastCreate",
-    "cuMulticastAddDevice",
-    "cuMulticastBindMem",
-    "cuMulticastBindAddr",
-    "cuMulticastUnbind",
-    "cuMulticastGetGranularity",
-    "cuPointerGetAttribute",
-    "cuMemPrefetchAsync",
-    "cuMemPrefetchAsync_v2",
-    "cuMemAdvise",
-    "cuMemAdvise_v2",
-    "cuMemRangeGetAttribute",
-    "cuMemRangeGetAttributes",
-    "cuPointerSetAttribute",
-    "cuPointerGetAttributes",
-    "cuStreamCreate",
-    "cuStreamCreateWithPriority",
-    "cuStreamGetPriority",
-    "cuStreamGetFlags",
-    "cuStreamGetId",
-    "cuStreamGetCtx",
-    "cuStreamWaitEvent",
-    "cuStreamAddCallback",
-    "cuStreamBeginCapture_v2",
-    "cuThreadExchangeStreamCaptureMode",
-    "cuStreamEndCapture",
-    "cuStreamIsCapturing",
-    "cuStreamGetCaptureInfo_v2",
-    "cuStreamUpdateCaptureDependencies",
-    "cuStreamAttachMemAsync",
-    "cuStreamQuery",
-    "cuStreamSynchronize",
-    "cuStreamDestroy_v2",
-    "cuStreamCopyAttributes",
-    "cuStreamGetAttribute",
-    "cuStreamSetAttribute",
-    "cuEventCreate",
-    "cuEventRecord",
-    "cuEventRecordWithFlags",
-    "cuEventQuery",
-    "cuEventSynchronize",
-    "cuEventDestroy_v2",
-    "cuEventElapsedTime",
-    "cuImportExternalMemory",
-    "cuExternalMemoryGetMappedBuffer",
-    "cuExternalMemoryGetMappedMipmappedArray",
-    "cuDestroyExternalMemory",
-    "cuImportExternalSemaphore",
-    "cuSignalExternalSemaphoresAsync",
-    "cuWaitExternalSemaphoresAsync",
-    "cuDestroyExternalSemaphore",
-    "cuStreamWaitValue32_v2",
-    "cuStreamWaitValue64_v2",
-    "cuStreamWriteValue32_v2",
-    "cuStreamWriteValue64_v2",
-    "cuStreamBatchMemOp_v2",
-    "cuFuncGetAttribute",
-    "cuFuncSetAttribute",
-    "cuFuncSetCacheConfig",
-    "cuFuncSetSharedMemConfig",
-    "cuFuncGetModule",
-    "cuLaunchKernel",
-    "cuLaunchKernelEx",
-    "cuLaunchCooperativeKernel",
-    "cuLaunchCooperativeKernelMultiDevice",
-    "cuLaunchHostFunc",
-    "cuFuncSetBlockShape",
-    "cuFuncSetSharedSize",
-    "cuParamSetSize",
-    "cuParamSeti",
-    "cuParamSetf",
-    "cuParamSetv",
-    "cuLaunch",
-    "cuLaunchGrid",
-    "cuLaunchGridAsync",
-    "cuParamSetTexRef",
-    "cuGraphCreate",
-    "cuGraphAddKernelNode_v2",
-    "cuGraphKernelNodeGetParams_v2",
-    "cuGraphKernelNodeSetParams_v2",
-    "cuGraphAddMemcpyNode",
-    "cuGraphMemcpyNodeGetParams",
-    "cuGraphMemcpyNodeSetParams",
-    "cuGraphAddMemsetNode",
-    "cuGraphMemsetNodeGetParams",
-    "cuGraphMemsetNodeSetParams",
-    "cuGraphAddHostNode",
-    "cuGraphHostNodeGetParams",
-    "cuGraphHostNodeSetParams",
-    "cuGraphAddChildGraphNode",
-    "cuGraphChildGraphNodeGetGraph",
-    "cuGraphAddEmptyNode",
-    "cuGraphAddEventRecordNode",
-    "cuGraphEventRecordNodeGetEvent",
-    "cuGraphEventRecordNodeSetEvent",
-    "cuGraphAddEventWaitNode",
-    "cuGraphEventWaitNodeGetEvent",
-    "cuGraphEventWaitNodeSetEvent",
-    "cuGraphAddExternalSemaphoresSignalNode",
-    "cuGraphExternalSemaphoresSignalNodeGetParams",
-    "cuGraphExternalSemaphoresSignalNodeSetParams",
-    "cuGraphAddExternalSemaphoresWaitNode",
-    "cuGraphExternalSemaphoresWaitNodeGetParams",
-    "cuGraphExternalSemaphoresWaitNodeSetParams",
-    "cuGraphAddBatchMemOpNode",
-    "cuGraphBatchMemOpNodeGetParams",
-    "cuGraphBatchMemOpNodeSetParams",
-    "cuGraphExecBatchMemOpNodeSetParams",
-    "cuGraphAddMemAllocNode",
-    "cuGraphMemAllocNodeGetParams",
-    "cuGraphAddMemFreeNode",
-    "cuGraphMemFreeNodeGetParams",
-    "cuDeviceGraphMemTrim",
-    "cuDeviceGetGraphMemAttribute",
-    "cuDeviceSetGraphMemAttribute",
-    "cuGraphClone",
-    "cuGraphNodeFindInClone",
-    "cuGraphNodeGetType",
-    "cuGraphGetNodes",
-    "cuGraphGetRootNodes",
-    "cuGraphGetEdges",
-    "cuGraphNodeGetDependencies",
-    "cuGraphNodeGetDependentNodes",
-    "cuGraphAddDependencies",
-    "cuGraphRemoveDependencies",
-    "cuGraphDestroyNode",
-    "cuGraphInstantiate",
-    "cuGraphInstantiateWithFlags",
-    "cuGraphInstantiateWithParams",
-    "cuGraphInstantiateWithParams_ptsz",
-    "cuGraphExecGetFlags",
-    "cuGraphExecKernelNodeSetParams_v2",
-    "cuGraphExecMemcpyNodeSetParams",
-    "cuGraphExecMemsetNodeSetParams",
-    "cuGraphExecHostNodeSetParams",
-    "cuGraphExecChildGraphNodeSetParams",
-    "cuGraphExecEventRecordNodeSetEvent",
-    "cuGraphExecEventWaitNodeSetEvent",
-    "cuGraphExecExternalSemaphoresSignalNodeSetParams",
-    "cuGraphExecExternalSemaphoresWaitNodeSetParams",
-    "cuGraphNodeSetEnabled",
-    "cuGraphNodeGetEnabled",
-    "cuGraphUpload",
-    "cuGraphLaunch",
-    "cuGraphExecDestroy",
-    "cuGraphDestroy",
-    "cuGraphExecUpdate_v2",
-    "cuGraphKernelNodeCopyAttributes",
-    "cuGraphKernelNodeGetAttribute",
-    "cuGraphKernelNodeSetAttribute",
-    "cuGraphDebugDotPrint",
-    "cuUserObjectCreate",
-    "cuUserObjectRetain",
-    "cuUserObjectRelease",
-    "cuGraphRetainUserObject",
-    "cuGraphReleaseUserObject",
-    "cuGraphAddNode",
-    "cuGraphNodeSetParams",
-    "cuGraphExecNodeSetParams",
-    "cuOccupancyMaxActiveBlocksPerMultiprocessor",
-    "cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags",
-    "cuOccupancyMaxPotentialBlockSize",
-    "cuOccupancyMaxPotentialBlockSizeWithFlags",
-    "cuOccupancyAvailableDynamicSMemPerBlock",
-    "cuOccupancyMaxPotentialClusterSize",
-    "cuOccupancyMaxActiveClusters",
-    "cuTexRefSetArray",
-    "cuTexRefSetMipmappedArray",
-    "cuTexRefSetAddress_v2",
-    "cuTexRefSetAddress2D_v3",
-    "cuTexRefSetFormat",
-    "cuTexRefSetAddressMode",
-    "cuTexRefSetFilterMode",
-    "cuTexRefSetMipmapFilterMode",
-    "cuTexRefSetMipmapLevelBias",
-    "cuTexRefSetMipmapLevelClamp",
-    "cuTexRefSetMaxAnisotropy",
-    "cuTexRefSetBorderColor",
-    "cuTexRefSetFlags",
-    "cuTexRefGetAddress_v2",
-    "cuTexRefGetArray",
-    "cuTexRefGetMipmappedArray",
-    "cuTexRefGetAddressMode",
-    "cuTexRefGetFilterMode",
-    "cuTexRefGetFormat",
-    "cuTexRefGetMipmapFilterMode",
-    "cuTexRefGetMipmapLevelBias",
-    "cuTexRefGetMipmapLevelClamp",
-    "cuTexRefGetMaxAnisotropy",
-    "cuTexRefGetBorderColor",
-    "cuTexRefGetFlags",
-    "cuTexRefCreate",
-    "cuTexRefDestroy",
-    "cuSurfRefSetArray",
-    "cuSurfRefGetArray",
-    "cuTexObjectCreate",
-    "cuTexObjectDestroy",
-    "cuTexObjectGetResourceDesc",
-    "cuTexObjectGetTextureDesc",
-    "cuTexObjectGetResourceViewDesc",
-    "cuSurfObjectCreate",
-    "cuSurfObjectDestroy",
-    "cuSurfObjectGetResourceDesc",
-    "cuTensorMapEncodeTiled",
-    "cuTensorMapEncodeIm2col",
-    "cuTensorMapReplaceAddress",
-    "cuDeviceCanAccessPeer",
-    "cuCtxEnablePeerAccess",
-    "cuCtxDisablePeerAccess",
-    "cuDeviceGetP2PAttribute",
-    "cuGraphicsUnregisterResource",
-    "cuGraphicsSubResourceGetMappedArray",
-    "cuGraphicsResourceGetMappedMipmappedArray",
-    "cuGraphicsResourceGetMappedPointer_v2",
-    "cuGraphicsResourceSetMapFlags_v2",
-    "cuGraphicsMapResources",
-    "cuGraphicsUnmapResources",
-    "cuGetProcAddress_v2",
-    "cuCoredumpGetAttribute",
-    "cuCoredumpGetAttributeGlobal",
-    "cuCoredumpSetAttribute",
-    "cuCoredumpSetAttributeGlobal",
-    "cuGetExportTable",
-    "cuProfilerStart",
-    "cuProfilerStop",
-    "cudaGetTextureReference",
-    "cudaGetSurfaceReference",
-    "cudaBindTexture",
-    "cudaBindTexture2D",
-    "cudaBindTextureToArray",
-    "cudaBindTextureToMipmappedArray",
-    "cudaLaunchKernel",
-    "cudaLaunchCooperativeKernel",
-    "cudaLaunchCooperativeKernelMultiDevice",
-    "cudaMemcpyToSymbol",
-    "cudaMemcpyFromSymbol",
-    "cudaMemcpyToSymbolAsync",
-    "cudaMemcpyFromSymbolAsync",
-    "cudaGetSymbolAddress",
-    "cudaGetSymbolSize",
-    "cudaUnbindTexture",
-    "cudaGetTextureAlignmentOffset",
-    "cudaBindSurfaceToArray",
-    "cudaGetFuncBySymbol",
-    "cudaSetValidDevices",
-    "cudaGraphExecMemcpyNodeSetParamsFromSymbol",
-    "cudaGraphExecMemcpyNodeSetParamsToSymbol",
-    "cudaGraphAddMemcpyNodeToSymbol",
-    "cudaGraphAddMemcpyNodeFromSymbol",
-    "cudaGraphMemcpyNodeSetParamsToSymbol",
-    "cudaGraphMemcpyNodeSetParamsFromSymbol",
-    "cudaProfilerInitialize",
-    "cudaProfilerStart",
-    "cudaProfilerStop",
-    "cuProfilerInitialize",
-    "cuProfilerStart",
-    "cuProfilerStop",
-    "cuDeviceGetLuid"
-};
-
-const std::vector<std::string> cuGetProcAddress_v2funcs = {
-    "cuDeviceTotalMem",
-    "cuStreamBeginCapture",
-    "cuGetProcAddress",
-    "cuDevicePrimaryCtxRelease",
-    "cuDevicePrimaryCtxSetFlags",
-    "cuDevicePrimaryCtxReset",
-    "cuCtxCreate",
-    "cuCtxDestroy",
-    "cuCtxPushCurrent",
-    "cuCtxPopCurrent",
-    "cuModuleGetGlobal",
-    "cuLinkCreate",
-    "cuLinkAddData",
-    "cuLinkAddFile",
-    "cuMemGetInfo",
-    "cuMemAlloc",
-    "cuMemAllocPitch",
-    "cuMemFree",
-    "cuMemGetAddressRange",
-    "cuMemAllocHost",
-    "cuMemHostGetDevicePointer",
-    "cuIpcOpenMemHandle",
-    "cuMemHostRegister",
-    "cuMemcpyHtoD",
-    "cuMemcpyDtoH",
-    "cuMemcpyDtoD",
-    "cuMemcpyDtoA",
-    "cuMemcpyAtoD",
-    "cuMemcpyHtoA",
-    "cuMemcpyAtoH",
-    "cuMemcpyAtoA",
-    "cuMemcpy2D",
-    "cuMemcpy2DUnaligned",
-    "cuMemcpy3D",
-    "cuMemcpyHtoDAsync",
-    "cuMemcpyDtoHAsync",
-    "cuMemcpyDtoDAsync",
-    "cuMemcpyHtoAAsync",
-    "cuMemcpyAtoHAsync",
-    "cuMemcpy2DAsync",
-    "cuMemcpy3DAsync",
-    "cuMemsetD8",
-    "cuMemsetD16",
-    "cuMemsetD32",
-    "cuMemsetD2D8",
-    "cuMemsetD2D16",
-    "cuMemsetD2D32",
-    "cuArrayCreate",
-    "cuArrayGetDescriptor",
-    "cuArray3DCreate",
-    "cuArray3DGetDescriptor",
-    "cuMemPrefetchAsync",
-    "cuMemAdvise",
-    "cuStreamBeginCapture",
-    "cuStreamGetCaptureInfo",
-    "cuStreamDestroy",
-    "cuEventDestroy",
-    "cuStreamWaitValue32",
-    "cuStreamWaitValue64",
-    "cuStreamWriteValue32",
-    "cuStreamWriteValue64",
-    "cuStreamBatchMemOp",
-    "cuGraphAddKernelNode",
-    "cuGraphKernelNodeGetParams",
-    "cuGraphKernelNodeSetParams",
-    "cuGraphExecKernelNodeSetParams",
-    "cuGraphExecUpdate",
-    "cuTexRefSetAddress",
-    "cuTexRefGetAddress",
-    "cuGraphicsResourceGetMappedPointer",
-    "cuGraphicsResourceSetMapFlags",
-    "cuGetProcAddress"
-};
-
-const std::vector<std::string> cuGetProcAddress_v3funcs = {
-    "cuTexRefSetAddress2D"
-};
-
-
-const std::vector<std::string> cuGetProcAddress_direct_call_funcs = {
-    "cuGraphicsGLRegisterBuffer",
-    "cuGraphicsGLRegisterImage",
-    "cuWGLGetDevice",
-    "cuGLGetDevices",
-    "cuGLCtxCreate",
-    "cuGLInit",
-    "cuGLRegisterBufferObject",
-    "cuGLMapBufferObject",
-    "cuGLUnmapBufferObject",
-    "cuGLUnregisterBufferObject",
-    "cuGLSetBufferObjectMapFlags",
-    "cuGLMapBufferObjectAsync",
-    "cuGLUnmapBufferObjectAsync",
-    "cudaGLGetDevices",
-    "cudaGraphicsGLRegisterImage",
-    "cudaGraphicsGLRegisterBuffer",
-    "cudaWGLGetDevice",
-    "cudaGLSetGLDevice",
-    "cudaGLRegisterBufferObject",
-    "cudaGLMapBufferObject",
-    "cudaGLUnmapBufferObject",
-    "cudaGLUnregisterBufferObject",
-    "cudaGLSetBufferObjectMapFlags",
-    "cudaGLMapBufferObjectAsync",
-    "cudaGLUnmapBufferObjectAsync",
-    "cuGraphicsEGLRegisterImage",
-    "cuEGLStreamConsumerConnect",
-    "cuEGLStreamConsumerConnectWithFlags",
-    "cuEGLStreamConsumerDisconnect",
-    "cuEGLStreamConsumerAcquireFrame",
-    "cuEGLStreamConsumerReleaseFrame",
-    "cuEGLStreamProducerConnect",
-    "cuEGLStreamProducerDisconnect",
-    "cuEGLStreamProducerPresentFrame",
-    "cuEGLStreamProducerReturnFrame",
-    "cuGraphicsResourceGetMappedEglFrame",
-    "cuEventCreateFromEGLSync",
-    "cudaGraphicsEGLRegisterImage",
-    "cudaEGLStreamConsumerConnect",
-    "cudaEGLStreamConsumerConnectWithFlags",
-    "cudaEGLStreamConsumerDisconnect",
-    "cudaEGLStreamConsumerAcquireFrame",
-    "cudaEGLStreamConsumerReleaseFrame",
-    "cudaEGLStreamProducerConnect",
-    "cudaEGLStreamProducerDisconnect",
-    "cudaEGLStreamProducerPresentFrame",
-    "cudaEGLStreamProducerReturnFrame",
-    "cudaGraphicsResourceGetMappedEglFrame",
-    "cudaEventCreateFromEGLSync",
-    "cuVDPAUGetDevice",
-    "cuVDPAUCtxCreate",
-    "cuGraphicsVDPAURegisterVideoSurface",
-    "cuGraphicsVDPAURegisterOutputSurface",
-    "cudaVDPAUGetDevice",
-    "cudaVDPAUSetVDPAUDevice",
-    "cudaGraphicsVDPAURegisterVideoSurface",
-    "cudaGraphicsVDPAURegisterOutputSurface"
-};
 
 extern "C" {
 
@@ -732,15 +130,9 @@ void *dlopen(const char *filename, int flag)
         if (std::find(preload_libs.begin(), preload_libs.end(), f_name) != preload_libs.end()) {
 
             if (!tally_handle) {
-                std::filesystem::path client_preload_path;
-                if (std::getenv("TALLY_HOME")) {
-                    client_preload_path = std::filesystem::path(std::string(std::getenv("TALLY_HOME"))) / "build/libtally_client.so";
-                } else {
-                    client_preload_path = std::filesystem::path(std::string(std::getenv("HOME"))) / "tally/build/libtally_client.so";
-                }
-
-                auto preload_str = client_preload_path.string();
-
+                auto client_preload_dir = get_client_preload_dir();
+                auto tally_lib_path = client_preload_dir / "libtally_client.so";
+                auto preload_str = tally_lib_path.string();
                 tally_handle = ldlopen(preload_str.c_str(), flag); 
             } 
 
@@ -1333,7 +725,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         auto cutlass_transa = cublas_op_to_cutlass_op(transa);
         auto cutlass_transb = cublas_op_to_cutlass_op(transb);
 
-        auto cuda_err = CutlassSgemmNN(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, nullptr, ctx.stream);
+        auto cuda_err = CutlassSgemmNN(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, ctx.workspace, ctx.stream);
 
         cudaDeviceSynchronize();
 
@@ -1459,7 +851,12 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 	TALLY_SPD_LOG("cublasLtMatmulDescSetAttribute hooked");
     TALLY_CLIENT_PROFILE_START;
 
+    cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
+
 #if defined(RUN_LOCALLY)
+
+    std::cout << "cublasLtMatmulDescAttributes_t: " << (int) attr << std::endl;
+
     auto err = lcublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
 #else
 
@@ -3956,6 +3353,7 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasCreate_v2(handle);
+    cublas_tracer.handle_cublasCreate_v2(*handle);
 #else
 
     cublasStatus_t err;
@@ -5994,6 +5392,9 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 {
 	TALLY_SPD_LOG("cublasSetMathMode hooked");
 	TALLY_CLIENT_PROFILE_START;
+
+    cublas_tracer.handle_cublasSetMathMode(handle, mode);
+
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetMathMode(handle, mode);
 #else
@@ -6016,18 +5417,7 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const cublasStatus_t*>(responsePayload);
-            err = *response;
-
-            cublas_tracer.handle_cublasSetMathMode(handle, mode);
-
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetMathMode);
@@ -6038,6 +5428,9 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 {
 	TALLY_LOG("cublasDestroy_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
+
+    cublas_tracer.handle_cublasDestroy_v2(handle);
+
 #if defined(RUN_LOCALLY)
 	auto err = lcublasDestroy_v2(handle);
 #else
@@ -6059,21 +5452,269 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasDestroy_v2);
+	return err;
+}
+
+cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId)
+{
+	TALLY_SPD_LOG("cublasSetStream_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+    cublas_tracer.handle_cublasSetStream_v2(handle, streamId);
+
+#if defined(RUN_LOCALLY)
+	auto err = lcublasSetStream_v2(handle, streamId);
+#else
+
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetStream_v2Arg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSETSTREAM_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasSetStream_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->handle = handle;
+			request->streamId = streamId;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasSetStream_v2);
+	return err;
+}
+
+cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, size_t  workspaceSizeInBytes)
+{
+	TALLY_SPD_LOG("cublasSetWorkspace_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+    cublas_tracer.handle_cublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
+
+#if defined(RUN_LOCALLY)
+	auto err = lcublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
+#else
+
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetWorkspace_v2Arg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSETWORKSPACE_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasSetWorkspace_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->handle = handle;
+			request->workspace = workspace;
+			request->workspaceSizeInBytes = workspaceSizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasSetWorkspace_v2);
+	return err;
+}
+
+cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
+{
+	TALLY_SPD_LOG("cublasLtCreate hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcublasLtCreate(lightHandle);
+    cublasLt_tracer.handle_cublasLtCreate(*lightHandle);
+#else
+
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtCreateArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTCREATE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasLtCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->lightHandle = lightHandle;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     while(!TallyClient::client->iox_client->take()
         .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasLtCreateResponse*>(responsePayload);
+			if (lightHandle) { *lightHandle = response->lightHandle; }
+
+            err = response->err;
+            cublasLt_tracer.handle_cublasLtCreate(response->lightHandle);
+
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasLtCreate);
+	return err;
+}
+
+cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cublasComputeType_t  computeType, cudaDataType_t  scaleType)
+{
+	TALLY_SPD_LOG("cublasLtMatmulDescCreate hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
+    cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(*matmulDesc, computeType, scaleType);
+#else
+
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescCreateArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCCREATE;
+            header->client_id = TallyClient::client->client_id;
             
-            auto response = static_cast<const cublasStatus_t*>(responsePayload);
-            err = *response;
+            auto request = (cublasLtMatmulDescCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->matmulDesc = matmulDesc;
+			request->computeType = computeType;
+			request->scaleType = scaleType;
 
-            cublas_tracer.handle_cublasDestroy_v2(handle);
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasLtMatmulDescCreateResponse*>(responsePayload);
+			if (matmulDesc) { *matmulDesc = response->matmulDesc; }
+
+            err = response->err;
+            cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(response->matmulDesc, computeType, scaleType);
+
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescCreate);
+	return err;
+}
+
+cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)
+{
+	TALLY_SPD_LOG("cublasLtMatrixLayoutCreate hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
+    cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(*matLayout, type, rows, cols, ld);
+#else
+
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutCreateArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTCREATE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasLtMatrixLayoutCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->matLayout = matLayout;
+			request->type = type;
+			request->rows = rows;
+			request->cols = cols;
+			request->ld = ld;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasLtMatrixLayoutCreateResponse*>(responsePayload);
+			if (matLayout) { *matLayout = response->matLayout; }
+
+            cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(response->matLayout, type, rows, cols, ld);
+
+            err = response->err;
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasDestroy_v2);
+	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutCreate);
+	return err;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
+{
+	TALLY_SPD_LOG("cublasLtMatmulPreferenceCreate hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcublasLtMatmulPreferenceCreate(pref);
+    cublasLtMatmulPreference_tracer.handle_cublasLtMatmulPreferenceCreate(*pref);
+#else
+
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceCreateArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCECREATE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasLtMatmulPreferenceCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->pref = pref;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasLtMatmulPreferenceCreateResponse*>(responsePayload);
+			if (pref) { *pref = response->pref; }
+            cublasLtMatmulPreference_tracer.handle_cublasLtMatmulPreferenceCreate(response->pref);
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceCreate);
 	return err;
 }
 

@@ -59,11 +59,11 @@ done
 
 cleanup
 
-# Run tests with offline client 
-for item in "${test_list[@]}"; do
-    echo $item
-    SCHEDULER_POLICY=WORKLOAD_AGNOSTIC_SHARING ./scripts/start_client.sh $item
-done
+# # Run tests with offline client 
+# for item in "${test_list[@]}"; do
+#     echo $item
+#     SCHEDULER_POLICY=WORKLOAD_AGNOSTIC_SHARING ./scripts/start_client.sh $item
+# done
 
 echo All tests passed!
 

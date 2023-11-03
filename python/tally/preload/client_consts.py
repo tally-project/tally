@@ -520,6 +520,12 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasLtMatmulPreferenceCreate",
+    "cublasLtMatrixLayoutCreate",
+    "cublasLtMatmulDescCreate",
+    "cublasLtCreate",
+    "cublasSetWorkspace_v2",
+    "cublasSetStream_v2",
     "cublasDestroy_v2",
     "cublasSetMathMode",
     "cudaStreamEndCapture",
@@ -700,8 +706,6 @@ FORWARD_API_CALLS = [
     "cuDevicePrimaryCtxRelease_v2",
     "cuDevicePrimaryCtxSetFlags_v2",
     "cuDevicePrimaryCtxReset_v2",
-    "cublasSetStream_v2",
-    "cublasSetWorkspace_v2",
     "cublasLtMatmulDescDestroy",
     "cublasLtMatrixLayoutDestroy",
     "cublasLtMatmulPreferenceDestroy",
@@ -797,10 +801,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cuDeviceGetDefaultMemPool",
     "cuDeviceGetProperties",
     "cuDevicePrimaryCtxRetain",
-    "cublasLtMatmulDescCreate",
-    "cublasLtMatrixLayoutCreate",
-    "cublasLtMatmulPreferenceCreate",
-    "cublasLtCreate",
     "cuDeviceGetTexture1DLinearMaxWidth",
     "cuDeviceGetExecAffinitySupport",
     "cuCtxPopCurrent_v2",

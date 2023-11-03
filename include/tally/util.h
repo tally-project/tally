@@ -9,6 +9,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 std::string demangleFunc(std::string mangledName);
 bool is_process_running(pid_t pid);
@@ -28,6 +29,17 @@ std::string get_tmp_file_path(std::string suffix, int file_name=-1);
 template <typename T>
 void merge_vec(std::vector<T>& dest, const std::vector<T>& src) {
     dest.insert(dest.end(), src.begin(), src.end());
+}
+
+inline std::filesystem::path get_client_preload_dir()
+{
+    std::filesystem::path client_preload_dir;
+    if (std::getenv("TALLY_HOME")) {
+        client_preload_dir = std::filesystem::path(std::string(std::getenv("TALLY_HOME"))) / "build";
+    } else {
+        client_preload_dir = std::filesystem::path(std::string(std::getenv("HOME"))) / "tally/build";
+    }
+    return client_preload_dir;
 }
 
 inline std::string get_process_name(int pid) {
