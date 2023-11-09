@@ -46,6 +46,12 @@ struct cublasLtMatrixLayoutCtx {
 
 struct cublasLtMatmulPreferenceCtx {
 	cublasLtMatmulPreference_t handle;
+
+	uint64_t cublaslt_matmul_pref_max_workspace_bytes = 0;
+	uint32_t cublaslt_matmul_pref_min_alignment_c_bytes = 256;
+	uint32_t cublaslt_matmul_pref_min_alignment_d_bytes = 256;
+	float cublaslt_matmul_pref_max_waves_count = 0.0f;
+	uint64_t cublaslt_matmul_pref_impl_mask = -1;
 };
 
 class cublasTracer {
@@ -188,6 +194,29 @@ public:
 
 	cublasLtMatmulPreferenceCtx get_cublasLtMatrixLayoutCtx(cublasLtMatmulPreference_t handle) {
 		return handle_map[handle];
+	}
+
+	void handle_cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t handle, cublasLtMatmulPreferenceAttributes_t attr, const void *buf, size_t sizeInBytes) {
+		auto &ctx = handle_map[handle];
+
+		if (attr == CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES) {
+			assert(sizeInBytes == sizeof(uint64_t));
+			ctx.cublaslt_matmul_pref_max_workspace_bytes = *((uint64_t *) buf);
+		} else if (attr == CUBLASLT_MATMUL_PREF_MIN_ALIGNMENT_C_BYTES) {
+			assert(sizeInBytes == sizeof(uint32_t));
+			ctx.cublaslt_matmul_pref_min_alignment_c_bytes = *((uint32_t *) buf);
+		} else if (attr == CUBLASLT_MATMUL_PREF_MIN_ALIGNMENT_D_BYTES) {
+			assert(sizeInBytes == sizeof(uint32_t));
+			ctx.cublaslt_matmul_pref_min_alignment_d_bytes = *((uint32_t *) buf);
+		} else if (attr == CUBLASLT_MATMUL_PREF_MAX_WAVES_COUNT) {
+			assert(sizeInBytes == sizeof(float));
+			ctx.cublaslt_matmul_pref_max_waves_count = *((float *) buf);
+		} else if (attr == CUBLASLT_MATMUL_PREF_IMPL_MASK) {
+			assert(sizeInBytes == sizeof(uint64_t));
+			ctx.cublaslt_matmul_pref_impl_mask = *((uint64_t *) buf);
+		} else {
+			throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublasLtMatmulDescAttributes_t " + std::to_string((int) attr) + " is yet handled.");
+		}
 	}
 };
 
