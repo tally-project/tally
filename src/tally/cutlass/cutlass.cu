@@ -24,6 +24,8 @@ cudaError_t CutlassSgemmNN(
     float beta,
     float *C,
     int ldc,
+    float *D,
+    int ldd,
     void *workSpace,
     cudaStream_t stream
 ) {
@@ -48,7 +50,7 @@ cudaError_t CutlassSgemmNN(
                                     {A, lda},    // Tensor-ref for source matrix A
                                     {B, ldb},    // Tensor-ref for source matrix B
                                     {C, ldc},    // Tensor-ref for source matrix C
-                                    {C, ldc},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
+                                    {D, ldd},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
                                     {alpha, beta}); // Scalars used in the Epilogue
 
 
@@ -68,7 +70,7 @@ cudaError_t CutlassSgemmNN(
                                     {A, lda},    // Tensor-ref for source matrix A
                                     {B, ldb},    // Tensor-ref for source matrix B
                                     {C, ldc},    // Tensor-ref for source matrix C
-                                    {C, ldc},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
+                                    {D, ldd},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
                                     {alpha, beta}); // Scalars used in the Epilogue
 
 
@@ -87,7 +89,7 @@ cudaError_t CutlassSgemmNN(
                                     {A, lda},    // Tensor-ref for source matrix A
                                     {B, ldb},    // Tensor-ref for source matrix B
                                     {C, ldc},    // Tensor-ref for source matrix C
-                                    {C, ldc},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
+                                    {D, ldd},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
                                     {alpha, beta}); // Scalars used in the Epilogue
 
 
@@ -106,7 +108,7 @@ cudaError_t CutlassSgemmNN(
                                     {A, lda},    // Tensor-ref for source matrix A
                                     {B, ldb},    // Tensor-ref for source matrix B
                                     {C, ldc},    // Tensor-ref for source matrix C
-                                    {C, ldc},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
+                                    {D, ldd},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
                                     {alpha, beta}); // Scalars used in the Epilogue
 
 

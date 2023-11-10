@@ -44,16 +44,6 @@ struct cublasLtMatrixLayoutCtx {
 	int64_t  ld;
 };
 
-struct cublasLtMatmulPreferenceCtx {
-	cublasLtMatmulPreference_t handle;
-
-	uint64_t cublaslt_matmul_pref_max_workspace_bytes = 0;
-	uint32_t cublaslt_matmul_pref_min_alignment_c_bytes = 256;
-	uint32_t cublaslt_matmul_pref_min_alignment_d_bytes = 256;
-	float cublaslt_matmul_pref_max_waves_count = 0.0f;
-	uint64_t cublaslt_matmul_pref_impl_mask = -1;
-};
-
 class cublasTracer {
 
 private:
@@ -129,22 +119,34 @@ public:
 		ctx.computeType = computeType;
 		ctx.scaleType = scaleType;
 		handle_map[handle] = ctx;
+
+		std::cout << "tracer: cublasLtMatmulDescCreate" << std::endl;
+		std::cout << "computeType: " << (int) computeType << std::endl;
+		std::cout << "scaleType: " << (int) scaleType << std::endl;
 	}
 
 	void handle_cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t handle, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes) {
+		
+		std::cout << "tracer: cublasLtMatmulDescSetAttribute" << std::endl;
+
 		auto &ctx = handle_map[handle];
 		if (attr == CUBLASLT_MATMUL_DESC_TRANSA) {
 			assert(sizeInBytes == sizeof(cublasOperation_t));
 			ctx.cublaslt_matmul_desc_transa = *((cublasOperation_t *) buf);
+			std::cout << "CUBLASLT_MATMUL_DESC_TRANSA" << std::endl;
 		} else if (attr == CUBLASLT_MATMUL_DESC_TRANSB) {
 			assert(sizeInBytes == sizeof(cublasOperation_t));
 			ctx.cublaslt_matmul_desc_transb = *((cublasOperation_t *) buf);
+			std::cout << "CUBLASLT_MATMUL_DESC_TRANSB" << std::endl;
 		} else if (attr == CUBLASLT_MATMUL_DESC_EPILOGUE) {
 			assert(sizeInBytes == sizeof(cublasLtEpilogue_t));
 			ctx.cublaslt_matmul_desc_epilogue = *((cublasLtEpilogue_t *) buf);
+			std::cout << "CUBLASLT_MATMUL_DESC_EPILOGUE" << std::endl;
+			std::cout << "ctx.cublaslt_matmul_desc_epilogue: " << (int) ctx.cublaslt_matmul_desc_epilogue << std::endl;
 		} else if (attr == CUBLASLT_MATMUL_DESC_BIAS_POINTER) {
 			assert(sizeInBytes == sizeof(void *));
 			ctx.cublaslt_matmul_desc_bias_pointer = *((void **) buf);
+			std::cout << "CUBLASLT_MATMUL_DESC_BIAS_POINTER" << std::endl;
 		} else {
 			throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublasLtMatmulDescAttributes_t " + std::to_string((int) attr) + " is yet handled.");
 		}
@@ -164,6 +166,13 @@ public:
 	~cublasLtMatrixLayoutTracer(){}
 
 	void handle_cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t  handle, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld) {
+		
+		std::cout << "tracer: cublasLtMatrixLayoutCreate" << std::endl;
+		std::cout << "type: " << (int) type << std::endl;
+		std::cout << "rows: " << (int) rows << std::endl;
+		std::cout << "cols: " << (int) cols << std::endl;
+		std::cout << "ld: " << (int) ld << std::endl;
+		
 		cublasLtMatrixLayoutCtx ctx;
 		ctx.handle = handle;
 		ctx.type = type;
@@ -175,48 +184,6 @@ public:
 
 	cublasLtMatrixLayoutCtx get_cublasLtMatrixLayoutCtx(cublasLtMatrixLayout_t handle) {
 		return handle_map[handle];
-	}
-};
-
-class cublasLtMatmulPreferenceTracer {
-private:
-	std::unordered_map<cublasLtMatmulPreference_t, cublasLtMatmulPreferenceCtx> handle_map;
-
-public:
-	cublasLtMatmulPreferenceTracer(){}
-	~cublasLtMatmulPreferenceTracer(){}
-
-	void handle_cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t  handle) {
-		cublasLtMatmulPreferenceCtx ctx;
-		ctx.handle = handle;
-		handle_map[handle] = ctx;
-	}
-
-	cublasLtMatmulPreferenceCtx get_cublasLtMatrixLayoutCtx(cublasLtMatmulPreference_t handle) {
-		return handle_map[handle];
-	}
-
-	void handle_cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t handle, cublasLtMatmulPreferenceAttributes_t attr, const void *buf, size_t sizeInBytes) {
-		auto &ctx = handle_map[handle];
-
-		if (attr == CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES) {
-			assert(sizeInBytes == sizeof(uint64_t));
-			ctx.cublaslt_matmul_pref_max_workspace_bytes = *((uint64_t *) buf);
-		} else if (attr == CUBLASLT_MATMUL_PREF_MIN_ALIGNMENT_C_BYTES) {
-			assert(sizeInBytes == sizeof(uint32_t));
-			ctx.cublaslt_matmul_pref_min_alignment_c_bytes = *((uint32_t *) buf);
-		} else if (attr == CUBLASLT_MATMUL_PREF_MIN_ALIGNMENT_D_BYTES) {
-			assert(sizeInBytes == sizeof(uint32_t));
-			ctx.cublaslt_matmul_pref_min_alignment_d_bytes = *((uint32_t *) buf);
-		} else if (attr == CUBLASLT_MATMUL_PREF_MAX_WAVES_COUNT) {
-			assert(sizeInBytes == sizeof(float));
-			ctx.cublaslt_matmul_pref_max_waves_count = *((float *) buf);
-		} else if (attr == CUBLASLT_MATMUL_PREF_IMPL_MASK) {
-			assert(sizeInBytes == sizeof(uint64_t));
-			ctx.cublaslt_matmul_pref_impl_mask = *((uint64_t *) buf);
-		} else {
-			throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublasLtMatmulDescAttributes_t " + std::to_string((int) attr) + " is yet handled.");
-		}
 	}
 };
 

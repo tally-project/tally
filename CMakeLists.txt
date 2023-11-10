@@ -15,6 +15,7 @@ option(ENABLE_LOGGING "Enable logging" OFF)
 option(ENABLE_PROFILING "Enable profiling" OFF)
 option(RUN_LOCALLY "Run client process locally" OFF)
 option(REPLACE_CUBLAS "Replace cublas calls with cutlass calls" ON)
+option(VERIFY_CORRECTNESS "Verify that the results after replacing cublas is correct" OFF)
 
 link_directories(/usr/local/cuda/lib64)
 
@@ -114,21 +115,15 @@ add_library(tally_client SHARED
     ${TALLY_CLIENT_SRC_FILES}
 )
 
-if(ENABLE_LOGGING)
-    target_compile_definitions(tally_client PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
-endif()
+# Define a list of strings
+set(tally_client_env_vars "ENABLE_LOGGING" "ENABLE_PROFILING" "RUN_LOCALLY" "REPLACE_CUBLAS" "VERIFY_CORRECTNESS")
 
-if(ENABLE_PROFILING)
-    target_compile_definitions(tally_client PRIVATE ENABLE_PROFILING=${ENABLE_PROFILING})
-endif()
-
-if(RUN_LOCALLY)
-    target_compile_definitions(tally_client PRIVATE RUN_LOCALLY=${RUN_LOCALLY})
-endif()
-
-if (REPLACE_CUBLAS)
-    target_compile_definitions(tally_client PRIVATE REPLACE_CUBLAS=${REPLACE_CUBLAS})
-endif()
+# Loop over the strings using foreach
+foreach(env_var ${tally_client_env_vars})
+    if(${env_var})
+        target_compile_definitions(tally_client PRIVATE ${env_var}=${env_var})
+    endif()
+endforeach()
 
 target_include_directories(tally_client
     PUBLIC ${PROJECT_SOURCE_DIR}/include
