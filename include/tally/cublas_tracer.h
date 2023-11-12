@@ -120,33 +120,35 @@ public:
 		ctx.scaleType = scaleType;
 		handle_map[handle] = ctx;
 
-		std::cout << "tracer: cublasLtMatmulDescCreate" << std::endl;
-		std::cout << "computeType: " << (int) computeType << std::endl;
-		std::cout << "scaleType: " << (int) scaleType << std::endl;
+		// std::cout << "tracer: cublasLtMatmulDescCreate" << std::endl;
+		// std::cout << "computeType: " << (int) computeType << std::endl;
+		// std::cout << "scaleType: " << (int) scaleType << std::endl;
 	}
 
 	void handle_cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t handle, cublasLtMatmulDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes) {
 		
-		std::cout << "tracer: cublasLtMatmulDescSetAttribute" << std::endl;
+		// std::cout << "tracer: cublasLtMatmulDescSetAttribute" << std::endl;
 
 		auto &ctx = handle_map[handle];
 		if (attr == CUBLASLT_MATMUL_DESC_TRANSA) {
 			assert(sizeInBytes == sizeof(cublasOperation_t));
 			ctx.cublaslt_matmul_desc_transa = *((cublasOperation_t *) buf);
-			std::cout << "CUBLASLT_MATMUL_DESC_TRANSA" << std::endl;
+			// std::cout << "CUBLASLT_MATMUL_DESC_TRANSA" << std::endl;
 		} else if (attr == CUBLASLT_MATMUL_DESC_TRANSB) {
 			assert(sizeInBytes == sizeof(cublasOperation_t));
 			ctx.cublaslt_matmul_desc_transb = *((cublasOperation_t *) buf);
-			std::cout << "CUBLASLT_MATMUL_DESC_TRANSB" << std::endl;
+			// std::cout << "CUBLASLT_MATMUL_DESC_TRANSB" << std::endl;
 		} else if (attr == CUBLASLT_MATMUL_DESC_EPILOGUE) {
 			assert(sizeInBytes == sizeof(cublasLtEpilogue_t));
 			ctx.cublaslt_matmul_desc_epilogue = *((cublasLtEpilogue_t *) buf);
-			std::cout << "CUBLASLT_MATMUL_DESC_EPILOGUE" << std::endl;
-			std::cout << "ctx.cublaslt_matmul_desc_epilogue: " << (int) ctx.cublaslt_matmul_desc_epilogue << std::endl;
+			// std::cout << "CUBLASLT_MATMUL_DESC_EPILOGUE" << std::endl;
+			// std::cout << "ctx.cublaslt_matmul_desc_epilogue: " << (int) ctx.cublaslt_matmul_desc_epilogue << std::endl;
 		} else if (attr == CUBLASLT_MATMUL_DESC_BIAS_POINTER) {
 			assert(sizeInBytes == sizeof(void *));
 			ctx.cublaslt_matmul_desc_bias_pointer = *((void **) buf);
-			std::cout << "CUBLASLT_MATMUL_DESC_BIAS_POINTER" << std::endl;
+			// std::cout << "CUBLASLT_MATMUL_DESC_BIAS_POINTER" << std::endl;
+		} else if (attr == CUBLASLT_MATMUL_DESC_SM_COUNT_TARGET) {
+			// Ignore this
 		} else {
 			throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublasLtMatmulDescAttributes_t " + std::to_string((int) attr) + " is yet handled.");
 		}
@@ -167,11 +169,11 @@ public:
 
 	void handle_cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t  handle, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld) {
 		
-		std::cout << "tracer: cublasLtMatrixLayoutCreate" << std::endl;
-		std::cout << "type: " << (int) type << std::endl;
-		std::cout << "rows: " << (int) rows << std::endl;
-		std::cout << "cols: " << (int) cols << std::endl;
-		std::cout << "ld: " << (int) ld << std::endl;
+		// std::cout << "tracer: cublasLtMatrixLayoutCreate" << std::endl;
+		// std::cout << "type: " << (int) type << std::endl;
+		// std::cout << "rows: " << (int) rows << std::endl;
+		// std::cout << "cols: " << (int) cols << std::endl;
+		// std::cout << "ld: " << (int) ld << std::endl;
 		
 		cublasLtMatrixLayoutCtx ctx;
 		ctx.handle = handle;

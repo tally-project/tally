@@ -92,13 +92,14 @@ void *tally_cutlass_handle = nullptr;
 void (*tally_register_cutlass)() = nullptr;
 cudaError_t (*CutlassSgemmNN) (cutlassOperation_t transA, cutlassOperation_t transB, int M, int N,
                                int K, float alpha, float const *A, int lda,float const *B, int ldb,
-                               float beta, float *C, int ldc, float *D, int ldd, void *workSpace, cudaStream_t stream) = nullptr;
+                               float beta, float *C, int ldc, float *D, int ldd, float *bias, 
+                               void *workSpace, cudaStream_t stream) = nullptr;
 
 void load_tally_cutlass_lib()
 {
     if (!tally_cutlass_handle) {
 
-        spdlog::info("Enabling replacing cublas with cutlass");
+        // TALLY_SPD_LOG_ALWAYS("Enabling replacing cublas with cutlass");
 
         auto client_preload_dir = get_client_preload_dir();
         auto tally_cutlass_lib_path = client_preload_dir / "libtally_cutlass.so";
@@ -107,7 +108,7 @@ void load_tally_cutlass_lib()
         tally_cutlass_handle = dlopen(preload_str.c_str(), RTLD_LAZY);
         tally_register_cutlass = (void (*)()) dlsym(tally_cutlass_handle, "tally_register_cutlass");
         CutlassSgemmNN = (cudaError_t (*) (cutlassOperation_t, cutlassOperation_t, int, int, int, float, float const *, int,
-                                           float const *, int, float, float *, int, float *, int, void *, cudaStream_t))
+                                           float const *, int, float, float *, int, float *, int, float *, void *, cudaStream_t))
                                            dlsym(tally_cutlass_handle, "CutlassSgemmNN");
     }
 }
@@ -719,6 +720,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
     if (ctx.mode == CUBLAS_DEFAULT_MATH) { 
 
         TALLY_SPD_LOG("cublasSgemm_v2 replaced with CutlassSgemmNN");
+        // TALLY_SPD_LOG_ALWAYS("cublasSgemm_v2 replaced with CutlassSgemmNN");
         load_tally_cutlass_lib();
 
         auto cutlass_transa = cublas_op_to_cutlass_op(transa);
@@ -731,7 +733,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         cudaMemcpy(C_copy, C, sizeof(float) * m * n, cudaMemcpyDeviceToDevice);
 #endif
 
-        auto cuda_err = CutlassSgemmNN(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, C, ldc, ctx.workspace, ctx.stream);
+        auto cuda_err = CutlassSgemmNN(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, C, ldc, NULL, NULL, ctx.stream);
 
         if (!cuda_err) {
             err = CUBLAS_STATUS_SUCCESS;
@@ -755,14 +757,17 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         bool results_match = true;
 
         for (int i = 0; i < m * n; i++) {
-            if (abs(h_c_cublas[i] - h_c_cutlass[i]) > 0.001) {
+            if (!numerically_close(h_c_cublas[i], h_c_cutlass[i])) {
+                std::cout << "h_c_cublas[i]: " << h_c_cublas[i] << std::endl;
+                std::cout << "h_c_cutlass[i]: " << h_c_cutlass[i] << std::endl;
                 results_match = false;
                 break;
             }
         }
 
         if (!results_match) {
-            spdlog::warn("cublas and cutlass results do not match.");
+            TALLY_SPD_WARN("cublas and cutlass results do not match.");
+            // exit(1);
         }
 
         free(h_c_cublas);
@@ -772,7 +777,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
     }
 
     if (!launched) {
-        spdlog::warn("Fail to replace cublasSgemm_v2 with cutlass implementation");
+        TALLY_SPD_WARN("Fail to replace cublasSgemm_v2 with cutlass implementation");
     }
 #endif
 
@@ -859,84 +864,92 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
             matrix_c_layout.type == CUDA_R_32F &&
             matrix_d_layout.type == CUDA_R_32F ) {
 
-            TALLY_SPD_LOG("cublasLtMatmul replaced with CutlassSgemmNN");
-            load_tally_cutlass_lib();
-            
-            uint64_t m = matrix_d_layout.rows;
-            uint64_t n = matrix_d_layout.cols;
-            uint64_t k;
-            if (matmul_desc.cublaslt_matmul_desc_transa == CUBLAS_OP_N) {
-                k = matrix_a_layout.cols;
-            } else {
-                k = matrix_a_layout.rows;
-            }
+            if (matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_DEFAULT ||
+                matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_BIAS ) {
 
-#if defined(VERIFY_CORRECTNESS)
-            // Copy array D
-            float *D_copy;
-            cudaMalloc(&D_copy, sizeof(float) * m * n);
-            cudaMemcpy(D_copy, D, sizeof(float) * m * n, cudaMemcpyDeviceToDevice);
-#endif
-
-            auto cutlass_transa = cublas_op_to_cutlass_op(matmul_desc.cublaslt_matmul_desc_transa);
-            auto cutlass_transb = cublas_op_to_cutlass_op(matmul_desc.cublaslt_matmul_desc_transb);
-
-            auto cuda_err = CutlassSgemmNN(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (float *) A, matrix_a_layout.ld,
-                                           (float *) B, matrix_a_layout.ld, *((float *)beta), (float *) C, matrix_d_layout.ld, (float *) D,
-                                           matrix_d_layout.ld, NULL, stream);
-
-            if (matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_DEFAULT) {
-                // do nothing
-            } else if (matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_BIAS) {
-                assert(matmul_desc.cublaslt_matmul_desc_bias_pointer);
-            } else {
-                throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Epilogue is not yet handled.");
-            }
-
-            if (!cuda_err) {
-                err = CUBLAS_STATUS_SUCCESS;
-            } else {
-                err = CUBLAS_STATUS_INVALID_VALUE;
-            }
-
-            launched = true;
-
-#if defined(VERIFY_CORRECTNESS)
-            err = lcublasLtMatmul(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D_copy, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
-
-            cudaDeviceSynchronize();
-
-            float *h_d_cublas = (float *) malloc(sizeof(float) * m * n);
-            float *h_d_cutlass = (float *) malloc(sizeof(float) * m * n);
-
-            cudaMemcpy(h_d_cublas, D_copy, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
-            cudaMemcpy(h_d_cutlass, D, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
-
-            bool results_match = true;
-
-            for (int i = 0; i < m * n; i++) {
-                if (abs(h_d_cublas[i] - h_d_cutlass[i]) > 0.001) {
-                    results_match = false;
-                    std::cout << "h_d_cublas[i]: " << h_d_cublas[i] << std::endl;
-                    std::cout << "h_d_cutlass[i]: " << h_d_cutlass[i] << std::endl;
-                    break;
+                TALLY_SPD_LOG("cublasLtMatmul replaced with CutlassSgemmNN");
+                // TALLY_SPD_LOG_ALWAYS("cublasLtMatmul replaced with CutlassSgemmNN");
+                load_tally_cutlass_lib();
+                
+                uint64_t m = matrix_d_layout.rows;
+                uint64_t n = matrix_d_layout.cols;
+                uint64_t k;
+                if (matmul_desc.cublaslt_matmul_desc_transa == CUBLAS_OP_N) {
+                    k = matrix_a_layout.cols;
+                } else {
+                    k = matrix_a_layout.rows;
                 }
-            }
 
-            if (!results_match) {
-                spdlog::warn("cublas and cutlass results do not match.");
-            }
-
-            free(h_d_cublas);
-            free(h_d_cutlass);
-            cudaFree(D_copy);
+#if defined(VERIFY_CORRECTNESS)
+                // Copy array D
+                float *D_copy;
+                cudaMalloc(&D_copy, sizeof(float) * m * n);
+                cudaMemcpy(D_copy, D, sizeof(float) * m * n, cudaMemcpyDeviceToDevice);
 #endif
 
+                auto cutlass_transa = cublas_op_to_cutlass_op(matmul_desc.cublaslt_matmul_desc_transa);
+                auto cutlass_transb = cublas_op_to_cutlass_op(matmul_desc.cublaslt_matmul_desc_transb);
+
+                float *bias = nullptr;
+                if (matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_BIAS) {
+                    bias = (float *) matmul_desc.cublaslt_matmul_desc_bias_pointer;
+                    assert(bias);
+                }
+
+                auto cuda_err = CutlassSgemmNN(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (float *) A, matrix_a_layout.ld,
+                                            (float *) B, matrix_a_layout.ld, *((float *)beta), (float *) C, matrix_d_layout.ld, (float *) D,
+                                            matrix_d_layout.ld, bias, NULL, stream);
+
+                if (!cuda_err) {
+                    err = CUBLAS_STATUS_SUCCESS;
+                } else {
+                    err = CUBLAS_STATUS_INVALID_VALUE;
+                }
+
+                launched = true;
+
+#if defined(VERIFY_CORRECTNESS)
+                err = lcublasLtMatmul(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D_copy, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
+
+                cudaDeviceSynchronize();
+
+                float *h_d_cublas = (float *) malloc(sizeof(float) * m * n);
+                float *h_d_cutlass = (float *) malloc(sizeof(float) * m * n);
+
+                cudaMemcpy(h_d_cublas, D_copy, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+                cudaMemcpy(h_d_cutlass, D, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+
+                bool results_match = true;
+
+                for (int i = 0; i < m * n; i++) {
+                    if (!numerically_close(h_d_cublas[i], h_d_cutlass[i])) {
+                        results_match = false;
+                        std::cout << "h_d_cublas[i]: " << h_d_cublas[i] << std::endl;
+                        std::cout << "h_d_cutlass[i]: " << h_d_cutlass[i] << std::endl;
+                        break;
+                    }
+                }
+
+                if (!results_match) {
+                    TALLY_SPD_WARN("cublas and cutlass results do not match.");
+                }
+                
+                free(h_d_cublas);
+                free(h_d_cutlass);
+                cudaFree(D_copy);
+#endif
+            } else {
+                TALLY_SPD_WARN("Epilogue " + std::to_string((int) (matmul_desc.cublaslt_matmul_desc_epilogue)) + " is not supported yet.");
+            }
+        } else {
+            TALLY_SPD_WARN("matrix type is not CUDA_R_32F");
         }
+    } else {
+        TALLY_SPD_WARN("scaleType is not CUDA_R_32F or computeType is not CUBLAS_COMPUTE_32F");
     }
 
     if (!launched) {
-        spdlog::warn("Fail to replace cublasLtMatmul with cutlass implementation");
+        TALLY_SPD_WARN("Fail to replace cublasLtMatmul with cutlass implementation");
     }
 
 #endif

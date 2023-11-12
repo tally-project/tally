@@ -29,6 +29,7 @@ cudaError_t CutlassSgemmNN(
     int ldc,
     float *D,
     int ldd,
+    float *bias=nullptr,
     void *workSpace=nullptr,
     cudaStream_t stream=nullptr
 );
