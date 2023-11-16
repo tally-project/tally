@@ -5857,8 +5857,6 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
         .and_then([&](const auto& responsePayload) {
             auto response = static_cast<const cublasLtMatmulPreferenceCreateResponse*>(responsePayload);
 			if (pref) { *pref = response->pref; }
-            cublasLtMatmulPreference_tracer.handle_cublasLtMatmulPreferenceCreate(response->pref);
-
             err = response->err;
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
