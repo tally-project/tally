@@ -4,6 +4,7 @@
 #include <array>
 #include <fstream>
 #include <unistd.h>
+#include <cmath>
 
 #include <tally/util.h>
 
@@ -148,4 +149,52 @@ std::string get_tmp_file_path(std::string suffix, int file_name)
     }
     std::string tmp_file = "/tmp/tmp_" + std::to_string(file_name) + suffix;
     return tmp_file;
+}
+
+bool numerically_close(float a, float b, float tolerance) {
+
+    if (std::isnan(a) && std::isnan(b)) {
+        return true;
+    }
+
+    // Try absolute
+    if (std::abs(a - b) < 0.001)
+        return true;
+
+    return std::abs(a - b) < tolerance * std::max(std::abs(a), std::abs(b));
+}
+
+std::filesystem::path get_client_preload_dir()
+{
+    std::filesystem::path client_preload_dir;
+    if (std::getenv("TALLY_HOME")) {
+        client_preload_dir = std::filesystem::path(std::string(std::getenv("TALLY_HOME"))) / "build";
+    } else {
+        client_preload_dir = std::filesystem::path(std::string(std::getenv("HOME"))) / "tally/build";
+    }
+    return client_preload_dir;
+}
+
+std::string get_process_name(int pid) {
+    std::stringstream ss;
+    ss << "/proc/" << pid << "/cmdline";
+    std::ifstream commFile(ss.str());
+    std::string processName;
+    std::stringstream buffer;
+    buffer << commFile.rdbuf();
+
+    return buffer.str();
+}
+
+std::string replace_substring(std::string& input, const std::string& oldStr, const std::string& newStr) {
+
+    std::string res = input;
+
+    size_t startPos = 0;
+    while ((startPos = res.find(oldStr, startPos)) != std::string::npos) {
+        res.replace(startPos, oldStr.length(), newStr);
+        startPos += newStr.length();
+    }
+
+    return res;
 }

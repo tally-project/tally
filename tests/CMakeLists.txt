@@ -113,6 +113,25 @@ target_include_directories(cublas_to_cutlass
     PUBLIC  ${PROJECT_SOURCE_DIR}/tests
 )
 
+add_executable(cutlass_bias_epilogue cuda_samples_basic/cutlass_bias_epilogue.cu)
+
+target_link_libraries(cutlass_bias_epilogue
+    cuda
+    cudart
+    cublas
+    cublasLt
+)
+
+set_target_properties(cutlass_bias_epilogue PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_include_directories(cutlass_bias_epilogue
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
+    PUBLIC  ${PROJECT_SOURCE_DIR}/tests
+)
+
 add_executable(basic_gemm cuda_samples_basic/basic_gemm.cu)
 
 target_link_libraries(basic_gemm

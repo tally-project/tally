@@ -9,6 +9,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 std::string demangleFunc(std::string mangledName);
 bool is_process_running(pid_t pid);
@@ -24,34 +25,14 @@ void write_str_to_file(std::string path, std::string str);
 void write_binary_to_file(std::string path, const char* data, uint32_t size);
 std::string strip_space_and_colon(const std::string& input);
 std::string get_tmp_file_path(std::string suffix, int file_name=-1);
+bool numerically_close(float a, float b, float tolerance=0.01);
+std::filesystem::path get_client_preload_dir();
+std::string get_process_name(int pid);
+std::string replace_substring(std::string& input, const std::string& oldStr, const std::string& newStr);
 
 template <typename T>
 void merge_vec(std::vector<T>& dest, const std::vector<T>& src) {
     dest.insert(dest.end(), src.begin(), src.end());
-}
-
-inline std::string get_process_name(int pid) {
-    std::stringstream ss;
-    ss << "/proc/" << pid << "/cmdline";
-    std::ifstream commFile(ss.str());
-    std::string processName;
-    std::stringstream buffer;
-    buffer << commFile.rdbuf();
-
-    return buffer.str();
-}
-
-inline std::string replace_substring(std::string& input, const std::string& oldStr, const std::string& newStr) {
-
-    std::string res = input;
-
-    size_t startPos = 0;
-    while ((startPos = res.find(oldStr, startPos)) != std::string::npos) {
-        res.replace(startPos, oldStr.length(), newStr);
-        startPos += newStr.length();
-    }
-
-    return res;
 }
 
 #endif // TALLY_UTIL_H

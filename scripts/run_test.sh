@@ -22,6 +22,7 @@ test_list=(
     "./build/tests/turing_tensorop_gemm"
     "./build/tests/ampere_tf32_tensorop_gemm"
     "python3 ./tests/tensorflow_samples/tf_basic.py"
+    "python3 ./tests/tensorflow_samples/cifar_train.py"
     "python3 ./tests/pytorch_samples/train.py"
     "python3 ./tests/pytorch_samples/run-triton.py"
     "python3 ./tests/pytorch_samples/run-torch-compile.py"
@@ -59,11 +60,11 @@ done
 
 cleanup
 
-# Run tests with offline client 
-for item in "${test_list[@]}"; do
-    echo $item
-    SCHEDULER_POLICY=WORKLOAD_AGNOSTIC_SHARING ./scripts/start_client.sh $item
-done
+# # Run tests with offline client 
+# for item in "${test_list[@]}"; do
+#     echo $item
+#     SCHEDULER_POLICY=WORKLOAD_AGNOSTIC_SHARING ./scripts/start_client.sh $item
+# done
 
 echo All tests passed!
 

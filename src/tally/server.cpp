@@ -4159,3 +4159,149 @@ void TallyServer::handle_cublasDestroy_v2(void *__args, iox::popo::UntypedServer
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cublasSetStream_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasSetStream_v2");
+	auto args = (struct cublasSetStream_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    cudaStream_t __stream = args->streamId;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasStatus_t*>(responsePayload);
+            *response = cublasSetStream_v2(
+				args->handle,
+				__stream
+            );
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cublasSetWorkspace_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasSetWorkspace_v2");
+	auto args = (struct cublasSetWorkspace_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasStatus_t*>(responsePayload);
+            *response = cublasSetWorkspace_v2(
+				args->handle,
+				args->workspace,
+				args->workspaceSizeInBytes
+            );
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cublasLtCreate(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasLtCreate");
+	auto args = (struct cublasLtCreateArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+    auto &client_meta = client_data_all[client_id];
+
+    iox_server->loan(requestHeader, sizeof(cublasLtCreateResponse), alignof(cublasLtCreateResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasLtCreateResponse*>(responsePayload);
+            response->err = cublasLtCreate(
+				(args->lightHandle ? &(response->lightHandle) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cublasLtMatmulDescCreate(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasLtMatmulDescCreate");
+	auto args = (struct cublasLtMatmulDescCreateArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cublasLtMatmulDescCreateResponse), alignof(cublasLtMatmulDescCreateResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasLtMatmulDescCreateResponse*>(responsePayload);
+            response->err = cublasLtMatmulDescCreate(
+				(args->matmulDesc ? &(response->matmulDesc) : NULL),
+				args->computeType,
+				args->scaleType
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cublasLtMatrixLayoutCreate(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasLtMatrixLayoutCreate");
+	auto args = (struct cublasLtMatrixLayoutCreateArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cublasLtMatrixLayoutCreateResponse), alignof(cublasLtMatrixLayoutCreateResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasLtMatrixLayoutCreateResponse*>(responsePayload);
+            response->err = cublasLtMatrixLayoutCreate(
+				(args->matLayout ? &(response->matLayout) : NULL),
+				args->type,
+				args->rows,
+				args->cols,
+				args->ld
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cublasLtMatmulPreferenceCreate(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasLtMatmulPreferenceCreate");
+	auto args = (struct cublasLtMatmulPreferenceCreateArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cublasLtMatmulPreferenceCreateResponse), alignof(cublasLtMatmulPreferenceCreateResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasLtMatmulPreferenceCreateResponse*>(responsePayload);
+            response->err = cublasLtMatmulPreferenceCreate(
+				(args->pref ? &(response->pref) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
