@@ -1255,7 +1255,7 @@ std::string gen_transform_ptx(std::string &ptx_path)
 
         brace_counter += numLeftBrace;
         brace_counter -= numRightBrace;
-        if (!brace_encountered && numLeftBrace > 0) {
+        if (record_kernel && !brace_encountered && numLeftBrace > 0) {
             brace_encountered = true;
         }
 

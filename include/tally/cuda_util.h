@@ -503,6 +503,11 @@ void register_kernels_from_ptx_fatbin(
                 auto transform_kernel_name = transform_kernel_names[i];
                 auto kernel_map_ptr = kernel_map_ptrs[i];
 
+                // Ignore kernels without parameters
+                if (i > 0 && num_params == 0) {
+                    continue;
+                }
+
                 if (transform_kernel_name == kernel_name + "_tally_ptb") {
                     num_params += 1;
                 } else if (transform_kernel_name == kernel_name + "_tally_dynamic_ptb") {
@@ -512,16 +517,16 @@ void register_kernels_from_ptx_fatbin(
                 }
 
                 CUfunction function;
-                lcuModuleGetFunction(&function, cudaModule, transform_kernel_name.c_str());
+                CHECK_CUDA_ERROR(cuModuleGetFunction(&function, cudaModule, transform_kernel_name.c_str()));
 
                 WrappedCUfunction wrapped_cu_func;
 
                 wrapped_cu_func.func = function;
                 wrapped_cu_func.num_args = num_params;
-                lcuFuncGetAttribute (&(wrapped_cu_func.meta_data.max_threads_per_block), CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, function);
-                lcuFuncGetAttribute (&(wrapped_cu_func.meta_data.static_shmem_size_bytes), CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, function);
-                lcuFuncGetAttribute (&(wrapped_cu_func.meta_data.num_regs), CU_FUNC_ATTRIBUTE_NUM_REGS, function);
-                lcuFuncGetAttribute (&(wrapped_cu_func.meta_data.max_dynamic_shmem_size_bytes), CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, function);
+                CHECK_CUDA_ERROR(cuFuncGetAttribute (&(wrapped_cu_func.meta_data.max_threads_per_block), CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, function));
+                CHECK_CUDA_ERROR(cuFuncGetAttribute (&(wrapped_cu_func.meta_data.static_shmem_size_bytes), CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, function));
+                CHECK_CUDA_ERROR(cuFuncGetAttribute (&(wrapped_cu_func.meta_data.num_regs), CU_FUNC_ATTRIBUTE_NUM_REGS, function));
+                CHECK_CUDA_ERROR(cuFuncGetAttribute (&(wrapped_cu_func.meta_data.max_dynamic_shmem_size_bytes), CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, function));
 
                 if constexpr (std::is_same<KERNEL_MAP_TYPE, std::unordered_map<const void*, WrappedCUfunction>>::value) {
                     (*kernel_map_ptr)[host_func] = wrapped_cu_func;

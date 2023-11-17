@@ -554,7 +554,6 @@ void TallyServer::register_cu_modules(uint32_t cubin_uid)
 
         CUmodule transform_module;
         auto err = cuModuleLoadData(&transform_module, transform_fatbin_str.c_str());
-        CHECK_CUDA_ERROR(err);
 
         if (!err) {
             cubin_to_cu_module.insert(cubin_uid, transform_module);
