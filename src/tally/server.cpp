@@ -2389,18 +2389,29 @@ void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
     auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
     int32_t client_id = msg_header->client_id;
 
+    auto server_addr = client_data_all[client_id]._kernel_client_addr_mapping[args->func];
+    auto cu_func = original_kernel_map[server_addr].func;
+
     iox_server->loan(requestHeader, sizeof(cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse), alignof(cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse))
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse*>(responsePayload);
-            response->err = cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
+            
+            auto err = cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
                 &response->numBlocks,
-                client_data_all[client_id]._kernel_client_addr_mapping[args->func],
+                cu_func,
                 args->blockSize,
                 args->dynamicSMemSize,
                 args->flags
             );
-            CHECK_CUDA_ERROR(response->err);
+            
+            CHECK_CUDA_ERROR(err);
+
+            if (!err) {
+                response->err = cudaSuccess;
+            } else {
+                response->err = cudaErrorInvalidValue;
+            }
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
