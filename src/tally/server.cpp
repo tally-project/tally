@@ -2347,36 +2347,31 @@ void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args, iox::po
 void TallyServer::handle_cublasSgemmStridedBatched(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
     TALLY_SPD_LOG("Received request: cublasSgemmStridedBatched");
+	auto args = (struct cublasSgemmStridedBatchedArg *) __args;
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
 
-    throw std::runtime_error("Need to implement partial for this kernel launch");
+    auto partial = cublasSgemmStridedBatched_Partial(args);
 
-    auto args = (struct cublasSgemmStridedBatchedArg *) __args;
+    client_data_all[client_id].queue_size++;
+    client_data_all[client_id].kernel_dispatch_queue.enqueue(
+        KernelLaunchWrapper(
+            partial,
+            true,
+            CudaLaunchCall(0, 0, 0),
+            NULL,
+            0
+        )
+    );
+
+    wait_until_launch_queue_empty(client_id);
 
     auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
     iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
         .and_then([&](auto& responsePayload) {
 
             auto response = static_cast<cublasStatus_t*>(responsePayload);
-            *response = cublasSgemmStridedBatched(
-                args->handle,
-                args->transa,
-                args->transb,
-                args->m,
-                args->n,
-                args->k,
-                &(args->alpha),
-                args->A,
-                args->lda,
-                args->strideA,
-                args->B,
-                args->ldb,
-                args->strideB,
-                &(args->beta),
-                args->C,
-                args->ldc,
-                args->strideC,
-                args->batchCount
-            );
+            *response = CUBLAS_STATUS_SUCCESS;
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });

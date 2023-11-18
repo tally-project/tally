@@ -131,7 +131,11 @@ void *dlopen(const char *filename, int flag)
 
             if (!tally_handle) {
                 auto client_preload_dir = get_client_preload_dir();
+#if defined(RUN_LOCALLY)
+                auto tally_lib_path = client_preload_dir / "libtally_client_local.so";
+#else
                 auto tally_lib_path = client_preload_dir / "libtally_client.so";
+#endif
                 auto preload_str = tally_lib_path.string();
                 tally_handle = ldlopen(preload_str.c_str(), flag); 
             } 

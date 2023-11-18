@@ -8,12 +8,10 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-deprecated-declarations -Wno-
 
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
-    # set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "" FORCE)
 endif()
 
 option(ENABLE_LOGGING "Enable logging" OFF)
 option(ENABLE_PROFILING "Enable profiling" OFF)
-option(RUN_LOCALLY "Run client process locally" OFF)
 option(REPLACE_CUBLAS "Replace cublas calls with cutlass calls" ON)
 option(VERIFY_CORRECTNESS "Verify that the results after replacing cublas is correct" OFF)
 
@@ -116,7 +114,7 @@ add_library(tally_client SHARED
 )
 
 # Define a list of strings
-set(tally_client_env_vars "ENABLE_LOGGING" "ENABLE_PROFILING" "RUN_LOCALLY" "REPLACE_CUBLAS" "VERIFY_CORRECTNESS")
+set(tally_client_env_vars "ENABLE_LOGGING" "ENABLE_PROFILING" "REPLACE_CUBLAS" "VERIFY_CORRECTNESS")
 
 # Loop over the strings using foreach
 foreach(env_var ${tally_client_env_vars})
@@ -139,6 +137,39 @@ target_link_libraries(tally_client PUBLIC
 )
 
 target_compile_definitions(tally_client PRIVATE IS_CLIENT="TRUE")
+
+add_library(tally_client_local SHARED
+    ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_client.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/preload/generated/tally_client.cpp
+    ${TALLY_SRC_FILES}
+    ${TALLY_CLIENT_SRC_FILES}
+)
+
+target_include_directories(tally_client_local
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+    PUBLIC  /usr/local/cuda/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
+)
+
+target_link_libraries(tally_client_local PUBLIC
+    PUBLIC Boost::serialization 
+    PUBLIC Boost::regex
+    iceoryx_posh::iceoryx_posh
+    spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
+)
+
+target_compile_definitions(tally_client_local PRIVATE IS_CLIENT="TRUE")
+target_compile_definitions(tally_client_local PRIVATE RUN_LOCALLY="TRUE")
+
+# Define a list of strings
+set(tally_client_local_env_vars "ENABLE_LOGGING" "REPLACE_CUBLAS" "VERIFY_CORRECTNESS")
+
+# Loop over the strings using foreach
+foreach(env_var ${tally_client_local_env_vars})
+    if(${env_var})
+        target_compile_definitions(tally_client_local PRIVATE ${env_var}=${env_var})
+    endif()
+endforeach()
 
 add_library(tally_client_offline SHARED
     ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_client_offline.cpp

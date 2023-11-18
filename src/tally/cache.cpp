@@ -6,6 +6,7 @@
 
 std::shared_ptr<TallyCache> TallyCache::cache;
 
+#if not defined(RUN_LOCALLY)
 __attribute__((__constructor__)) void init_cache()
 {
     NO_INIT_PROCESS_KEYWORDS_VEC;
@@ -25,3 +26,4 @@ __attribute__((__constructor__)) void init_cache()
 
     TallyCache::cache = std::make_shared<TallyCache>();
 }
+#endif

@@ -265,7 +265,8 @@ public:
 	partial_t cudnnBackendExecute_Partial(cudnnBackendExecuteArg *, cudnnStatus_t *err);
 	partial_t cublasGemmEx_Partial(cublasGemmExArg *);
 	partial_t cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *);
-    
+    partial_t cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *__args);
+
 	void handle_cudaGetDeviceProperties_v2(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
 	void handle_cudaGraphHostNodeGetParams(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
 	void handle_cuMulticastBindAddr(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);

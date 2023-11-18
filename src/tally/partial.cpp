@@ -1090,3 +1090,44 @@ partial_t TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatch
         }
     };
 }
+
+partial_t TallyServer::cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *__args)
+{
+    size_t args_len = sizeof(cublasSgemmStridedBatchedArg);
+    auto args = (cublasSgemmStridedBatchedArg *) malloc(args_len);
+    memcpy(args, __args, args_len);
+
+    return [this, args] (PARTIAL_ARGUMENTS) {
+
+        auto err = cublasSgemmStridedBatched(
+            args->handle,
+            args->transa,
+            args->transb,
+            args->m,
+            args->n,
+            args->k,
+            &(args->alpha),
+            args->A,
+            args->lda,
+            args->strideA,
+            args->B,
+            args->ldb,
+            args->strideB,
+            &(args->beta),
+            args->C,
+            args->ldc,
+            args->strideC,
+            args->batchCount
+        );
+
+        // free(args);
+
+        CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
+
+        if (!err) {
+            return CUDA_SUCCESS;
+        } else {
+            return CUDA_ERROR_INVALID_VALUE;
+        }
+    };
+}
