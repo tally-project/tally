@@ -498,6 +498,7 @@ KERNEL_LAUNCH_CALLS = [
 
 # let the client call the APIs directly
 DIRECT_CALLS = [
+    "cudaHostAlloc",
     "cuMemHostAlloc",
     "cuDeviceGetPCIBusId",
     "cuCtxDestroy_v2",
@@ -521,6 +522,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaPointerGetAttributes",
     "cublasLtMatmulPreferenceCreate",
     "cublasLtMatrixLayoutCreate",
     "cublasLtMatmulDescCreate",

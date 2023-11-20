@@ -6359,7 +6359,8 @@ cudaError_t cudaFreeMipmappedArray(cudaMipmappedArray_t  mipmappedArray)
 cudaError_t cudaHostAlloc(void ** pHost, size_t  size, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaHostAlloc hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	cudaError_t res = 		lcudaHostAlloc(pHost, size, flags);
+	return res;
 }
 
 cudaError_t cudaHostRegister(void * ptr, size_t  size, unsigned int  flags)
@@ -6852,12 +6853,6 @@ cudaError_t cudaMemPoolExportPointer(struct cudaMemPoolPtrExportData * exportDat
 cudaError_t cudaMemPoolImportPointer(void ** ptr, cudaMemPool_t  memPool, struct cudaMemPoolPtrExportData * exportData)
 {
 	TALLY_SPD_LOG("cudaMemPoolImportPointer hooked");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-}
-
-cudaError_t cudaPointerGetAttributes(struct cudaPointerAttributes * attributes, const void * ptr)
-{
-	TALLY_SPD_LOG("cudaPointerGetAttributes hooked");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
 

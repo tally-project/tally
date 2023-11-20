@@ -1328,4 +1328,14 @@ struct cublasLtMatmulPreferenceCreateResponse {
 	cublasStatus_t err;
 };
 
+struct cudaPointerGetAttributesArg {
+	struct cudaPointerAttributes * attributes;
+	void * ptr;
+};
+
+struct cudaPointerGetAttributesResponse {
+	struct cudaPointerAttributes  attributes;
+	cudaError_t err;
+};
+
 #endif // TALLY_DEF_H

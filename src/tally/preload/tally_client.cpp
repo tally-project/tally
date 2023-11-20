@@ -3595,7 +3595,7 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
 	TALLY_CLIENT_PROFILE_START;
     
 #if defined(RUN_LOCALLY)
-	auto err = lcuModuleLoadData(module, image);
+    auto err = lcuModuleLoadData(module, image);
 #else
 
     CUresult err;
@@ -3628,8 +3628,8 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
         auto elf_size_sh = hdr->e_shoff + hdr->e_shentsize * hdr->e_shnum;
         auto elf_size = std::max(elf_size_ph, elf_size_sh);
 
-        // Leave it unhandled at this moment
-        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Handling elf file is yet unimplemented.");
+        fatbin_data = (char *) image;
+        fatbin_size = elf_size;
     }
 
     bool cached = TallyCache::cache->cubin_cache.contains(fatbin_data, fatbin_size);
@@ -5035,8 +5035,8 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
         auto elf_size_sh = hdr->e_shoff + hdr->e_shentsize * hdr->e_shnum;
         auto elf_size = std::max(elf_size_ph, elf_size_sh);
 
-        // Leave it unhandled at this moment
-        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Handling elf file is yet unimplemented.");
+        fatbin_data = (char *) fatCubin;
+        fatbin_size = elf_size;
     }
 
     CUresult err;
@@ -5201,8 +5201,8 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
         auto elf_size_sh = hdr->e_shoff + hdr->e_shentsize * hdr->e_shnum;
         auto elf_size = std::max(elf_size_ph, elf_size_sh);
 
-        // Leave it unhandled at this moment
-        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Handling elf file is yet unimplemented.");
+        fatbin_data = (char *) image;
+        fatbin_size = elf_size;
     }
 
     bool cached = TallyCache::cache->cubin_cache.contains(fatbin_data, fatbin_size);
@@ -5868,6 +5868,54 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceCreate);
+	return err;
+}
+
+cudaError_t cudaPointerGetAttributes(struct cudaPointerAttributes * attributes, const void * ptr)
+{
+	TALLY_SPD_LOG("cudaPointerGetAttributes hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+    auto err = lcudaPointerGetAttributes(attributes, ptr);
+
+#if defined(RUN_LOCALLY)
+	return err;
+#else
+
+    // First check if ptr is CUDA-registered host memory
+    if (attributes->type == cudaMemoryTypeHost) {
+        return err;
+    }
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaPointerGetAttributesArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAPOINTERGETATTRIBUTES;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaPointerGetAttributesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->attributes = attributes;
+			request->ptr = const_cast<void *>(ptr);
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaPointerGetAttributesResponse*>(responsePayload);
+			if (attributes) { *attributes = response->attributes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaPointerGetAttributes);
 	return err;
 }
 

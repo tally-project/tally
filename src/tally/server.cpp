@@ -4310,3 +4310,25 @@ void TallyServer::handle_cublasLtMatmulPreferenceCreate(void *__args, iox::popo:
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cudaPointerGetAttributes(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaPointerGetAttributes");
+	auto args = (struct cudaPointerGetAttributesArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cudaPointerGetAttributesResponse), alignof(cudaPointerGetAttributesResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaPointerGetAttributesResponse*>(responsePayload);
+            response->err = cudaPointerGetAttributes(
+				(args->attributes ? &(response->attributes) : NULL),
+				args->ptr
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
