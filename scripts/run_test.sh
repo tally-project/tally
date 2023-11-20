@@ -14,6 +14,7 @@ run_tally_test() {
 test_list=(
     "./build/tests/elementwise"
     "./build/tests/matmul"
+    "./build/tests/cuda-memcpy-test"
     "./build/tests/max_pool"
     "./build/tests/cudnn_test"
     "./build/tests/cublas_test"

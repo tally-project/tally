@@ -898,7 +898,7 @@ void TallyServer::handle_cudaMemcpyAsync(void *__args, iox::popo::UntypedServer 
                 throw std::runtime_error("Unknown memcpy kind!");
             }
 
-            cudaStreamSynchronize(stream);
+            // cudaStreamSynchronize(stream);
 
             iox_server->send(res).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -2597,7 +2597,7 @@ void TallyServer::handle_cudnnBackendExecute(void *__args, iox::popo::UntypedSer
             auto response = static_cast<cudnnStatus_t*>(responsePayload);
 
             *response = err;
-            CHECK_CUDA_ERROR(*response);
+            // CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3130,7 +3130,7 @@ void TallyServer::handle_cuMemcpyAsync(void *__args, iox::popo::UntypedServer *i
             );
             CHECK_CUDA_ERROR(response->err);
 
-            cudaStreamSynchronize(__stream);
+            // cudaStreamSynchronize(__stream);
             
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3648,7 +3648,7 @@ void TallyServer::handle_cuMemcpyHtoDAsync_v2(void *__args, iox::popo::UntypedSe
             );
             CHECK_CUDA_ERROR(*response);
 
-            cudaStreamSynchronize(stream);
+            // cudaStreamSynchronize(stream);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3689,7 +3689,7 @@ void TallyServer::handle_cuMemcpyDtoHAsync_v2(void *__args, iox::popo::UntypedSe
             );
             CHECK_CUDA_ERROR(response->err);
 
-            cudaStreamSynchronize(__stream);
+            // cudaStreamSynchronize(__stream);
             
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
