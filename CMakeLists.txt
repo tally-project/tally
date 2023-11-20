@@ -161,11 +161,8 @@ target_link_libraries(tally_client_local PUBLIC
 target_compile_definitions(tally_client_local PRIVATE IS_CLIENT="TRUE")
 target_compile_definitions(tally_client_local PRIVATE RUN_LOCALLY="TRUE")
 
-# Define a list of strings
-set(tally_client_local_env_vars "ENABLE_LOGGING" "REPLACE_CUBLAS" "VERIFY_CORRECTNESS")
-
 # Loop over the strings using foreach
-foreach(env_var ${tally_client_local_env_vars})
+foreach(env_var ${tally_client_env_vars})
     if(${env_var})
         target_compile_definitions(tally_client_local PRIVATE ${env_var}=${env_var})
     endif()
