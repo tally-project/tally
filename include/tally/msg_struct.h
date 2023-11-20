@@ -1338,4 +1338,9 @@ struct cudaPointerGetAttributesResponse {
 	cudaError_t err;
 };
 
+struct cuDevicePrimaryCtxSetFlags_v2Arg {
+	CUdevice  dev;
+	unsigned int  flags;
+};
+
 #endif // TALLY_DEF_H

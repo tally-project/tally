@@ -498,6 +498,7 @@ KERNEL_LAUNCH_CALLS = [
 
 # let the client call the APIs directly
 DIRECT_CALLS = [
+    "cuDevicePrimaryCtxGetState",
     "cudaHostAlloc",
     "cuMemHostAlloc",
     "cuDeviceGetPCIBusId",
@@ -522,6 +523,7 @@ DIRECT_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuDevicePrimaryCtxSetFlags_v2",
     "cudaPointerGetAttributes",
     "cublasLtMatmulPreferenceCreate",
     "cublasLtMatrixLayoutCreate",
@@ -707,7 +709,6 @@ FORWARD_API_CALLS = [
     "cuDeviceSetMemPool",
     "cuFlushGPUDirectRDMAWrites",
     "cuDevicePrimaryCtxRelease_v2",
-    "cuDevicePrimaryCtxSetFlags_v2",
     "cuDevicePrimaryCtxReset_v2",
     "cublasLtMatmulDescDestroy",
     "cublasLtMatrixLayoutDestroy",
@@ -852,8 +853,7 @@ CUDA_GET_2_PARAM_FUNCS = [
 ]
 
 CUDA_GET_2_3_PARAM_FUNCS = [
-    "cudaStreamGetCaptureInfo",
-    "cuDevicePrimaryCtxGetState"
+    "cudaStreamGetCaptureInfo"
 ]
 
 CUDA_GET_1_2_PARAM_FUNCS = [
