@@ -9,6 +9,23 @@
 
 #include "cutlass/gemm/device/gemm.h"
 
+#define CUTLASS_GEMM_TEMPLATE(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR)  \
+    using Gemm = cutlass::gemm::device::Gemm<ELEMENT_TYPE,                                      \
+                                             LAYOUT_A,                                          \
+                                             ELEMENT_TYPE,                                      \
+                                             LAYOUT_B,                                          \
+                                             ELEMENT_TYPE,                                      \
+                                             LAYOUT_C,                                          \
+                                             ELEMENT_ACCUMULATOR>;                              \
+    Gemm gemm_operator;                                                                         \
+    Gemm::Arguments args({M, N, K},                                                             \
+                        {(ELEMENT_TYPE *) A, lda},                                              \
+                        {(ELEMENT_TYPE *) B, ldb},                                              \
+                        {(ELEMENT_TYPE *) C, ldc},                                              \
+                        {(ELEMENT_TYPE *) D, ldd},                                              \
+                        {alpha, beta});                                                         \
+    status = gemm_operator(args, stream);
+
 struct AddVecBiasFunctor {
     int rows;
     const float* vec;
@@ -30,7 +47,7 @@ void tally_register_cutlass()
     std::cout << "tally register cutlass ..." << std::endl;
 }
 
-cudaError_t CutlassSgemmNN(
+cudaError_t cutlassGemm_f32(
     cutlassOperation_t transA,
     cutlassOperation_t transB,
     int M,
@@ -56,84 +73,26 @@ cudaError_t CutlassSgemmNN(
 
     cutlass::Status status;
 
-    if (transA == cutlassOperation_t::CUTLASS_OP_N && transB == cutlassOperation_t::CUTLASS_OP_N) {
+    if (transA == cutlassOperation_t::CUTLASS_OP_N &&
+        transB == cutlassOperation_t::CUTLASS_OP_N) {
 
-        using CutlassGemm = cutlass::gemm::device::Gemm<float,        // Data-type of A matrix
-                                                        ColumnMajor,  // Layout of A matrix
-                                                        float,        // Data-type of B matrix
-                                                        ColumnMajor,  // Layout of B matrix
-                                                        float,        // Data-type of C matrix
-                                                        ColumnMajor>; // Layout of C matrix
+        CUTLASS_GEMM_TEMPLATE(float, ColumnMajor, ColumnMajor, ColumnMajor, float);
 
-        CutlassGemm gemm_operator;
+    } else if (transA == cutlassOperation_t::CUTLASS_OP_T &&
+               transB == cutlassOperation_t::CUTLASS_OP_N){
 
-        CutlassGemm::Arguments args({M, N, K},  // Gemm Problem dimensions
-                                    {A, lda},    // Tensor-ref for source matrix A
-                                    {B, ldb},    // Tensor-ref for source matrix B
-                                    {C, ldc},    // Tensor-ref for source matrix C
-                                    {D, ldd},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
-                                    {alpha, beta}); // Scalars used in the Epilogue
+        CUTLASS_GEMM_TEMPLATE(float, RowMajor, ColumnMajor, ColumnMajor, float);
 
+    } else if (transA == cutlassOperation_t::CUTLASS_OP_N &&
+               transB == cutlassOperation_t::CUTLASS_OP_T){
 
-        status = gemm_operator(args, stream);
+        CUTLASS_GEMM_TEMPLATE(float, ColumnMajor, RowMajor, ColumnMajor, float);
 
-    } else if (transA == cutlassOperation_t::CUTLASS_OP_T && transB == cutlassOperation_t::CUTLASS_OP_N){
-        using CutlassGemm = cutlass::gemm::device::Gemm<float,        // Data-type of A matrix
-                                                        RowMajor,  // Layout of A matrix
-                                                        float,        // Data-type of B matrix
-                                                        ColumnMajor,  // Layout of B matrix
-                                                        float,        // Data-type of C matrix
-                                                        ColumnMajor>; // Layout of C matrix
+    } else if (transA == cutlassOperation_t::CUTLASS_OP_T &&
+               transB == cutlassOperation_t::CUTLASS_OP_T){
 
-        CutlassGemm gemm_operator;
+        CUTLASS_GEMM_TEMPLATE(float, RowMajor, RowMajor, ColumnMajor, float);
 
-        CutlassGemm::Arguments args({M, N, K},  // Gemm Problem dimensions
-                                    {A, lda},    // Tensor-ref for source matrix A
-                                    {B, ldb},    // Tensor-ref for source matrix B
-                                    {C, ldc},    // Tensor-ref for source matrix C
-                                    {D, ldd},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
-                                    {alpha, beta}); // Scalars used in the Epilogue
-
-
-        status = gemm_operator(args, stream);
-    } else if (transA == cutlassOperation_t::CUTLASS_OP_N && transB == cutlassOperation_t::CUTLASS_OP_T){
-        using CutlassGemm = cutlass::gemm::device::Gemm<float,        // Data-type of A matrix
-                                                        ColumnMajor,  // Layout of A matrix
-                                                        float,        // Data-type of B matrix
-                                                        RowMajor,  // Layout of B matrix
-                                                        float,        // Data-type of C matrix
-                                                        ColumnMajor>; // Layout of C matrix
-
-        CutlassGemm gemm_operator;
-
-        CutlassGemm::Arguments args({M, N, K},  // Gemm Problem dimensions
-                                    {A, lda},    // Tensor-ref for source matrix A
-                                    {B, ldb},    // Tensor-ref for source matrix B
-                                    {C, ldc},    // Tensor-ref for source matrix C
-                                    {D, ldd},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
-                                    {alpha, beta}); // Scalars used in the Epilogue
-
-
-        status = gemm_operator(args, stream);
-    } else if (transA == cutlassOperation_t::CUTLASS_OP_T && transB == cutlassOperation_t::CUTLASS_OP_T){
-        using CutlassGemm = cutlass::gemm::device::Gemm<float,        // Data-type of A matrix
-                                                        RowMajor,  // Layout of A matrix
-                                                        float,        // Data-type of B matrix
-                                                        RowMajor,  // Layout of B matrix
-                                                        float,        // Data-type of C matrix
-                                                        ColumnMajor>; // Layout of C matrix
-
-        CutlassGemm gemm_operator;
-
-        CutlassGemm::Arguments args({M, N, K},  // Gemm Problem dimensions
-                                    {A, lda},    // Tensor-ref for source matrix A
-                                    {B, ldb},    // Tensor-ref for source matrix B
-                                    {C, ldc},    // Tensor-ref for source matrix C
-                                    {D, ldd},    // Tensor-ref for destination matrix D (may be different memory than source C matrix)
-                                    {alpha, beta}); // Scalars used in the Epilogue
-
-
-        status = gemm_operator(args, stream);
     } else {
         throw std::runtime_error("Not implemented.");
     }
@@ -142,9 +101,64 @@ cudaError_t CutlassSgemmNN(
         thrust::device_ptr<float> D_thrust(D);
 
         thrust::transform(D_thrust, D_thrust + M * N, 
-                        thrust::make_counting_iterator(0), 
-                        D_thrust, 
-                        AddVecBiasFunctor(M, thrust::raw_pointer_cast(bias)));
+                          thrust::make_counting_iterator(0), 
+                          D_thrust, 
+                          AddVecBiasFunctor(M, thrust::raw_pointer_cast(bias)));
+    }
+
+    if (status != cutlass::Status::kSuccess) {
+        return cudaErrorUnknown;
+    }
+
+    return cudaSuccess;
+}
+
+cudaError_t cutlassGemm_f16(
+    cutlassOperation_t transA,
+    cutlassOperation_t transB,
+    int M,
+    int N,
+    int K,
+    float alpha,
+    half const *A,
+    int lda,
+    half const *B,
+    int ldb,
+    float beta,
+    half *C,
+    int ldc,
+    half *D,
+    int ldd,
+    cudaStream_t stream
+) {
+    using ElementAccumulator = float;
+    using RowMajor = cutlass::layout::RowMajor;
+    using ColumnMajor = cutlass::layout::ColumnMajor;
+
+    cutlass::Status status;
+
+    if (transA == cutlassOperation_t::CUTLASS_OP_N &&
+        transB == cutlassOperation_t::CUTLASS_OP_N) {
+
+        CUTLASS_GEMM_TEMPLATE(cutlass::half_t, ColumnMajor, ColumnMajor, ColumnMajor, ElementAccumulator);
+
+    } else if (transA == cutlassOperation_t::CUTLASS_OP_T &&
+               transB == cutlassOperation_t::CUTLASS_OP_N){
+
+        CUTLASS_GEMM_TEMPLATE(cutlass::half_t, RowMajor, ColumnMajor, ColumnMajor, ElementAccumulator);
+
+    } else if (transA == cutlassOperation_t::CUTLASS_OP_N &&
+               transB == cutlassOperation_t::CUTLASS_OP_T){
+
+        CUTLASS_GEMM_TEMPLATE(cutlass::half_t, ColumnMajor, RowMajor, ColumnMajor, ElementAccumulator);
+
+    } else if (transA == cutlassOperation_t::CUTLASS_OP_T &&
+               transB == cutlassOperation_t::CUTLASS_OP_T){
+
+        CUTLASS_GEMM_TEMPLATE(cutlass::half_t, RowMajor, RowMajor, ColumnMajor, ElementAccumulator);
+
+    } else {
+        throw std::runtime_error("Not implemented.");
     }
 
     if (status != cutlass::Status::kSuccess) {

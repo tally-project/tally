@@ -113,6 +113,25 @@ target_include_directories(cublas_to_cutlass
     PUBLIC  ${PROJECT_SOURCE_DIR}/tests
 )
 
+add_executable(matmul_fp16 cuda_samples_basic/matmul_fp16.cu)
+
+target_link_libraries(matmul_fp16
+    cuda
+    cudart
+    cublas
+)
+
+set_target_properties(matmul_fp16 PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_include_directories(matmul_fp16
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
+    PUBLIC  ${PROJECT_SOURCE_DIR}/tests
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
+)
+
 add_executable(cutlass_bias_epilogue cuda_samples_basic/cutlass_bias_epilogue.cu)
 
 target_link_libraries(cutlass_bias_epilogue

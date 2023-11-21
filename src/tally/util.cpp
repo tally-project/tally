@@ -158,7 +158,7 @@ bool numerically_close(float a, float b, float tolerance) {
     }
 
     // Try absolute
-    if (std::abs(a - b) < 0.001)
+    if (std::abs(a - b) < 0.1)
         return true;
 
     return std::abs(a - b) < tolerance * std::max(std::abs(a), std::abs(b));

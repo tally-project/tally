@@ -13,7 +13,7 @@ extern "C" {
 
 void tally_register_cutlass();
 
-cudaError_t CutlassSgemmNN(
+cudaError_t cutlassGemm_f32(
     cutlassOperation_t transA,
     cutlassOperation_t transB,
     int M,
@@ -31,6 +31,25 @@ cudaError_t CutlassSgemmNN(
     int ldd,
     float *bias=nullptr,
     void *workSpace=nullptr,
+    cudaStream_t stream=nullptr
+);
+
+cudaError_t cutlassGemm_f16(
+    cutlassOperation_t transA,
+    cutlassOperation_t transB,
+    int M,
+    int N,
+    int K,
+    float alpha,
+    half const *A,
+    int lda,
+    half const *B,
+    int ldb,
+    float beta,
+    half *C,
+    int ldc,
+    half *D,
+    int ldd,
     cudaStream_t stream=nullptr
 );
 
