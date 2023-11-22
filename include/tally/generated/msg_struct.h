@@ -10,6 +10,7 @@
 #include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <nccl.h>
 
 
 struct cuDriverGetVersionArg {
@@ -362,6 +363,15 @@ struct cuStreamBeginCapture_v2Arg {
 	CUstreamCaptureMode  mode;
 };
 
+struct cuThreadExchangeStreamCaptureModeArg {
+	CUstreamCaptureMode * mode;
+};
+
+struct cuThreadExchangeStreamCaptureModeResponse {
+	CUstreamCaptureMode  mode;
+	CUresult err;
+};
+
 struct cuStreamIsCapturingArg {
 	CUstream  hStream;
 	CUstreamCaptureStatus * captureStatus;
@@ -699,6 +709,15 @@ struct cudaStreamWaitEventArg {
 
 struct cudaStreamQueryArg {
 	cudaStream_t  stream;
+};
+
+struct cudaThreadExchangeStreamCaptureModeArg {
+	enum cudaStreamCaptureMode * mode;
+};
+
+struct cudaThreadExchangeStreamCaptureModeResponse {
+	enum cudaStreamCaptureMode  mode;
+	cudaError_t err;
 };
 
 struct cudaStreamIsCapturingArg {
@@ -1709,6 +1728,41 @@ struct cublasLtMatmulPreferenceDestroyArg {
 };
 
 struct cublasLtLoggerForceDisableArg {
+};
+
+struct ncclGetUniqueIdArg {
+	ncclUniqueId*  uniqueId;
+};
+
+struct ncclGetUniqueIdResponse {
+	ncclUniqueId uniqueId;
+	ncclResult_t err;
+};
+
+struct ncclCommInitRankArg {
+	ncclComm_t*  comm;
+	int  nranks;
+	ncclUniqueId  commId;
+	int  rank;
+};
+
+struct ncclCommInitRankResponse {
+	ncclComm_t comm;
+	ncclResult_t err;
+};
+
+struct ncclCommDestroyArg {
+	ncclComm_t  comm;
+};
+
+struct ncclAllReduceArg {
+	void*  sendbuff;
+	void*  recvbuff;
+	size_t  count;
+	ncclDataType_t  datatype;
+	ncclRedOp_t  op;
+	ncclComm_t  comm;
+	cudaStream_t  stream;
 };
 
 

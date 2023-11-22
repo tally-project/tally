@@ -28,6 +28,7 @@ API_DECL_TEMPLATE_TOP = """
 #include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <nccl.h>
 
 """
 
@@ -54,9 +55,11 @@ API_DEF_TEMPLATE_TOP = """
 #include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <nccl.h>
 
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
+#include <tally/util.h>
 
 void *cuda_handle;
 void *cudart_handle;
@@ -64,15 +67,20 @@ void *cudnn_handle;
 void *cublas_handle;
 void *cublasLt_handle;
 void *nvrtc_handle;
+void *nccl_handle;
 
 void __attribute__((constructor)) register_cuda_handles()
 {
+	auto tally_home_dir = get_tally_home_dir();
+	auto lib_nccl_path = tally_home_dir / "third_party/nccl/build/lib/libnccl.so";
+
 	cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
 	cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
 	cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
 	cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
 	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
     nvrtc_handle = dlopen(LIBNVRTC_PATH, RTLD_LAZY);
+	nccl_handle = dlopen(lib_nccl_path.string().c_str(), RTLD_LAZY);
 }
 
 """
@@ -108,6 +116,7 @@ MSG_STRUCT_TEMPLATE_TOP = """
 #include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <nccl.h>
 
 
 """
@@ -140,6 +149,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 #include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <nccl.h>
 
 #include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
@@ -173,6 +183,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <nccl.h>
 
 #include <readerwriterqueue.h>
 
@@ -642,6 +653,8 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "ncclCommDestroy",
+    "ncclAllReduce",
     "cublasLtMatrixTransformDescDestroy",
     "cuGraphExecDestroy",
     "cuGraphDestroy",
@@ -756,6 +769,10 @@ FORWARD_API_CALLS = [
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cuThreadExchangeStreamCaptureMode",
+    "ncclCommInitRank",
+    "ncclGetUniqueId",
+    "cudaThreadExchangeStreamCaptureMode",
     "cublasLtMatrixTransformDescCreate",
     "cuEventElapsedTime",
     "cuEventCreate",

@@ -27,6 +27,7 @@ std::string strip_space_and_colon(const std::string& input);
 std::string get_tmp_file_path(std::string suffix, int file_name=-1);
 bool numerically_close(float a, float b, float tolerance=0.01);
 std::filesystem::path get_client_preload_dir();
+std::filesystem::path get_tally_home_dir();
 std::string get_process_name(int pid);
 std::string replace_substring(std::string& input, const std::string& oldStr, const std::string& newStr);
 

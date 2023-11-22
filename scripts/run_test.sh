@@ -19,6 +19,7 @@ test_list=(
     "./build/tests/cudnn_test"
     "./build/tests/cublas_test"
     "./build/tests/cublasLt_test"
+    "./build/tests/test_nccl"
     "./build/tests/basic_gemm"
     "./build/tests/turing_tensorop_gemm"
     "./build/tests/ampere_tf32_tensorop_gemm"

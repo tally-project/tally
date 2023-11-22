@@ -24,6 +24,7 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <fatbinary_section.h>
+#include <nccl.h>
 
 #include "tally/log.h"
 #include "tally/util.h"
@@ -204,7 +205,7 @@ void *dlsym(void * handle, const char * symbol)
     }
 
     if (!res) {
-        TALLY_SPD_WARN("dlsym cannot retrieve symbol from anywhere");
+        TALLY_SPD_WARN("dlsym cannot retrieve symbol: " + symbol_str);
     }
 
     return res;
@@ -217,7 +218,6 @@ cudaError_t CUDARTAPI __cudaPopCallConfiguration(dim3 *gridDim, dim3 *blockDim, 
 #if defined(RUN_LOCALLY)
     return l__cudaPopCallConfiguration(gridDim, blockDim, sharedMem, stream);
 #else
-    // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
     return l__cudaPopCallConfiguration(gridDim, blockDim, sharedMem, stream);
 #endif
     
@@ -230,7 +230,6 @@ unsigned __cudaPushCallConfiguration(dim3 gridDim, dim3 blockDim, size_t sharedM
 #if defined(RUN_LOCALLY)
     return l__cudaPushCallConfiguration(gridDim, blockDim, sharedMem, stream);
 #else
-    // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
     return l__cudaPushCallConfiguration(gridDim, blockDim, sharedMem, stream);
 #endif
 }
@@ -3957,25 +3956,23 @@ cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr
     return err;
 }
 
-CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)
+CUresult cuGetProcAddress_v11030(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags)
 {
-	TALLY_SPD_LOG("cuGetProcAddress_v2 hooked");
+	TALLY_SPD_LOG("cuGetProcAddress_v11030 hooked");
 
     std::string symbol_str(symbol);
-    TALLY_SPD_LOG("cuGetProcAddress symbol: " + symbol_str);
+    TALLY_SPD_LOG("cuGetProcAddress_v11030 symbol: " + symbol_str);
 
-    CUresult res = lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
-
-    if (res) {
-        TALLY_SPD_LOG("cuGetProcAddress failed");
-    }
+    CUresult res = CUDA_SUCCESS;
 
     if (symbol_str == "") {
         // do nothing
-        return res;
     }
     else if (symbol_str == "cuGetProcAddress") {
-        return res;
+        *pfn = (void **) cuGetProcAddress_v11030;
+    }
+    else if (symbol_str == "cuGetProcAddress_v2") {
+        *pfn = (void **) cuGetProcAddress_v2;
     }
     else if (std::find(cuGetProcAddress_funcs.begin(), cuGetProcAddress_funcs.end(), symbol_str) != cuGetProcAddress_funcs.end()) {
         *pfn = dlsym(RTLD_DEFAULT, symbol_str.c_str());
@@ -3992,7 +3989,53 @@ CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion,
         assert(pfn);
     }
     else if (std::find(cuGetProcAddress_direct_call_funcs.begin(), cuGetProcAddress_direct_call_funcs.end(), symbol_str) != cuGetProcAddress_direct_call_funcs.end()) {
-        return lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
+        return lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, NULL);
+    }
+    else {
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented cuGetProcAddress_v2 lookup.");
+    }
+
+	return res;
+}
+
+CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)
+{
+	TALLY_SPD_LOG("cuGetProcAddress_v2 hooked");
+
+    std::string symbol_str(symbol);
+    TALLY_SPD_LOG("cuGetProcAddress_v2 symbol: " + symbol_str);
+
+    CUresult res = lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
+
+    if (res) {
+        TALLY_SPD_LOG("cuGetProcAddress_v2 failed");
+    }
+
+    if (symbol_str == "") {
+        // do nothing
+    }
+    else if (symbol_str == "cuGetProcAddress") {
+        *pfn = (void **) cuGetProcAddress_v11030;
+    }
+    else if (symbol_str == "cuGetProcAddress_v2") {
+        *pfn = (void **) cuGetProcAddress_v2;
+    }
+    else if (std::find(cuGetProcAddress_funcs.begin(), cuGetProcAddress_funcs.end(), symbol_str) != cuGetProcAddress_funcs.end()) {
+        *pfn = dlsym(RTLD_DEFAULT, symbol_str.c_str());
+        assert(pfn);
+    }
+    else if (std::find(cuGetProcAddress_v2funcs.begin(), cuGetProcAddress_v2funcs.end(), symbol_str) != cuGetProcAddress_v2funcs.end()) {
+        auto symbol_v2_str = symbol_str + "_v2";
+        *pfn = dlsym(RTLD_DEFAULT, symbol_v2_str.c_str());
+        assert(pfn);
+    }
+    else if (std::find(cuGetProcAddress_v3funcs.begin(), cuGetProcAddress_v3funcs.end(), symbol_str) != cuGetProcAddress_v3funcs.end()) {
+        auto symbol_v3_str = symbol_str + "_v3";
+        *pfn = dlsym(RTLD_DEFAULT, symbol_v3_str.c_str());
+        assert(pfn);
+    }
+    else if (std::find(cuGetProcAddress_direct_call_funcs.begin(), cuGetProcAddress_direct_call_funcs.end(), symbol_str) != cuGetProcAddress_direct_call_funcs.end()) {
+        // do nothing
     }
     else {
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented cuGetProcAddress_v2 lookup.");

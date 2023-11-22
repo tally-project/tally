@@ -7,10 +7,11 @@ CUDA_API_HEADER_FILES = [
     "/usr/local/cuda/include/cuda_profiler_api.h",
     "/usr/local/cuda/include/cudaProfiler.h",
     "/usr/local/cuda/include/nvrtc.h",
-    "/usr/local/cuda/include/cublasLt.h"
+    "/usr/local/cuda/include/cublasLt.h",
+    "/usr/include/nccl.h"
 ]
 
-FUNC_SIG_MUST_CONTAIN = [("cu", "nvrtc"), "(", ")"]
+FUNC_SIG_MUST_CONTAIN = [("cu", "nvrtc", "nccl"), "(", ")"]
 FUNC_SIG_MUST_NOT_CONTAIN = ["{", "}",]
 FUNC_SIG_MUST_NOT_CONTAIN_KEYWORDS = ["noexcept", "return", "for", "throw", "sizeof"]
 

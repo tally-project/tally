@@ -9,9 +9,11 @@
 #include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <nccl.h>
 
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
+#include <tally/util.h>
 
 void *cuda_handle;
 void *cudart_handle;
@@ -19,15 +21,20 @@ void *cudnn_handle;
 void *cublas_handle;
 void *cublasLt_handle;
 void *nvrtc_handle;
+void *nccl_handle;
 
 void __attribute__((constructor)) register_cuda_handles()
 {
+	auto tally_home_dir = get_tally_home_dir();
+	auto lib_nccl_path = tally_home_dir / "third_party/nccl/build/lib/libnccl.so";
+
 	cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
 	cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
 	cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
 	cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
 	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
     nvrtc_handle = dlopen(LIBNVRTC_PATH, RTLD_LAZY);
+	nccl_handle = dlopen(lib_nccl_path.string().c_str(), RTLD_LAZY);
 }
 
 CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr) =
@@ -4643,6 +4650,162 @@ cublasStatus_t (*lcublasLtLoggerSetMask) (int  mask) =
 
 cublasStatus_t (*lcublasLtLoggerForceDisable) () =
 	(cublasStatus_t (*) ()) dlsym(cublasLt_handle, "cublasLtLoggerForceDisable");
+
+ncclResult_t (*lncclGetVersion) (int * version) =
+	(ncclResult_t (*) (int * version)) dlsym(nccl_handle, "ncclGetVersion");
+
+ncclResult_t (*lpncclGetVersion) (int * version) =
+	(ncclResult_t (*) (int * version)) dlsym(nccl_handle, "pncclGetVersion");
+
+ncclResult_t (*lncclGetUniqueId) (ncclUniqueId*  uniqueId) =
+	(ncclResult_t (*) (ncclUniqueId*  uniqueId)) dlsym(nccl_handle, "ncclGetUniqueId");
+
+ncclResult_t (*lpncclGetUniqueId) (ncclUniqueId*  uniqueId) =
+	(ncclResult_t (*) (ncclUniqueId*  uniqueId)) dlsym(nccl_handle, "pncclGetUniqueId");
+
+ncclResult_t (*lncclCommInitRankConfig) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config) =
+	(ncclResult_t (*) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config)) dlsym(nccl_handle, "ncclCommInitRankConfig");
+
+ncclResult_t (*lpncclCommInitRankConfig) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config) =
+	(ncclResult_t (*) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config)) dlsym(nccl_handle, "pncclCommInitRankConfig");
+
+ncclResult_t (*lncclCommInitRank) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank) =
+	(ncclResult_t (*) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank)) dlsym(nccl_handle, "ncclCommInitRank");
+
+ncclResult_t (*lpncclCommInitRank) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank) =
+	(ncclResult_t (*) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank)) dlsym(nccl_handle, "pncclCommInitRank");
+
+ncclResult_t (*lncclCommInitAll) (ncclComm_t*  comm, int  ndev, const int*  devlist) =
+	(ncclResult_t (*) (ncclComm_t*  comm, int  ndev, const int*  devlist)) dlsym(nccl_handle, "ncclCommInitAll");
+
+ncclResult_t (*lpncclCommInitAll) (ncclComm_t*  comm, int  ndev, const int*  devlist) =
+	(ncclResult_t (*) (ncclComm_t*  comm, int  ndev, const int*  devlist)) dlsym(nccl_handle, "pncclCommInitAll");
+
+ncclResult_t (*lncclCommFinalize) (ncclComm_t  comm) =
+	(ncclResult_t (*) (ncclComm_t  comm)) dlsym(nccl_handle, "ncclCommFinalize");
+
+ncclResult_t (*lpncclCommFinalize) (ncclComm_t  comm) =
+	(ncclResult_t (*) (ncclComm_t  comm)) dlsym(nccl_handle, "pncclCommFinalize");
+
+ncclResult_t (*lncclCommDestroy) (ncclComm_t  comm) =
+	(ncclResult_t (*) (ncclComm_t  comm)) dlsym(nccl_handle, "ncclCommDestroy");
+
+ncclResult_t (*lpncclCommDestroy) (ncclComm_t  comm) =
+	(ncclResult_t (*) (ncclComm_t  comm)) dlsym(nccl_handle, "pncclCommDestroy");
+
+ncclResult_t (*lncclCommAbort) (ncclComm_t  comm) =
+	(ncclResult_t (*) (ncclComm_t  comm)) dlsym(nccl_handle, "ncclCommAbort");
+
+ncclResult_t (*lpncclCommAbort) (ncclComm_t  comm) =
+	(ncclResult_t (*) (ncclComm_t  comm)) dlsym(nccl_handle, "pncclCommAbort");
+
+const char* (*lncclGetErrorString) (ncclResult_t  result) =
+	(const char* (*) (ncclResult_t  result)) dlsym(nccl_handle, "ncclGetErrorString");
+
+const char* (*lpncclGetErrorString) (ncclResult_t  result) =
+	(const char* (*) (ncclResult_t  result)) dlsym(nccl_handle, "pncclGetErrorString");
+
+const char* (*lncclGetLastError) (ncclComm_t  comm) =
+	(const char* (*) (ncclComm_t  comm)) dlsym(nccl_handle, "ncclGetLastError");
+
+const char* (*lpncclGetError) (ncclComm_t  comm) =
+	(const char* (*) (ncclComm_t  comm)) dlsym(nccl_handle, "pncclGetError");
+
+ncclResult_t (*lncclCommGetAsyncError) (ncclComm_t  comm, ncclResult_t * asyncError) =
+	(ncclResult_t (*) (ncclComm_t  comm, ncclResult_t * asyncError)) dlsym(nccl_handle, "ncclCommGetAsyncError");
+
+ncclResult_t (*lpncclCommGetAsyncError) (ncclComm_t  comm, ncclResult_t * asyncError) =
+	(ncclResult_t (*) (ncclComm_t  comm, ncclResult_t * asyncError)) dlsym(nccl_handle, "pncclCommGetAsyncError");
+
+ncclResult_t (*lncclCommCount) (const ncclComm_t  comm, int*  count) =
+	(ncclResult_t (*) (const ncclComm_t  comm, int*  count)) dlsym(nccl_handle, "ncclCommCount");
+
+ncclResult_t (*lpncclCommCount) (const ncclComm_t  comm, int*  count) =
+	(ncclResult_t (*) (const ncclComm_t  comm, int*  count)) dlsym(nccl_handle, "pncclCommCount");
+
+ncclResult_t (*lncclCommCuDevice) (const ncclComm_t  comm, int*  device) =
+	(ncclResult_t (*) (const ncclComm_t  comm, int*  device)) dlsym(nccl_handle, "ncclCommCuDevice");
+
+ncclResult_t (*lpncclCommCuDevice) (const ncclComm_t  comm, int*  device) =
+	(ncclResult_t (*) (const ncclComm_t  comm, int*  device)) dlsym(nccl_handle, "pncclCommCuDevice");
+
+ncclResult_t (*lncclCommUserRank) (const ncclComm_t  comm, int*  rank) =
+	(ncclResult_t (*) (const ncclComm_t  comm, int*  rank)) dlsym(nccl_handle, "ncclCommUserRank");
+
+ncclResult_t (*lpncclCommUserRank) (const ncclComm_t  comm, int*  rank) =
+	(ncclResult_t (*) (const ncclComm_t  comm, int*  rank)) dlsym(nccl_handle, "pncclCommUserRank");
+
+ncclResult_t (*lncclRedOpCreatePreMulSum) (ncclRedOp_t * op, void * scalar, ncclDataType_t  datatype, ncclScalarResidence_t  residence, ncclComm_t  comm) =
+	(ncclResult_t (*) (ncclRedOp_t * op, void * scalar, ncclDataType_t  datatype, ncclScalarResidence_t  residence, ncclComm_t  comm)) dlsym(nccl_handle, "ncclRedOpCreatePreMulSum");
+
+ncclResult_t (*lpncclRedOpCreatePreMulSum) (ncclRedOp_t * op, void * scalar, ncclDataType_t  datatype, ncclScalarResidence_t  residence, ncclComm_t  comm) =
+	(ncclResult_t (*) (ncclRedOp_t * op, void * scalar, ncclDataType_t  datatype, ncclScalarResidence_t  residence, ncclComm_t  comm)) dlsym(nccl_handle, "pncclRedOpCreatePreMulSum");
+
+ncclResult_t (*lncclRedOpDestroy) (ncclRedOp_t  op, ncclComm_t  comm) =
+	(ncclResult_t (*) (ncclRedOp_t  op, ncclComm_t  comm)) dlsym(nccl_handle, "ncclRedOpDestroy");
+
+ncclResult_t (*lpncclRedOpDestroy) (ncclRedOp_t  op, ncclComm_t  comm) =
+	(ncclResult_t (*) (ncclRedOp_t  op, ncclComm_t  comm)) dlsym(nccl_handle, "pncclRedOpDestroy");
+
+ncclResult_t (*lncclReduce) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, int  root, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, int  root, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "ncclReduce");
+
+ncclResult_t (*lpncclReduce) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, int  root, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, int  root, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "pncclReduce");
+
+ncclResult_t (*lncclBcast) (void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "ncclBcast");
+
+ncclResult_t (*lpncclBcast) (void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "pncclBcast");
+
+ncclResult_t (*lncclBroadcast) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "ncclBroadcast");
+
+ncclResult_t (*lpncclBroadcast) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "pncclBroadcast");
+
+ncclResult_t (*lncclAllReduce) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "ncclAllReduce");
+
+ncclResult_t (*lpncclAllReduce) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "pncclAllReduce");
+
+ncclResult_t (*lncclReduceScatter) (const void*  sendbuff, void*  recvbuff, size_t  recvcount, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, void*  recvbuff, size_t  recvcount, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "ncclReduceScatter");
+
+ncclResult_t (*lpncclReduceScatter) (const void*  sendbuff, void*  recvbuff, size_t  recvcount, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, void*  recvbuff, size_t  recvcount, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "pncclReduceScatter");
+
+ncclResult_t (*lncclAllGather) (const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "ncclAllGather");
+
+ncclResult_t (*lpncclAllGather) (const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "pncclAllGather");
+
+ncclResult_t (*lncclSend) (const void*  sendbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "ncclSend");
+
+ncclResult_t (*lpncclSend) (const void*  sendbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (const void*  sendbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "pncclSend");
+
+ncclResult_t (*lpncclRecv) (void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "pncclRecv");
+
+ncclResult_t (*lncclRecv) (void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream) =
+	(ncclResult_t (*) (void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)) dlsym(nccl_handle, "ncclRecv");
+
+ncclResult_t (*lncclGroupStart) () =
+	(ncclResult_t (*) ()) dlsym(nccl_handle, "ncclGroupStart");
+
+ncclResult_t (*lpncclGroupStart) () =
+	(ncclResult_t (*) ()) dlsym(nccl_handle, "pncclGroupStart");
+
+ncclResult_t (*lncclGroupEnd) () =
+	(ncclResult_t (*) ()) dlsym(nccl_handle, "ncclGroupEnd");
+
+ncclResult_t (*lpncclGroupEnd) () =
+	(ncclResult_t (*) ()) dlsym(nccl_handle, "pncclGroupEnd");
 
 
 

@@ -56,6 +56,8 @@ def gen_client_func_decl_def(func_sig):
         handle = "cublas_handle"
     elif "nvrtc" in func_name.lower():
         handle = "nvrtc_handle"
+    elif "nccl" in func_name.lower():
+        handle = "nccl_handle"
 
     func_declaration = f"extern {ret_type} (*{preload_func_name}) ({args_str_no_val});\n"
 
@@ -303,16 +305,13 @@ def gen_func_client_preload(func_sig):
         func_preload_builder += "\treturn err;\n"
 
     elif func_name in DIRECT_CALLS:
-        # call original
-        if ret_type != "void":
-            func_preload_builder += f"\t{ret_type} res = "
-            
-        func_preload_builder += f"\t\t{preload_func_name}({arg_names_str});\n"
-
-        if ret_type != "void":
-            func_preload_builder += f"\treturn res;\n"
+        func_preload_builder += f"\treturn {preload_func_name}({arg_names_str});\n"
     else:
+        func_preload_builder += "#if defined(RUN_LOCALLY)\n"
+        func_preload_builder += f"\treturn {preload_func_name}({arg_names_str});\n"
+        func_preload_builder += "#else\n"
         func_preload_builder += f"\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": Unimplemented.\");\n"
+        func_preload_builder += "#endif\n"
 
     # close bracket
     func_preload_builder += "}"
