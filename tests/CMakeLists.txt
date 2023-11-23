@@ -215,3 +215,16 @@ set_target_properties(cuda-memcpy-test PROPERTIES
     CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
+
+add_executable(test_nccl cuda_samples_basic/test_nccl.cu)
+
+target_link_libraries(test_nccl
+    cuda
+    cudart
+    nccl
+)
+
+set_target_properties(test_nccl PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)

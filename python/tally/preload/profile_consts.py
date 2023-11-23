@@ -186,6 +186,7 @@ PRELOAD_TEMPLATE = """
 #include <cublasLt.h>
 #include <cuda_profiler_api.h>
 #include <cudaProfiler.h>
+#include <nccl.h>
 
 // g++ -I/usr/local/cuda/include -fPIC -shared -o preload.so preload.cpp
 

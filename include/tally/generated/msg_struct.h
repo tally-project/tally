@@ -10,6 +10,7 @@
 #include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <nccl.h>
 
 
 struct cuDriverGetVersionArg {
@@ -182,6 +183,18 @@ struct cuDevicePrimaryCtxRelease_v2Arg {
 	CUdevice  dev;
 };
 
+struct cuDevicePrimaryCtxGetStateArg {
+	CUdevice  dev;
+	unsigned int * flags;
+	int * active;
+};
+
+struct cuDevicePrimaryCtxGetStateResponse {
+	unsigned int  flags;
+	int  active;
+	CUresult err;
+};
+
 struct cuDevicePrimaryCtxReset_v2Arg {
 	CUdevice  dev;
 };
@@ -339,6 +352,17 @@ struct cuMemGetInfo_v2Response {
 	CUresult err;
 };
 
+struct cuDeviceGetPCIBusIdArg {
+	char * pciBusId;
+	int  len;
+	CUdevice  dev;
+};
+
+struct cuDeviceGetPCIBusIdResponse {
+	char  pciBusId;
+	CUresult err;
+};
+
 struct cuMemAllocFromPoolAsyncArg {
 	CUdeviceptr * dptr;
 	size_t  bytesize;
@@ -360,6 +384,15 @@ struct cuStreamWaitEventArg {
 struct cuStreamBeginCapture_v2Arg {
 	CUstream  hStream;
 	CUstreamCaptureMode  mode;
+};
+
+struct cuThreadExchangeStreamCaptureModeArg {
+	CUstreamCaptureMode * mode;
+};
+
+struct cuThreadExchangeStreamCaptureModeResponse {
+	CUstreamCaptureMode  mode;
+	CUresult err;
 };
 
 struct cuStreamIsCapturingArg {
@@ -588,6 +621,15 @@ struct cudaGetLastErrorArg {
 struct cudaPeekAtLastErrorArg {
 };
 
+struct cudaGetDeviceCountArg {
+	int * count;
+};
+
+struct cudaGetDeviceCountResponse {
+	int  count;
+	cudaError_t err;
+};
+
 struct cudaGetDeviceProperties_v2Arg {
 	struct cudaDeviceProp * prop;
 	int  device;
@@ -646,6 +688,15 @@ struct cudaDeviceGetP2PAttributeResponse {
 	cudaError_t err;
 };
 
+struct cudaGetDeviceArg {
+	int * device;
+};
+
+struct cudaGetDeviceResponse {
+	int  device;
+	cudaError_t err;
+};
+
 struct cudaSetDeviceFlagsArg {
 	unsigned int  flags;
 };
@@ -699,6 +750,15 @@ struct cudaStreamWaitEventArg {
 
 struct cudaStreamQueryArg {
 	cudaStream_t  stream;
+};
+
+struct cudaThreadExchangeStreamCaptureModeArg {
+	enum cudaStreamCaptureMode * mode;
+};
+
+struct cudaThreadExchangeStreamCaptureModeResponse {
+	enum cudaStreamCaptureMode  mode;
+	cudaError_t err;
 };
 
 struct cudaStreamIsCapturingArg {
@@ -784,6 +844,24 @@ struct cudaMemsetAsyncArg {
 struct cudaMemPoolTrimToArg {
 	cudaMemPool_t  memPool;
 	size_t  minBytesToKeep;
+};
+
+struct cudaDriverGetVersionArg {
+	int * driverVersion;
+};
+
+struct cudaDriverGetVersionResponse {
+	int  driverVersion;
+	cudaError_t err;
+};
+
+struct cudaRuntimeGetVersionArg {
+	int * runtimeVersion;
+};
+
+struct cudaRuntimeGetVersionResponse {
+	int  runtimeVersion;
+	cudaError_t err;
 };
 
 struct cudaGraphCreateArg {
@@ -1709,6 +1787,41 @@ struct cublasLtMatmulPreferenceDestroyArg {
 };
 
 struct cublasLtLoggerForceDisableArg {
+};
+
+struct ncclGetUniqueIdArg {
+	ncclUniqueId*  uniqueId;
+};
+
+struct ncclGetUniqueIdResponse {
+	ncclUniqueId uniqueId;
+	ncclResult_t err;
+};
+
+struct ncclCommInitRankArg {
+	ncclComm_t*  comm;
+	int  nranks;
+	ncclUniqueId  commId;
+	int  rank;
+};
+
+struct ncclCommInitRankResponse {
+	ncclComm_t comm;
+	ncclResult_t err;
+};
+
+struct ncclCommDestroyArg {
+	ncclComm_t  comm;
+};
+
+struct ncclAllReduceArg {
+	void*  sendbuff;
+	void*  recvbuff;
+	size_t  count;
+	ncclDataType_t  datatype;
+	ncclRedOp_t  op;
+	ncclComm_t  comm;
+	cudaStream_t  stream;
 };
 
 

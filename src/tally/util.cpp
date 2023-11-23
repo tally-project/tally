@@ -166,13 +166,16 @@ bool numerically_close(float a, float b, float tolerance) {
 
 std::filesystem::path get_client_preload_dir()
 {
-    std::filesystem::path client_preload_dir;
+    return get_tally_home_dir() / "build";
+}
+
+std::filesystem::path get_tally_home_dir()
+{
     if (std::getenv("TALLY_HOME")) {
-        client_preload_dir = std::filesystem::path(std::string(std::getenv("TALLY_HOME"))) / "build";
+        return std::filesystem::path(std::string(std::getenv("TALLY_HOME")));
     } else {
-        client_preload_dir = std::filesystem::path(std::string(std::getenv("HOME"))) / "tally/build";
+        return std::filesystem::path(std::string(std::getenv("HOME"))) / "tally";
     }
-    return client_preload_dir;
 }
 
 std::string get_process_name(int pid) {

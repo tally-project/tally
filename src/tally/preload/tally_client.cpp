@@ -24,6 +24,7 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <fatbinary_section.h>
+#include <nccl.h>
 
 #include "tally/log.h"
 #include "tally/util.h"
@@ -49,7 +50,10 @@ std::map<size_t, std::vector<std::pair<std::string, std::string>>> ptx_to_fatbin
 std::unordered_map<cudnnSeqDataDescriptor_t, int> seq_desc_to_seq_len_map;
 
 // Used to check whether an address points to device memory
-std::vector<DeviceMemoryKey> dev_addr_map;
+std::vector<mem_region> dev_addr_map;
+
+// Used to check whether an address points to host memory allocated by CUDA
+std::vector<mem_region> host_addr_map;
 
 std::map<std::string, void *> lib_name_to_lib_handle;
 void *tally_handle = nullptr;
@@ -169,7 +173,9 @@ void *dlsym(void * handle, const char * symbol)
     std::string symbol_str(symbol);
     TALLY_SPD_LOG("dlsym: " + symbol_str);
 
-    if (std::find(cuGetProcAddress_v2funcs.begin(), cuGetProcAddress_v2funcs.end(), symbol_str) != cuGetProcAddress_v2funcs.end()) {
+    if (symbol_str == "cuGetProcAddress") {
+        symbol_str = symbol_str + "_v2";
+    } else if (std::find(cuGetProcAddress_v2funcs.begin(), cuGetProcAddress_v2funcs.end(), symbol_str) != cuGetProcAddress_v2funcs.end()) {
         symbol_str = symbol_str + "_v2";
     } else if (std::find(cuGetProcAddress_v3funcs.begin(), cuGetProcAddress_v3funcs.end(), symbol_str) != cuGetProcAddress_v3funcs.end()) {
         symbol_str = symbol_str + "_v3";
@@ -204,7 +210,7 @@ void *dlsym(void * handle, const char * symbol)
     }
 
     if (!res) {
-        TALLY_SPD_WARN("dlsym cannot retrieve symbol from anywhere");
+        TALLY_SPD_WARN("dlsym cannot retrieve symbol: " + symbol_str);
     }
 
     return res;
@@ -217,7 +223,6 @@ cudaError_t CUDARTAPI __cudaPopCallConfiguration(dim3 *gridDim, dim3 *blockDim, 
 #if defined(RUN_LOCALLY)
     return l__cudaPopCallConfiguration(gridDim, blockDim, sharedMem, stream);
 #else
-    // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
     return l__cudaPopCallConfiguration(gridDim, blockDim, sharedMem, stream);
 #endif
     
@@ -230,7 +235,6 @@ unsigned __cudaPushCallConfiguration(dim3 gridDim, dim3 blockDim, size_t sharedM
 #if defined(RUN_LOCALLY)
     return l__cudaPushCallConfiguration(gridDim, blockDim, sharedMem, stream);
 #else
-    // throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
     return l__cudaPushCallConfiguration(gridDim, blockDim, sharedMem, stream);
 #endif
 }
@@ -423,7 +427,7 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
     {};
 
     if (err == cudaSuccess) {
-        dev_addr_map.push_back( DeviceMemoryKey(*devPtr, size) );
+        dev_addr_map.push_back( mem_region(*devPtr, size) );
     }
 #endif
 
@@ -466,7 +470,7 @@ cudaError_t cudaFree(void * devPtr)
     IOX_RECV_RETURN_STATUS(cudaError_t);
 
     if (err == cudaSuccess) {
-        free_dev_addr(dev_addr_map, devPtr);
+        free_mem_region(dev_addr_map, devPtr);
     }
 #endif
 
@@ -713,7 +717,47 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
 	return err;
 }
 
-#define IDX2C(i,j,ld) (((j)*(ld))+(i))
+cublasStatus_t cublasSgemm_v2_inner(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
+{
+    cublasStatus_t err;
+
+#if defined(RUN_LOCALLY)
+    err = lcublasSgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+#else
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemm_v2Arg);
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
+        .and_then([&](auto& requestPayload) {
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASSGEMM_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasSgemm_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+            request->handle = handle;
+            request->transa = transa;
+            request->transb = transb;
+            request->m = m;
+            request->n = n;
+            request->k = k;
+            request->alpha = *alpha;
+            request->A = A;
+            request->lda = lda;
+            request->B = B;
+            request->ldb = ldb;
+            request->beta = *beta;
+            request->C = C;
+            request->ldc = ldc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+#endif
+    return err;
+}
 
 cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
 {
@@ -754,7 +798,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         launched = true;
 
 #if defined(VERIFY_CORRECTNESS)
-        err = lcublasSgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C_copy, ldc);
+        err = cublasSgemm_v2_inner(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C_copy, ldc);
 
         cudaDeviceSynchronize();
 
@@ -794,50 +838,56 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 #endif
 
     if (!launched) {
-
-#if defined(RUN_LOCALLY)
-        err = lcublasSgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-#else
-   
-        uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemm_v2Arg);
-
-        IOX_CLIENT_ACQUIRE_LOCK;
-        TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
-            .and_then([&](auto& requestPayload) {
-                auto header = static_cast<MessageHeader_t*>(requestPayload);
-                header->api_id = CUDA_API_ENUM::CUBLASSGEMM_V2;
-                header->client_id = TallyClient::client->client_id;
-                
-                auto request = (cublasSgemm_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-                request->handle = handle;
-                request->transa = transa;
-                request->transb = transb;
-                request->m = m;
-                request->n = n;
-                request->k = k;
-                request->alpha = *alpha;
-                request->A = A;
-                request->lda = lda;
-                request->B = B;
-                request->ldb = ldb;
-                request->beta = *beta;
-                request->C = C;
-                request->ldc = ldc;
-
-                TallyClient::client->iox_client->send(header).or_else(
-                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-            })
-            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-        IOX_RECV_RETURN_STATUS(cublasStatus_t);
-
-#endif // RUN_LOCALLY
-
+        err = cublasSgemm_v2_inner(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
     }
 
     TALLY_CLIENT_PROFILE_END;
     TALLY_CLIENT_TRACE_API_CALL(cublasSgemm_v2);
     
+    return err;
+}
+
+cublasStatus_t cublasLtMatmul_inner(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  computeDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  B, cublasLtMatrixLayout_t  Bdesc, const void*  beta, const void*  C, cublasLtMatrixLayout_t  Cdesc, void*  D, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, void*  workspace, size_t  workspaceSizeInBytes, cudaStream_t  stream)
+{
+    cublasStatus_t err;
+
+#if defined(RUN_LOCALLY)
+    err = lcublasLtMatmul(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
+#else
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulArg);
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
+    .and_then([&](auto& requestPayload) {
+        auto header = static_cast<MessageHeader_t*>(requestPayload);
+        header->api_id = CUDA_API_ENUM::CUBLASLTMATMUL;
+        header->client_id = TallyClient::client->client_id;
+        
+        auto request = (cublasLtMatmulArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+        request->lightHandle = lightHandle;
+        request->computeDesc = computeDesc;
+        request->alpha = *((uint64_t *) alpha); // copy the 64 bits from the pointer
+        request->A = A;
+        request->Adesc = Adesc;
+        request->B = B;
+        request->Bdesc = Bdesc;
+        request->beta = *((uint64_t *) beta);
+        request->C = (void *)C;
+        request->Cdesc = Cdesc;
+        request->D = D;
+        request->Ddesc = Ddesc;
+        request->algo = *algo;
+        request->workspace = workspace;
+        request->workspaceSizeInBytes = workspaceSizeInBytes;
+        request->stream = stream;
+
+        TallyClient::client->iox_client->send(header).or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+    })
+    .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+#endif
     return err;
 }
 
@@ -921,7 +971,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                 launched = true;
 
 #if defined(VERIFY_CORRECTNESS)
-                err = lcublasLtMatmul(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D_copy, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
+                err = cublasLtMatmul_inner(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D_copy, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
 
                 cudaDeviceSynchronize();
 
@@ -970,45 +1020,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 #endif
 
     if (!launched) {
-
-#if defined(RUN_LOCALLY)
-        err = lcublasLtMatmul(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
-#else
-        uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulArg);
-
-        IOX_CLIENT_ACQUIRE_LOCK;
-        TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
-        .and_then([&](auto& requestPayload) {
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTMATMUL;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtMatmulArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-            request->lightHandle = lightHandle;
-            request->computeDesc = computeDesc;
-            request->alpha = *((uint64_t *) alpha); // copy the 64 bits from the pointer
-            request->A = A;
-            request->Adesc = Adesc;
-            request->B = B;
-            request->Bdesc = Bdesc;
-            request->beta = *((uint64_t *) beta);
-            request->C = (void *)C;
-            request->Cdesc = Cdesc;
-            request->D = D;
-            request->Ddesc = Ddesc;
-            request->algo = *algo;
-            request->workspace = workspace;
-            request->workspaceSizeInBytes = workspaceSizeInBytes;
-            request->stream = stream;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-        IOX_RECV_RETURN_STATUS(cublasStatus_t);
-#endif
-
+        err = cublasLtMatmul_inner(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
     }
 
     TALLY_CLIENT_PROFILE_END;
@@ -3144,9 +3156,7 @@ cudaError_t cudaSetDevice(int  device)
 	TALLY_SPD_LOG("cudaSetDevice hooked");
 	TALLY_CLIENT_PROFILE_START;
 
-    // Run this locally so local process know which device is being used
-    // Thus, cudaGetDevice can be run completely locally
-	auto err = lcudaSetDevice(device);
+	cudaError_t err;
 
 #ifndef RUN_LOCALLY
 
@@ -3923,6 +3933,7 @@ cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr
 {
 	TALLY_SPD_LOG("cudaFuncSetAttribute hooked");
 	TALLY_CLIENT_PROFILE_START;
+
 #if defined(RUN_LOCALLY)
 	auto err = lcudaFuncSetAttribute(func, attr, value);
 #else
@@ -3949,7 +3960,6 @@ cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr
 
     IOX_RECV_RETURN_STATUS(cudaError_t);
 
-    err = lcudaFuncSetAttribute(func, attr, value);
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaFuncSetAttribute);
@@ -3957,25 +3967,23 @@ cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr
     return err;
 }
 
-CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)
+CUresult cuGetProcAddress_v11030(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags)
 {
-	TALLY_SPD_LOG("cuGetProcAddress_v2 hooked");
+	TALLY_SPD_LOG("cuGetProcAddress_v11030 hooked");
 
     std::string symbol_str(symbol);
-    TALLY_SPD_LOG("cuGetProcAddress symbol: " + symbol_str);
+    TALLY_SPD_LOG("cuGetProcAddress_v11030 symbol: " + symbol_str);
 
-    CUresult res = lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
-
-    if (res) {
-        TALLY_SPD_LOG("cuGetProcAddress failed");
-    }
+    CUresult res = CUDA_SUCCESS;
 
     if (symbol_str == "") {
         // do nothing
-        return res;
     }
     else if (symbol_str == "cuGetProcAddress") {
-        return res;
+        *pfn = (void **) cuGetProcAddress_v11030;
+    }
+    else if (symbol_str == "cuGetProcAddress_v2") {
+        *pfn = (void **) cuGetProcAddress_v2;
     }
     else if (std::find(cuGetProcAddress_funcs.begin(), cuGetProcAddress_funcs.end(), symbol_str) != cuGetProcAddress_funcs.end()) {
         *pfn = dlsym(RTLD_DEFAULT, symbol_str.c_str());
@@ -3992,7 +4000,53 @@ CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion,
         assert(pfn);
     }
     else if (std::find(cuGetProcAddress_direct_call_funcs.begin(), cuGetProcAddress_direct_call_funcs.end(), symbol_str) != cuGetProcAddress_direct_call_funcs.end()) {
-        return lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
+        return lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, NULL);
+    }
+    else {
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented cuGetProcAddress_v2 lookup.");
+    }
+
+	return res;
+}
+
+CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion, cuuint64_t  flags, CUdriverProcAddressQueryResult * symbolStatus)
+{
+	TALLY_SPD_LOG("cuGetProcAddress_v2 hooked");
+
+    std::string symbol_str(symbol);
+    TALLY_SPD_LOG("cuGetProcAddress_v2 symbol: " + symbol_str);
+
+    CUresult res = lcuGetProcAddress_v2(symbol, pfn, cudaVersion, flags, symbolStatus);
+
+    if (res) {
+        TALLY_SPD_LOG("cuGetProcAddress_v2 failed");
+    }
+
+    if (symbol_str == "") {
+        // do nothing
+    }
+    else if (symbol_str == "cuGetProcAddress") {
+        *pfn = (void **) cuGetProcAddress_v11030;
+    }
+    else if (symbol_str == "cuGetProcAddress_v2") {
+        *pfn = (void **) cuGetProcAddress_v2;
+    }
+    else if (std::find(cuGetProcAddress_funcs.begin(), cuGetProcAddress_funcs.end(), symbol_str) != cuGetProcAddress_funcs.end()) {
+        *pfn = dlsym(RTLD_DEFAULT, symbol_str.c_str());
+        assert(pfn);
+    }
+    else if (std::find(cuGetProcAddress_v2funcs.begin(), cuGetProcAddress_v2funcs.end(), symbol_str) != cuGetProcAddress_v2funcs.end()) {
+        auto symbol_v2_str = symbol_str + "_v2";
+        *pfn = dlsym(RTLD_DEFAULT, symbol_v2_str.c_str());
+        assert(pfn);
+    }
+    else if (std::find(cuGetProcAddress_v3funcs.begin(), cuGetProcAddress_v3funcs.end(), symbol_str) != cuGetProcAddress_v3funcs.end()) {
+        auto symbol_v3_str = symbol_str + "_v3";
+        *pfn = dlsym(RTLD_DEFAULT, symbol_v3_str.c_str());
+        assert(pfn);
+    }
+    else if (std::find(cuGetProcAddress_direct_call_funcs.begin(), cuGetProcAddress_direct_call_funcs.end(), symbol_str) != cuGetProcAddress_direct_call_funcs.end()) {
+        // do nothing
     }
     else {
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented cuGetProcAddress_v2 lookup.");
@@ -4015,7 +4069,7 @@ CUresult cuMemcpy(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount)
     uint32_t msg_len;
 
     // Copy data if `src` is at host
-    if (is_dev_addr(dev_addr_map, (const void*) src)) {
+    if (is_registered_addr(dev_addr_map, (const void*) src)) {
         msg_len = sizeof(MessageHeader_t) + sizeof(cudaMemcpyArg);
     } else {
         msg_len = sizeof(MessageHeader_t) + sizeof(cudaMemcpyArg) + ByteCount;
@@ -4034,7 +4088,7 @@ CUresult cuMemcpy(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount)
 			request->src = src;
 			request->ByteCount = ByteCount;
 
-            if (!is_dev_addr(dev_addr_map, (const void*) src)) {
+            if (!is_registered_addr(dev_addr_map, (const void*) src)) {
                 memcpy(request->data, (const void*) src, ByteCount);
             }
 
@@ -4049,7 +4103,7 @@ CUresult cuMemcpy(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount)
             auto response = static_cast<const cuMemcpyResponse*>(responsePayload);
 
             err = response->err;
-            if (!is_dev_addr(dev_addr_map, (const void*) dst)) {
+            if (!is_registered_addr(dev_addr_map, (const void*) dst)) {
                 memcpy((void*) dst, response->data, ByteCount);
             }
 
@@ -4075,7 +4129,7 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
     uint32_t msg_len;
 
     // Copy data if `src` is at host
-    if (is_dev_addr(dev_addr_map, (const void*) src)) {
+    if (is_registered_addr(dev_addr_map, (const void*) src)) {
         msg_len = sizeof(MessageHeader_t) + sizeof(cuMemcpyAsyncArg);
     } else {
         msg_len = sizeof(MessageHeader_t) + sizeof(cuMemcpyAsyncArg) + ByteCount;
@@ -4095,7 +4149,7 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
 			request->ByteCount = ByteCount;
 			request->hStream = hStream;
 
-            if (!is_dev_addr(dev_addr_map, (const void*) src)) {
+            if (!is_registered_addr(dev_addr_map, (const void*) src)) {
                 memcpy(request->data, (const void*) src, ByteCount);
             }
 
@@ -4110,7 +4164,7 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
             auto response = static_cast<const cuMemcpyAsyncResponse*>(responsePayload);
 
             err = response->err;
-            if (!is_dev_addr(dev_addr_map, (const void*) dst)) {
+            if (!is_registered_addr(dev_addr_map, (const void*) dst)) {
                 memcpy((void*) dst, response->data, ByteCount);
             }
 
@@ -4162,7 +4216,7 @@ CUresult cuMemAllocAsync(CUdeviceptr * dptr, size_t  bytesize, CUstream  hStream
     {};
 
     if (err == CUDA_SUCCESS) {
-        dev_addr_map.push_back( DeviceMemoryKey((void *)*dptr, bytesize) );
+        dev_addr_map.push_back( mem_region((void *)*dptr, bytesize) );
     }
 #endif
 
@@ -4208,7 +4262,7 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
     {};
 
     if (err == CUDA_SUCCESS) {
-        free_dev_addr(dev_addr_map, (void *)dptr);
+        free_mem_region(dev_addr_map, (void *)dptr);
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
@@ -4468,6 +4522,54 @@ CUresult cuStreamCreateWithPriority(CUstream * phStream, unsigned int  flags, in
 	return err;
 }
 
+cublasStatus_t cublasGemmEx_inner(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
+{
+    cublasStatus_t err;
+
+#if defined(RUN_LOCALLY)
+    err = lcublasGemmEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc, computeType, algo);
+#else
+
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasGemmExArg);
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
+    .and_then([&](auto& requestPayload) {
+        auto header = static_cast<MessageHeader_t*>(requestPayload);
+        header->api_id = CUDA_API_ENUM::CUBLASGEMMEX;
+        header->client_id = TallyClient::client->client_id;
+        
+        auto request = (cublasGemmExArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+        request->handle = handle;
+        request->transa = transa;
+        request->transb = transb;
+        request->m = m;
+        request->n = n;
+        request->k = k;
+        request->alpha = *((uint64_t *) alpha);
+        request->A = const_cast<void*>(A);
+        request->Atype = Atype;
+        request->lda = lda;
+        request->B = const_cast<void*>(B);
+        request->Btype = Btype;
+        request->ldb = ldb;
+        request->beta = *((uint64_t *) beta);
+        request->C = C;
+        request->Ctype = Ctype;
+        request->ldc = ldc;
+        request->computeType = computeType;
+        request->algo = algo;
+
+        TallyClient::client->iox_client->send(header).or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+    })
+    .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+#endif
+    return err;
+}
+
 cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
 {
 	TALLY_SPD_LOG("cublasGemmEx hooked");
@@ -4516,7 +4618,7 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                 launched = true;
 
 #if defined(VERIFY_CORRECTNESS)
-                err = lcublasGemmEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C_copy, Ctype, ldc, computeType, algo);
+                err = cublasGemmEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C_copy, Ctype, ldc, computeType, algo);
 
                 cudaDeviceSynchronize();
 
@@ -4569,49 +4671,7 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
 #endif
 
     if (!launched) {
-
-#if defined(RUN_LOCALLY)
-        err = lcublasGemmEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc, computeType, algo);
-#else
-
-        uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasGemmExArg);
-
-        IOX_CLIENT_ACQUIRE_LOCK;
-        TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
-        .and_then([&](auto& requestPayload) {
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASGEMMEX;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasGemmExArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-            request->handle = handle;
-            request->transa = transa;
-            request->transb = transb;
-            request->m = m;
-            request->n = n;
-            request->k = k;
-            request->alpha = *((uint64_t *) alpha);
-            request->A = const_cast<void*>(A);
-            request->Atype = Atype;
-            request->lda = lda;
-            request->B = const_cast<void*>(B);
-            request->Btype = Btype;
-            request->ldb = ldb;
-            request->beta = *((uint64_t *) beta);
-            request->C = C;
-            request->Ctype = Ctype;
-            request->ldc = ldc;
-            request->computeType = computeType;
-            request->algo = algo;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-        IOX_RECV_RETURN_STATUS(cublasStatus_t);
-#endif
-
+        err = cublasGemmEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc, computeType, algo);
     }
 
     TALLY_CLIENT_PROFILE_END;
@@ -4929,7 +4989,7 @@ CUresult cuMemAlloc_v2(CUdeviceptr * dptr, size_t  bytesize)
     {};
 
     if (err == CUDA_SUCCESS) {
-        dev_addr_map.push_back( DeviceMemoryKey((void *) *dptr, bytesize) );
+        dev_addr_map.push_back( mem_region((void *) *dptr, bytesize) );
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
@@ -5981,63 +6041,22 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 
 cudaError_t cudaPointerGetAttributes(struct cudaPointerAttributes * attributes, const void * ptr)
 {
-	TALLY_SPD_LOG("cudaPointerGetAttributes hooked");
-	TALLY_CLIENT_PROFILE_START;
-
-    auto err = lcudaPointerGetAttributes(attributes, ptr);
-
 #if defined(RUN_LOCALLY)
-	return err;
+	return lcudaPointerGetAttributes(attributes, ptr);
 #else
-
-    // First check if ptr is CUDA-registered host memory
-    if (attributes->type == cudaMemoryTypeHost) {
-        return err;
-    }
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaPointerGetAttributesArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDAPOINTERGETATTRIBUTES;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cudaPointerGetAttributesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->attributes = attributes;
-			request->ptr = const_cast<void *>(ptr);
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cudaPointerGetAttributesResponse*>(responsePayload);
-			if (attributes) { *attributes = response->attributes; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+    throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaPointerGetAttributes);
-	return err;
 }
 
 CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuDevicePrimaryCtxSetFlags_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
+
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxSetFlags_v2(dev, flags);
 #else
-
-    // Also run locally so that running cuDevicePrimaryCtxGetState locally 
-    // will return the correct state
-    CUresult err = lcuDevicePrimaryCtxSetFlags_v2(dev, flags);
+    CUresult err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxSetFlags_v2Arg), alignof(MessageHeader_t))
@@ -6061,6 +6080,208 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxSetFlags_v2);
 	return err;
+}
+
+CUresult cuDeviceGetName(char * name, int  len, CUdevice  dev)
+{
+	TALLY_SPD_LOG("cuDeviceGetName hooked");
+    TALLY_CLIENT_PROFILE_START;
+
+    CUresult err;
+
+#if defined(RUN_LOCALLY)
+	err = lcuDeviceGetName(name, len, dev);
+#else
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDeviceGetNameArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEGETNAME;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuDeviceGetNameArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->len = len;
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuDeviceGetNameResponse*>(responsePayload);
+
+            err = response->err;
+            memcpy(name, response->name, len);
+
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetName);
+	return err;
+}
+
+CUresult cuMemHostAlloc(void ** pp, size_t  bytesize, unsigned int  Flags)
+{
+	TALLY_SPD_LOG("cuMemHostAlloc hooked");
+#if defined(RUN_LOCALLY)
+	return lcuMemHostAlloc(pp, bytesize, Flags);
+#else
+
+    // Ignore Page-locked memory
+    *pp = aligned_alloc(4096, bytesize);
+
+    if (*pp) {
+        host_addr_map.push_back( mem_region(*pp, bytesize) );
+        return CUDA_SUCCESS;
+    } else {
+        return CUDA_ERROR_INVALID_VALUE;
+    }
+#endif
+}
+
+cudaError_t cudaMallocHost(void ** ptr, size_t  size)
+{
+	TALLY_SPD_LOG("cudaMallocHost hooked");
+#if defined(RUN_LOCALLY)
+	return lcudaMallocHost(ptr, size);
+#else
+	
+    // Ignore Page-locked memory
+    *ptr = aligned_alloc(4096, size);
+
+    if (*ptr) {
+        host_addr_map.push_back( mem_region(*ptr, size) );
+        return cudaSuccess;
+    } else {
+        return cudaErrorInvalidValue;
+    }
+
+#endif
+}
+
+cudaError_t cudaHostAlloc(void ** pHost, size_t  size, unsigned int  flags)
+{
+	TALLY_SPD_LOG("cudaHostAlloc hooked");
+#if defined(RUN_LOCALLY)
+	return lcudaHostAlloc(pHost, size, flags);
+#else
+	
+    // Ignore Page-locked memory
+    *pHost = aligned_alloc(4096, size);
+
+    if (*pHost) {
+        host_addr_map.push_back( mem_region(*pHost, size) );
+        return cudaSuccess;
+    } else {
+        return cudaErrorInvalidValue;
+    }
+
+#endif
+}
+
+cudaError_t cudaFreeHost(void * ptr)
+{
+	TALLY_SPD_LOG("cudaFreeHost hooked");
+#if defined(RUN_LOCALLY)
+	return lcudaFreeHost(ptr);
+#else
+	
+    free(ptr);
+    free_mem_region(host_addr_map, ptr);
+    return cudaSuccess;
+
+#endif
+}
+
+cudaError_t cudaFuncGetAttributes(struct cudaFuncAttributes * attr, const void * func)
+{
+	TALLY_SPD_LOG("cudaFuncGetAttributes hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaFuncGetAttributes(attr, func);
+#else
+
+    cudaError_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaFuncGetAttributesArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAFUNCGETATTRIBUTES;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaFuncGetAttributesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->attr = attr;
+			request->func = const_cast<void *>(func);
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaFuncGetAttributesResponse*>(responsePayload);
+			if (attr) { *attr = response->attr; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaFuncGetAttributes);
+	return err;
+}
+
+const char * cudnnGetErrorString(cudnnStatus_t  status)
+{
+	TALLY_SPD_LOG("cudnnGetErrorString hooked");
+#if defined(RUN_LOCALLY)
+	return lcudnnGetErrorString(status);
+#else
+	switch(status) {
+		case CUDNN_STATUS_SUCCESS:
+			return "CUDNN_STATUS_SUCCESS";
+        case CUDNN_STATUS_NOT_INITIALIZED:
+			return "CUDNN_STATUS_NOT_INITIALIZED";
+        case CUDNN_STATUS_ALLOC_FAILED:
+			return "CUDNN_STATUS_ALLOC_FAILED";
+        case CUDNN_STATUS_BAD_PARAM:
+			return "CUDNN_STATUS_BAD_PARAM";
+        case CUDNN_STATUS_INTERNAL_ERROR:
+			return "CUDNN_STATUS_INTERNAL_ERROR";
+        case CUDNN_STATUS_INVALID_VALUE:
+			return "CUDNN_STATUS_INVALID_VALUE";
+        case CUDNN_STATUS_ARCH_MISMATCH:
+			return "CUDNN_STATUS_ARCH_MISMATCH";
+        case CUDNN_STATUS_MAPPING_ERROR:
+			return "CUDNN_STATUS_MAPPING_ERROR";
+        case CUDNN_STATUS_EXECUTION_FAILED:
+			return "CUDNN_STATUS_EXECUTION_FAILED";
+        case CUDNN_STATUS_NOT_SUPPORTED:
+			return "CUDNN_STATUS_NOT_SUPPORTED";
+        case CUDNN_STATUS_LICENSE_ERROR:
+			return "CUDNN_STATUS_LICENSE_ERROR";
+        case CUDNN_STATUS_RUNTIME_PREREQUISITE_MISSING:
+			return "CUDNN_STATUS_RUNTIME_PREREQUISITE_MISSING";
+        case CUDNN_STATUS_RUNTIME_IN_PROGRESS:
+			return "CUDNN_STATUS_RUNTIME_IN_PROGRESS";
+        case CUDNN_STATUS_RUNTIME_FP_OVERFLOW:
+			return "CUDNN_STATUS_RUNTIME_FP_OVERFLOW";
+        case CUDNN_STATUS_VERSION_MISMATCH:
+			return "CUDNN_STATUS_VERSION_MISMATCH";
+		default:
+			throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "Unhandled status: " + std::to_string((int) status));
+	}
+#endif
 }
 
 }

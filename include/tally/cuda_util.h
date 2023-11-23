@@ -20,7 +20,7 @@
 #include <cudnn.h>
 #include <fatbinary_section.h>
 
-struct DeviceMemoryKey {
+struct mem_region {
     void *addr;
     size_t size;
 };
@@ -123,7 +123,7 @@ inline std::string get_func_attr_str(CUfunction_attribute attr) {
     }
 }
 
-inline bool is_dev_addr(const std::vector<DeviceMemoryKey> &dev_addr_map, const void *addr)
+inline bool is_registered_addr(const std::vector<mem_region> &dev_addr_map, const void *addr)
 {
     for (auto &dev_addr_key : dev_addr_map) {
         if ((uint64_t) addr >= (uint64_t) dev_addr_key.addr && (uint64_t) addr < ((uint64_t) dev_addr_key.addr + dev_addr_key.size)) {
@@ -134,7 +134,7 @@ inline bool is_dev_addr(const std::vector<DeviceMemoryKey> &dev_addr_map, const 
     return false;
 }
 
-inline void convert_stack_void_ptr_to_value(void *arrayOfElements, size_t elementCount, std::vector<DeviceMemoryKey> &dev_addr_map)
+inline void convert_stack_void_ptr_to_value(void *arrayOfElements, size_t elementCount, std::vector<mem_region> &dev_addr_map)
 {
     auto pointer_arr = (void **) (arrayOfElements);
 
@@ -145,7 +145,7 @@ inline void convert_stack_void_ptr_to_value(void *arrayOfElements, size_t elemen
             continue;
         }
 
-        auto found = is_dev_addr(dev_addr_map, pointer);
+        auto found = is_registered_addr(dev_addr_map, pointer);
 
         // pointer points to CPU memory
         if (!found) {
@@ -159,7 +159,7 @@ inline void convert_stack_void_ptr_to_value(void *arrayOfElements, size_t elemen
     }
 }
 
-inline void free_dev_addr(std::vector<DeviceMemoryKey> &dev_addr_map, void *addr)
+inline void free_mem_region(std::vector<mem_region> &dev_addr_map, void *addr)
 {   
     for (auto it = dev_addr_map.begin(); it != dev_addr_map.end(); it++) {
         auto key = *it;

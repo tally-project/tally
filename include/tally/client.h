@@ -163,7 +163,8 @@ const std::vector<std::string> preload_libs {
     "libcufft.so.11",
     "libcusolver.so.11",
     "libcusparse.so.12",
-    "libcudnn.so.8"
+    "libcudnn.so.8",
+    "libnccl-net.so"
 };
 
 const std::vector<std::string> cuGetProcAddress_funcs = {
@@ -191,7 +192,6 @@ const std::vector<std::string> cuGetProcAddress_funcs = {
     "cuDeviceGetName",
     "cuDeviceGetCount",
     "cuStreamBeginCapture_v2",
-    "cuGetProcAddress_v2",
     "cuGetErrorString",
     "cuGetErrorName",
     "cuDriverGetVersion",
@@ -580,7 +580,6 @@ const std::vector<std::string> cuGetProcAddress_funcs = {
     "cuGraphicsResourceSetMapFlags_v2",
     "cuGraphicsMapResources",
     "cuGraphicsUnmapResources",
-    "cuGetProcAddress_v2",
     "cuCoredumpGetAttribute",
     "cuCoredumpGetAttributeGlobal",
     "cuCoredumpSetAttribute",
@@ -626,7 +625,6 @@ const std::vector<std::string> cuGetProcAddress_funcs = {
 const std::vector<std::string> cuGetProcAddress_v2funcs = {
     "cuDeviceTotalMem",
     "cuStreamBeginCapture",
-    "cuGetProcAddress",
     "cuDevicePrimaryCtxRelease",
     "cuDevicePrimaryCtxSetFlags",
     "cuDevicePrimaryCtxReset",
@@ -694,8 +692,7 @@ const std::vector<std::string> cuGetProcAddress_v2funcs = {
     "cuTexRefSetAddress",
     "cuTexRefGetAddress",
     "cuGraphicsResourceGetMappedPointer",
-    "cuGraphicsResourceSetMapFlags",
-    "cuGetProcAddress"
+    "cuGraphicsResourceSetMapFlags"
 };
 
 const std::vector<std::string> cuGetProcAddress_v3funcs = {

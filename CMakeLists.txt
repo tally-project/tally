@@ -224,6 +224,7 @@ target_link_libraries(tally_server PUBLIC
     tally
     cublasLt
     cudnn
+    nccl
     PUBLIC Boost::serialization
     PUBLIC Boost::regex
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>

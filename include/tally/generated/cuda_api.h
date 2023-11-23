@@ -10,6 +10,7 @@
 #include <cudaProfiler.h>
 #include <nvrtc.h>
 #include <cublasLt.h>
+#include <nccl.h>
 
 extern CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuGetErrorName) (CUresult  error, const char ** pStr);
@@ -1549,6 +1550,58 @@ extern cublasStatus_t (*lcublasLtLoggerOpenFile) (const char*  logFile);
 extern cublasStatus_t (*lcublasLtLoggerSetLevel) (int  level);
 extern cublasStatus_t (*lcublasLtLoggerSetMask) (int  mask);
 extern cublasStatus_t (*lcublasLtLoggerForceDisable) ();
+extern ncclResult_t (*lncclGetVersion) (int * version);
+extern ncclResult_t (*lpncclGetVersion) (int * version);
+extern ncclResult_t (*lncclGetUniqueId) (ncclUniqueId*  uniqueId);
+extern ncclResult_t (*lpncclGetUniqueId) (ncclUniqueId*  uniqueId);
+extern ncclResult_t (*lncclCommInitRankConfig) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config);
+extern ncclResult_t (*lpncclCommInitRankConfig) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config);
+extern ncclResult_t (*lncclCommInitRank) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank);
+extern ncclResult_t (*lpncclCommInitRank) (ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank);
+extern ncclResult_t (*lncclCommInitAll) (ncclComm_t*  comm, int  ndev, const int*  devlist);
+extern ncclResult_t (*lpncclCommInitAll) (ncclComm_t*  comm, int  ndev, const int*  devlist);
+extern ncclResult_t (*lncclCommFinalize) (ncclComm_t  comm);
+extern ncclResult_t (*lpncclCommFinalize) (ncclComm_t  comm);
+extern ncclResult_t (*lncclCommDestroy) (ncclComm_t  comm);
+extern ncclResult_t (*lpncclCommDestroy) (ncclComm_t  comm);
+extern ncclResult_t (*lncclCommAbort) (ncclComm_t  comm);
+extern ncclResult_t (*lpncclCommAbort) (ncclComm_t  comm);
+extern const char* (*lncclGetErrorString) (ncclResult_t  result);
+extern const char* (*lpncclGetErrorString) (ncclResult_t  result);
+extern const char* (*lncclGetLastError) (ncclComm_t  comm);
+extern const char* (*lpncclGetError) (ncclComm_t  comm);
+extern ncclResult_t (*lncclCommGetAsyncError) (ncclComm_t  comm, ncclResult_t * asyncError);
+extern ncclResult_t (*lpncclCommGetAsyncError) (ncclComm_t  comm, ncclResult_t * asyncError);
+extern ncclResult_t (*lncclCommCount) (const ncclComm_t  comm, int*  count);
+extern ncclResult_t (*lpncclCommCount) (const ncclComm_t  comm, int*  count);
+extern ncclResult_t (*lncclCommCuDevice) (const ncclComm_t  comm, int*  device);
+extern ncclResult_t (*lpncclCommCuDevice) (const ncclComm_t  comm, int*  device);
+extern ncclResult_t (*lncclCommUserRank) (const ncclComm_t  comm, int*  rank);
+extern ncclResult_t (*lpncclCommUserRank) (const ncclComm_t  comm, int*  rank);
+extern ncclResult_t (*lncclRedOpCreatePreMulSum) (ncclRedOp_t * op, void * scalar, ncclDataType_t  datatype, ncclScalarResidence_t  residence, ncclComm_t  comm);
+extern ncclResult_t (*lpncclRedOpCreatePreMulSum) (ncclRedOp_t * op, void * scalar, ncclDataType_t  datatype, ncclScalarResidence_t  residence, ncclComm_t  comm);
+extern ncclResult_t (*lncclRedOpDestroy) (ncclRedOp_t  op, ncclComm_t  comm);
+extern ncclResult_t (*lpncclRedOpDestroy) (ncclRedOp_t  op, ncclComm_t  comm);
+extern ncclResult_t (*lncclReduce) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, int  root, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lpncclReduce) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, int  root, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lncclBcast) (void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lpncclBcast) (void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lncclBroadcast) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lpncclBroadcast) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lncclAllReduce) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lpncclAllReduce) (const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lncclReduceScatter) (const void*  sendbuff, void*  recvbuff, size_t  recvcount, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lpncclReduceScatter) (const void*  sendbuff, void*  recvbuff, size_t  recvcount, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lncclAllGather) (const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lpncclAllGather) (const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lncclSend) (const void*  sendbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lpncclSend) (const void*  sendbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lpncclRecv) (void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lncclRecv) (void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream);
+extern ncclResult_t (*lncclGroupStart) ();
+extern ncclResult_t (*lpncclGroupStart) ();
+extern ncclResult_t (*lncclGroupEnd) ();
+extern ncclResult_t (*lpncclGroupEnd) ();
 
 
 extern void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);

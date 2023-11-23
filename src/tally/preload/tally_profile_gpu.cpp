@@ -23,6 +23,7 @@
 #include <cublasLt.h>
 #include <cuda_profiler_api.h>
 #include <cudaProfiler.h>
+#include <nccl.h>
 
 // g++ -I/usr/local/cuda/include -fPIC -shared -o preload.so preload.cpp
 
@@ -52919,6 +52920,1826 @@ cublasStatus_t cublasLtLoggerForceDisable()
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lcublasLtLoggerForceDisable);
+	}
+	return res;
+}
+
+ncclResult_t ncclGetVersion(int * version)
+{
+	static ncclResult_t (*lncclGetVersion) (int *);
+	if (!lncclGetVersion) {
+		lncclGetVersion = (ncclResult_t (*) (int *)) dlsym(RTLD_NEXT, "ncclGetVersion");
+		tracer._kernel_map[(void *) lncclGetVersion] = std::string("ncclGetVersion");
+	}
+	assert(lncclGetVersion);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclGetVersion(version);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclGetVersion);
+	}
+	return res;
+}
+
+ncclResult_t pncclGetVersion(int * version)
+{
+	static ncclResult_t (*lpncclGetVersion) (int *);
+	if (!lpncclGetVersion) {
+		lpncclGetVersion = (ncclResult_t (*) (int *)) dlsym(RTLD_NEXT, "pncclGetVersion");
+		tracer._kernel_map[(void *) lpncclGetVersion] = std::string("pncclGetVersion");
+	}
+	assert(lpncclGetVersion);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclGetVersion(version);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclGetVersion);
+	}
+	return res;
+}
+
+ncclResult_t ncclGetUniqueId(ncclUniqueId*  uniqueId)
+{
+	static ncclResult_t (*lncclGetUniqueId) (ncclUniqueId* );
+	if (!lncclGetUniqueId) {
+		lncclGetUniqueId = (ncclResult_t (*) (ncclUniqueId* )) dlsym(RTLD_NEXT, "ncclGetUniqueId");
+		tracer._kernel_map[(void *) lncclGetUniqueId] = std::string("ncclGetUniqueId");
+	}
+	assert(lncclGetUniqueId);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclGetUniqueId(uniqueId);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclGetUniqueId);
+	}
+	return res;
+}
+
+ncclResult_t pncclGetUniqueId(ncclUniqueId*  uniqueId)
+{
+	static ncclResult_t (*lpncclGetUniqueId) (ncclUniqueId* );
+	if (!lpncclGetUniqueId) {
+		lpncclGetUniqueId = (ncclResult_t (*) (ncclUniqueId* )) dlsym(RTLD_NEXT, "pncclGetUniqueId");
+		tracer._kernel_map[(void *) lpncclGetUniqueId] = std::string("pncclGetUniqueId");
+	}
+	assert(lpncclGetUniqueId);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclGetUniqueId(uniqueId);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclGetUniqueId);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommInitRankConfig(ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config)
+{
+	static ncclResult_t (*lncclCommInitRankConfig) (ncclComm_t* , int , ncclUniqueId , int , ncclConfig_t* );
+	if (!lncclCommInitRankConfig) {
+		lncclCommInitRankConfig = (ncclResult_t (*) (ncclComm_t* , int , ncclUniqueId , int , ncclConfig_t* )) dlsym(RTLD_NEXT, "ncclCommInitRankConfig");
+		tracer._kernel_map[(void *) lncclCommInitRankConfig] = std::string("ncclCommInitRankConfig");
+	}
+	assert(lncclCommInitRankConfig);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclCommInitRankConfig(comm, nranks, commId, rank, config);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommInitRankConfig);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommInitRankConfig(ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config)
+{
+	static ncclResult_t (*lpncclCommInitRankConfig) (ncclComm_t* , int , ncclUniqueId , int , ncclConfig_t* );
+	if (!lpncclCommInitRankConfig) {
+		lpncclCommInitRankConfig = (ncclResult_t (*) (ncclComm_t* , int , ncclUniqueId , int , ncclConfig_t* )) dlsym(RTLD_NEXT, "pncclCommInitRankConfig");
+		tracer._kernel_map[(void *) lpncclCommInitRankConfig] = std::string("pncclCommInitRankConfig");
+	}
+	assert(lpncclCommInitRankConfig);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclCommInitRankConfig(comm, nranks, commId, rank, config);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommInitRankConfig);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommInitRank(ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank)
+{
+	static ncclResult_t (*lncclCommInitRank) (ncclComm_t* , int , ncclUniqueId , int );
+	if (!lncclCommInitRank) {
+		lncclCommInitRank = (ncclResult_t (*) (ncclComm_t* , int , ncclUniqueId , int )) dlsym(RTLD_NEXT, "ncclCommInitRank");
+		tracer._kernel_map[(void *) lncclCommInitRank] = std::string("ncclCommInitRank");
+	}
+	assert(lncclCommInitRank);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclCommInitRank(comm, nranks, commId, rank);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommInitRank);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommInitRank(ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank)
+{
+	static ncclResult_t (*lpncclCommInitRank) (ncclComm_t* , int , ncclUniqueId , int );
+	if (!lpncclCommInitRank) {
+		lpncclCommInitRank = (ncclResult_t (*) (ncclComm_t* , int , ncclUniqueId , int )) dlsym(RTLD_NEXT, "pncclCommInitRank");
+		tracer._kernel_map[(void *) lpncclCommInitRank] = std::string("pncclCommInitRank");
+	}
+	assert(lpncclCommInitRank);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclCommInitRank(comm, nranks, commId, rank);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommInitRank);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommInitAll(ncclComm_t*  comm, int  ndev, const int*  devlist)
+{
+	static ncclResult_t (*lncclCommInitAll) (ncclComm_t* , int , const int* );
+	if (!lncclCommInitAll) {
+		lncclCommInitAll = (ncclResult_t (*) (ncclComm_t* , int , const int* )) dlsym(RTLD_NEXT, "ncclCommInitAll");
+		tracer._kernel_map[(void *) lncclCommInitAll] = std::string("ncclCommInitAll");
+	}
+	assert(lncclCommInitAll);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclCommInitAll(comm, ndev, devlist);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommInitAll);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommInitAll(ncclComm_t*  comm, int  ndev, const int*  devlist)
+{
+	static ncclResult_t (*lpncclCommInitAll) (ncclComm_t* , int , const int* );
+	if (!lpncclCommInitAll) {
+		lpncclCommInitAll = (ncclResult_t (*) (ncclComm_t* , int , const int* )) dlsym(RTLD_NEXT, "pncclCommInitAll");
+		tracer._kernel_map[(void *) lpncclCommInitAll] = std::string("pncclCommInitAll");
+	}
+	assert(lpncclCommInitAll);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclCommInitAll(comm, ndev, devlist);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommInitAll);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommFinalize(ncclComm_t  comm)
+{
+	static ncclResult_t (*lncclCommFinalize) (ncclComm_t );
+	if (!lncclCommFinalize) {
+		lncclCommFinalize = (ncclResult_t (*) (ncclComm_t )) dlsym(RTLD_NEXT, "ncclCommFinalize");
+		tracer._kernel_map[(void *) lncclCommFinalize] = std::string("ncclCommFinalize");
+	}
+	assert(lncclCommFinalize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclCommFinalize(comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommFinalize);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommFinalize(ncclComm_t  comm)
+{
+	static ncclResult_t (*lpncclCommFinalize) (ncclComm_t );
+	if (!lpncclCommFinalize) {
+		lpncclCommFinalize = (ncclResult_t (*) (ncclComm_t )) dlsym(RTLD_NEXT, "pncclCommFinalize");
+		tracer._kernel_map[(void *) lpncclCommFinalize] = std::string("pncclCommFinalize");
+	}
+	assert(lpncclCommFinalize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclCommFinalize(comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommFinalize);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommDestroy(ncclComm_t  comm)
+{
+	static ncclResult_t (*lncclCommDestroy) (ncclComm_t );
+	if (!lncclCommDestroy) {
+		lncclCommDestroy = (ncclResult_t (*) (ncclComm_t )) dlsym(RTLD_NEXT, "ncclCommDestroy");
+		tracer._kernel_map[(void *) lncclCommDestroy] = std::string("ncclCommDestroy");
+	}
+	assert(lncclCommDestroy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclCommDestroy(comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommDestroy);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommDestroy(ncclComm_t  comm)
+{
+	static ncclResult_t (*lpncclCommDestroy) (ncclComm_t );
+	if (!lpncclCommDestroy) {
+		lpncclCommDestroy = (ncclResult_t (*) (ncclComm_t )) dlsym(RTLD_NEXT, "pncclCommDestroy");
+		tracer._kernel_map[(void *) lpncclCommDestroy] = std::string("pncclCommDestroy");
+	}
+	assert(lpncclCommDestroy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclCommDestroy(comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommDestroy);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommAbort(ncclComm_t  comm)
+{
+	static ncclResult_t (*lncclCommAbort) (ncclComm_t );
+	if (!lncclCommAbort) {
+		lncclCommAbort = (ncclResult_t (*) (ncclComm_t )) dlsym(RTLD_NEXT, "ncclCommAbort");
+		tracer._kernel_map[(void *) lncclCommAbort] = std::string("ncclCommAbort");
+	}
+	assert(lncclCommAbort);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclCommAbort(comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommAbort);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommAbort(ncclComm_t  comm)
+{
+	static ncclResult_t (*lpncclCommAbort) (ncclComm_t );
+	if (!lpncclCommAbort) {
+		lpncclCommAbort = (ncclResult_t (*) (ncclComm_t )) dlsym(RTLD_NEXT, "pncclCommAbort");
+		tracer._kernel_map[(void *) lpncclCommAbort] = std::string("pncclCommAbort");
+	}
+	assert(lpncclCommAbort);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclCommAbort(comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommAbort);
+	}
+	return res;
+}
+
+const char* ncclGetErrorString(ncclResult_t  result)
+{
+	static const char* (*lncclGetErrorString) (ncclResult_t );
+	if (!lncclGetErrorString) {
+		lncclGetErrorString = (const char* (*) (ncclResult_t )) dlsym(RTLD_NEXT, "ncclGetErrorString");
+		tracer._kernel_map[(void *) lncclGetErrorString] = std::string("ncclGetErrorString");
+	}
+	assert(lncclGetErrorString);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	const char* res = 
+		lncclGetErrorString(result);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclGetErrorString);
+	}
+	return res;
+}
+
+const char* pncclGetErrorString(ncclResult_t  result)
+{
+	static const char* (*lpncclGetErrorString) (ncclResult_t );
+	if (!lpncclGetErrorString) {
+		lpncclGetErrorString = (const char* (*) (ncclResult_t )) dlsym(RTLD_NEXT, "pncclGetErrorString");
+		tracer._kernel_map[(void *) lpncclGetErrorString] = std::string("pncclGetErrorString");
+	}
+	assert(lpncclGetErrorString);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	const char* res = 
+		lpncclGetErrorString(result);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclGetErrorString);
+	}
+	return res;
+}
+
+const char* ncclGetLastError(ncclComm_t  comm)
+{
+	static const char* (*lncclGetLastError) (ncclComm_t );
+	if (!lncclGetLastError) {
+		lncclGetLastError = (const char* (*) (ncclComm_t )) dlsym(RTLD_NEXT, "ncclGetLastError");
+		tracer._kernel_map[(void *) lncclGetLastError] = std::string("ncclGetLastError");
+	}
+	assert(lncclGetLastError);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	const char* res = 
+		lncclGetLastError(comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclGetLastError);
+	}
+	return res;
+}
+
+const char* pncclGetError(ncclComm_t  comm)
+{
+	static const char* (*lpncclGetError) (ncclComm_t );
+	if (!lpncclGetError) {
+		lpncclGetError = (const char* (*) (ncclComm_t )) dlsym(RTLD_NEXT, "pncclGetError");
+		tracer._kernel_map[(void *) lpncclGetError] = std::string("pncclGetError");
+	}
+	assert(lpncclGetError);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	const char* res = 
+		lpncclGetError(comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclGetError);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommGetAsyncError(ncclComm_t  comm, ncclResult_t * asyncError)
+{
+	static ncclResult_t (*lncclCommGetAsyncError) (ncclComm_t , ncclResult_t *);
+	if (!lncclCommGetAsyncError) {
+		lncclCommGetAsyncError = (ncclResult_t (*) (ncclComm_t , ncclResult_t *)) dlsym(RTLD_NEXT, "ncclCommGetAsyncError");
+		tracer._kernel_map[(void *) lncclCommGetAsyncError] = std::string("ncclCommGetAsyncError");
+	}
+	assert(lncclCommGetAsyncError);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclCommGetAsyncError(comm, asyncError);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommGetAsyncError);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommGetAsyncError(ncclComm_t  comm, ncclResult_t * asyncError)
+{
+	static ncclResult_t (*lpncclCommGetAsyncError) (ncclComm_t , ncclResult_t *);
+	if (!lpncclCommGetAsyncError) {
+		lpncclCommGetAsyncError = (ncclResult_t (*) (ncclComm_t , ncclResult_t *)) dlsym(RTLD_NEXT, "pncclCommGetAsyncError");
+		tracer._kernel_map[(void *) lpncclCommGetAsyncError] = std::string("pncclCommGetAsyncError");
+	}
+	assert(lpncclCommGetAsyncError);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclCommGetAsyncError(comm, asyncError);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommGetAsyncError);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommCount(const ncclComm_t  comm, int*  count)
+{
+	static ncclResult_t (*lncclCommCount) (const ncclComm_t , int* );
+	if (!lncclCommCount) {
+		lncclCommCount = (ncclResult_t (*) (const ncclComm_t , int* )) dlsym(RTLD_NEXT, "ncclCommCount");
+		tracer._kernel_map[(void *) lncclCommCount] = std::string("ncclCommCount");
+	}
+	assert(lncclCommCount);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclCommCount(comm, count);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommCount);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommCount(const ncclComm_t  comm, int*  count)
+{
+	static ncclResult_t (*lpncclCommCount) (const ncclComm_t , int* );
+	if (!lpncclCommCount) {
+		lpncclCommCount = (ncclResult_t (*) (const ncclComm_t , int* )) dlsym(RTLD_NEXT, "pncclCommCount");
+		tracer._kernel_map[(void *) lpncclCommCount] = std::string("pncclCommCount");
+	}
+	assert(lpncclCommCount);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclCommCount(comm, count);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommCount);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommCuDevice(const ncclComm_t  comm, int*  device)
+{
+	static ncclResult_t (*lncclCommCuDevice) (const ncclComm_t , int* );
+	if (!lncclCommCuDevice) {
+		lncclCommCuDevice = (ncclResult_t (*) (const ncclComm_t , int* )) dlsym(RTLD_NEXT, "ncclCommCuDevice");
+		tracer._kernel_map[(void *) lncclCommCuDevice] = std::string("ncclCommCuDevice");
+	}
+	assert(lncclCommCuDevice);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclCommCuDevice(comm, device);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommCuDevice);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommCuDevice(const ncclComm_t  comm, int*  device)
+{
+	static ncclResult_t (*lpncclCommCuDevice) (const ncclComm_t , int* );
+	if (!lpncclCommCuDevice) {
+		lpncclCommCuDevice = (ncclResult_t (*) (const ncclComm_t , int* )) dlsym(RTLD_NEXT, "pncclCommCuDevice");
+		tracer._kernel_map[(void *) lpncclCommCuDevice] = std::string("pncclCommCuDevice");
+	}
+	assert(lpncclCommCuDevice);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclCommCuDevice(comm, device);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommCuDevice);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommUserRank(const ncclComm_t  comm, int*  rank)
+{
+	static ncclResult_t (*lncclCommUserRank) (const ncclComm_t , int* );
+	if (!lncclCommUserRank) {
+		lncclCommUserRank = (ncclResult_t (*) (const ncclComm_t , int* )) dlsym(RTLD_NEXT, "ncclCommUserRank");
+		tracer._kernel_map[(void *) lncclCommUserRank] = std::string("ncclCommUserRank");
+	}
+	assert(lncclCommUserRank);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclCommUserRank(comm, rank);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommUserRank);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommUserRank(const ncclComm_t  comm, int*  rank)
+{
+	static ncclResult_t (*lpncclCommUserRank) (const ncclComm_t , int* );
+	if (!lpncclCommUserRank) {
+		lpncclCommUserRank = (ncclResult_t (*) (const ncclComm_t , int* )) dlsym(RTLD_NEXT, "pncclCommUserRank");
+		tracer._kernel_map[(void *) lpncclCommUserRank] = std::string("pncclCommUserRank");
+	}
+	assert(lpncclCommUserRank);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclCommUserRank(comm, rank);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommUserRank);
+	}
+	return res;
+}
+
+ncclResult_t ncclRedOpCreatePreMulSum(ncclRedOp_t * op, void * scalar, ncclDataType_t  datatype, ncclScalarResidence_t  residence, ncclComm_t  comm)
+{
+	static ncclResult_t (*lncclRedOpCreatePreMulSum) (ncclRedOp_t *, void *, ncclDataType_t , ncclScalarResidence_t , ncclComm_t );
+	if (!lncclRedOpCreatePreMulSum) {
+		lncclRedOpCreatePreMulSum = (ncclResult_t (*) (ncclRedOp_t *, void *, ncclDataType_t , ncclScalarResidence_t , ncclComm_t )) dlsym(RTLD_NEXT, "ncclRedOpCreatePreMulSum");
+		tracer._kernel_map[(void *) lncclRedOpCreatePreMulSum] = std::string("ncclRedOpCreatePreMulSum");
+	}
+	assert(lncclRedOpCreatePreMulSum);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclRedOpCreatePreMulSum(op, scalar, datatype, residence, comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclRedOpCreatePreMulSum);
+	}
+	return res;
+}
+
+ncclResult_t pncclRedOpCreatePreMulSum(ncclRedOp_t * op, void * scalar, ncclDataType_t  datatype, ncclScalarResidence_t  residence, ncclComm_t  comm)
+{
+	static ncclResult_t (*lpncclRedOpCreatePreMulSum) (ncclRedOp_t *, void *, ncclDataType_t , ncclScalarResidence_t , ncclComm_t );
+	if (!lpncclRedOpCreatePreMulSum) {
+		lpncclRedOpCreatePreMulSum = (ncclResult_t (*) (ncclRedOp_t *, void *, ncclDataType_t , ncclScalarResidence_t , ncclComm_t )) dlsym(RTLD_NEXT, "pncclRedOpCreatePreMulSum");
+		tracer._kernel_map[(void *) lpncclRedOpCreatePreMulSum] = std::string("pncclRedOpCreatePreMulSum");
+	}
+	assert(lpncclRedOpCreatePreMulSum);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclRedOpCreatePreMulSum(op, scalar, datatype, residence, comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclRedOpCreatePreMulSum);
+	}
+	return res;
+}
+
+ncclResult_t ncclRedOpDestroy(ncclRedOp_t  op, ncclComm_t  comm)
+{
+	static ncclResult_t (*lncclRedOpDestroy) (ncclRedOp_t , ncclComm_t );
+	if (!lncclRedOpDestroy) {
+		lncclRedOpDestroy = (ncclResult_t (*) (ncclRedOp_t , ncclComm_t )) dlsym(RTLD_NEXT, "ncclRedOpDestroy");
+		tracer._kernel_map[(void *) lncclRedOpDestroy] = std::string("ncclRedOpDestroy");
+	}
+	assert(lncclRedOpDestroy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclRedOpDestroy(op, comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclRedOpDestroy);
+	}
+	return res;
+}
+
+ncclResult_t pncclRedOpDestroy(ncclRedOp_t  op, ncclComm_t  comm)
+{
+	static ncclResult_t (*lpncclRedOpDestroy) (ncclRedOp_t , ncclComm_t );
+	if (!lpncclRedOpDestroy) {
+		lpncclRedOpDestroy = (ncclResult_t (*) (ncclRedOp_t , ncclComm_t )) dlsym(RTLD_NEXT, "pncclRedOpDestroy");
+		tracer._kernel_map[(void *) lpncclRedOpDestroy] = std::string("pncclRedOpDestroy");
+	}
+	assert(lpncclRedOpDestroy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclRedOpDestroy(op, comm);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclRedOpDestroy);
+	}
+	return res;
+}
+
+ncclResult_t ncclReduce(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, int  root, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lncclReduce) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , int , ncclComm_t , cudaStream_t );
+	if (!lncclReduce) {
+		lncclReduce = (ncclResult_t (*) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , int , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "ncclReduce");
+		tracer._kernel_map[(void *) lncclReduce] = std::string("ncclReduce");
+	}
+	assert(lncclReduce);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclReduce(sendbuff, recvbuff, count, datatype, op, root, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclReduce);
+	}
+	return res;
+}
+
+ncclResult_t pncclReduce(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, int  root, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lpncclReduce) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , int , ncclComm_t , cudaStream_t );
+	if (!lpncclReduce) {
+		lpncclReduce = (ncclResult_t (*) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , int , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "pncclReduce");
+		tracer._kernel_map[(void *) lpncclReduce] = std::string("pncclReduce");
+	}
+	assert(lpncclReduce);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclReduce(sendbuff, recvbuff, count, datatype, op, root, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclReduce);
+	}
+	return res;
+}
+
+ncclResult_t ncclBcast(void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lncclBcast) (void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t );
+	if (!lncclBcast) {
+		lncclBcast = (ncclResult_t (*) (void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "ncclBcast");
+		tracer._kernel_map[(void *) lncclBcast] = std::string("ncclBcast");
+	}
+	assert(lncclBcast);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclBcast(buff, count, datatype, root, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclBcast);
+	}
+	return res;
+}
+
+ncclResult_t pncclBcast(void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lpncclBcast) (void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t );
+	if (!lpncclBcast) {
+		lpncclBcast = (ncclResult_t (*) (void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "pncclBcast");
+		tracer._kernel_map[(void *) lpncclBcast] = std::string("pncclBcast");
+	}
+	assert(lpncclBcast);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclBcast(buff, count, datatype, root, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclBcast);
+	}
+	return res;
+}
+
+ncclResult_t ncclBroadcast(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lncclBroadcast) (const void* , void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t );
+	if (!lncclBroadcast) {
+		lncclBroadcast = (ncclResult_t (*) (const void* , void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "ncclBroadcast");
+		tracer._kernel_map[(void *) lncclBroadcast] = std::string("ncclBroadcast");
+	}
+	assert(lncclBroadcast);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclBroadcast(sendbuff, recvbuff, count, datatype, root, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclBroadcast);
+	}
+	return res;
+}
+
+ncclResult_t pncclBroadcast(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lpncclBroadcast) (const void* , void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t );
+	if (!lpncclBroadcast) {
+		lpncclBroadcast = (ncclResult_t (*) (const void* , void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "pncclBroadcast");
+		tracer._kernel_map[(void *) lpncclBroadcast] = std::string("pncclBroadcast");
+	}
+	assert(lpncclBroadcast);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclBroadcast(sendbuff, recvbuff, count, datatype, root, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclBroadcast);
+	}
+	return res;
+}
+
+ncclResult_t ncclAllReduce(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lncclAllReduce) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , ncclComm_t , cudaStream_t );
+	if (!lncclAllReduce) {
+		lncclAllReduce = (ncclResult_t (*) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "ncclAllReduce");
+		tracer._kernel_map[(void *) lncclAllReduce] = std::string("ncclAllReduce");
+	}
+	assert(lncclAllReduce);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclAllReduce(sendbuff, recvbuff, count, datatype, op, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclAllReduce);
+	}
+	return res;
+}
+
+ncclResult_t pncclAllReduce(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lpncclAllReduce) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , ncclComm_t , cudaStream_t );
+	if (!lpncclAllReduce) {
+		lpncclAllReduce = (ncclResult_t (*) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "pncclAllReduce");
+		tracer._kernel_map[(void *) lpncclAllReduce] = std::string("pncclAllReduce");
+	}
+	assert(lpncclAllReduce);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclAllReduce(sendbuff, recvbuff, count, datatype, op, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclAllReduce);
+	}
+	return res;
+}
+
+ncclResult_t ncclReduceScatter(const void*  sendbuff, void*  recvbuff, size_t  recvcount, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lncclReduceScatter) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , ncclComm_t , cudaStream_t );
+	if (!lncclReduceScatter) {
+		lncclReduceScatter = (ncclResult_t (*) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "ncclReduceScatter");
+		tracer._kernel_map[(void *) lncclReduceScatter] = std::string("ncclReduceScatter");
+	}
+	assert(lncclReduceScatter);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclReduceScatter(sendbuff, recvbuff, recvcount, datatype, op, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclReduceScatter);
+	}
+	return res;
+}
+
+ncclResult_t pncclReduceScatter(const void*  sendbuff, void*  recvbuff, size_t  recvcount, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lpncclReduceScatter) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , ncclComm_t , cudaStream_t );
+	if (!lpncclReduceScatter) {
+		lpncclReduceScatter = (ncclResult_t (*) (const void* , void* , size_t , ncclDataType_t , ncclRedOp_t , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "pncclReduceScatter");
+		tracer._kernel_map[(void *) lpncclReduceScatter] = std::string("pncclReduceScatter");
+	}
+	assert(lpncclReduceScatter);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclReduceScatter(sendbuff, recvbuff, recvcount, datatype, op, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclReduceScatter);
+	}
+	return res;
+}
+
+ncclResult_t ncclAllGather(const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lncclAllGather) (const void* , void* , size_t , ncclDataType_t , ncclComm_t , cudaStream_t );
+	if (!lncclAllGather) {
+		lncclAllGather = (ncclResult_t (*) (const void* , void* , size_t , ncclDataType_t , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "ncclAllGather");
+		tracer._kernel_map[(void *) lncclAllGather] = std::string("ncclAllGather");
+	}
+	assert(lncclAllGather);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclAllGather(sendbuff, recvbuff, sendcount, datatype, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclAllGather);
+	}
+	return res;
+}
+
+ncclResult_t pncclAllGather(const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lpncclAllGather) (const void* , void* , size_t , ncclDataType_t , ncclComm_t , cudaStream_t );
+	if (!lpncclAllGather) {
+		lpncclAllGather = (ncclResult_t (*) (const void* , void* , size_t , ncclDataType_t , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "pncclAllGather");
+		tracer._kernel_map[(void *) lpncclAllGather] = std::string("pncclAllGather");
+	}
+	assert(lpncclAllGather);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclAllGather(sendbuff, recvbuff, sendcount, datatype, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclAllGather);
+	}
+	return res;
+}
+
+ncclResult_t ncclSend(const void*  sendbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lncclSend) (const void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t );
+	if (!lncclSend) {
+		lncclSend = (ncclResult_t (*) (const void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "ncclSend");
+		tracer._kernel_map[(void *) lncclSend] = std::string("ncclSend");
+	}
+	assert(lncclSend);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclSend(sendbuff, count, datatype, peer, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclSend);
+	}
+	return res;
+}
+
+ncclResult_t pncclSend(const void*  sendbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lpncclSend) (const void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t );
+	if (!lpncclSend) {
+		lpncclSend = (ncclResult_t (*) (const void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "pncclSend");
+		tracer._kernel_map[(void *) lpncclSend] = std::string("pncclSend");
+	}
+	assert(lpncclSend);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclSend(sendbuff, count, datatype, peer, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclSend);
+	}
+	return res;
+}
+
+ncclResult_t pncclRecv(void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lpncclRecv) (void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t );
+	if (!lpncclRecv) {
+		lpncclRecv = (ncclResult_t (*) (void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "pncclRecv");
+		tracer._kernel_map[(void *) lpncclRecv] = std::string("pncclRecv");
+	}
+	assert(lpncclRecv);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclRecv(recvbuff, count, datatype, peer, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclRecv);
+	}
+	return res;
+}
+
+ncclResult_t ncclRecv(void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)
+{
+	static ncclResult_t (*lncclRecv) (void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t );
+	if (!lncclRecv) {
+		lncclRecv = (ncclResult_t (*) (void* , size_t , ncclDataType_t , int , ncclComm_t , cudaStream_t )) dlsym(RTLD_NEXT, "ncclRecv");
+		tracer._kernel_map[(void *) lncclRecv] = std::string("ncclRecv");
+	}
+	assert(lncclRecv);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclRecv(recvbuff, count, datatype, peer, comm, stream);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclRecv);
+	}
+	return res;
+}
+
+ncclResult_t ncclGroupStart()
+{
+	static ncclResult_t (*lncclGroupStart) ();
+	if (!lncclGroupStart) {
+		lncclGroupStart = (ncclResult_t (*) ()) dlsym(RTLD_NEXT, "ncclGroupStart");
+		tracer._kernel_map[(void *) lncclGroupStart] = std::string("ncclGroupStart");
+	}
+	assert(lncclGroupStart);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclGroupStart();
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclGroupStart);
+	}
+	return res;
+}
+
+ncclResult_t pncclGroupStart()
+{
+	static ncclResult_t (*lpncclGroupStart) ();
+	if (!lpncclGroupStart) {
+		lpncclGroupStart = (ncclResult_t (*) ()) dlsym(RTLD_NEXT, "pncclGroupStart");
+		tracer._kernel_map[(void *) lpncclGroupStart] = std::string("pncclGroupStart");
+	}
+	assert(lpncclGroupStart);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclGroupStart();
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclGroupStart);
+	}
+	return res;
+}
+
+ncclResult_t ncclGroupEnd()
+{
+	static ncclResult_t (*lncclGroupEnd) ();
+	if (!lncclGroupEnd) {
+		lncclGroupEnd = (ncclResult_t (*) ()) dlsym(RTLD_NEXT, "ncclGroupEnd");
+		tracer._kernel_map[(void *) lncclGroupEnd] = std::string("ncclGroupEnd");
+	}
+	assert(lncclGroupEnd);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lncclGroupEnd();
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclGroupEnd);
+	}
+	return res;
+}
+
+ncclResult_t pncclGroupEnd()
+{
+	static ncclResult_t (*lpncclGroupEnd) ();
+	if (!lpncclGroupEnd) {
+		lpncclGroupEnd = (ncclResult_t (*) ()) dlsym(RTLD_NEXT, "pncclGroupEnd");
+		tracer._kernel_map[(void *) lpncclGroupEnd] = std::string("pncclGroupEnd");
+	}
+	assert(lpncclGroupEnd);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	ncclResult_t res = 
+		lpncclGroupEnd();
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclGroupEnd);
 	}
 	return res;
 }
