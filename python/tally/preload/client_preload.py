@@ -17,7 +17,7 @@ from tally.preload.client_consts import (
     PARAM_INDICES,
     CLIENT_PRELOAD_TEMPLATE,
     FORWARD_API_CALLS,
-    DIRECT_CALLS,
+    IGNORE_CALLS,
     get_preload_func_template_iox,
     is_get_param_func,
     should_check_cuda_err,
@@ -304,8 +304,8 @@ def gen_func_client_preload(func_sig):
 
         func_preload_builder += "\treturn err;\n"
 
-    elif func_name in DIRECT_CALLS:
-        func_preload_builder += f"\treturn {preload_func_name}({arg_names_str});\n"
+    elif func_name in IGNORE_CALLS:
+        func_preload_builder += f"\treturn ({ret_type}) 0;\n"
     else:
         func_preload_builder += "#if defined(RUN_LOCALLY)\n"
         func_preload_builder += f"\treturn {preload_func_name}({arg_names_str});\n"

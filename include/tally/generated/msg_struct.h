@@ -183,6 +183,18 @@ struct cuDevicePrimaryCtxRelease_v2Arg {
 	CUdevice  dev;
 };
 
+struct cuDevicePrimaryCtxGetStateArg {
+	CUdevice  dev;
+	unsigned int * flags;
+	int * active;
+};
+
+struct cuDevicePrimaryCtxGetStateResponse {
+	unsigned int  flags;
+	int  active;
+	CUresult err;
+};
+
 struct cuDevicePrimaryCtxReset_v2Arg {
 	CUdevice  dev;
 };
@@ -337,6 +349,17 @@ struct cuMemGetInfo_v2Arg {
 struct cuMemGetInfo_v2Response {
 	size_t  free;
 	size_t  total;
+	CUresult err;
+};
+
+struct cuDeviceGetPCIBusIdArg {
+	char * pciBusId;
+	int  len;
+	CUdevice  dev;
+};
+
+struct cuDeviceGetPCIBusIdResponse {
+	char  pciBusId;
 	CUresult err;
 };
 
@@ -598,6 +621,15 @@ struct cudaGetLastErrorArg {
 struct cudaPeekAtLastErrorArg {
 };
 
+struct cudaGetDeviceCountArg {
+	int * count;
+};
+
+struct cudaGetDeviceCountResponse {
+	int  count;
+	cudaError_t err;
+};
+
 struct cudaGetDeviceProperties_v2Arg {
 	struct cudaDeviceProp * prop;
 	int  device;
@@ -653,6 +685,15 @@ struct cudaDeviceGetP2PAttributeArg {
 
 struct cudaDeviceGetP2PAttributeResponse {
 	int  value;
+	cudaError_t err;
+};
+
+struct cudaGetDeviceArg {
+	int * device;
+};
+
+struct cudaGetDeviceResponse {
+	int  device;
 	cudaError_t err;
 };
 
@@ -803,6 +844,24 @@ struct cudaMemsetAsyncArg {
 struct cudaMemPoolTrimToArg {
 	cudaMemPool_t  memPool;
 	size_t  minBytesToKeep;
+};
+
+struct cudaDriverGetVersionArg {
+	int * driverVersion;
+};
+
+struct cudaDriverGetVersionResponse {
+	int  driverVersion;
+	cudaError_t err;
+};
+
+struct cudaRuntimeGetVersionArg {
+	int * runtimeVersion;
+};
+
+struct cudaRuntimeGetVersionResponse {
+	int  runtimeVersion;
+	cudaError_t err;
 };
 
 struct cudaGraphCreateArg {

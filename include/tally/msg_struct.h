@@ -1343,4 +1343,14 @@ struct cuDevicePrimaryCtxSetFlags_v2Arg {
 	unsigned int  flags;
 };
 
+struct cuDeviceGetNameArg {
+    int  len;
+    CUdevice  dev;
+};
+
+struct cuDeviceGetNameResponse {
+    CUresult err;
+    char name[];
+};
+
 #endif // TALLY_DEF_H

@@ -240,7 +240,7 @@ public:
 	// Following are used at runtime:
 
 	// Used to check whether an address points to device memory
-	std::vector<DeviceMemoryKey> dev_addr_map;
+	std::vector<mem_region> dev_addr_map;
 
 	std::unordered_map<const void *, const void *> _kernel_client_addr_mapping;
 
@@ -508,32 +508,26 @@ KERNEL_LAUNCH_CALLS = [
 ]
 
 # let the client call the APIs directly
-DIRECT_CALLS = [
-    "cuDevicePrimaryCtxGetState",
-    "cudaHostAlloc",
-    "cuMemHostAlloc",
-    "cuDeviceGetPCIBusId",
+IGNORE_CALLS = [
+    # "cuDevicePrimaryCtxGetState",
     "cuCtxDestroy_v2",
     "cuInit",
-    "cuDeviceGetName",
-    "cudaGetErrorString",
-    "cuGetErrorString",
-    "cuGetErrorName",
-    "cudnnGetErrorString",
-    "cudaMallocHost",
-    "cudaFreeHost",
-    "cudaGetDevice",
-    "cudaGetDeviceCount",
-    "cudaDriverGetVersion",
-    "cudaRuntimeGetVersion",
-    "cudaFuncGetAttributes",
-    "cudaFuncGetAttribute",
-    "cuGetExportTable",
+    # "cudaGetErrorString",
+    # "cuGetErrorString",
+    # "cuGetErrorName",
+    # "cuGetExportTable",
     "cuCtxCreate_v2",
 ]
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudnnGetErrorString",
+    "cudaFuncGetAttributes",
+    "cuDeviceGetName",
+    "cudaFreeHost",
+    "cuMemHostAlloc",
+    "cudaMallocHost",
+    "cudaHostAlloc",
     "cuDevicePrimaryCtxSetFlags_v2",
     "cudaPointerGetAttributes",
     "cublasLtMatmulPreferenceCreate",
@@ -769,6 +763,11 @@ FORWARD_API_CALLS = [
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cudaDriverGetVersion",
+    "cudaRuntimeGetVersion",
+    "cuDeviceGetPCIBusId",
+    "cudaGetDevice",
+    "cudaGetDeviceCount",
     "cuThreadExchangeStreamCaptureMode",
     "ncclCommInitRank",
     "ncclGetUniqueId",
@@ -870,6 +869,7 @@ CUDA_GET_2_PARAM_FUNCS = [
 ]
 
 CUDA_GET_2_3_PARAM_FUNCS = [
+    "cuDevicePrimaryCtxGetState",
     "cudaStreamGetCaptureInfo"
 ]
 

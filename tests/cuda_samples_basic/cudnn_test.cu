@@ -72,5 +72,6 @@ int main(int argc, char** argv)
     for(int i=0;i<NUM_ELEMENTS;i++) std::cout << x[i] << " ";
     std::cout << std::endl;
     cudaFree(x);
+
     return 0;
 }

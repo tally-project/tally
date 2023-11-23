@@ -765,7 +765,7 @@ void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_
 
             // Keep track that this addr is device memory
             if (response->err == cudaSuccess) {
-                client_data_all[client_id].dev_addr_map.push_back( DeviceMemoryKey(response->devPtr, args->size) );
+                client_data_all[client_id].dev_addr_map.push_back( mem_region(response->devPtr, args->size) );
             }
 
             if (response->err == cudaErrorMemoryAllocation) {
@@ -796,7 +796,7 @@ void TallyServer::handle_cudaFree(void *__args, iox::popo::UntypedServer *iox_se
             *response = cudaFree(args->devPtr);
 
             if (*response == cudaSuccess) {
-                free_dev_addr(client_data_all[client_id].dev_addr_map, args->devPtr);
+                free_mem_region(client_data_all[client_id].dev_addr_map, args->devPtr);
             }
 
             iox_server->send(response).or_else(
@@ -1113,7 +1113,7 @@ void TallyServer::handle_cudnnBackendSetAttribute(void *__args, iox::popo::Untyp
                 continue;
             }
             
-            auto found = is_dev_addr(client_data_all[client_id].dev_addr_map, pointer);
+            auto found = is_registered_addr(client_data_all[client_id].dev_addr_map, pointer);
 
             // pointer points to CPU memory
             if (!found) {
@@ -3062,7 +3062,7 @@ void TallyServer::handle_cuMemcpy(void *__args, iox::popo::UntypedServer *iox_se
 
     size_t res_size;
 
-    if (is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst)) {
+    if (is_registered_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst)) {
         res_size = sizeof(cuMemcpyResponse);
     } else {
         res_size = sizeof(cuMemcpyResponse) + args->ByteCount;
@@ -3075,8 +3075,8 @@ void TallyServer::handle_cuMemcpy(void *__args, iox::popo::UntypedServer *iox_se
             wait_until_launch_queue_empty(client_id);
 
             response->err = cuMemcpyAsync(
-				is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst) ? args->dst : (CUdeviceptr) response->data,
-				is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->src) ? args->src : (CUdeviceptr) args->data,
+				is_registered_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst) ? args->dst : (CUdeviceptr) response->data,
+				is_registered_addr(client_data_all[client_id].dev_addr_map, (void *) args->src) ? args->src : (CUdeviceptr) args->data,
 				args->ByteCount,
                 client_data_all[client_id].default_stream
             );
@@ -3110,7 +3110,7 @@ void TallyServer::handle_cuMemcpyAsync(void *__args, iox::popo::UntypedServer *i
 
     size_t res_size;
 
-    if (is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst)) {
+    if (is_registered_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst)) {
         res_size = sizeof(cuMemcpyAsyncResponse);
     } else {
         res_size = sizeof(cuMemcpyAsyncResponse) + args->ByteCount;
@@ -3123,8 +3123,8 @@ void TallyServer::handle_cuMemcpyAsync(void *__args, iox::popo::UntypedServer *i
             wait_until_launch_queue_empty(client_id);
 
             response->err = cuMemcpyAsync(
-				is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst) ? args->dst : (CUdeviceptr) response->data,
-				is_dev_addr(client_data_all[client_id].dev_addr_map, (void *) args->src) ? args->src : (CUdeviceptr) args->data,
+				is_registered_addr(client_data_all[client_id].dev_addr_map, (void *) args->dst) ? args->dst : (CUdeviceptr) response->data,
+				is_registered_addr(client_data_all[client_id].dev_addr_map, (void *) args->src) ? args->src : (CUdeviceptr) args->data,
 				args->ByteCount,
 				__stream
             );
@@ -3169,7 +3169,7 @@ void TallyServer::handle_cuMemAllocAsync(void *__args, iox::popo::UntypedServer 
 
             // Keep track that this addr is device memory
             if (response->err == CUDA_SUCCESS) {
-                client_data_all[client_id].dev_addr_map.push_back( DeviceMemoryKey((void *)response->dptr, args->bytesize) );
+                client_data_all[client_id].dev_addr_map.push_back( mem_region((void *)response->dptr, args->bytesize) );
             }
 
             iox_server->send(response).or_else(
@@ -3196,7 +3196,7 @@ void TallyServer::handle_cuMemFree_v2(void *__args, iox::popo::UntypedServer *io
             CHECK_CUDA_ERROR(*response);
 
             if (*response == CUDA_SUCCESS) {
-                free_dev_addr(client_data_all[client_id].dev_addr_map, (void *)args->dptr);
+                free_mem_region(client_data_all[client_id].dev_addr_map, (void *)args->dptr);
             }
 
             iox_server->send(response).or_else(
@@ -3581,7 +3581,7 @@ void TallyServer::handle_cuMemAlloc_v2(void *__args, iox::popo::UntypedServer *i
 
             // Keep track that this addr is device memory
             if (response->err == CUDA_SUCCESS) {
-                client_data_all[client_id].dev_addr_map.push_back( DeviceMemoryKey((void *)response->dptr, args->bytesize) );
+                client_data_all[client_id].dev_addr_map.push_back( mem_region((void *)response->dptr, args->bytesize) );
             }
 
             iox_server->send(response).or_else(
@@ -4352,4 +4352,114 @@ void TallyServer::handle_cuDevicePrimaryCtxSetFlags_v2(void *__args, iox::popo::
         })
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cudaMallocHost(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaMallocHost");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cuMemHostAlloc(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuMemHostAlloc");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudaHostAlloc(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaHostAlloc");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudaFreeHost(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaFreeHost");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cuDeviceGetName(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuDeviceGetName");
+	auto args = (struct cuDeviceGetNameArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    size_t msg_len = sizeof(cuDeviceGetNameResponse) + args->len;
+
+    iox_server->loan(requestHeader, msg_len, alignof(cuDeviceGetNameResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuDeviceGetNameResponse*>(responsePayload);
+            response->err = cuDeviceGetName(
+                response->name,
+				args->len,
+				args->dev
+            );
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cudaFuncGetAttributes(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaFuncGetAttributes");
+	auto args = (struct cudaFuncGetAttributesArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+    
+    const void *server_func_addr = client_data_all[client_id]._kernel_client_addr_mapping[args->func];
+    auto cu_func = original_kernel_map[server_func_addr].func;
+
+    iox_server->loan(requestHeader, sizeof(cudaFuncGetAttributesResponse), alignof(cudaFuncGetAttributesResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaFuncGetAttributesResponse*>(responsePayload);
+
+            int constSizeBytes;
+            int localSizeBytes;
+            int sharedSizeBytes;
+
+            auto err = cuFuncGetAttribute (&(response->attr.binaryVersion), CU_FUNC_ATTRIBUTE_BINARY_VERSION, cu_func);
+            cuFuncGetAttribute (&(response->attr.cacheModeCA), CU_FUNC_ATTRIBUTE_CACHE_MODE_CA, cu_func);
+            cuFuncGetAttribute (&(response->attr.clusterDimMustBeSet), CU_FUNC_ATTRIBUTE_CLUSTER_SIZE_MUST_BE_SET, cu_func);
+            cuFuncGetAttribute (&(response->attr.clusterSchedulingPolicyPreference), CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE, cu_func);
+            cuFuncGetAttribute (&(response->attr.maxDynamicSharedSizeBytes), CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, cu_func);
+            cuFuncGetAttribute (&(response->attr.maxThreadsPerBlock), CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, cu_func);
+            cuFuncGetAttribute (&(response->attr.nonPortableClusterSizeAllowed), CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED, cu_func);
+            cuFuncGetAttribute (&(response->attr.numRegs), CU_FUNC_ATTRIBUTE_NUM_REGS, cu_func);
+            cuFuncGetAttribute (&(response->attr.preferredShmemCarveout), CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT, cu_func);
+            cuFuncGetAttribute (&(response->attr.ptxVersion), CU_FUNC_ATTRIBUTE_PTX_VERSION, cu_func);
+            cuFuncGetAttribute (&(response->attr.requiredClusterWidth), CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_WIDTH, cu_func);
+            cuFuncGetAttribute (&(response->attr.requiredClusterHeight), CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_HEIGHT, cu_func);
+            cuFuncGetAttribute (&(response->attr.requiredClusterDepth), CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_DEPTH, cu_func);
+            
+
+            cuFuncGetAttribute (&constSizeBytes, CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES, cu_func);
+            cuFuncGetAttribute (&localSizeBytes, CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES, cu_func);
+            cuFuncGetAttribute (&sharedSizeBytes, CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, cu_func);
+
+            response->attr.constSizeBytes = (size_t) constSizeBytes;
+            response->attr.localSizeBytes = (size_t) localSizeBytes;
+            response->attr.sharedSizeBytes = (size_t) sharedSizeBytes;
+
+            if (err) {
+                response->err = cudaErrorInvalidValue;
+            } else {
+                response->err = cudaSuccess;
+            }
+
+            CHECK_CUDA_ERROR(response->err);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cudnnGetErrorString(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudnnGetErrorString");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
