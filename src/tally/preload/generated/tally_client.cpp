@@ -59,7 +59,11 @@ CUresult cuGetErrorName(CUresult  error, const char ** pStr)
 CUresult cuInit(unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuInit hooked");
+#if defined(RUN_LOCALLY)
+	return lcuInit(Flags);
+#else
 	return (CUresult) 0;
+#endif
 }
 
 CUresult cuDriverGetVersion(int * driverVersion)
@@ -917,7 +921,11 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuCtxCreate_v2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcuCtxCreate_v2(pctx, flags, dev);
+#else
 	return (CUresult) 0;
+#endif
 }
 
 CUresult cuCtxCreate_v3(CUcontext * pctx, CUexecAffinityParam * paramsArray, int  numParams, unsigned int  flags, CUdevice  dev)
@@ -933,7 +941,11 @@ CUresult cuCtxCreate_v3(CUcontext * pctx, CUexecAffinityParam * paramsArray, int
 CUresult cuCtxDestroy_v2(CUcontext  ctx)
 {
 	TALLY_SPD_LOG("cuCtxDestroy_v2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcuCtxDestroy_v2(ctx);
+#else
 	return (CUresult) 0;
+#endif
 }
 
 CUresult cuCtxPushCurrent_v2(CUcontext  ctx)

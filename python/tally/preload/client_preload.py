@@ -305,7 +305,11 @@ def gen_func_client_preload(func_sig):
         func_preload_builder += "\treturn err;\n"
 
     elif func_name in IGNORE_CALLS:
+        func_preload_builder += "#if defined(RUN_LOCALLY)\n"
+        func_preload_builder += f"\treturn {preload_func_name}({arg_names_str});\n"
+        func_preload_builder += "#else\n"
         func_preload_builder += f"\treturn ({ret_type}) 0;\n"
+        func_preload_builder += "#endif\n"
     else:
         func_preload_builder += "#if defined(RUN_LOCALLY)\n"
         func_preload_builder += f"\treturn {preload_func_name}({arg_names_str});\n"
