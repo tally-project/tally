@@ -22,6 +22,7 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <nccl.h>
+#include <curand.h>
 
 #include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
@@ -21328,6 +21329,399 @@ cublasStatus_t cublasLtLoggerForceDisable()
 	return err;
 }
 
+curandStatus_t curandCreateGenerator(curandGenerator_t * generator, curandRngType_t  rng_type)
+{
+	TALLY_SPD_LOG("curandCreateGenerator hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcurandCreateGenerator(generator, rng_type);
+#else
+
+    curandStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(curandCreateGeneratorArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CURANDCREATEGENERATOR;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (curandCreateGeneratorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->generator = generator;
+			request->rng_type = rng_type;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const curandCreateGeneratorResponse*>(responsePayload);
+			if (generator) { *generator = response->generator; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(curandCreateGenerator);
+	return err;
+}
+
+curandStatus_t curandCreateGeneratorHost(curandGenerator_t * generator, curandRngType_t  rng_type)
+{
+	TALLY_SPD_LOG("curandCreateGeneratorHost hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandCreateGeneratorHost(generator, rng_type);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandDestroyGenerator(curandGenerator_t  generator)
+{
+	TALLY_SPD_LOG("curandDestroyGenerator hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandDestroyGenerator(generator);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGetVersion(int * version)
+{
+	TALLY_SPD_LOG("curandGetVersion hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGetVersion(version);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGetProperty(libraryPropertyType  type, int * value)
+{
+	TALLY_SPD_LOG("curandGetProperty hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGetProperty(type, value);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandSetStream(curandGenerator_t  generator, cudaStream_t  stream)
+{
+	TALLY_SPD_LOG("curandSetStream hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandSetStream(generator, stream);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandSetPseudoRandomGeneratorSeed(curandGenerator_t  generator, unsigned long long  seed)
+{
+	TALLY_SPD_LOG("curandSetPseudoRandomGeneratorSeed hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcurandSetPseudoRandomGeneratorSeed(generator, seed);
+#else
+
+    curandStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(curandSetPseudoRandomGeneratorSeedArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CURANDSETPSEUDORANDOMGENERATORSEED;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (curandSetPseudoRandomGeneratorSeedArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->generator = generator;
+			request->seed = seed;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const curandStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(curandSetPseudoRandomGeneratorSeed);
+	return err;
+}
+
+curandStatus_t curandSetGeneratorOffset(curandGenerator_t  generator, unsigned long long  offset)
+{
+	TALLY_SPD_LOG("curandSetGeneratorOffset hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandSetGeneratorOffset(generator, offset);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandSetGeneratorOrdering(curandGenerator_t  generator, curandOrdering_t  order)
+{
+	TALLY_SPD_LOG("curandSetGeneratorOrdering hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandSetGeneratorOrdering(generator, order);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandSetQuasiRandomGeneratorDimensions(curandGenerator_t  generator, unsigned int  num_dimensions)
+{
+	TALLY_SPD_LOG("curandSetQuasiRandomGeneratorDimensions hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandSetQuasiRandomGeneratorDimensions(generator, num_dimensions);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerate(curandGenerator_t  generator, unsigned int * outputPtr, size_t  num)
+{
+	TALLY_SPD_LOG("curandGenerate hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerate(generator, outputPtr, num);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerateLongLong(curandGenerator_t  generator, unsigned long long * outputPtr, size_t  num)
+{
+	TALLY_SPD_LOG("curandGenerateLongLong hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerateLongLong(generator, outputPtr, num);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerateUniform(curandGenerator_t  generator, float * outputPtr, size_t  num)
+{
+	TALLY_SPD_LOG("curandGenerateUniform hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerateUniform(generator, outputPtr, num);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerateUniformDouble(curandGenerator_t  generator, double * outputPtr, size_t  num)
+{
+	TALLY_SPD_LOG("curandGenerateUniformDouble hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerateUniformDouble(generator, outputPtr, num);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerateNormal(curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev)
+{
+	TALLY_SPD_LOG("curandGenerateNormal hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerateNormal(generator, outputPtr, n, mean, stddev);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerateNormalDouble(curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev)
+{
+	TALLY_SPD_LOG("curandGenerateNormalDouble hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerateNormalDouble(generator, outputPtr, n, mean, stddev);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerateLogNormal(curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev)
+{
+	TALLY_SPD_LOG("curandGenerateLogNormal hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerateLogNormal(generator, outputPtr, n, mean, stddev);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerateLogNormalDouble(curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev)
+{
+	TALLY_SPD_LOG("curandGenerateLogNormalDouble hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerateLogNormalDouble(generator, outputPtr, n, mean, stddev);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandCreatePoissonDistribution(double  lambda, curandDiscreteDistribution_t * discrete_distribution)
+{
+	TALLY_SPD_LOG("curandCreatePoissonDistribution hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandCreatePoissonDistribution(lambda, discrete_distribution);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandDestroyDistribution(curandDiscreteDistribution_t  discrete_distribution)
+{
+	TALLY_SPD_LOG("curandDestroyDistribution hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandDestroyDistribution(discrete_distribution);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGeneratePoisson(curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda)
+{
+	TALLY_SPD_LOG("curandGeneratePoisson hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGeneratePoisson(generator, outputPtr, n, lambda);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGeneratePoissonMethod(curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda, curandMethod_t  method)
+{
+	TALLY_SPD_LOG("curandGeneratePoissonMethod hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGeneratePoissonMethod(generator, outputPtr, n, lambda, method);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerateBinomial(curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p)
+{
+	TALLY_SPD_LOG("curandGenerateBinomial hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerateBinomial(generator, outputPtr, num, n, p);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerateBinomialMethod(curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p, curandMethod_t  method)
+{
+	TALLY_SPD_LOG("curandGenerateBinomialMethod hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerateBinomialMethod(generator, outputPtr, num, n, p, method);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGenerateSeeds(curandGenerator_t  generator)
+{
+	TALLY_SPD_LOG("curandGenerateSeeds hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGenerateSeeds(generator);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGetDirectionVectors32(curandDirectionVectors32_t * vectors[], curandDirectionVectorSet_t  set)
+{
+	TALLY_SPD_LOG("curandGetDirectionVectors32 hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGetDirectionVectors32(vectors, set);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGetScrambleConstants32(unsigned int * *  constants)
+{
+	TALLY_SPD_LOG("curandGetScrambleConstants32 hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGetScrambleConstants32(constants);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGetDirectionVectors64(curandDirectionVectors64_t * vectors[], curandDirectionVectorSet_t  set)
+{
+	TALLY_SPD_LOG("curandGetDirectionVectors64 hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGetDirectionVectors64(vectors, set);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+curandStatus_t curandGetScrambleConstants64(unsigned long long * *  constants)
+{
+	TALLY_SPD_LOG("curandGetScrambleConstants64 hooked");
+#if defined(RUN_LOCALLY)
+	return lcurandGetScrambleConstants64(constants);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+ncclResult_t ncclMemAlloc(void**  ptr, size_t  size)
+{
+	TALLY_SPD_LOG("ncclMemAlloc hooked");
+#if defined(RUN_LOCALLY)
+	return lncclMemAlloc(ptr, size);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+ncclResult_t pncclMemAlloc(void**  ptr, size_t  size)
+{
+	TALLY_SPD_LOG("pncclMemAlloc hooked");
+#if defined(RUN_LOCALLY)
+	return lpncclMemAlloc(ptr, size);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+ncclResult_t ncclMemFree(void * ptr)
+{
+	TALLY_SPD_LOG("ncclMemFree hooked");
+#if defined(RUN_LOCALLY)
+	return lncclMemFree(ptr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+ncclResult_t pncclMemFree(void * ptr)
+{
+	TALLY_SPD_LOG("pncclMemFree hooked");
+#if defined(RUN_LOCALLY)
+	return lpncclMemFree(ptr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
 ncclResult_t ncclGetVersion(int * version)
 {
 	TALLY_SPD_LOG("ncclGetVersion hooked");
@@ -21394,16 +21788,6 @@ ncclResult_t pncclGetUniqueId(ncclUniqueId*  uniqueId)
 	TALLY_SPD_LOG("pncclGetUniqueId hooked");
 #if defined(RUN_LOCALLY)
 	return lpncclGetUniqueId(uniqueId);
-#else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-#endif
-}
-
-ncclResult_t ncclCommInitRankConfig(ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config)
-{
-	TALLY_SPD_LOG("ncclCommInitRankConfig hooked");
-#if defined(RUN_LOCALLY)
-	return lncclCommInitRankConfig(comm, nranks, commId, rank, config);
 #else
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
@@ -21566,11 +21950,41 @@ ncclResult_t pncclCommDestroy(ncclComm_t  comm)
 ncclResult_t ncclCommAbort(ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("ncclCommAbort hooked");
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	return lncclCommAbort(comm);
+	auto err = lncclCommAbort(comm);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    ncclResult_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(ncclCommAbortArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::NCCLCOMMABORT;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (ncclCommAbortArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->comm = comm;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const ncclResult_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(ncclCommAbort);
+	return err;
 }
 
 ncclResult_t pncclCommAbort(ncclComm_t  comm)
@@ -21578,6 +21992,26 @@ ncclResult_t pncclCommAbort(ncclComm_t  comm)
 	TALLY_SPD_LOG("pncclCommAbort hooked");
 #if defined(RUN_LOCALLY)
 	return lpncclCommAbort(comm);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+ncclResult_t ncclCommSplit(ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config)
+{
+	TALLY_SPD_LOG("ncclCommSplit hooked");
+#if defined(RUN_LOCALLY)
+	return lncclCommSplit(comm, color, key, newcomm, config);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+ncclResult_t pncclCommSplit(ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config)
+{
+	TALLY_SPD_LOG("pncclCommSplit hooked");
+#if defined(RUN_LOCALLY)
+	return lpncclCommSplit(comm, color, key, newcomm, config);
 #else
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
@@ -21613,11 +22047,11 @@ const char* ncclGetLastError(ncclComm_t  comm)
 #endif
 }
 
-const char* pncclGetError(ncclComm_t  comm)
+const char* pncclGetLastError(ncclComm_t  comm)
 {
-	TALLY_SPD_LOG("pncclGetError hooked");
+	TALLY_SPD_LOG("pncclGetLastError hooked");
 #if defined(RUN_LOCALLY)
-	return lpncclGetError(comm);
+	return lpncclGetLastError(comm);
 #else
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
@@ -21626,11 +22060,43 @@ const char* pncclGetError(ncclComm_t  comm)
 ncclResult_t ncclCommGetAsyncError(ncclComm_t  comm, ncclResult_t * asyncError)
 {
 	TALLY_SPD_LOG("ncclCommGetAsyncError hooked");
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	return lncclCommGetAsyncError(comm, asyncError);
+	auto err = lncclCommGetAsyncError(comm, asyncError);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    ncclResult_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(ncclCommGetAsyncErrorArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::NCCLCOMMGETASYNCERROR;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (ncclCommGetAsyncErrorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->comm = comm;
+			request->asyncError = asyncError;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const ncclCommGetAsyncErrorResponse*>(responsePayload);
+			if (asyncError) { *asyncError = response->asyncError; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(ncclCommGetAsyncError);
+	return err;
 }
 
 ncclResult_t pncclCommGetAsyncError(ncclComm_t  comm, ncclResult_t * asyncError)
@@ -21766,11 +22232,46 @@ ncclResult_t pncclReduce(const void*  sendbuff, void*  recvbuff, size_t  count, 
 ncclResult_t ncclBcast(void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("ncclBcast hooked");
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	return lncclBcast(buff, count, datatype, root, comm, stream);
+	auto err = lncclBcast(buff, count, datatype, root, comm, stream);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    ncclResult_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(ncclBcastArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::NCCLBCAST;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (ncclBcastArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->buff = buff;
+			request->count = count;
+			request->datatype = datatype;
+			request->root = root;
+			request->comm = comm;
+			request->stream = stream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const ncclResult_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(ncclBcast);
+	return err;
 }
 
 ncclResult_t pncclBcast(void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)
@@ -21882,11 +22383,46 @@ ncclResult_t pncclReduceScatter(const void*  sendbuff, void*  recvbuff, size_t  
 ncclResult_t ncclAllGather(const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("ncclAllGather hooked");
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	return lncclAllGather(sendbuff, recvbuff, sendcount, datatype, comm, stream);
+	auto err = lncclAllGather(sendbuff, recvbuff, sendcount, datatype, comm, stream);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    ncclResult_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(ncclAllGatherArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::NCCLALLGATHER;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (ncclAllGatherArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->sendbuff = const_cast<void *>(sendbuff);
+			request->recvbuff = recvbuff;
+			request->sendcount = sendcount;
+			request->datatype = datatype;
+			request->comm = comm;
+			request->stream = stream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const ncclResult_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(ncclAllGather);
+	return err;
 }
 
 ncclResult_t pncclAllGather(const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream)
@@ -21942,11 +22478,40 @@ ncclResult_t ncclRecv(void*  recvbuff, size_t  count, ncclDataType_t  datatype, 
 ncclResult_t ncclGroupStart()
 {
 	TALLY_SPD_LOG("ncclGroupStart hooked");
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	return lncclGroupStart();
+	auto err = lncclGroupStart();
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    ncclResult_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(ncclGroupStartArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::NCCLGROUPSTART;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (ncclGroupStartArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const ncclResult_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(ncclGroupStart);
+	return err;
 }
 
 ncclResult_t pncclGroupStart()
@@ -21962,11 +22527,40 @@ ncclResult_t pncclGroupStart()
 ncclResult_t ncclGroupEnd()
 {
 	TALLY_SPD_LOG("ncclGroupEnd hooked");
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	return lncclGroupEnd();
+	auto err = lncclGroupEnd();
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    ncclResult_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(ncclGroupEndArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::NCCLGROUPEND;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (ncclGroupEndArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const ncclResult_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(ncclGroupEnd);
+	return err;
 }
 
 ncclResult_t pncclGroupEnd()
@@ -21974,6 +22568,46 @@ ncclResult_t pncclGroupEnd()
 	TALLY_SPD_LOG("pncclGroupEnd hooked");
 #if defined(RUN_LOCALLY)
 	return lpncclGroupEnd();
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+ncclResult_t ncclCommRegister(const ncclComm_t  comm, void*  buff, size_t  size, void**  handle)
+{
+	TALLY_SPD_LOG("ncclCommRegister hooked");
+#if defined(RUN_LOCALLY)
+	return lncclCommRegister(comm, buff, size, handle);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+ncclResult_t pncclCommRegister(const ncclComm_t  comm, void*  buff, size_t  size, void**  handle)
+{
+	TALLY_SPD_LOG("pncclCommRegister hooked");
+#if defined(RUN_LOCALLY)
+	return lpncclCommRegister(comm, buff, size, handle);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+ncclResult_t ncclCommDeregister(const ncclComm_t  comm, void*  handle)
+{
+	TALLY_SPD_LOG("ncclCommDeregister hooked");
+#if defined(RUN_LOCALLY)
+	return lncclCommDeregister(comm, handle);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+ncclResult_t pncclCommDeregister(const ncclComm_t  comm, void*  handle)
+{
+	TALLY_SPD_LOG("pncclCommDeregister hooked");
+#if defined(RUN_LOCALLY)
+	return lpncclCommDeregister(comm, handle);
 #else
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif

@@ -29,6 +29,7 @@ API_DECL_TEMPLATE_TOP = """
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <nccl.h>
+#include <curand.h>
 
 """
 
@@ -56,6 +57,7 @@ API_DEF_TEMPLATE_TOP = """
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <nccl.h>
+#include <curand.h>
 
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
@@ -68,6 +70,7 @@ void *cublas_handle;
 void *cublasLt_handle;
 void *nvrtc_handle;
 void *nccl_handle;
+void *curand_handle;
 
 void __attribute__((constructor)) register_cuda_handles()
 {
@@ -80,6 +83,7 @@ void __attribute__((constructor)) register_cuda_handles()
 	cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
 	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
     nvrtc_handle = dlopen(LIBNVRTC_PATH, RTLD_LAZY);
+    curand_handle = dlopen(LIBCURAND_PATH, RTLD_LAZY);
 	nccl_handle = dlopen(lib_nccl_path.string().c_str(), RTLD_LAZY);
 }
 
@@ -117,6 +121,7 @@ MSG_STRUCT_TEMPLATE_TOP = """
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <nccl.h>
+#include <curand.h>
 
 
 """
@@ -150,6 +155,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <nccl.h>
+#include <curand.h>
 
 #include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
@@ -184,6 +190,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <nccl.h>
+#include <curand.h>
 
 #include <readerwriterqueue.h>
 
@@ -521,6 +528,7 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "ncclCommInitRankConfig",
     "cudnnGetErrorString",
     "cudaFuncGetAttributes",
     "cuDeviceGetName",
@@ -647,6 +655,12 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "ncclAllGather",
+    "curandSetPseudoRandomGeneratorSeed",
+    "ncclCommAbort",
+    "ncclBcast",
+    "ncclGroupEnd",
+    "ncclGroupStart",
     "ncclCommDestroy",
     "ncclAllReduce",
     "cublasLtMatrixTransformDescDestroy",
@@ -763,6 +777,7 @@ FORWARD_API_CALLS = [
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "curandCreateGenerator",
     "cudaDriverGetVersion",
     "cudaRuntimeGetVersion",
     "cuDeviceGetPCIBusId",
@@ -845,6 +860,7 @@ UNSUPPORTED_FUNCS = [
 ]
 
 CUDA_GET_2_PARAM_FUNCS = [
+    "ncclCommGetAsyncError",
     "cuStreamIsCapturing",
     "cublasGetMathMode",
     "cudnnGetRNNBiasMode",

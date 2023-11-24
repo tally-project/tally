@@ -24,6 +24,7 @@
 #include <cuda_profiler_api.h>
 #include <cudaProfiler.h>
 #include <nccl.h>
+#include <curand.h>
 
 // g++ -I/usr/local/cuda/include -fPIC -shared -o preload.so preload.cpp
 
@@ -39525,6 +39526,864 @@ cublasStatus_t cublasLtLoggerForceDisable()
 	return res;
 }
 
+curandStatus_t curandCreateGenerator(curandGenerator_t * generator, curandRngType_t  rng_type)
+{
+	static curandStatus_t (*lcurandCreateGenerator) (curandGenerator_t *, curandRngType_t );
+	if (!lcurandCreateGenerator) {
+		lcurandCreateGenerator = (curandStatus_t (*) (curandGenerator_t *, curandRngType_t )) dlsym(RTLD_NEXT, "curandCreateGenerator");
+		tracer._kernel_map[(void *) lcurandCreateGenerator] = std::string("curandCreateGenerator");
+	}
+	assert(lcurandCreateGenerator);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandCreateGenerator(generator, rng_type);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandCreateGenerator);
+	}
+	return res;
+}
+
+curandStatus_t curandCreateGeneratorHost(curandGenerator_t * generator, curandRngType_t  rng_type)
+{
+	static curandStatus_t (*lcurandCreateGeneratorHost) (curandGenerator_t *, curandRngType_t );
+	if (!lcurandCreateGeneratorHost) {
+		lcurandCreateGeneratorHost = (curandStatus_t (*) (curandGenerator_t *, curandRngType_t )) dlsym(RTLD_NEXT, "curandCreateGeneratorHost");
+		tracer._kernel_map[(void *) lcurandCreateGeneratorHost] = std::string("curandCreateGeneratorHost");
+	}
+	assert(lcurandCreateGeneratorHost);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandCreateGeneratorHost(generator, rng_type);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandCreateGeneratorHost);
+	}
+	return res;
+}
+
+curandStatus_t curandDestroyGenerator(curandGenerator_t  generator)
+{
+	static curandStatus_t (*lcurandDestroyGenerator) (curandGenerator_t );
+	if (!lcurandDestroyGenerator) {
+		lcurandDestroyGenerator = (curandStatus_t (*) (curandGenerator_t )) dlsym(RTLD_NEXT, "curandDestroyGenerator");
+		tracer._kernel_map[(void *) lcurandDestroyGenerator] = std::string("curandDestroyGenerator");
+	}
+	assert(lcurandDestroyGenerator);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandDestroyGenerator(generator);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandDestroyGenerator);
+	}
+	return res;
+}
+
+curandStatus_t curandGetVersion(int * version)
+{
+	static curandStatus_t (*lcurandGetVersion) (int *);
+	if (!lcurandGetVersion) {
+		lcurandGetVersion = (curandStatus_t (*) (int *)) dlsym(RTLD_NEXT, "curandGetVersion");
+		tracer._kernel_map[(void *) lcurandGetVersion] = std::string("curandGetVersion");
+	}
+	assert(lcurandGetVersion);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGetVersion(version);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGetVersion);
+	}
+	return res;
+}
+
+curandStatus_t curandGetProperty(libraryPropertyType  type, int * value)
+{
+	static curandStatus_t (*lcurandGetProperty) (libraryPropertyType , int *);
+	if (!lcurandGetProperty) {
+		lcurandGetProperty = (curandStatus_t (*) (libraryPropertyType , int *)) dlsym(RTLD_NEXT, "curandGetProperty");
+		tracer._kernel_map[(void *) lcurandGetProperty] = std::string("curandGetProperty");
+	}
+	assert(lcurandGetProperty);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGetProperty(type, value);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGetProperty);
+	}
+	return res;
+}
+
+curandStatus_t curandSetStream(curandGenerator_t  generator, cudaStream_t  stream)
+{
+	static curandStatus_t (*lcurandSetStream) (curandGenerator_t , cudaStream_t );
+	if (!lcurandSetStream) {
+		lcurandSetStream = (curandStatus_t (*) (curandGenerator_t , cudaStream_t )) dlsym(RTLD_NEXT, "curandSetStream");
+		tracer._kernel_map[(void *) lcurandSetStream] = std::string("curandSetStream");
+	}
+	assert(lcurandSetStream);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandSetStream(generator, stream);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandSetStream);
+	}
+	return res;
+}
+
+curandStatus_t curandSetPseudoRandomGeneratorSeed(curandGenerator_t  generator, unsigned long long  seed)
+{
+	static curandStatus_t (*lcurandSetPseudoRandomGeneratorSeed) (curandGenerator_t , unsigned long long );
+	if (!lcurandSetPseudoRandomGeneratorSeed) {
+		lcurandSetPseudoRandomGeneratorSeed = (curandStatus_t (*) (curandGenerator_t , unsigned long long )) dlsym(RTLD_NEXT, "curandSetPseudoRandomGeneratorSeed");
+		tracer._kernel_map[(void *) lcurandSetPseudoRandomGeneratorSeed] = std::string("curandSetPseudoRandomGeneratorSeed");
+	}
+	assert(lcurandSetPseudoRandomGeneratorSeed);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandSetPseudoRandomGeneratorSeed(generator, seed);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandSetPseudoRandomGeneratorSeed);
+	}
+	return res;
+}
+
+curandStatus_t curandSetGeneratorOffset(curandGenerator_t  generator, unsigned long long  offset)
+{
+	static curandStatus_t (*lcurandSetGeneratorOffset) (curandGenerator_t , unsigned long long );
+	if (!lcurandSetGeneratorOffset) {
+		lcurandSetGeneratorOffset = (curandStatus_t (*) (curandGenerator_t , unsigned long long )) dlsym(RTLD_NEXT, "curandSetGeneratorOffset");
+		tracer._kernel_map[(void *) lcurandSetGeneratorOffset] = std::string("curandSetGeneratorOffset");
+	}
+	assert(lcurandSetGeneratorOffset);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandSetGeneratorOffset(generator, offset);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandSetGeneratorOffset);
+	}
+	return res;
+}
+
+curandStatus_t curandSetGeneratorOrdering(curandGenerator_t  generator, curandOrdering_t  order)
+{
+	static curandStatus_t (*lcurandSetGeneratorOrdering) (curandGenerator_t , curandOrdering_t );
+	if (!lcurandSetGeneratorOrdering) {
+		lcurandSetGeneratorOrdering = (curandStatus_t (*) (curandGenerator_t , curandOrdering_t )) dlsym(RTLD_NEXT, "curandSetGeneratorOrdering");
+		tracer._kernel_map[(void *) lcurandSetGeneratorOrdering] = std::string("curandSetGeneratorOrdering");
+	}
+	assert(lcurandSetGeneratorOrdering);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandSetGeneratorOrdering(generator, order);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandSetGeneratorOrdering);
+	}
+	return res;
+}
+
+curandStatus_t curandSetQuasiRandomGeneratorDimensions(curandGenerator_t  generator, unsigned int  num_dimensions)
+{
+	static curandStatus_t (*lcurandSetQuasiRandomGeneratorDimensions) (curandGenerator_t , unsigned int );
+	if (!lcurandSetQuasiRandomGeneratorDimensions) {
+		lcurandSetQuasiRandomGeneratorDimensions = (curandStatus_t (*) (curandGenerator_t , unsigned int )) dlsym(RTLD_NEXT, "curandSetQuasiRandomGeneratorDimensions");
+		tracer._kernel_map[(void *) lcurandSetQuasiRandomGeneratorDimensions] = std::string("curandSetQuasiRandomGeneratorDimensions");
+	}
+	assert(lcurandSetQuasiRandomGeneratorDimensions);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandSetQuasiRandomGeneratorDimensions(generator, num_dimensions);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandSetQuasiRandomGeneratorDimensions);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerate(curandGenerator_t  generator, unsigned int * outputPtr, size_t  num)
+{
+	static curandStatus_t (*lcurandGenerate) (curandGenerator_t , unsigned int *, size_t );
+	if (!lcurandGenerate) {
+		lcurandGenerate = (curandStatus_t (*) (curandGenerator_t , unsigned int *, size_t )) dlsym(RTLD_NEXT, "curandGenerate");
+		tracer._kernel_map[(void *) lcurandGenerate] = std::string("curandGenerate");
+	}
+	assert(lcurandGenerate);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerate(generator, outputPtr, num);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerate);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerateLongLong(curandGenerator_t  generator, unsigned long long * outputPtr, size_t  num)
+{
+	static curandStatus_t (*lcurandGenerateLongLong) (curandGenerator_t , unsigned long long *, size_t );
+	if (!lcurandGenerateLongLong) {
+		lcurandGenerateLongLong = (curandStatus_t (*) (curandGenerator_t , unsigned long long *, size_t )) dlsym(RTLD_NEXT, "curandGenerateLongLong");
+		tracer._kernel_map[(void *) lcurandGenerateLongLong] = std::string("curandGenerateLongLong");
+	}
+	assert(lcurandGenerateLongLong);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerateLongLong(generator, outputPtr, num);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerateLongLong);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerateUniform(curandGenerator_t  generator, float * outputPtr, size_t  num)
+{
+	static curandStatus_t (*lcurandGenerateUniform) (curandGenerator_t , float *, size_t );
+	if (!lcurandGenerateUniform) {
+		lcurandGenerateUniform = (curandStatus_t (*) (curandGenerator_t , float *, size_t )) dlsym(RTLD_NEXT, "curandGenerateUniform");
+		tracer._kernel_map[(void *) lcurandGenerateUniform] = std::string("curandGenerateUniform");
+	}
+	assert(lcurandGenerateUniform);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerateUniform(generator, outputPtr, num);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerateUniform);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerateUniformDouble(curandGenerator_t  generator, double * outputPtr, size_t  num)
+{
+	static curandStatus_t (*lcurandGenerateUniformDouble) (curandGenerator_t , double *, size_t );
+	if (!lcurandGenerateUniformDouble) {
+		lcurandGenerateUniformDouble = (curandStatus_t (*) (curandGenerator_t , double *, size_t )) dlsym(RTLD_NEXT, "curandGenerateUniformDouble");
+		tracer._kernel_map[(void *) lcurandGenerateUniformDouble] = std::string("curandGenerateUniformDouble");
+	}
+	assert(lcurandGenerateUniformDouble);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerateUniformDouble(generator, outputPtr, num);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerateUniformDouble);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerateNormal(curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev)
+{
+	static curandStatus_t (*lcurandGenerateNormal) (curandGenerator_t , float *, size_t , float , float );
+	if (!lcurandGenerateNormal) {
+		lcurandGenerateNormal = (curandStatus_t (*) (curandGenerator_t , float *, size_t , float , float )) dlsym(RTLD_NEXT, "curandGenerateNormal");
+		tracer._kernel_map[(void *) lcurandGenerateNormal] = std::string("curandGenerateNormal");
+	}
+	assert(lcurandGenerateNormal);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerateNormal(generator, outputPtr, n, mean, stddev);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerateNormal);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerateNormalDouble(curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev)
+{
+	static curandStatus_t (*lcurandGenerateNormalDouble) (curandGenerator_t , double *, size_t , double , double );
+	if (!lcurandGenerateNormalDouble) {
+		lcurandGenerateNormalDouble = (curandStatus_t (*) (curandGenerator_t , double *, size_t , double , double )) dlsym(RTLD_NEXT, "curandGenerateNormalDouble");
+		tracer._kernel_map[(void *) lcurandGenerateNormalDouble] = std::string("curandGenerateNormalDouble");
+	}
+	assert(lcurandGenerateNormalDouble);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerateNormalDouble(generator, outputPtr, n, mean, stddev);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerateNormalDouble);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerateLogNormal(curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev)
+{
+	static curandStatus_t (*lcurandGenerateLogNormal) (curandGenerator_t , float *, size_t , float , float );
+	if (!lcurandGenerateLogNormal) {
+		lcurandGenerateLogNormal = (curandStatus_t (*) (curandGenerator_t , float *, size_t , float , float )) dlsym(RTLD_NEXT, "curandGenerateLogNormal");
+		tracer._kernel_map[(void *) lcurandGenerateLogNormal] = std::string("curandGenerateLogNormal");
+	}
+	assert(lcurandGenerateLogNormal);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerateLogNormal(generator, outputPtr, n, mean, stddev);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerateLogNormal);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerateLogNormalDouble(curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev)
+{
+	static curandStatus_t (*lcurandGenerateLogNormalDouble) (curandGenerator_t , double *, size_t , double , double );
+	if (!lcurandGenerateLogNormalDouble) {
+		lcurandGenerateLogNormalDouble = (curandStatus_t (*) (curandGenerator_t , double *, size_t , double , double )) dlsym(RTLD_NEXT, "curandGenerateLogNormalDouble");
+		tracer._kernel_map[(void *) lcurandGenerateLogNormalDouble] = std::string("curandGenerateLogNormalDouble");
+	}
+	assert(lcurandGenerateLogNormalDouble);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerateLogNormalDouble(generator, outputPtr, n, mean, stddev);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerateLogNormalDouble);
+	}
+	return res;
+}
+
+curandStatus_t curandCreatePoissonDistribution(double  lambda, curandDiscreteDistribution_t * discrete_distribution)
+{
+	static curandStatus_t (*lcurandCreatePoissonDistribution) (double , curandDiscreteDistribution_t *);
+	if (!lcurandCreatePoissonDistribution) {
+		lcurandCreatePoissonDistribution = (curandStatus_t (*) (double , curandDiscreteDistribution_t *)) dlsym(RTLD_NEXT, "curandCreatePoissonDistribution");
+		tracer._kernel_map[(void *) lcurandCreatePoissonDistribution] = std::string("curandCreatePoissonDistribution");
+	}
+	assert(lcurandCreatePoissonDistribution);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandCreatePoissonDistribution(lambda, discrete_distribution);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandCreatePoissonDistribution);
+	}
+	return res;
+}
+
+curandStatus_t curandDestroyDistribution(curandDiscreteDistribution_t  discrete_distribution)
+{
+	static curandStatus_t (*lcurandDestroyDistribution) (curandDiscreteDistribution_t );
+	if (!lcurandDestroyDistribution) {
+		lcurandDestroyDistribution = (curandStatus_t (*) (curandDiscreteDistribution_t )) dlsym(RTLD_NEXT, "curandDestroyDistribution");
+		tracer._kernel_map[(void *) lcurandDestroyDistribution] = std::string("curandDestroyDistribution");
+	}
+	assert(lcurandDestroyDistribution);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandDestroyDistribution(discrete_distribution);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandDestroyDistribution);
+	}
+	return res;
+}
+
+curandStatus_t curandGeneratePoisson(curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda)
+{
+	static curandStatus_t (*lcurandGeneratePoisson) (curandGenerator_t , unsigned int *, size_t , double );
+	if (!lcurandGeneratePoisson) {
+		lcurandGeneratePoisson = (curandStatus_t (*) (curandGenerator_t , unsigned int *, size_t , double )) dlsym(RTLD_NEXT, "curandGeneratePoisson");
+		tracer._kernel_map[(void *) lcurandGeneratePoisson] = std::string("curandGeneratePoisson");
+	}
+	assert(lcurandGeneratePoisson);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGeneratePoisson(generator, outputPtr, n, lambda);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGeneratePoisson);
+	}
+	return res;
+}
+
+curandStatus_t curandGeneratePoissonMethod(curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda, curandMethod_t  method)
+{
+	static curandStatus_t (*lcurandGeneratePoissonMethod) (curandGenerator_t , unsigned int *, size_t , double , curandMethod_t );
+	if (!lcurandGeneratePoissonMethod) {
+		lcurandGeneratePoissonMethod = (curandStatus_t (*) (curandGenerator_t , unsigned int *, size_t , double , curandMethod_t )) dlsym(RTLD_NEXT, "curandGeneratePoissonMethod");
+		tracer._kernel_map[(void *) lcurandGeneratePoissonMethod] = std::string("curandGeneratePoissonMethod");
+	}
+	assert(lcurandGeneratePoissonMethod);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGeneratePoissonMethod(generator, outputPtr, n, lambda, method);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGeneratePoissonMethod);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerateBinomial(curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p)
+{
+	static curandStatus_t (*lcurandGenerateBinomial) (curandGenerator_t , unsigned int *, size_t , unsigned int , double );
+	if (!lcurandGenerateBinomial) {
+		lcurandGenerateBinomial = (curandStatus_t (*) (curandGenerator_t , unsigned int *, size_t , unsigned int , double )) dlsym(RTLD_NEXT, "curandGenerateBinomial");
+		tracer._kernel_map[(void *) lcurandGenerateBinomial] = std::string("curandGenerateBinomial");
+	}
+	assert(lcurandGenerateBinomial);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerateBinomial(generator, outputPtr, num, n, p);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerateBinomial);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerateBinomialMethod(curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p, curandMethod_t  method)
+{
+	static curandStatus_t (*lcurandGenerateBinomialMethod) (curandGenerator_t , unsigned int *, size_t , unsigned int , double , curandMethod_t );
+	if (!lcurandGenerateBinomialMethod) {
+		lcurandGenerateBinomialMethod = (curandStatus_t (*) (curandGenerator_t , unsigned int *, size_t , unsigned int , double , curandMethod_t )) dlsym(RTLD_NEXT, "curandGenerateBinomialMethod");
+		tracer._kernel_map[(void *) lcurandGenerateBinomialMethod] = std::string("curandGenerateBinomialMethod");
+	}
+	assert(lcurandGenerateBinomialMethod);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerateBinomialMethod(generator, outputPtr, num, n, p, method);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerateBinomialMethod);
+	}
+	return res;
+}
+
+curandStatus_t curandGenerateSeeds(curandGenerator_t  generator)
+{
+	static curandStatus_t (*lcurandGenerateSeeds) (curandGenerator_t );
+	if (!lcurandGenerateSeeds) {
+		lcurandGenerateSeeds = (curandStatus_t (*) (curandGenerator_t )) dlsym(RTLD_NEXT, "curandGenerateSeeds");
+		tracer._kernel_map[(void *) lcurandGenerateSeeds] = std::string("curandGenerateSeeds");
+	}
+	assert(lcurandGenerateSeeds);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGenerateSeeds(generator);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGenerateSeeds);
+	}
+	return res;
+}
+
+curandStatus_t curandGetDirectionVectors32(curandDirectionVectors32_t * vectors[], curandDirectionVectorSet_t  set)
+{
+	static curandStatus_t (*lcurandGetDirectionVectors32) (curandDirectionVectors32_t *[], curandDirectionVectorSet_t );
+	if (!lcurandGetDirectionVectors32) {
+		lcurandGetDirectionVectors32 = (curandStatus_t (*) (curandDirectionVectors32_t *[], curandDirectionVectorSet_t )) dlsym(RTLD_NEXT, "curandGetDirectionVectors32");
+		tracer._kernel_map[(void *) lcurandGetDirectionVectors32] = std::string("curandGetDirectionVectors32");
+	}
+	assert(lcurandGetDirectionVectors32);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGetDirectionVectors32(vectors, set);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGetDirectionVectors32);
+	}
+	return res;
+}
+
+curandStatus_t curandGetScrambleConstants32(unsigned int * *  constants)
+{
+	static curandStatus_t (*lcurandGetScrambleConstants32) (unsigned int * * );
+	if (!lcurandGetScrambleConstants32) {
+		lcurandGetScrambleConstants32 = (curandStatus_t (*) (unsigned int * * )) dlsym(RTLD_NEXT, "curandGetScrambleConstants32");
+		tracer._kernel_map[(void *) lcurandGetScrambleConstants32] = std::string("curandGetScrambleConstants32");
+	}
+	assert(lcurandGetScrambleConstants32);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGetScrambleConstants32(constants);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGetScrambleConstants32);
+	}
+	return res;
+}
+
+curandStatus_t curandGetDirectionVectors64(curandDirectionVectors64_t * vectors[], curandDirectionVectorSet_t  set)
+{
+	static curandStatus_t (*lcurandGetDirectionVectors64) (curandDirectionVectors64_t *[], curandDirectionVectorSet_t );
+	if (!lcurandGetDirectionVectors64) {
+		lcurandGetDirectionVectors64 = (curandStatus_t (*) (curandDirectionVectors64_t *[], curandDirectionVectorSet_t )) dlsym(RTLD_NEXT, "curandGetDirectionVectors64");
+		tracer._kernel_map[(void *) lcurandGetDirectionVectors64] = std::string("curandGetDirectionVectors64");
+	}
+	assert(lcurandGetDirectionVectors64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGetDirectionVectors64(vectors, set);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGetDirectionVectors64);
+	}
+	return res;
+}
+
+curandStatus_t curandGetScrambleConstants64(unsigned long long * *  constants)
+{
+	static curandStatus_t (*lcurandGetScrambleConstants64) (unsigned long long * * );
+	if (!lcurandGetScrambleConstants64) {
+		lcurandGetScrambleConstants64 = (curandStatus_t (*) (unsigned long long * * )) dlsym(RTLD_NEXT, "curandGetScrambleConstants64");
+		tracer._kernel_map[(void *) lcurandGetScrambleConstants64] = std::string("curandGetScrambleConstants64");
+	}
+	assert(lcurandGetScrambleConstants64);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	curandStatus_t res = 
+		lcurandGetScrambleConstants64(constants);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcurandGetScrambleConstants64);
+	}
+	return res;
+}
+
+ncclResult_t ncclMemAlloc(void**  ptr, size_t  size)
+{
+	static ncclResult_t (*lncclMemAlloc) (void** , size_t );
+	if (!lncclMemAlloc) {
+		lncclMemAlloc = (ncclResult_t (*) (void** , size_t )) dlsym(RTLD_NEXT, "ncclMemAlloc");
+		tracer._kernel_map[(void *) lncclMemAlloc] = std::string("ncclMemAlloc");
+	}
+	assert(lncclMemAlloc);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	ncclResult_t res = 
+		lncclMemAlloc(ptr, size);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclMemAlloc);
+	}
+	return res;
+}
+
+ncclResult_t pncclMemAlloc(void**  ptr, size_t  size)
+{
+	static ncclResult_t (*lpncclMemAlloc) (void** , size_t );
+	if (!lpncclMemAlloc) {
+		lpncclMemAlloc = (ncclResult_t (*) (void** , size_t )) dlsym(RTLD_NEXT, "pncclMemAlloc");
+		tracer._kernel_map[(void *) lpncclMemAlloc] = std::string("pncclMemAlloc");
+	}
+	assert(lpncclMemAlloc);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	ncclResult_t res = 
+		lpncclMemAlloc(ptr, size);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclMemAlloc);
+	}
+	return res;
+}
+
+ncclResult_t ncclMemFree(void * ptr)
+{
+	static ncclResult_t (*lncclMemFree) (void *);
+	if (!lncclMemFree) {
+		lncclMemFree = (ncclResult_t (*) (void *)) dlsym(RTLD_NEXT, "ncclMemFree");
+		tracer._kernel_map[(void *) lncclMemFree] = std::string("ncclMemFree");
+	}
+	assert(lncclMemFree);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	ncclResult_t res = 
+		lncclMemFree(ptr);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclMemFree);
+	}
+	return res;
+}
+
+ncclResult_t pncclMemFree(void * ptr)
+{
+	static ncclResult_t (*lpncclMemFree) (void *);
+	if (!lpncclMemFree) {
+		lpncclMemFree = (ncclResult_t (*) (void *)) dlsym(RTLD_NEXT, "pncclMemFree");
+		tracer._kernel_map[(void *) lpncclMemFree] = std::string("pncclMemFree");
+	}
+	assert(lpncclMemFree);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	ncclResult_t res = 
+		lpncclMemFree(ptr);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclMemFree);
+	}
+	return res;
+}
+
 ncclResult_t ncclGetVersion(int * version)
 {
 	static ncclResult_t (*lncclGetVersion) (int *);
@@ -39941,6 +40800,58 @@ ncclResult_t pncclCommAbort(ncclComm_t  comm)
 	return res;
 }
 
+ncclResult_t ncclCommSplit(ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config)
+{
+	static ncclResult_t (*lncclCommSplit) (ncclComm_t , int , int , ncclComm_t *, ncclConfig_t* );
+	if (!lncclCommSplit) {
+		lncclCommSplit = (ncclResult_t (*) (ncclComm_t , int , int , ncclComm_t *, ncclConfig_t* )) dlsym(RTLD_NEXT, "ncclCommSplit");
+		tracer._kernel_map[(void *) lncclCommSplit] = std::string("ncclCommSplit");
+	}
+	assert(lncclCommSplit);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	ncclResult_t res = 
+		lncclCommSplit(comm, color, key, newcomm, config);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommSplit);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommSplit(ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config)
+{
+	static ncclResult_t (*lpncclCommSplit) (ncclComm_t , int , int , ncclComm_t *, ncclConfig_t* );
+	if (!lpncclCommSplit) {
+		lpncclCommSplit = (ncclResult_t (*) (ncclComm_t , int , int , ncclComm_t *, ncclConfig_t* )) dlsym(RTLD_NEXT, "pncclCommSplit");
+		tracer._kernel_map[(void *) lpncclCommSplit] = std::string("pncclCommSplit");
+	}
+	assert(lpncclCommSplit);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	ncclResult_t res = 
+		lpncclCommSplit(comm, color, key, newcomm, config);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommSplit);
+	}
+	return res;
+}
+
 const char* ncclGetErrorString(ncclResult_t  result)
 {
 	static const char* (*lncclGetErrorString) (ncclResult_t );
@@ -40019,28 +40930,28 @@ const char* ncclGetLastError(ncclComm_t  comm)
 	return res;
 }
 
-const char* pncclGetError(ncclComm_t  comm)
+const char* pncclGetLastError(ncclComm_t  comm)
 {
-	static const char* (*lpncclGetError) (ncclComm_t );
-	if (!lpncclGetError) {
-		lpncclGetError = (const char* (*) (ncclComm_t )) dlsym(RTLD_NEXT, "pncclGetError");
-		tracer._kernel_map[(void *) lpncclGetError] = std::string("pncclGetError");
+	static const char* (*lpncclGetLastError) (ncclComm_t );
+	if (!lpncclGetLastError) {
+		lpncclGetLastError = (const char* (*) (ncclComm_t )) dlsym(RTLD_NEXT, "pncclGetLastError");
+		tracer._kernel_map[(void *) lpncclGetLastError] = std::string("pncclGetLastError");
 	}
-	assert(lpncclGetError);
+	assert(lpncclGetLastError);
 
     time_point_t _start;
     if (tracer.profile_start) {
         _start = std::chrono::high_resolution_clock::now();
     }
 	const char* res = 
-		lpncclGetError(comm);
+		lpncclGetLastError(comm);
 
     if (tracer.profile_start) {
         auto _end = std::chrono::high_resolution_clock::now();
         tracer._cpu_timestamps.push_back({ _start, _end });
     }
 	if (tracer.profile_start) {
-		tracer._kernel_seq.push_back((void *)lpncclGetError);
+		tracer._kernel_seq.push_back((void *)lpncclGetLastError);
 	}
 	return res;
 }
@@ -40873,6 +41784,110 @@ ncclResult_t pncclGroupEnd()
     }
 	if (tracer.profile_start) {
 		tracer._kernel_seq.push_back((void *)lpncclGroupEnd);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommRegister(const ncclComm_t  comm, void*  buff, size_t  size, void**  handle)
+{
+	static ncclResult_t (*lncclCommRegister) (const ncclComm_t , void* , size_t , void** );
+	if (!lncclCommRegister) {
+		lncclCommRegister = (ncclResult_t (*) (const ncclComm_t , void* , size_t , void** )) dlsym(RTLD_NEXT, "ncclCommRegister");
+		tracer._kernel_map[(void *) lncclCommRegister] = std::string("ncclCommRegister");
+	}
+	assert(lncclCommRegister);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	ncclResult_t res = 
+		lncclCommRegister(comm, buff, size, handle);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommRegister);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommRegister(const ncclComm_t  comm, void*  buff, size_t  size, void**  handle)
+{
+	static ncclResult_t (*lpncclCommRegister) (const ncclComm_t , void* , size_t , void** );
+	if (!lpncclCommRegister) {
+		lpncclCommRegister = (ncclResult_t (*) (const ncclComm_t , void* , size_t , void** )) dlsym(RTLD_NEXT, "pncclCommRegister");
+		tracer._kernel_map[(void *) lpncclCommRegister] = std::string("pncclCommRegister");
+	}
+	assert(lpncclCommRegister);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	ncclResult_t res = 
+		lpncclCommRegister(comm, buff, size, handle);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommRegister);
+	}
+	return res;
+}
+
+ncclResult_t ncclCommDeregister(const ncclComm_t  comm, void*  handle)
+{
+	static ncclResult_t (*lncclCommDeregister) (const ncclComm_t , void* );
+	if (!lncclCommDeregister) {
+		lncclCommDeregister = (ncclResult_t (*) (const ncclComm_t , void* )) dlsym(RTLD_NEXT, "ncclCommDeregister");
+		tracer._kernel_map[(void *) lncclCommDeregister] = std::string("ncclCommDeregister");
+	}
+	assert(lncclCommDeregister);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	ncclResult_t res = 
+		lncclCommDeregister(comm, handle);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lncclCommDeregister);
+	}
+	return res;
+}
+
+ncclResult_t pncclCommDeregister(const ncclComm_t  comm, void*  handle)
+{
+	static ncclResult_t (*lpncclCommDeregister) (const ncclComm_t , void* );
+	if (!lpncclCommDeregister) {
+		lpncclCommDeregister = (ncclResult_t (*) (const ncclComm_t , void* )) dlsym(RTLD_NEXT, "pncclCommDeregister");
+		tracer._kernel_map[(void *) lpncclCommDeregister] = std::string("pncclCommDeregister");
+	}
+	assert(lpncclCommDeregister);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	ncclResult_t res = 
+		lpncclCommDeregister(comm, handle);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lpncclCommDeregister);
 	}
 	return res;
 }

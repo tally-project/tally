@@ -58,6 +58,8 @@ def gen_client_func_decl_def(func_sig):
         handle = "nvrtc_handle"
     elif "nccl" in func_name.lower():
         handle = "nccl_handle"
+    elif "curand" in func_name.lower():
+        handle = "curand_handle"
 
     func_declaration = f"extern {ret_type} (*{preload_func_name}) ({args_str_no_val});\n"
 

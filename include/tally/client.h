@@ -163,8 +163,7 @@ const std::vector<std::string> preload_libs {
     "libcufft.so.11",
     "libcusolver.so.11",
     "libcusparse.so.12",
-    "libcudnn.so.8",
-    "libnccl-net.so"
+    "libcudnn.so.8"
 };
 
 const std::vector<std::string> cuGetProcAddress_funcs = {

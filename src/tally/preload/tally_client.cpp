@@ -135,7 +135,7 @@ void *dlopen(const char *filename, int flag)
 
     if (filename) {
         std::string f_name(filename);
-        TALLY_SPD_LOG("dlopen: " + f_name);
+        // TALLY_SPD_LOG("dlopen: " + f_name);
 
         if (std::find(preload_libs.begin(), preload_libs.end(), f_name) != preload_libs.end()) {
 
@@ -171,10 +171,10 @@ void *dlsym(void * handle, const char * symbol)
     assert(ldlsym);
 
     std::string symbol_str(symbol);
-    TALLY_SPD_LOG("dlsym: " + symbol_str);
+    // TALLY_SPD_LOG("dlsym: " + symbol_str);
 
     if (symbol_str == "cuGetProcAddress") {
-        symbol_str = symbol_str + "_v2";
+        symbol_str = symbol_str + "_v11030";
     } else if (std::find(cuGetProcAddress_v2funcs.begin(), cuGetProcAddress_v2funcs.end(), symbol_str) != cuGetProcAddress_v2funcs.end()) {
         symbol_str = symbol_str + "_v2";
     } else if (std::find(cuGetProcAddress_v3funcs.begin(), cuGetProcAddress_v3funcs.end(), symbol_str) != cuGetProcAddress_v3funcs.end()) {
@@ -6044,7 +6044,40 @@ cudaError_t cudaPointerGetAttributes(struct cudaPointerAttributes * attributes, 
 #if defined(RUN_LOCALLY)
 	return lcudaPointerGetAttributes(attributes, ptr);
 #else
-    throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    if (is_registered_addr(host_addr_map, ptr)) {
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    }
+
+    cudaError_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaPointerGetAttributesArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAPOINTERGETATTRIBUTES;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaPointerGetAttributesArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->attributes = attributes;
+			request->ptr = const_cast<void *>(ptr);
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudaPointerGetAttributesResponse*>(responsePayload);
+			if (attributes) { *attributes = response->attributes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    return err;
 #endif
 }
 
@@ -6151,17 +6184,20 @@ cudaError_t cudaMallocHost(void ** ptr, size_t  size)
 #if defined(RUN_LOCALLY)
 	return lcudaMallocHost(ptr, size);
 #else
-	
+
+    TALLY_SPD_LOG("*ptr = aligned_alloc(4096, size);");
     // Ignore Page-locked memory
     *ptr = aligned_alloc(4096, size);
 
     if (*ptr) {
+        TALLY_SPD_LOG("host_addr_map.push_back( mem_region(*ptr, size) );");
         host_addr_map.push_back( mem_region(*ptr, size) );
+        TALLY_SPD_LOG("cudaMallocHost done");
         return cudaSuccess;
     } else {
+        TALLY_SPD_LOG("cudaMallocHost done");
         return cudaErrorInvalidValue;
     }
-
 #endif
 }
 
@@ -6282,6 +6318,61 @@ const char * cudnnGetErrorString(cudnnStatus_t  status)
 			throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "Unhandled status: " + std::to_string((int) status));
 	}
 #endif
+}
+
+ncclResult_t ncclCommInitRankConfig(ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config)
+{
+	TALLY_SPD_LOG("ncclCommInitRankConfig hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lncclCommInitRankConfig(comm, nranks, commId, rank, config);
+    TALLY_SPD_LOG("ncclCommInitRankConfig done");
+#else
+
+    uint32_t netName_len = 0;
+    if (config->netName) {
+        netName_len = strlen(config->netName) + 1;
+    }
+    size_t msg_len = sizeof(MessageHeader_t) + sizeof(ncclCommInitRankConfigArg) + netName_len;
+
+    ncclResult_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::NCCLCOMMINITRANKCONFIG;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (ncclCommInitRankConfigArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->comm = comm;
+			request->nranks = nranks;
+			request->commId = commId;
+			request->rank = rank;
+			request->config = *config;
+            request->netName_len = netName_len;
+            memcpy(request->netName, config->netName, netName_len);
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const ncclCommInitRankConfigResponse*>(responsePayload);
+			if (comm) { *comm = response->comm; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(ncclCommInitRankConfig);
+	return err;
 }
 
 }

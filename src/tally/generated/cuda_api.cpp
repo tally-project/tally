@@ -10,6 +10,7 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <nccl.h>
+#include <curand.h>
 
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
@@ -22,6 +23,7 @@ void *cublas_handle;
 void *cublasLt_handle;
 void *nvrtc_handle;
 void *nccl_handle;
+void *curand_handle;
 
 void __attribute__((constructor)) register_cuda_handles()
 {
@@ -34,6 +36,7 @@ void __attribute__((constructor)) register_cuda_handles()
 	cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
 	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
     nvrtc_handle = dlopen(LIBNVRTC_PATH, RTLD_LAZY);
+    curand_handle = dlopen(LIBCURAND_PATH, RTLD_LAZY);
 	nccl_handle = dlopen(lib_nccl_path.string().c_str(), RTLD_LAZY);
 }
 
@@ -4651,6 +4654,105 @@ cublasStatus_t (*lcublasLtLoggerSetMask) (int  mask) =
 cublasStatus_t (*lcublasLtLoggerForceDisable) () =
 	(cublasStatus_t (*) ()) dlsym(cublasLt_handle, "cublasLtLoggerForceDisable");
 
+curandStatus_t (*lcurandCreateGenerator) (curandGenerator_t * generator, curandRngType_t  rng_type) =
+	(curandStatus_t (*) (curandGenerator_t * generator, curandRngType_t  rng_type)) dlsym(curand_handle, "curandCreateGenerator");
+
+curandStatus_t (*lcurandCreateGeneratorHost) (curandGenerator_t * generator, curandRngType_t  rng_type) =
+	(curandStatus_t (*) (curandGenerator_t * generator, curandRngType_t  rng_type)) dlsym(curand_handle, "curandCreateGeneratorHost");
+
+curandStatus_t (*lcurandDestroyGenerator) (curandGenerator_t  generator) =
+	(curandStatus_t (*) (curandGenerator_t  generator)) dlsym(curand_handle, "curandDestroyGenerator");
+
+curandStatus_t (*lcurandGetVersion) (int * version) =
+	(curandStatus_t (*) (int * version)) dlsym(curand_handle, "curandGetVersion");
+
+curandStatus_t (*lcurandGetProperty) (libraryPropertyType  type, int * value) =
+	(curandStatus_t (*) (libraryPropertyType  type, int * value)) dlsym(curand_handle, "curandGetProperty");
+
+curandStatus_t (*lcurandSetStream) (curandGenerator_t  generator, cudaStream_t  stream) =
+	(curandStatus_t (*) (curandGenerator_t  generator, cudaStream_t  stream)) dlsym(curand_handle, "curandSetStream");
+
+curandStatus_t (*lcurandSetPseudoRandomGeneratorSeed) (curandGenerator_t  generator, unsigned long long  seed) =
+	(curandStatus_t (*) (curandGenerator_t  generator, unsigned long long  seed)) dlsym(curand_handle, "curandSetPseudoRandomGeneratorSeed");
+
+curandStatus_t (*lcurandSetGeneratorOffset) (curandGenerator_t  generator, unsigned long long  offset) =
+	(curandStatus_t (*) (curandGenerator_t  generator, unsigned long long  offset)) dlsym(curand_handle, "curandSetGeneratorOffset");
+
+curandStatus_t (*lcurandSetGeneratorOrdering) (curandGenerator_t  generator, curandOrdering_t  order) =
+	(curandStatus_t (*) (curandGenerator_t  generator, curandOrdering_t  order)) dlsym(curand_handle, "curandSetGeneratorOrdering");
+
+curandStatus_t (*lcurandSetQuasiRandomGeneratorDimensions) (curandGenerator_t  generator, unsigned int  num_dimensions) =
+	(curandStatus_t (*) (curandGenerator_t  generator, unsigned int  num_dimensions)) dlsym(curand_handle, "curandSetQuasiRandomGeneratorDimensions");
+
+curandStatus_t (*lcurandGenerate) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  num) =
+	(curandStatus_t (*) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  num)) dlsym(curand_handle, "curandGenerate");
+
+curandStatus_t (*lcurandGenerateLongLong) (curandGenerator_t  generator, unsigned long long * outputPtr, size_t  num) =
+	(curandStatus_t (*) (curandGenerator_t  generator, unsigned long long * outputPtr, size_t  num)) dlsym(curand_handle, "curandGenerateLongLong");
+
+curandStatus_t (*lcurandGenerateUniform) (curandGenerator_t  generator, float * outputPtr, size_t  num) =
+	(curandStatus_t (*) (curandGenerator_t  generator, float * outputPtr, size_t  num)) dlsym(curand_handle, "curandGenerateUniform");
+
+curandStatus_t (*lcurandGenerateUniformDouble) (curandGenerator_t  generator, double * outputPtr, size_t  num) =
+	(curandStatus_t (*) (curandGenerator_t  generator, double * outputPtr, size_t  num)) dlsym(curand_handle, "curandGenerateUniformDouble");
+
+curandStatus_t (*lcurandGenerateNormal) (curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev) =
+	(curandStatus_t (*) (curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev)) dlsym(curand_handle, "curandGenerateNormal");
+
+curandStatus_t (*lcurandGenerateNormalDouble) (curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev) =
+	(curandStatus_t (*) (curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev)) dlsym(curand_handle, "curandGenerateNormalDouble");
+
+curandStatus_t (*lcurandGenerateLogNormal) (curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev) =
+	(curandStatus_t (*) (curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev)) dlsym(curand_handle, "curandGenerateLogNormal");
+
+curandStatus_t (*lcurandGenerateLogNormalDouble) (curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev) =
+	(curandStatus_t (*) (curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev)) dlsym(curand_handle, "curandGenerateLogNormalDouble");
+
+curandStatus_t (*lcurandCreatePoissonDistribution) (double  lambda, curandDiscreteDistribution_t * discrete_distribution) =
+	(curandStatus_t (*) (double  lambda, curandDiscreteDistribution_t * discrete_distribution)) dlsym(curand_handle, "curandCreatePoissonDistribution");
+
+curandStatus_t (*lcurandDestroyDistribution) (curandDiscreteDistribution_t  discrete_distribution) =
+	(curandStatus_t (*) (curandDiscreteDistribution_t  discrete_distribution)) dlsym(curand_handle, "curandDestroyDistribution");
+
+curandStatus_t (*lcurandGeneratePoisson) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda) =
+	(curandStatus_t (*) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda)) dlsym(curand_handle, "curandGeneratePoisson");
+
+curandStatus_t (*lcurandGeneratePoissonMethod) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda, curandMethod_t  method) =
+	(curandStatus_t (*) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda, curandMethod_t  method)) dlsym(curand_handle, "curandGeneratePoissonMethod");
+
+curandStatus_t (*lcurandGenerateBinomial) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p) =
+	(curandStatus_t (*) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p)) dlsym(curand_handle, "curandGenerateBinomial");
+
+curandStatus_t (*lcurandGenerateBinomialMethod) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p, curandMethod_t  method) =
+	(curandStatus_t (*) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p, curandMethod_t  method)) dlsym(curand_handle, "curandGenerateBinomialMethod");
+
+curandStatus_t (*lcurandGenerateSeeds) (curandGenerator_t  generator) =
+	(curandStatus_t (*) (curandGenerator_t  generator)) dlsym(curand_handle, "curandGenerateSeeds");
+
+curandStatus_t (*lcurandGetDirectionVectors32) (curandDirectionVectors32_t * vectors[], curandDirectionVectorSet_t  set) =
+	(curandStatus_t (*) (curandDirectionVectors32_t * vectors[], curandDirectionVectorSet_t  set)) dlsym(curand_handle, "curandGetDirectionVectors32");
+
+curandStatus_t (*lcurandGetScrambleConstants32) (unsigned int * *  constants) =
+	(curandStatus_t (*) (unsigned int * *  constants)) dlsym(curand_handle, "curandGetScrambleConstants32");
+
+curandStatus_t (*lcurandGetDirectionVectors64) (curandDirectionVectors64_t * vectors[], curandDirectionVectorSet_t  set) =
+	(curandStatus_t (*) (curandDirectionVectors64_t * vectors[], curandDirectionVectorSet_t  set)) dlsym(curand_handle, "curandGetDirectionVectors64");
+
+curandStatus_t (*lcurandGetScrambleConstants64) (unsigned long long * *  constants) =
+	(curandStatus_t (*) (unsigned long long * *  constants)) dlsym(curand_handle, "curandGetScrambleConstants64");
+
+ncclResult_t (*lncclMemAlloc) (void**  ptr, size_t  size) =
+	(ncclResult_t (*) (void**  ptr, size_t  size)) dlsym(nccl_handle, "ncclMemAlloc");
+
+ncclResult_t (*lpncclMemAlloc) (void**  ptr, size_t  size) =
+	(ncclResult_t (*) (void**  ptr, size_t  size)) dlsym(nccl_handle, "pncclMemAlloc");
+
+ncclResult_t (*lncclMemFree) (void * ptr) =
+	(ncclResult_t (*) (void * ptr)) dlsym(nccl_handle, "ncclMemFree");
+
+ncclResult_t (*lpncclMemFree) (void * ptr) =
+	(ncclResult_t (*) (void * ptr)) dlsym(nccl_handle, "pncclMemFree");
+
 ncclResult_t (*lncclGetVersion) (int * version) =
 	(ncclResult_t (*) (int * version)) dlsym(nccl_handle, "ncclGetVersion");
 
@@ -4699,6 +4801,12 @@ ncclResult_t (*lncclCommAbort) (ncclComm_t  comm) =
 ncclResult_t (*lpncclCommAbort) (ncclComm_t  comm) =
 	(ncclResult_t (*) (ncclComm_t  comm)) dlsym(nccl_handle, "pncclCommAbort");
 
+ncclResult_t (*lncclCommSplit) (ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config) =
+	(ncclResult_t (*) (ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config)) dlsym(nccl_handle, "ncclCommSplit");
+
+ncclResult_t (*lpncclCommSplit) (ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config) =
+	(ncclResult_t (*) (ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config)) dlsym(nccl_handle, "pncclCommSplit");
+
 const char* (*lncclGetErrorString) (ncclResult_t  result) =
 	(const char* (*) (ncclResult_t  result)) dlsym(nccl_handle, "ncclGetErrorString");
 
@@ -4708,8 +4816,8 @@ const char* (*lpncclGetErrorString) (ncclResult_t  result) =
 const char* (*lncclGetLastError) (ncclComm_t  comm) =
 	(const char* (*) (ncclComm_t  comm)) dlsym(nccl_handle, "ncclGetLastError");
 
-const char* (*lpncclGetError) (ncclComm_t  comm) =
-	(const char* (*) (ncclComm_t  comm)) dlsym(nccl_handle, "pncclGetError");
+const char* (*lpncclGetLastError) (ncclComm_t  comm) =
+	(const char* (*) (ncclComm_t  comm)) dlsym(nccl_handle, "pncclGetLastError");
 
 ncclResult_t (*lncclCommGetAsyncError) (ncclComm_t  comm, ncclResult_t * asyncError) =
 	(ncclResult_t (*) (ncclComm_t  comm, ncclResult_t * asyncError)) dlsym(nccl_handle, "ncclCommGetAsyncError");
@@ -4806,6 +4914,18 @@ ncclResult_t (*lncclGroupEnd) () =
 
 ncclResult_t (*lpncclGroupEnd) () =
 	(ncclResult_t (*) ()) dlsym(nccl_handle, "pncclGroupEnd");
+
+ncclResult_t (*lncclCommRegister) (const ncclComm_t  comm, void*  buff, size_t  size, void**  handle) =
+	(ncclResult_t (*) (const ncclComm_t  comm, void*  buff, size_t  size, void**  handle)) dlsym(nccl_handle, "ncclCommRegister");
+
+ncclResult_t (*lpncclCommRegister) (const ncclComm_t  comm, void*  buff, size_t  size, void**  handle) =
+	(ncclResult_t (*) (const ncclComm_t  comm, void*  buff, size_t  size, void**  handle)) dlsym(nccl_handle, "pncclCommRegister");
+
+ncclResult_t (*lncclCommDeregister) (const ncclComm_t  comm, void*  handle) =
+	(ncclResult_t (*) (const ncclComm_t  comm, void*  handle)) dlsym(nccl_handle, "ncclCommDeregister");
+
+ncclResult_t (*lpncclCommDeregister) (const ncclComm_t  comm, void*  handle) =
+	(ncclResult_t (*) (const ncclComm_t  comm, void*  handle)) dlsym(nccl_handle, "pncclCommDeregister");
 
 
 

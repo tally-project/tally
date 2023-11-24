@@ -179,14 +179,24 @@ std::filesystem::path get_tally_home_dir()
 }
 
 std::string get_process_name(int pid) {
+
     std::stringstream ss;
     ss << "/proc/" << pid << "/cmdline";
-    std::ifstream commFile(ss.str());
-    std::string processName;
-    std::stringstream buffer;
-    buffer << commFile.rdbuf();
 
-    return buffer.str();
+    std::ifstream comm_file(ss.str());
+    std::stringstream buffer;
+    buffer << comm_file.rdbuf();
+
+    auto process_name = buffer.str();
+
+    // Replace null character with space
+    for (char &c : process_name) {
+        if (c == '\0') {
+            c = ' ';
+        }
+    }
+
+    return process_name;
 }
 
 std::string replace_substring(std::string& input, const std::string& oldStr, const std::string& newStr) {

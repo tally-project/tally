@@ -11,6 +11,7 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <nccl.h>
+#include <curand.h>
 
 
 struct cuDriverGetVersionArg {
@@ -1789,6 +1790,21 @@ struct cublasLtMatmulPreferenceDestroyArg {
 struct cublasLtLoggerForceDisableArg {
 };
 
+struct curandCreateGeneratorArg {
+	curandGenerator_t * generator;
+	curandRngType_t  rng_type;
+};
+
+struct curandCreateGeneratorResponse {
+	curandGenerator_t  generator;
+	curandStatus_t err;
+};
+
+struct curandSetPseudoRandomGeneratorSeedArg {
+	curandGenerator_t  generator;
+	unsigned long long  seed;
+};
+
 struct ncclGetUniqueIdArg {
 	ncclUniqueId*  uniqueId;
 };
@@ -1814,6 +1830,29 @@ struct ncclCommDestroyArg {
 	ncclComm_t  comm;
 };
 
+struct ncclCommAbortArg {
+	ncclComm_t  comm;
+};
+
+struct ncclCommGetAsyncErrorArg {
+	ncclComm_t  comm;
+	ncclResult_t * asyncError;
+};
+
+struct ncclCommGetAsyncErrorResponse {
+	ncclResult_t  asyncError;
+	ncclResult_t err;
+};
+
+struct ncclBcastArg {
+	void*  buff;
+	size_t  count;
+	ncclDataType_t  datatype;
+	int  root;
+	ncclComm_t  comm;
+	cudaStream_t  stream;
+};
+
 struct ncclAllReduceArg {
 	void*  sendbuff;
 	void*  recvbuff;
@@ -1822,6 +1861,21 @@ struct ncclAllReduceArg {
 	ncclRedOp_t  op;
 	ncclComm_t  comm;
 	cudaStream_t  stream;
+};
+
+struct ncclAllGatherArg {
+	void*  sendbuff;
+	void*  recvbuff;
+	size_t  sendcount;
+	ncclDataType_t  datatype;
+	ncclComm_t  comm;
+	cudaStream_t  stream;
+};
+
+struct ncclGroupStartArg {
+};
+
+struct ncclGroupEndArg {
 };
 
 

@@ -11,6 +11,7 @@
 #include <nvrtc.h>
 #include <cublasLt.h>
 #include <nccl.h>
+#include <curand.h>
 
 extern CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr);
 extern CUresult (*lcuGetErrorName) (CUresult  error, const char ** pStr);
@@ -1550,6 +1551,39 @@ extern cublasStatus_t (*lcublasLtLoggerOpenFile) (const char*  logFile);
 extern cublasStatus_t (*lcublasLtLoggerSetLevel) (int  level);
 extern cublasStatus_t (*lcublasLtLoggerSetMask) (int  mask);
 extern cublasStatus_t (*lcublasLtLoggerForceDisable) ();
+extern curandStatus_t (*lcurandCreateGenerator) (curandGenerator_t * generator, curandRngType_t  rng_type);
+extern curandStatus_t (*lcurandCreateGeneratorHost) (curandGenerator_t * generator, curandRngType_t  rng_type);
+extern curandStatus_t (*lcurandDestroyGenerator) (curandGenerator_t  generator);
+extern curandStatus_t (*lcurandGetVersion) (int * version);
+extern curandStatus_t (*lcurandGetProperty) (libraryPropertyType  type, int * value);
+extern curandStatus_t (*lcurandSetStream) (curandGenerator_t  generator, cudaStream_t  stream);
+extern curandStatus_t (*lcurandSetPseudoRandomGeneratorSeed) (curandGenerator_t  generator, unsigned long long  seed);
+extern curandStatus_t (*lcurandSetGeneratorOffset) (curandGenerator_t  generator, unsigned long long  offset);
+extern curandStatus_t (*lcurandSetGeneratorOrdering) (curandGenerator_t  generator, curandOrdering_t  order);
+extern curandStatus_t (*lcurandSetQuasiRandomGeneratorDimensions) (curandGenerator_t  generator, unsigned int  num_dimensions);
+extern curandStatus_t (*lcurandGenerate) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  num);
+extern curandStatus_t (*lcurandGenerateLongLong) (curandGenerator_t  generator, unsigned long long * outputPtr, size_t  num);
+extern curandStatus_t (*lcurandGenerateUniform) (curandGenerator_t  generator, float * outputPtr, size_t  num);
+extern curandStatus_t (*lcurandGenerateUniformDouble) (curandGenerator_t  generator, double * outputPtr, size_t  num);
+extern curandStatus_t (*lcurandGenerateNormal) (curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev);
+extern curandStatus_t (*lcurandGenerateNormalDouble) (curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev);
+extern curandStatus_t (*lcurandGenerateLogNormal) (curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev);
+extern curandStatus_t (*lcurandGenerateLogNormalDouble) (curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev);
+extern curandStatus_t (*lcurandCreatePoissonDistribution) (double  lambda, curandDiscreteDistribution_t * discrete_distribution);
+extern curandStatus_t (*lcurandDestroyDistribution) (curandDiscreteDistribution_t  discrete_distribution);
+extern curandStatus_t (*lcurandGeneratePoisson) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda);
+extern curandStatus_t (*lcurandGeneratePoissonMethod) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda, curandMethod_t  method);
+extern curandStatus_t (*lcurandGenerateBinomial) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p);
+extern curandStatus_t (*lcurandGenerateBinomialMethod) (curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p, curandMethod_t  method);
+extern curandStatus_t (*lcurandGenerateSeeds) (curandGenerator_t  generator);
+extern curandStatus_t (*lcurandGetDirectionVectors32) (curandDirectionVectors32_t * vectors[], curandDirectionVectorSet_t  set);
+extern curandStatus_t (*lcurandGetScrambleConstants32) (unsigned int * *  constants);
+extern curandStatus_t (*lcurandGetDirectionVectors64) (curandDirectionVectors64_t * vectors[], curandDirectionVectorSet_t  set);
+extern curandStatus_t (*lcurandGetScrambleConstants64) (unsigned long long * *  constants);
+extern ncclResult_t (*lncclMemAlloc) (void**  ptr, size_t  size);
+extern ncclResult_t (*lpncclMemAlloc) (void**  ptr, size_t  size);
+extern ncclResult_t (*lncclMemFree) (void * ptr);
+extern ncclResult_t (*lpncclMemFree) (void * ptr);
 extern ncclResult_t (*lncclGetVersion) (int * version);
 extern ncclResult_t (*lpncclGetVersion) (int * version);
 extern ncclResult_t (*lncclGetUniqueId) (ncclUniqueId*  uniqueId);
@@ -1566,10 +1600,12 @@ extern ncclResult_t (*lncclCommDestroy) (ncclComm_t  comm);
 extern ncclResult_t (*lpncclCommDestroy) (ncclComm_t  comm);
 extern ncclResult_t (*lncclCommAbort) (ncclComm_t  comm);
 extern ncclResult_t (*lpncclCommAbort) (ncclComm_t  comm);
+extern ncclResult_t (*lncclCommSplit) (ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config);
+extern ncclResult_t (*lpncclCommSplit) (ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config);
 extern const char* (*lncclGetErrorString) (ncclResult_t  result);
 extern const char* (*lpncclGetErrorString) (ncclResult_t  result);
 extern const char* (*lncclGetLastError) (ncclComm_t  comm);
-extern const char* (*lpncclGetError) (ncclComm_t  comm);
+extern const char* (*lpncclGetLastError) (ncclComm_t  comm);
 extern ncclResult_t (*lncclCommGetAsyncError) (ncclComm_t  comm, ncclResult_t * asyncError);
 extern ncclResult_t (*lpncclCommGetAsyncError) (ncclComm_t  comm, ncclResult_t * asyncError);
 extern ncclResult_t (*lncclCommCount) (const ncclComm_t  comm, int*  count);
@@ -1602,6 +1638,10 @@ extern ncclResult_t (*lncclGroupStart) ();
 extern ncclResult_t (*lpncclGroupStart) ();
 extern ncclResult_t (*lncclGroupEnd) ();
 extern ncclResult_t (*lpncclGroupEnd) ();
+extern ncclResult_t (*lncclCommRegister) (const ncclComm_t  comm, void*  buff, size_t  size, void**  handle);
+extern ncclResult_t (*lpncclCommRegister) (const ncclComm_t  comm, void*  buff, size_t  size, void**  handle);
+extern ncclResult_t (*lncclCommDeregister) (const ncclComm_t  comm, void*  handle);
+extern ncclResult_t (*lpncclCommDeregister) (const ncclComm_t  comm, void*  handle);
 
 
 extern void (*l__cudaRegisterFunction) (void **, const char *, char *, const char *, int , uint3 *, uint3 *, dim3 *, dim3 *, int *);

@@ -7,6 +7,8 @@
 #include <cuda_profiler_api.h>
 #include <cublasLt.h>
 #include <cudnn.h>
+#include <nccl.h>
+#include <curand.h>
 
 #include <tally/generated/cuda_api_enum.h>
 
@@ -1351,6 +1353,21 @@ struct cuDeviceGetNameArg {
 struct cuDeviceGetNameResponse {
     CUresult err;
     char name[];
+};
+
+struct ncclCommInitRankConfigArg {
+	ncclComm_t*  comm;
+	int  nranks;
+	ncclUniqueId  commId;
+	int  rank;
+	ncclConfig_t  config;
+    uint32_t netName_len;
+    char netName[];
+};
+
+struct ncclCommInitRankConfigResponse {
+	ncclComm_t comm;
+	ncclResult_t err;
 };
 
 #endif // TALLY_DEF_H

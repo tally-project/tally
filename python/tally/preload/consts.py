@@ -1,3 +1,7 @@
+import pathlib
+
+current_file_path = pathlib.Path(__file__).parent
+nccl_header_path = str(current_file_path / "../../../third_party/nccl/build/include/nccl.h")
 
 CUDA_API_HEADER_FILES = [
     "/usr/local/cuda/include/cuda.h",
@@ -8,7 +12,8 @@ CUDA_API_HEADER_FILES = [
     "/usr/local/cuda/include/cudaProfiler.h",
     "/usr/local/cuda/include/nvrtc.h",
     "/usr/local/cuda/include/cublasLt.h",
-    "/usr/include/nccl.h"
+    "/usr/local/cuda/include/curand.h",
+    nccl_header_path
 ]
 
 FUNC_SIG_MUST_CONTAIN = [("cu", "nvrtc", "nccl"), "(", ")"]

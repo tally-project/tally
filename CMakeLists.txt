@@ -74,6 +74,10 @@ set(TALLY_CLIENT_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/tally/generated/client.cpp
 )
 
+add_library(nccl_lib SHARED IMPORTED)
+
+set_target_properties(nccl_lib PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/third_party/nccl/build/lib/libnccl.so)
+
 add_library(tally_cutlass SHARED
     ${TALLY_CUTLASS_SRC_FILES}
 )
@@ -96,6 +100,7 @@ set_target_properties(tally_cutlass PROPERTIES
 add_library(tally STATIC ${TALLY_SRC_FILES})
 target_include_directories(tally
     PUBLIC ${PROJECT_SOURCE_DIR}/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/nccl/build/include
     PUBLIC  /usr/local/cuda/include
     PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
 )
@@ -125,6 +130,7 @@ endforeach()
 
 target_include_directories(tally_client
     PUBLIC ${PROJECT_SOURCE_DIR}/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/nccl/build/include
     PUBLIC  /usr/local/cuda/include
     PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
 )
@@ -147,6 +153,7 @@ add_library(tally_client_local SHARED
 
 target_include_directories(tally_client_local
     PUBLIC ${PROJECT_SOURCE_DIR}/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/nccl/build/include
     PUBLIC  /usr/local/cuda/include
     PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
 )
@@ -178,6 +185,7 @@ add_library(tally_client_offline SHARED
 
 target_include_directories(tally_client_offline
     PUBLIC ${PROJECT_SOURCE_DIR}/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/nccl/build/include
     PUBLIC  /usr/local/cuda/include
     PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
 )
@@ -190,20 +198,6 @@ target_link_libraries(tally_client_offline PUBLIC
 
 target_compile_definitions(tally_client_offline PRIVATE IS_CLIENT_OFFLINE="TRUE")
 
-add_library(tally_profile_cpu SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_profile_cpu.cpp)
-
-target_include_directories(tally_profile_cpu
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
-    PUBLIC  /usr/local/cuda/include
-)
-
-add_library(tally_profile_gpu SHARED ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_profile_gpu.cpp)
-
-target_include_directories(tally_profile_gpu
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
-    PUBLIC  /usr/local/cuda/include
-)
-
 add_executable(tally_server ${PROJECT_SOURCE_DIR}/src/tally/tally_server.cpp ${TALLY_SERVER_SRC_FILES})
 
 if(ENABLE_LOGGING)
@@ -211,6 +205,7 @@ if(ENABLE_LOGGING)
 endif()
 
 target_include_directories(tally_server
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/nccl/build/include
     PUBLIC  /usr/local/cuda/include
     PUBLIC  ${PROJECT_SOURCE_DIR}/include
     PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
@@ -224,7 +219,8 @@ target_link_libraries(tally_server PUBLIC
     tally
     cublasLt
     cudnn
-    nccl
+    nccl_lib
+    curand
     PUBLIC Boost::serialization
     PUBLIC Boost::regex
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>

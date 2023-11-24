@@ -20,7 +20,15 @@
         "gcc", \
         "fatbinary", \
         "ldconfig", \
-        "cuobjdump" \
+        "cuobjdump", \
+        "uname", \
+        "file -b", \
+        "lscpu", \
+        "sysctl", \
+        "dmesg", \
+        "ninja", \
+        "/usr/bin/python3 /home/zhaowe58/.local/lib/python3.10/site-packages/cpuinfo/cpuinfo.py --json", \
+        "cat /proc/cpuinfo" \
     };
 
 #endif // TALLY_CONSTS_H

@@ -4463,3 +4463,32 @@ void TallyServer::handle_cudnnGetErrorString(void *__args, iox::popo::UntypedSer
 	TALLY_SPD_LOG("Received request: cudnnGetErrorString");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
+
+void TallyServer::handle_ncclCommInitRankConfig(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: ncclCommInitRankConfig");
+	auto args = (struct ncclCommInitRankConfigArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    // Check if netName is set
+    if (args->config.netName) {
+        args->config.netName = args->netName;
+    }
+
+    iox_server->loan(requestHeader, sizeof(ncclCommInitRankConfigResponse), alignof(ncclCommInitRankConfigResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<ncclCommInitRankConfigResponse*>(responsePayload);
+            response->err = ncclCommInitRankConfig(
+				(args->comm ? &(response->comm) : NULL),
+				args->nranks,
+				args->commId,
+				args->rank,
+				&(args->config)
+			);
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
