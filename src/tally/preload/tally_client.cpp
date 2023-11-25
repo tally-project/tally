@@ -5750,7 +5750,7 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 
 cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 {
-	TALLY_LOG("cublasDestroy_v2 hooked");
+	TALLY_SPD_LOG("cublasDestroy_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 
     cublas_tracer.handle_cublasDestroy_v2(handle);
