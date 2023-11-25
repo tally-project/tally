@@ -26,20 +26,6 @@
                         {alpha, beta});                                                         \
     status = gemm_operator(args, stream);
 
-struct AddVecBiasFunctor {
-    int rows;
-    const float* vec;
-
-    AddVecBiasFunctor(int _rows, const float* _vec) : rows(_rows), vec(_vec) {}
-
-    __host__ __device__
-    float operator()(const float& matrix_val, const int& idx) const {
-        // Compute the corresponding index in the vector
-        int vec_idx = idx % rows;
-        return matrix_val + vec[vec_idx];
-    }
-};
-
 extern "C" {
 
 void tally_register_cutlass()
@@ -103,7 +89,7 @@ cudaError_t cutlassGemm_f32(
         thrust::transform(D_thrust, D_thrust + M * N, 
                           thrust::make_counting_iterator(0), 
                           D_thrust, 
-                          AddVecBiasFunctor(M, thrust::raw_pointer_cast(bias)));
+                          AddVecBiasFunctor<float>(M, thrust::raw_pointer_cast(bias)));
     }
 
     if (status != cutlass::Status::kSuccess) {
@@ -129,6 +115,7 @@ cudaError_t cutlassGemm_f16(
     int ldc,
     half *D,
     int ldd,
+    half *bias,
     cudaStream_t stream
 ) {
     using ElementAccumulator = float;
@@ -163,6 +150,15 @@ cudaError_t cutlassGemm_f16(
 
     if (status != cutlass::Status::kSuccess) {
         return cudaErrorUnknown;
+    }
+
+    if (bias) {
+        thrust::device_ptr<half> D_thrust(D);
+
+        thrust::transform(D_thrust, D_thrust + M * N, 
+                          thrust::make_counting_iterator(0), 
+                          D_thrust, 
+                          AddVecBiasFunctor<half>(M, thrust::raw_pointer_cast(bias)));
     }
 
     return cudaSuccess;

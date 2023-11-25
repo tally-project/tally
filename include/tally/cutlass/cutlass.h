@@ -9,6 +9,21 @@
 
 #include <tally/cutlass/cutlass_struct.h>
 
+template <typename T>
+struct AddVecBiasFunctor {
+    int rows;
+    const T* vec;
+
+    AddVecBiasFunctor(int _rows, const T* _vec) : rows(_rows), vec(_vec) {}
+
+    __host__ __device__
+    T operator()(const T& matrix_val, const int& idx) const {
+        // Compute the corresponding index in the vector
+        int vec_idx = idx % rows;
+        return matrix_val + vec[vec_idx];
+    }
+};
+
 extern "C" {
 
 void tally_register_cutlass();
@@ -50,6 +65,7 @@ cudaError_t cutlassGemm_f16(
     int ldc,
     half *D,
     int ldd,
+    half *bias=nullptr,
     cudaStream_t stream=nullptr
 );
 
