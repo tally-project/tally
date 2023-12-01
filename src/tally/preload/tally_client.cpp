@@ -3150,7 +3150,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 #if defined(VERIFY_CORRECTNESS)
         // Copy array C
         float *C_copy;
-        int num_elems = batchCount * strideC + m * n;
+        int num_elems = (batchCount - 1) * strideC + m * n;
         int size_bytes = num_elems * sizeof(float);
         cudaMalloc(&C_copy, size_bytes);
         cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
