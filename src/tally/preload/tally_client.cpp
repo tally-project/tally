@@ -125,7 +125,7 @@ void load_tally_cutlass_lib()
 {
     if (!tally_cutlass_handle) {
 
-        // TALLY_SPD_LOG_ALWAYS("Enabling replacing cublas with cutlass");
+        // TALLY_SPD_LOG("Enabling replacing cublas with cutlass");
 
         auto client_preload_dir = get_client_preload_dir();
         auto tally_cutlass_lib_path = client_preload_dir / "libtally_cutlass.so";
@@ -815,6 +815,9 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         float *C_copy;
         cudaMalloc(&C_copy, sizeof(float) * m * n);
         cudaMemcpy(C_copy, C, sizeof(float) * m * n, cudaMemcpyDeviceToDevice);
+
+        cudaDeviceSynchronize();
+        auto start = std::chrono::high_resolution_clock::now();
 #endif
 
         auto cuda_err = cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, C, ldc, NULL, NULL, ctx.stream);
@@ -828,9 +831,25 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         launched = true;
 
 #if defined(VERIFY_CORRECTNESS)
+        cudaDeviceSynchronize();
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> duration = end - start;
+        auto cutlass_ms = duration.count();
+
+        start = std::chrono::high_resolution_clock::now();
+
         err = cublasSgemm_v2_inner(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C_copy, ldc);
 
         cudaDeviceSynchronize();
+        end = std::chrono::high_resolution_clock::now();
+        duration =  end - start;
+        auto cublas_ms = duration.count();
+
+        if ((cublas_ms / cutlass_ms) < 0.5) {
+            TALLY_SPD_WARN("cutlass performance does not match with cublas");
+            TALLY_SPD_WARN("cutlassGemm_f32: " + std::to_string(cutlass_ms) + "ms");
+            TALLY_SPD_WARN("cublasSgemm_v2: " + std::to_string(cublas_ms) + "ms");
+        }
 
         float *h_c_cublas = (float *) malloc(sizeof(float) * m * n);
         float *h_c_cutlass = (float *) malloc(sizeof(float) * m * n);
@@ -853,7 +872,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
             TALLY_SPD_WARN("cublas and cutlass results do not match.");
             exit(1);
         } else {
-            TALLY_SPD_LOG_ALWAYS("cutlassGemm results match with cublasSgemm_v2");
+            TALLY_SPD_LOG("cutlassGemm results match with cublasSgemm_v2");
         }
 
         free(h_c_cublas);
@@ -990,6 +1009,9 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                 cudaMalloc(&D_copy, size_bytes);
                 cudaMemcpy(D_copy, D, size_bytes, cudaMemcpyDeviceToDevice);
 
+                cudaDeviceSynchronize();
+                auto start = std::chrono::high_resolution_clock::now();
+
 #endif
 
                 auto cutlass_transa = cublas_op_to_cutlass_op(matmul_desc.cublaslt_matmul_desc_transa);
@@ -1034,9 +1056,26 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                 launched = true;
 
 #if defined(VERIFY_CORRECTNESS)
+
+                cudaDeviceSynchronize();
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double, std::milli> duration = end - start;
+                auto cutlass_ms = duration.count();
+
+                start = std::chrono::high_resolution_clock::now();
+
                 err = cublasLtMatmul_inner(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D_copy, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
 
                 cudaDeviceSynchronize();
+                end = std::chrono::high_resolution_clock::now();
+                duration =  end - start;
+                auto cublas_ms = duration.count();
+
+                if ((cublas_ms / cutlass_ms) < 0.5) {
+                    TALLY_SPD_WARN("cutlass performance does not match with cublas");
+                    TALLY_SPD_WARN("cutlassGemm: " + std::to_string(cutlass_ms) + "ms");
+                    TALLY_SPD_WARN("cublasLtMatmul: " + std::to_string(cublas_ms) + "ms");
+                }
 
                 void *h_d_cublas = malloc(size_bytes);
                 void *h_d_cutlass = malloc(size_bytes);
@@ -1071,7 +1110,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                     TALLY_SPD_WARN("cublas and cutlass results do not match.");
                     exit(1);
                 } else {
-                    TALLY_SPD_LOG_ALWAYS("cutlassGemm results match with cublasLtMatmul");
+                    TALLY_SPD_LOG("cutlassGemm results match with cublasLtMatmul");
                 }
                 
                 free(h_d_cublas);
@@ -3164,6 +3203,9 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
         int size_bytes = num_elems * sizeof(float);
         cudaMalloc(&C_copy, size_bytes);
         cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
+
+        cudaDeviceSynchronize();
+        auto start = std::chrono::high_resolution_clock::now();
 #endif
 
         auto cuda_err = cutlassStridedBatchedGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, strideA, B, ldb, strideB, C, ldc, strideC, *beta, batchCount, ctx.stream);
@@ -3178,9 +3220,25 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 
 #if defined(VERIFY_CORRECTNESS)
 
+        cudaDeviceSynchronize();
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> duration = end - start;
+        auto cutlass_ms = duration.count();
+
+        start = std::chrono::high_resolution_clock::now();
+
         err = cublasSgemmStridedBatched_inner(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C_copy, ldc, strideC, batchCount);
 
         cudaDeviceSynchronize();
+        end = std::chrono::high_resolution_clock::now();
+        duration =  end - start;
+        auto cublas_ms = duration.count();
+
+        if ((cublas_ms / cutlass_ms) < 0.5) {
+            TALLY_SPD_WARN("cutlass performance does not match with cublas");
+            TALLY_SPD_WARN("cutlassStridedBatchedGemm_f32: " + std::to_string(cutlass_ms) + "ms");
+            TALLY_SPD_WARN("cublasSgemmStridedBatched: " + std::to_string(cublas_ms) + "ms");
+        }
 
         float *h_c_cublas = (float *) malloc(size_bytes);
         float *h_c_cutlass = (float *) malloc(size_bytes);
@@ -3207,7 +3265,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
             TALLY_SPD_WARN("cublas and cutlass results do not match.");
             exit(1);
         } else {
-            TALLY_SPD_LOG_ALWAYS("cutlassStridedBatchedGemm_f32 results match with cublasSgemmStridedBatched");
+            TALLY_SPD_LOG("cutlassStridedBatchedGemm_f32 results match with cublasSgemmStridedBatched");
         }
         
         free(h_c_cublas);
@@ -4775,6 +4833,9 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                 half *C_copy;
                 cudaMalloc(&C_copy, sizeof(half) * m * n);
                 cudaMemcpy(C_copy, C, sizeof(half) * m * n, cudaMemcpyDeviceToDevice);
+
+                cudaDeviceSynchronize();
+                auto start = std::chrono::high_resolution_clock::now();
 #endif
 
                 auto cutlass_transa = cublas_op_to_cutlass_op(transa);
@@ -4793,9 +4854,26 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                 launched = true;
 
 #if defined(VERIFY_CORRECTNESS)
+
+                cudaDeviceSynchronize();
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double, std::milli> duration = end - start;
+                auto cutlass_ms = duration.count();
+
+                start = std::chrono::high_resolution_clock::now();
+
                 err = cublasGemmEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C_copy, Ctype, ldc, computeType, algo);
 
                 cudaDeviceSynchronize();
+                end = std::chrono::high_resolution_clock::now();
+                duration =  end - start;
+                auto cublas_ms = duration.count();
+
+                if ((cublas_ms / cutlass_ms) < 0.5) {
+                    TALLY_SPD_WARN("cutlass performance does not match with cublas");
+                    TALLY_SPD_WARN("cutlassGemm_f16: " + std::to_string(cutlass_ms) + "ms");
+                    TALLY_SPD_WARN("cublasGemmEx: " + std::to_string(cublas_ms) + "ms");
+                }
 
                 half *h_c_cublas = (half *) malloc(sizeof(half) * m * n);
                 half *h_c_cutlass = (half *) malloc(sizeof(half) * m * n);
@@ -4821,7 +4899,7 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                     TALLY_SPD_WARN("cublas and cutlass results do not match.");
                     exit(1);
                 } else {
-                    TALLY_SPD_LOG_ALWAYS("cutlassGemm results match with cublasGemmEx");
+                    TALLY_SPD_LOG("cutlassGemm results match with cublasGemmEx");
                 }
 
                 free(h_c_cublas);
@@ -5069,6 +5147,9 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
                 int size_bytes = num_elems * sizeof(half);
                 cudaMalloc(&C_copy, size_bytes);
                 cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
+
+                cudaDeviceSynchronize();
+                auto start = std::chrono::high_resolution_clock::now();
 #endif
 
                 auto cuda_err = cutlassStridedBatchedGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *)A, lda, strideA, (half *)B, ldb, strideB, (half *)C, ldc, strideC, *((float *)beta), batchCount, stream);
@@ -5083,9 +5164,25 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
 
 #if defined(VERIFY_CORRECTNESS)
 
+                cudaDeviceSynchronize();
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double, std::milli> duration = end - start;
+                auto cutlass_ms = duration.count();
+
+                start = std::chrono::high_resolution_clock::now();
+
                 err = cublasGemmStridedBatchedEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C_copy, Ctype, ldc, strideC, batchCount, computeType, algo);
                 
                 cudaDeviceSynchronize();
+                end = std::chrono::high_resolution_clock::now();
+                duration =  end - start;
+                auto cublas_ms = duration.count();
+
+                if ((cublas_ms / cutlass_ms) < 0.5) {
+                    TALLY_SPD_WARN("cutlass performance does not match with cublas");
+                    TALLY_SPD_WARN("cutlassStridedBatchedGemm_f16: " + std::to_string(cutlass_ms) + "ms");
+                    TALLY_SPD_WARN("cublasGemmStridedBatchedEx: " + std::to_string(cublas_ms) + "ms");
+                }
 
                 half *h_c_cublas = (half *) malloc(size_bytes);
                 half *h_c_cutlass = (half *) malloc(size_bytes);
@@ -5112,7 +5209,7 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
                     TALLY_SPD_WARN("cublas and cutlass results do not match.");
                     exit(1);
                 } else {
-                    TALLY_SPD_LOG_ALWAYS("cutlassStridedBatchedGemm_f32 results match with cublasSgemmStridedBatched");
+                    TALLY_SPD_LOG("cutlassStridedBatchedGemm_f32 results match with cublasSgemmStridedBatched");
                 }
                 
                 free(h_c_cublas);
