@@ -69,7 +69,7 @@ cudaError_t cutlassGemm_f16(
     cudaStream_t stream=nullptr
 );
 
-cudaError_t cutlassStridedBatchedSgemm(
+cudaError_t cutlassStridedBatchedGemm_f32(
     cutlassOperation_t transA,
     cutlassOperation_t transB,
     int m, 
