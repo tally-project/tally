@@ -8,6 +8,7 @@
 #include <thrust/functional.h>
 
 #include "cutlass/gemm/device/gemm.h"
+#include "cutlass/gemm/device/gemm_batched.h"
 
 #define CUTLASS_GEMM_TEMPLATE(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR)  \
     using Gemm = cutlass::gemm::device::Gemm<ELEMENT_TYPE,                                      \
@@ -24,7 +25,7 @@
                         {(ELEMENT_TYPE *) C, ldc},                                              \
                         {(ELEMENT_TYPE *) D, ldd},                                              \
                         {alpha, beta});                                                         \
-    status = gemm_operator(args, stream);
+    status = gemm_operator(args, nullptr, stream);
 
 extern "C" {
 
@@ -162,6 +163,149 @@ cudaError_t cutlassGemm_f16(
     }
 
     return cudaSuccess;
+}
+
+cudaError_t cutlassStridedBatchedSgemm(
+    cutlassOperation_t transA,
+    cutlassOperation_t transB,
+    int m, 
+    int n,
+    int k,
+    float alpha,
+    float const *A,
+    int lda,
+    long long int batch_stride_A,
+    float const *B,
+    int ldb,
+    long long int batch_stride_B,
+    float *C,
+    int ldc,
+    long long int batch_stride_C,
+    float beta,
+    int batch_count,
+    cudaStream_t stream
+) {
+
+    using RowMajor = cutlass::layout::RowMajor;
+    using ColumnMajor = cutlass::layout::ColumnMajor;
+
+    cutlass::Status status;
+
+    if (transA == cutlassOperation_t::CUTLASS_OP_N &&
+        transB == cutlassOperation_t::CUTLASS_OP_N) {
+
+        using Gemm = cutlass::gemm::device::GemmBatched<
+            float, cutlass::layout::ColumnMajor,
+            float, cutlass::layout::ColumnMajor,
+            float, cutlass::layout::ColumnMajor
+        >;
+
+        Gemm gemm_op;
+        Gemm::Arguments args(
+            {m, n, k},
+            {A, lda}, 
+            batch_stride_A,
+            {B, ldb}, 
+            batch_stride_B,
+            {C, ldc}, 
+            batch_stride_C,
+            {C, ldc}, 
+            batch_stride_C,
+            {alpha, beta},
+            batch_count
+        );
+
+        status = gemm_op(args, nullptr /* workspace */, stream);
+
+    } else if (transA == cutlassOperation_t::CUTLASS_OP_T &&
+               transB == cutlassOperation_t::CUTLASS_OP_N){
+
+        using Gemm = cutlass::gemm::device::GemmBatched<
+            float, cutlass::layout::RowMajor,
+            float, cutlass::layout::ColumnMajor,
+            float, cutlass::layout::ColumnMajor
+        >;
+
+        Gemm gemm_op;
+        Gemm::Arguments args(
+            {m, n, k},
+            {A, lda}, 
+            batch_stride_A,
+            {B, ldb}, 
+            batch_stride_B,
+            {C, ldc}, 
+            batch_stride_C,
+            {C, ldc}, 
+            batch_stride_C,
+            {alpha, beta},
+            batch_count
+        );
+
+        status = gemm_op(args, nullptr /* workspace */, stream);
+
+    } else if (transA == cutlassOperation_t::CUTLASS_OP_N &&
+               transB == cutlassOperation_t::CUTLASS_OP_T){
+
+        using Gemm = cutlass::gemm::device::GemmBatched<
+            float, cutlass::layout::ColumnMajor,
+            float, cutlass::layout::RowMajor,
+            float, cutlass::layout::ColumnMajor
+        >;
+
+        Gemm gemm_op;
+        Gemm::Arguments args(
+            {m, n, k},
+            {A, lda}, 
+            batch_stride_A,
+            {B, ldb}, 
+            batch_stride_B,
+            {C, ldc}, 
+            batch_stride_C,
+            {C, ldc}, 
+            batch_stride_C,
+            {alpha, beta},
+            batch_count
+        );
+
+        status = gemm_op(args, nullptr /* workspace */, stream);
+
+    } else if (transA == cutlassOperation_t::CUTLASS_OP_T &&
+               transB == cutlassOperation_t::CUTLASS_OP_T){
+
+        using Gemm = cutlass::gemm::device::GemmBatched<
+            float, cutlass::layout::RowMajor,
+            float, cutlass::layout::RowMajor,
+            float, cutlass::layout::ColumnMajor
+        >;
+
+        Gemm gemm_op;
+        Gemm::Arguments args(
+            {m, n, k},
+            {A, lda}, 
+            batch_stride_A,
+            {B, ldb}, 
+            batch_stride_B,
+            {C, ldc}, 
+            batch_stride_C,
+            {C, ldc}, 
+            batch_stride_C,
+            {alpha, beta},
+            batch_count
+        );
+
+        status = gemm_op(args, nullptr /* workspace */, stream);
+
+    } else {
+        throw std::runtime_error("Not implemented.");
+    }
+
+
+    if (status != cutlass::Status::kSuccess) {
+        return cudaErrorUnknown;
+    }
+
+    return cudaSuccess;
+
 }
 
 }

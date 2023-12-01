@@ -132,6 +132,25 @@ target_include_directories(matmul_fp16
     PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
 )
 
+add_executable(batched_gemm cuda_samples_basic/batched_gemm.cu)
+
+target_link_libraries(batched_gemm
+    cuda
+    cudart
+    cublas
+)
+
+set_target_properties(batched_gemm PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_include_directories(batched_gemm
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
+    PUBLIC  ${PROJECT_SOURCE_DIR}/tests
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
+)
+
 add_executable(cutlass_bias_epilogue cuda_samples_basic/cutlass_bias_epilogue.cu)
 
 target_link_libraries(cutlass_bias_epilogue
