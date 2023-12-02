@@ -32,7 +32,7 @@ void TallyServer::run_priority_scheduler()
     cudaStream_t retreat_stream;
     cudaStreamCreateWithFlags(&retreat_stream, cudaStreamNonBlocking);
 
-    CudaLaunchConfig preemptive_config(false, false, false, true, 1);
+    CudaLaunchConfig preemptive_config(false, false, false, true, 4);
     CudaLaunchConfig original_config = CudaLaunchConfig::default_config;
 
     while (!iox::posix::hasTerminationRequested()) {
@@ -58,19 +58,24 @@ void TallyServer::run_priority_scheduler()
                 auto &in_progress_kernel_wrapper = dispatched_kernel.kernel_wrapper;
                 auto running = dispatched_kernel.running;
 
-                // is running
+                // First check if the kernel is still running
+                // note that the running flag only tells us whether the kernel has been signaled to stop
+                // it is possible that it has yet terminated
+                if (cudaEventQuery(in_progress_kernel_wrapper.event) != cudaSuccess) {
+                    break;
+                }
+
+                // Destroy the previously created event since the kernel has completed
+                cudaEventDestroy(in_progress_kernel_wrapper.event);
+
+                // it was running and now it is finished
                 if (running) {
 
-                    // Check whether has finished
-                    if (cudaEventQuery(in_progress_kernel_wrapper.event) == cudaSuccess) {
+                    // Erase from in-progress
+                    in_progress_kernels.erase(client_priority);
+                    client_data.queue_size--;
 
-                        // Erase if finished
-                        in_progress_kernels.erase(client_priority);
-                        client_data.queue_size--;
-
-                    }
-
-                // has been attempted to stop
+                // we have told it to stop so we will launch it again
                 } else {
 
                     CudaLaunchConfig config = original_config;
