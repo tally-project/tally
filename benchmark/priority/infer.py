@@ -29,13 +29,13 @@ for _ in range(100):
     milli_seconds = random.randint(1, 1000)
     time.sleep(milli_seconds / 1000.)
 
-    start_event = torch.cuda.Event(enable_timing=True)
-    end_event = torch.cuda.Event(enable_timing=True)
+    torch.cuda.synchronize()
+    start_time = time.time()
+
+    y = model_opt(x)
 
     torch.cuda.synchronize()
-    start_event.record()
-    y = model_opt(x)
-    end_event.record()
-    torch.cuda.synchronize()
-    
-    print('{:>10}: {:.3f} ms'.format('hidet', start_event.elapsed_time(end_event)))
+    end_time = time.time()
+    elapsed_time_ms = (end_time - start_time) * 1000
+
+    print('{:>10}: {:.3f} ms'.format('hidet', elapsed_time_ms))

@@ -375,22 +375,26 @@ cudaError_t TestCutlassGemm(int M, int N, int K, float alpha, float beta) {
   //   if (((double) elapsed_ns) / 1e9 >= dur_seconds) {
   //       break;
   //   }
+
+  //   if (count % 100 == 0) {
+  //     std::cout << "Count: " << count << std::endl;
+  //   }
   // }
 
   // std::cout << "elapsed_ns: " << elapsed_ns << std::endl;
   // std::cout << "count: " << count << std::endl;
 
-  // if (result != cudaSuccess) {
-  //     std::cerr << "CUTLASS GEMM kernel failed: "
-  //     << cudaGetErrorString(result) << std::endl;
+  if (result != cudaSuccess) {
+      std::cerr << "CUTLASS GEMM kernel failed: "
+      << cudaGetErrorString(result) << std::endl;
 
-  //     cudaFree(C_reference);
-  //     cudaFree(C_cutlass);
-  //     cudaFree(B);
-  //     cudaFree(A);
+      cudaFree(C_reference);
+      cudaFree(C_cutlass);
+      cudaFree(B);
+      cudaFree(A);
 
-  //     return result;
-  // }
+      return result;
+  }
 
   //
   // Verify.
@@ -486,7 +490,7 @@ int main(int argc, const char *arg[]) {
   //
 
   // GEMM problem dimensions.
-  int problem[3] = { 5120, 5120, 5120 };
+  int problem[3] = { 1024, 64, 65536 };
 
   for (int i = 1; i < argc && i < 4; ++i) {
     std::stringstream ss(arg[i]);
