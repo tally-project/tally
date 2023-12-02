@@ -352,30 +352,34 @@ cudaError_t TestCutlassGemm(int M, int N, int K, float alpha, float beta) {
   // Launch CUTLASS GEMM.
   //
 
-  for (int i = 0; i < 100; i++) {
-    result = CutlassSgemmNN(M, N, K, alpha, A, lda, B, ldb, beta, C_cutlass, ldc);
-  }
-
-  // std::cout << "start" << std::endl;
-  // double dur_seconds = 60;
-  // int count = 0;
-  // uint64_t elapsed_ns = 0;
-  // auto startTime = std::chrono::steady_clock::now();
-
-  // while (true) {
-
-  //   // Perform your steps here
+  // for (int i = 0; i < 100; i++) {
   //   result = CutlassSgemmNN(M, N, K, alpha, A, lda, B, ldb, beta, C_cutlass, ldc);
-  //   count++;
-      
-  //   cudaDeviceSynchronize();
-
-  //   auto currentTime = std::chrono::steady_clock::now();
-  //   elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
-  //   if (((double) elapsed_ns) / 1e9 >= dur_seconds) {
-  //       break;
-  //   }
   // }
+
+  std::cout << "start" << std::endl;
+  double dur_seconds = 60;
+  int count = 0;
+  uint64_t elapsed_ns = 0;
+  auto startTime = std::chrono::steady_clock::now();
+
+  while (true) {
+
+    // Perform your steps here
+    result = CutlassSgemmNN(M, N, K, alpha, A, lda, B, ldb, beta, C_cutlass, ldc);
+    count++;
+      
+    cudaDeviceSynchronize();
+
+    auto currentTime = std::chrono::steady_clock::now();
+    elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
+    if (((double) elapsed_ns) / 1e9 >= dur_seconds) {
+        break;
+    }
+
+    if (count % 100 == 0) {
+      std::cout << "Count: " << count << std::endl;
+    }
+  }
 
   // std::cout << "elapsed_ns: " << elapsed_ns << std::endl;
   // std::cout << "count: " << count << std::endl;
@@ -486,7 +490,7 @@ int main(int argc, const char *arg[]) {
   //
 
   // GEMM problem dimensions.
-  int problem[3] = { 5120, 5120, 5120 };
+  int problem[3] = { 1024, 64, 65536 };
 
   for (int i = 1; i < argc && i < 4; ++i) {
     std::stringstream ss(arg[i]);

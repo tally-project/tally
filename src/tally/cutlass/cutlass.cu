@@ -109,7 +109,9 @@ cudaError_t cutlassGemm_f32(
     if (bias) {
         thrust::device_ptr<float> D_thrust(D);
 
-        thrust::transform(D_thrust, D_thrust + M * N, 
+        thrust::transform(thrust::cuda::par.on(stream),
+                          D_thrust,
+                          D_thrust + M * N, 
                           thrust::make_counting_iterator(0), 
                           D_thrust, 
                           AddVecBiasFunctor<float>(M, thrust::raw_pointer_cast(bias)));
@@ -178,7 +180,9 @@ cudaError_t cutlassGemm_f16(
     if (bias) {
         thrust::device_ptr<half> D_thrust(D);
 
-        thrust::transform(D_thrust, D_thrust + M * N, 
+        thrust::transform(thrust::cuda::par.on(stream),
+                          D_thrust,
+                          D_thrust + M * N, 
                           thrust::make_counting_iterator(0), 
                           D_thrust, 
                           AddVecBiasFunctor<half>(M, thrust::raw_pointer_cast(bias)));

@@ -281,7 +281,9 @@ int main()
 
     thrust::device_ptr<float> d_D_thrust(d_cutlass);
 
-    thrust::transform(d_D_thrust, d_D_thrust + m * n, 
+    thrust::transform(thrust::cuda::par.on(NULL),
+                      d_D_thrust,
+                      d_D_thrust + m * n, 
                       thrust::make_counting_iterator(0), 
                       d_D_thrust, 
                       RowAddFunctor(m, thrust::raw_pointer_cast(d_bias)));

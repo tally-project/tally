@@ -9,6 +9,15 @@
 #include <tally/util.h>
 #include <tally/env.h>
 
+struct DispatchedKernel {
+public:
+    KernelLaunchWrapper kernel_wrapper;
+
+    // If true, this kernel is running
+    // If false, this kernel has been signaled to stop (may not have stopped)
+    bool running = false;
+};
+
 // Always prioritize to execute kernels from high-priority job.
 // Run low-priority job only when there is no high-priority kernel.
 // Preempt low-priority kernel when high-priority kernel arrives.
@@ -18,12 +27,12 @@ void TallyServer::run_priority_scheduler()
 
     // Keep in track kernels that are in progress
     // The boolean indicates whether the kernel is running/stopped
-    std::map<ClientPriority, std::pair<KernelLaunchWrapper, bool>, std::greater<ClientPriority>> in_progress_kernels;
+    std::map<ClientPriority, DispatchedKernel, std::greater<ClientPriority>> in_progress_kernels;
 
     cudaStream_t retreat_stream;
-    cudaStreamCreate(&retreat_stream);
+    cudaStreamCreateWithFlags(&retreat_stream, cudaStreamNonBlocking);
 
-    CudaLaunchConfig preemptive_config(false, false, false, true, 4);
+    CudaLaunchConfig preemptive_config(false, false, false, true, 1);
     CudaLaunchConfig original_config = CudaLaunchConfig::default_config;
 
     while (!iox::posix::hasTerminationRequested()) {
@@ -45,8 +54,9 @@ void TallyServer::run_priority_scheduler()
             // First check whether this client already has a kernel running
             if (in_progress_kernels.find(client_priority) != in_progress_kernels.end()) {
 
-                auto &in_progress_kernel_wrapper = in_progress_kernels[client_priority].first;
-                auto running = in_progress_kernels[client_priority].second;
+                auto &dispatched_kernel = in_progress_kernels[client_priority];
+                auto &in_progress_kernel_wrapper = dispatched_kernel.kernel_wrapper;
+                auto running = dispatched_kernel.running;
 
                 // is running
                 if (running) {
@@ -60,12 +70,18 @@ void TallyServer::run_priority_scheduler()
 
                     }
 
-                // is stopped
+                // has been attempted to stop
                 } else {
 
                     CudaLaunchConfig config = original_config;
 
                     if (!is_highest_priority) {
+
+                        // Make sure there is no pending event in retreat stream
+                        // think about a previous cudaMemsetAsync(&retreat) has not yet completed,
+                        // then there may be conflicted writes to retreat
+                        cudaStreamSynchronize(retreat_stream);
+
                         // set retreat to 0
                         cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), in_progress_kernel_wrapper.launch_stream);
 
@@ -82,7 +98,7 @@ void TallyServer::run_priority_scheduler()
                     cudaEventRecord(in_progress_kernel_wrapper.event, in_progress_kernel_wrapper.launch_stream);
 
                     // Flip the flag
-                    in_progress_kernels[client_priority].second = true;
+                    in_progress_kernels[client_priority].running = true;
 
                 }
 
@@ -101,40 +117,31 @@ void TallyServer::run_priority_scheduler()
                 // Stop any running kernel
                 for (auto &in_progress_kernel : in_progress_kernels) {
 
-                    auto running = in_progress_kernel.second.second;
+                    auto &dispatched_kernel = in_progress_kernel.second;
+                    auto running = dispatched_kernel.running;
 
                     if (!running) {
                         continue;
                     }
 
                     auto in_progress_client_id = in_progress_kernel.first.client_id;
-                    auto &in_progress_kernel_wrapper = in_progress_kernel.second.first;
+                    auto &in_progress_kernel_wrapper = dispatched_kernel.kernel_wrapper;
                     auto &in_progress_client_data = client_data_all[in_progress_client_id];
+
+                    // First check whether this kernel has already finished
+                    if (cudaEventQuery(in_progress_kernel_wrapper.event) == cudaSuccess) {
+
+                        // Erase if finished
+                        in_progress_kernels.erase(in_progress_kernel.first);
+                        in_progress_client_data.queue_size--;
+                        break;
+                    }
 
                     // Set retreat flag
                     cudaMemsetAsync(in_progress_client_data.retreat, 1, sizeof(bool), retreat_stream);
-                    
-                    // Fetch progress
-                    uint32_t progress = 0;
-                    cudaMemcpyAsync(&progress, in_progress_client_data.global_idx, sizeof(uint32_t), cudaMemcpyDeviceToHost, in_progress_kernel_wrapper.launch_stream);
 
-                    auto &launch_call = in_progress_kernel_wrapper.launch_call;
-                    auto num_thread_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
-
-                    // Wait for kernel to stop
-                    cudaStreamSynchronize(in_progress_kernel_wrapper.launch_stream);
-
-                    if (progress >= num_thread_blocks) {
-
-                        // Remove from bookkeeping
-                        in_progress_kernels.erase(in_progress_kernel.first);
-                        in_progress_client_data.queue_size--;
-
-                    } else {
-
-                        // Mark as stopped
-                        in_progress_kernel.second.second = false;
-                    }
+                    // Mark that this kernel has been signaled to stop
+                    dispatched_kernel.running = false;
 
                     // We know there are at most one kernel running, so break
                     break;
@@ -162,8 +169,8 @@ void TallyServer::run_priority_scheduler()
                 cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream);
 
                 // Bookkeep this kernel launch
-                in_progress_kernels[client_priority].first = kernel_wrapper;
-                in_progress_kernels[client_priority].second = true;
+                in_progress_kernels[client_priority].kernel_wrapper = kernel_wrapper;
+                in_progress_kernels[client_priority].running = true;
 
                 break;
             }
