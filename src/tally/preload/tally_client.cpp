@@ -643,7 +643,9 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     TALLY_CLIENT_PROFILE_START;
 
     auto kernel_name = TallyClient::client->host_func_to_demangled_kernel_name_map[func];
-    TALLY_SPD_LOG(kernel_name);
+    TALLY_SPD_LOG_PROFILE(kernel_name);
+    TALLY_SPD_LOG_PROFILE("gridDim: (" + std::to_string(gridDim.x) + ", " + std::to_string(gridDim.y) + ", " + std::to_string(gridDim.z) + ")");
+    TALLY_SPD_LOG_PROFILE("blockDim: (" + std::to_string(blockDim.x) + ", " + std::to_string(blockDim.y) + ", " + std::to_string(blockDim.z) + ")");
 
 #if defined(RUN_LOCALLY)
     auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
@@ -811,6 +813,12 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         auto cutlass_transb = cublas_op_to_cutlass_op(transb);
 
 #if defined(VERIFY_CORRECTNESS)
+
+        TALLY_LOG_PROFILE("");
+        TALLY_SPD_LOG_PROFILE("cublasSgemm_v2 arguments:");
+        TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
+        TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
+
         // Copy array C
         float *C_copy;
         cudaMalloc(&C_copy, sizeof(float) * m * n);
@@ -845,11 +853,15 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         duration =  end - start;
         auto cublas_ms = duration.count();
 
-        if ((cublas_ms / cutlass_ms) < 0.5) {
+        TALLY_SPD_LOG_PROFILE("cutlassGemm_f32: " + std::to_string(cutlass_ms) + "ms");
+        TALLY_SPD_LOG_PROFILE("cublasSgemm_v2: " + std::to_string(cublas_ms) + "ms");
+
+        if ((cublas_ms / cutlass_ms) < 0.8) {
             TALLY_SPD_WARN("cutlass performance does not match with cublas");
-            TALLY_SPD_WARN("cutlassGemm_f32: " + std::to_string(cutlass_ms) + "ms");
-            TALLY_SPD_WARN("cublasSgemm_v2: " + std::to_string(cublas_ms) + "ms");
+        } else {
+            TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
         }
+        TALLY_LOG_PROFILE("");
 
         float *h_c_cublas = (float *) malloc(sizeof(float) * m * n);
         float *h_c_cutlass = (float *) malloc(sizeof(float) * m * n);
@@ -997,10 +1009,17 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 
 #if defined(VERIFY_CORRECTNESS)
 
+                TALLY_LOG_PROFILE("");
+                TALLY_SPD_LOG_PROFILE("cublasLtMatmul arguments:");
+                TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
+                TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(matrix_a_layout.ld) + ", " + std::to_string(matrix_b_layout.ld) + ", " + std::to_string(matrix_c_layout.ld));
+
                 size_t size_bytes;
                 if (matrix_a_layout.type == CUDA_R_32F) {
+                    TALLY_SPD_LOG_PROFILE("Precision: f32");
                     size_bytes = sizeof(float) * m * n;
                 } else if (matrix_a_layout.type == CUDA_R_16F) {
+                    TALLY_SPD_LOG_PROFILE("Precision: f16");
                     size_bytes = sizeof(half) * m * n;
                 }
 
@@ -1071,11 +1090,15 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                 duration =  end - start;
                 auto cublas_ms = duration.count();
 
-                if ((cublas_ms / cutlass_ms) < 0.5) {
+                TALLY_SPD_LOG_PROFILE("cutlassGemm: " + std::to_string(cutlass_ms) + "ms");
+                TALLY_SPD_LOG_PROFILE("cublasLtMatmul: " + std::to_string(cublas_ms) + "ms");
+
+                if ((cublas_ms / cutlass_ms) < 0.8) {
                     TALLY_SPD_WARN("cutlass performance does not match with cublas");
-                    TALLY_SPD_WARN("cutlassGemm: " + std::to_string(cutlass_ms) + "ms");
-                    TALLY_SPD_WARN("cublasLtMatmul: " + std::to_string(cublas_ms) + "ms");
+                } else {
+                    TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
                 }
+                TALLY_LOG_PROFILE("");
 
                 void *h_d_cublas = malloc(size_bytes);
                 void *h_d_cutlass = malloc(size_bytes);
@@ -3197,6 +3220,13 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
         auto cutlass_transb = cublas_op_to_cutlass_op(transb);
 
 #if defined(VERIFY_CORRECTNESS)
+
+        TALLY_LOG_PROFILE("");
+        TALLY_SPD_LOG_PROFILE("cublasSgemmStridedBatched arguments:");
+        TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
+        TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
+        TALLY_SPD_LOG_PROFILE("strides: " + std::to_string(strideA) + ", " + std::to_string(strideB) + ", " + std::to_string(strideC));
+
         // Copy array C
         float *C_copy;
         int num_elems = (batchCount - 1) * strideC + m * n;
@@ -3234,11 +3264,15 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
         duration =  end - start;
         auto cublas_ms = duration.count();
 
-        if ((cublas_ms / cutlass_ms) < 0.5) {
+        TALLY_SPD_LOG_PROFILE("cutlassStridedBatchedGemm_f32: " + std::to_string(cutlass_ms) + "ms");
+        TALLY_SPD_LOG_PROFILE("cublasSgemmStridedBatched: " + std::to_string(cublas_ms) + "ms");
+
+        if ((cublas_ms / cutlass_ms) < 0.8) {
             TALLY_SPD_WARN("cutlass performance does not match with cublas");
-            TALLY_SPD_WARN("cutlassStridedBatchedGemm_f32: " + std::to_string(cutlass_ms) + "ms");
-            TALLY_SPD_WARN("cublasSgemmStridedBatched: " + std::to_string(cublas_ms) + "ms");
+        } else {
+            TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
         }
+        TALLY_LOG_PROFILE("");
 
         float *h_c_cublas = (float *) malloc(size_bytes);
         float *h_c_cutlass = (float *) malloc(size_bytes);
@@ -4829,6 +4863,12 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                 load_tally_cutlass_lib();
 
 #if defined(VERIFY_CORRECTNESS)
+                TALLY_LOG_PROFILE("");
+                TALLY_SPD_LOG_PROFILE("cublasGemmEx arguments:");
+                TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
+                TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
+                TALLY_SPD_LOG_PROFILE("Precision: f16");
+
                 // Copy array C
                 half *C_copy;
                 cudaMalloc(&C_copy, sizeof(half) * m * n);
@@ -4869,11 +4909,15 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                 duration =  end - start;
                 auto cublas_ms = duration.count();
 
-                if ((cublas_ms / cutlass_ms) < 0.5) {
+                TALLY_SPD_LOG_PROFILE("cutlassGemm_f16: " + std::to_string(cutlass_ms) + "ms");
+                TALLY_SPD_LOG_PROFILE("cublasGemmEx: " + std::to_string(cublas_ms) + "ms");
+
+                if ((cublas_ms / cutlass_ms) < 0.8) {
                     TALLY_SPD_WARN("cutlass performance does not match with cublas");
-                    TALLY_SPD_WARN("cutlassGemm_f16: " + std::to_string(cutlass_ms) + "ms");
-                    TALLY_SPD_WARN("cublasGemmEx: " + std::to_string(cublas_ms) + "ms");
+                } else {
+                    TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
                 }
+                TALLY_LOG_PROFILE("");
 
                 half *h_c_cublas = (half *) malloc(sizeof(half) * m * n);
                 half *h_c_cutlass = (half *) malloc(sizeof(half) * m * n);
@@ -5141,6 +5185,13 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
                 auto cutlass_transb = cublas_op_to_cutlass_op(transb);
 
 #if defined(VERIFY_CORRECTNESS)
+
+                TALLY_LOG_PROFILE("");
+                TALLY_SPD_LOG_PROFILE("cublasGemmStridedBatchedEx arguments:");
+                TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
+                TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
+                TALLY_SPD_LOG_PROFILE("Precision: f16");
+
                 // Copy array C
                 half *C_copy;
                 int num_elems = (batchCount - 1) * strideC + m * n;
@@ -5178,11 +5229,15 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
                 duration =  end - start;
                 auto cublas_ms = duration.count();
 
-                if ((cublas_ms / cutlass_ms) < 0.5) {
+                TALLY_SPD_LOG_PROFILE("cutlassStridedBatchedGemm_f16: " + std::to_string(cutlass_ms) + "ms");
+                TALLY_SPD_LOG_PROFILE("cublasGemmStridedBatchedEx: " + std::to_string(cublas_ms) + "ms");
+
+                if ((cublas_ms / cutlass_ms) < 0.8) {
                     TALLY_SPD_WARN("cutlass performance does not match with cublas");
-                    TALLY_SPD_WARN("cutlassStridedBatchedGemm_f16: " + std::to_string(cutlass_ms) + "ms");
-                    TALLY_SPD_WARN("cublasGemmStridedBatchedEx: " + std::to_string(cublas_ms) + "ms");
+                } else {
+                    TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
                 }
+                TALLY_LOG_PROFILE("");
 
                 half *h_c_cublas = (half *) malloc(size_bytes);
                 half *h_c_cutlass = (half *) malloc(size_bytes);

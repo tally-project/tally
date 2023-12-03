@@ -26,6 +26,16 @@
     #define TALLY_SPD_LOG(msg)
 #endif
 
+#if defined(ENABLE_LOGGING) || defined(ENABLE_PERFORMANCE_LOGGING)
+    #define TALLY_SPD_LOG_PROFILE(msg) \
+        spdlog::info(msg);
+    #define TALLY_LOG_PROFILE(msg) \
+        std::cout << msg << std::endl
+#else
+    #define TALLY_SPD_LOG_PROFILE(msg)
+    #define TALLY_LOG_PROFILE(msg)
+#endif
+
 #define CHECK_ERR_LOG_AND_EXIT(ERR, MSG) \
     if (ERR) { \
         std::cerr << MSG << " " << std::string(__FILE__) + ":" + std::to_string(__LINE__) << std::endl; \
