@@ -15,6 +15,7 @@ option(ENABLE_PERFORMANCE_LOGGING "Enable performance-related logging" OFF)
 option(ENABLE_PROFILING "Enable profiling" OFF)
 option(REPLACE_CUBLAS "Replace cublas calls with cutlass calls" ON)
 option(VERIFY_CORRECTNESS "Verify that the results after replacing cublas is correct" OFF)
+option(MEASURE_PREEMPTION_LATENCY "Measure latency of preemption in priority scheduler" OFF)
 
 link_directories(/usr/local/cuda/lib64)
 
@@ -203,6 +204,10 @@ add_executable(tally_server ${PROJECT_SOURCE_DIR}/src/tally/tally_server.cpp ${T
 
 if(ENABLE_LOGGING)
     target_compile_definitions(tally_server PRIVATE ENABLE_LOGGING=${ENABLE_LOGGING})
+endif()
+
+if(MEASURE_PREEMPTION_LATENCY)
+    target_compile_definitions(tally_server PRIVATE MEASURE_PREEMPTION_LATENCY=${MEASURE_PREEMPTION_LATENCY})
 endif()
 
 target_include_directories(tally_server

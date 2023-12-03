@@ -23,7 +23,7 @@ public:
 // Preempt low-priority kernel when high-priority kernel arrives.
 void TallyServer::run_priority_scheduler()
 {
-    spdlog::info("Running priority scheduler ...");
+    TALLY_SPD_LOG_ALWAYS("Running priority scheduler ...");
 
     // Keep in track kernels that are in progress
     // The boolean indicates whether the kernel is running/stopped
@@ -32,7 +32,9 @@ void TallyServer::run_priority_scheduler()
     cudaStream_t retreat_stream;
     cudaStreamCreateWithFlags(&retreat_stream, cudaStreamNonBlocking);
 
-    CudaLaunchConfig preemptive_config(false, false, false, true, 4);
+    // Setting blocks per 1 for the moment to maximize priority-enforcement
+    // Later we may need to think about smarter ways to set this variable
+    CudaLaunchConfig preemptive_config(false, false, false, true, 1);
     CudaLaunchConfig original_config = CudaLaunchConfig::default_config;
 
     while (!iox::posix::hasTerminationRequested()) {
@@ -145,6 +147,26 @@ void TallyServer::run_priority_scheduler()
                     // Set retreat flag
                     cudaMemsetAsync(in_progress_client_data.retreat, 1, sizeof(bool), retreat_stream);
 
+#if defined(MEASURE_PREEMPTION_LATENCY)
+                    auto start = std::chrono::high_resolution_clock::now();
+
+                    // Fetch progress - this will block as memcpy from device to host
+                    uint32_t progress = 0;
+                    cudaMemcpyAsync(&progress, in_progress_client_data.global_idx, sizeof(uint32_t), cudaMemcpyDeviceToHost, in_progress_kernel_wrapper.launch_stream);
+
+                    auto end = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double, std::milli> duration = end - start;
+                    auto preemption_latency_ms = duration.count();
+
+                    auto &launch_call = in_progress_kernel_wrapper.launch_call;
+                    auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
+                    auto num_thread_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+
+                    TALLY_SPD_LOG_ALWAYS("Preempted Kernel " + kernel_name);
+                    TALLY_SPD_LOG_ALWAYS("Number thread blocks: " + std::to_string(num_thread_blocks));
+                    TALLY_SPD_LOG_ALWAYS("Latency: " + std::to_string(preemption_latency_ms) + "ms");
+
+#endif
                     // Mark that this kernel has been signaled to stop
                     dispatched_kernel.running = false;
 

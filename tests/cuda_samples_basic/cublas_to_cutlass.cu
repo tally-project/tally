@@ -5,6 +5,7 @@
 #include <ctime>
 #include <fstream>
 #include <sys/time.h>
+#include <chrono>
 
 #include <cublas_v2.h>
 #include "cuda.h"
@@ -35,7 +36,13 @@ cudaError_t CutlassSgemmNN(
                                                     float,        // Data-type of B matrix
                                                     ColumnMajor,  // Layout of B matrix
                                                     float,        // Data-type of C matrix
-                                                    ColumnMajor>; // Layout of C matrix
+                                                    ColumnMajor, // Layout of C matrix
+                                                    float,
+                                                    cutlass::arch::OpClassSimt,
+                                                    cutlass::arch::Sm86,
+                                                    cutlass::gemm::GemmShape<128, 128, 8>,
+                                                    cutlass::gemm::GemmShape<32, 64, 8>,
+                                                    cutlass::gemm::GemmShape<1, 1, 1>>;
 
     CutlassGemm gemm_operator;
 
@@ -63,9 +70,9 @@ int main()
 
     cublasHandle_t handle;
     cublasCreate(&handle);
-    int m = 512;
+    int m = 1024;
     int n = 1024;
-    int k = 256;
+    int k = 1024;
 
     float *h_A, *h_B, *h_cublas, *h_cutlass;
     float *h_AT, *h_ref;
@@ -167,22 +174,41 @@ int main()
     cudaMemcpy(d_B, h_B, sizeof(float) * k * n, cudaMemcpyHostToDevice);
 
     const float alpha = 1.0f;
-    const float beta = 0.5f;
+    const float beta = 0.f;
 
     cublasOperation_t transa = CUBLAS_OP_T; // No transpose for A
     cublasOperation_t transb = CUBLAS_OP_N; // No transpose for B
 
+    // warmup
+    cublasSgemm_v2(handle, transa, transb, m, n, k, &alpha, d_A, k /*lda*/, d_B, k /*ldb*/, &beta, d_cublas, m /*ldc*/);
+    CutlassSgemmNN(m, n, k, alpha, d_A, k /*lda*/, d_B, k /*ldb*/, beta, d_cutlass, m /*ldc*/, NULL);
+
+    cudaDeviceSynchronize();
+    auto start = std::chrono::high_resolution_clock::now();
+
     cublasSgemm_v2(handle, transa, transb, m, n, k, &alpha, d_A, k /*lda*/, d_B, k /*ldb*/, &beta, d_cublas, m /*ldc*/);
 
-    cudaMemcpy(h_cublas, d_cublas, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+    cudaDeviceSynchronize();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = end - start;
+    auto cublas_ms = duration.count();
 
-    cublasDestroy(handle);
+    cudaDeviceSynchronize();
+    start = std::chrono::high_resolution_clock::now();
 
     // Run cutlass impl
     CutlassSgemmNN(m, n, k, alpha, d_A, k /*lda*/, d_B, k /*ldb*/, beta, d_cutlass, m /*ldc*/, NULL);
 
-    //
+    cudaDeviceSynchronize();
+    end = std::chrono::high_resolution_clock::now();
+    duration = end - start;
+    auto cutlass_ms = duration.count();
+
+    std::cout << "cutlassGemm_f32: " << std::to_string(cutlass_ms) << "ms" << std::endl;
+    std::cout << "cublasSgemm_v2: " << std::to_string(cublas_ms) << "ms" << std::endl;
+
     cudaMemcpy(h_cutlass, d_cutlass, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_cublas, d_cublas, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
 
     for (int j = 0; j < n; j++) {
         for (int i = 0; i < m; i++) {
@@ -202,6 +228,7 @@ int main()
     cudaFree(d_B);
     cudaFree(d_cublas);
     cudaFree(d_cutlass);
+    cublasDestroy(handle);
 
     return 0;
 }
