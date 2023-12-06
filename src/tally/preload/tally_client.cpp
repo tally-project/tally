@@ -822,6 +822,11 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         // Copy array C
         float *C_copy;
         cudaMalloc(&C_copy, sizeof(float) * m * n);
+  
+        // warmup
+        cublasSgemm_v2_inner(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C_copy, ldc);
+
+        // Copy array C
         cudaMemcpy(C_copy, C, sizeof(float) * m * n, cudaMemcpyDeviceToDevice);
 
         cudaDeviceSynchronize();
@@ -856,8 +861,10 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         TALLY_SPD_LOG_PROFILE("cutlassGemm_f32: " + std::to_string(cutlass_ms) + "ms");
         TALLY_SPD_LOG_PROFILE("cublasSgemm_v2: " + std::to_string(cublas_ms) + "ms");
 
-        if ((cublas_ms / cutlass_ms) < 0.8) {
-            TALLY_SPD_WARN("cutlass performance does not match with cublas");
+        if ((cublas_ms / cutlass_ms) < 0.5) {
+            TALLY_SPD_WARN("cutlass performance does not match at least 50% of cublas");
+        } else if ((cublas_ms / cutlass_ms) < 0.8) {
+            TALLY_SPD_WARN("cutlass performance does not match at least 80% of cublas");
         } else {
             TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
         }
@@ -1026,6 +1033,11 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                 // Copy array D
                 void *D_copy;
                 cudaMalloc(&D_copy, size_bytes);
+
+                // warmup
+                cublasLtMatmul_inner(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D_copy, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
+
+                // Copy array D
                 cudaMemcpy(D_copy, D, size_bytes, cudaMemcpyDeviceToDevice);
 
                 cudaDeviceSynchronize();
@@ -1093,8 +1105,10 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                 TALLY_SPD_LOG_PROFILE("cutlassGemm: " + std::to_string(cutlass_ms) + "ms");
                 TALLY_SPD_LOG_PROFILE("cublasLtMatmul: " + std::to_string(cublas_ms) + "ms");
 
-                if ((cublas_ms / cutlass_ms) < 0.8) {
-                    TALLY_SPD_WARN("cutlass performance does not match with cublas");
+                if ((cublas_ms / cutlass_ms) < 0.5) {
+                    TALLY_SPD_WARN("cutlass performance does not match at least 50% of cublas");
+                } else if ((cublas_ms / cutlass_ms) < 0.8) {
+                    TALLY_SPD_WARN("cutlass performance does not match at least 80% of cublas");
                 } else {
                     TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
                 }
@@ -3232,6 +3246,10 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
         int num_elems = (batchCount - 1) * strideC + m * n;
         int size_bytes = num_elems * sizeof(float);
         cudaMalloc(&C_copy, size_bytes);
+
+        // warmup
+        cublasSgemmStridedBatched_inner(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C_copy, ldc, strideC, batchCount);
+
         cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
 
         cudaDeviceSynchronize();
@@ -3267,8 +3285,10 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
         TALLY_SPD_LOG_PROFILE("cutlassStridedBatchedGemm_f32: " + std::to_string(cutlass_ms) + "ms");
         TALLY_SPD_LOG_PROFILE("cublasSgemmStridedBatched: " + std::to_string(cublas_ms) + "ms");
 
-        if ((cublas_ms / cutlass_ms) < 0.8) {
-            TALLY_SPD_WARN("cutlass performance does not match with cublas");
+        if ((cublas_ms / cutlass_ms) < 0.5) {
+            TALLY_SPD_WARN("cutlass performance does not match at least 50% of cublas");
+        } else if ((cublas_ms / cutlass_ms) < 0.8) {
+            TALLY_SPD_WARN("cutlass performance does not match at least 80% of cublas");
         } else {
             TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
         }
@@ -4872,6 +4892,10 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                 // Copy array C
                 half *C_copy;
                 cudaMalloc(&C_copy, sizeof(half) * m * n);
+
+                // warmup
+                cublasGemmEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C_copy, Ctype, ldc, computeType, algo);
+
                 cudaMemcpy(C_copy, C, sizeof(half) * m * n, cudaMemcpyDeviceToDevice);
 
                 cudaDeviceSynchronize();
@@ -4912,8 +4936,10 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                 TALLY_SPD_LOG_PROFILE("cutlassGemm_f16: " + std::to_string(cutlass_ms) + "ms");
                 TALLY_SPD_LOG_PROFILE("cublasGemmEx: " + std::to_string(cublas_ms) + "ms");
 
-                if ((cublas_ms / cutlass_ms) < 0.8) {
-                    TALLY_SPD_WARN("cutlass performance does not match with cublas");
+                if ((cublas_ms / cutlass_ms) < 0.5) {
+                    TALLY_SPD_WARN("cutlass performance does not match at least 50% of cublas");
+                } else if ((cublas_ms / cutlass_ms) < 0.8) {
+                    TALLY_SPD_WARN("cutlass performance does not match at least 80% of cublas");
                 } else {
                     TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
                 }
@@ -5197,6 +5223,10 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
                 int num_elems = (batchCount - 1) * strideC + m * n;
                 int size_bytes = num_elems * sizeof(half);
                 cudaMalloc(&C_copy, size_bytes);
+
+                // warmup
+                cublasGemmStridedBatchedEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C_copy, Ctype, ldc, strideC, batchCount, computeType, algo);
+                
                 cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
 
                 cudaDeviceSynchronize();
@@ -5232,8 +5262,10 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
                 TALLY_SPD_LOG_PROFILE("cutlassStridedBatchedGemm_f16: " + std::to_string(cutlass_ms) + "ms");
                 TALLY_SPD_LOG_PROFILE("cublasGemmStridedBatchedEx: " + std::to_string(cublas_ms) + "ms");
 
-                if ((cublas_ms / cutlass_ms) < 0.8) {
-                    TALLY_SPD_WARN("cutlass performance does not match with cublas");
+                if ((cublas_ms / cutlass_ms) < 0.5) {
+                    TALLY_SPD_WARN("cutlass performance does not match at least 50% of cublas");
+                } else if ((cublas_ms / cutlass_ms) < 0.8) {
+                    TALLY_SPD_WARN("cutlass performance does not match at least 80% of cublas");
                 } else {
                     TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
                 }

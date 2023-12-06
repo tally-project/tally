@@ -17,6 +17,18 @@ void *get_workspace(size_t size, cudaStream_t stream) {
     static std::map<cudaStream_t, std::pair<size_t, void *>> workspace_map;
 
     if (workspace_map.find(stream) == workspace_map.end()) {
+        workspace_map[stream].first = 0;
+        workspace_map[stream].second = NULL;
+    }
+
+    if (size > workspace_map[stream].first) {
+        cudaStreamSynchronize(stream);
+        auto old_workspace = workspace_map[stream].second;
+
+        if (old_workspace) {
+            cudaFree(old_workspace);
+        }
+
         void *workspace;
         cudaMalloc(&workspace, size);
         workspace_map[stream].first = size;
@@ -41,7 +53,35 @@ void *get_workspace(size_t size, cudaStream_t stream) {
                         {(ELEMENT_TYPE *) C, ldc},                                              \
                         {(ELEMENT_TYPE *) D, ldd},                                              \
                         {alpha, beta});                                                         \
-    status = gemm_op(args, nullptr, stream);
+    size_t workspace_size = Gemm::get_workspace_size(args);                                     \
+    void *workspace = get_workspace(workspace_size, stream);                                    \
+    gemm_op.initialize(args, workspace);                                                        \
+    status = gemm_op(stream);
+
+#define CUTLASS_GEMM_FP16_TEMPLATE(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR)     \
+    using Gemm = cutlass::gemm::device::Gemm<ELEMENT_TYPE,                                              \
+                                             LAYOUT_A,                                                  \
+                                             ELEMENT_TYPE,                                              \
+                                             LAYOUT_B,                                                  \
+                                             ELEMENT_TYPE,                                              \
+                                             LAYOUT_C,                                                  \
+                                             ELEMENT_ACCUMULATOR,                                       \
+                                             cutlass::arch::OpClassTensorOp,                            \
+                                             cutlass::arch::Sm80,                                       \
+                                             cutlass::gemm::GemmShape<128, 128, 16>,                    \
+                                             cutlass::gemm::GemmShape<64, 64, 16>,                      \
+                                             cutlass::gemm::GemmShape<16, 8, 8>>;                       \
+    Gemm gemm_op;                                                                                       \
+    Gemm::Arguments args({M, N, K},                                                                     \
+                        {(ELEMENT_TYPE *) A, lda},                                                      \
+                        {(ELEMENT_TYPE *) B, ldb},                                                      \
+                        {(ELEMENT_TYPE *) C, ldc},                                                      \
+                        {(ELEMENT_TYPE *) D, ldd},                                                      \
+                        {alpha, beta});                                                                 \
+    size_t workspace_size = Gemm::get_workspace_size(args);                                             \
+    void *workspace = get_workspace(workspace_size, stream);                                            \
+    gemm_op.initialize(args, workspace);                                                                \
+    status = gemm_op(stream);
 
 #define CUTLASS_GEMM_SPLIT_K_TEMPLATE(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR)          \
     using Gemm = cutlass::gemm::device::GemmSplitKParallel<ELEMENT_TYPE,                                        \
@@ -84,9 +124,12 @@ void *get_workspace(size_t size, cudaStream_t stream) {
                         batch_stride_C,                                                                 \
                         {alpha, beta},                                                                  \
                         batch_count);                                                                   \
-    status = gemm_op(args, nullptr, stream);
+    size_t workspace_size = Gemm::get_workspace_size(args);                                             \
+    void *workspace = get_workspace(workspace_size, stream);                                            \
+    gemm_op.initialize(args, workspace);                                                                \
+    status = gemm_op(stream);
 
-#define INVOKE_CUTLASS_GEMM_TEMPLATE(TEMPLATE_NAME, ELEMENT_TYPE, ElementAccumulator)                           \
+#define INVOKE_CUTLASS_GEMM_TEMPLATE(TEMPLATE_NAME, ELEMENT_TYPE, ElementAccumulator)                    \
     if (transA == cutlassOperation_t::CUTLASS_OP_N && transB == cutlassOperation_t::CUTLASS_OP_N) {             \
         TEMPLATE_NAME(ELEMENT_TYPE, ColumnMajor, ColumnMajor, ColumnMajor, ElementAccumulator);                 \
     } else if (transA == cutlassOperation_t::CUTLASS_OP_T && transB == cutlassOperation_t::CUTLASS_OP_N) {      \
@@ -132,8 +175,21 @@ cudaError_t cutlassGemm_f32(
 
     cutlass::Status status;
 
+    bool use_k_split = false;
+    int split_k_slices;
+
     if (M == 1024 && N == 60 && K == 1024) {
-        int split_k_slices = 32;
+        split_k_slices = 16;
+        use_k_split = true;
+    } else if (M == 4096 && N == 60 && K == 1024) {
+        split_k_slices = 4;
+        use_k_split = true;
+    } else if (M == 1024 && N == 60 && K == 4096) {
+        split_k_slices = 16;
+        use_k_split = true;
+    }
+
+    if (use_k_split) {
         INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_SPLIT_K_TEMPLATE, float, float);
     } else {
         INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_TEMPLATE, float, float);
@@ -151,7 +207,7 @@ cudaError_t cutlassGemm_f32(
     }
 
     if (status != cutlass::Status::kSuccess) {
-        std::cout << "status != cutlass::Status::kSuccess" << std::endl;
+        std::cout << "cutlass error: " << cutlassGetStatusString(status) << std::endl;
         return cudaErrorUnknown;
     }
 
@@ -177,13 +233,13 @@ cudaError_t cutlassGemm_f16(
     half *bias,
     cudaStream_t stream
 ) {
-    using ElementAccumulator = float;
-    
+
     cutlass::Status status;
 
-    INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_TEMPLATE, cutlass::half_t, ElementAccumulator);
+    INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_FP16_TEMPLATE, cutlass::half_t, float);
 
     if (status != cutlass::Status::kSuccess) {
+        std::cout << "cutlass error: " << cutlassGetStatusString(status) << std::endl;
         return cudaErrorUnknown;
     }
 
@@ -224,31 +280,10 @@ cudaError_t cutlassStridedBatchedGemm_f32(
 
     cutlass::Status status;
 
-    if (transA == cutlassOperation_t::CUTLASS_OP_N &&
-        transB == cutlassOperation_t::CUTLASS_OP_N) {
-
-        CUTLASS_GEMM_BATCHED_TEMPLATE(float, ColumnMajor, ColumnMajor, ColumnMajor, float);
-
-    } else if (transA == cutlassOperation_t::CUTLASS_OP_T &&
-               transB == cutlassOperation_t::CUTLASS_OP_N){
-
-        CUTLASS_GEMM_BATCHED_TEMPLATE(float, RowMajor, ColumnMajor, ColumnMajor, float);
-
-    } else if (transA == cutlassOperation_t::CUTLASS_OP_N &&
-               transB == cutlassOperation_t::CUTLASS_OP_T){
-
-        CUTLASS_GEMM_BATCHED_TEMPLATE(float, ColumnMajor, RowMajor, ColumnMajor, float);
-
-    } else if (transA == cutlassOperation_t::CUTLASS_OP_T &&
-               transB == cutlassOperation_t::CUTLASS_OP_T){
-
-        CUTLASS_GEMM_BATCHED_TEMPLATE(float, RowMajor, RowMajor, ColumnMajor, float);
-
-    } else {
-        throw std::runtime_error("Not implemented.");
-    }
+    INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_BATCHED_TEMPLATE, float, float);
 
     if (status != cutlass::Status::kSuccess) {
+        std::cout << "cutlass error: " << cutlassGetStatusString(status) << std::endl;
         return cudaErrorUnknown;
     }
 
@@ -279,31 +314,10 @@ cudaError_t cutlassStridedBatchedGemm_f16(
 
     cutlass::Status status;
 
-    if (transA == cutlassOperation_t::CUTLASS_OP_N &&
-        transB == cutlassOperation_t::CUTLASS_OP_N) {
-
-        CUTLASS_GEMM_BATCHED_TEMPLATE(cutlass::half_t, ColumnMajor, ColumnMajor, ColumnMajor, float);
-
-    } else if (transA == cutlassOperation_t::CUTLASS_OP_T &&
-               transB == cutlassOperation_t::CUTLASS_OP_N){
-
-        CUTLASS_GEMM_BATCHED_TEMPLATE(cutlass::half_t, RowMajor, ColumnMajor, ColumnMajor, float);
-
-    } else if (transA == cutlassOperation_t::CUTLASS_OP_N &&
-               transB == cutlassOperation_t::CUTLASS_OP_T){
-
-        CUTLASS_GEMM_BATCHED_TEMPLATE(cutlass::half_t, ColumnMajor, RowMajor, ColumnMajor, float);
-
-    } else if (transA == cutlassOperation_t::CUTLASS_OP_T &&
-               transB == cutlassOperation_t::CUTLASS_OP_T){
-
-        CUTLASS_GEMM_BATCHED_TEMPLATE(cutlass::half_t, RowMajor, RowMajor, ColumnMajor, float);
-
-    } else {
-        throw std::runtime_error("Not implemented.");
-    }
+    INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_BATCHED_TEMPLATE, cutlass::half_t, float);
 
     if (status != cutlass::Status::kSuccess) {
+        std::cout << "cutlass error: " << cutlassGetStatusString(status) << std::endl;
         return cudaErrorUnknown;
     }
 

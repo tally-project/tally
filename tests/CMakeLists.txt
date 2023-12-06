@@ -101,6 +101,12 @@ target_link_libraries(cublas_to_cutlass
     cuda
     cudart
     cublas
+    cublasLt
+)
+
+set_target_properties(cublas_to_cutlass PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
 )
 
 target_include_directories(cublas_to_cutlass
@@ -196,6 +202,24 @@ set_target_properties(turing_tensorop_gemm PROPERTIES
 )
 
 target_include_directories(turing_tensorop_gemm
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
+    PUBLIC  ${PROJECT_SOURCE_DIR}/tests
+)
+
+add_executable(volta_tensorop_gemm cuda_samples_basic/volta_tensorop_gemm.cu)
+
+target_link_libraries(volta_tensorop_gemm
+    cuda
+    cudart
+)
+
+set_target_properties(volta_tensorop_gemm PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_include_directories(volta_tensorop_gemm
     PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
     PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
     PUBLIC  ${PROJECT_SOURCE_DIR}/tests

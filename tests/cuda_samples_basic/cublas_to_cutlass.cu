@@ -8,6 +8,7 @@
 #include <chrono>
 
 #include <cublas_v2.h>
+#include <cublasLt.h>
 
 #include <tally/cutlass/cutlass.h>
 
@@ -17,128 +18,129 @@ int main()
 {
     srand (1);
 
-    cublasHandle_t handle;
-    cublasCreate(&handle);
-    int m = 1024;
-    int n = 60;
-    int k = 1024;
+    int m = 3072;
+    int n = 1376;
+    int k = 768;
 
-    float *h_A, *h_B, *h_cublas, *h_cutlass;
-    float *h_AT, *h_ref;
+    bool use_fp16 = true;
+
+    void *h_A, *h_B;
+    void *h_cublas, *h_cutlass;
+
+    size_t A_size_bytes;
+    size_t B_size_bytes;
+    size_t C_size_bytes;
+
+    if (use_fp16) {
+        A_size_bytes = sizeof(half) * m * k;
+        B_size_bytes = sizeof(half) * k * n;
+        C_size_bytes = sizeof(half) * m * n;
+    } else {
+        A_size_bytes = sizeof(float) * m * k;
+        B_size_bytes = sizeof(float) * k * n;
+        C_size_bytes = sizeof(float) * m * n;
+    }
+
 
     // A will be k * m
-    h_A = (float *) malloc(sizeof(float) * k * m);
-
-    // AT will be m * k
-    h_AT = (float *) malloc(sizeof(float) * m * k);
-
+    h_A = malloc(A_size_bytes);
     // B will be k * n
-    h_B = (float *) malloc(sizeof(float) * k * n);
-    h_cublas = (float *) malloc(sizeof(float) * m * n);
-    h_cutlass = (float *) malloc(sizeof(float) * m * n);
+    h_B = malloc(B_size_bytes);
 
-    h_ref = (float *) malloc(sizeof(float) * m * n);
-    memset(h_ref, 0, sizeof(float) * m * n);
+    h_cublas = malloc(C_size_bytes);
+    h_cutlass = malloc(C_size_bytes);
 
     // Set values in h_A
     for (int j = 0; j < m; j++) {
         for (int i = 0; i < k; i++) {
-            h_A[IDX2C(i, j, k)] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-        }
-    }
+            float val = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-    // for (int i = 0; i < k; i++) {
-    //     for (int j = 0; j < m; j++) {
-    //         std::cout << h_A[IDX2C(i, j, k)] << " ";
-    //     }
-
-    //     std::cout << std::endl;
-    // }
-
-    //  std::cout << std::endl;
-
-    // Set values in h_AT
-    for (int j = 0; j < k; j++) {
-        for (int i = 0; i < m; i++) {
-            h_AT[IDX2C(i, j, m)] = h_A[IDX2C(j, i, k)];
-        }
-    }
-
-    // for (int i = 0; i < m; i++) {
-    //     for (int j = 0; j < k; j++) {
-    //         std::cout << h_AT[IDX2C(i, j, m)] << " ";
-    //     }
-
-    //     std::cout << std::endl;
-    // }
-
-    // std::cout << std::endl;
-
-    // Set values in h_B
-    for (int j = 0; j < n; j++) {
-        for (int i = 0; i < k; i++) {
-            h_B[IDX2C(i, j, k)] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-        }
-    }
-
-    // for (int i = 0; i < k; i++) {
-    //     for (int j = 0; j < n; j++) {
-    //         std::cout << h_B[IDX2C(i, j, k)] << " ";
-    //     }
-
-    //     std::cout << std::endl;
-    // }
-
-    // std::cout << std::endl;
-
-    for (int i = 0; i < m; ++i) {
-        for (int j = 0; j < n; ++j) {
-            for( int p = 0; p < k; p++ ) {
-                h_ref[IDX2C(i, j, m)] += h_AT[IDX2C(i, p, m)] * h_B[IDX2C(p, j, k)];
+            if (use_fp16) {
+                ((half *)h_A)[IDX2C(i, j, k)] = __float2half(val);
+            } else {
+                ((float *)h_A)[IDX2C(i, j, k)] = val;
             }
         }
     }
 
-    // for (int i = 0; i < m; i++) {
-    //     for (int j = 0; j < n; j++) {
-    //         std::cout << h_ref[IDX2C(i, j, m)] << " ";
-    //     }
+    // Set values in h_B
+    for (int j = 0; j < n; j++) {
+        for (int i = 0; i < k; i++) {
+            float val = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-    //     std::cout << std::endl;
-    // }
-
-    // std::cout << std::endl;
+            if (use_fp16) {
+                ((half *)h_B)[IDX2C(i, j, k)] = __float2half(val);
+            } else {
+                ((float *)h_B)[IDX2C(i, j, k)] = val;
+            }
+        }
+    }
 
     // Allocate memory on the device
-    float* d_A, *d_AT, *d_B, *d_cublas, *d_cutlass;
-    cudaMalloc((void**)&d_A, sizeof(float) * k * m); // k x m matrix
-    cudaMalloc((void**)&d_AT, sizeof(float) * m * k); // k x m matrix
-    cudaMalloc((void**)&d_B, sizeof(float) * k * n); // k x n matrix
-    cudaMalloc((void**)&d_cublas, sizeof(float) * m * n); // m x n matrix
-    cudaMalloc((void**)&d_cutlass, sizeof(float) * m * n); // m x n matrix
+    void* d_A, *d_B;
+    float *d_cublas, *d_cutlass;
+    cudaMalloc(&d_A, A_size_bytes);
+    cudaMalloc(&d_B, B_size_bytes);
+    cudaMalloc(&d_cublas, C_size_bytes);
+    cudaMalloc(&d_cutlass, C_size_bytes);
+    cudaMemset(d_cublas, 0, C_size_bytes);
+    cudaMemset(d_cutlass, 0, C_size_bytes);
 
     // Copy input matrices from host to device
-    cudaMemcpy(d_A, h_A, sizeof(float) * k * m, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_AT, h_AT, sizeof(float) * m * k, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B, h_B, sizeof(float) * k * n, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_A, h_A, A_size_bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, h_B, B_size_bytes, cudaMemcpyHostToDevice);
 
     const float alpha = 1.0f;
     const float beta = 0.f;
 
-    cublasOperation_t transa = CUBLAS_OP_T; // No transpose for A
+    cublasOperation_t transa = CUBLAS_OP_N; // No transpose for A
     cublasOperation_t transb = CUBLAS_OP_N; // No transpose for B
 
-    cutlassOperation_t transa_cutlass = CUTLASS_OP_T;
+    cutlassOperation_t transa_cutlass = CUTLASS_OP_N;
     cutlassOperation_t transb_cutlass = CUTLASS_OP_N;
 
+    cublasHandle_t handle;
+    cublasCreate(&handle);
+
+    cublasLtHandle_t lightHandle;
+    cublasLtCreate(&lightHandle);
+
+    cublasLtMatmulDesc_t matmul_desc;
+    cublasLtMatrixLayout_t A_layout;
+    cublasLtMatrixLayout_t B_layout;
+    cublasLtMatrixLayout_t C_layout;
+
+    int returnedResults = 0;
+    cublasLtMatmulHeuristicResult_t heuristicResult;
+
+    cublasLtMatmulDescCreate(&matmul_desc, CUBLAS_COMPUTE_32F, CUDA_R_32F);
+
+    cublasLtMatrixLayoutCreate(&A_layout, CUDA_R_16F, m, k, m);
+    cublasLtMatrixLayoutCreate(&B_layout, CUDA_R_16F, k, n, k);
+    cublasLtMatrixLayoutCreate(&C_layout, CUDA_R_16F, m, n, m);
+
+    cublasLtMatmulPreference_t preference = NULL;
+    cublasLtMatmulPreferenceCreate(&preference);
+
+    cublasLtMatmulAlgoGetHeuristic(lightHandle, matmul_desc, A_layout, B_layout, C_layout, C_layout, preference, 1, &heuristicResult, &returnedResults);
+
     // warmup
-    cublasSgemm_v2(handle, transa, transb, m, n, k, &alpha, d_A, k /*lda*/, d_B, k /*ldb*/, &beta, d_cublas, m /*ldc*/);
-    cutlassGemm_f32(transa_cutlass, transb_cutlass, m, n, k, alpha, d_A, k /*lda*/, d_B, k /*ldb*/, beta, d_cutlass, m /*ldc*/, d_cutlass, m /*ldd*/, NULL, NULL, NULL);
+    if (use_fp16) {
+        cublasLtMatmul(lightHandle, matmul_desc, &alpha, d_A, A_layout, d_B, B_layout, &beta, d_cublas, C_layout, d_cublas, C_layout, &heuristicResult.algo, NULL, 0, 0);
+        cutlassGemm_f16(transa_cutlass, transb_cutlass, m, n, k, alpha, (half *)d_A, m /*lda*/, (half *)d_B, k /*ldb*/, beta, (half *)d_cutlass, m /*ldc*/, (half *)d_cutlass, m /*ldd*/, NULL, NULL);
+    } else {
+        cublasSgemm_v2(handle, transa, transb, m, n, k, &alpha, (float *)d_A, m /*lda*/, (float *)d_B, k /*ldb*/, &beta, d_cublas, m /*ldc*/);
+        cutlassGemm_f32(transa_cutlass, transb_cutlass, m, n, k, alpha, (float *)d_A, m /*lda*/, (float *)d_B, k /*ldb*/, beta, (float *)d_cutlass, m /*ldc*/, (float *)d_cutlass, m /*ldd*/, NULL, NULL, NULL);
+    }
 
     cudaDeviceSynchronize();
     auto start = std::chrono::high_resolution_clock::now();
 
-    cublasSgemm_v2(handle, transa, transb, m, n, k, &alpha, d_A, k /*lda*/, d_B, k /*ldb*/, &beta, d_cublas, m /*ldc*/);
+    if (use_fp16) {
+        cublasLtMatmul(lightHandle, matmul_desc, &alpha, d_A, A_layout, d_B, B_layout, &beta, d_cublas, C_layout, d_cublas, C_layout, &heuristicResult.algo, NULL, 0, 0);
+    } else {
+        cublasSgemm_v2(handle, transa, transb, m, n, k, &alpha, (float *)d_A, m /*lda*/, (float *)d_B, k /*ldb*/, &beta, d_cublas, m /*ldc*/);
+    }
 
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
@@ -149,28 +151,42 @@ int main()
     start = std::chrono::high_resolution_clock::now();
 
     // Run cutlass impl
-    cutlassGemm_f32(transa_cutlass, transb_cutlass, m, n, k, alpha, d_A, k /*lda*/, d_B, k /*ldb*/, beta, d_cutlass, m /*ldc*/, d_cutlass, m /*ldd*/, NULL, NULL, NULL);
+    if (use_fp16) {
+        cutlassGemm_f16(transa_cutlass, transb_cutlass, m, n, k, alpha, (half *)d_A, m /*lda*/, (half *)d_B, k /*ldb*/, beta, (half *)d_cutlass, m /*ldc*/, (half *)d_cutlass, m /*ldd*/, NULL, NULL);
+    } else {
+       cutlassGemm_f32(transa_cutlass, transb_cutlass, m, n, k, alpha, (float *)d_A, m /*lda*/, (float *)d_B, k /*ldb*/, beta, (float *)d_cutlass, m /*ldc*/, (float *)d_cutlass, m /*ldd*/, NULL, NULL, NULL);
+    }
 
     cudaDeviceSynchronize();
     end = std::chrono::high_resolution_clock::now();
     duration = end - start;
     auto cutlass_ms = duration.count();
 
-    std::cout << "cutlassGemm_f32: " << std::to_string(cutlass_ms) << "ms" << std::endl;
-    std::cout << "cublasSgemm_v2: " << std::to_string(cublas_ms) << "ms" << std::endl;
+    std::cout << "cutlass: " << std::to_string(cutlass_ms) << "ms" << std::endl;
+    std::cout << "cublas: " << std::to_string(cublas_ms) << "ms" << std::endl;
 
-    cudaMemcpy(h_cutlass, d_cutlass, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
-    cudaMemcpy(h_cublas, d_cublas, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_cutlass, d_cutlass, C_size_bytes, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_cublas, d_cublas, C_size_bytes, cudaMemcpyDeviceToHost);
 
     for (int j = 0; j < n; j++) {
         for (int i = 0; i < m; i++) {
 
-            if (abs(h_cutlass[IDX2C(i, j, m)] - h_cublas[IDX2C(i, j, m)]) > 0.01) {
+            float cublas_val;
+            float cutlass_val;
+
+            if (use_fp16) {
+                cublas_val = __half2float(((half *)h_cublas)[i * n + j]);
+                cutlass_val = __half2float(((half *)h_cutlass)[i * n + j]);
+            } else {
+                cublas_val = ((float *)h_cublas)[i * n + j];
+                cutlass_val = ((float *)h_cutlass)[i * n + j];
+            }
+
+            if (abs(cublas_val - cutlass_val) > 1) {
                 std::cout << "Results do not match." << std::endl;
-                std::cout << "(i, j): " << i << " " << j << std::endl;
-                std::cout << "h_cutlass[IDX2C(i, j, m)]: " << h_cutlass[IDX2C(i, j, m)] << std::endl;
-                std::cout << "h_cublas[IDX2C(i, j, m)]: " << h_cublas[IDX2C(i, j, m)] << std::endl;
-                std::cout << "h_ref[IDX2C(i, j, m)]: " << h_ref[IDX2C(i, j, m)] << std::endl;
+                std::cout << "idx: " << (i * n + j) << std::endl;
+                std::cout << "cublas_val: " << cublas_val << std::endl;
+                std::cout << "cutlass_val: " << cutlass_val << std::endl;
                 exit(1);
             }
 
