@@ -95,7 +95,7 @@ set_target_properties(test-sync PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
 )
 
-add_executable(cublas_to_cutlass cuda_samples_basic/cublas_to_cutlass.cu)
+add_executable(cublas_to_cutlass cuda_samples_basic/cublas_to_cutlass.cu ${PROJECT_SOURCE_DIR}/src/tally/cutlass/cutlass.cu)
 
 target_link_libraries(cublas_to_cutlass
     cuda
@@ -103,14 +103,10 @@ target_link_libraries(cublas_to_cutlass
     cublas
 )
 
-set_target_properties(cublas_to_cutlass PROPERTIES
-    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
-    CUDA_RUNTIME_LIBRARY Shared
-)
-
 target_include_directories(cublas_to_cutlass
+    PUBLIC  ${PROJECT_SOURCE_DIR}/include
     PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
-    PUBLIC  ${PROJECT_SOURCE_DIR}/tests
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
 )
 
 add_executable(matmul_fp16 cuda_samples_basic/matmul_fp16.cu)

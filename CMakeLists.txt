@@ -92,6 +92,7 @@ target_link_libraries(tally_cutlass
 target_include_directories(tally_cutlass
     PUBLIC  ${PROJECT_SOURCE_DIR}/include
     PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/include
+    PUBLIC  ${PROJECT_SOURCE_DIR}/third_party/cutlass/tools/util/include/
 )
 
 set_target_properties(tally_cutlass PROPERTIES

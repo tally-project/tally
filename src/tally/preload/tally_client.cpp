@@ -37,7 +37,7 @@
 #include "tally/client.h"
 #include "tally/generated/cuda_api.h"
 #include "tally/generated/cuda_api_enum.h"
-#include <tally/cublas_tracer.h>
+#include "tally/cublas_tracer.h"
 
 cublasTracer cublas_tracer;
 cublasLtTracer cublasLt_tracer;
