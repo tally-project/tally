@@ -39,12 +39,6 @@ void *get_workspace(size_t size, cudaStream_t stream) {
     return workspace_map[stream].second;
 }
 
-using EpilogueOp = cutlass::epilogue::thread::LinearCombination<
-    cutlass::half_t,
-    128 / cutlass::sizeof_bits<cutlass::half_t>::value,
-    float,
-    float>;
-
 #define CUTLASS_CHECK(status)                                                                    \
   {                                                                                              \
     cutlass::Status error = status;                                                              \
@@ -93,12 +87,17 @@ using EpilogueOp = cutlass::epilogue::thread::LinearCombination<
                                              ELEMENT_ACCUMULATOR,                                       \
                                              cutlass::arch::OpClassTensorOp,                            \
                                              cutlass::arch::Sm80,                                       \
-                                             cutlass::gemm::GemmShape<128, 128, 16>,                    \
-                                             cutlass::gemm::GemmShape<64, 64, 16>,                      \
-                                             cutlass::gemm::GemmShape<16, 8, 8>, \
-                                             EpilogueOp, \
-                                             cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>, \
-                                             4 /* NumStages */>;                       \
+                                             cutlass::gemm::GemmShape<128, 128, 16>,                            \
+                                             cutlass::gemm::GemmShape<64, 64, 16>,                              \
+                                             cutlass::gemm::GemmShape<16, 8, 8>,                                \
+                                             cutlass::epilogue::thread::LinearCombination<ELEMENT_TYPE,         \
+                                                128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value,                \
+                                                ELEMENT_ACCUMULATOR,                                            \
+                                                ELEMENT_ACCUMULATOR>,                                           \
+                                             cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>,      \
+                                             4 /* NumStages */,                                                 \
+                                             128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value,                   \
+                                             128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value>;                  \
     Gemm gemm_op;                                                                                       \
     Gemm::Arguments args({M, N, K},                                                                     \
                         {(ELEMENT_TYPE *) A, lda},                                                      \
@@ -337,6 +336,7 @@ cudaError_t cutlassGemm_f16(
     // Some sizes do not work in tensor core mode because of misaligned error
     // won't fix at this point
     if (status == cutlass::Status::kErrorMisalignedOperand) {
+        // std::cout << "Failing back to simt op because of kErrorMisalignedOperand" << std::endl;
         INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_FP16_DEFAULT_TEMPLATE, cutlass::half_t, float);
     }
 
