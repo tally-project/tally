@@ -18,13 +18,21 @@ int main()
 {
     srand (1);
 
-    int m = 43264;
-    int n = 16;
-    int k = 27;
+    int m = 10816;
+    int n = 32;
+    int k = 144;
+
+    // int m = 768;
+    // int n = 51865;
+    // int k = 1376;
 
     int lda = m;
     int ldb = k;
     int ldc = m;
+
+    // int lda = 768;
+    // int ldb = 51865;
+    // int ldc = 768;
 
     bool use_fp16 = true;
 

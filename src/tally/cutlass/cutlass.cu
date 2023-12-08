@@ -11,34 +11,6 @@
 #include <thrust/transform.h>
 #include <thrust/functional.h>
 
-// Get the workspace with given size
-// Will keep one workspace for each stream
-void *get_workspace(size_t size, cudaStream_t stream) {
-
-    static std::map<cudaStream_t, std::pair<size_t, void *>> workspace_map;
-
-    if (workspace_map.find(stream) == workspace_map.end()) {
-        workspace_map[stream].first = 0;
-        workspace_map[stream].second = NULL;
-    }
-
-    if (size > workspace_map[stream].first) {
-        cudaStreamSynchronize(stream);
-        auto old_workspace = workspace_map[stream].second;
-
-        if (old_workspace) {
-            cudaFree(old_workspace);
-        }
-
-        void *workspace;
-        cudaMalloc(&workspace, size);
-        workspace_map[stream].first = size;
-        workspace_map[stream].second = workspace;
-    }
-
-    return workspace_map[stream].second;
-}
-
 #define CUTLASS_CHECK(status)                                                                    \
   {                                                                                              \
     cutlass::Status error = status;                                                              \
@@ -49,7 +21,18 @@ void *get_workspace(size_t size, cudaStream_t stream) {
     }                                                                                            \
   }
 
-#define CUTLASS_GEMM_TEMPLATE(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR)  \
+#define LAUNCH_GEMM                                                                             \
+    status = gemm_op.can_implement(args);                                                       \
+    if (status == cutlass::Status::kSuccess) {                                                  \
+        size_t workspace_size = Gemm::get_workspace_size(args);                                 \
+        void *workspace = get_workspace(workspace_size, stream);                                \
+        gemm_op.initialize(args, workspace);                                                    \
+        status = gemm_op(stream);                                                               \
+    }
+
+// Basic template of using cutlass::gemm::device::Gemm. The default alignment is 1
+// https://github.com/NVIDIA/cutlass/blob/f4a021660162510572f90ea715b018cff9c0f12f/include/cutlass/gemm/device/default_gemm_configuration.h#L73
+#define CUTLASS_GEMM_SIMT_TEMPLATE(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR)  \
     using Gemm = cutlass::gemm::device::Gemm<ELEMENT_TYPE,                                      \
                                              LAYOUT_A,                                          \
                                              ELEMENT_TYPE,                                      \
@@ -69,13 +52,51 @@ void *get_workspace(size_t size, cudaStream_t stream) {
                         {(ELEMENT_TYPE *) C, ldc},                                              \
                         {(ELEMENT_TYPE *) D, ldd},                                              \
                         {alpha, beta});                                                         \
-    status = gemm_op.can_implement(args);                                                       \
-    if (status == cutlass::Status::kSuccess) {                                                  \
-        size_t workspace_size = Gemm::get_workspace_size(args);                                 \
-        void *workspace = get_workspace(workspace_size, stream);                                \
-        gemm_op.initialize(args, workspace);                                                    \
-        status = gemm_op(stream);                                                               \
-    }
+    LAUNCH_GEMM;
+
+// Tensor op gemm template
+#define CUTLASS_GEMM_TENSOR_OP_TEMPLATE_BASE(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR, ALIGNMENT, EPILOGUE_ALIGNMENT)     \
+    using Gemm = cutlass::gemm::device::Gemm<ELEMENT_TYPE,                                              \
+                                             LAYOUT_A,                                                  \
+                                             ELEMENT_TYPE,                                              \
+                                             LAYOUT_B,                                                  \
+                                             ELEMENT_TYPE,                                              \
+                                             LAYOUT_C,                                                  \
+                                             ELEMENT_ACCUMULATOR,                                       \
+                                             cutlass::arch::OpClassTensorOp,                            \
+                                             cutlass::arch::Sm80,                                       \
+                                             cutlass::gemm::GemmShape<128, 128, 16>,                    \
+                                             cutlass::gemm::GemmShape<64, 64, 16>,                      \
+                                             cutlass::gemm::GemmShape<16, 8, 8>,                        \
+                                             cutlass::epilogue::thread::LinearCombination<              \
+                                                ELEMENT_TYPE,                                           \
+                                                EPILOGUE_ALIGNMENT,                 \
+                                                ELEMENT_ACCUMULATOR,                                            \
+                                                ELEMENT_ACCUMULATOR>,                                           \
+                                             cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>,      \
+                                             4 /* NumStages */,                                                 \
+                                             ALIGNMENT,                    \
+                                             ALIGNMENT>;                   \
+    Gemm gemm_op;                                                                                       \
+    Gemm::Arguments args({M, N, K},                                                                     \
+                        {(ELEMENT_TYPE *) A, lda},                                                      \
+                        {(ELEMENT_TYPE *) B, ldb},                                                      \
+                        {(ELEMENT_TYPE *) C, ldc},                                                      \
+                        {(ELEMENT_TYPE *) D, ldd},                                                      \
+                        {alpha, beta});                                                                 \
+    LAUNCH_GEMM;
+
+#define CUTLASS_GEMM_TENSOR_OP_TEMPLATE_DEFAULT(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR) \
+    CUTLASS_GEMM_TENSOR_OP_TEMPLATE_BASE(   \
+        ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR,    \
+        128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value,    \
+        128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value);
+
+#define CUTLASS_GEMM_TENSOR_OP_TEMPLATE_SMALL_ALIGNMENT(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR) \
+    CUTLASS_GEMM_TENSOR_OP_TEMPLATE_BASE(   \
+        ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR,    \
+        2,    \
+        1);
 
 #define CUTLASS_GEMM_FP16_TEMPLATE(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR)     \
     using Gemm = cutlass::gemm::device::Gemm<ELEMENT_TYPE,                                              \
@@ -87,17 +108,18 @@ void *get_workspace(size_t size, cudaStream_t stream) {
                                              ELEMENT_ACCUMULATOR,                                       \
                                              cutlass::arch::OpClassTensorOp,                            \
                                              cutlass::arch::Sm80,                                       \
-                                             cutlass::gemm::GemmShape<128, 128, 16>,                            \
-                                             cutlass::gemm::GemmShape<64, 64, 16>,                              \
-                                             cutlass::gemm::GemmShape<16, 8, 8>,                                \
-                                             cutlass::epilogue::thread::LinearCombination<ELEMENT_TYPE,         \
-                                                128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value,                \
+                                             cutlass::gemm::GemmShape<128, 128, 16>,                    \
+                                             cutlass::gemm::GemmShape<64, 64, 16>,                      \
+                                             cutlass::gemm::GemmShape<16, 8, 8>,                        \
+                                             cutlass::epilogue::thread::LinearCombination<              \
+                                                ELEMENT_TYPE,                                           \
+                                                128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value,                 \
                                                 ELEMENT_ACCUMULATOR,                                            \
                                                 ELEMENT_ACCUMULATOR>,                                           \
                                              cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>,      \
                                              4 /* NumStages */,                                                 \
-                                             128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value,                   \
-                                             128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value>;                  \
+                                             128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value,                    \
+                                             128 / cutlass::sizeof_bits<ELEMENT_TYPE>::value>;                   \
     Gemm gemm_op;                                                                                       \
     Gemm::Arguments args({M, N, K},                                                                     \
                         {(ELEMENT_TYPE *) A, lda},                                                      \
@@ -107,29 +129,6 @@ void *get_workspace(size_t size, cudaStream_t stream) {
                         {alpha, beta});                                                                 \
     status = gemm_op.can_implement(args);                                                               \
     if (status == cutlass::Status::kSuccess) {                                                  \
-        size_t workspace_size = Gemm::get_workspace_size(args);                                             \
-        void *workspace = get_workspace(workspace_size, stream);                                            \
-        gemm_op.initialize(args, workspace);                                                                \
-        status = gemm_op(stream);                                                                           \
-    }
-
-#define CUTLASS_GEMM_FP16_DEFAULT_TEMPLATE(ELEMENT_TYPE, LAYOUT_A, LAYOUT_B, LAYOUT_C, ELEMENT_ACCUMULATOR)     \
-    using Gemm = cutlass::gemm::device::Gemm<ELEMENT_TYPE,                                                      \
-                                             LAYOUT_A,                                                  \
-                                             ELEMENT_TYPE,                                              \
-                                             LAYOUT_B,                                                  \
-                                             ELEMENT_TYPE,                                              \
-                                             LAYOUT_C,                                                  \
-                                             ELEMENT_ACCUMULATOR>;                                      \
-    Gemm gemm_op;                                                                                       \
-    Gemm::Arguments args({M, N, K},                                                                     \
-                        {(ELEMENT_TYPE *) A, lda},                                                      \
-                        {(ELEMENT_TYPE *) B, ldb},                                                      \
-                        {(ELEMENT_TYPE *) C, ldc},                                                      \
-                        {(ELEMENT_TYPE *) D, ldd},                                                      \
-                        {alpha, beta});                                                                 \
-    status = gemm_op.can_implement(args);                                                               \
-    if (status == cutlass::Status::kSuccess) { \
         size_t workspace_size = Gemm::get_workspace_size(args);                                             \
         void *workspace = get_workspace(workspace_size, stream);                                            \
         gemm_op.initialize(args, workspace);                                                                \
@@ -240,6 +239,34 @@ void *get_workspace(size_t size, cudaStream_t stream) {
         use_k_split = true;                             \
     }
 
+// Get the workspace with given size
+// Will keep one workspace for each stream
+void *get_workspace(size_t size, cudaStream_t stream) {
+
+    static std::map<cudaStream_t, std::pair<size_t, void *>> workspace_map;
+
+    if (workspace_map.find(stream) == workspace_map.end()) {
+        workspace_map[stream].first = 0;
+        workspace_map[stream].second = NULL;
+    }
+
+    if (size > workspace_map[stream].first) {
+        cudaStreamSynchronize(stream);
+        auto old_workspace = workspace_map[stream].second;
+
+        if (old_workspace) {
+            cudaFree(old_workspace);
+        }
+
+        void *workspace;
+        cudaMalloc(&workspace, size);
+        workspace_map[stream].first = size;
+        workspace_map[stream].second = workspace;
+    }
+
+    return workspace_map[stream].second;
+}
+
 using RowMajor = cutlass::layout::RowMajor;
 using ColumnMajor = cutlass::layout::ColumnMajor;
 
@@ -285,7 +312,7 @@ cudaError_t cutlassGemm_f32(
     if (use_k_split) {
         INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_SPLIT_K_TEMPLATE, float, float);
     } else {
-        INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_TEMPLATE, float, float);
+        INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_SIMT_TEMPLATE, float, float);
     }
 
     if (bias) {
@@ -329,15 +356,19 @@ cudaError_t cutlassGemm_f16(
 
     cutlass::Status status;
 
-    // Some sizes do not work in tensor core mode because of misaligned error
-    // won't fix at this point
-    INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_FP16_TEMPLATE, cutlass::half_t, float);
-    
-    // Some sizes do not work in tensor core mode because of misaligned error
-    // won't fix at this point
+    // Try to use default tensorop gemm
+    INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_TENSOR_OP_TEMPLATE_DEFAULT, cutlass::half_t, float);
+
+    // If fails with kErrorMisalignedOperand, try with a smaller alignment
     if (status == cutlass::Status::kErrorMisalignedOperand) {
-        // std::cout << "Failing back to simt op because of kErrorMisalignedOperand" << std::endl;
-        INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_FP16_DEFAULT_TEMPLATE, cutlass::half_t, float);
+        std::cout << "Failing back to small alignment because of kErrorMisalignedOperand" << std::endl;
+        INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_TENSOR_OP_TEMPLATE_SMALL_ALIGNMENT, cutlass::half_t, float);
+    }
+
+    // If still fails, try with simt gemm 
+    if (status == cutlass::Status::kErrorMisalignedOperand) {
+        std::cout << "Failing back to simt op because of kErrorMisalignedOperand" << std::endl;
+        INVOKE_CUTLASS_GEMM_TEMPLATE(CUTLASS_GEMM_SIMT_TEMPLATE, cutlass::half_t, float);
     }
 
     CUTLASS_CHECK(status);
