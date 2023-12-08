@@ -831,6 +831,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         cudaMemcpy(C_copy, C, sizeof(float) * m * n, cudaMemcpyDeviceToDevice);
 
         cudaDeviceSynchronize();
+        spdlog::set_level(spdlog::level::warn);
         auto start = std::chrono::high_resolution_clock::now();
 #endif
 
@@ -849,6 +850,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> duration = end - start;
         auto cutlass_ms = duration.count();
+        spdlog::set_level(spdlog::level::info);
 
         start = std::chrono::high_resolution_clock::now();
 
@@ -1070,6 +1072,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                 cudaMemcpy(D_copy, D, size_bytes, cudaMemcpyDeviceToDevice);
 
                 cudaDeviceSynchronize();
+                spdlog::set_level(spdlog::level::warn);
                 auto start = std::chrono::high_resolution_clock::now();
 
 #endif
@@ -1111,6 +1114,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                 auto end = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double, std::milli> duration = end - start;
                 auto cutlass_ms = duration.count();
+                spdlog::set_level(spdlog::level::info);
 
                 start = std::chrono::high_resolution_clock::now();
 
@@ -3277,6 +3281,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
         cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
 
         cudaDeviceSynchronize();
+        spdlog::set_level(spdlog::level::warn);
         auto start = std::chrono::high_resolution_clock::now();
 #endif
 
@@ -3296,6 +3301,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> duration = end - start;
         auto cutlass_ms = duration.count();
+        spdlog::set_level(spdlog::level::info);
 
         start = std::chrono::high_resolution_clock::now();
 
@@ -4930,6 +4936,7 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                 cudaMemcpy(C_copy, C, sizeof(half) * m * n, cudaMemcpyDeviceToDevice);
 
                 cudaDeviceSynchronize();
+                spdlog::set_level(spdlog::level::warn);
                 auto start = std::chrono::high_resolution_clock::now();
 #endif
                 auto cuda_err = cutlassGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *) A, lda,
@@ -4950,6 +4957,7 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                 auto end = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double, std::milli> duration = end - start;
                 auto cutlass_ms = duration.count();
+                spdlog::set_level(spdlog::level::info);
 
                 start = std::chrono::high_resolution_clock::now();
 
@@ -5259,6 +5267,7 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
                 cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
 
                 cudaDeviceSynchronize();
+                spdlog::set_level(spdlog::level::warn);
                 auto start = std::chrono::high_resolution_clock::now();
 #endif
 
@@ -5278,6 +5287,7 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
                 auto end = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double, std::milli> duration = end - start;
                 auto cutlass_ms = duration.count();
+                spdlog::set_level(spdlog::level::info);
 
                 start = std::chrono::high_resolution_clock::now();
 

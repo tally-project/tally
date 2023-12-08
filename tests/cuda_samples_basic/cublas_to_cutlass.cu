@@ -18,9 +18,9 @@ int main()
 {
     srand (1);
 
-    int m = 10816;
-    int n = 32;
-    int k = 144;
+    int m = 2704;
+    int n = 64;
+    int k = 576;
 
     // int m = 768;
     // int n = 51865;
