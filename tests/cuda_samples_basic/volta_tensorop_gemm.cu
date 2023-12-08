@@ -213,9 +213,9 @@ int run() {
 //     return 0;
 //   }
 
-  const int length_m = 3072;
-  const int length_n = 1376;
-  const int length_k = 768;
+  const int length_m = 1500;
+  const int length_n = 768;
+  const int length_k = 2304;
 
   // Create a tuple of problem size for matrix multiplication
   cutlass::gemm::GemmCoord problem_size(length_m, length_n, length_k);

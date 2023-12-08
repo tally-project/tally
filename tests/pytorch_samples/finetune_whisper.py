@@ -13,6 +13,22 @@ from transformers import (
     Seq2SeqTrainingArguments
 )
 import evaluate
+import random
+import numpy as np
+
+def set_deterministic(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed) 
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.enabled = False
+
+seed = 42 # any number 
+set_deterministic(seed=seed)
 
 @dataclass
 class DataCollatorSpeechSeq2SeqWithPadding:
@@ -75,7 +91,7 @@ common_voice["train"] = load_dataset("mozilla-foundation/common_voice_11_0", "hi
 common_voice["test"] = load_dataset("mozilla-foundation/common_voice_11_0", "hi", split="test")
 common_voice = common_voice.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "path", "segment", "up_votes"])
 common_voice = common_voice.cast_column("audio", Audio(sampling_rate=16000))
-common_voice = common_voice.map(prepare_dataset, remove_columns=common_voice.column_names["train"], num_proc=2)
+common_voice = common_voice.map(prepare_dataset, remove_columns=common_voice.column_names["train"], num_proc=2)  
 
 processor = WhisperProcessor.from_pretrained("openai/whisper-small", language="Hindi", task="transcribe")
 data_collator = DataCollatorSpeechSeq2SeqWithPadding(processor=processor)
