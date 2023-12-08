@@ -14,6 +14,7 @@
 // Get the workspace with given size
 // Will keep one workspace for each stream
 void *get_workspace(size_t size, cudaStream_t stream) {
+
     static std::map<cudaStream_t, std::pair<size_t, void *>> workspace_map;
 
     if (workspace_map.find(stream) == workspace_map.end()) {
