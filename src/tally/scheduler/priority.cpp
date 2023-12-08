@@ -16,6 +16,8 @@ public:
     // If true, this kernel is running
     // If false, this kernel has been signaled to stop (may not have stopped)
     bool running = false;
+
+    CudaLaunchConfig config;
 };
 
 // Always prioritize to execute kernels from high-priority job.
@@ -71,7 +73,7 @@ void TallyServer::run_priority_scheduler()
                 cudaEventDestroy(in_progress_kernel_wrapper.event);
 
                 // it was running and now it is finished
-                if (running) {
+                if (running || dispatched_kernel.config.use_original) {
 
                     // Erase from in-progress
                     in_progress_kernels.erase(client_priority);
@@ -80,7 +82,16 @@ void TallyServer::run_priority_scheduler()
                 // we have told it to stop so we will launch it again
                 } else {
 
-                    CudaLaunchConfig config = original_config;
+                    auto &launch_call = in_progress_kernel_wrapper.launch_call;
+
+                    bool found_in_cache;
+                    auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
+
+                    if (!found_in_cache) {
+                        throw std::runtime_error("must be found in cache");
+                    }
+
+                    auto config = CudaLaunchConfig::default_config;
 
                     if (!is_highest_priority) {
 
@@ -92,7 +103,7 @@ void TallyServer::run_priority_scheduler()
                         // set retreat to 0
                         cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), in_progress_kernel_wrapper.launch_stream);
 
-                        config = preemptive_config;
+                        config = res.config;
                     }
 
                     // Create a event to monitor the kernel execution
@@ -106,6 +117,7 @@ void TallyServer::run_priority_scheduler()
 
                     // Flip the flag
                     in_progress_kernels[client_priority].running = true;
+                    in_progress_kernels[client_priority].config = config;
 
                 }
 
@@ -174,6 +186,21 @@ void TallyServer::run_priority_scheduler()
                     break;
                 }
 
+                // Do some profiling of the preemptive kernels
+                auto &launch_call = kernel_wrapper.launch_call;
+
+                bool found_in_cache;
+                auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
+
+                if (!found_in_cache) {
+                    auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
+                    auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+
+                    auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(threads_per_block, num_blocks);
+                    tune_kernel_launch(kernel_wrapper, client_id, preemptive_ptb_configs);
+                    res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                }
+
                 // Now launch the high priority kernel
                 CudaLaunchConfig config = original_config;
 
@@ -183,10 +210,8 @@ void TallyServer::run_priority_scheduler()
                     cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
                     cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
                     
-                    config = preemptive_config;
+                    config = res.config;
                 }
-
-                // std::cout << "Launched a new kernel" << std::endl;
 
                 // Create a event to monitor the kernel execution
                 cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming);
@@ -196,8 +221,7 @@ void TallyServer::run_priority_scheduler()
                 cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream);
 
                 // Bookkeep this kernel launch
-                in_progress_kernels[client_priority].kernel_wrapper = kernel_wrapper;
-                in_progress_kernels[client_priority].running = true;
+                in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
 
                 break;
             }

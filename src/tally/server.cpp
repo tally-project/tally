@@ -176,8 +176,8 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     // In seconds
     float profile_duration = (100 * time_elapsed) / 1000.f;
 
-    // At least run for 0.5 sec
-    profile_duration = std::max(profile_duration, 0.5f);
+    // At least run for 0.01 sec
+    profile_duration = std::max(profile_duration, 0.01f);
 
     // Maybe don't exceed 1 minute;
     profile_duration = std::min(profile_duration, 60.f);
@@ -217,6 +217,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     float best_norm_speed = base_latency_ms / best_latency_ms;
     if (best_norm_speed < USE_PTB_THRESHOLD) {
+        spdlog::info("Fall back to original config as preemptive norm speed is below threshold: " + std::to_string(best_norm_speed));
         best_config = base_config;
         best_norm_speed = 1.;
     }

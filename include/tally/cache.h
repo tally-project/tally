@@ -112,6 +112,8 @@ public:
             performance_cache_file = (cache_path / ".tally_perf_cache_workload_agnostic").string();
         } else if (policy == TALLY_SCHEDULER_POLICY::WORKLOAD_AWARE_SHARING) {
             performance_cache_file = (cache_path / ".tally_perf_cache_workload_aware").string();
+        } else if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
+            performance_cache_file = (cache_path / ".tally_perf_cache_priority").string();
         }
 
         load_cache();

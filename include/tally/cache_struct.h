@@ -701,6 +701,8 @@ public:
             policy_str = "workload_agnostic";
         } else if (policy == TALLY_SCHEDULER_POLICY::WORKLOAD_AWARE_SHARING) {
             policy_str = "workload_aware";
+        } else if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
+            policy_str = "priority";
         } else {
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unknown policy enum.");
         }

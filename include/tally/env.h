@@ -26,9 +26,9 @@ static uint32_t FATBIN_MAGIC_NUMBER = 3126193488;
 static uint32_t PTB_MAX_NUM_THREADS_PER_SM = 1024;
 
 // Time share Threshold
-static uint32_t TIME_SHARE_THRESHOLD = 1;
-static uint32_t USE_PTB_THRESHOLD = 0.5;
-static uint32_t USE_PREEMPTIVE_LATENCY_THRESHOLD = 0.5;
+static float TIME_SHARE_THRESHOLD = 1.f;
+static float USE_PTB_THRESHOLD = 0.5f;
+static float USE_PREEMPTIVE_LATENCY_THRESHOLD = 0.5f;
 
 extern bool TALLY_INITIALIZED;
 
