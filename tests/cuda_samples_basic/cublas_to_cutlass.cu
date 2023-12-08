@@ -18,11 +18,18 @@ int main()
 {
     srand (1);
 
-    int m = 3072;
-    int n = 1376;
-    int k = 768;
+    int m = 768;
+    int n = 51865;
+    int k = 1376;
+
+    int lda = 768;
+    int ldb = 51865;
+    int ldc = 768;
 
     bool use_fp16 = true;
+
+    std::cout << "M: " << m << " N: " << n << " K: " << k << std::endl;  
+    std::cout << "use_fp16: " << use_fp16 << std::endl;  
 
     void *h_A, *h_B;
     void *h_cublas, *h_cutlass;
@@ -40,7 +47,6 @@ int main()
         B_size_bytes = sizeof(float) * k * n;
         C_size_bytes = sizeof(float) * m * n;
     }
-
 
     // A will be k * m
     h_A = malloc(A_size_bytes);
@@ -127,10 +133,10 @@ int main()
     // warmup
     if (use_fp16) {
         cublasLtMatmul(lightHandle, matmul_desc, &alpha, d_A, A_layout, d_B, B_layout, &beta, d_cublas, C_layout, d_cublas, C_layout, &heuristicResult.algo, NULL, 0, 0);
-        cutlassGemm_f16(transa_cutlass, transb_cutlass, m, n, k, alpha, (half *)d_A, m /*lda*/, (half *)d_B, k /*ldb*/, beta, (half *)d_cutlass, m /*ldc*/, (half *)d_cutlass, m /*ldd*/, NULL, NULL);
+        cutlassGemm_f16(transa_cutlass, transb_cutlass, m, n, k, alpha, (half *)d_A, lda /*lda*/, (half *)d_B, ldb /*ldb*/, beta, (half *)d_cutlass, ldc /*ldc*/, (half *)d_cutlass, ldc /*ldd*/, NULL, NULL);
     } else {
-        cublasSgemm_v2(handle, transa, transb, m, n, k, &alpha, (float *)d_A, m /*lda*/, (float *)d_B, k /*ldb*/, &beta, d_cublas, m /*ldc*/);
-        cutlassGemm_f32(transa_cutlass, transb_cutlass, m, n, k, alpha, (float *)d_A, m /*lda*/, (float *)d_B, k /*ldb*/, beta, (float *)d_cutlass, m /*ldc*/, (float *)d_cutlass, m /*ldd*/, NULL, NULL, NULL);
+        cublasSgemm_v2(handle, transa, transb, m, n, k, &alpha, (float *)d_A, lda /*lda*/, (float *)d_B, ldb /*ldb*/, &beta, d_cublas, ldc /*ldc*/);
+        cutlassGemm_f32(transa_cutlass, transb_cutlass, m, n, k, alpha, (float *)d_A, lda /*lda*/, (float *)d_B, ldb /*ldb*/, beta, (float *)d_cutlass, ldc /*ldc*/, (float *)d_cutlass, ldc /*ldd*/, NULL, NULL, NULL);
     }
 
     cudaDeviceSynchronize();
@@ -139,7 +145,7 @@ int main()
     if (use_fp16) {
         cublasLtMatmul(lightHandle, matmul_desc, &alpha, d_A, A_layout, d_B, B_layout, &beta, d_cublas, C_layout, d_cublas, C_layout, &heuristicResult.algo, NULL, 0, 0);
     } else {
-        cublasSgemm_v2(handle, transa, transb, m, n, k, &alpha, (float *)d_A, m /*lda*/, (float *)d_B, k /*ldb*/, &beta, d_cublas, m /*ldc*/);
+        cublasSgemm_v2(handle, transa, transb, m, n, k, &alpha, (float *)d_A, lda /*lda*/, (float *)d_B, ldb /*ldb*/, &beta, d_cublas, ldc /*ldc*/);
     }
 
     cudaDeviceSynchronize();
@@ -152,9 +158,9 @@ int main()
 
     // Run cutlass impl
     if (use_fp16) {
-        cutlassGemm_f16(transa_cutlass, transb_cutlass, m, n, k, alpha, (half *)d_A, m /*lda*/, (half *)d_B, k /*ldb*/, beta, (half *)d_cutlass, m /*ldc*/, (half *)d_cutlass, m /*ldd*/, NULL, NULL);
+        cutlassGemm_f16(transa_cutlass, transb_cutlass, m, n, k, alpha, (half *)d_A, lda /*lda*/, (half *)d_B, ldb /*ldb*/, beta, (half *)d_cutlass, ldc /*ldc*/, (half *)d_cutlass, ldc /*ldd*/, NULL, NULL);
     } else {
-       cutlassGemm_f32(transa_cutlass, transb_cutlass, m, n, k, alpha, (float *)d_A, m /*lda*/, (float *)d_B, k /*ldb*/, beta, (float *)d_cutlass, m /*ldc*/, (float *)d_cutlass, m /*ldd*/, NULL, NULL, NULL);
+       cutlassGemm_f32(transa_cutlass, transb_cutlass, m, n, k, alpha, (float *)d_A, lda /*lda*/, (float *)d_B, ldb /*ldb*/, beta, (float *)d_cutlass, ldc /*ldc*/, (float *)d_cutlass, ldc /*ldd*/, NULL, NULL, NULL);
     }
 
     cudaDeviceSynchronize();
