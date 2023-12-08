@@ -5243,6 +5243,7 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
                 TALLY_SPD_LOG_PROFILE("cublasGemmStridedBatchedEx arguments:");
                 TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
                 TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
+                TALLY_SPD_LOG_PROFILE("batchCount: " + std::to_string(batchCount));
                 TALLY_SPD_LOG_PROFILE("Precision: f16");
 
                 // Copy array C
