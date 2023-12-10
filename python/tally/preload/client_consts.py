@@ -494,6 +494,7 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasGetMathMode",
     "cublasLtDestroy",
     "cudaGetLastError",
     "cublasLtMatmulDescDestroy",
@@ -829,7 +830,6 @@ UNSUPPORTED_FUNCS = [
 CUDA_GET_2_PARAM_FUNCS = [
     "ncclCommGetAsyncError",
     "cuStreamIsCapturing",
-    "cublasGetMathMode",
     "cudnnGetRNNBiasMode",
     "cudnnGetRNNMatrixMathType",
     "cublasGetSmCountTarget",

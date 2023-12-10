@@ -34,7 +34,8 @@ void TallyServer::run_priority_scheduler()
     // The boolean indicates whether the kernel is running/stopped
     std::map<ClientPriority, DispatchedKernel, std::greater<ClientPriority>> in_progress_kernels;
 
-    cudaEvent_t highest_priority_event = nullptr;
+    cudaEvent_t highest_priority_event;
+    cudaEventCreateWithFlags(&highest_priority_event, cudaEventDisableTiming);
 
     cudaStream_t retreat_stream;
     cudaStreamCreateWithFlags(&retreat_stream, cudaStreamNonBlocking);
@@ -211,16 +212,7 @@ void TallyServer::run_priority_scheduler()
                 // Now launch the high priority kernel
                 auto config = CudaLaunchConfig::default_config;
 
-                if (is_highest_priority) {
-
-                    if (highest_priority_event) {
-                        cudaEventDestroy(highest_priority_event);
-                    }
-
-                    // Create a new event to monitor the highest-priority kernel execution
-                    cudaEventCreateWithFlags(&highest_priority_event, cudaEventDisableTiming);
-
-                } else {
+                if (!is_highest_priority) {
 
                     auto &launch_call = kernel_wrapper.launch_call;
 

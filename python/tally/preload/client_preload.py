@@ -263,7 +263,7 @@ def gen_func_client_preload(func_sig):
         if ret_type == "cublasStatus_t":
             func_preload_builder += "#elif defined(REPLACE_CUBLAS)\n"
             func_preload_builder += "\tauto err = CUBLAS_STATUS_SUCCESS;\n"
-            func_preload_builder += "\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \"cublas function is not handled when REPLACE_CUBLAS is set.\");\n"
+            func_preload_builder += "\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": cublas function is not handled when REPLACE_CUBLAS is set.\");\n"
 
         func_preload_builder += "#else\n"
         func_preload_builder += get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type)
@@ -300,7 +300,7 @@ def gen_func_client_preload(func_sig):
         if ret_type == "cublasStatus_t":
             func_preload_builder += "#elif defined(REPLACE_CUBLAS)\n"
             func_preload_builder += "\tauto err = CUBLAS_STATUS_SUCCESS;\n"
-            func_preload_builder += "\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \"cublas function is not handled when REPLACE_CUBLAS is set.\");\n"
+            func_preload_builder += "\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": cublas function is not handled when REPLACE_CUBLAS is set.\");\n"
 
         func_preload_builder += "#else\n"
 

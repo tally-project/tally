@@ -81,6 +81,11 @@ public:
 		handle_map.erase(handle);	
 	}
 
+	void handle_cublasGetMathMode(cublasHandle_t handle, cublasMath_t *mode) {
+		auto &ctx = handle_map[handle];
+		*mode = ctx.mode;
+	}
+
 	cublasCtx get_cublasCtx(cublasHandle_t handle) {
 		return handle_map[handle];
 	}

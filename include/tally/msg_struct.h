@@ -1405,4 +1405,15 @@ struct cublasLtDestroyArg {
 	cublasLtHandle_t  lightHandle;
 };
 
+struct cublasGetMathModeArg {
+	cublasHandle_t  handle;
+	cublasMath_t*  mode;
+};
+
+struct cublasGetMathModeResponse {
+	cublasMath_t mode;
+	cublasStatus_t err;
+};
+
+
 #endif // TALLY_DEF_H

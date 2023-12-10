@@ -7158,4 +7158,51 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 	return err;
 }
 
+cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
+{
+	TALLY_SPD_LOG("cublasGetMathMode hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcublasGetMathMode(handle, mode);
+
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_SUCCESS;
+    cublas_tracer.handle_cublasGetMathMode(handle, mode);
+
+#else
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetMathModeArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASGETMATHMODE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasGetMathModeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->handle = handle;
+			request->mode = mode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cublasGetMathModeResponse*>(responsePayload);
+			if (mode) { *mode = response->mode; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasGetMathMode);
+	return err;
+}
+
 }
