@@ -237,19 +237,17 @@ void TallyServer::run_priority_scheduler()
                         res = get_single_kernel_best_config(launch_call, &found_in_cache);
                     }
 
+                    config = res.config;
+
                     if (config.use_preemptive_ptb) {
                         // set retreat ang global_idx to 0
                         cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
                         cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
                     }
-
-                    config = res.config;
-
+                    
                     // Create a event to monitor the kernel execution
                     cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming);
                 }
-
-
 
                 // Launch the kernel
                 kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
