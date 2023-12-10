@@ -23,21 +23,21 @@ public:
 // Always prioritize to execute kernels from high-priority job.
 // Run low-priority job only when there is no high-priority kernel.
 // Preempt low-priority kernel when high-priority kernel arrives.
+
+// For high-priority, we launch as many kernels as there are in the queue
+// For low-priority, we at most launch one kernel
 void TallyServer::run_priority_scheduler()
 {
     TALLY_SPD_LOG_ALWAYS("Running priority scheduler ...");
 
-    // Keep in track kernels that are in progress
+    // Keep in track low-priority kernels that are in progress
     // The boolean indicates whether the kernel is running/stopped
     std::map<ClientPriority, DispatchedKernel, std::greater<ClientPriority>> in_progress_kernels;
 
+    cudaEvent_t highest_priority_event = nullptr;
+
     cudaStream_t retreat_stream;
     cudaStreamCreateWithFlags(&retreat_stream, cudaStreamNonBlocking);
-
-    // Setting blocks per 1 for the moment to maximize priority-enforcement
-    // Later we may need to think about smarter ways to set this variable
-    CudaLaunchConfig preemptive_config(false, false, false, true, 1);
-    CudaLaunchConfig original_config = CudaLaunchConfig::default_config;
 
     while (!iox::posix::hasTerminationRequested()) {
 
@@ -55,80 +55,102 @@ void TallyServer::run_priority_scheduler()
                 break;
             }
 
-            // First check whether this client already has a kernel running
-            if (in_progress_kernels.find(client_priority) != in_progress_kernels.end()) {
+            KernelLaunchWrapper kernel_wrapper;
+            bool succeeded;
+        
+            if (is_highest_priority) {
 
-                auto &dispatched_kernel = in_progress_kernels[client_priority];
-                auto &in_progress_kernel_wrapper = dispatched_kernel.kernel_wrapper;
-                auto running = dispatched_kernel.running;
+                // Always try to fetch and launch kernel
+                succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
 
-                // First check if the kernel is still running
-                // note that the running flag only tells us whether the kernel has been signaled to stop
-                // it is possible that it has yet terminated
-                if (cudaEventQuery(in_progress_kernel_wrapper.event) != cudaSuccess) {
+                // all kernels have been launched
+                if (!succeeded) {
+
+                    // then we wait until all kernels have completed execution to
+                    // potentially consider launching low-priority kernels
+                    if (cudaEventQuery(highest_priority_event) != cudaSuccess) {
+                        break;
+                    }
+
+                }
+
+            } else {
+                // For non-highest-priority client, we only launch at most 1 kernel at any time
+                // therefore we will query whether the kernel has finished
+
+                // First check whether this client already has a kernel running
+                if (in_progress_kernels.find(client_priority) != in_progress_kernels.end()) {
+
+                    auto &dispatched_kernel = in_progress_kernels[client_priority];
+                    auto &in_progress_kernel_wrapper = dispatched_kernel.kernel_wrapper;
+                    auto running = dispatched_kernel.running;
+
+                    // First check if the kernel is still running
+                    // note that the running flag only tells us whether the kernel has been signaled to stop
+                    // it is possible that it has yet terminated
+                    if (cudaEventQuery(in_progress_kernel_wrapper.event) != cudaSuccess) {
+                        break;
+                    }
+
+                    // Destroy the previously created event since the kernel has completed
+                    cudaEventDestroy(in_progress_kernel_wrapper.event);
+
+                    // it was running and now it is finished
+                    if (running || dispatched_kernel.config.use_original) {
+
+                        // Erase from in-progress
+                        in_progress_kernels.erase(client_priority);
+                        client_data.queue_size--;
+
+                    // we have told it to stop so we will launch it again
+                    } else {
+
+                        auto &launch_call = in_progress_kernel_wrapper.launch_call;
+
+                        bool found_in_cache;
+                        auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
+
+                        if (!found_in_cache) {
+                            throw std::runtime_error("must be found in cache");
+                        }
+
+                        auto config = CudaLaunchConfig::default_config;
+
+                        if (!is_highest_priority) {
+
+                            // Make sure there is no pending event in retreat stream
+                            // think about a previous cudaMemsetAsync(&retreat) has not yet completed,
+                            // then there may be conflicted writes to retreat
+                            cudaStreamSynchronize(retreat_stream);
+
+                            // set retreat to 0
+                            cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), in_progress_kernel_wrapper.launch_stream);
+
+                            config = res.config;
+                        }
+
+                        // Create a event to monitor the kernel execution
+                        cudaEventCreateWithFlags(&in_progress_kernel_wrapper.event, cudaEventDisableTiming);
+
+                        // Launch the kernel again
+                        in_progress_kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+
+                        // Monitor the launched kernel
+                        cudaEventRecord(in_progress_kernel_wrapper.event, in_progress_kernel_wrapper.launch_stream);
+
+                        // Flip the flag
+                        in_progress_kernels[client_priority].running = true;
+                        in_progress_kernels[client_priority].config = config;
+
+                    }
+
+                    // Either way, break the loop
                     break;
                 }
 
-                // Destroy the previously created event since the kernel has completed
-                cudaEventDestroy(in_progress_kernel_wrapper.event);
-
-                // it was running and now it is finished
-                if (running || dispatched_kernel.config.use_original) {
-
-                    // Erase from in-progress
-                    in_progress_kernels.erase(client_priority);
-                    client_data.queue_size--;
-
-                // we have told it to stop so we will launch it again
-                } else {
-
-                    auto &launch_call = in_progress_kernel_wrapper.launch_call;
-
-                    bool found_in_cache;
-                    auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
-
-                    if (!found_in_cache) {
-                        throw std::runtime_error("must be found in cache");
-                    }
-
-                    auto config = CudaLaunchConfig::default_config;
-
-                    if (!is_highest_priority) {
-
-                        // Make sure there is no pending event in retreat stream
-                        // think about a previous cudaMemsetAsync(&retreat) has not yet completed,
-                        // then there may be conflicted writes to retreat
-                        cudaStreamSynchronize(retreat_stream);
-
-                        // set retreat to 0
-                        cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), in_progress_kernel_wrapper.launch_stream);
-
-                        config = res.config;
-                    }
-
-                    // Create a event to monitor the kernel execution
-                    cudaEventCreateWithFlags(&in_progress_kernel_wrapper.event, cudaEventDisableTiming);
-
-                    // Launch the kernel again
-                    in_progress_kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
-
-                    // Monitor the launched kernel
-                    cudaEventRecord(in_progress_kernel_wrapper.event, in_progress_kernel_wrapper.launch_stream);
-
-                    // Flip the flag
-                    in_progress_kernels[client_priority].running = true;
-                    in_progress_kernels[client_priority].config = config;
-
-                }
-
-                // Either way, break the loop
-                break;
-
+                // Try to fetch kernel from low-priority queue
+                succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
             }
-
-            // If this client does not have a kernel in progress, try fetching from the queue
-            KernelLaunchWrapper kernel_wrapper;
-            bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
 
             // Successfully fetched a kernel from the launch queue
             if (succeeded) {
@@ -186,42 +208,64 @@ void TallyServer::run_priority_scheduler()
                     break;
                 }
 
-                // Do some profiling of the preemptive kernels
-                auto &launch_call = kernel_wrapper.launch_call;
-
-                bool found_in_cache;
-                auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
-
-                if (!found_in_cache) {
-                    auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
-                    auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
-
-                    auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(threads_per_block, num_blocks);
-                    tune_kernel_launch(kernel_wrapper, client_id, preemptive_ptb_configs);
-                    res = get_single_kernel_best_config(launch_call, &found_in_cache);
-                }
-
                 // Now launch the high priority kernel
-                CudaLaunchConfig config = original_config;
+                auto config = CudaLaunchConfig::default_config;
 
-                if (!is_highest_priority) {
+                if (is_highest_priority) {
 
-                    // set retreat ang global_idx to 0
-                    cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
-                    cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
-                    
+                    if (highest_priority_event) {
+                        cudaEventDestroy(highest_priority_event);
+                    }
+
+                    // Create a new event to monitor the highest-priority kernel execution
+                    cudaEventCreateWithFlags(&highest_priority_event, cudaEventDisableTiming);
+
+                } else {
+
+                    auto &launch_call = kernel_wrapper.launch_call;
+
+                    // Do some profiling of the preemptive kernels
+                    bool found_in_cache;
+                    auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
+
+                    if (!found_in_cache) {
+                        auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
+                        auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+
+                        auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(threads_per_block, num_blocks);
+                        tune_kernel_launch(kernel_wrapper, client_id, preemptive_ptb_configs);
+                        res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                    }
+
+                    if (config.use_preemptive_ptb) {
+                        // set retreat ang global_idx to 0
+                        cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
+                        cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
+                    }
+
                     config = res.config;
+
+                    // Create a event to monitor the kernel execution
+                    cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming);
                 }
 
-                // Create a event to monitor the kernel execution
-                cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming);
 
+
+                // Launch the kernel
                 kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                
+                // For highest priority, we can directly mark the kernel as launched as we won't ever preempt it
+                if (is_highest_priority) {
 
-                cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream);
+                    client_data.queue_size--;
+                    cudaEventRecord(highest_priority_event, kernel_wrapper.launch_stream);
 
-                // Bookkeep this kernel launch
-                in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
+                } else {
+                    // Otherwise, bookkeep kernel launch if it is not highest-priority 
+                    cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream);
+
+                    in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
+                }
 
                 break;
             }

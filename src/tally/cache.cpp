@@ -20,9 +20,9 @@ __attribute__((__constructor__)) void init_cache()
         }
     }
 
-    std::ofstream cache_log_file("tally-cache.log", std::ios::app);
-    cache_log_file << process_name << std::endl;
-    cache_log_file.close();
+    // std::ofstream cache_log_file("tally-cache.log", std::ios::app);
+    // cache_log_file << process_name << std::endl;
+    // cache_log_file.close();
 
     TallyCache::cache = std::make_shared<TallyCache>();
 }
