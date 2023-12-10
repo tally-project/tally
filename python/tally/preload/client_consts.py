@@ -516,18 +516,15 @@ KERNEL_LAUNCH_CALLS = [
 
 # let the client call the APIs directly
 IGNORE_CALLS = [
-    # "cuDevicePrimaryCtxGetState",
     "cuCtxDestroy_v2",
     "cuInit",
-    # "cudaGetErrorString",
-    # "cuGetErrorString",
-    # "cuGetErrorName",
-    # "cuGetExportTable",
     "cuCtxCreate_v2",
 ]
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuDevicePrimaryCtxGetState",
+    "cudaGetDevice",
     "ncclCommInitRankConfig",
     "cudnnGetErrorString",
     "cudaFuncGetAttributes",
@@ -781,7 +778,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cudaDriverGetVersion",
     "cudaRuntimeGetVersion",
     "cuDeviceGetPCIBusId",
-    "cudaGetDevice",
     "cudaGetDeviceCount",
     "cuThreadExchangeStreamCaptureMode",
     "ncclCommInitRank",
@@ -885,7 +881,6 @@ CUDA_GET_2_PARAM_FUNCS = [
 ]
 
 CUDA_GET_2_3_PARAM_FUNCS = [
-    "cuDevicePrimaryCtxGetState",
     "cudaStreamGetCaptureInfo"
 ]
 

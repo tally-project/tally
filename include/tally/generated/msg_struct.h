@@ -180,26 +180,6 @@ struct cuDevicePrimaryCtxRetainResponse {
 	CUresult err;
 };
 
-struct cuDevicePrimaryCtxRelease_v2Arg {
-	CUdevice  dev;
-};
-
-struct cuDevicePrimaryCtxGetStateArg {
-	CUdevice  dev;
-	unsigned int * flags;
-	int * active;
-};
-
-struct cuDevicePrimaryCtxGetStateResponse {
-	unsigned int  flags;
-	int  active;
-	CUresult err;
-};
-
-struct cuDevicePrimaryCtxReset_v2Arg {
-	CUdevice  dev;
-};
-
 struct cuCtxPushCurrent_v2Arg {
 	CUcontext  ctx;
 };
@@ -686,15 +666,6 @@ struct cudaDeviceGetP2PAttributeArg {
 
 struct cudaDeviceGetP2PAttributeResponse {
 	int  value;
-	cudaError_t err;
-};
-
-struct cudaGetDeviceArg {
-	int * device;
-};
-
-struct cudaGetDeviceResponse {
-	int  device;
 	cudaError_t err;
 };
 

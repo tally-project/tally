@@ -26,10 +26,14 @@
 
     #define TALLY_CLIENT_PROFILE_END \
         auto __tally_call_end = std::chrono::high_resolution_clock::now(); \
-        TallyClient::client->_profile_cpu_timestamps.push_back({ __tally_call_start, __tally_call_end });
+        TallyClient::client->_profile_cpu_timestamps.push_back({ __tally_call_start, __tally_call_end });   \
+        auto start_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(__tally_call_start.time_since_epoch()).count();    \
+        auto end_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(__tally_call_end.time_since_epoch()).count();    \
+        std::cout << "Duration: " << end_ns - start_ns << "ns" << std::endl;
 
     #define TALLY_CLIENT_TRACE_API_CALL(CLIENT_API_CALL) \
-        TallyClient::client->_profile_kernel_seq.push_back((void *) l##CLIENT_API_CALL);
+        TallyClient::client->_profile_kernel_seq.push_back((void *) l##CLIENT_API_CALL);    \
+        std::cout << #CLIENT_API_CALL << std::endl; \
 
     #define TALLY_CLIENT_TRACE_KERNEL_CALL(FUNC) \
         TallyClient::client->_profile_kernel_seq.push_back((void *) FUNC);

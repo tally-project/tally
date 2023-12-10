@@ -4493,3 +4493,47 @@ void TallyServer::handle_ncclCommInitRankConfig(void *__args, iox::popo::Untyped
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cudaGetDevice(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaGetDevice");
+	auto args = (struct cudaGetDeviceArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cudaGetDeviceResponse), alignof(cudaGetDeviceResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaGetDeviceResponse*>(responsePayload);
+            response->err = cudaGetDevice(
+				(args->device ? &(response->device) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuDevicePrimaryCtxGetState(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuDevicePrimaryCtxGetState");
+	auto args = (struct cuDevicePrimaryCtxGetStateArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cuDevicePrimaryCtxGetStateResponse), alignof(cuDevicePrimaryCtxGetStateResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuDevicePrimaryCtxGetStateResponse*>(responsePayload);
+            response->err = cuDevicePrimaryCtxGetState(
+				args->dev,
+				(args->flags ? &(response->flags) : NULL),
+				(args->active ? &(response->active) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}

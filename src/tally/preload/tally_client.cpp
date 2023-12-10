@@ -39,6 +39,9 @@
 #include "tally/generated/cuda_api_enum.h"
 #include "tally/cublas_tracer.h"
 
+int cuda_device = 0;
+unsigned int device_ctx_flags = 0;
+
 cublasTracer cublas_tracer;
 cublasLtTracer cublasLt_tracer;
 cublasLtMatmulDescTracer cublasLtMatmulDesc_tracer;
@@ -3472,8 +3475,10 @@ cudaError_t cudaSetDevice(int  device)
 {
 	TALLY_SPD_LOG("cudaSetDevice hooked");
 	TALLY_CLIENT_PROFILE_START;
-
 	cudaError_t err;
+
+    // Record it locally so that cudaGetDevice do not have to query the server
+    cuda_device = device;
 
 #ifndef RUN_LOCALLY
 
@@ -6591,6 +6596,9 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
 	TALLY_SPD_LOG("cuDevicePrimaryCtxSetFlags_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
 
+    // Keep a local copy
+    device_ctx_flags = flags;
+
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxSetFlags_v2(dev, flags);
 #else
@@ -6877,6 +6885,97 @@ ncclResult_t ncclCommInitRankConfig(ncclComm_t*  comm, int  nranks, ncclUniqueId
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(ncclCommInitRankConfig);
+	return err;
+}
+
+cudaError_t cudaGetDevice(int * device)
+{
+	TALLY_SPD_LOG("cudaGetDevice hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcudaGetDevice(device);
+#else
+
+    auto err = cudaSuccess;
+    *device = cuda_device;
+
+    // cudaError_t err;
+
+    // IOX_CLIENT_ACQUIRE_LOCK;
+    // TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetDeviceArg), alignof(MessageHeader_t))
+    //     .and_then([&](auto& requestPayload) {
+
+    //         auto header = static_cast<MessageHeader_t*>(requestPayload);
+    //         header->api_id = CUDA_API_ENUM::CUDAGETDEVICE;
+    //         header->client_id = TallyClient::client->client_id;
+            
+    //         auto request = (cudaGetDeviceArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+	// 		request->device = device;
+
+    //         TallyClient::client->iox_client->send(header).or_else(
+    //             [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+    //     })
+    //     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    // while(!TallyClient::client->iox_client->take()
+    //     .and_then([&](const auto& responsePayload) {
+    //         auto response = static_cast<const cudaGetDeviceResponse*>(responsePayload);
+	// 		if (device) { *device = response->device; }
+
+    //         err = response->err;
+    //         TallyClient::client->iox_client->releaseResponse(responsePayload);
+    //     }))
+    // {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaGetDevice);
+	return err;
+}
+
+CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * active)
+{
+	TALLY_SPD_LOG("cuDevicePrimaryCtxGetState hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuDevicePrimaryCtxGetState(dev, flags, active);
+#else
+
+    CUresult err = CUDA_SUCCESS;
+    *flags = device_ctx_flags;
+    *active = 1;
+
+    // IOX_CLIENT_ACQUIRE_LOCK;
+    // TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxGetStateArg), alignof(MessageHeader_t))
+    //     .and_then([&](auto& requestPayload) {
+
+    //         auto header = static_cast<MessageHeader_t*>(requestPayload);
+    //         header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXGETSTATE;
+    //         header->client_id = TallyClient::client->client_id;
+            
+    //         auto request = (cuDevicePrimaryCtxGetStateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+	// 		request->dev = dev;
+	// 		request->flags = flags;
+	// 		request->active = active;
+
+    //         TallyClient::client->iox_client->send(header).or_else(
+    //             [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+    //     })
+    //     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    // while(!TallyClient::client->iox_client->take()
+    //     .and_then([&](const auto& responsePayload) {
+    //         auto response = static_cast<const cuDevicePrimaryCtxGetStateResponse*>(responsePayload);
+	// 		if (flags) { *flags = response->flags; }
+	// 		if (active) { *active = response->active; }
+
+    //         err = response->err;
+    //         TallyClient::client->iox_client->releaseResponse(responsePayload);
+    //     }))
+    // {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxGetState);
 	return err;
 }
 

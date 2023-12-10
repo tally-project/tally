@@ -798,125 +798,21 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDevicePrimaryCtxRelease_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	auto err = lcuDevicePrimaryCtxRelease_v2(dev);
+	return lcuDevicePrimaryCtxRelease_v2(dev);
 #else
-
-    CUresult err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxRelease_v2Arg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRELEASE_V2;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuDevicePrimaryCtxRelease_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->dev = dev;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const CUresult*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxRelease_v2);
-	return err;
-}
-
-CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * active)
-{
-	TALLY_SPD_LOG("cuDevicePrimaryCtxGetState hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcuDevicePrimaryCtxGetState(dev, flags, active);
-#else
-
-    CUresult err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxGetStateArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXGETSTATE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuDevicePrimaryCtxGetStateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->dev = dev;
-			request->flags = flags;
-			request->active = active;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cuDevicePrimaryCtxGetStateResponse*>(responsePayload);
-			if (flags) { *flags = response->flags; }
-			if (active) { *active = response->active; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxGetState);
-	return err;
 }
 
 CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDevicePrimaryCtxReset_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	auto err = lcuDevicePrimaryCtxReset_v2(dev);
+	return lcuDevicePrimaryCtxReset_v2(dev);
 #else
-
-    CUresult err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxReset_v2Arg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRESET_V2;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuDevicePrimaryCtxReset_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->dev = dev;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const CUresult*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxReset_v2);
-	return err;
 }
 
 CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
@@ -6698,47 +6594,6 @@ cudaError_t cudaInitDevice(int  device, unsigned int  deviceFlags, unsigned int 
 #else
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
-}
-
-cudaError_t cudaGetDevice(int * device)
-{
-	TALLY_SPD_LOG("cudaGetDevice hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcudaGetDevice(device);
-#else
-
-    cudaError_t err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetDeviceArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDAGETDEVICE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cudaGetDeviceArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->device = device;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cudaGetDeviceResponse*>(responsePayload);
-			if (device) { *device = response->device; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGetDevice);
-	return err;
 }
 
 cudaError_t cudaSetValidDevices(int * device_arr, int  len)

@@ -1370,4 +1370,25 @@ struct ncclCommInitRankConfigResponse {
 	ncclResult_t err;
 };
 
+struct cudaGetDeviceArg {
+	int * device;
+};
+
+struct cudaGetDeviceResponse {
+	int  device;
+	cudaError_t err;
+};
+
+struct cuDevicePrimaryCtxGetStateArg {
+	CUdevice  dev;
+	unsigned int * flags;
+	int * active;
+};
+
+struct cuDevicePrimaryCtxGetStateResponse {
+	unsigned int  flags;
+	int  active;
+	CUresult err;
+};
+
 #endif // TALLY_DEF_H
