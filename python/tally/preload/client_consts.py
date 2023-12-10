@@ -459,6 +459,8 @@ TALLY_CLIENT_SRC_TEMPLATE_TOP = """
 
 TallyClient *TallyClient::client;
 
+cudaError_t last_err = cudaSuccess;
+
 __attribute__((__constructor__)) void init_client()
 {
     NO_INIT_PROCESS_KEYWORDS_VEC;
@@ -483,37 +485,6 @@ REGISTER_FUNCS = [
     "__cudaRegisterFatBinaryEnd"
 ]
 
-# API calls that will launch a kernel
-# For these, we will delay the actual dispatch to the hardware
-# as we intend to schedule ourselves.
-KERNEL_LAUNCH_CALLS = [
-    "cudaLaunchKernel",
-    "cudnnRNNBackwardWeights",
-    "cudnnRNNBackwardData",
-    "cudnnRNNForwardTraining",
-    "cudnnMultiHeadAttnBackwardData",
-    "cudnnMultiHeadAttnForward",
-    "cublasSgemmEx",
-    "cudnnTransformTensor",
-    "cublasSgemv_v2",
-    "cudnnLRNCrossChannelForward",
-    "cublasSgemm_v2",
-    "cudnnSoftmaxForward",
-    "cudnnAddTensor",
-    "cublasLtMatmul",
-    "cudnnActivationForward",
-    "cudnnConvolutionForward",
-    "cudnnPoolingForward",
-    "cudnnMultiHeadAttnBackwardWeights",
-    "cudnnReorderFilterAndBias",
-    "cudnnBatchNormalizationForwardTrainingEx",
-    "cudnnBatchNormalizationBackwardEx",
-    "cudnnRNNBackwardWeights_v8",
-    "cudnnRNNBackwardData_v8",
-    "cudnnRNNForward",
-    "cudnnBackendExecute"
-]
-
 # just do nothing for these
 IGNORE_CALLS = [
     "cuCtxDestroy_v2",
@@ -523,6 +494,8 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasLtDestroy",
+    "cudaGetLastError",
     "cublasLtMatmulDescDestroy",
     "cublasLtMatrixLayoutDestroy",
     "cuDevicePrimaryCtxGetState",
@@ -712,7 +685,6 @@ FORWARD_API_CALLS = [
     "cudaThreadExit",
     "cudaThreadSetLimit",
     "cudaThreadSetCacheConfig",
-    "cudaGetLastError",
     "cudaPeekAtLastError",
     "cudaSetDeviceFlags",
     "cudaCtxResetPersistingL2Cache",
@@ -731,7 +703,6 @@ FORWARD_API_CALLS = [
     "cuDevicePrimaryCtxRelease_v2",
     "cuDevicePrimaryCtxReset_v2",
     "cublasLtMatmulPreferenceDestroy",
-    "cublasLtDestroy",
     "cuCtxPushCurrent_v2",
     "cuCtxSetCurrent",
     "cuCtxSetLimit",

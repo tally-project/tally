@@ -283,6 +283,10 @@ def gen_func_client_preload(func_sig):
     {};
 """
         func_preload_builder += "#endif\n"
+
+        if ret_type == "cudaError_t":
+            func_preload_builder += f"\tlast_err = err;\n"
+
         func_preload_builder += f"\tTALLY_CLIENT_PROFILE_END;\n"
         func_preload_builder += f"\tTALLY_CLIENT_TRACE_API_CALL({func_name});\n"
 
@@ -313,6 +317,10 @@ def gen_func_client_preload(func_sig):
     {{}};
 """
         func_preload_builder += "#endif\n"
+
+        if ret_type == "cudaError_t":
+            func_preload_builder += f"\tlast_err = err;\n"
+            
         func_preload_builder += f"\tTALLY_CLIENT_PROFILE_END;\n"
         func_preload_builder += f"\tTALLY_CLIENT_TRACE_API_CALL({func_name});\n"
 

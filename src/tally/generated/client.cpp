@@ -10,6 +10,8 @@
 
 TallyClient *TallyClient::client;
 
+cudaError_t last_err = cudaSuccess;
+
 __attribute__((__constructor__)) void init_client()
 {
     NO_INIT_PROCESS_KEYWORDS_VEC;

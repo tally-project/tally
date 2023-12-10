@@ -5465,6 +5465,7 @@ cudaError_t cudaDeviceReset()
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceReset);
 	return err;
@@ -5506,6 +5507,7 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetLimit);
 	return err;
@@ -5548,6 +5550,7 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetLimit);
 	return err;
@@ -5599,6 +5602,7 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetCacheConfig);
 	return err;
@@ -5642,6 +5646,7 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetStreamPriorityRange);
 	return err;
@@ -5682,6 +5687,7 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetCacheConfig);
 	return err;
@@ -5732,6 +5738,7 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetSharedMemConfig);
 	return err;
@@ -5785,6 +5792,7 @@ cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetPCIBusId);
 	return err;
@@ -5827,6 +5835,7 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcGetEventHandle);
 	return err;
@@ -5869,6 +5878,7 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcOpenEventHandle);
 	return err;
@@ -5911,6 +5921,7 @@ cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcGetMemHandle);
 	return err;
@@ -5954,6 +5965,7 @@ cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, uns
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcOpenMemHandle);
 	return err;
@@ -5994,6 +6006,7 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaIpcCloseMemHandle);
 	return err;
@@ -6035,6 +6048,7 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceFlushGPUDirectRDMAWrites);
 	return err;
@@ -6074,6 +6088,7 @@ cudaError_t cudaThreadExit()
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadExit);
 	return err;
@@ -6115,6 +6130,7 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSetLimit);
 	return err;
@@ -6157,6 +6173,7 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadGetLimit);
 	return err;
@@ -6198,6 +6215,7 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadGetCacheConfig);
 	return err;
@@ -6238,47 +6256,9 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSetCacheConfig);
-	return err;
-}
-
-cudaError_t cudaGetLastError()
-{
-	TALLY_SPD_LOG("cudaGetLastError hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcudaGetLastError();
-#else
-
-    cudaError_t err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGetLastErrorArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDAGETLASTERROR;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cudaGetLastErrorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const cudaError_t*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGetLastError);
 	return err;
 }
 
@@ -6316,6 +6296,7 @@ cudaError_t cudaPeekAtLastError()
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaPeekAtLastError);
 	return err;
@@ -6377,6 +6358,7 @@ cudaError_t cudaGetDeviceCount(int * count)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceCount);
 	return err;
@@ -6419,6 +6401,7 @@ cudaError_t cudaGetDeviceProperties_v2(struct cudaDeviceProp * prop, int  device
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceProperties_v2);
 	return err;
@@ -6462,6 +6445,7 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetAttribute);
 	return err;
@@ -6504,6 +6488,7 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetDefaultMemPool);
 	return err;
@@ -6545,6 +6530,7 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetMemPool);
 	return err;
@@ -6587,6 +6573,7 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetMemPool);
 	return err;
@@ -6641,6 +6628,7 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetP2PAttribute);
 	return err;
@@ -6701,6 +6689,7 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaSetDeviceFlags);
 	return err;
@@ -6742,6 +6731,7 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceFlags);
 	return err;
@@ -6784,6 +6774,7 @@ cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetPriority);
 	return err;
@@ -6826,6 +6817,7 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetFlags);
 	return err;
@@ -6875,6 +6867,7 @@ cudaError_t cudaCtxResetPersistingL2Cache()
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaCtxResetPersistingL2Cache);
 	return err;
@@ -6916,6 +6909,7 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCopyAttributes);
 	return err;
@@ -6976,6 +6970,7 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamDestroy);
 	return err;
@@ -7018,6 +7013,7 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamWaitEvent);
 	return err;
@@ -7068,6 +7064,7 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamQuery);
 	return err;
@@ -7119,6 +7116,7 @@ cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mod
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadExchangeStreamCaptureMode);
 	return err;
@@ -7161,6 +7159,7 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamIsCapturing);
 	return err;
@@ -7212,6 +7211,7 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventCreate);
 	return err;
@@ -7254,6 +7254,7 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventCreateWithFlags);
 	return err;
@@ -7296,6 +7297,7 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventRecordWithFlags);
 	return err;
@@ -7336,6 +7338,7 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventQuery);
 	return err;
@@ -7376,6 +7379,7 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventSynchronize);
 	return err;
@@ -7416,6 +7420,7 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventDestroy);
 	return err;
@@ -7459,6 +7464,7 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaEventElapsedTime);
 	return err;
@@ -7729,6 +7735,7 @@ cudaError_t cudaFreeArray(cudaArray_t  array)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaFreeArray);
 	return err;
@@ -7902,6 +7909,7 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaMemGetInfo);
 	return err;
@@ -8155,6 +8163,7 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaMemsetAsync);
 	return err;
@@ -8366,6 +8375,7 @@ cudaError_t cudaMemPoolTrimTo(cudaMemPool_t  memPool, size_t  minBytesToKeep)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaMemPoolTrimTo);
 	return err;
@@ -8717,6 +8727,7 @@ cudaError_t cudaDriverGetVersion(int * driverVersion)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDriverGetVersion);
 	return err;
@@ -8758,6 +8769,7 @@ cudaError_t cudaRuntimeGetVersion(int * runtimeVersion)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaRuntimeGetVersion);
 	return err;
@@ -8800,6 +8812,7 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGraphCreate);
 	return err;
@@ -9383,6 +9396,7 @@ cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t * pGraphExec, cudaGrap
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGraphInstantiateWithFlags);
 	return err;
@@ -9594,6 +9608,7 @@ cudaError_t cudaGraphUpload(cudaGraphExec_t  graphExec, cudaStream_t  stream)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGraphUpload);
 	return err;
@@ -9635,6 +9650,7 @@ cudaError_t cudaGraphLaunch(cudaGraphExec_t  graphExec, cudaStream_t  stream)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGraphLaunch);
 	return err;
@@ -9675,6 +9691,7 @@ cudaError_t cudaGraphExecDestroy(cudaGraphExec_t  graphExec)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGraphExecDestroy);
 	return err;
@@ -9715,6 +9732,7 @@ cudaError_t cudaGraphDestroy(cudaGraph_t  graph)
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaGraphDestroy);
 	return err;
@@ -14845,7 +14863,7 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetVersion_v2(handle, version);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -14890,7 +14908,7 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetProperty(type, value);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -14974,7 +14992,7 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetStream_v2(handle, streamId);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -15019,7 +15037,7 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetPointerMode_v2(handle, mode);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -15064,7 +15082,7 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetPointerMode_v2(handle, mode);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -15128,7 +15146,7 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetMathMode(handle, mode);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -15173,7 +15191,7 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetSmCountTarget(handle, smCountTarget);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -15218,7 +15236,7 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetSmCountTarget(handle, smCountTarget);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -15292,7 +15310,7 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetLoggerCallback(userCallback);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -15335,7 +15353,7 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetLoggerCallback(userCallback);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -15379,7 +15397,7 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetVector(n, elemSize, x, incx, devicePtr, incy);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -20384,6 +20402,7 @@ cudaError_t cudaProfilerStart()
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaProfilerStart);
 	return err;
@@ -20423,6 +20442,7 @@ cudaError_t cudaProfilerStop()
         }))
     {};
 #endif
+	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaProfilerStop);
 	return err;
@@ -20648,49 +20668,6 @@ nvrtcResult nvrtcGetLoweredName(nvrtcProgram  prog, const char *const  name_expr
 #endif
 }
 
-cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
-{
-	TALLY_SPD_LOG("cublasLtDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcublasLtDestroy(lightHandle);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
-#else
-
-    cublasStatus_t err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtDestroyArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTDESTROY;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->lightHandle = lightHandle;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const cublasStatus_t*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtDestroy);
-	return err;
-}
-
 const char* cublasLtGetStatusName(cublasStatus_t  status)
 {
 	TALLY_SPD_LOG("cublasLtGetStatusName hooked");
@@ -20896,7 +20873,7 @@ cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t* 
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixTransformDescCreate(transformDesc, scaleType);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -20941,7 +20918,7 @@ cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t 
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixTransformDescDestroy(transformDesc);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -21014,7 +20991,7 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulPreferenceDestroy(pref);
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
@@ -21177,7 +21154,7 @@ cublasStatus_t cublasLtLoggerForceDisable()
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtLoggerForceDisable();
 #elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	auto err = CUBLAS_STATUS_SUCCESS;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 

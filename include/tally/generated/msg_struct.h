@@ -604,9 +604,6 @@ struct cudaThreadSetCacheConfigArg {
 	enum cudaFuncCache  cacheConfig;
 };
 
-struct cudaGetLastErrorArg {
-};
-
 struct cudaPeekAtLastErrorArg {
 };
 
@@ -1728,10 +1725,6 @@ struct cudaProfilerStartArg {
 };
 
 struct cudaProfilerStopArg {
-};
-
-struct cublasLtDestroyArg {
-	cublasLtHandle_t  lightHandle;
 };
 
 struct cublasLtGetVersionArg {

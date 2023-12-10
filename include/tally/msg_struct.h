@@ -1399,5 +1399,10 @@ struct cublasLtMatmulDescDestroyArg {
 	cublasLtMatmulDesc_t  matmulDesc;
 };
 
+struct cudaGetLastErrorArg {};
+
+struct cublasLtDestroyArg {
+	cublasLtHandle_t  lightHandle;
+};
 
 #endif // TALLY_DEF_H

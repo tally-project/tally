@@ -13,6 +13,8 @@
 #include <sstream>
 #include <unistd.h>
 
+#include <cuda_runtime.h>
+
 #include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
 #include "iceoryx_posh/popo/untyped_client.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
@@ -43,6 +45,8 @@
     #define TALLY_CLIENT_TRACE_API_CALL(CLIENT_API_CALL)
     #define TALLY_CLIENT_TRACE_KERNEL_CALL(FUNC)
 #endif
+
+extern cudaError_t last_err;
 
 class TallyClient {
 

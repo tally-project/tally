@@ -100,6 +100,10 @@ public:
 		handle_map[handle] = ctx;
 	}
 
+	void handle_cublasLtDestroy(cublasLtHandle_t handle) {
+		handle_map.erase(handle);
+	}
+
 	cublasLtCtx get_cublasLtCtx(cublasLtHandle_t handle) {
 		return handle_map[handle];
 	}
