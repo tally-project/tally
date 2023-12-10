@@ -798,21 +798,81 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDevicePrimaryCtxRelease_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	return lcuDevicePrimaryCtxRelease_v2(dev);
+	auto err = lcuDevicePrimaryCtxRelease_v2(dev);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxRelease_v2Arg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRELEASE_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuDevicePrimaryCtxRelease_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxRelease_v2);
+	return err;
 }
 
 CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDevicePrimaryCtxReset_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	return lcuDevicePrimaryCtxReset_v2(dev);
+	auto err = lcuDevicePrimaryCtxReset_v2(dev);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxReset_v2Arg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXRESET_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuDevicePrimaryCtxReset_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->dev = dev;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxReset_v2);
+	return err;
 }
 
 CUresult cuCtxCreate_v2(CUcontext * pctx, unsigned int  flags, CUdevice  dev)
@@ -14784,6 +14844,9 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetVersion_v2(handle, version);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -14826,6 +14889,9 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetProperty(type, value);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -14907,6 +14973,9 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetStream_v2(handle, streamId);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -14949,6 +15018,9 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetPointerMode_v2(handle, mode);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -14991,6 +15063,9 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetPointerMode_v2(handle, mode);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -15052,6 +15127,9 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetMathMode(handle, mode);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -15094,6 +15172,9 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetSmCountTarget(handle, smCountTarget);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -15136,6 +15217,9 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetSmCountTarget(handle, smCountTarget);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -15207,6 +15291,9 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetLoggerCallback(userCallback);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -15247,6 +15334,9 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetLoggerCallback(userCallback);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -15288,6 +15378,9 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetVector(n, elemSize, x, incx, devicePtr, incy);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -20561,6 +20654,9 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtDestroy(lightHandle);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -20753,46 +20849,6 @@ cublasStatus_t cublasLtMatrixLayoutInit_internal(cublasLtMatrixLayout_t  matLayo
 #endif
 }
 
-cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
-{
-	TALLY_SPD_LOG("cublasLtMatrixLayoutDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcublasLtMatrixLayoutDestroy(matLayout);
-#else
-
-    cublasStatus_t err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutDestroyArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTDESTROY;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtMatrixLayoutDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->matLayout = matLayout;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const cublasStatus_t*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutDestroy);
-	return err;
-}
-
 cublasStatus_t cublasLtMatrixLayoutGetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
 {
 	TALLY_SPD_LOG("cublasLtMatrixLayoutGetAttribute hooked");
@@ -20811,46 +20867,6 @@ cublasStatus_t cublasLtMatmulDescInit_internal(cublasLtMatmulDesc_t  matmulDesc,
 #else
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
-}
-
-cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
-{
-	TALLY_SPD_LOG("cublasLtMatmulDescDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcublasLtMatmulDescDestroy(matmulDesc);
-#else
-
-    cublasStatus_t err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescDestroyArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCDESTROY;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtMatmulDescDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->matmulDesc = matmulDesc;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const cublasStatus_t*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescDestroy);
-	return err;
 }
 
 cublasStatus_t cublasLtMatmulDescGetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
@@ -20879,6 +20895,9 @@ cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t* 
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixTransformDescCreate(transformDesc, scaleType);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -20921,6 +20940,9 @@ cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t 
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixTransformDescDestroy(transformDesc);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -20991,6 +21013,9 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulPreferenceDestroy(pref);
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;
@@ -21151,6 +21176,9 @@ cublasStatus_t cublasLtLoggerForceDisable()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtLoggerForceDisable();
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_INVALID_VALUE;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
 
     cublasStatus_t err;

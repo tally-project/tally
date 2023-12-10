@@ -154,6 +154,10 @@ public:
 		}
 	}
 
+	void handle_cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t handle) {
+		handle_map.erase(handle);
+	}
+
 	cublasLtMatmulDescCtx get_cublasLtMatmulDescCtx(cublasLtMatmulDesc_t handle) {
 		return handle_map[handle];
 	}
@@ -182,6 +186,10 @@ public:
 		ctx.cols = cols;
 		ctx.ld = ld;
 		handle_map[handle] = ctx;
+	}
+
+	void handle_cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  handle) {
+		handle_map.erase(handle);	
 	}
 
 	cublasLtMatrixLayoutCtx get_cublasLtMatrixLayoutCtx(cublasLtMatrixLayout_t handle) {

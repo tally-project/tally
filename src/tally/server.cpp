@@ -4537,3 +4537,43 @@ void TallyServer::handle_cuDevicePrimaryCtxGetState(void *__args, iox::popo::Unt
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cublasLtMatrixLayoutDestroy(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasLtMatrixLayoutDestroy");
+	auto args = (struct cublasLtMatrixLayoutDestroyArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasStatus_t*>(responsePayload);
+            *response = cublasLtMatrixLayoutDestroy(
+				args->matLayout
+            );
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cublasLtMatmulDescDestroy(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasLtMatmulDescDestroy");
+	auto args = (struct cublasLtMatmulDescDestroyArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasStatus_t*>(responsePayload);
+            *response = cublasLtMatmulDescDestroy(
+				args->matmulDesc
+            );
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}

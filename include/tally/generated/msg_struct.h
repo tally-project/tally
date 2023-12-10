@@ -180,6 +180,14 @@ struct cuDevicePrimaryCtxRetainResponse {
 	CUresult err;
 };
 
+struct cuDevicePrimaryCtxRelease_v2Arg {
+	CUdevice  dev;
+};
+
+struct cuDevicePrimaryCtxReset_v2Arg {
+	CUdevice  dev;
+};
+
 struct cuCtxPushCurrent_v2Arg {
 	CUcontext  ctx;
 };
@@ -1730,14 +1738,6 @@ struct cublasLtGetVersionArg {
 };
 
 struct cublasLtGetCudartVersionArg {
-};
-
-struct cublasLtMatrixLayoutDestroyArg {
-	cublasLtMatrixLayout_t  matLayout;
-};
-
-struct cublasLtMatmulDescDestroyArg {
-	cublasLtMatmulDesc_t  matmulDesc;
 };
 
 struct cublasLtMatrixTransformDescCreateArg {

@@ -1391,4 +1391,13 @@ struct cuDevicePrimaryCtxGetStateResponse {
 	CUresult err;
 };
 
+struct cublasLtMatrixLayoutDestroyArg {
+	cublasLtMatrixLayout_t  matLayout;
+};
+
+struct cublasLtMatmulDescDestroyArg {
+	cublasLtMatmulDesc_t  matmulDesc;
+};
+
+
 #endif // TALLY_DEF_H

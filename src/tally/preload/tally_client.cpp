@@ -908,6 +908,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 
     if (!launched) {
         TALLY_SPD_WARN("Fail to replace cublasSgemm_v2 with cutlass implementation");
+        throw std::runtime_error("Fail to replace cublasSgemm_v2 with cutlass implementation");
     }
 #endif
 
@@ -1204,6 +1205,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 
     if (!launched) {
         TALLY_SPD_WARN("Fail to replace cublasLtMatmul with cutlass implementation");
+        throw std::runtime_error("Fail to replace cublasLtMatmul with cutlass implementation");
     }
 
 #endif
@@ -1227,11 +1229,14 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
+
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_SUCCESS;
+
 #else
-
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulDescSetAttributeArg) + sizeInBytes;
-
     cublasStatus_t err;
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulDescSetAttributeArg) + sizeInBytes;
 
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
@@ -1267,6 +1272,11 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatrixLayoutSetAttribute(matLayout, attr, buf, sizeInBytes);
+
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_SUCCESS;
+
 #else
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatrixLayoutSetAttributeArg) + sizeInBytes;
     cublasStatus_t err;
@@ -1305,6 +1315,11 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatmulPreferenceSetAttribute(pref, attr, buf, sizeInBytes);
+
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_SUCCESS;
+
 #else
     cublasStatus_t err;
 
@@ -1342,12 +1357,18 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 	TALLY_SPD_LOG("cublasLtMatmulAlgoGetHeuristic hooked");
     TALLY_CLIENT_PROFILE_START;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulAlgoGetHeuristicArg);
-
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatmulAlgoGetHeuristic(lightHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, preference, requestedAlgoCount, heuristicResultsArray, returnAlgoCount);
 
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_SUCCESS;
+    // Pretend we have set something
+    *returnAlgoCount = 1;
+    heuristicResultsArray[0].state = CUBLAS_STATUS_SUCCESS;
+
 #else
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulAlgoGetHeuristicArg);
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -2101,6 +2122,11 @@ cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 #if defined(RUN_LOCALLY)
     auto err = lcublasSgemv_v2(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_INVALID_VALUE;
+    throw std::runtime_error("Fail to replace cublasSgemv_v2 with cutlass implementation");
+
 #else
     cublasStatus_t err;
 
@@ -2281,6 +2307,10 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 
 #if defined(RUN_LOCALLY)
     auto err = lcublasSgemmEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
+
+#elif defined(REPLACE_CUBLAS)
+    auto err = CUBLAS_STATUS_INVALID_VALUE;
+    throw std::runtime_error("Fail to replace cublasSgemmEx with cutlass implementation");
 
 #else
     cublasStatus_t err;
@@ -3366,6 +3396,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 
     if (!launched) {
         TALLY_SPD_WARN("Fail to replace cublasSgemmStridedBatched with cutlass implementation");
+        throw std::runtime_error("Fail to replace cublasSgemmStridedBatched with cutlass implementation");
     }
 
 #endif
@@ -3850,10 +3881,14 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 {
 	TALLY_SPD_LOG("cublasCreate_v2 hooked");
 	TALLY_CLIENT_PROFILE_START;
+
 #if defined(RUN_LOCALLY)
 	auto err = lcublasCreate_v2(handle);
     cublas_tracer.handle_cublasCreate_v2(*handle);
 #else
+
+    // For this call, we will forward regardless of replacing cublas
+    // because we want the server to give us the default stream
 
     cublasStatus_t err;
 
@@ -5029,6 +5064,7 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
 
     if (!launched) {
         TALLY_SPD_WARN("Fail to replace cublasGemmEx with cutlass implementation");
+        throw std::runtime_error("Fail to replace cublasGemmEx with cutlass implementation");
     }
 
 #endif
@@ -5362,6 +5398,7 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
 
     if (!launched) {
         TALLY_SPD_WARN("Fail to replace cublasGemmStridedBatchedEx with cutlass implementation");
+        throw std::runtime_error("Fail to replace cublasGemmStridedBatchedEx with cutlass implementation");
     }
 
 #endif
@@ -6231,6 +6268,11 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetMathMode(handle, mode);
+
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_SUCCESS;
+
 #else
 
     cublasStatus_t err;
@@ -6269,6 +6311,8 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
 	auto err = lcublasDestroy_v2(handle);
 #else
 
+    // we will forward because we forwared cublasCreate
+
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -6302,6 +6346,11 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
 
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetStream_v2(handle, streamId);
+
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_SUCCESS;
+
 #else
 
     cublasStatus_t err;
@@ -6338,6 +6387,11 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
 
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
+
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_SUCCESS;
+
 #else
 
     cublasStatus_t err;
@@ -6375,6 +6429,14 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtCreate(lightHandle);
     cublasLt_tracer.handle_cublasLtCreate(*lightHandle);
+
+#elif defined(REPLACE_CUBLAS)
+    auto err = CUBLAS_STATUS_SUCCESS;
+
+    // Just give a opaque pointer as handle
+    *lightHandle = (cublasLtHandle_t)malloc(8);
+    cublasLt_tracer.handle_cublasLtCreate(*lightHandle);
+
 #else
 
     cublasStatus_t err;
@@ -6421,8 +6483,16 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
     cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(*matmulDesc, computeType, scaleType);
-#else
 
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_SUCCESS;
+
+    // opaque pointer
+    *matmulDesc = (cublasLtMatmulDesc_t) malloc(8);
+    cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(*matmulDesc, computeType, scaleType);
+
+#else
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -6465,9 +6535,19 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
 {
 	TALLY_SPD_LOG("cublasLtMatrixLayoutCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
+
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
     cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(*matLayout, type, rows, cols, ld);
+
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_SUCCESS;
+
+    // opaque pointer
+    *matLayout = (cublasLtMatrixLayout_t) malloc(8);
+    cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(*matLayout, type, rows, cols, ld);
+
 #else
 
     cublasStatus_t err;
@@ -6515,6 +6595,11 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulPreferenceCreate(pref);
+
+#elif defined(REPLACE_CUBLAS)
+    // do nothing because we won't call cublas anyway
+    auto err = CUBLAS_STATUS_SUCCESS;
+
 #else
 
     cublasStatus_t err;
@@ -6937,45 +7022,97 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
 {
 	TALLY_SPD_LOG("cuDevicePrimaryCtxGetState hooked");
 	TALLY_CLIENT_PROFILE_START;
+
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxGetState(dev, flags, active);
-#else
 
+#else
     CUresult err = CUDA_SUCCESS;
     *flags = device_ctx_flags;
     *active = 1;
 
-    // IOX_CLIENT_ACQUIRE_LOCK;
-    // TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuDevicePrimaryCtxGetStateArg), alignof(MessageHeader_t))
-    //     .and_then([&](auto& requestPayload) {
-
-    //         auto header = static_cast<MessageHeader_t*>(requestPayload);
-    //         header->api_id = CUDA_API_ENUM::CUDEVICEPRIMARYCTXGETSTATE;
-    //         header->client_id = TallyClient::client->client_id;
-            
-    //         auto request = (cuDevicePrimaryCtxGetStateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-	// 		request->dev = dev;
-	// 		request->flags = flags;
-	// 		request->active = active;
-
-    //         TallyClient::client->iox_client->send(header).or_else(
-    //             [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-    //     })
-    //     .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    // while(!TallyClient::client->iox_client->take()
-    //     .and_then([&](const auto& responsePayload) {
-    //         auto response = static_cast<const cuDevicePrimaryCtxGetStateResponse*>(responsePayload);
-	// 		if (flags) { *flags = response->flags; }
-	// 		if (active) { *active = response->active; }
-
-    //         err = response->err;
-    //         TallyClient::client->iox_client->releaseResponse(responsePayload);
-    //     }))
-    // {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxGetState);
+	return err;
+}
+
+cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
+{
+	TALLY_SPD_LOG("cublasLtMatrixLayoutDestroy hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+    cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutDestroy(matLayout);
+
+#if defined(RUN_LOCALLY)
+	auto err = lcublasLtMatrixLayoutDestroy(matLayout);
+
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_SUCCESS;
+
+#else
+
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutDestroyArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTDESTROY;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasLtMatrixLayoutDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->matLayout = matLayout;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutDestroy);
+	return err;
+}
+
+cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
+{
+	TALLY_SPD_LOG("cublasLtMatmulDescDestroy hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+    cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescDestroy(matmulDesc);
+
+#if defined(RUN_LOCALLY)
+	auto err = lcublasLtMatmulDescDestroy(matmulDesc);
+
+#elif defined(REPLACE_CUBLAS)
+	auto err = CUBLAS_STATUS_SUCCESS;
+
+#else
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescDestroyArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCDESTROY;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasLtMatmulDescDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->matmulDesc = matmulDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescDestroy);
 	return err;
 }
 

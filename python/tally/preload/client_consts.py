@@ -514,7 +514,7 @@ KERNEL_LAUNCH_CALLS = [
     "cudnnBackendExecute"
 ]
 
-# let the client call the APIs directly
+# just do nothing for these
 IGNORE_CALLS = [
     "cuCtxDestroy_v2",
     "cuInit",
@@ -523,6 +523,8 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasLtMatmulDescDestroy",
+    "cublasLtMatrixLayoutDestroy",
     "cuDevicePrimaryCtxGetState",
     "cudaGetDevice",
     "ncclCommInitRankConfig",
@@ -728,8 +730,6 @@ FORWARD_API_CALLS = [
     "cuFlushGPUDirectRDMAWrites",
     "cuDevicePrimaryCtxRelease_v2",
     "cuDevicePrimaryCtxReset_v2",
-    "cublasLtMatmulDescDestroy",
-    "cublasLtMatrixLayoutDestroy",
     "cublasLtMatmulPreferenceDestroy",
     "cublasLtDestroy",
     "cuCtxPushCurrent_v2",
