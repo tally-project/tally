@@ -177,7 +177,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_preemptive_configs(
 // return (time, iterations)
 CUresult CudaLaunchConfig::repeat_launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
-    float dur_seconds, uint32_t *global_idx, bool *retreat, uint32_t *curr_idx_arr, float *time_ms, float *iters, int32_t max_count)
+    float dur_seconds, PTBArgs *ptb_args, uint32_t *curr_idx_arr, float *time_ms, float *iters, int32_t max_count)
 {
     float _time_ms;
     CUresult err;
@@ -193,12 +193,11 @@ CUresult CudaLaunchConfig::repeat_launch(
 
         if (use_dynamic_ptb || use_preemptive_ptb) {
             // Make Sure the previous kernel has finished
-            cudaMemsetAsync(retreat, 0, sizeof(bool), stream);
-            cudaMemsetAsync(global_idx, 0, sizeof(uint32_t), stream);
+            cudaMemsetAsync(ptb_args, 0, sizeof(PTBArgs), stream);
         }
 
         // Perform your steps here
-        err = launch(func, gridDim, blockDim, args, sharedMem, stream, global_idx, retreat, curr_idx_arr);
+        err = launch(func, gridDim, blockDim, args, sharedMem, stream, ptb_args, curr_idx_arr);
         count++;
         ckpt_count++;
 
@@ -221,7 +220,7 @@ CUresult CudaLaunchConfig::repeat_launch(
 
 CUresult CudaLaunchConfig::launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
-    uint32_t *global_idx, bool *retreat, uint32_t *curr_idx_arr, bool run_profile, float *elapsed_time_ms)
+    PTBArgs *ptb_args, uint32_t *curr_idx_arr, bool run_profile, float *elapsed_time_ms)
 {
     cudaEvent_t _start, _stop;
 
@@ -297,7 +296,8 @@ CUresult CudaLaunchConfig::launch(
         
     } else if (use_dynamic_ptb) {
 
-        assert(global_idx);
+        assert(ptb_args);
+        auto global_idx = &(ptb_args->global_idx);
 
         CUfunction cu_func = TallyServer::server->dynamic_ptb_kernel_map[func].func;
         size_t num_args = TallyServer::server->dynamic_ptb_kernel_map[func].num_args;
@@ -344,9 +344,11 @@ CUresult CudaLaunchConfig::launch(
         return err;
 
     } else if (use_preemptive_ptb) { 
-        assert(global_idx);
-        assert(retreat);
+        assert(ptb_args);
         assert(curr_idx_arr);
+
+        auto global_idx = &(ptb_args->global_idx);
+        auto retreat = &(ptb_args->retreat);
 
         CUfunction cu_func = TallyServer::server->preemptive_ptb_kernel_map[func].func;
         size_t num_args = TallyServer::server->preemptive_ptb_kernel_map[func].num_args;

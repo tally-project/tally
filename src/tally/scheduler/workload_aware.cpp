@@ -49,13 +49,13 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
                 // Check the latency of this kernel, if it is short, then we fall back to the non-preemtive version
                 float latency_ms;
-                kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &latency_ms, nullptr, 1, true);
+                kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &latency_ms, nullptr, 1, true);
 
                 auto &client_data = client_data_all[client_id];
 
                 // Some preemptive kernel launch fails with 'invalid argument', fall back to the non-preemtive version for those
                 CudaLaunchConfig preemptive_config(false, false, false, true, 4);
-                auto err = kernel_wrapper.kernel_to_dispatch(preemptive_config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, true, 1000, nullptr, nullptr, 1, false);
+                auto err = kernel_wrapper.kernel_to_dispatch(preemptive_config, client_data.ptb_args, client_data.curr_idx_arr, true, 1000, nullptr, nullptr, 1, false);
 
                 if (err) {
                     auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
@@ -103,7 +103,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             }
 
             // Set retreat flag
-            cudaMemsetAsync(client_data.retreat, 1, sizeof(bool), retreat_stream);
+            cudaMemsetAsync(&(client_data.ptb_args->retreat), 1, sizeof(bool), retreat_stream);
         }
     };
 
@@ -111,6 +111,8 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
         auto &client_data = client_data_all[client_id];
         auto &kernel_wrapper = kernel.kernel_wrapper;
+
+        bool clear_retreat = false;
 
         // Check if kernel is already launched
         if (kernel.launched) {
@@ -127,7 +129,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
             // Fetch the progress
             uint32_t progress = 0;
-            cudaMemcpyAsync(&progress, client_data.global_idx, sizeof(uint32_t), cudaMemcpyDeviceToHost, kernel_wrapper.launch_stream);
+            cudaMemcpyAsync(&progress, &(client_data.ptb_args->global_idx), sizeof(uint32_t), cudaMemcpyDeviceToHost, kernel_wrapper.launch_stream);
 
             // Use this to check whether kernel has finished
             auto &launch_call = kernel_wrapper.launch_call;
@@ -143,20 +145,21 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         // If never launched before, set global_idx to 0
         } else {
             if (config.use_preemptive_ptb || config.use_dynamic_ptb) {
-                cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
+                cudaMemsetAsync(client_data.ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
+                clear_retreat = true;
             }
         }
 
         // Always set retreat to 0 before launch preemptive kernel
-        if (config.use_preemptive_ptb) {
-            cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
+        if (config.use_preemptive_ptb || !clear_retreat) {
+            cudaMemsetAsync(&(client_data.ptb_args->retreat), 0, sizeof(bool), kernel_wrapper.launch_stream);
         }
 
         // Create a event to monitor the kernel execution
         CHECK_CUDA_ERROR(cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming));
 
         // Launch the kernel again
-        kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+        kernel_wrapper.kernel_to_dispatch(config, client_data.ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
 
         // Monitor the launched kernel
         CHECK_CUDA_ERROR(cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream));

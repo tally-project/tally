@@ -33,9 +33,7 @@ void TallyServer::run_priority_scheduler()
     // Keep in track low-priority kernels that are in progress
     // The boolean indicates whether the kernel is running/stopped
     std::map<ClientPriority, DispatchedKernel, std::greater<ClientPriority>> in_progress_kernels;
-
-    cudaEvent_t highest_priority_event;
-    cudaEventCreateWithFlags(&highest_priority_event, cudaEventDisableTiming);
+    std::map<uint32_t, cudaEvent_t> client_events;
 
     cudaStream_t retreat_stream;
     cudaStreamCreateWithFlags(&retreat_stream, cudaStreamNonBlocking);
@@ -50,8 +48,17 @@ void TallyServer::run_priority_scheduler()
             auto client_id = client_priority.client_id;
             auto &client_data = client_data_all[client_id];
 
+            if (client_events.find(client_id) == client_events.end()) {
+                cudaEventCreateWithFlags(&client_events[client_id], cudaEventDisableTiming);
+            }
+
+            auto client_event = client_events[client_id];
+
             if (client_data.has_exit) {
+                cudaEventDestroy(client_event);
+                
                 client_data_all.erase(client_id);
+                client_events.erase(client_id);
                 client_priority_map.erase(client_priority);
                 break;
             }
@@ -69,7 +76,7 @@ void TallyServer::run_priority_scheduler()
 
                     // then we wait until all kernels have completed execution to
                     // potentially consider launching low-priority kernels
-                    if (cudaEventQuery(highest_priority_event) != cudaSuccess) {
+                    if (cudaEventQuery(client_event) != cudaSuccess) {
                         break;
                     }
 
@@ -89,12 +96,9 @@ void TallyServer::run_priority_scheduler()
                     // First check if the kernel is still running
                     // note that the running flag only tells us whether the kernel has been signaled to stop
                     // it is possible that it has yet terminated
-                    if (cudaEventQuery(in_progress_kernel_wrapper.event) != cudaSuccess) {
+                    if (cudaEventQuery(client_event) != cudaSuccess) {
                         break;
                     }
-
-                    // Destroy the previously created event since the kernel has completed
-                    cudaEventDestroy(in_progress_kernel_wrapper.event);
 
                     // it was running and now it is finished
                     if (running || dispatched_kernel.config.use_original) {
@@ -115,34 +119,25 @@ void TallyServer::run_priority_scheduler()
                             throw std::runtime_error("must be found in cache");
                         }
 
-                        auto config = CudaLaunchConfig::default_config;
+                        auto config = res.config;
 
-                        if (!is_highest_priority) {
+                        // Make sure there is no pending event in retreat stream
+                        // think about a previous cudaMemsetAsync(&retreat) has not yet completed,
+                        // then there may be conflicted writes to retreat
+                        cudaStreamSynchronize(retreat_stream);
 
-                            // Make sure there is no pending event in retreat stream
-                            // think about a previous cudaMemsetAsync(&retreat) has not yet completed,
-                            // then there may be conflicted writes to retreat
-                            cudaStreamSynchronize(retreat_stream);
-
-                            // set retreat to 0
-                            cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), in_progress_kernel_wrapper.launch_stream);
-
-                            config = res.config;
-                        }
-
-                        // Create a event to monitor the kernel execution
-                        cudaEventCreateWithFlags(&in_progress_kernel_wrapper.event, cudaEventDisableTiming);
-
+                        // set retreat to 0
+                        cudaMemsetAsync(&(client_data.ptb_args->retreat), 0, sizeof(bool), in_progress_kernel_wrapper.launch_stream);
+    
                         // Launch the kernel again
-                        in_progress_kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                        in_progress_kernel_wrapper.kernel_to_dispatch(config, client_data.ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
 
                         // Monitor the launched kernel
-                        cudaEventRecord(in_progress_kernel_wrapper.event, in_progress_kernel_wrapper.launch_stream);
+                        cudaEventRecord(client_event, in_progress_kernel_wrapper.launch_stream);
 
                         // Flip the flag
                         in_progress_kernels[client_priority].running = true;
                         in_progress_kernels[client_priority].config = config;
-
                     }
 
                     // Either way, break the loop
@@ -169,9 +164,10 @@ void TallyServer::run_priority_scheduler()
                     auto in_progress_client_id = in_progress_kernel.first.client_id;
                     auto &in_progress_kernel_wrapper = dispatched_kernel.kernel_wrapper;
                     auto &in_progress_client_data = client_data_all[in_progress_client_id];
+                    auto in_progress_kernel_event = client_events[in_progress_client_id];
 
                     // First check whether this kernel has already finished
-                    if (cudaEventQuery(in_progress_kernel_wrapper.event) == cudaSuccess) {
+                    if (cudaEventQuery(in_progress_kernel_event) == cudaSuccess) {
 
                         // Erase if finished
                         in_progress_kernels.erase(in_progress_kernel.first);
@@ -180,7 +176,7 @@ void TallyServer::run_priority_scheduler()
                     }
 
                     // Set retreat flag
-                    cudaMemsetAsync(in_progress_client_data.retreat, 1, sizeof(bool), retreat_stream);
+                    cudaMemsetAsync(&(in_progress_client_data.ptb_args->retreat), 1, sizeof(bool), retreat_stream);
 
 #if defined(MEASURE_PREEMPTION_LATENCY)
                     auto start = std::chrono::high_resolution_clock::now();
@@ -233,27 +229,22 @@ void TallyServer::run_priority_scheduler()
 
                     if (config.use_preemptive_ptb) {
                         // set retreat ang global_idx to 0
-                        cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
-                        cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
+                        cudaMemsetAsync(client_data.ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
                     }
-                    
-                    // Create a event to monitor the kernel execution
-                    cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming);
                 }
 
                 // Launch the kernel
-                kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                kernel_wrapper.kernel_to_dispatch(config, client_data.ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
                 
+                cudaEventRecord(client_event, kernel_wrapper.launch_stream);
+
                 // For highest priority, we can directly mark the kernel as launched as we won't ever preempt it
                 if (is_highest_priority) {
 
                     client_data.queue_size--;
-                    cudaEventRecord(highest_priority_event, kernel_wrapper.launch_stream);
 
                 } else {
                     // Otherwise, bookkeep kernel launch if it is not highest-priority 
-                    cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream);
-
                     in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
                 }
 
