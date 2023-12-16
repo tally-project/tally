@@ -185,7 +185,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     // Run default config first
     CudaLaunchConfig base_config = CudaLaunchConfig::default_config;
 
-    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1, true);
+    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, 1, true);
 
     float base_latency_ms = time_elapsed / iters;
 
@@ -197,7 +197,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     for (auto &config : configs) {
 
-        auto err = kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, true, profile_duration, &time_elapsed, &iters, -1, true);
+        auto err = kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, true, profile_duration, &time_elapsed, &iters, 1, true);
 
         if (err) {
             return;
@@ -213,6 +213,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
         float norm_speed = base_latency_ms / latency_ms;
 
         set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, base_latency_ms, iters);
+        spdlog::info("Launch config: " + config.str() + ". Norm speed: " + std::to_string(norm_speed));
     }
 
     float best_norm_speed = base_latency_ms / best_latency_ms;

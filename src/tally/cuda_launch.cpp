@@ -144,6 +144,36 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(uint32_t 
     return configs;
 }
 
+// =================== Used by Priority Scheduler ===========================
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_preemptive_configs(uint32_t threads_per_block, uint32_t num_blocks)
+{
+    std::vector<CudaLaunchConfig> configs;
+
+    // some PTB configs
+    uint32_t _num_blocks_per_sm = 1;
+    while(true) {
+
+        // One kernel should not take all the thread slots
+        if (_num_blocks_per_sm * threads_per_block > CUDA_MAX_NUM_THREADS_PER_SM) {
+            break;
+        }
+        
+        // There is no point going over the total num of blocks
+        // But we will keep the (_num_blocks_per_sm == 1) case
+        if (_num_blocks_per_sm > 1 && (_num_blocks_per_sm - 1) * CUDA_NUM_SM > num_blocks) {
+            break;
+        }
+
+        // preemptive PTB
+        CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
+        configs.push_back(preemptive_ptb_config);
+
+        _num_blocks_per_sm++;
+    }
+    
+    return configs;
+}
+
 // return (time, iterations)
 CUresult CudaLaunchConfig::repeat_launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
