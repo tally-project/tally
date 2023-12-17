@@ -183,7 +183,7 @@ void TallyServer::run_priority_scheduler()
 
                     // Fetch progress - this will block as memcpy from device to host
                     uint32_t progress = 0;
-                    cudaMemcpyAsync(&progress, in_progress_client_data.global_idx, sizeof(uint32_t), cudaMemcpyDeviceToHost, in_progress_kernel_wrapper.launch_stream);
+                    cudaMemcpyAsync(&progress, &(in_progress_client_data.ptb_args->global_idx), sizeof(uint32_t), cudaMemcpyDeviceToHost, in_progress_kernel_wrapper.launch_stream);
 
                     auto end = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double, std::milli> duration = end - start;
@@ -208,22 +208,22 @@ void TallyServer::run_priority_scheduler()
                 // Now launch the high priority kernel
                 auto config = CudaLaunchConfig::default_config;
 
+                auto &launch_call = kernel_wrapper.launch_call;
+
+                // Do some profiling of the preemptive kernels
+                bool found_in_cache;
+                auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
+
+                if (!found_in_cache) {
+                    auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
+                    auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+
+                    auto preemptive_ptb_configs = CudaLaunchConfig::get_priority_preemptive_configs(threads_per_block, num_blocks);
+                    tune_kernel_launch(kernel_wrapper, client_id, preemptive_ptb_configs);
+                    res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                }
+
                 if (!is_highest_priority) {
-
-                    auto &launch_call = kernel_wrapper.launch_call;
-
-                    // Do some profiling of the preemptive kernels
-                    bool found_in_cache;
-                    auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
-
-                    if (!found_in_cache) {
-                        auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
-                        auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
-
-                        auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(threads_per_block, num_blocks);
-                        tune_kernel_launch(kernel_wrapper, client_id, preemptive_ptb_configs);
-                        res = get_single_kernel_best_config(launch_call, &found_in_cache);
-                    }
 
                     config = res.config;
 

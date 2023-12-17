@@ -148,13 +148,15 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(uint32_t 
 std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_preemptive_configs(uint32_t threads_per_block, uint32_t num_blocks)
 {
     std::vector<CudaLaunchConfig> configs;
+    std::vector<uint32_t> _num_blocks_per_sm_candiates;
 
     // some PTB configs
     uint32_t _num_blocks_per_sm = 1;
     while(true) {
 
         // One kernel should not take all the thread slots
-        if (_num_blocks_per_sm * threads_per_block > CUDA_MAX_NUM_THREADS_PER_SM) {
+        if (_num_blocks_per_sm * threads_per_block > PTB_MAX_NUM_THREADS_PER_SM) {
+        // if (_num_blocks_per_sm * threads_per_block > CUDA_MAX_NUM_THREADS_PER_SM) {
             break;
         }
         
@@ -164,12 +166,27 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_preemptive_configs(
             break;
         }
 
-        // preemptive PTB
-        CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
-        configs.push_back(preemptive_ptb_config);
-
+        _num_blocks_per_sm_candiates.push_back(_num_blocks_per_sm);
         _num_blocks_per_sm++;
     }
+
+    // preemptive PTB
+    for (auto _num_blocks_per_sm : _num_blocks_per_sm_candiates) {
+        CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
+        configs.push_back(preemptive_ptb_config);
+    }
+
+    // // regular PTB
+    // for (auto _num_blocks_per_sm : _num_blocks_per_sm_candiates) {
+    //     CudaLaunchConfig ptb_config(false, true, false, false, _num_blocks_per_sm);
+    //     configs.push_back(ptb_config);
+    // }
+
+    // // dynamic PTB
+    // for (auto _num_blocks_per_sm : _num_blocks_per_sm_candiates) {
+    //     CudaLaunchConfig dynamic_ptb_config(false, false, true, false, _num_blocks_per_sm);
+    //     configs.push_back(dynamic_ptb_config);
+    // }
     
     return configs;
 }

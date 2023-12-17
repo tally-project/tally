@@ -170,7 +170,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     cudaDeviceSynchronize();
 
-    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
+    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 100, true);
 
     // In seconds
     float profile_duration = (100 * time_elapsed) / 1000.f;
@@ -184,7 +184,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     // Run default config first
     CudaLaunchConfig base_config = CudaLaunchConfig::default_config;
 
-    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, 1, true);
+    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, 100, true);
 
     float base_latency_ms = time_elapsed / iters;
 
@@ -229,7 +229,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = end - start;
 
-    spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Launch config: " + best_config.str() + ". Norm speed: " + std::to_string(best_norm_speed));
+    spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Launch config: " + best_config.str() + ". Norm speed: " + std::to_string(best_norm_speed) + "\n");
 }
 
 void TallyServer::tune_kernel_pair_launch(
