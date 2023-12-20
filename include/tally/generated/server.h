@@ -84,13 +84,13 @@ public:
 	moodycamel::ReaderWriterQueue<KernelLaunchWrapper> kernel_dispatch_queue;
 	std::atomic<uint32_t> queue_size = 0;
 
-	PTBArgs *ptb_args;
 	uint32_t *curr_idx_arr;
 
     cudaStream_t default_stream = nullptr;
 	std::atomic<bool> has_exit = false;
 
 	std::vector<cudaStream_t> streams;
+	std::map<cudaStream_t, PTBArgs*> stream_to_ptb_args;
 };
 
 struct ClientPriority {
@@ -237,6 +237,7 @@ public:
     void start_worker_server(int32_t client_id);
 
 	void wait_until_launch_queue_empty(int32_t client_id);
+	void client_add_stream(int32_t client_id, cudaStream_t stream);
 
     // Return a partial function to be scheduled by scheduler
     partial_t cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);

@@ -127,10 +127,12 @@ void TallyServer::run_priority_scheduler()
                         cudaStreamSynchronize(retreat_stream);
 
                         // set retreat to 0
-                        cudaMemsetAsync(&(client_data.ptb_args->retreat), 0, sizeof(bool), in_progress_kernel_wrapper.launch_stream);
+                        auto ptb_args = client_data.stream_to_ptb_args[in_progress_kernel_wrapper.launch_stream];
+                        auto retreat = &(ptb_args->retreat);
+                        cudaMemsetAsync(retreat, 0, sizeof(bool), in_progress_kernel_wrapper.launch_stream);
     
                         // Launch the kernel again
-                        in_progress_kernel_wrapper.kernel_to_dispatch(config, client_data.ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                        in_progress_kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
 
                         // Monitor the launched kernel
                         cudaEventRecord(client_event, in_progress_kernel_wrapper.launch_stream);
@@ -176,14 +178,15 @@ void TallyServer::run_priority_scheduler()
                     }
 
                     // Set retreat flag
-                    cudaMemsetAsync(&(in_progress_client_data.ptb_args->retreat), 1, sizeof(bool), retreat_stream);
+                    auto ptb_args = in_progress_client_data.stream_to_ptb_args[in_progress_kernel_wrapper.launch_stream];
+                    cudaMemsetAsync(&(ptb_args->retreat), 1, sizeof(bool), retreat_stream);
 
 #if defined(MEASURE_PREEMPTION_LATENCY)
                     auto start = std::chrono::high_resolution_clock::now();
 
                     // Fetch progress - this will block as memcpy from device to host
                     uint32_t progress = 0;
-                    cudaMemcpyAsync(&progress, &(in_progress_client_data.ptb_args->global_idx), sizeof(uint32_t), cudaMemcpyDeviceToHost, in_progress_kernel_wrapper.launch_stream);
+                    cudaMemcpyAsync(&progress, &(ptb_args->global_idx), sizeof(uint32_t), cudaMemcpyDeviceToHost, in_progress_kernel_wrapper.launch_stream);
 
                     auto end = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double, std::milli> duration = end - start;
@@ -223,18 +226,21 @@ void TallyServer::run_priority_scheduler()
                     res = get_single_kernel_best_config(launch_call, &found_in_cache);
                 }
 
+                PTBArgs *ptb_args = nullptr;
+
                 if (!is_highest_priority) {
 
                     config = res.config;
 
                     if (config.use_preemptive_ptb) {
                         // set retreat ang global_idx to 0
-                        cudaMemsetAsync(client_data.ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
+                        ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+                        cudaMemsetAsync(ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
                     }
                 }
 
                 // Launch the kernel
-                kernel_wrapper.kernel_to_dispatch(config, client_data.ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
                 
                 cudaEventRecord(client_event, kernel_wrapper.launch_stream);
 

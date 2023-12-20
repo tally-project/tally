@@ -54,24 +54,24 @@ void TallyServer::run_workload_aware_sharing_scheduler()
                 auto &client_data = client_data_all[client_id];
 
                 // Some preemptive kernel launch fails with 'invalid argument', fall back to the non-preemtive version for those
-                CudaLaunchConfig preemptive_config(false, false, false, true, 4);
-                auto err = kernel_wrapper.kernel_to_dispatch(preemptive_config, client_data.ptb_args, client_data.curr_idx_arr, true, 1000, nullptr, nullptr, 1, false);
+                // CudaLaunchConfig preemptive_config(false, false, false, true, 4);
+                // auto err = kernel_wrapper.kernel_to_dispatch(preemptive_config, client_data.ptb_args, client_data.curr_idx_arr, true, 1000, nullptr, nullptr, 1, false);
 
-                if (err) {
-                    auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
-                    spdlog::info("Fail to launch preemptive version of kernel " + kernel_name + ". Falling back to non-preemptive versions");
+                // if (err) {
+                //     auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
+                //     spdlog::info("Fail to launch preemptive version of kernel " + kernel_name + ". Falling back to non-preemptive versions");
                 
-                    auto dynamic_shmem_size_bytes = kernel_wrapper.dynamic_shmem_size_bytes;
-                    auto static_shmem_size_bytes = preemptive_ptb_kernel_map[launch_call.func].meta_data.static_shmem_size_bytes;
+                //     auto dynamic_shmem_size_bytes = kernel_wrapper.dynamic_shmem_size_bytes;
+                //     auto static_shmem_size_bytes = preemptive_ptb_kernel_map[launch_call.func].meta_data.static_shmem_size_bytes;
 
-                    spdlog::info("Dynamic shared mem: " + std::to_string(dynamic_shmem_size_bytes));
-                    spdlog::info("Static shared mem: " + std::to_string(static_shmem_size_bytes));
+                //     spdlog::info("Dynamic shared mem: " + std::to_string(dynamic_shmem_size_bytes));
+                //     spdlog::info("Static shared mem: " + std::to_string(static_shmem_size_bytes));
 
-                }
+                // }
 
                 // auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
 
-                if (latency_ms < USE_PREEMPTIVE_LATENCY_THRESHOLD || err) {
+                if (latency_ms < USE_PREEMPTIVE_LATENCY_THRESHOLD) {
                     auto non_preemptive_ptb_configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
                     tune_kernel_launch(kernel_wrapper, client_id, non_preemptive_ptb_configs);
                     res = get_single_kernel_best_config(launch_call, &found_in_cache);
@@ -103,7 +103,8 @@ void TallyServer::run_workload_aware_sharing_scheduler()
             }
 
             // Set retreat flag
-            cudaMemsetAsync(&(client_data.ptb_args->retreat), 1, sizeof(bool), retreat_stream);
+            auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+            cudaMemsetAsync(&(ptb_args->retreat), 1, sizeof(bool), retreat_stream);
         }
     };
 
@@ -113,6 +114,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         auto &kernel_wrapper = kernel.kernel_wrapper;
 
         bool clear_retreat = false;
+        PTBArgs *ptb_args = nullptr;
 
         // Check if kernel is already launched
         if (kernel.launched) {
@@ -129,7 +131,8 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
             // Fetch the progress
             uint32_t progress = 0;
-            cudaMemcpyAsync(&progress, &(client_data.ptb_args->global_idx), sizeof(uint32_t), cudaMemcpyDeviceToHost, kernel_wrapper.launch_stream);
+            auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+            cudaMemcpyAsync(&progress, &(ptb_args->global_idx), sizeof(uint32_t), cudaMemcpyDeviceToHost, kernel_wrapper.launch_stream);
 
             // Use this to check whether kernel has finished
             auto &launch_call = kernel_wrapper.launch_call;
@@ -145,21 +148,22 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         // If never launched before, set global_idx to 0
         } else {
             if (config.use_preemptive_ptb || config.use_dynamic_ptb) {
-                cudaMemsetAsync(client_data.ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
+                ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+                cudaMemsetAsync(ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
                 clear_retreat = true;
             }
         }
 
         // Always set retreat to 0 before launch preemptive kernel
         if (config.use_preemptive_ptb || !clear_retreat) {
-            cudaMemsetAsync(&(client_data.ptb_args->retreat), 0, sizeof(bool), kernel_wrapper.launch_stream);
+            cudaMemsetAsync(&(ptb_args->retreat), 0, sizeof(bool), kernel_wrapper.launch_stream);
         }
 
         // Create a event to monitor the kernel execution
         CHECK_CUDA_ERROR(cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming));
 
         // Launch the kernel again
-        kernel_wrapper.kernel_to_dispatch(config, client_data.ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+        kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
 
         // Monitor the launched kernel
         CHECK_CUDA_ERROR(cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream));
