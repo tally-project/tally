@@ -96,7 +96,8 @@ void TallyServer::run_profile_scheduler()
                 break;
             }
 
-            ptb_args_arrs[index] = client_data.ptb_args;
+            auto ptb_args = client_data.stream_to_ptb_args[kernel_wrappers[index].launch_stream];
+            ptb_args_arrs[index] = ptb_args;
             curr_idx_arrs[index] = client_data.curr_idx_arr;
 
             launch_calls[index] = kernel_wrappers[index].launch_call;

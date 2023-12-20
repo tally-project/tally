@@ -15,7 +15,7 @@ void TallyServer::run_naive_scheduler()
     spdlog::info("Running naive scheduler ...");
 
     // CudaLaunchConfig config = CudaLaunchConfig::default_config;
-    CudaLaunchConfig config = CudaLaunchConfig(false, true, false, false, 4);
+    CudaLaunchConfig config = CudaLaunchConfig(false, false, false, true, 4);
 
     KernelLaunchWrapper kernel_wrapper;
 
@@ -39,12 +39,13 @@ void TallyServer::run_naive_scheduler()
             if (succeeded) {
 
                 if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
-                    // Make Sure the previous kernel has finished
-                    cudaStreamSynchronize(kernel_wrapper.launch_stream);
-                    cudaMemsetAsync(client_data.ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
+                    auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+                    cudaMemsetAsync(ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
+                    kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                } else {
+                    kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
                 }
                 
-                kernel_wrapper.kernel_to_dispatch(config, client_data.ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
                 client_data.queue_size--;
             }
         }

@@ -168,6 +168,7 @@ struct cublasLtMatmulArg {
     void*  D;
     cublasLtMatrixLayout_t  Ddesc;
     cublasLtMatmulAlgo_t algo;
+    bool algo_is_null;
     void*  workspace;
     size_t  workspaceSizeInBytes;
     cudaStream_t  stream;

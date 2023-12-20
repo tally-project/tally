@@ -113,11 +113,8 @@ void TallyServer::start_worker_server(int32_t client_id) {
     auto &client_meta = client_data_all[client_id];
 
     CHECK_CUDA_ERROR(cudaStreamCreateWithFlags(&client_meta.default_stream, cudaStreamNonBlocking));
-    // CHECK_CUDA_ERROR(cudaStreamCreate(&client_meta.default_stream));
-    CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.ptb_args, sizeof(PTBArgs)));
     CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.curr_idx_arr, sizeof(uint32_t) * CUDA_NUM_SM * 20));
-
-    client_meta.streams.push_back(client_meta.default_stream);
+    client_add_stream(client_id, client_meta.default_stream);
 
     spdlog::info("Tally worker server is up ...");
 
@@ -196,7 +193,8 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     for (auto &config : configs) {
 
-        auto err = kernel_wrapper.kernel_to_dispatch(config, client_data.ptb_args, client_data.curr_idx_arr, true, profile_duration, &time_elapsed, &iters, 1, true);
+        auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+        auto err = kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, true, profile_duration, &time_elapsed, &iters, 1, true);
 
         if (err) {
             return;
@@ -295,7 +293,8 @@ void TallyServer::tune_kernel_pair_launch(
 
     auto launch_kernel_func = [this, kernel_wrappers, client_ids](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, int32_t total_iters) {
         auto &client_data = client_data_all[client_ids[idx]];
-        (kernel_wrappers[idx].kernel_to_dispatch)(config, client_data.ptb_args, client_data.curr_idx_arr, true, dur_seconds, time_elapsed, iters, total_iters, true);
+        auto ptb_args = client_data.stream_to_ptb_args[kernel_wrappers[idx].launch_stream];
+        (kernel_wrappers[idx].kernel_to_dispatch)(config, ptb_args, client_data.curr_idx_arr, true, dur_seconds, time_elapsed, iters, total_iters, true);
     };
 
     CudaLaunchMetadata null_metadata;
@@ -395,6 +394,15 @@ void TallyServer::wait_until_launch_queue_empty(int32_t client_id)
             }
         }
     }
+}
+
+void TallyServer::client_add_stream(int32_t client_id, cudaStream_t stream)
+{
+    auto &client_meta = client_data_all[client_id];
+    client_meta.streams.push_back(stream);
+
+    auto &ptb_args = client_meta.stream_to_ptb_args[stream];
+    cudaMalloc(&ptb_args, sizeof(PTBArgs));
 }
 
 void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_size)
@@ -3252,7 +3260,7 @@ void TallyServer::handle_cudaStreamCreate(void *__args, iox::popo::UntypedServer
             CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
-            client_data_all[client_uid].streams.push_back(response->pStream);
+            client_add_stream(client_uid, response->pStream);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3279,7 +3287,7 @@ void TallyServer::handle_cudaStreamCreateWithFlags(void *__args, iox::popo::Unty
             CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
-            client_data_all[client_uid].streams.push_back(response->pStream);
+            client_add_stream(client_uid, response->pStream);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3307,7 +3315,7 @@ void TallyServer::handle_cudaStreamCreateWithPriority(void *__args, iox::popo::U
             CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
-            client_data_all[client_uid].streams.push_back(response->pStream);
+            client_add_stream(client_uid, response->pStream);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3370,7 +3378,7 @@ void TallyServer::handle_cuStreamCreateWithPriority(void *__args, iox::popo::Unt
             CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
-            client_data_all[client_uid].streams.push_back(response->phStream);
+            client_add_stream(client_uid, response->phStream);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3549,7 +3557,7 @@ void TallyServer::handle_cuStreamCreate(void *__args, iox::popo::UntypedServer *
             CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
-            client_data_all[client_uid].streams.push_back(response->phStream);
+            client_add_stream(client_uid, response->phStream);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
