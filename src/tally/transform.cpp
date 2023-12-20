@@ -222,6 +222,10 @@ std::string gen_preemptive_ptb_ptx(std::string &kernel_ptx_str)
             reg_replacement_rules["%ctaid.y"] = newBlockIdx_y_reg;
             reg_replacement_rules["%ctaid.z"] = newBlockIdx_z_reg;
 
+            reg_replacement_rules["%nctaid.x"] = origGridDim_x_reg;
+            reg_replacement_rules["%nctaid.y"] = origGridDim_y_reg;
+            reg_replacement_rules["%nctaid.z"] = origGridDim_z_reg;
+
             brace_counter = 0;
             brace_encountered = false;
             int count_num_params = 0;
@@ -670,6 +674,10 @@ std::string gen_dynamic_ptb_ptx(std::string &kernel_ptx_str)
             reg_replacement_rules["%ctaid.y"] = newBlockIdx_y_reg;
             reg_replacement_rules["%ctaid.z"] = newBlockIdx_z_reg;
 
+            reg_replacement_rules["%nctaid.x"] = origGridDim_x_reg;
+            reg_replacement_rules["%nctaid.y"] = origGridDim_y_reg;
+            reg_replacement_rules["%nctaid.z"] = origGridDim_z_reg;
+
             brace_counter = 0;
             brace_encountered = false;
             int count_num_params = 0;
@@ -1037,6 +1045,10 @@ std::string gen_ptb_ptx(std::string &kernel_ptx_str)
             reg_replacement_rules["%ctaid.y"] = newBlockIdx_y_reg;
             reg_replacement_rules["%ctaid.z"] = newBlockIdx_z_reg;
 
+            reg_replacement_rules["%nctaid.x"] = origGridDim_x_reg;
+            reg_replacement_rules["%nctaid.y"] = origGridDim_y_reg;
+            reg_replacement_rules["%nctaid.z"] = origGridDim_z_reg;
+
             brace_counter = 0;
             brace_encountered = false;
             int count_num_params = 0;
@@ -1089,10 +1101,10 @@ std::string gen_ptb_ptx(std::string &kernel_ptx_str)
                     // Load origGridDim.z
                     ptb_ptx_code += "ld.param.u32 " + origGridDim_z_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+8];\n";
 
-                    // threadIdx.x
-                    ptb_ptx_code += "mov.u32 " + threadIdx_x_reg + ", %tid.x;\n";
-                    // blockDim.x
-                    ptb_ptx_code += "mov.u32 " + blockDim_x_reg + ", %ntid.x;\n";
+                    // // threadIdx.x
+                    // ptb_ptx_code += "mov.u32 " + threadIdx_x_reg + ", %tid.x;\n";
+                    // // blockDim.x
+                    // ptb_ptx_code += "mov.u32 " + blockDim_x_reg + ", %ntid.x;\n";
                     // gridDim.x
                     ptb_ptx_code += "mov.u32 " + gridDim_x_reg + ", %nctaid.x;\n";
 
