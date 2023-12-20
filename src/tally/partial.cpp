@@ -560,7 +560,7 @@ partial_t TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *__args)
             args->Cdesc,
             args->D,
             args->Ddesc,
-            &(args->algo),
+            args->algo_is_null ? NULL : &(args->algo),
             args->workspace,
             args->workspaceSizeInBytes,
             args->stream

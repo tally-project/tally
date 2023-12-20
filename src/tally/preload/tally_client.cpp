@@ -958,10 +958,15 @@ cublasStatus_t cublasLtMatmul_inner(cublasLtHandle_t  lightHandle, cublasLtMatmu
         request->Cdesc = Cdesc;
         request->D = D;
         request->Ddesc = Ddesc;
-        request->algo = *algo;
         request->workspace = workspace;
         request->workspaceSizeInBytes = workspaceSizeInBytes;
         request->stream = stream;
+        if (algo) {
+            request->algo = *algo;
+            request->algo_is_null = false;
+        } else {
+            request->algo_is_null = true;
+        }
 
         TallyClient::client->iox_client->send(header).or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
