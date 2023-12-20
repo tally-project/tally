@@ -46,7 +46,7 @@ void TallyServer::run_profile_scheduler()
                             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": try_dequeue failed.");
                         }
 
-                        kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                        kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
                         client_data.queue_size--;
                         kernel_count--;
                     }
@@ -62,8 +62,7 @@ void TallyServer::run_profile_scheduler()
 
         int index = 0;
 
-        uint32_t *global_idices[2];
-        bool *retreats[2];
+        PTBArgs *ptb_args_arrs[2];
         uint32_t *curr_idx_arrs[2];
         KernelLaunchWrapper kernel_wrappers[2];
         CudaLaunchCall launch_calls[2];
@@ -90,15 +89,14 @@ void TallyServer::run_profile_scheduler()
             }
 
             float time_elapsed;
-            kernel_wrappers[index].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
+            kernel_wrappers[index].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
 
             if (kernel_wrappers[index].is_library_call) {
                 found_library_call = true;
                 break;
             }
 
-            global_idices[index] = client_data.global_idx;
-            retreats[index] = client_data.retreat;
+            ptb_args_arrs[index] = client_data.ptb_args;
             curr_idx_arrs[index] = client_data.curr_idx_arr;
 
             launch_calls[index] = kernel_wrappers[index].launch_call;
@@ -138,15 +136,15 @@ void TallyServer::run_profile_scheduler()
         auto k2_configs = CudaLaunchConfig::get_profile_configs(k2_blockDim.x * k2_blockDim.y * k2_blockDim.z, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
         auto k1_k2_configs = std::vector<std::vector<CudaLaunchConfig>> {k1_configs, k2_configs};
 
-        auto launch_kernel_func = [kernel_wrappers, global_idices, retreats, curr_idx_arrs](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, CUresult *err, int32_t total_iters) {
-            *err = (kernel_wrappers[idx].kernel_to_dispatch)(config, global_idices[idx], retreats[idx], curr_idx_arrs[idx], true, dur_seconds, time_elapsed, iters, total_iters, true);
+        auto launch_kernel_func = [kernel_wrappers, ptb_args_arrs, curr_idx_arrs](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, CUresult *err, int32_t total_iters) {
+            *err = (kernel_wrappers[idx].kernel_to_dispatch)(config, ptb_args_arrs[idx], curr_idx_arrs[idx], true, dur_seconds, time_elapsed, iters, total_iters, true);
         };
 
         CUresult errs[2];
 
         // Launch once, in case all results are cached already
-        errs[0] = (kernel_wrappers[0].kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
-        errs[1] = (kernel_wrappers[1].kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+        errs[0] = (kernel_wrappers[0].kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+        errs[1] = (kernel_wrappers[1].kernel_to_dispatch)(CudaLaunchConfig::default_config, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
 
         // We will be collecting two things:
         //    1. single-kernel performance under different launch configs

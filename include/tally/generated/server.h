@@ -38,7 +38,7 @@
 #include <tally/cuda_util.h>
 #include <tally/cache_struct.h>
 
-using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, uint32_t *, bool, float, float*, float*, int32_t, bool)>;
+using partial_t = std::function<CUresult(CudaLaunchConfig, PTBArgs*, uint32_t*, bool, float, float*, float*, int32_t, bool)>;
 
 struct KernelLaunchWrapper {
 
@@ -84,8 +84,7 @@ public:
 	moodycamel::ReaderWriterQueue<KernelLaunchWrapper> kernel_dispatch_queue;
 	std::atomic<uint32_t> queue_size = 0;
 
-	uint32_t *global_idx;
-	bool *retreat;
+	PTBArgs *ptb_args;
 	uint32_t *curr_idx_arr;
 
     cudaStream_t default_stream = nullptr;

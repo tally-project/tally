@@ -144,10 +144,57 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(uint32_t 
     return configs;
 }
 
+// =================== Used by Priority Scheduler ===========================
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_preemptive_configs(uint32_t threads_per_block, uint32_t num_blocks)
+{
+    std::vector<CudaLaunchConfig> configs;
+    std::vector<uint32_t> _num_blocks_per_sm_candiates;
+
+    // some PTB configs
+    uint32_t _num_blocks_per_sm = 1;
+    while(true) {
+
+        // One kernel should not take all the thread slots
+        if (_num_blocks_per_sm * threads_per_block > PTB_MAX_NUM_THREADS_PER_SM) {
+        // if (_num_blocks_per_sm * threads_per_block > CUDA_MAX_NUM_THREADS_PER_SM) {
+            break;
+        }
+        
+        // There is no point going over the total num of blocks
+        // But we will keep the (_num_blocks_per_sm == 1) case
+        if (_num_blocks_per_sm > 1 && (_num_blocks_per_sm - 1) * CUDA_NUM_SM > num_blocks) {
+            break;
+        }
+
+        _num_blocks_per_sm_candiates.push_back(_num_blocks_per_sm);
+        _num_blocks_per_sm++;
+    }
+
+    // preemptive PTB
+    for (auto _num_blocks_per_sm : _num_blocks_per_sm_candiates) {
+        CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
+        configs.push_back(preemptive_ptb_config);
+    }
+
+    // // regular PTB
+    // for (auto _num_blocks_per_sm : _num_blocks_per_sm_candiates) {
+    //     CudaLaunchConfig ptb_config(false, true, false, false, _num_blocks_per_sm);
+    //     configs.push_back(ptb_config);
+    // }
+
+    // // dynamic PTB
+    // for (auto _num_blocks_per_sm : _num_blocks_per_sm_candiates) {
+    //     CudaLaunchConfig dynamic_ptb_config(false, false, true, false, _num_blocks_per_sm);
+    //     configs.push_back(dynamic_ptb_config);
+    // }
+    
+    return configs;
+}
+
 // return (time, iterations)
 CUresult CudaLaunchConfig::repeat_launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream,
-    float dur_seconds, uint32_t *global_idx, bool *retreat, uint32_t *curr_idx_arr, float *time_ms, float *iters, int32_t max_count)
+    float dur_seconds, PTBArgs *ptb_args, uint32_t *curr_idx_arr, float *time_ms, float *iters, int32_t max_count)
 {
     float _time_ms;
     CUresult err;
@@ -163,12 +210,11 @@ CUresult CudaLaunchConfig::repeat_launch(
 
         if (use_dynamic_ptb || use_preemptive_ptb) {
             // Make Sure the previous kernel has finished
-            cudaMemsetAsync(retreat, 0, sizeof(bool), stream);
-            cudaMemsetAsync(global_idx, 0, sizeof(uint32_t), stream);
+            cudaMemsetAsync(ptb_args, 0, sizeof(PTBArgs), stream);
         }
 
         // Perform your steps here
-        err = launch(func, gridDim, blockDim, args, sharedMem, stream, global_idx, retreat, curr_idx_arr);
+        err = launch(func, gridDim, blockDim, args, sharedMem, stream, ptb_args, curr_idx_arr);
         count++;
         ckpt_count++;
 
@@ -191,7 +237,7 @@ CUresult CudaLaunchConfig::repeat_launch(
 
 CUresult CudaLaunchConfig::launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
-    uint32_t *global_idx, bool *retreat, uint32_t *curr_idx_arr, bool run_profile, float *elapsed_time_ms)
+    PTBArgs *ptb_args, uint32_t *curr_idx_arr, bool run_profile, float *elapsed_time_ms)
 {
     cudaEvent_t _start, _stop;
 
@@ -267,7 +313,8 @@ CUresult CudaLaunchConfig::launch(
         
     } else if (use_dynamic_ptb) {
 
-        assert(global_idx);
+        assert(ptb_args);
+        auto global_idx = &(ptb_args->global_idx);
 
         CUfunction cu_func = TallyServer::server->dynamic_ptb_kernel_map[func].func;
         size_t num_args = TallyServer::server->dynamic_ptb_kernel_map[func].num_args;
@@ -314,9 +361,11 @@ CUresult CudaLaunchConfig::launch(
         return err;
 
     } else if (use_preemptive_ptb) { 
-        assert(global_idx);
-        assert(retreat);
+        assert(ptb_args);
         assert(curr_idx_arr);
+
+        auto global_idx = &(ptb_args->global_idx);
+        auto retreat = &(ptb_args->retreat);
 
         CUfunction cu_func = TallyServer::server->preemptive_ptb_kernel_map[func].func;
         size_t num_args = TallyServer::server->preemptive_ptb_kernel_map[func].num_args;

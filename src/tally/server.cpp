@@ -114,11 +114,10 @@ void TallyServer::start_worker_server(int32_t client_id) {
 
     CHECK_CUDA_ERROR(cudaStreamCreateWithFlags(&client_meta.default_stream, cudaStreamNonBlocking));
     // CHECK_CUDA_ERROR(cudaStreamCreate(&client_meta.default_stream));
-    CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.global_idx, sizeof(uint32_t)));
-    CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.retreat, sizeof(bool)));
+    CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.ptb_args, sizeof(PTBArgs)));
     CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.curr_idx_arr, sizeof(uint32_t) * CUDA_NUM_SM * 20));
 
-   client_meta.streams.push_back(client_meta.default_stream);
+    client_meta.streams.push_back(client_meta.default_stream);
 
     spdlog::info("Tally worker server is up ...");
 
@@ -171,7 +170,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     cudaDeviceSynchronize();
 
-    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
+    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 100, true);
 
     // In seconds
     float profile_duration = (100 * time_elapsed) / 1000.f;
@@ -185,7 +184,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     // Run default config first
     CudaLaunchConfig base_config = CudaLaunchConfig::default_config;
 
-    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1, true);
+    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, 100, true);
 
     float base_latency_ms = time_elapsed / iters;
 
@@ -197,7 +196,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     for (auto &config : configs) {
 
-        auto err = kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, true, profile_duration, &time_elapsed, &iters, -1, true);
+        auto err = kernel_wrapper.kernel_to_dispatch(config, client_data.ptb_args, client_data.curr_idx_arr, true, profile_duration, &time_elapsed, &iters, 1, true);
 
         if (err) {
             return;
@@ -213,6 +212,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
         float norm_speed = base_latency_ms / latency_ms;
 
         set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, base_latency_ms, iters);
+        spdlog::info("Launch config: " + config.str() + ". Norm speed: " + std::to_string(norm_speed));
     }
 
     float best_norm_speed = base_latency_ms / best_latency_ms;
@@ -229,7 +229,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = end - start;
 
-    spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Launch config: " + best_config.str() + ". Norm speed: " + std::to_string(best_norm_speed));
+    spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Launch config: " + best_config.str() + ". Norm speed: " + std::to_string(best_norm_speed) + "\n");
 }
 
 void TallyServer::tune_kernel_pair_launch(
@@ -250,7 +250,7 @@ void TallyServer::tune_kernel_pair_launch(
 
     for (int i = 0; i < 2; i++) {
         // Run one time of kernel
-        kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
+        kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
         profile_duration = std::max(profile_duration, (30 * time_elapsed) / 1000.f);
 
         launch_calls[i] = kernel_wrappers[i].launch_call;
@@ -295,7 +295,7 @@ void TallyServer::tune_kernel_pair_launch(
 
     auto launch_kernel_func = [this, kernel_wrappers, client_ids](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, int32_t total_iters) {
         auto &client_data = client_data_all[client_ids[idx]];
-        (kernel_wrappers[idx].kernel_to_dispatch)(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, true, dur_seconds, time_elapsed, iters, total_iters, true);
+        (kernel_wrappers[idx].kernel_to_dispatch)(config, client_data.ptb_args, client_data.curr_idx_arr, true, dur_seconds, time_elapsed, iters, total_iters, true);
     };
 
     CudaLaunchMetadata null_metadata;

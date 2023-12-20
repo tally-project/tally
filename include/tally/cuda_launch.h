@@ -12,6 +12,11 @@
 
 #include <tally/env.h>
 
+struct PTBArgs {
+    uint32_t global_idx;
+	bool retreat;
+};
+
 inline std::string get_dim3_str(dim3 dim)
 {
     std::string dim_str = "(" + std::to_string(dim.x) + ", " + 
@@ -174,6 +179,7 @@ public:
     static std::vector<CudaLaunchConfig> get_profile_configs(uint32_t threads_per_block, uint32_t num_blocks);
     static std::vector<CudaLaunchConfig> get_workload_agnostic_sharing_configs(uint32_t threads_per_block, uint32_t num_blocks);
     static std::vector<CudaLaunchConfig> get_preemptive_configs(uint32_t threads_per_block, uint32_t num_blocks);
+    static std::vector<CudaLaunchConfig> get_priority_preemptive_configs(uint32_t threads_per_block, uint32_t num_blocks);
 
     CudaLaunchConfig(
         bool use_original=true, bool use_ptb=false,
@@ -224,8 +230,8 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config);
     
-    CUresult launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, uint32_t *global_idx=nullptr, bool *retreat=nullptr, uint32_t *curr_idx_arr=nullptr, bool run_profile=false, float *elapsed_time_ms=nullptr);
-    CUresult repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, uint32_t *global_idx=nullptr, bool *retreat=nullptr, uint32_t *curr_idx_arr=nullptr, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1);
+    CUresult launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, PTBArgs *ptb_args, uint32_t *curr_idx_arr=nullptr, bool run_profile=false, float *elapsed_time_ms=nullptr);
+    CUresult repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, PTBArgs *ptb_args, uint32_t *curr_idx_arr=nullptr, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1);
 };
 
 struct CudaLaunchCallConfig {

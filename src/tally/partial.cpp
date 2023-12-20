@@ -17,8 +17,7 @@
 
 #define PARTIAL_ARGUMENTS \
     CudaLaunchConfig config, \
-    uint32_t *global_idx, \
-    bool *retreat, \
+    PTBArgs *ptb_args, \
     uint32_t *curr_idx_arr, \
     bool repeat, \
     float dur_seconds, \
@@ -27,7 +26,7 @@
     int32_t total_iters, \
     bool exit_if_fail \
     
-using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, uint32_t *, bool, float, float*, float*, int32_t, bool)>;
+using partial_t = std::function<CUresult(CudaLaunchConfig, PTBArgs*, uint32_t*, bool, float, float*, float*, int32_t, bool)>;
 
 partial_t TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
 {
@@ -58,9 +57,9 @@ partial_t TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim,
         CUresult err;
 
         if (repeat) {
-            err = config.repeat_launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, dur_seconds, global_idx, retreat, curr_idx_arr, time_ms, iters, total_iters);
+            err = config.repeat_launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, dur_seconds, ptb_args, curr_idx_arr, time_ms, iters, total_iters);
         } else {
-            err = config.launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, global_idx, retreat, curr_idx_arr);
+            err = config.launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, ptb_args, curr_idx_arr);
         }
 
         // free(params_local);

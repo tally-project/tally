@@ -64,12 +64,11 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
                     if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
                         // Make Sure the previous kernel has finished
                         cudaStreamSynchronize(kernel_wrapper.launch_stream);
-                        cudaMemsetAsync(client_data.retreat, 0, sizeof(bool), kernel_wrapper.launch_stream);
-                        cudaMemsetAsync(client_data.global_idx, 0, sizeof(uint32_t), kernel_wrapper.launch_stream);
+                        cudaMemsetAsync(client_data.ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
                     }
                 }
 
-                kernel_wrapper.kernel_to_dispatch(config, client_data.global_idx, client_data.retreat, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                kernel_wrapper.kernel_to_dispatch(config, client_data.ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
                 client_data.queue_size--;
             }
         }
