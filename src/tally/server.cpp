@@ -4642,3 +4642,23 @@ void TallyServer::handle_cublasGetMathMode(void *__args, iox::popo::UntypedServe
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cublasLtMatmulPreferenceDestroy(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cublasLtMatmulPreferenceDestroy");
+	auto args = (struct cublasLtMatmulPreferenceDestroyArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cublasStatus_t), alignof(cublasStatus_t))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cublasStatus_t*>(responsePayload);
+            *response = cublasLtMatmulPreferenceDestroy(
+				args->pref
+            );
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}

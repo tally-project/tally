@@ -1737,10 +1737,6 @@ struct cublasLtMatrixTransformDescDestroyArg {
 	cublasLtMatrixTransformDesc_t  transformDesc;
 };
 
-struct cublasLtMatmulPreferenceDestroyArg {
-	cublasLtMatmulPreference_t  pref;
-};
-
 struct cublasLtLoggerForceDisableArg {
 };
 

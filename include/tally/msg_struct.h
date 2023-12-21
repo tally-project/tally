@@ -1416,5 +1416,8 @@ struct cublasGetMathModeResponse {
 	cublasStatus_t err;
 };
 
+struct cublasLtMatmulPreferenceDestroyArg {
+	cublasLtMatmulPreference_t  pref;
+};
 
 #endif // TALLY_DEF_H

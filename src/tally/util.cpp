@@ -158,10 +158,15 @@ bool numerically_close(float a, float b, float tolerance) {
     }
 
     // Try absolute
-    if (std::abs(a - b) < 0.1)
+    if (std::abs(a - b) < 0.01)
         return true;
 
-    return std::abs(a - b) < tolerance * std::max(std::abs(a), std::abs(b));
+    // Try relative
+    if (std::abs(a - b) < tolerance * std::max(std::abs(a), std::abs(b))) {
+        return true;
+    }
+
+    return false;
 }
 
 std::filesystem::path get_client_preload_dir()

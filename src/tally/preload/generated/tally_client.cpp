@@ -20939,49 +20939,6 @@ cublasStatus_t cublasLtMatmulPreferenceInit_internal(cublasLtMatmulPreference_t 
 #endif
 }
 
-cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
-{
-	TALLY_SPD_LOG("cublasLtMatmulPreferenceDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcublasLtMatmulPreferenceDestroy(pref);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
-#else
-
-    cublasStatus_t err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceDestroyArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEDESTROY;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtMatmulPreferenceDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->pref = pref;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const cublasStatus_t*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceDestroy);
-	return err;
-}
-
 cublasStatus_t cublasLtMatmulPreferenceGetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
 {
 	TALLY_SPD_LOG("cublasLtMatmulPreferenceGetAttribute hooked");

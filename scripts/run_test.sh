@@ -26,6 +26,7 @@ test_list=(
     "./build/tests/cutlass_bias_epilogue"
     "./build/tests/matmul_fp16"
     "./build/tests/basic_gemm"
+    "./build/tests/batched_gemm_cutlass"
     "./build/tests/turing_tensorop_gemm"
     "./build/tests/ampere_tf32_tensorop_gemm"
     # "python3 ./tests/tensorflow_samples/tf_basic.py"

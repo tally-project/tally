@@ -25,7 +25,7 @@ void write_str_to_file(std::string path, std::string str);
 void write_binary_to_file(std::string path, const char* data, uint32_t size);
 std::string strip_space_and_colon(const std::string& input);
 std::string get_tmp_file_path(std::string suffix, int file_name=-1);
-bool numerically_close(float a, float b, float tolerance=0.01);
+bool numerically_close(float a, float b, float tolerance=0.005);
 std::filesystem::path get_client_preload_dir();
 std::filesystem::path get_tally_home_dir();
 std::string get_process_name(int pid);

@@ -276,7 +276,7 @@ CUresult CudaLaunchConfig::launch(
 
         dim3 PTB_grid_dim;
         
-        uint32_t total_blocks = blockDim.x * blockDim.y * blockDim.z;
+        uint32_t total_blocks = gridDim.x * gridDim.y * gridDim.z;
         // Depend on number of PTBs/SM
         if (total_blocks < CUDA_NUM_SM) {
             PTB_grid_dim = dim3(total_blocks);
@@ -323,7 +323,7 @@ CUresult CudaLaunchConfig::launch(
 
         dim3 PTB_grid_dim;
         
-        uint32_t total_blocks = blockDim.x * blockDim.y * blockDim.z;
+        uint32_t total_blocks = gridDim.x * gridDim.y * gridDim.z;
         // Depend on number of PTBs/SM
         if (total_blocks < CUDA_NUM_SM) {
             PTB_grid_dim = dim3(total_blocks);
@@ -374,7 +374,7 @@ CUresult CudaLaunchConfig::launch(
 
         dim3 PTB_grid_dim;
         
-        uint32_t total_blocks = blockDim.x * blockDim.y * blockDim.z;
+        uint32_t total_blocks = gridDim.x * gridDim.y * gridDim.z;
         // Depend on number of PTBs/SM
         if (total_blocks < CUDA_NUM_SM) {
             PTB_grid_dim = dim3(total_blocks);

@@ -208,7 +208,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <tally/cuda_util.h>
 #include <tally/cache_struct.h>
 
-using partial_t = std::function<CUresult(CudaLaunchConfig, uint32_t *, bool *, uint32_t *, bool, float, float*, float*, int32_t, bool)>;
+using partial_t = std::function<CUresult(CudaLaunchConfig, PTBArgs*, uint32_t*, bool, float, float*, float*, int32_t, bool)>;
 
 struct KernelLaunchWrapper {
 
@@ -254,14 +254,13 @@ public:
 	moodycamel::ReaderWriterQueue<KernelLaunchWrapper> kernel_dispatch_queue;
 	std::atomic<uint32_t> queue_size = 0;
 
-	uint32_t *global_idx;
-	bool *retreat;
 	uint32_t *curr_idx_arr;
 
     cudaStream_t default_stream = nullptr;
 	std::atomic<bool> has_exit = false;
 
 	std::vector<cudaStream_t> streams;
+	std::map<cudaStream_t, PTBArgs*> stream_to_ptb_args;
 };
 
 struct ClientPriority {
@@ -408,6 +407,7 @@ public:
     void start_worker_server(int32_t client_id);
 
 	void wait_until_launch_queue_empty(int32_t client_id);
+	void client_add_stream(int32_t client_id, cudaStream_t stream);
 
     // Return a partial function to be scheduled by scheduler
     partial_t cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
@@ -494,6 +494,7 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cublasLtMatmulPreferenceDestroy",
     "cublasGetMathMode",
     "cublasLtDestroy",
     "cudaGetLastError",
@@ -703,7 +704,6 @@ FORWARD_API_CALLS = [
     "cuFlushGPUDirectRDMAWrites",
     "cuDevicePrimaryCtxRelease_v2",
     "cuDevicePrimaryCtxReset_v2",
-    "cublasLtMatmulPreferenceDestroy",
     "cuCtxPushCurrent_v2",
     "cuCtxSetCurrent",
     "cuCtxSetLimit",

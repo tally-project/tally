@@ -875,9 +875,9 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
         TALLY_SPD_LOG_PROFILE("cublasSgemm_v2: " + std::to_string(cublas_ms) + "ms");
 
         if ((cublas_ms / cutlass_ms) < 0.5) {
-            TALLY_SPD_WARN("cutlass performance does not match at least 50% of cublas");
+            TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
         } else if ((cublas_ms / cutlass_ms) < 0.8) {
-            TALLY_SPD_WARN("cutlass performance does not match at least 80% of cublas");
+            TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
         } else {
             TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
         }
@@ -1148,9 +1148,9 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                 TALLY_SPD_LOG_PROFILE("cublasLtMatmul: " + std::to_string(cublas_ms) + "ms");
 
                 if ((cublas_ms / cutlass_ms) < 0.5) {
-                    TALLY_SPD_WARN("cutlass performance does not match at least 50% of cublas");
+                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
                 } else if ((cublas_ms / cutlass_ms) < 0.8) {
-                    TALLY_SPD_WARN("cutlass performance does not match at least 80% of cublas");
+                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
                 } else {
                     TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
                 }
@@ -1242,7 +1242,7 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     // do nothing because we won't call cublas anyway
     auto err = CUBLAS_STATUS_SUCCESS;
 
@@ -1285,7 +1285,7 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatrixLayoutSetAttribute(matLayout, attr, buf, sizeInBytes);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     // do nothing because we won't call cublas anyway
     auto err = CUBLAS_STATUS_SUCCESS;
 
@@ -1328,7 +1328,7 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatmulPreferenceSetAttribute(pref, attr, buf, sizeInBytes);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     // do nothing because we won't call cublas anyway
     auto err = CUBLAS_STATUS_SUCCESS;
 
@@ -1372,7 +1372,7 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatmulAlgoGetHeuristic(lightHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, preference, requestedAlgoCount, heuristicResultsArray, returnAlgoCount);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     // do nothing because we won't call cublas anyway
     auto err = CUBLAS_STATUS_SUCCESS;
     // Pretend we have set something
@@ -3361,9 +3361,9 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
         TALLY_SPD_LOG_PROFILE("cublasSgemmStridedBatched: " + std::to_string(cublas_ms) + "ms");
 
         if ((cublas_ms / cutlass_ms) < 0.5) {
-            TALLY_SPD_WARN("cutlass performance does not match at least 50% of cublas");
+            TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
         } else if ((cublas_ms / cutlass_ms) < 0.8) {
-            TALLY_SPD_WARN("cutlass performance does not match at least 80% of cublas");
+            TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
         } else {
             TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
         }
@@ -5024,9 +5024,9 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
                 TALLY_SPD_LOG_PROFILE("cublasGemmEx: " + std::to_string(cublas_ms) + "ms");
 
                 if ((cublas_ms / cutlass_ms) < 0.5) {
-                    TALLY_SPD_WARN("cutlass performance does not match at least 50% of cublas");
+                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
                 } else if ((cublas_ms / cutlass_ms) < 0.8) {
-                    TALLY_SPD_WARN("cutlass performance does not match at least 80% of cublas");
+                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
                 } else {
                     TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
                 }
@@ -5355,9 +5355,9 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
                 TALLY_SPD_LOG_PROFILE("cublasGemmStridedBatchedEx: " + std::to_string(cublas_ms) + "ms");
 
                 if ((cublas_ms / cutlass_ms) < 0.5) {
-                    TALLY_SPD_WARN("cutlass performance does not match at least 50% of cublas");
+                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
                 } else if ((cublas_ms / cutlass_ms) < 0.8) {
-                    TALLY_SPD_WARN("cutlass performance does not match at least 80% of cublas");
+                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
                 } else {
                     TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
                 }
@@ -6283,7 +6283,7 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetMathMode(handle, mode);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     // do nothing because we won't call cublas anyway
     auto err = CUBLAS_STATUS_SUCCESS;
 
@@ -6361,7 +6361,7 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetStream_v2(handle, streamId);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     // do nothing because we won't call cublas anyway
     auto err = CUBLAS_STATUS_SUCCESS;
 
@@ -6402,7 +6402,7 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     // do nothing because we won't call cublas anyway
     auto err = CUBLAS_STATUS_SUCCESS;
 
@@ -6444,7 +6444,7 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 	auto err = lcublasLtCreate(lightHandle);
     cublasLt_tracer.handle_cublasLtCreate(*lightHandle);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     auto err = CUBLAS_STATUS_SUCCESS;
 
     // Just give a opaque pointer as handle
@@ -6498,7 +6498,7 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
 	auto err = lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
     cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(*matmulDesc, computeType, scaleType);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     // do nothing because we won't call cublas anyway
     auto err = CUBLAS_STATUS_SUCCESS;
 
@@ -6554,7 +6554,7 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
 	auto err = lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
     cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(*matLayout, type, rows, cols, ld);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     // do nothing because we won't call cublas anyway
     auto err = CUBLAS_STATUS_SUCCESS;
 
@@ -6610,7 +6610,7 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulPreferenceCreate(pref);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
     // do nothing because we won't call cublas anyway
     auto err = CUBLAS_STATUS_SUCCESS;
 
@@ -7041,7 +7041,7 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixLayoutDestroy(matLayout);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
 	auto err = CUBLAS_STATUS_SUCCESS;
 
 #else
@@ -7081,7 +7081,7 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulDescDestroy(matmulDesc);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
 	auto err = CUBLAS_STATUS_SUCCESS;
 
 #else
@@ -7134,7 +7134,7 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtDestroy(lightHandle);
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
 	auto err = CUBLAS_STATUS_SUCCESS;
 #else
 
@@ -7171,7 +7171,7 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetMathMode(handle, mode);
 
-#elif defined(REPLACE_CUBLAS)
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
 	auto err = CUBLAS_STATUS_SUCCESS;
     cublas_tracer.handle_cublasGetMathMode(handle, mode);
 
@@ -7207,6 +7207,42 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetMathMode);
+	return err;
+}
+
+cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
+{
+	TALLY_SPD_LOG("cublasLtMatmulPreferenceDestroy hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcublasLtMatmulPreferenceDestroy(pref);
+
+#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
+	auto err = CUBLAS_STATUS_SUCCESS;
+
+#else
+    cublasStatus_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceDestroyArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEDESTROY;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasLtMatmulPreferenceDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->pref = pref;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceDestroy);
 	return err;
 }
 
