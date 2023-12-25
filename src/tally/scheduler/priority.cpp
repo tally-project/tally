@@ -90,7 +90,7 @@ void TallyServer::run_priority_scheduler()
                 if (in_progress_kernels.find(client_priority) != in_progress_kernels.end()) {
 
                     auto &dispatched_kernel = in_progress_kernels[client_priority];
-                    auto &in_progress_kernel_wrapper = dispatched_kernel.kernel_wrapper;
+                    auto &dispatched_kernel_wrapper = dispatched_kernel.kernel_wrapper;
                     auto running = dispatched_kernel.running;
 
                     // First check if the kernel is still running
@@ -104,6 +104,7 @@ void TallyServer::run_priority_scheduler()
                     if (running || dispatched_kernel.config.use_original) {
 
                         // Erase from in-progress
+                        dispatched_kernel_wrapper.free_args();
                         in_progress_kernels.erase(client_priority);
                         client_data.queue_size--;
 
@@ -118,15 +119,15 @@ void TallyServer::run_priority_scheduler()
                         cudaStreamSynchronize(retreat_stream);
 
                         // set retreat to 0
-                        auto ptb_args = client_data.stream_to_ptb_args[in_progress_kernel_wrapper.launch_stream];
+                        auto ptb_args = client_data.stream_to_ptb_args[dispatched_kernel_wrapper.launch_stream];
                         auto retreat = &(ptb_args->retreat);
-                        cudaMemsetAsync(retreat, 0, sizeof(bool), in_progress_kernel_wrapper.launch_stream);
+                        cudaMemsetAsync(retreat, 0, sizeof(bool), dispatched_kernel_wrapper.launch_stream);
     
                         // Launch the kernel again
-                        in_progress_kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                        dispatched_kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
 
                         // Monitor the launched kernel
-                        cudaEventRecord(client_event, in_progress_kernel_wrapper.launch_stream);
+                        cudaEventRecord(client_event, dispatched_kernel_wrapper.launch_stream);
 
                         // Flip the flag
                         dispatched_kernel.running = true;
@@ -162,6 +163,7 @@ void TallyServer::run_priority_scheduler()
                     if (cudaEventQuery(in_progress_kernel_event) == cudaSuccess) {
 
                         // Erase if finished
+                        in_progress_kernel_wrapper.free_args();
                         in_progress_kernels.erase(in_progress_kernel.first);
                         in_progress_client_data.queue_size--;
                         break;
@@ -237,6 +239,8 @@ void TallyServer::run_priority_scheduler()
                 // For highest priority, we can directly mark the kernel as launched as we won't ever preempt it
                 if (is_highest_priority) {
 
+                    // Mark as launched
+                    kernel_wrapper.free_args();
                     client_data.queue_size--;
 
                 } else {

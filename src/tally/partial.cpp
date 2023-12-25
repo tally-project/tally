@@ -26,34 +26,30 @@
     int32_t total_iters, \
     bool exit_if_fail \
     
-using partial_t = std::function<CUresult(CudaLaunchConfig, PTBArgs*, uint32_t*, bool, float, float*, float*, int32_t, bool)>;
-
-partial_t TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
+std::pair<partial_t, void *> TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim, dim3  blockDim, size_t  sharedMem, cudaStream_t  stream, char *params)
 {
-
     assert(func);
     assert(_kernel_addr_to_args.find(func) != _kernel_addr_to_args.end());
 
     std::vector<uint32_t> arg_sizes = _kernel_addr_to_args[func];
 
     auto argc = arg_sizes.size();
-    auto args_bytes = std::reduce(arg_sizes.begin(), arg_sizes.end());
+    auto args_len = std::reduce(arg_sizes.begin(), arg_sizes.end());
 
-    auto params_local = (char *) malloc(args_bytes);
-    // auto params_local = std::vector<char>(args_bytes);
-    memcpy(params_local, params, args_bytes);
+    auto args = (char *) malloc(args_len);
+    memcpy(args, params, args_len);
 
     void *__args_arr[MAXIMUM_ARG_COUNT];
     int __args_idx = 0;
     int offset = 0;
 
     for (size_t i = 0; i < argc; i++) {
-        __args_arr[__args_idx] = (void *) (params_local + offset);
+        __args_arr[__args_idx] = (void *) (args + offset);
         ++__args_idx;
         offset += arg_sizes[i];
     }
 
-    return [this, func, gridDim, blockDim, __args_arr, sharedMem, stream, params_local] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, func, gridDim, blockDim, __args_arr, sharedMem, stream, args] (PARTIAL_ARGUMENTS) {
 
         CUresult err;
 
@@ -78,14 +74,16 @@ partial_t TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim,
 
         return err;
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *__args)
+std::pair<partial_t, void *> TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *__args)
 {
     auto args = (cublasSgemm_v2Arg *) malloc(sizeof(cublasSgemm_v2Arg));
     memcpy(args, __args, sizeof(cublasSgemm_v2Arg));
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemm_v2(
             args->handle,
@@ -104,8 +102,6 @@ partial_t TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *__args)
             args->ldc
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -114,15 +110,17 @@ partial_t TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *__args)
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *__args)
 {
     size_t args_len = sizeof(cudnnRNNBackwardWeightsArg) + sizeof(cudnnTensorDescriptor_t) * __args->seqLength * 2;
     auto args = (cudnnRNNBackwardWeightsArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardWeights(
             args->handle,
@@ -142,8 +140,6 @@ partial_t TallyServer::cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsAr
             args->reserveSpaceSizeInBytes
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -152,15 +148,17 @@ partial_t TallyServer::cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsAr
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *__args)
 {
     size_t args_len = sizeof(cudnnRNNBackwardDataArg) + sizeof(cudnnTensorDescriptor_t) * __args->seqLength * 3;
     auto args = (cudnnRNNBackwardDataArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardData(
             args->handle,
@@ -192,8 +190,6 @@ partial_t TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *__a
             args->reserveSpaceSizeInBytes
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -202,15 +198,17 @@ partial_t TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *__a
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *__args)
 {
     size_t args_len = sizeof(cudnnRNNForwardTrainingArg) + sizeof(cudnnTensorDescriptor_t) * __args->seqLength * 2;
     auto args = (cudnnRNNForwardTrainingArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNForwardTraining(
             args->handle,
@@ -236,8 +234,6 @@ partial_t TallyServer::cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingAr
             args->reserveSpaceSizeInBytes
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -246,15 +242,17 @@ partial_t TallyServer::cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingAr
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDataArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDataArg *__args)
 {
     size_t args_len = sizeof(cudnnMultiHeadAttnBackwardDataArg) + sizeof(int) * __args->winIdxLen * 2;
     auto args = (cudnnMultiHeadAttnBackwardDataArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnMultiHeadAttnBackwardData(
             args->handle,
@@ -282,8 +280,6 @@ partial_t TallyServer::cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttn
             args->reserveSpace
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -292,15 +288,17 @@ partial_t TallyServer::cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttn
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnMultiHeadAttnForwardArg) + sizeof(int) * __args->winIdxLen * 2;
     auto args = (cudnnMultiHeadAttnForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnMultiHeadAttnForward(
             args->handle,
@@ -327,8 +325,6 @@ partial_t TallyServer::cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwa
             args->reserveSpace
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -337,15 +333,17 @@ partial_t TallyServer::cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwa
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg *__args)
+std::pair<partial_t, void *> TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg *__args)
 {
     size_t args_len = sizeof(struct cublasSgemmExArg);
     auto args = (cublasSgemmExArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemmEx(
             args->handle,
@@ -367,8 +365,6 @@ partial_t TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg *__args)
             args->ldc
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -377,15 +373,17 @@ partial_t TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg *__args)
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnTransformTensor_Partial(cudnnTransformTensorArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnTransformTensor_Partial(cudnnTransformTensorArg *__args)
 {
     size_t args_len = sizeof(cudnnTransformTensorArg);
     auto args = (cudnnTransformTensorArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnTransformTensor(
             args->handle,
@@ -397,8 +395,6 @@ partial_t TallyServer::cudnnTransformTensor_Partial(cudnnTransformTensorArg *__a
             args->y
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -407,15 +403,17 @@ partial_t TallyServer::cudnnTransformTensor_Partial(cudnnTransformTensorArg *__a
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2Arg *__args)
+std::pair<partial_t, void *> TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2Arg *__args)
 {
     size_t args_len = sizeof(cublasSgemv_v2Arg);
     auto args = (cublasSgemv_v2Arg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemv_v2(
             args->handle,
@@ -432,8 +430,6 @@ partial_t TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2Arg *__args)
             args->incy
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -442,15 +438,17 @@ partial_t TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2Arg *__args)
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnLRNCrossChannelForwardArg);
     auto args = (cudnnLRNCrossChannelForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnLRNCrossChannelForward(
             args->handle,
@@ -464,8 +462,6 @@ partial_t TallyServer::cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelF
             args->y
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -474,15 +470,17 @@ partial_t TallyServer::cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelF
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnSoftmaxForwardArg);
     auto args = (cudnnSoftmaxForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnSoftmaxForward(
             args->handle,
@@ -496,8 +494,6 @@ partial_t TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *__arg
             args->y
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -506,15 +502,17 @@ partial_t TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *__arg
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnAddTensor_Partial(cudnnAddTensorArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnAddTensor_Partial(cudnnAddTensorArg *__args)
 {
     size_t args_len = sizeof(cudnnAddTensorArg);
     auto args = (cudnnAddTensorArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnAddTensor(
             args->handle,
@@ -526,8 +524,6 @@ partial_t TallyServer::cudnnAddTensor_Partial(cudnnAddTensorArg *__args)
             args->C
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -536,15 +532,17 @@ partial_t TallyServer::cudnnAddTensor_Partial(cudnnAddTensorArg *__args)
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *__args)
+std::pair<partial_t, void *> TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *__args)
 {
     size_t args_len = sizeof(cublasLtMatmulArg);
     auto args = (cublasLtMatmulArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasLtMatmul(
             args->lightHandle,
@@ -565,8 +563,6 @@ partial_t TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *__args)
             args->stream
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -575,15 +571,17 @@ partial_t TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *__args)
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnActivationForward_Partial(cudnnActivationForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnActivationForward_Partial(cudnnActivationForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnActivationForwardArg);
     auto args = (cudnnActivationForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnActivationForward(
             args->handle,
@@ -596,8 +594,6 @@ partial_t TallyServer::cudnnActivationForward_Partial(cudnnActivationForwardArg 
             args->y
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -606,15 +602,17 @@ partial_t TallyServer::cudnnActivationForward_Partial(cudnnActivationForwardArg 
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnConvolutionForwardArg);
     auto args = (cudnnConvolutionForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnConvolutionForward(
             args->handle,
@@ -632,8 +630,6 @@ partial_t TallyServer::cudnnConvolutionForward_Partial(cudnnConvolutionForwardAr
             args->y
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -642,15 +638,17 @@ partial_t TallyServer::cudnnConvolutionForward_Partial(cudnnConvolutionForwardAr
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnPoolingForward_Partial(cudnnPoolingForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnPoolingForward_Partial(cudnnPoolingForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnPoolingForwardArg);
     auto args = (cudnnPoolingForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnPoolingForward(
             args->handle,
@@ -663,8 +661,6 @@ partial_t TallyServer::cudnnPoolingForward_Partial(cudnnPoolingForwardArg *__arg
             args->y
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -673,15 +669,17 @@ partial_t TallyServer::cudnnPoolingForward_Partial(cudnnPoolingForwardArg *__arg
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwardWeightsArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwardWeightsArg *__args)
 {
     size_t args_len = sizeof(cudnnMultiHeadAttnBackwardWeightsArg);
     auto args = (cudnnMultiHeadAttnBackwardWeightsArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnMultiHeadAttnBackwardWeights(
             args->handle,
@@ -704,8 +702,6 @@ partial_t TallyServer::cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadA
             args->reserveSpace
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -714,15 +710,17 @@ partial_t TallyServer::cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadA
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *__args)
 {
     size_t args_len = sizeof(cudnnReorderFilterAndBiasArg);
     auto args = (cudnnReorderFilterAndBiasArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnReorderFilterAndBias(
             args->handle,
@@ -735,8 +733,6 @@ partial_t TallyServer::cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBi
             args->reorderedBiasData
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -745,15 +741,17 @@ partial_t TallyServer::cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBi
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormalizationForwardTrainingExArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormalizationForwardTrainingExArg *__args)
 {
     size_t args_len = sizeof(cudnnBatchNormalizationForwardTrainingExArg);
     auto args = (cudnnBatchNormalizationForwardTrainingExArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnBatchNormalizationForwardTrainingEx(
             args->handle,
@@ -783,8 +781,6 @@ partial_t TallyServer::cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBat
             args->reserveSpaceSizeInBytes
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -793,15 +789,17 @@ partial_t TallyServer::cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBat
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBackwardExArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBackwardExArg *__args)
 {
     size_t args_len = sizeof(cudnnBatchNormalizationBackwardExArg);
     auto args = (cudnnBatchNormalizationBackwardExArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnBatchNormalizationBackwardEx(
             args->handle,
@@ -836,8 +834,6 @@ partial_t TallyServer::cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNorma
             args->reserveSpaceSizeInBytes
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -846,15 +842,17 @@ partial_t TallyServer::cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNorma
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *__args)
 {
     size_t args_len = sizeof(cudnnRNNBackwardWeights_v8Arg);
     auto args = (cudnnRNNBackwardWeights_v8Arg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardWeights_v8(
             args->handle,
@@ -875,8 +873,6 @@ partial_t TallyServer::cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeight
             args->reserveSpace
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -885,15 +881,17 @@ partial_t TallyServer::cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeight
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *__args)
 {
     size_t args_len = sizeof(cudnnRNNBackwardData_v8Arg);
     auto args = (cudnnRNNBackwardData_v8Arg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardData_v8(
             args->handle,
@@ -920,8 +918,6 @@ partial_t TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Ar
             args->reserveSpace
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -930,15 +926,17 @@ partial_t TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Ar
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnRNNForward_Partial(cudnnRNNForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNForward_Partial(cudnnRNNForwardArg *__args)
 {
     size_t args_len = sizeof(cudnnRNNForwardArg);
     auto args = (cudnnRNNForwardArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNForward(
             args->handle,
@@ -963,8 +961,6 @@ partial_t TallyServer::cudnnRNNForward_Partial(cudnnRNNForwardArg *__args)
             args->reserveSpace
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -973,23 +969,23 @@ partial_t TallyServer::cudnnRNNForward_Partial(cudnnRNNForwardArg *__args)
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cudnnBackendExecute_Partial(cudnnBackendExecuteArg *__args, cudnnStatus_t *err)
+std::pair<partial_t, void *> TallyServer::cudnnBackendExecute_Partial(cudnnBackendExecuteArg *__args, cudnnStatus_t *err)
 {
     size_t args_len = sizeof(cudnnBackendExecuteArg);
     auto args = (cudnnBackendExecuteArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [args, err] (PARTIAL_ARGUMENTS) {
+    auto partial = [args, err] (PARTIAL_ARGUMENTS) {
 
         *err = cudnnBackendExecute(
             args->handle,
             args->executionPlan,
             args->variantPack
         );
-
-        // free(args);
 
         // CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
@@ -999,15 +995,17 @@ partial_t TallyServer::cudnnBackendExecute_Partial(cudnnBackendExecuteArg *__arg
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cublasGemmEx_Partial(cublasGemmExArg *__args)
+std::pair<partial_t, void *> TallyServer::cublasGemmEx_Partial(cublasGemmExArg *__args)
 {
     size_t args_len = sizeof(cublasGemmExArg);
     auto args = (cublasGemmExArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasGemmEx(
             args->handle,
@@ -1031,8 +1029,6 @@ partial_t TallyServer::cublasGemmEx_Partial(cublasGemmExArg *__args)
             args->algo
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -1041,15 +1037,17 @@ partial_t TallyServer::cublasGemmEx_Partial(cublasGemmExArg *__args)
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *__args)
+std::pair<partial_t, void *> TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *__args)
 {
     size_t args_len = sizeof(cublasGemmStridedBatchedExArg);
     auto args = (cublasGemmStridedBatchedExArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasGemmStridedBatchedEx(
             args->handle,
@@ -1077,8 +1075,6 @@ partial_t TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatch
             args->algo
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -1087,15 +1083,17 @@ partial_t TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatch
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }
 
-partial_t TallyServer::cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *__args)
+std::pair<partial_t, void *> TallyServer::cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *__args)
 {
     size_t args_len = sizeof(cublasSgemmStridedBatchedArg);
     auto args = (cublasSgemmStridedBatchedArg *) malloc(args_len);
     memcpy(args, __args, args_len);
 
-    return [this, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemmStridedBatched(
             args->handle,
@@ -1118,8 +1116,6 @@ partial_t TallyServer::cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatch
             args->batchCount
         );
 
-        // free(args);
-
         CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
 
         if (!err) {
@@ -1128,4 +1124,6 @@ partial_t TallyServer::cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatch
             return CUDA_ERROR_INVALID_VALUE;
         }
     };
+
+    return std::make_pair(partial, (void *) args);
 }

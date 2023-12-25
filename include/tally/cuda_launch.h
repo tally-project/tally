@@ -362,4 +362,35 @@ struct WrappedCUfunction {
     CudaLaunchMetadata meta_data;
 };
 
+using partial_t = std::function<CUresult(CudaLaunchConfig, PTBArgs*, uint32_t*, bool, float, float*, float*, int32_t, bool)>;
+
+struct KernelLaunchWrapper {
+
+public:
+	// Callable to launch kernel
+	partial_t kernel_to_dispatch;
+
+	void *args;
+
+	// whether it is blackbox kernel from nvidia libraries
+	bool is_library_call;
+
+	// unique identification of the kernel
+	CudaLaunchCall launch_call;
+
+	// Stream to launch to
+	cudaStream_t launch_stream;
+
+	// Useful info
+	int dynamic_shmem_size_bytes = 0;
+
+	// For query the status of the kernel
+	cudaEvent_t event = nullptr;
+
+	void free_args()
+	{
+		free(args);
+	}
+};
+
 #endif // TALLY_CUDA_LAUNCH_H

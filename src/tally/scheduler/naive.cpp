@@ -45,6 +45,8 @@ void TallyServer::run_naive_scheduler()
                 } else {
                     kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
                 }
+
+                kernel_wrapper.free_args();
                 
                 client_data.queue_size--;
             }

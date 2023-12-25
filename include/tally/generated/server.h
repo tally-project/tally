@@ -38,30 +38,6 @@
 #include <tally/cuda_util.h>
 #include <tally/cache_struct.h>
 
-using partial_t = std::function<CUresult(CudaLaunchConfig, PTBArgs*, uint32_t*, bool, float, float*, float*, int32_t, bool)>;
-
-struct KernelLaunchWrapper {
-
-public:
-	// Callable to launch kernel
-	partial_t kernel_to_dispatch;
-
-	// whether it is blackbox kernel from nvidia libraries
-	bool is_library_call;
-
-	// unique identification of the kernel
-	CudaLaunchCall launch_call;
-
-	// Stream to launch to
-	cudaStream_t launch_stream;
-
-	// Useful info
-	int dynamic_shmem_size_bytes = 0;
-
-	// For query the status of the kernel
-	cudaEvent_t event = nullptr;
-};
-
 class ClientData {
 
 public:
@@ -244,34 +220,34 @@ public:
 	void client_add_stream(int32_t client_id, cudaStream_t stream);
 
     // Return a partial function to be scheduled by scheduler
-    partial_t cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
-	partial_t cublasSgemm_v2_Partial(cublasSgemm_v2Arg *);
-	partial_t cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *);
-	partial_t cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *);
-    partial_t cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *);
-	partial_t cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDataArg *);
-	partial_t cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *);
-	partial_t cublasSgemmEx_Partial(cublasSgemmExArg *);
-	partial_t cudnnTransformTensor_Partial(cudnnTransformTensorArg *);
-	partial_t cublasSgemv_v2_Partial(cublasSgemv_v2Arg *);
-	partial_t cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg *);
-	partial_t cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *);
-	partial_t cudnnAddTensor_Partial(cudnnAddTensorArg *);
-	partial_t cublasLtMatmul_Partial(cublasLtMatmulArg *);
-	partial_t cudnnActivationForward_Partial(cudnnActivationForwardArg *);
-	partial_t cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *);
-	partial_t cudnnPoolingForward_Partial(cudnnPoolingForwardArg *);
-	partial_t cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwardWeightsArg *);
-	partial_t cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *);
-	partial_t cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormalizationForwardTrainingExArg *);
-	partial_t cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBackwardExArg *);
-	partial_t cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *);
-	partial_t cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *);
-	partial_t cudnnRNNForward_Partial(cudnnRNNForwardArg *);
-	partial_t cudnnBackendExecute_Partial(cudnnBackendExecuteArg *, cudnnStatus_t *err);
-	partial_t cublasGemmEx_Partial(cublasGemmExArg *);
-	partial_t cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *);
-    partial_t cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *__args);
+    std::pair<partial_t, void *> cudaLaunchKernel_Partial(const void *, dim3, dim3, size_t, cudaStream_t, char *);
+	std::pair<partial_t, void *> cublasSgemm_v2_Partial(cublasSgemm_v2Arg *);
+	std::pair<partial_t, void *> cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *);
+	std::pair<partial_t, void *> cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *);
+    std::pair<partial_t, void *> cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *);
+	std::pair<partial_t, void *> cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDataArg *);
+	std::pair<partial_t, void *> cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *);
+	std::pair<partial_t, void *> cublasSgemmEx_Partial(cublasSgemmExArg *);
+	std::pair<partial_t, void *> cudnnTransformTensor_Partial(cudnnTransformTensorArg *);
+	std::pair<partial_t, void *> cublasSgemv_v2_Partial(cublasSgemv_v2Arg *);
+	std::pair<partial_t, void *> cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg *);
+	std::pair<partial_t, void *> cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *);
+	std::pair<partial_t, void *> cudnnAddTensor_Partial(cudnnAddTensorArg *);
+	std::pair<partial_t, void *> cublasLtMatmul_Partial(cublasLtMatmulArg *);
+	std::pair<partial_t, void *> cudnnActivationForward_Partial(cudnnActivationForwardArg *);
+	std::pair<partial_t, void *> cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *);
+	std::pair<partial_t, void *> cudnnPoolingForward_Partial(cudnnPoolingForwardArg *);
+	std::pair<partial_t, void *> cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwardWeightsArg *);
+	std::pair<partial_t, void *> cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *);
+	std::pair<partial_t, void *> cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormalizationForwardTrainingExArg *);
+	std::pair<partial_t, void *> cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBackwardExArg *);
+	std::pair<partial_t, void *> cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *);
+	std::pair<partial_t, void *> cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *);
+	std::pair<partial_t, void *> cudnnRNNForward_Partial(cudnnRNNForwardArg *);
+	std::pair<partial_t, void *> cudnnBackendExecute_Partial(cudnnBackendExecuteArg *, cudnnStatus_t *err);
+	std::pair<partial_t, void *> cublasGemmEx_Partial(cublasGemmExArg *);
+	std::pair<partial_t, void *> cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *);
+    std::pair<partial_t, void *> cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *__args);
     
 	void handle_cuMemcpyHtoA_v2(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
 	void handle_cudnnSetTensorNdDescriptorEx(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);
