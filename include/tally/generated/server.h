@@ -227,6 +227,10 @@ public:
     void register_api_handler();
     void load_cache();
 
+	const void *get_server_addr_from_client_addr(uint32_t client_id, const void *client_addr);
+	const void *get_server_addr_from_cu_func(CUfunction cu_func);
+
+	void register_kernel(const void *server_func_addr);
 	void register_cu_modules(uint32_t cubin_uid);
 	void register_kernels();
     void register_measurements();

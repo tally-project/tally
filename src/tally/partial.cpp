@@ -40,6 +40,7 @@ partial_t TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim,
     auto args_bytes = std::reduce(arg_sizes.begin(), arg_sizes.end());
 
     auto params_local = (char *) malloc(args_bytes);
+    // auto params_local = std::vector<char>(args_bytes);
     memcpy(params_local, params, args_bytes);
 
     void *__args_arr[MAXIMUM_ARG_COUNT];
@@ -61,8 +62,6 @@ partial_t TallyServer::cudaLaunchKernel_Partial(const void *func, dim3  gridDim,
         } else {
             err = config.launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, ptb_args, curr_idx_arr);
         }
-
-        // free(params_local);
 
         if (exit_if_fail && err) {
 

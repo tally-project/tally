@@ -405,6 +405,50 @@ void TallyServer::client_add_stream(int32_t client_id, cudaStream_t stream)
     cudaMalloc(&ptb_args, sizeof(PTBArgs));
 }
 
+const void *TallyServer::get_server_addr_from_client_addr(uint32_t client_id, const void *client_addr)
+{
+    auto &client_addr_mapping = client_data_all[client_id]._kernel_client_addr_mapping;
+
+    if (client_addr_mapping.find(client_addr) == client_addr_mapping.end()) {
+        throw std::runtime_error("Fail to look up server addr from client addr");
+    }
+
+    const void *server_addr = client_addr_mapping[client_addr];
+
+    // register the kernel of this server addr if not done already
+    if (original_kernel_map.find(server_addr) == original_kernel_map.end()) {
+        register_kernel(server_addr);
+    }
+
+    return server_addr;
+}
+
+const void *TallyServer::get_server_addr_from_cu_func(CUfunction cu_func)
+{
+    if (cu_func_addr_mapping.find(cu_func) == cu_func_addr_mapping.end()) {
+        throw std::runtime_error("Fail to look up server addr from cu_func");
+    }
+
+    const void *server_addr = cu_func_addr_mapping[cu_func];
+
+    // register the kernel of this server addr if not done already
+    if (original_kernel_map.find(server_addr) == original_kernel_map.end()) {
+        register_kernel(server_addr);
+    }
+
+    return server_addr;
+}
+
+void TallyServer::register_kernel(const void *server_func_addr)
+{
+    auto cubin_uid = host_func_to_cubin_uid_map[server_func_addr];
+    auto cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
+    auto cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+
+    register_cu_modules(cubin_uid);
+    register_ptx_transform(cubin_data, cubin_size);
+}
+
 void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_size)
 {
     using KERNEL_NAME_MAP_TYPE = folly::ConcurrentHashMap<std::string, const void *>;
@@ -449,12 +493,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
         stream = client_data_all[client_id].default_stream;
     }
 
-    assert(client_data_all[client_id]._kernel_client_addr_mapping.find(args->host_func) != client_data_all[client_id]._kernel_client_addr_mapping.end());
-    if (client_data_all[client_id]._kernel_client_addr_mapping.find(args->host_func) == client_data_all[client_id]._kernel_client_addr_mapping.end()) {
-        throw std::runtime_error("client_data_all[client_id]._kernel_client_addr_mapping.find(args->host_func) == client_data_all[client_id]._kernel_client_addr_mapping.end()");
-    }
-
-    const void *server_func_addr = client_data_all[client_id]._kernel_client_addr_mapping[args->host_func];
+    const void *server_func_addr = get_server_addr_from_client_addr(client_id, args->host_func);
 
     auto kernel_name = host_func_to_demangled_kernel_name_map[server_func_addr];
     TALLY_SPD_LOG(kernel_name);
@@ -501,13 +540,7 @@ void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *
         stream = client_data_all[client_id].default_stream;
     }
 
-    assert(cu_func_addr_mapping.find(args->f) != cu_func_addr_mapping.end());
-    if (cu_func_addr_mapping.find(args->f) == cu_func_addr_mapping.end()) {
-        throw std::runtime_error("cu_func_addr_mapping.find(args->f) == cu_func_addr_mapping.end()");
-    }
-
-    const void *server_func_addr = cu_func_addr_mapping[args->f];
-
+    auto server_func_addr = get_server_addr_from_cu_func(args->f);
     auto kernel_name = host_func_to_demangled_kernel_name_map[server_func_addr];
     TALLY_SPD_LOG(kernel_name);
 
@@ -577,7 +610,7 @@ void TallyServer::load_cache()
 
         for (auto &cubin_data : cubin_vec) {
 
-            auto kernel_args = cubin_data.kernel_args;
+            auto &kernel_args = cubin_data.kernel_args;
             auto cubin_uid = cubin_data.cubin_uid;
 
             for (auto &kernel_args_pair : cubin_data.kernel_args) {
@@ -607,10 +640,10 @@ void TallyServer::load_cache()
                 }
             }
 
-            register_cu_modules(cubin_uid);
+            // register_cu_modules(cubin_uid);
 
             // Load the original and transformed PTX and register them as callable functions
-            register_ptx_transform(cubin_data.cubin_data.c_str(), cubin_size);
+            // register_ptx_transform(cubin_data.cubin_data.c_str(), cubin_size);
         }
     }
 
@@ -742,13 +775,12 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
         }
     }
 
-    register_cu_modules(cubin_uid);
+    // register_cu_modules(cubin_uid);
 
-    // Load the transformed PTX and register them as callable functions
-    if (!client_meta.cubin_registered) {
-        register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
-    }
-
+    // // Load the transformed PTX and register them as callable functions
+    // if (!client_meta.cubin_registered) {
+    //     register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+    // }
 }
 
 void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -2393,7 +2425,7 @@ void TallyServer::handle_cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
     auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
     int32_t client_id = msg_header->client_id;
 
-    auto server_addr = client_data_all[client_id]._kernel_client_addr_mapping[args->func];
+    auto server_addr = get_server_addr_from_client_addr(client_id, args->func);
     auto cu_func = original_kernel_map[server_addr].func;
 
     iox_server->loan(requestHeader, sizeof(cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse), alignof(cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlagsResponse))
@@ -3021,7 +3053,7 @@ void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedSe
     auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
     int32_t client_id = msg_header->client_id;
     
-    const void *server_func_addr = client_data_all[client_id]._kernel_client_addr_mapping[args->func];
+    auto server_func_addr = get_server_addr_from_client_addr(client_id, args->func);
     auto cu_func = original_kernel_map[server_func_addr].func;
     auto cu_func_ptb = ptb_kernel_map[server_func_addr].func;
     auto cu_func_dynamic_ptb = dynamic_ptb_kernel_map[server_func_addr].func;
@@ -3393,8 +3425,8 @@ void TallyServer::handle_cuFuncGetAttribute(void *__args, iox::popo::UntypedServ
 	auto args = (struct cuFuncGetAttributeArg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
 
-	const void *server_func_addr = cu_func_addr_mapping[args->hfunc];
-	CUfunction cu_func_original = TallyServer::server->original_kernel_map[server_func_addr].func;
+	auto server_func_addr = get_server_addr_from_cu_func(args->hfunc);
+	auto cu_func_original = TallyServer::server->original_kernel_map[server_func_addr].func;
 
     iox_server->loan(requestHeader, sizeof(cuFuncGetAttributeResponse), alignof(cuFuncGetAttributeResponse))
         .and_then([&](auto& responsePayload) {
@@ -3419,7 +3451,7 @@ void TallyServer::handle_cuFuncSetAttribute(void *__args, iox::popo::UntypedServ
 	auto args = (struct cuFuncSetAttributeArg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
 
-	const void *server_func_addr = cu_func_addr_mapping[args->hfunc];
+	auto server_func_addr = get_server_addr_from_cu_func(args->hfunc);
 	auto cu_func_original = TallyServer::server->original_kernel_map[server_func_addr].func;
 	auto cu_func_ptb = TallyServer::server->ptb_kernel_map[server_func_addr].func;
 	auto cu_func_dynamic = TallyServer::server->dynamic_ptb_kernel_map[server_func_addr].func;
@@ -3448,7 +3480,7 @@ void TallyServer::handle_cuFuncSetCacheConfig(void *__args, iox::popo::UntypedSe
 	auto args = (struct cuFuncSetCacheConfigArg *) __args;
 	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
 
-    const void *server_func_addr = cu_func_addr_mapping[args->hfunc];
+    auto server_func_addr = get_server_addr_from_cu_func(args->hfunc);
 	auto cu_func_original = TallyServer::server->original_kernel_map[server_func_addr].func;
 	auto cu_func_ptb = TallyServer::server->ptb_kernel_map[server_func_addr].func;
 	auto cu_func_dynamic = TallyServer::server->dynamic_ptb_kernel_map[server_func_addr].func;
@@ -4413,7 +4445,7 @@ void TallyServer::handle_cudaFuncGetAttributes(void *__args, iox::popo::UntypedS
     auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
     int32_t client_id = msg_header->client_id;
     
-    const void *server_func_addr = client_data_all[client_id]._kernel_client_addr_mapping[args->func];
+    auto server_func_addr = get_server_addr_from_client_addr(client_id, args->func);
     auto cu_func = original_kernel_map[server_func_addr].func;
 
     iox_server->loan(requestHeader, sizeof(cudaFuncGetAttributesResponse), alignof(cudaFuncGetAttributesResponse))
