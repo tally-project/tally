@@ -1427,4 +1427,7 @@ struct cudaMemsetAsyncArg {
 	cudaStream_t  stream;
 };
 
+struct cudaPeekAtLastErrorArg {
+};
+
 #endif // TALLY_DEF_H

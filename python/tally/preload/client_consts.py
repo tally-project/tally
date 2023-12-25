@@ -494,6 +494,7 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaPeekAtLastError",
     "cudaMemsetAsync",
     "cublasLtMatmulPreferenceDestroy",
     "cublasGetMathMode",
@@ -687,7 +688,6 @@ FORWARD_API_CALLS = [
     "cudaThreadExit",
     "cudaThreadSetLimit",
     "cudaThreadSetCacheConfig",
-    "cudaPeekAtLastError",
     "cudaSetDeviceFlags",
     "cudaCtxResetPersistingL2Cache",
     "cudaEventRecordWithFlags",

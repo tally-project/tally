@@ -4698,3 +4698,23 @@ void TallyServer::handle_cudaMemsetAsync(void *__args, iox::popo::UntypedServer 
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cudaPeekAtLastError(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaPeekAtLastError");
+	auto args = (struct cudaPeekAtLastErrorArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaError_t*>(responsePayload);
+            *response = cudaPeekAtLastError(
+
+            );
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}

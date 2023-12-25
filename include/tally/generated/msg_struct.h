@@ -604,9 +604,6 @@ struct cudaThreadSetCacheConfigArg {
 	enum cudaFuncCache  cacheConfig;
 };
 
-struct cudaPeekAtLastErrorArg {
-};
-
 struct cudaGetDeviceCountArg {
 	int * count;
 };

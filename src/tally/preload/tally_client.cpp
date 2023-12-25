@@ -7283,4 +7283,18 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
 	return err;
 }
 
+cudaError_t cudaPeekAtLastError()
+{
+	TALLY_SPD_LOG("cudaPeekAtLastError hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaPeekAtLastError();
+#else
+    auto err = last_err;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaPeekAtLastError);
+	return err;
+}
+
 }
