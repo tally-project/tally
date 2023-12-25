@@ -7246,4 +7246,41 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 	return err;
 }
 
+cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream_t  stream)
+{
+	TALLY_SPD_LOG("cudaMemsetAsync hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaMemsetAsync(devPtr, value, count, stream);
+#else
+
+    cudaError_t err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaMemsetAsyncArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDAMEMSETASYNC;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudaMemsetAsyncArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->devPtr = devPtr;
+			request->value = value;
+			request->count = count;
+			request->stream = stream;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    IOX_RECV_RETURN_STATUS(cudaError_t );
+#endif
+	last_err = err;
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaMemsetAsync);
+	return err;
+}
+
 }

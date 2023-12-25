@@ -1420,4 +1420,11 @@ struct cublasLtMatmulPreferenceDestroyArg {
 	cublasLtMatmulPreference_t  pref;
 };
 
+struct cudaMemsetAsyncArg {
+	void * devPtr;
+	int  value;
+	size_t  count;
+	cudaStream_t  stream;
+};
+
 #endif // TALLY_DEF_H

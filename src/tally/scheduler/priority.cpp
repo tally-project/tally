@@ -110,16 +110,7 @@ void TallyServer::run_priority_scheduler()
                     // we have told it to stop so we will launch it again
                     } else {
 
-                        auto &launch_call = in_progress_kernel_wrapper.launch_call;
-
-                        bool found_in_cache;
-                        auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
-
-                        if (!found_in_cache) {
-                            throw std::runtime_error("must be found in cache");
-                        }
-
-                        auto config = res.config;
+                        auto config = dispatched_kernel.config;
 
                         // Make sure there is no pending event in retreat stream
                         // think about a previous cudaMemsetAsync(&retreat) has not yet completed,
@@ -138,12 +129,11 @@ void TallyServer::run_priority_scheduler()
                         cudaEventRecord(client_event, in_progress_kernel_wrapper.launch_stream);
 
                         // Flip the flag
-                        in_progress_kernels[client_priority].running = true;
-                        in_progress_kernels[client_priority].config = config;
-                    }
+                        dispatched_kernel.running = true;
 
-                    // Either way, break the loop
-                    break;
+                        // done
+                        break;
+                    }
                 }
 
                 // Try to fetch kernel from low-priority queue

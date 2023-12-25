@@ -4662,3 +4662,39 @@ void TallyServer::handle_cublasLtMatmulPreferenceDestroy(void *__args, iox::popo
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cudaMemsetAsync(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaMemsetAsync");
+	auto args = (struct cudaMemsetAsyncArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    cudaStream_t __stream = args->stream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
+        .and_then([&](auto& responsePayload) {
+
+            wait_until_launch_queue_empty(client_uid);
+
+            auto response = static_cast<cudaError_t*>(responsePayload);
+            *response = cudaMemsetAsync(
+				args->devPtr,
+				args->value,
+				args->count,
+				__stream
+            );
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}

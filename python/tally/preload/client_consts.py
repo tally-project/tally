@@ -494,6 +494,7 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaMemsetAsync",
     "cublasLtMatmulPreferenceDestroy",
     "cublasGetMathMode",
     "cublasLtDestroy",
@@ -654,7 +655,6 @@ FORWARD_API_CALLS = [
     "cudnnRNNSetClip",
     "cudnnRNNSetClip_v8",
     "cudnnSetRNNMatrixMathType",
-    "cudaMemsetAsync",
     "cublasSetSmCountTarget",
     "cublasSetLoggerCallback",
     "cudnnGetFoldedConvBackwardDataDescriptors",

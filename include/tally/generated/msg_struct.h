@@ -811,13 +811,6 @@ struct cudaMemGetInfoResponse {
 	cudaError_t err;
 };
 
-struct cudaMemsetAsyncArg {
-	void * devPtr;
-	int  value;
-	size_t  count;
-	cudaStream_t  stream;
-};
-
 struct cudaMemPoolTrimToArg {
 	cudaMemPool_t  memPool;
 	size_t  minBytesToKeep;
