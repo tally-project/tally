@@ -5,10 +5,6 @@ TALLY_CACHE_CLIENT_PATH=${HOME%%/}/.cache/tally/.tally_cache_client
 
 TALLY_CLIENT_LIB=libtally_client.so
 
-if [ "$SCHEDULER_POLICY" = "WORKLOAD_AGNOSTIC_SHARING" ]; then
-    TALLY_CLIENT_LIB=libtally_client_offline.so
-fi
-
 TALLY_CLIENT_LIB_PATH=${HOME%%/}/tally/build/$TALLY_CLIENT_LIB
 
 if [[ ! -z "$TALLY_HOME" ]]; then
