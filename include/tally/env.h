@@ -26,7 +26,7 @@ static uint32_t FATBIN_MAGIC_NUMBER = 3126193488;
 static uint32_t PTB_MAX_NUM_THREADS_PER_SM = 1024;
 
 // number of times to run a kernel to get performance metrics
-static uint32_t KERNEL_PROFILE_ITERATIONS = 30;
+static uint32_t KERNEL_PROFILE_ITERATIONS = 10;
 
 // Time share Threshold
 static float TIME_SHARE_THRESHOLD = 1.f;

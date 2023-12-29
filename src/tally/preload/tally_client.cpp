@@ -4358,6 +4358,12 @@ CUresult cuGetProcAddress_v11030(const char * symbol, void ** pfn, int  cudaVers
     else if (symbol_str == "cuGetProcAddress_v2") {
         *pfn = (void **) cuGetProcAddress_v2;
     }
+    else if (symbol_str == "cuGraphInstantiate") {
+        *pfn = dlsym(RTLD_DEFAULT, "cuGraphInstantiateWithFlags");
+    }
+    else if (symbol_str == "cuGraphInstantiateWithParams_ptsz") {
+        *pfn = dlsym(RTLD_DEFAULT, "cuGraphInstantiateWithParams");
+    }
     else if (std::find(cuGetProcAddress_funcs.begin(), cuGetProcAddress_funcs.end(), symbol_str) != cuGetProcAddress_funcs.end()) {
         *pfn = dlsym(RTLD_DEFAULT, symbol_str.c_str());
         assert(pfn);
