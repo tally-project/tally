@@ -214,8 +214,11 @@ void TallyServer::run_priority_scheduler()
                     auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
 
                     auto preemptive_ptb_configs = CudaLaunchConfig::get_priority_preemptive_configs(threads_per_block, num_blocks);
-                    tune_kernel_launch(kernel_wrapper, client_id, preemptive_ptb_configs);
-                    res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                    launch_and_measure_kernel(kernel_wrapper, client_id, preemptive_ptb_configs);
+
+                    kernel_wrapper.free_args();
+                    client_data.queue_size--;
+                    break;
                 }
 
                 PTBArgs *ptb_args = nullptr;

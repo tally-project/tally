@@ -237,41 +237,21 @@ CUresult CudaLaunchConfig::repeat_launch(
 
 CUresult CudaLaunchConfig::launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
-    PTBArgs *ptb_args, uint32_t *curr_idx_arr, bool run_profile, float *elapsed_time_ms)
+    PTBArgs *ptb_args, uint32_t *curr_idx_arr)
 {
-    cudaEvent_t _start, _stop;
-
     if (use_original) {
 
-        if (run_profile) {
-            cudaEventCreate(&_start);
-            cudaEventCreate(&_stop);
-            cudaStreamSynchronize(stream);
-
-            cudaEventRecord(_start);
-        }
-
         CUfunction cu_func = TallyServer::server->original_kernel_map[func].func;
-
         assert(cu_func);
 
         auto err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
                                 blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
-
-        if (run_profile) {
-            cudaEventRecord(_stop);
-            cudaEventSynchronize(_stop);
-            cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
-            cudaEventDestroy(_start);
-            cudaEventDestroy(_stop);
-        }
 
         return err;
     } else if (use_ptb) {
 
         CUfunction cu_func = TallyServer::server->ptb_kernel_map[func].func;
         size_t num_args = TallyServer::server->ptb_kernel_map[func].num_args;
-
         assert(cu_func);
 
         dim3 PTB_grid_dim;
@@ -290,24 +270,8 @@ CUresult CudaLaunchConfig::launch(
         }
         KernelParams[num_args - 1] = &gridDim;
 
-        if (run_profile) {
-            cudaEventCreate(&_start);
-            cudaEventCreate(&_stop);
-            cudaStreamSynchronize(stream);
-
-            cudaEventRecord(_start);
-        }
-
         auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
                               blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
-
-        if (run_profile) {
-            cudaEventRecord(_stop);
-            cudaEventSynchronize(_stop);
-            cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
-            cudaEventDestroy(_start);
-            cudaEventDestroy(_stop);
-        }
 
         return err;
         
@@ -339,24 +303,8 @@ CUresult CudaLaunchConfig::launch(
         KernelParams[num_args - 2] = &global_idx;
         KernelParams[num_args - 1] = &curr_idx_arr;
 
-        if (run_profile) {
-            cudaEventCreate(&_start);
-            cudaEventCreate(&_stop);
-            cudaStreamSynchronize(stream);
-
-            cudaEventRecord(_start);
-        }
-
         auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
                               blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
-
-        if (run_profile) {
-            cudaEventRecord(_stop);
-            cudaEventSynchronize(_stop);
-            cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
-            cudaEventDestroy(_start);
-            cudaEventDestroy(_stop);
-        }
 
         return err;
 
@@ -391,24 +339,8 @@ CUresult CudaLaunchConfig::launch(
         KernelParams[num_args - 2] = &retreat;
         KernelParams[num_args - 1] = &curr_idx_arr;
 
-        if (run_profile) {
-            cudaEventCreate(&_start);
-            cudaEventCreate(&_stop);
-            cudaStreamSynchronize(stream);
-
-            cudaEventRecord(_start);
-        }
-
         auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
                               blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
-
-        if (run_profile) {
-            cudaEventRecord(_stop);
-            cudaEventSynchronize(_stop);
-            cudaEventElapsedTime(elapsed_time_ms, _start, _stop);
-            cudaEventDestroy(_start);
-            cudaEventDestroy(_stop);
-        }
 
         return err;
 
