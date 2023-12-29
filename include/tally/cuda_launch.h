@@ -230,7 +230,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config);
     
-    CUresult launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, PTBArgs *ptb_args, uint32_t *curr_idx_arr=nullptr, bool run_profile=false, float *elapsed_time_ms=nullptr);
+    CUresult launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, PTBArgs *ptb_args, uint32_t *curr_idx_arr=nullptr);
     CUresult repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, PTBArgs *ptb_args, uint32_t *curr_idx_arr=nullptr, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1);
 };
 
@@ -277,6 +277,11 @@ struct std::hash<CudaLaunchCallConfigPair>
                      std::hash<CudaLaunchCallConfig>()(k.call_config_2);
         return _hash;
     }
+};
+
+struct TempKernelProfileMetrics {
+    float avg_latency_ms = 0.;
+    uint32_t count = 0;
 };
 
 struct KernelProfileMetrics {

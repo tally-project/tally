@@ -54,9 +54,9 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
                         auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
                         auto configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
 
-                        tune_kernel_launch(kernel_wrapper, client_id, configs);
-                        res = get_single_kernel_best_config(launch_call, &found_in_cache);
-                        assert(found_in_cache);
+                        launch_and_measure_kernel(kernel_wrapper, client_id, configs);
+                        client_data.queue_size--;
+                        continue;
                     }
 
                     config = res.config;
