@@ -121,6 +121,16 @@ void TallyServer::start_worker_server(int32_t client_id) {
     auto process_name = get_process_name(client_id);
     spdlog::info("Client process: " + process_name);
 
+    auto policy = SCHEDULER_POLICY;
+    if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
+        for (auto &client_priority_data : client_priority_map) {
+            auto &client_priority = client_priority_data.first;
+            if (client_priority.client_id == client_id) {
+                spdlog::info("Client priority: " + std::to_string(client_priority.priority));
+            }
+        }
+    }
+
     auto worker_server = worker_servers[client_id];
 
     while (!iox::posix::hasTerminationRequested())

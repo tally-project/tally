@@ -74,12 +74,13 @@ struct ClientPriority {
 	int32_t client_id;
 	int32_t priority;
 
-	bool operator<(const ClientPriority& other) const {
-        return priority < other.priority;
-    }
-
 	bool operator>(const ClientPriority& other) const {
-        return priority > other.priority;
+
+		if (priority != other.priority) {
+			return priority > other.priority;
+		}
+
+		return client_id > other.client_id;
     }
 
 };
