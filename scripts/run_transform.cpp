@@ -6,7 +6,7 @@
 
 int main() {
 
-    std::ifstream t("elementwise_with_cond.ptx");
+    std::ifstream t("fused_dropout_kernel_vec.ptx");
     std::string str((std::istreambuf_iterator<char>(t)),
                         std::istreambuf_iterator<char>());
 

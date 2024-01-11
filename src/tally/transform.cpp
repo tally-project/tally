@@ -21,10 +21,10 @@ std::string gen_sync_aware_kernel(std::string &kernel_ptx_str)
 
     boost::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
     boost::regex pred_reg_decl_pattern("\\.reg \\.pred %p<(\\d+)>;");
+    boost::regex threads_sync_pattern("bar\\.sync \\d;");
+    boost::regex kernel_param_pattern("^\\.param");
     
-
     std::string SYNC_BLOCK_NAME = "L__SYNC_BLOCK";
-    std::string RESUME_BLOCK_NAME = "L__RESUME_BLOCK";
     std::string RETURN_BLOCK_NAME = "L__RETURN_BLOCK";
 
     uint32_t num_b32_regs = 0;
@@ -34,12 +34,14 @@ std::string gen_sync_aware_kernel(std::string &kernel_ptx_str)
     int32_t brace_counter = 0;
     int32_t brace_encountered = false;
 
-    uint32_t num_additional_b32 = 0;
+    uint32_t resume_block_counter = 0;
+    uint32_t num_additional_b32_regs = 0;
     uint32_t num_additional_pred_regs = 0;
+    std::string sync_aware_ptx_code = "";
 
-    auto allocate_new_b32_reg = [&num_b32_regs, &num_additional_b32]() {
-        uint32_t new_b32_reg = num_b32_regs + num_additional_b32;
-        num_additional_b32++;
+    auto allocate_new_b32_reg = [&num_b32_regs, &num_additional_b32_regs]() {
+        uint32_t new_b32_reg = num_b32_regs + num_additional_b32_regs;
+        num_additional_b32_regs++;
         return new_b32_reg;
     };
 
@@ -49,18 +51,136 @@ std::string gen_sync_aware_kernel(std::string &kernel_ptx_str)
         return new_pred_reg;
     };
 
-    std::string sync_aware_ptx_code = "";
-
-    //
+    // First pass - collect number of used registers
     while (std::getline(ss, line, '\n')) {
 
+        if (strip(line) == "ret;" || boost::regex_search(line, matches, threads_sync_pattern)) {
+            num_additional_b32_regs++;
+            num_additional_pred_regs++;
+            continue;
+        }
+
+        if (boost::regex_search(line, matches, b32_reg_decl_pattern)) {
+            num_b32_regs = std::stoi(matches[1]);
+            continue;
+        }
+
+        if (boost::regex_search(line, matches, pred_reg_decl_pattern)) {
+            num_pred_regs = std::stoi(matches[1]);
+            continue;
+        }
     }
 
     ss.clear();
     ss.seekg(0, std::ios::beg);
 
+    std::string resume_block_idx_reg = "%r" + std::to_string(allocate_new_b32_reg());
+    std::string sync_ret_pred_reg = "%p" + std::to_string(allocate_new_pred_reg());
+    std::string has_sync_pred_reg = "%p" + std::to_string(allocate_new_pred_reg());
+    std::vector<std::string> resume_block_names;
+
     while (std::getline(ss, line, '\n')) {
 
+        if (boost::regex_search(line, matches, b32_reg_decl_pattern)) {
+            continue;
+        }
+
+        if (boost::regex_search(line, matches, pred_reg_decl_pattern)) {
+            continue;
+        }
+
+        if (strip(line) == "ret;" || boost::regex_search(line, matches, threads_sync_pattern)) {
+
+            std::string resume_block_name = "L__POST_RET_OR_SYNC_BB_" + std::to_string(resume_block_counter);
+
+            if (strip(line) == "ret;") {
+                sync_aware_ptx_code += "bra.uni $" + resume_block_name + ";\n";
+                sync_aware_ptx_code += "\n";
+                sync_aware_ptx_code += "$" + resume_block_name + ":\n";
+            }
+
+            sync_aware_ptx_code += "mov.u32 " + resume_block_idx_reg + ", " + std::to_string(resume_block_counter) + ";\n";
+
+            if (strip(line) == "ret;") {
+                sync_aware_ptx_code += "setp.eq.u32 " + sync_ret_pred_reg + ", 0, 1;\n";
+            } else {
+                sync_aware_ptx_code += "setp.eq.u32 " + sync_ret_pred_reg + ", 0, 0;\n";
+            }
+
+            sync_aware_ptx_code += "bra.uni $" + SYNC_BLOCK_NAME + ";\n";
+
+            if (boost::regex_search(line, matches, threads_sync_pattern)) {
+                sync_aware_ptx_code += "\n";
+                sync_aware_ptx_code += "$" + resume_block_name + ":\n";
+            }
+
+            resume_block_names.push_back(resume_block_name);
+            resume_block_counter++;
+            continue;
+        }
+
+        if (boost::regex_search(line, matches, b32_reg_decl_pattern)) {
+            num_b32_regs = std::stoi(matches[1]);
+        }
+
+        if (boost::regex_search(line, matches, pred_reg_decl_pattern)) {
+            num_pred_regs = std::stoi(matches[1]);
+        }
+
+        int32_t numLeftBrace = countLeftBrace(line);
+        int32_t numRightBrace = countRightBrace(line);
+
+        brace_counter += numLeftBrace;
+        brace_counter -= numRightBrace;
+
+        // Insert code at start of kernel
+        if (strip(line) == "{") {
+
+            if (brace_encountered) {
+                sync_aware_ptx_code += line + "\n";
+                continue;
+            }
+
+            sync_aware_ptx_code += line + "\n";
+            brace_encountered = true;
+
+            sync_aware_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32_regs) + ">;\n";
+            sync_aware_ptx_code += ".reg .pred %p<" + std::to_string(num_pred_regs + num_additional_pred_regs) + ">;\n";
+
+            continue;
+        }
+
+        // Insert code at end of kernel
+        if (brace_encountered && brace_counter == 0) {
+
+            // Now must be at end of kernel
+            sync_aware_ptx_code += "$" + SYNC_BLOCK_NAME + ":\n";
+            sync_aware_ptx_code += "bar.cta.red.or.pred " + has_sync_pred_reg + ", 0, " + sync_ret_pred_reg + ";\n";
+            sync_aware_ptx_code += "ts: .branchtargets ";
+
+            for (auto &resume_block_name : resume_block_names) {
+                sync_aware_ptx_code += "$" + resume_block_name;
+
+                if (resume_block_name == resume_block_names.back()) {
+                    sync_aware_ptx_code += ";\n";
+                } else {
+                    sync_aware_ptx_code += ", ";
+                }
+            }
+
+            sync_aware_ptx_code += "@" + has_sync_pred_reg + " brx.idx "+ resume_block_idx_reg +", ts;\n";
+            sync_aware_ptx_code += "bra.uni $" + RETURN_BLOCK_NAME + ";\n\n";
+
+            sync_aware_ptx_code += "$" + RETURN_BLOCK_NAME + ":\n";
+            sync_aware_ptx_code += "ret;\n";
+
+            sync_aware_ptx_code += "\n";
+            sync_aware_ptx_code += line + "\n";
+
+            continue;
+        }
+
+        sync_aware_ptx_code += line + "\n";
     }
 
     return sync_aware_ptx_code;
@@ -103,7 +223,7 @@ std::string gen_preemptive_ptb_kernel(std::string &kernel_ptx_str)
     bool use_BlockIdx_z = false;
 
     uint32_t num_additional_b16 = 0;
-    uint32_t num_additional_b32 = 0;
+    uint32_t num_additional_b32_regs = 0;
     uint32_t num_additional_b64 = 0;
     uint32_t num_additional_pred_regs = 0;
 
@@ -113,9 +233,9 @@ std::string gen_preemptive_ptb_kernel(std::string &kernel_ptx_str)
         return new_b16_reg;
     };
 
-    auto allocate_new_b32_reg = [&num_b32_regs, &num_additional_b32]() {
-        uint32_t new_b32_reg = num_b32_regs + num_additional_b32;
-        num_additional_b32++;
+    auto allocate_new_b32_reg = [&num_b32_regs, &num_additional_b32_regs]() {
+        uint32_t new_b32_reg = num_b32_regs + num_additional_b32_regs;
+        num_additional_b32_regs++;
         return new_b32_reg;
     };
 
@@ -145,7 +265,7 @@ std::string gen_preemptive_ptb_kernel(std::string &kernel_ptx_str)
             num_b64_regs = 0;
             num_pred_regs = 0;
             num_additional_b16 = 0;
-            num_additional_b32 = 0;
+            num_additional_b32_regs = 0;
             num_additional_b64 = 0;
             num_additional_pred_regs = 0;
             brace_counter = 0;
@@ -327,7 +447,7 @@ std::string gen_preemptive_ptb_kernel(std::string &kernel_ptx_str)
 
                     // Perform actions at the top
                     ptb_ptx_code += ".reg .b16 %rs<" + std::to_string(num_b16_regs + num_additional_b16) + ">;\n";
-                    ptb_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
+                    ptb_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32_regs) + ">;\n";
                     ptb_ptx_code += ".reg .b64 %rd<" + std::to_string(num_b64_regs + num_additional_b64) + ">;\n";
                     ptb_ptx_code += ".reg .pred %p<" + std::to_string(num_pred_regs + num_additional_pred_regs) + ">;\n";
 
@@ -575,13 +695,13 @@ std::string gen_dynamic_ptb_kernel(std::string &kernel_ptx_str)
     bool use_BlockIdx_y = false;
     bool use_BlockIdx_z = false;
 
-    uint32_t num_additional_b32 = 0;
+    uint32_t num_additional_b32_regs = 0;
     uint32_t num_additional_b64 = 0;
     uint32_t num_additional_pred_regs = 0;
 
-    auto allocate_new_b32_reg = [&num_b32_regs, &num_additional_b32]() {
-        uint32_t new_b32_reg = num_b32_regs + num_additional_b32;
-        num_additional_b32++;
+    auto allocate_new_b32_reg = [&num_b32_regs, &num_additional_b32_regs]() {
+        uint32_t new_b32_reg = num_b32_regs + num_additional_b32_regs;
+        num_additional_b32_regs++;
         return new_b32_reg;
     };
 
@@ -609,7 +729,7 @@ std::string gen_dynamic_ptb_kernel(std::string &kernel_ptx_str)
             num_b32_regs = 0;
             num_b64_regs = 0;
             num_pred_regs = 0;
-            num_additional_b32 = 0;
+            num_additional_b32_regs = 0;
             num_additional_b64 = 0;
             num_additional_pred_regs = 0;
             brace_counter = 0;
@@ -777,7 +897,7 @@ std::string gen_dynamic_ptb_kernel(std::string &kernel_ptx_str)
                     brace_encountered = true;
 
                     // Perform actions at the top
-                    ptb_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
+                    ptb_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32_regs) + ">;\n";
                     ptb_ptx_code += ".reg .b64 %rd<" + std::to_string(num_b64_regs + num_additional_b64) + ">;\n";
                     ptb_ptx_code += ".reg .pred %p<" + std::to_string(num_pred_regs + num_additional_pred_regs) + ">;\n";
 
@@ -994,7 +1114,7 @@ std::string gen_ptb_kernel(std::string &kernel_ptx_str)
     bool use_BlockIdx_y = false;
     bool use_BlockIdx_z = false;
 
-    uint32_t num_additional_b32 = 15;
+    uint32_t num_additional_b32_regs = 15;
     uint32_t num_additional_pred_regs = 2;
 
     std::string ptb_ptx_code = "";
@@ -1146,7 +1266,7 @@ std::string gen_ptb_kernel(std::string &kernel_ptx_str)
                     brace_encountered = true;
 
                     // Perform actions at the top
-                    ptb_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
+                    ptb_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32_regs) + ">;\n";
                     ptb_ptx_code += ".reg .pred %p<" + std::to_string(num_pred_regs + num_additional_pred_regs) + ">;\n";
 
                     // Load origGridDim.x
