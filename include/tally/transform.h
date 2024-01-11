@@ -20,14 +20,18 @@
 #include <tally/cuda_launch.h>
 #include <tally/generated/cuda_api.h>
 
+// Transform the kernel to make sure threads return at the same time
+// This is to fix deadlock issue when some threads exit early while others block at __syncthreads()
+std::string gen_sync_aware_kernel(std::string &ptx_str);
+
 // Generating PTB version of a PTX file
-std::string gen_ptb_ptx(std::string &ptx_str);
+std::string gen_ptb_kernel(std::string &ptx_str);
 
 // Generating dynamic PTB version of a PTX file
-std::string gen_dynamic_ptb_ptx(std::string &ptx_str);
+std::string gen_dynamic_ptb_kernel(std::string &ptx_str);
 
 // Generating preemptive PTB version of a PTX file
-std::string gen_preemptive_ptb_ptx(std::string &ptx_str);
+std::string gen_preemptive_ptb_kernel(std::string &ptx_str);
 
 // Generating combined version of a PTX file
 std::string gen_transform_ptx(std::string &ptx_path);

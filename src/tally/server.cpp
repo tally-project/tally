@@ -981,6 +981,7 @@ void TallyServer::handle_cudaFree(void *__args, iox::popo::UntypedServer *iox_se
 
             auto response = static_cast<cudaError_t*>(responsePayload);
 
+            wait_until_launch_queue_empty(client_id);
             *response = cudaFree(args->devPtr);
 
             if (*response == cudaSuccess) {

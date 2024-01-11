@@ -17,6 +17,18 @@ target_link_libraries(elementwise
     cudart
 )
 
+add_executable(elementwise_with_cond cuda_samples_basic/elementwise_with_cond.cu)
+
+set_target_properties(elementwise_with_cond PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_link_libraries(elementwise_with_cond
+    cuda
+    cudart
+)
+
 add_executable(add_driver_api cuda_samples_basic/add_driver_api.cu)
 
 set_target_properties(add_driver_api PROPERTIES

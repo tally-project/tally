@@ -11,8 +11,63 @@
 #include <boost/timer/progress_display.hpp>
 #include <boost/regex.hpp>
 
+// Transform the kernel to make sure threads return at the same time
+// This is to fix deadlock issue when some threads exit early while others block at __syncthreads()
+std::string gen_sync_aware_kernel(std::string &kernel_ptx_str)
+{
+    std::stringstream ss(kernel_ptx_str);
+    std::string line;
+    boost::smatch matches;
+
+    boost::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
+    boost::regex pred_reg_decl_pattern("\\.reg \\.pred %p<(\\d+)>;");
+    
+
+    std::string SYNC_BLOCK_NAME = "L__SYNC_BLOCK";
+    std::string RESUME_BLOCK_NAME = "L__RESUME_BLOCK";
+    std::string RETURN_BLOCK_NAME = "L__RETURN_BLOCK";
+
+    uint32_t num_b32_regs = 0;
+    uint32_t num_pred_regs = 0;
+    bool record_kernel = false;
+    std::vector<std::string> kernel_lines;
+    int32_t brace_counter = 0;
+    int32_t brace_encountered = false;
+
+    uint32_t num_additional_b32 = 0;
+    uint32_t num_additional_pred_regs = 0;
+
+    auto allocate_new_b32_reg = [&num_b32_regs, &num_additional_b32]() {
+        uint32_t new_b32_reg = num_b32_regs + num_additional_b32;
+        num_additional_b32++;
+        return new_b32_reg;
+    };
+
+    auto allocate_new_pred_reg = [&num_pred_regs, &num_additional_pred_regs]() {
+        uint32_t new_pred_reg = num_pred_regs + num_additional_pred_regs;
+        num_additional_pred_regs++;
+        return new_pred_reg;
+    };
+
+    std::string sync_aware_ptx_code = "";
+
+    //
+    while (std::getline(ss, line, '\n')) {
+
+    }
+
+    ss.clear();
+    ss.seekg(0, std::ios::beg);
+
+    while (std::getline(ss, line, '\n')) {
+
+    }
+
+    return sync_aware_ptx_code;
+}
+
 // Generating preemptive using no shmem PTB version of a PTX file
-std::string gen_preemptive_ptb_ptx(std::string &kernel_ptx_str)
+std::string gen_preemptive_ptb_kernel(std::string &kernel_ptx_str)
 {
     std::stringstream ss(kernel_ptx_str);
     std::string line;
@@ -488,7 +543,7 @@ std::string gen_preemptive_ptb_ptx(std::string &kernel_ptx_str)
 }
 
 // Generating dynamic PTB version of a PTX file
-std::string gen_dynamic_ptb_ptx(std::string &kernel_ptx_str)
+std::string gen_dynamic_ptb_kernel(std::string &kernel_ptx_str)
 {
     std::stringstream ss(kernel_ptx_str);
     std::string line;
@@ -910,7 +965,7 @@ std::string gen_dynamic_ptb_ptx(std::string &kernel_ptx_str)
 }
 
 
-std::string gen_ptb_ptx(std::string &kernel_ptx_str)
+std::string gen_ptb_kernel(std::string &kernel_ptx_str)
 {
     std::stringstream ss(kernel_ptx_str);
     std::string line;
@@ -1276,9 +1331,9 @@ std::string gen_transform_ptx(std::string &ptx_path)
             brace_encountered = false;
 
             final_ptx_str += kernel_func_str + "\n";
-            final_ptx_str += gen_ptb_ptx(kernel_func_str) + "\n";
-            final_ptx_str += gen_dynamic_ptb_ptx(kernel_func_str) + "\n";
-            final_ptx_str += gen_preemptive_ptb_ptx(kernel_func_str) + "\n";
+            final_ptx_str += gen_ptb_kernel(kernel_func_str) + "\n";
+            final_ptx_str += gen_dynamic_ptb_kernel(kernel_func_str) + "\n";
+            final_ptx_str += gen_preemptive_ptb_kernel(kernel_func_str) + "\n";
 
             kernel_func_str = "";
         }

@@ -6,8 +6,12 @@
 
 int main() {
 
-    auto ptx_file = std::string("tmp_910508.1.sm_86.ptx");
-    auto transformed = gen_transform_ptx(ptx_file);
+    std::ifstream t("elementwise_with_cond.ptx");
+    std::string str((std::istreambuf_iterator<char>(t)),
+                        std::istreambuf_iterator<char>());
+
+    // auto ptx_file = std::string("elementwise_with_cond.ptx");
+    auto transformed = gen_sync_aware_kernel(str);
     std::cout << transformed << std::endl;
 
     return 0;
