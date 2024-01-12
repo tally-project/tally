@@ -58,7 +58,7 @@ public:
     void save_transform_cache() {
         if (transform_cache_changed) {
             std::unique_lock lock(mutex_);
-            spdlog::info("Saving transform cache ...");
+            TALLY_SPD_LOG_ALWAYS("Saving transform cache ...");
             
             save_cache_to_file<CubinCache>(cubin_cache_file, cubin_cache);
             transform_cache_changed = false;
@@ -68,7 +68,7 @@ public:
     void save_performance_cache() {
         if (perf_cache_changed) {
             std::unique_lock lock(mutex_);
-            spdlog::info("Saving performance cache ...");
+            TALLY_SPD_LOG_ALWAYS("Saving performance cache ...");
 
             save_cache_to_file<PerformanceCache>(performance_cache_file, performance_cache);
             performance_cache.write_single_kernel_perf_to_file();

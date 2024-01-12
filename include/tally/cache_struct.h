@@ -12,6 +12,8 @@
 
 #include <tally/cuda_launch.h>
 #include <tally/cuda_util.h>
+#include <tally/transform.h>
+#include <tally/log.h>
 
 static std::shared_mutex mutex_;
 
@@ -305,14 +307,22 @@ public:
     // Original fatbin data
     std::string cubin_data;
 
+    // size of fatbin data
+    size_t cubin_size;
+
     // Key: kernel name, value: vector of the sizes of arguments in ordinal order
     std::map<std::string, std::vector<uint32_t>> kernel_args;
 
+    // cubin file will only be compile when it is used
+    bool compiled = false;
+
     // Ptx string including original, PTB, dynamic PTB, and preemptive PTB kernels
-    std::string ptx_str;
+    std::string ptx_str = "";
 
     // Fatbin data in a string with all the transform kernels
-    std::string fatbin_str;
+    std::string fatbin_str = "";
+
+    void compile();
 };
 
 class CubinCache
@@ -348,8 +358,9 @@ public:
         assert(transform_data);
 
         if (!transform_data) {
-            std::cout << "!transform_data" << std::endl;
+            throw std::runtime_error("cannot find transform_data");
         }
+
         return transform_data->kernel_args;
     }
 
@@ -359,8 +370,13 @@ public:
         assert(transform_data);
 
         if (!transform_data) {
-            std::cout << "!transform_data" << std::endl;
+            throw std::runtime_error("cannot find transform_data");
         }
+
+        if (!transform_data->compiled) {
+            transform_data->compile();
+        }
+
         return transform_data->ptx_str;
     }
 
@@ -370,8 +386,13 @@ public:
         assert(transform_data);
 
         if (!transform_data) {
-            std::cout << "!transform_data" << std::endl;
+            throw std::runtime_error("cannot find transform_data");
         }
+
+        if (!transform_data->compiled) {
+            transform_data->compile();
+        }
+
         return transform_data->fatbin_str;
     }
 
@@ -446,13 +467,11 @@ public:
     void add_data(
         size_t cubin_size,
         std::string &cubin_str,
-        std::map<std::string, std::vector<uint32_t>> &kernel_args,
-        std::string &ptx_str,
-        std::string &fatbin_str
+        std::map<std::string, std::vector<uint32_t>> &kernel_args
     )
     {
         std::unique_lock lock(mutex_);
-        cubin_map[cubin_size].push_back( CubinData { uid_counter, cubin_str, kernel_args, ptx_str, fatbin_str } );
+        cubin_map[cubin_size].push_back( CubinData { uid_counter, cubin_str, cubin_size, kernel_args } );
         uid_counter++;
     }
 };

@@ -17,6 +17,7 @@ __global__ void elementwiseAddition(float* a, float* b, float* c, int size) {
     
     if (tid < size && tid % 2 == 0) {
         c[tid] = a[tid] + b[tid];
+        __syncthreads();
     }
 }
 
@@ -96,6 +97,8 @@ int main()
             exit(1);
         }
     }
+
+    std::cout << "results match" << std::endl;
     
     // Cleanup
     delete[] arr_a;

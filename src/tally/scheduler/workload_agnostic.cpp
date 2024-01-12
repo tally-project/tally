@@ -14,7 +14,7 @@
 // simply launch the single-kernel best config
 void TallyServer::run_workload_agnostic_sharing_scheduler()
 {
-    spdlog::info("Running workload agnostic sharing scheduler ...");
+    TALLY_SPD_LOG_ALWAYS("Running workload agnostic sharing scheduler ...");
 
     KernelLaunchWrapper kernel_wrapper;
 

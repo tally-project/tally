@@ -14,7 +14,7 @@ int main(int argc, char ** argv) {
     main_server_t.join();
     scheduler_t.join();
 
-    spdlog::info("Tally server shutting down ...");
+    TALLY_SPD_LOG_ALWAYS("Tally server shutting down ...");
 
     return 0;
 }

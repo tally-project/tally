@@ -34,7 +34,7 @@ void TallyServer::start_main_server() {
 
     load_cache();
 
-    spdlog::info("Tally server is up ...");
+    TALLY_SPD_LOG_ALWAYS("Tally server is up ...");
 
     std::vector<std::thread> worker_threads;
 
@@ -116,17 +116,17 @@ void TallyServer::start_worker_server(int32_t client_id) {
     CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.curr_idx_arr, sizeof(uint32_t) * CUDA_NUM_SM * 20));
     client_add_stream(client_id, client_meta.default_stream);
 
-    spdlog::info("Tally worker server is up ...");
+    TALLY_SPD_LOG_ALWAYS("Tally worker server is up ...");
 
     auto process_name = get_process_name(client_id);
-    spdlog::info("Client process: " + process_name);
+    TALLY_SPD_LOG_ALWAYS("Client process: " + process_name);
 
     auto policy = SCHEDULER_POLICY;
     if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
         for (auto &client_priority_data : client_priority_map) {
             auto &client_priority = client_priority_data.first;
             if (client_priority.client_id == client_id) {
-                spdlog::info("Client priority: " + std::to_string(client_priority.priority));
+                TALLY_SPD_LOG_ALWAYS("Client priority: " + std::to_string(client_priority.priority));
             }
         }
     }
@@ -153,7 +153,7 @@ void TallyServer::start_worker_server(int32_t client_id) {
     }
 
     threads_running_map[client_id] = false;
-    spdlog::info("Tally worker server has exited ...");
+    TALLY_SPD_LOG_ALWAYS("Tally worker server has exited ...");
 }
 
 void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> &configs)
@@ -279,7 +279,7 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
 
     float best_norm_speed = original_res.metrics.latency_ms / best_latency_ms;
     if (best_norm_speed < USE_PTB_THRESHOLD) {
-        spdlog::info("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
+        TALLY_SPD_LOG_ALWAYS("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
         best_config = base_config;
         best_norm_speed = 1.;
         best_latency_ms = original_res.metrics.latency_ms;
@@ -288,14 +288,14 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
     auto res = get_single_kernel_perf(launch_call, best_config, &found);
     set_single_kernel_best_config(launch_call, res);
 
-    spdlog::info("Tuning complete for: " + kernel_str);
+    TALLY_SPD_LOG_ALWAYS("Tuning complete for: " + kernel_str);
     for (auto &config : configs) {
         auto res = get_single_kernel_perf(launch_call, config, &found);
         auto norm_speed = res.metrics.norm_speed;
         auto latency_ms = res.metrics.latency_ms;
-        spdlog::info("\tLaunch config: " + config.str() + ". Latency: " + std::to_string(latency_ms) + " ms Norm speed: " + std::to_string(norm_speed));
+        TALLY_SPD_LOG_ALWAYS("\tLaunch config: " + config.str() + ". Latency: " + std::to_string(latency_ms) + " ms Norm speed: " + std::to_string(norm_speed));
     }
-    spdlog::info("Best config: " + best_config.str() + ". Latency: " + std::to_string(best_latency_ms) + " ms Norm speed: " + std::to_string(best_norm_speed) + "\n");
+    TALLY_SPD_LOG_ALWAYS("Best config: " + best_config.str() + ". Latency: " + std::to_string(best_latency_ms) + " ms Norm speed: " + std::to_string(best_norm_speed) + "\n");
 
     return;
 }
@@ -307,7 +307,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
     auto cubin_uid = host_func_to_cubin_uid_map[launch_call.func];
 
-    spdlog::info("Launch config not found for: " + kernel_name + "_" + launch_call.dim_str() + "_" + std::to_string(cubin_uid));
+    TALLY_SPD_LOG_ALWAYS("Launch config not found for: " + kernel_name + "_" + launch_call.dim_str() + "_" + std::to_string(cubin_uid));
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -360,12 +360,12 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
         float norm_speed = base_latency_ms / latency_ms;
 
         set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, base_latency_ms, iters);
-        spdlog::info("Launch config: " + config.str() + ". Norm speed: " + std::to_string(norm_speed));
+        TALLY_SPD_LOG_ALWAYS("Launch config: " + config.str() + ". Norm speed: " + std::to_string(norm_speed));
     }
 
     float best_norm_speed = base_latency_ms / best_latency_ms;
     if (best_norm_speed < USE_PTB_THRESHOLD) {
-        spdlog::info("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
+        TALLY_SPD_LOG_ALWAYS("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
         best_config = base_config;
         best_norm_speed = 1.;
     }
@@ -377,7 +377,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = end - start;
 
-    spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Launch config: " + best_config.str() + ". Norm speed: " + std::to_string(best_norm_speed) + "\n");
+    TALLY_SPD_LOG_ALWAYS("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Launch config: " + best_config.str() + ". Norm speed: " + std::to_string(best_norm_speed) + "\n");
 }
 
 void TallyServer::tune_kernel_pair_launch(
@@ -415,7 +415,7 @@ void TallyServer::tune_kernel_pair_launch(
         kernel_names[i] = host_func_to_demangled_kernel_name_map[launch_calls[i].func];
     }
 
-    spdlog::info("Launch config not found for: \n\t" +
+    TALLY_SPD_LOG_ALWAYS("Launch config not found for: \n\t" +
                   kernel_names[0] + "_" + launch_calls[0].dim_str() + "\n\t" +
                   kernel_names[1] + "_" + launch_calls[1].dim_str());
 
@@ -519,13 +519,13 @@ void TallyServer::tune_kernel_pair_launch(
     bool time_share = std::get<2>(launch_configs);
 
     if (time_share) {
-        spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Chosen config: time share");
+        TALLY_SPD_LOG_ALWAYS("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Chosen config: time share");
     } else {
 
         auto config_1 = std::get<0>(launch_configs);
         auto config_2 = std::get<1>(launch_configs);
 
-        spdlog::info("Tuning complete ("+ std::to_string(elapsed.count()) + " ms).\n" + 
+        TALLY_SPD_LOG_ALWAYS("Tuning complete ("+ std::to_string(elapsed.count()) + " ms).\n" + 
                      "\tChosen config_1: " + config_1.str() + " config_2: " + config_2.str() + "\n" + 
                      "\tSum norm speed: " + std::to_string(best_sum_norm_speed)
         );

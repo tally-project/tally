@@ -12,7 +12,7 @@
 // Launch kernel as soon as they arrive
 void TallyServer::run_naive_scheduler()
 {
-    spdlog::info("Running naive scheduler ...");
+    TALLY_SPD_LOG_ALWAYS("Running naive scheduler ...");
 
     CudaLaunchConfig config = CudaLaunchConfig::default_config;
     // CudaLaunchConfig config = CudaLaunchConfig(false, false, false, true, 4);

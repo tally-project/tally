@@ -50,6 +50,7 @@ set(TALLY_CUTLASS_SRC_FILES
 
 set(TALLY_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/tally/cache.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/cache_struct.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/cuda_util.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/util.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/signal.cpp
@@ -177,29 +178,6 @@ foreach(env_var ${tally_client_env_vars})
         target_compile_definitions(tally_client_local PRIVATE ${env_var}=${env_var})
     endif()
 endforeach()
-
-add_library(tally_client_offline SHARED
-    ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_client_offline.cpp
-    ${PROJECT_SOURCE_DIR}/src/tally/client_offline.cpp
-    ${PROJECT_SOURCE_DIR}/src/tally/measurements_client.cpp
-    ${PROJECT_SOURCE_DIR}/src/tally/cuda_launch_client.cpp
-    ${TALLY_SRC_FILES}
-)
-
-target_include_directories(tally_client_offline
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
-    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/nccl/build/include
-    PUBLIC  /usr/local/cuda/include
-    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
-)
-
-target_link_libraries(tally_client_offline PUBLIC
-    PUBLIC Boost::serialization 
-    PUBLIC Boost::regex
-    spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
-)
-
-target_compile_definitions(tally_client_offline PRIVATE IS_CLIENT_OFFLINE="TRUE")
 
 add_executable(tally_server ${PROJECT_SOURCE_DIR}/src/tally/tally_server.cpp ${TALLY_SERVER_SRC_FILES})
 

@@ -11,7 +11,7 @@
 
 void TallyServer::run_profile_scheduler()
 {
-    spdlog::info("Running profile scheduler ...");
+    TALLY_SPD_LOG_ALWAYS("Running profile scheduler ...");
 
     std::random_device rd;
     std::mt19937 gen(rd());

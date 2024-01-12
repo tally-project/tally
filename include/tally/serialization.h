@@ -99,7 +99,9 @@ void serialize(Archive & ar, CubinData & g, const unsigned int version)
 {
     ar & g.cubin_uid;
     ar & g.cubin_data;
+    ar & g.cubin_size;
     ar & g.kernel_args;
+    ar & g.compiled;
     ar & g.ptx_str;
     ar & g.fatbin_str;
 }

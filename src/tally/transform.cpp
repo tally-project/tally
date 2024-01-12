@@ -1452,8 +1452,20 @@ std::string gen_transform_ptx(std::string &ptx_path)
 
             final_ptx_str += kernel_func_str + "\n";
             final_ptx_str += gen_ptb_kernel(kernel_func_str) + "\n";
-            final_ptx_str += gen_dynamic_ptb_kernel(kernel_func_str) + "\n";
-            final_ptx_str += gen_preemptive_ptb_kernel(kernel_func_str) + "\n";
+
+            // contains synchronization primitives
+            if (containsSubstring(kernel_func_str, "bar.sync")) {
+
+                // fix potential issues caused by threads early return 
+                auto sync_aware_ptx_code = gen_sync_aware_kernel(kernel_func_str);
+
+                final_ptx_str += gen_dynamic_ptb_kernel(sync_aware_ptx_code) + "\n";
+                final_ptx_str += gen_preemptive_ptb_kernel(sync_aware_ptx_code) + "\n";
+
+            } else {
+                final_ptx_str += gen_dynamic_ptb_kernel(kernel_func_str) + "\n";
+                final_ptx_str += gen_preemptive_ptb_kernel(kernel_func_str) + "\n";
+            }
 
             kernel_func_str = "";
         }

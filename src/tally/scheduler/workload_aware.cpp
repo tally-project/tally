@@ -19,7 +19,7 @@ public:
 // Always launch kernel pairs of the best config
 void TallyServer::run_workload_aware_sharing_scheduler()
 {
-    spdlog::info("Running workload aware sharing scheduler ...");
+    TALLY_SPD_LOG_ALWAYS("Running workload aware sharing scheduler ...");
 
     srand (time(NULL));
 
@@ -59,13 +59,13 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
                 // if (err) {
                 //     auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
-                //     spdlog::info("Fail to launch preemptive version of kernel " + kernel_name + ". Falling back to non-preemptive versions");
+                //     TALLY_SPD_LOG_ALWAYS("Fail to launch preemptive version of kernel " + kernel_name + ". Falling back to non-preemptive versions");
                 
                 //     auto dynamic_shmem_size_bytes = kernel_wrapper.dynamic_shmem_size_bytes;
                 //     auto static_shmem_size_bytes = preemptive_ptb_kernel_map[launch_call.func].meta_data.static_shmem_size_bytes;
 
-                //     spdlog::info("Dynamic shared mem: " + std::to_string(dynamic_shmem_size_bytes));
-                //     spdlog::info("Static shared mem: " + std::to_string(static_shmem_size_bytes));
+                //     TALLY_SPD_LOG_ALWAYS("Dynamic shared mem: " + std::to_string(dynamic_shmem_size_bytes));
+                //     TALLY_SPD_LOG_ALWAYS("Static shared mem: " + std::to_string(static_shmem_size_bytes));
 
                 // }
 
@@ -381,5 +381,5 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         }
     }
 
-    spdlog::info("Workload aware sharing scheduler has exited.");
+    TALLY_SPD_LOG_ALWAYS("Workload aware sharing scheduler has exited.");
 }
