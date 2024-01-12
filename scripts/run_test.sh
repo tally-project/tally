@@ -6,13 +6,20 @@ cleanup() {
 }
 
 run_tally_test() {
+
+    # Launch tally server in the background
+    ./scripts/start_server.sh &
+
     # Launch client process
     echo $@
     ./scripts/start_client.sh $@
+
+    ./scripts/kill_server.sh
 }
 
 test_list=(
     "./build/tests/elementwise"
+    "./build/tests/elementwise_with_cond"
     "./build/tests/matmul"
     "./build/tests/cuda-memcpy-test"
     "./build/tests/max_pool"
@@ -32,6 +39,7 @@ test_list=(
     # "python3 ./tests/tensorflow_samples/tf_basic.py"
     # "python3 ./tests/tensorflow_samples/cifar_train.py"
     "python3 ./tests/pytorch_samples/train.py"
+    "python3 ./tests/pytorch_samples/dropout.py"
     "python3 ./tests/pytorch_samples/run-triton.py"
     "python3 ./tests/pytorch_samples/run-torch-compile.py"
     "python3 ./tests/pytorch_samples/resnet50-compiled-1.py"
@@ -56,10 +64,6 @@ cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
 
 ./scripts/start_iox.sh &
 sleep 10
-
-# Launch tally server in the background
-./scripts/start_server.sh &
-sleep 5
 
 # Run tests with tally-server-client
 for item in "${test_list[@]}"; do

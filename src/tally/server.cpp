@@ -747,7 +747,7 @@ void TallyServer::register_cu_modules(uint32_t cubin_uid)
         if (!err) {
             cubin_to_cu_module.insert(cubin_uid, transform_module);
         } else {
-            spdlog::warn("Fail to load module for cubin id: " + std::to_string(cubin_uid));
+            TALLY_SPD_WARN("Fail to load module for cubin id: " + std::to_string(cubin_uid));
         }
     }
 }
@@ -957,7 +957,7 @@ void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_
             }
 
             if (response->err == cudaErrorMemoryAllocation) {
-                std::cerr << "Encountered cudaErrorMemoryAllocation " << std::string(__FILE__) + ":" + std::to_string(__LINE__) << std::endl;
+                TALLY_SPD_WARN("Encountered cudaErrorMemoryAllocation " + std::string(__FILE__) + ":" + std::to_string(__LINE__));
             }
             
             iox_server->send(response).or_else(

@@ -35,7 +35,7 @@ void CubinData::compile() {
 
     } else {
 
-        spdlog::warn("No PTX file found in fatbin data.");
+        TALLY_SPD_WARN("No PTX file found in fatbin data.");
 
     }
 
