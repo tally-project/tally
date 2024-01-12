@@ -201,28 +201,6 @@ struct cuCtxPopCurrent_v2Response {
 	CUresult err;
 };
 
-struct cuCtxSetCurrentArg {
-	CUcontext  ctx;
-};
-
-struct cuCtxGetCurrentArg {
-	CUcontext * pctx;
-};
-
-struct cuCtxGetCurrentResponse {
-	CUcontext  pctx;
-	CUresult err;
-};
-
-struct cuCtxGetDeviceArg {
-	CUdevice * device;
-};
-
-struct cuCtxGetDeviceResponse {
-	CUdevice  device;
-	CUresult err;
-};
-
 struct cuCtxGetFlagsArg {
 	unsigned int * flags;
 };
@@ -271,16 +249,6 @@ struct cuCtxGetSharedMemConfigResponse {
 
 struct cuCtxSetSharedMemConfigArg {
 	CUsharedconfig  config;
-};
-
-struct cuCtxGetApiVersionArg {
-	CUcontext  ctx;
-	unsigned int * version;
-};
-
-struct cuCtxGetApiVersionResponse {
-	unsigned int  version;
-	CUresult err;
 };
 
 struct cuCtxGetStreamPriorityRangeArg {
@@ -620,17 +588,6 @@ struct cudaGetDeviceProperties_v2Arg {
 
 struct cudaGetDeviceProperties_v2Response {
 	struct cudaDeviceProp  prop;
-	cudaError_t err;
-};
-
-struct cudaDeviceGetAttributeArg {
-	int * value;
-	enum cudaDeviceAttr  attr;
-	int  device;
-};
-
-struct cudaDeviceGetAttributeResponse {
-	int  value;
 	cudaError_t err;
 };
 

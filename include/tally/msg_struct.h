@@ -1430,4 +1430,43 @@ struct cudaMemsetAsyncArg {
 struct cudaPeekAtLastErrorArg {
 };
 
+struct cuCtxGetApiVersionArg {
+	CUcontext  ctx;
+	unsigned int * version;
+};
+
+struct cuCtxGetApiVersionResponse {
+	unsigned int  version;
+	CUresult err;
+};
+
+struct cuCtxGetDeviceArg {
+	CUdevice * device;
+};
+
+struct cuCtxGetDeviceResponse {
+	CUdevice  device;
+	CUresult err;
+};
+
+struct cuCtxGetCurrentArg {
+	CUcontext * pctx;
+};
+
+struct cuCtxGetCurrentResponse {
+	CUcontext  pctx;
+	CUresult err;
+};
+
+struct cudaDeviceGetAttributeArg {
+	int * value;
+	enum cudaDeviceAttr  attr;
+	int  device;
+};
+
+struct cudaDeviceGetAttributeResponse {
+	int  value;
+	cudaError_t err;
+};
+
 #endif // TALLY_DEF_H

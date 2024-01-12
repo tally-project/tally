@@ -245,12 +245,13 @@ struct ClientPriority {
 	int32_t client_id;
 	int32_t priority;
 
-	bool operator<(const ClientPriority& other) const {
-        return priority < other.priority;
-    }
-
 	bool operator>(const ClientPriority& other) const {
-        return priority > other.priority;
+
+		if (priority != other.priority) {
+			return priority > other.priority;
+		}
+
+		return client_id > other.client_id;
     }
 
 };
@@ -420,7 +421,7 @@ public:
 	std::pair<partial_t, void *> cublasGemmEx_Partial(cublasGemmExArg *);
 	std::pair<partial_t, void *> cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *);
     std::pair<partial_t, void *> cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *__args);
-     
+    
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
@@ -471,11 +472,16 @@ REGISTER_FUNCS = [
 IGNORE_CALLS = [
     "cuCtxDestroy_v2",
     "cuInit",
-    "cuCtxCreate_v2",
+    "cuCtxSetCurrent",
 ]
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaDeviceGetAttribute",
+    "cuCtxCreate_v2",
+    "cuCtxGetCurrent",
+    "cuCtxGetDevice",
+    "cuCtxGetApiVersion",
     "cudaPeekAtLastError",
     "cudaMemsetAsync",
     "cublasLtMatmulPreferenceDestroy",
@@ -687,7 +693,6 @@ FORWARD_API_CALLS = [
     "cuDevicePrimaryCtxRelease_v2",
     "cuDevicePrimaryCtxReset_v2",
     "cuCtxPushCurrent_v2",
-    "cuCtxSetCurrent",
     "cuCtxSetLimit",
     "cuCtxSetCacheConfig",
     "cuCtxSetSharedMemConfig",
@@ -769,7 +774,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cudaThreadGetCacheConfig",
     "cudaGetDeviceProperties",
     "cudaGetDeviceProperties_v2",
-    "cudaDeviceGetAttribute",
     "cudaDeviceGetDefaultMemPool",
     "cudaDeviceGetMemPool",
     "cudaDeviceGetP2PAttribute",
@@ -789,8 +793,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cuDeviceGetTexture1DLinearMaxWidth",
     "cuDeviceGetExecAffinitySupport",
     "cuCtxPopCurrent_v2",
-    "cuCtxGetCurrent",
-    "cuCtxGetDevice",
     "cuCtxGetFlags",
     "cuCtxGetLimit",
     "cuCtxGetCacheConfig",
@@ -824,7 +826,6 @@ CUDA_GET_2_PARAM_FUNCS = [
     "cudnnGetFilterSizeInBytes",
     "cudaStreamIsCapturing",
     "cublasGetVersion_v2",
-    "cuCtxGetApiVersion",
     "cudnnGetStream",
     "cudnnBackendCreateDescriptor",
     "cublasGetStream_v2",

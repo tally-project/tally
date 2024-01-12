@@ -662,17 +662,17 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
         )
     );
 
-    iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
-        .and_then([&](auto& responsePayload) {
+    // iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
+    //     .and_then([&](auto& responsePayload) {
 
-            auto response = static_cast<cudaError_t*>(responsePayload);
-            *response = cudaSuccess;
+    //         auto response = static_cast<cudaError_t*>(responsePayload);
+    //         *response = cudaSuccess;
 
-            iox_server->send(response).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
-        })
-        .or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+    //         iox_server->send(response).or_else(
+    //             [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+    //     })
+    //     .or_else(
+    //         [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -714,22 +714,17 @@ void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *
         )
     );
 
-    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
-        .and_then([&](auto& responsePayload) {
+    // iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+    //     .and_then([&](auto& responsePayload) {
 
-            auto response = static_cast<CUresult*>(responsePayload);
-            // *response = client_data_all[client_id].err;
+    //         auto response = static_cast<CUresult*>(responsePayload);
+    //         *response = CUDA_SUCCESS;
 
-            int device;
-            cudaGetDevice(&device);
-
-            *response = CUDA_SUCCESS;
-
-            iox_server->send(response).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
-        })
-        .or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+    //         iox_server->send(response).or_else(
+    //             [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+    //     })
+    //     .or_else(
+    //         [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::register_cu_modules(uint32_t cubin_uid)
@@ -4924,6 +4919,99 @@ void TallyServer::handle_cudaPeekAtLastError(void *__args, iox::popo::UntypedSer
 
             );
             CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuCtxGetApiVersion(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuCtxGetApiVersion");
+	auto args = (struct cuCtxGetApiVersionArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cuCtxGetApiVersionResponse), alignof(cuCtxGetApiVersionResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuCtxGetApiVersionResponse*>(responsePayload);
+            response->err = cuCtxGetApiVersion(
+				args->ctx,
+				(args->version ? &(response->version) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuCtxGetDevice(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuCtxGetDevice");
+	auto args = (struct cuCtxGetDeviceArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cuCtxGetDeviceResponse), alignof(cuCtxGetDeviceResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuCtxGetDeviceResponse*>(responsePayload);
+            response->err = cuCtxGetDevice(
+				(args->device ? &(response->device) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuCtxGetCurrent(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuCtxGetCurrent");
+	auto args = (struct cuCtxGetCurrentArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cuCtxGetCurrentResponse), alignof(cuCtxGetCurrentResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuCtxGetCurrentResponse*>(responsePayload);
+            response->err = cuCtxGetCurrent(
+				(args->pctx ? &(response->pctx) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuCtxCreate_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuCtxCreate_v2");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}
+
+void TallyServer::handle_cudaDeviceGetAttribute(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaDeviceGetAttribute");
+	auto args = (struct cudaDeviceGetAttributeArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cudaDeviceGetAttributeResponse), alignof(cudaDeviceGetAttributeResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaDeviceGetAttributeResponse*>(responsePayload);
+            response->err = cudaDeviceGetAttribute(
+				(args->value ? &(response->value) : NULL),
+				args->attr,
+				args->device
+			);
+
+            CHECK_CUDA_ERROR(response->err);
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
         })
