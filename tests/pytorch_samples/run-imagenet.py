@@ -26,7 +26,7 @@ model_name = "mobilenet_v3_large"
 
 batch_size = 64
 mixed_precision = False
-iterations = 1
+iterations = 10
 
 cudnn.benchmark = True
 
@@ -59,5 +59,5 @@ for i in range(iterations):
         loss = F.cross_entropy(output, target)
         loss.backward()
         optimizer.step()
-
-print(output)
+    
+    print(loss)
