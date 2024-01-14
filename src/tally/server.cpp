@@ -156,7 +156,8 @@ void TallyServer::start_worker_server(int32_t client_id) {
     TALLY_SPD_LOG_ALWAYS("Tally worker server has exited ...");
 }
 
-void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> &configs)
+void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id,
+                                            std::vector<CudaLaunchConfig> &configs, float use_ptb_threshold)
 {
     // Store temporary data here
     static std::unordered_map<CudaLaunchCallConfig, TempKernelProfileMetrics> temp_perf_data;
@@ -278,7 +279,7 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
     }
 
     float best_norm_speed = original_res.metrics.latency_ms / best_latency_ms;
-    if (best_norm_speed < USE_PTB_THRESHOLD) {
+    if (best_norm_speed < use_ptb_threshold) {
         TALLY_SPD_LOG_ALWAYS("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
         best_config = base_config;
         best_norm_speed = 1.;

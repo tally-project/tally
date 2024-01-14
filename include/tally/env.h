@@ -30,7 +30,7 @@ static uint32_t KERNEL_PROFILE_ITERATIONS = 10;
 
 // Time share Threshold
 static float TIME_SHARE_THRESHOLD = 1.f;
-static float USE_PTB_THRESHOLD = 0.5f;
+static float USE_PTB_THRESHOLD = 0.7f;
 static float USE_PREEMPTIVE_LATENCY_THRESHOLD = 0.3f;
 
 extern bool TALLY_INITIALIZED;
