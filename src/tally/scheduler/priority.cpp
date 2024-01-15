@@ -68,6 +68,38 @@ void TallyServer::run_priority_scheduler()
         
             if (is_highest_priority) {
 
+                // this job may have been promoted from low to high so it has a kernel in in_progress_kernels
+                if (in_progress_kernels.find(client_priority) != in_progress_kernels.end()) {
+                    auto &dispatched_kernel = in_progress_kernels[client_priority];
+                    auto &dispatched_kernel_wrapper = dispatched_kernel.kernel_wrapper;
+                    auto running = dispatched_kernel.running;
+
+                    // if this kernel has been signaled to stop, we will launch it again
+                    if (!running && !dispatched_kernel.config.use_original) {
+
+                        // Make sure there is no pending event in retreat stream
+                        cudaStreamSynchronize(retreat_stream);
+
+                        // set retreat to 0
+                        auto ptb_args = client_data.stream_to_ptb_args[dispatched_kernel_wrapper.launch_stream];
+                        auto retreat = &(ptb_args->retreat);
+                        cudaMemsetAsync(retreat, 0, sizeof(bool), dispatched_kernel_wrapper.launch_stream);
+    
+                        // Launch the kernel again
+                        dispatched_kernel_wrapper.kernel_to_dispatch(dispatched_kernel.config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                    }
+
+                    // wait for it to complete
+                    cudaStreamSynchronize(dispatched_kernel_wrapper.launch_stream);
+
+                    // Erase it from in-progress
+                    in_progress_kernels.erase(client_priority);
+
+                    // mark as launched
+                    dispatched_kernel_wrapper.free_args();
+                    client_data.queue_size--;
+                }
+
                 // Always try to fetch and launch kernel
                 succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
 
