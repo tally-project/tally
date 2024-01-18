@@ -35,7 +35,7 @@ std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config)
 // Note that this tries to profile as many configs as possible
 // Including ones that can take up all the thread slots
 // This should only be used for profiling purposes
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(uint32_t threads_per_block, uint32_t num_blocks)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks)
 {
     std::vector<CudaLaunchConfig> configs;
 
@@ -76,7 +76,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(uint32_t thr
 }
 
 // =================== Used by Workload Agnostic Sharing Scheduler ===========================
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_configs(uint32_t threads_per_block, uint32_t num_blocks)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks)
 {
     std::vector<CudaLaunchConfig> configs;
 
@@ -104,7 +104,16 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
         // preemptive PTB
         CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
 
-        configs.push_back(ptb_config);
+        auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[launch_call.func];
+    
+        if (containsSubstring(kernel_name, "DeviceSelectSweepKernel") && _num_blocks_per_sm > 3) {
+            // for some reason this kernel hangs indefinitely under PTB with _num_blocks_per_sm > 3
+            // while it works fine for dynamic PTB
+            // leave it unhandled for now.
+        } else {
+            configs.push_back(ptb_config);
+        }
+
         configs.push_back(dynamic_ptb_config);
         // configs.push_back(preemptive_ptb_config);
 
@@ -115,7 +124,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
 }
 
 // =================== Used by Workload Aware Sharing Scheduler ===========================
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(uint32_t threads_per_block, uint32_t num_blocks)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks)
 {
     std::vector<CudaLaunchConfig> configs;
 
@@ -145,7 +154,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(uint32_t 
 }
 
 // =================== Used by Priority Scheduler ===========================
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_preemptive_configs(uint32_t threads_per_block, uint32_t num_blocks)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_preemptive_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks)
 {
     std::vector<CudaLaunchConfig> configs;
     std::vector<uint32_t> _num_blocks_per_sm_candiates;

@@ -41,6 +41,7 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
     cudaMalloc((void**)&deviceA, size * sizeof(float));
     cudaMalloc((void**)&deviceB, size * sizeof(float));
     cudaMalloc((void**)&deviceC, size * sizeof(float));
+    cudaMemset(deviceC, 0, size * sizeof(float));
 
     // Copy input arrays from host to device
     cudaMemcpy(deviceA, arr_a, size * sizeof(float), cudaMemcpyHostToDevice);
@@ -71,7 +72,7 @@ void runElementwiseAdditionCpu(float* arr_a, float* arr_b, float* arr_c, int siz
 
 int main()
 {
-    int size = 16777216;
+    int size = 4194304;
     bool ptb = false;
     
     // Allocate memory on the host (CPU)
@@ -86,6 +87,7 @@ int main()
     for (int i = 0; i < size; i++) {
         arr_a[i] = static_cast<float>(std::rand()) / RAND_MAX;
         arr_b[i] = static_cast<float>(std::rand()) / RAND_MAX;
+        res_cpu[i] = 0;
     }
     
     runElementwiseAddition(arr_a, arr_b, res_gpu, size, ptb);

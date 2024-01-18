@@ -437,8 +437,8 @@ void TallyServer::tune_kernel_pair_launch(
     auto k1_block_size = k1_blockDim.x * k1_blockDim.y * k1_blockDim.z;
     auto k2_block_size = k2_blockDim.x * k2_blockDim.y * k2_blockDim.z;
 
-    auto k1_configs = CudaLaunchConfig::get_preemptive_configs(k1_block_size, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
-    auto k2_configs = CudaLaunchConfig::get_preemptive_configs(k2_block_size, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
+    auto k1_configs = CudaLaunchConfig::get_preemptive_configs(launch_calls[0], k1_block_size, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
+    auto k2_configs = CudaLaunchConfig::get_preemptive_configs(launch_calls[1], k2_block_size, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
     
     auto k1_k2_configs = std::vector<std::vector<CudaLaunchConfig>> {k1_configs, k2_configs};
 

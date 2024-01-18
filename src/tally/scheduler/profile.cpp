@@ -133,8 +133,8 @@ void TallyServer::run_profile_scheduler()
         auto k1_gridDim = launch_calls[0].gridDim;
         auto k2_gridDim = launch_calls[1].gridDim;
 
-        auto k1_configs = CudaLaunchConfig::get_profile_configs(k1_blockDim.x * k1_blockDim.y * k1_blockDim.z, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
-        auto k2_configs = CudaLaunchConfig::get_profile_configs(k2_blockDim.x * k2_blockDim.y * k2_blockDim.z, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
+        auto k1_configs = CudaLaunchConfig::get_profile_configs(launch_calls[0], k1_blockDim.x * k1_blockDim.y * k1_blockDim.z, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
+        auto k2_configs = CudaLaunchConfig::get_profile_configs(launch_calls[1], k2_blockDim.x * k2_blockDim.y * k2_blockDim.z, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
         auto k1_k2_configs = std::vector<std::vector<CudaLaunchConfig>> {k1_configs, k2_configs};
 
         auto launch_kernel_func = [kernel_wrappers, ptb_args_arrs, curr_idx_arrs](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, CUresult *err, int32_t total_iters) {

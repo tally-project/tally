@@ -156,7 +156,7 @@ std::string gen_sync_aware_kernel(std::string &kernel_ptx_str)
             // Now must be at end of kernel
             sync_aware_ptx_code += "$" + SYNC_BLOCK_NAME + ":\n";
             sync_aware_ptx_code += "bar.cta.red.or.pred " + has_sync_pred_reg + ", 0, " + sync_ret_pred_reg + ";\n";
-            sync_aware_ptx_code += "ts: .branchtargets ";
+            sync_aware_ptx_code += "__tally_ts: .branchtargets ";
 
             for (auto &resume_block_name : resume_block_names) {
                 sync_aware_ptx_code += "$" + resume_block_name;
@@ -168,7 +168,7 @@ std::string gen_sync_aware_kernel(std::string &kernel_ptx_str)
                 }
             }
 
-            sync_aware_ptx_code += "@" + has_sync_pred_reg + " brx.idx "+ resume_block_idx_reg +", ts;\n";
+            sync_aware_ptx_code += "@" + has_sync_pred_reg + " brx.idx "+ resume_block_idx_reg +", __tally_ts;\n";
             sync_aware_ptx_code += "bra.uni $" + RETURN_BLOCK_NAME + ";\n\n";
 
             sync_aware_ptx_code += "$" + RETURN_BLOCK_NAME + ":\n";
@@ -1344,6 +1344,12 @@ std::string gen_ptb_kernel(std::string &kernel_ptx_str)
                     continue;
                 }
 
+                if (containsSubstring(kernel_line, "__tally_ts: ")) {
+                    ptb_ptx_code += kernel_line + "\n";
+                    ptb_ptx_code += "call __tally_empty_func, ();\n";
+                    continue;
+                }
+
                 if (boost::regex_search(kernel_line, matches, b32_reg_decl_pattern)) {
                     continue;
                 }
@@ -1419,6 +1425,7 @@ std::string gen_transform_ptx(std::string &ptx_path)
     bool record_kernel = false;
     int32_t brace_counter = 0;
     bool brace_encountered = false;
+    bool inject_empty_func = false;
 
     std::string final_ptx_str = "";
     std::string kernel_func_str = "";
@@ -1449,6 +1456,11 @@ std::string gen_transform_ptx(std::string &ptx_path)
         if (record_kernel && brace_encountered && brace_counter == 0) {
             record_kernel = false;
             brace_encountered = false;
+
+            if (!inject_empty_func) {
+                final_ptx_str += ".func __tally_empty_func(){}\n";
+                inject_empty_func = true;
+            }
 
             final_ptx_str += kernel_func_str + "\n";
 

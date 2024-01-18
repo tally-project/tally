@@ -72,11 +72,11 @@ void TallyServer::run_workload_aware_sharing_scheduler()
                 // auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
 
                 if (latency_ms < USE_PREEMPTIVE_LATENCY_THRESHOLD) {
-                    auto non_preemptive_ptb_configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(threads_per_block, num_blocks);
+                    auto non_preemptive_ptb_configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(launch_call, threads_per_block, num_blocks);
                     tune_kernel_launch(kernel_wrapper, client_id, non_preemptive_ptb_configs);
                     res = get_single_kernel_best_config(launch_call, &found_in_cache);
                 } else {
-                    auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(threads_per_block, num_blocks);
+                    auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(launch_call, threads_per_block, num_blocks);
                     tune_kernel_launch(kernel_wrapper, client_id, preemptive_ptb_configs);
                     res = get_single_kernel_best_config(launch_call, &found_in_cache);
                 }
