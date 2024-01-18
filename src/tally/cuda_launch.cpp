@@ -106,9 +106,10 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
 
         auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[launch_call.func];
     
-        if (containsSubstring(kernel_name, "DeviceSelectSweepKernel") && _num_blocks_per_sm > 3) {
-            // for some reason this kernel hangs indefinitely under PTB with _num_blocks_per_sm > 3
-            // while it works fine for dynamic PTB
+        if (containsSubstring(kernel_name, "DeviceSelectSweepKernel") ||
+            containsSubstring(kernel_name, "DeviceScanKernel")
+        ) {
+            // for some reason these kernel hangs under PTB while they work fine for dynamic PTB
             // leave it unhandled for now.
         } else {
             configs.push_back(ptb_config);
