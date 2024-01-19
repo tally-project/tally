@@ -39,8 +39,6 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(CudaLaunchCa
 {
     std::vector<CudaLaunchConfig> configs;
 
-    configs.push_back(CudaLaunchConfig::default_config);
-
     // some PTB configs
     uint32_t _num_blocks_per_sm = 1;
     while(true) {
@@ -82,7 +80,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
 
     // some PTB configs
     uint32_t _num_blocks_per_sm = 1;
-    while(true) {
+    while (true) {
 
         // One kernel should not take all the thread slots
         if (_num_blocks_per_sm * threads_per_block > PTB_MAX_NUM_THREADS_PER_SM) {
@@ -95,31 +93,29 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
             break;
         }
 
-        // regular PTB
-        CudaLaunchConfig ptb_config(false, true, false, false, _num_blocks_per_sm);
-
-        // dynamic PTB
-        CudaLaunchConfig dynamic_ptb_config(false, false, true, false, _num_blocks_per_sm);
-
-        // preemptive PTB
-        CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
-
-        auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[launch_call.func];
-    
-        if (containsSubstring(kernel_name, "DeviceSelectSweepKernel") ||
-            containsSubstring(kernel_name, "DeviceScanKernel")
-        ) {
-            // for some reason these kernel hangs under PTB while they work fine for dynamic PTB
-            // leave it unhandled for now.
-        } else {
-            configs.push_back(ptb_config);
-        }
-
-        configs.push_back(dynamic_ptb_config);
-        // configs.push_back(preemptive_ptb_config);
-
         _num_blocks_per_sm++;
     }
+
+    // take the last before invalid
+    _num_blocks_per_sm--;
+
+    // regular PTB
+    CudaLaunchConfig ptb_config(false, true, false, false, _num_blocks_per_sm);
+    // dynamic PTB
+    CudaLaunchConfig dynamic_ptb_config(false, false, true, false, _num_blocks_per_sm);
+
+    auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[launch_call.func];
+
+    if (containsSubstring(kernel_name, "DeviceSelectSweepKernel") ||
+        containsSubstring(kernel_name, "DeviceScanKernel")
+    ) {
+        // for some reason these kernel hangs under PTB while they work fine for dynamic PTB
+        // leave it unhandled for now.
+    } else {
+        configs.push_back(ptb_config);
+    }
+
+    configs.push_back(dynamic_ptb_config);
     
     return configs;
 }
@@ -131,7 +127,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(CudaLaunc
 
     // some PTB configs
     uint32_t _num_blocks_per_sm = 1;
-    while(true) {
+    while (true) {
 
         // One kernel should not take all the thread slots
         if (_num_blocks_per_sm * threads_per_block > PTB_MAX_NUM_THREADS_PER_SM) {
@@ -144,60 +140,16 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(CudaLaunc
             break;
         }
 
-        // preemptive PTB
-        CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
-        configs.push_back(preemptive_ptb_config);
-
         _num_blocks_per_sm++;
     }
-    
-    return configs;
-}
 
-// =================== Used by Priority Scheduler ===========================
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_preemptive_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks)
-{
-    std::vector<CudaLaunchConfig> configs;
-    std::vector<uint32_t> _num_blocks_per_sm_candiates;
-
-    // some PTB configs
-    uint32_t _num_blocks_per_sm = 1;
-    while(true) {
-
-        // One kernel should not take all the thread slots
-        if (_num_blocks_per_sm * threads_per_block > PTB_MAX_NUM_THREADS_PER_SM) {
-        // if (_num_blocks_per_sm * threads_per_block > CUDA_MAX_NUM_THREADS_PER_SM) {
-            break;
-        }
-        
-        // There is no point going over the total num of blocks
-        // But we will keep the (_num_blocks_per_sm == 1) case
-        if (_num_blocks_per_sm > 1 && (_num_blocks_per_sm - 1) * CUDA_NUM_SM > num_blocks) {
-            break;
-        }
-
-        _num_blocks_per_sm_candiates.push_back(_num_blocks_per_sm);
-        _num_blocks_per_sm++;
-    }
+    // take the last before invalid
+    _num_blocks_per_sm--;
 
     // preemptive PTB
-    for (auto _num_blocks_per_sm : _num_blocks_per_sm_candiates) {
-        CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
-        configs.push_back(preemptive_ptb_config);
-    }
+    CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
+    configs.push_back(preemptive_ptb_config);
 
-    // // regular PTB
-    // for (auto _num_blocks_per_sm : _num_blocks_per_sm_candiates) {
-    //     CudaLaunchConfig ptb_config(false, true, false, false, _num_blocks_per_sm);
-    //     configs.push_back(ptb_config);
-    // }
-
-    // // dynamic PTB
-    // for (auto _num_blocks_per_sm : _num_blocks_per_sm_candiates) {
-    //     CudaLaunchConfig dynamic_ptb_config(false, false, true, false, _num_blocks_per_sm);
-    //     configs.push_back(dynamic_ptb_config);
-    // }
-    
     return configs;
 }
 

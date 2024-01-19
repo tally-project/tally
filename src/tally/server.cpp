@@ -202,8 +202,8 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
 
         warmup_perf_data[original_call_config]++;
 
-        // first 5 is warm up
-        if (warmup_perf_data[original_call_config] < 5) {
+        // first 3 is warm up
+        if (warmup_perf_data[original_call_config] < 3) {
             return;
         }
 
@@ -318,7 +318,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     cudaDeviceSynchronize();
 
-    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 100, true);
+    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
 
     // In seconds
     float profile_duration = (100 * time_elapsed) / 1000.f;
@@ -332,7 +332,11 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     // Run default config first
     CudaLaunchConfig base_config = CudaLaunchConfig::default_config;
 
-    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, 100, true);
+    // warmup
+    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1, true);
+
+    // profile
+    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1, true);
 
     float base_latency_ms = time_elapsed / iters;
 
@@ -345,7 +349,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     for (auto &config : configs) {
 
         auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
-        auto err = kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, true, profile_duration, &time_elapsed, &iters, 1, true);
+        auto err = kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, true, profile_duration, &time_elapsed, &iters, -1, true);
 
         if (err) {
             return;

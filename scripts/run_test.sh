@@ -10,6 +10,8 @@ run_tally_test() {
     # Launch tally server in the background
     ./scripts/start_server.sh &
 
+    sleep 5
+
     # Launch client process
     echo $@
     ./scripts/start_client.sh $@
@@ -63,7 +65,7 @@ make
 cd tests && cd cudnn_samples_v8 && make && cd .. && cd ..
 
 ./scripts/start_iox.sh &
-sleep 10
+sleep 5
 
 # Run tests with tally-server-client
 for item in "${test_list[@]}"; do
@@ -71,12 +73,6 @@ for item in "${test_list[@]}"; do
 done
 
 cleanup
-
-# # Run tests with offline client 
-# for item in "${test_list[@]}"; do
-#     echo $item
-#     SCHEDULER_POLICY=WORKLOAD_AGNOSTIC_SHARING ./scripts/start_client.sh $item
-# done
 
 echo All tests passed!
 

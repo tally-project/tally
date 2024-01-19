@@ -179,7 +179,6 @@ public:
     static std::vector<CudaLaunchConfig> get_profile_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks);
     static std::vector<CudaLaunchConfig> get_workload_agnostic_sharing_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks);
     static std::vector<CudaLaunchConfig> get_preemptive_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks);
-    static std::vector<CudaLaunchConfig> get_priority_preemptive_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks);
 
     CudaLaunchConfig(
         bool use_original=true, bool use_ptb=false,
