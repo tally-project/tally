@@ -197,6 +197,25 @@ CUresult CudaLaunchConfig::repeat_launch(
     return err;
 }
 
+// ======== Use the following template to try out a hand-written ptx kernel for correctness ===========
+// auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[func];
+// if (kernel_name == "kernel")
+// {
+
+//     CUmodule    cudaModule;
+//     CUfunction  function;
+
+//     std::ifstream t("kernel.ptx");
+//     std::string str((std::istreambuf_iterator<char>(t)),
+//                         std::istreambuf_iterator<char>());
+
+//     cuModuleLoadDataEx(&cudaModule, str.c_str(), 0, 0, 0);
+//     cuModuleGetFunction(&function, cudaModule, "kernel");
+
+//     cu_func = function;
+// }
+// ======================================================================================================
+
 CUresult CudaLaunchConfig::launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
     PTBArgs *ptb_args, uint32_t *curr_idx_arr)

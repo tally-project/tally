@@ -24,16 +24,19 @@
 // This is to fix deadlock issue when some threads exit early while others block at __syncthreads()
 std::string gen_sync_aware_kernel(std::string &ptx_str);
 
-// Generating PTB version of a PTX file
+// Generate PTB version of a kernel
 std::string gen_ptb_kernel(std::string &ptx_str);
 
-// Generating dynamic PTB version of a PTX file
+// Generate dynamic PTB version of a kernel
 std::string gen_dynamic_ptb_kernel(std::string &ptx_str);
 
-// Generating preemptive PTB version of a PTX file
+// Generate preemptive PTB version of a kernel
 std::string gen_preemptive_ptb_kernel(std::string &ptx_str);
 
-// Generating combined version of a PTX file
+// Generate sliced version of a kernel
+std::string gen_sliced_kernel(std::string &ptx_str);
+
+// Generate combined version of a PTX file
 std::string gen_transform_ptx(std::string &ptx_path);
 
 #endif // TALLY_TRANSFORM_H
