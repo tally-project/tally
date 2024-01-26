@@ -465,14 +465,16 @@ void register_kernels_from_ptx_fatbin(
     KERNEL_MAP_TYPE &original_kernel_map,
     KERNEL_MAP_TYPE &ptb_kernel_map,
     KERNEL_MAP_TYPE &dynamic_ptb_kernel_map,
-    KERNEL_MAP_TYPE &preemptive_ptb_kernel_map
+    KERNEL_MAP_TYPE &preemptive_ptb_kernel_map,
+    KERNEL_MAP_TYPE &sliced_kernel_map
 )
 {
     std::vector<KERNEL_MAP_TYPE *> kernel_map_ptrs {
         &original_kernel_map,
         &ptb_kernel_map,
         &dynamic_ptb_kernel_map,
-        &preemptive_ptb_kernel_map
+        &preemptive_ptb_kernel_map,
+        &sliced_kernel_map,
     };
 
     auto kernel_names_and_nparams = get_kernel_names_and_nparams_from_ptx(ptx_str);
@@ -493,7 +495,8 @@ void register_kernels_from_ptx_fatbin(
                 kernel_name,
                 kernel_name + "_tally_ptb",
                 kernel_name + "_tally_dynamic_ptb",
-                kernel_name + "_tally_preemptive_ptb"
+                kernel_name + "_tally_preemptive_ptb",
+                kernel_name + "_tally_sliced"
             };
    
             for (int i = 0; i < transform_kernel_names.size(); i++) {
@@ -514,6 +517,8 @@ void register_kernels_from_ptx_fatbin(
                     num_params += 3;
                 } else if (transform_kernel_name == kernel_name + "_tally_preemptive_ptb") {
                     num_params += 4;
+                } else if (transform_kernel_name == kernel_name + "_tally_sliced") {
+                    num_params += 2;
                 }
 
                 CUfunction function;

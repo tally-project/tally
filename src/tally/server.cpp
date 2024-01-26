@@ -619,9 +619,8 @@ void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_si
         CUmodule tranform_module = cubin_to_cu_module[cubin_uid];
 
         register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(
-            tranform_module, transform_ptx_str, transform_fatbin_str,
-            kernel_name_to_host_func_map, original_kernel_map,
-            ptb_kernel_map, dynamic_ptb_kernel_map, preemptive_ptb_kernel_map
+            tranform_module, transform_ptx_str, transform_fatbin_str, kernel_name_to_host_func_map, original_kernel_map,
+            ptb_kernel_map, dynamic_ptb_kernel_map, preemptive_ptb_kernel_map, sliced_kernel_map
         );
     }
 }
@@ -3237,6 +3236,7 @@ void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedSe
     auto cu_func_ptb = ptb_kernel_map[server_func_addr].func;
     auto cu_func_dynamic_ptb = dynamic_ptb_kernel_map[server_func_addr].func;
     auto cu_func_preemptive_ptb = preemptive_ptb_kernel_map[server_func_addr].func;
+    auto cu_func_sliced = sliced_kernel_map[server_func_addr].func;
 
     auto cu_attr = convert_func_attribute(args->attr);
 
@@ -3244,6 +3244,7 @@ void TallyServer::handle_cudaFuncSetAttribute(void *__args, iox::popo::UntypedSe
     cuFuncSetAttribute(cu_func_ptb, cu_attr, args->value);
     cuFuncSetAttribute(cu_func_dynamic_ptb, cu_attr, args->value);
     cuFuncSetAttribute(cu_func_preemptive_ptb, cu_attr, args->value);
+    cuFuncSetAttribute(cu_func_sliced, cu_attr, args->value);
 
     std::string set_attr_log = "Setting attribute " + get_func_attr_str(cu_attr) + " to value " + std::to_string(args->value);
     TALLY_SPD_LOG(set_attr_log);
@@ -3635,6 +3636,7 @@ void TallyServer::handle_cuFuncSetAttribute(void *__args, iox::popo::UntypedServ
 	auto cu_func_ptb = TallyServer::server->ptb_kernel_map[server_func_addr].func;
 	auto cu_func_dynamic = TallyServer::server->dynamic_ptb_kernel_map[server_func_addr].func;
 	auto cu_func_preemptive = TallyServer::server->preemptive_ptb_kernel_map[server_func_addr].func;
+    auto cu_func_sliced = TallyServer::server->sliced_kernel_map[server_func_addr].func;
 
     iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
         .and_then([&](auto& responsePayload) {
@@ -3643,7 +3645,8 @@ void TallyServer::handle_cuFuncSetAttribute(void *__args, iox::popo::UntypedServ
             *response = cuFuncSetAttribute(cu_func_original, args->attrib, args->value);
 			cuFuncSetAttribute(cu_func_ptb, args->attrib, args->value);
 			cuFuncSetAttribute(cu_func_dynamic, args->attrib, args->value);
-			cuFuncSetAttribute(cu_func_preemptive, args->attrib, args->value);
+            cuFuncSetAttribute(cu_func_preemptive, args->attrib, args->value);
+			cuFuncSetAttribute(cu_func_sliced, args->attrib, args->value);
             CHECK_CUDA_ERROR(*response);
 
             iox_server->send(response).or_else(
@@ -3664,6 +3667,7 @@ void TallyServer::handle_cuFuncSetCacheConfig(void *__args, iox::popo::UntypedSe
 	auto cu_func_ptb = TallyServer::server->ptb_kernel_map[server_func_addr].func;
 	auto cu_func_dynamic = TallyServer::server->dynamic_ptb_kernel_map[server_func_addr].func;
 	auto cu_func_preemptive = TallyServer::server->preemptive_ptb_kernel_map[server_func_addr].func;
+    auto cu_func_sliced = TallyServer::server->sliced_kernel_map[server_func_addr].func;
 
     iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
         .and_then([&](auto& responsePayload) {
@@ -3673,6 +3677,7 @@ void TallyServer::handle_cuFuncSetCacheConfig(void *__args, iox::popo::UntypedSe
             cuFuncSetCacheConfig(cu_func_ptb, args->config);
             cuFuncSetCacheConfig(cu_func_dynamic, args->config);
             cuFuncSetCacheConfig(cu_func_preemptive, args->config);
+            cuFuncSetCacheConfig(cu_func_sliced, args->config);
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });

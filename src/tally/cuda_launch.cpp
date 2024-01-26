@@ -222,16 +222,73 @@ CUresult CudaLaunchConfig::launch(
 {
     if (use_original) {
 
-        CUfunction cu_func = TallyServer::server->original_kernel_map[func].func;
-        assert(cu_func);
+        // auto cu_func = TallyServer::server->original_kernel_map[func].func;
+        // assert(cu_func);
 
-        auto err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
-                                blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
+        // auto err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
+        //                         blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
+
+        
+        auto cu_func = TallyServer::server->sliced_kernel_map[func].func;
+        auto num_args = TallyServer::server->sliced_kernel_map[func].num_args;
+
+        dim3 new_grid_dim;
+        dim3 blockOffset(0, 0, 0);
+
+        uint32_t threads_per_slice = 196608;
+        uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
+        uint32_t num_blocks = (threads_per_slice + threads_per_block - 1) / threads_per_block;
+
+        if (num_blocks <= gridDim.x) {
+            new_grid_dim = dim3(num_blocks, 1, 1);
+        } else {
+            uint32_t num_blocks_y = (num_blocks + gridDim.x - 1) / gridDim.x;
+            if (num_blocks_y <= gridDim.y) {
+                new_grid_dim = dim3(gridDim.x, num_blocks_y, 1);
+            } else {
+                uint32_t num_blocks_z = (num_blocks_y + gridDim.y - 1) / gridDim.y;
+                new_grid_dim = dim3(gridDim.x, gridDim.y, std::min(num_blocks_z, gridDim.z));
+            }
+        }
+
+        CUresult err;
+        while (blockOffset.x < gridDim.x && blockOffset.y < gridDim.y && blockOffset.z < gridDim.z) {
+
+            void *KernelParams[num_args];
+            for (size_t i = 0; i < num_args - 2; i++) {
+                KernelParams[i] = args[i];
+            }
+            KernelParams[num_args - 2] = &gridDim;
+            KernelParams[num_args - 1] = &blockOffset;
+
+            // This ensure that you won't go over the original grid size
+            dim3 curr_grid_dim (
+                std::min(gridDim.x - blockOffset.x, new_grid_dim.x),
+                std::min(gridDim.y - blockOffset.y, new_grid_dim.y),
+                std::min(gridDim.z - blockOffset.z, new_grid_dim.z)
+            );
+
+            err = lcuLaunchKernel(cu_func, curr_grid_dim.x, curr_grid_dim.y, curr_grid_dim.z,
+                                blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
+
+            blockOffset.x += new_grid_dim.x;
+
+            if (blockOffset.x >= gridDim.x) {
+                blockOffset.x = 0;
+                blockOffset.y += new_grid_dim.y;
+
+                if (blockOffset.y >= gridDim.y) {
+                    blockOffset.y = 0;
+                    blockOffset.z += new_grid_dim.z;
+                }
+            }
+        }
 
         return err;
+        
     } else if (use_ptb) {
 
-        CUfunction cu_func = TallyServer::server->ptb_kernel_map[func].func;
+        auto cu_func = TallyServer::server->ptb_kernel_map[func].func;
         size_t num_args = TallyServer::server->ptb_kernel_map[func].num_args;
         assert(cu_func);
 
@@ -261,7 +318,7 @@ CUresult CudaLaunchConfig::launch(
         assert(ptb_args);
         auto global_idx = &(ptb_args->global_idx);
 
-        CUfunction cu_func = TallyServer::server->dynamic_ptb_kernel_map[func].func;
+        auto cu_func = TallyServer::server->dynamic_ptb_kernel_map[func].func;
         size_t num_args = TallyServer::server->dynamic_ptb_kernel_map[func].num_args;
         
         assert(cu_func);
@@ -296,7 +353,7 @@ CUresult CudaLaunchConfig::launch(
         auto global_idx = &(ptb_args->global_idx);
         auto retreat = &(ptb_args->retreat);
 
-        CUfunction cu_func = TallyServer::server->preemptive_ptb_kernel_map[func].func;
+        auto cu_func = TallyServer::server->preemptive_ptb_kernel_map[func].func;
         size_t num_args = TallyServer::server->preemptive_ptb_kernel_map[func].num_args;
 
         assert(cu_func);

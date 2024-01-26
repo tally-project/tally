@@ -137,6 +137,7 @@ public:
     folly::ConcurrentHashMap<const void *, WrappedCUfunction> ptb_kernel_map;
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> dynamic_ptb_kernel_map;
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> preemptive_ptb_kernel_map;
+	folly::ConcurrentHashMap<const void *, WrappedCUfunction> sliced_kernel_map;
 
 	// Performance cache to use at runtime
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;

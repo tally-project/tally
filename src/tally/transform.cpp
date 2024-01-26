@@ -1412,41 +1412,50 @@ std::string gen_sliced_kernel(std::string &ptx_str)
 {
     std::stringstream ss(ptx_str);
     std::string line;
+    boost::smatch matches;
     
     std::string sliced_ptx_code = "";
 
     boost::regex kernel_name_pattern("(\\.visible\\s+)?\\.entry (\\w+)");
     boost::regex b32_reg_decl_pattern("\\.reg \\.b32 %r<(\\d+)>;");
     boost::regex block_idx_pattern("mov\\.u32 %r(\\d+), %ctaid\\.([xyz])");
-    boost::regex kernel_param_pattern("^placeholder$");
+    boost::regex kernel_param_pattern("^\\.param");
 
     uint32_t num_params = 0;
     uint32_t num_b32_regs = 0;
-    bool use_block_idx_xyz[3] = { false, false, false };
     bool record_kernel = false;
+    int32_t brace_counter = 0;
+    int32_t brace_encountered = false;
     std::vector<std::string> kernel_lines;
     std::string kernel_name;
 
-    // boost::timer::progress_display progress(ptx_code_str.size());
+    bool use_BlockIdx_x = false;
+    bool use_BlockIdx_y = false;
+    bool use_BlockIdx_z = false;
+
+    uint32_t num_additional_b32_regs = 0;
+
+    auto allocate_new_b32_reg = [&num_b32_regs, &num_additional_b32_regs]() {
+        uint32_t new_b32_reg = num_b32_regs + num_additional_b32_regs;
+        num_additional_b32_regs++;
+        return new_b32_reg;
+    };
 
     while (std::getline(ss, line, '\n')) {
-        // progress += line.size() + 1;
 
-        boost::smatch matches;
         if (boost::regex_search(line, matches, kernel_name_pattern)) {
             record_kernel = true;
             kernel_name = matches[2];
 
-            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
             num_params = 0;
             num_b32_regs = 0;
+            num_additional_b32_regs = 0;
+            brace_counter = 0;
+            brace_encountered = false;
+            use_BlockIdx_x = false;
+            use_BlockIdx_y = false;
+            use_BlockIdx_z = false;
             kernel_lines.clear();
-            
-            // reset to false 
-            memset(use_block_idx_xyz, 0, 3);
-
-            kernel_lines.push_back(line);
-            continue;
         }
 
         if (record_kernel) {
@@ -1455,9 +1464,24 @@ std::string gen_sliced_kernel(std::string &ptx_str)
             sliced_ptx_code += line + "\n";
         }
 
-        if (boost::regex_search(line, matches, kernel_param_pattern)) {
+        int32_t numLeftBrace = countLeftBrace(line);
+        int32_t numRightBrace = countRightBrace(line);
+
+        brace_counter += numLeftBrace;
+        brace_counter -= numRightBrace;
+
+        if (!brace_encountered && boost::regex_search(line, matches, kernel_param_pattern)) {
             num_params += 1;
+
+            if (!brace_encountered && numLeftBrace > 0) {
+                brace_encountered = true;
+            }
+
             continue;
+        }
+
+        if (!brace_encountered && numLeftBrace > 0) {
+            brace_encountered = true;
         }
 
         if (boost::regex_search(line, matches, b32_reg_decl_pattern)) {
@@ -1468,68 +1492,136 @@ std::string gen_sliced_kernel(std::string &ptx_str)
         if (boost::regex_search(line, matches, block_idx_pattern)) {
             std::string block_idx_match_dim = matches[2];
             if (block_idx_match_dim == "x") {
-                use_block_idx_xyz[0] = true;
+                use_BlockIdx_x = true;
             } else if (block_idx_match_dim == "y") {
-                use_block_idx_xyz[1] = true;
+                use_BlockIdx_y = true;
             } else if (block_idx_match_dim == "z") {
-                use_block_idx_xyz[2] = true;
+                use_BlockIdx_z = true;
             }
+
             continue;
         }
 
-        if (record_kernel && line == "ret;") {
+        if (record_kernel && brace_encountered && brace_counter == 0) {
+
             record_kernel = false;
 
-            boost::regex last_param_pattern("\\.param (.+) " + kernel_name + "_param_" + std::to_string(num_params - 1));
-            uint32_t num_additional_b32 = 0;
-    
-            uint32_t block_offset_xyz_reg[3];
-            uint32_t new_block_idx_xyz_reg[3];
-
-            uint32_t curr_reg = num_b32_regs;
-
-            for (size_t i = 0; i < 3; i++) {
-                if (use_block_idx_xyz[i]) {
-                    num_additional_b32 += 2;
-                    block_offset_xyz_reg[i] = curr_reg;
-                    new_block_idx_xyz_reg[i] = curr_reg + 1;
-                    curr_reg += 2;
-                }
+            // Ignore such kernels for now!
+            if (num_params == 0) {
+                continue;
             }
 
+            // Now must be at end of kernel
+
+            std::string blockIdx_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
+            std::string blockIdx_y_reg = "%r" + std::to_string(allocate_new_b32_reg());
+            std::string blockIdx_z_reg = "%r" + std::to_string(allocate_new_b32_reg());
+
+            std::string origGridDim_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
+            std::string origGridDim_y_reg = "%r" + std::to_string(allocate_new_b32_reg());
+            std::string origGridDim_z_reg = "%r" + std::to_string(allocate_new_b32_reg());
+
+            std::string block_offset_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
+            std::string block_offset_y_reg = "%r" + std::to_string(allocate_new_b32_reg());
+            std::string block_offset_z_reg = "%r" + std::to_string(allocate_new_b32_reg());
+
+            std::string newBlockIdx_x_reg = "%r" + std::to_string(allocate_new_b32_reg());
+            std::string newBlockIdx_y_reg = "%r" + std::to_string(allocate_new_b32_reg());
+            std::string newBlockIdx_z_reg = "%r" + std::to_string(allocate_new_b32_reg());
+
             std::map<std::string, std::string> reg_replacement_rules;
+
+            reg_replacement_rules["%ctaid.x"] = newBlockIdx_x_reg;
+            reg_replacement_rules["%ctaid.y"] = newBlockIdx_y_reg;
+            reg_replacement_rules["%ctaid.z"] = newBlockIdx_z_reg;
+
+            reg_replacement_rules["%nctaid.x"] = origGridDim_x_reg;
+            reg_replacement_rules["%nctaid.y"] = origGridDim_y_reg;
+            reg_replacement_rules["%nctaid.z"] = origGridDim_z_reg;
     
+            brace_counter = 0;
+            brace_encountered = false;
+            int count_num_params = 0;
+            bool found_all_params = false;
+            
             for (auto &kernel_line : kernel_lines) {
-                
-                if (boost::regex_search(kernel_line, matches, last_param_pattern)) {
-                    sliced_ptx_code += kernel_line + ",\n";
-                    sliced_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12]\n";
+
+                int32_t numLeftBrace = countLeftBrace(kernel_line);
+                int32_t numRightBrace = countRightBrace(kernel_line);
+
+                brace_counter += numLeftBrace;
+                brace_counter -= numRightBrace;
+                assert(brace_counter >= 0);
+
+                if (!found_all_params && boost::regex_search(kernel_line, matches, kernel_param_pattern)) {
+                    count_num_params += 1;
+
+                    if (count_num_params == num_params) {
+                        sliced_ptx_code += kernel_line + ",\n";
+                        sliced_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params) + "[12],\n";
+                        sliced_ptx_code += ".param .align 4 .b8 " + kernel_name + "_param_" + std::to_string(num_params + 1) + "[12]\n";
+                        count_num_params = 0;
+                        found_all_params = true;
+                        continue;
+                    }
+
+                    sliced_ptx_code += kernel_line + "\n";
+
+                    continue;
+                }
+
+                if (strip(kernel_line) == "{") {
+
+                    if (brace_encountered) {
+                        sliced_ptx_code += kernel_line + "\n";
+                        continue;
+                    }
+
+                    sliced_ptx_code += kernel_line + "\n";
+    
+                    brace_encountered = true;
+
+                    // Perform actions at the top
+                    sliced_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32_regs) + ">;\n";
+
+                    // Load origGridDim.x
+                    sliced_ptx_code += "ld.param.u32 " + origGridDim_x_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "];\n";
+                    // Load origGridDim.y
+                    sliced_ptx_code += "ld.param.u32 " + origGridDim_y_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+4];\n";
+                    // Load origGridDim.z
+                    sliced_ptx_code += "ld.param.u32 " + origGridDim_z_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+8];\n";
+
+                    // Load blockOffset.x
+                    sliced_ptx_code += "ld.param.u32 " + block_offset_x_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params + 1) + "];\n";
+                    // Load blockOffset.y
+                    sliced_ptx_code += "ld.param.u32 " + block_offset_y_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params + 1) + "+4];\n";
+                    // Load blockOffset.z
+                    sliced_ptx_code += "ld.param.u32 " + block_offset_z_reg + ", [" + kernel_name + "_param_" + std::to_string(num_params + 1) + "+8];\n";
+
+                    // Load blockIdx.x
+                    sliced_ptx_code += "mov.u32 " + blockIdx_x_reg + ", %ctaid.x;\n";
+                    // Load blockIdx.y
+                    sliced_ptx_code += "mov.u32 " + blockIdx_y_reg + ", %ctaid.y;\n";
+                    // Load blockIdx.z
+                    sliced_ptx_code += "mov.u32 " + blockIdx_z_reg + ", %ctaid.z;\n";
+
+                    // newBlockIdx.x = blockIdx.x + blockOffset.x
+                    sliced_ptx_code += "add.u32 " + newBlockIdx_x_reg + ", " + blockIdx_x_reg + ", " + block_offset_x_reg + ";\n";
+                    // newBlockIdx.y = blockIdx.y + blockOffset.y
+                    sliced_ptx_code += "add.u32 " + newBlockIdx_y_reg + ", " + blockIdx_y_reg + ", " + block_offset_y_reg + ";\n";
+                    // newBlockIdx.z = blockIdx.z + blockOffset.z
+                    sliced_ptx_code += "add.u32 " + newBlockIdx_z_reg + ", " + blockIdx_z_reg + ", " + block_offset_z_reg + ";\n";
+
+                    continue;
+                }
+
+                if (boost::regex_search(kernel_line, matches, kernel_name_pattern)) {
+                    auto new_kernel_name = kernel_name + "_tally_sliced";
+                    sliced_ptx_code += replace_substring(kernel_line, kernel_name, new_kernel_name) + "\n";
                     continue;
                 }
 
                 if (boost::regex_search(kernel_line, matches, b32_reg_decl_pattern)) {
-                    sliced_ptx_code += ".reg .b32 %r<" + std::to_string(num_b32_regs + num_additional_b32) + ">;\n";
-                    continue;
-                }
-
-                if (boost::regex_search(kernel_line, matches, block_idx_pattern)) {
-                    std::string block_idx_match_dim = matches[2];
-                    uint32_t block_idx_match_reg = std::stoi(matches[1]);
-
-                    int32_t idx = -1;
-                    if (block_idx_match_dim == "x") {
-                        idx = 0;
-                    } else if (block_idx_match_dim == "y") {
-                        idx = 1;
-                    } else if (block_idx_match_dim == "z") {
-                        idx = 2;
-                    }
-
-                    sliced_ptx_code += kernel_line + "\n";
-                    sliced_ptx_code += "ld.param.u32 %r" + std::to_string(block_offset_xyz_reg[idx]) + ", [" + kernel_name + "_param_" + std::to_string(num_params) + "+" + std::to_string(idx * 4) + "];\n";
-                    sliced_ptx_code += "add.u32 %r" + std::to_string(new_block_idx_xyz_reg[idx]) + ", %r" + std::to_string(block_idx_match_reg) + ", %r" + std::to_string(block_offset_xyz_reg[idx]) + ";\n";
-                    reg_replacement_rules["%r" + std::to_string(block_idx_match_reg) + "(?!\\d)"] = "%r" + std::to_string(new_block_idx_xyz_reg[idx]);
-
                     continue;
                 }
 
@@ -1602,6 +1694,8 @@ std::string gen_transform_ptx(std::string &ptx_path)
             }
 
             final_ptx_str += kernel_func_str + "\n";
+
+            final_ptx_str += gen_sliced_kernel(kernel_func_str) + "\n";
 
             // contains synchronization primitives
             if (containsSubstring(kernel_func_str, "bar.sync")) {
