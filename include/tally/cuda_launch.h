@@ -72,6 +72,10 @@ struct CudaLaunchCall {
         blockDim(blockDim)
     {}
 
+    uint32_t num_blocks() {
+        return gridDim.x * gridDim.y * gridDim.z;
+    }
+
     std::string dim_str() {
         return get_dim3_str(gridDim) + "_" + get_dim3_str(blockDim);
     }
@@ -167,37 +171,76 @@ public:
     static const CudaLaunchConfig default_config;
 
     // Choose which kernel version to launch
-    bool use_original = true;
+    bool use_original = false;
     bool use_ptb = false;
     bool use_dynamic_ptb = false;
     bool use_preemptive_ptb = false;
+    bool use_sliced = false;
 
-    // Specific to use_ptb
-    uint32_t num_blocks_per_sm = 0;
+    // Specific to ptb
+    uint32_t blocks_per_sm = 0;
 
-    // Static function - return the best config for a cuda launch
-    static std::vector<CudaLaunchConfig> get_profile_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks);
-    static std::vector<CudaLaunchConfig> get_workload_agnostic_sharing_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks);
-    static std::vector<CudaLaunchConfig> get_preemptive_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks);
+    // Specific to sliced
+    uint32_t num_slices = 0;
 
-    CudaLaunchConfig(
-        bool use_original=true, bool use_ptb=false,
-        bool use_dynamic_ptb=false, bool use_preemptive_ptb=false, uint32_t num_blocks_per_sm=0) :
-        use_original(use_original),
-        use_ptb(use_ptb),
-        use_dynamic_ptb(use_dynamic_ptb),
-        use_preemptive_ptb(use_preemptive_ptb),
-        num_blocks_per_sm(num_blocks_per_sm)
-    {}
+    CudaLaunchConfig(){}
+
+    static std::vector<CudaLaunchConfig> get_profile_configs(
+        CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks
+    );
+
+    static std::vector<CudaLaunchConfig> get_workload_agnostic_sharing_configs(
+        CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks
+    );
+
+    static std::vector<CudaLaunchConfig> get_preemptive_configs(
+        CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks
+    );
+
+    static CudaLaunchConfig get_original_config() {
+        CudaLaunchConfig config;
+        config.use_original = true;
+        return config;
+    }
+
+    static CudaLaunchConfig get_ptb_config(uint32_t blocks_per_sm) {
+        CudaLaunchConfig config;
+        config.use_dynamic_ptb = true;
+        config.blocks_per_sm = blocks_per_sm;
+        return config;
+    }
+
+    static CudaLaunchConfig get_dynamic_ptb_config(uint32_t blocks_per_sm) {
+        CudaLaunchConfig config;
+        config.use_ptb = true;
+        config.blocks_per_sm = blocks_per_sm;
+        return config;
+    }
+
+    static CudaLaunchConfig get_preemptive_ptb_config(uint32_t blocks_per_sm) {
+        CudaLaunchConfig config;
+        config.use_preemptive_ptb = true;
+        config.blocks_per_sm = blocks_per_sm;
+        return config;
+    }
+
+    static CudaLaunchConfig get_sliced_config(uint32_t num_slices) {
+        CudaLaunchConfig config;
+        config.use_sliced = true;
+        config.num_slices = num_slices;
+        return config;
+    }
 
     bool operator==(const CudaLaunchConfig &other) const
     {
         return (
             use_original == other.use_original &&
+            use_sliced == other.use_sliced &&
             use_ptb == other.use_ptb &&
             use_dynamic_ptb == other.use_dynamic_ptb &&
             use_preemptive_ptb == other.use_preemptive_ptb &&
-            num_blocks_per_sm == other.num_blocks_per_sm
+            blocks_per_sm == other.blocks_per_sm &&
+            num_slices == other.num_slices
         );
     }
 
@@ -208,7 +251,9 @@ public:
             {"use_ptb", use_ptb},
             {"use_dynamic_ptb", use_dynamic_ptb},
             {"use_preemptive_ptb", use_preemptive_ptb},
-            {"num_blocks_per_sm", num_blocks_per_sm},
+            {"use_sliced", use_sliced},
+            {"blocks_per_sm", blocks_per_sm},
+            {"num_slices", num_slices},
         });
     }
 
@@ -217,11 +262,13 @@ public:
         if (use_original) {
             return "original";
         } else if (use_ptb) {
-            return "PTB num_blocks_per_sm: " + std::to_string(num_blocks_per_sm);
+            return "PTB blocks_per_sm: " + std::to_string(blocks_per_sm);
         } else if (use_dynamic_ptb) {
-            return "Dynamic PTB num_blocks_per_sm: " + std::to_string(num_blocks_per_sm);
+            return "Dynamic PTB blocks_per_sm: " + std::to_string(blocks_per_sm);
         } else if (use_preemptive_ptb) {
-            return "Preemptive PTB num_blocks_per_sm: " + std::to_string(num_blocks_per_sm);
+            return "Preemptive PTB blocks_per_sm: " + std::to_string(blocks_per_sm);
+        } else if (use_sliced) {
+            return "Sliced num_slices: " + std::to_string(num_slices);
         } else {
             return "";
         }
@@ -230,7 +277,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config);
     
     CUresult launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, PTBArgs *ptb_args, uint32_t *curr_idx_arr=nullptr);
-    CUresult repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, PTBArgs *ptb_args, uint32_t *curr_idx_arr=nullptr, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1);
+    CUresult repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, PTBArgs *ptb_args, uint32_t *curr_idx_arr=nullptr, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1); 
 };
 
 struct CudaLaunchCallConfig {

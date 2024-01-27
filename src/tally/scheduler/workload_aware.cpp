@@ -29,7 +29,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
     cudaStream_t retreat_stream;
     cudaStreamCreate(&retreat_stream);
 
-    CudaLaunchConfig preemptive_config(false, false, false, true, 4);
+    CudaLaunchConfig preemptive_config = CudaLaunchConfig::get_preemptive_ptb_config(4);
     CudaLaunchConfig original_config = CudaLaunchConfig::default_config;
 
     auto get_single_kernel_result = [this](KernelLaunchWrapper &kernel_wrapper, int32_t client_id) {

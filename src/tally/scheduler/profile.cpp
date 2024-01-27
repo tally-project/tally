@@ -40,6 +40,7 @@ void TallyServer::run_profile_scheduler()
                     auto launch_call = kernel_wrapper.launch_call;
                     auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
 
+                    // Some kernels will fail if launched many times
                     if (containsSubstring(kernel_name, "DeviceRadixSortOnesweepKernel") ||
                         containsSubstring(kernel_name, "krn_partial_segment_offset") ||
                         containsSubstring(kernel_name, "compute_grad_weight") ||

@@ -14,7 +14,7 @@
 #include <tally/transform.h>
 #include <tally/generated/server.h>
 
-const CudaLaunchConfig CudaLaunchConfig::default_config = CudaLaunchConfig();
+const CudaLaunchConfig CudaLaunchConfig::default_config = get_original_config();
 
 std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config)
 {
@@ -22,13 +22,68 @@ std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config)
     if (config.use_original) {
         os << "original";
     } else if (config.use_ptb) {
-        os << "PTB: num_blocks_per_sm: " << config.num_blocks_per_sm;
+        os << "PTB: blocks_per_sm: " << config.blocks_per_sm;
     } else if (config.use_dynamic_ptb) {
-        os << "Dynamic PTB: num_blocks_per_sm: " << config.num_blocks_per_sm;
+        os << "Dynamic PTB: blocks_per_sm: " << config.blocks_per_sm;
     } else if (config.use_preemptive_ptb) {
-        os << "Preemptive PTB: num_blocks_per_sm: " << config.num_blocks_per_sm;
+        os << "Preemptive PTB: blocks_per_sm: " << config.blocks_per_sm;
     }
     return os;
+}
+
+std::vector<uint32_t> get_candidate_blocks_per_sm(uint32_t threads_per_block, uint32_t num_blocks, uint32_t max_threads_per_sm) {
+
+    std::vector<uint32_t> candiates;
+
+    uint32_t _blocks_per_sm = 1;
+    while (true) {
+
+        // One kernel should not take all the thread slots
+        if (_blocks_per_sm * threads_per_block > max_threads_per_sm) {
+            break;
+        }
+        
+        // There is no point going over the total num of blocks
+        // But we will keep the (_blocks_per_sm == 1) case
+        if (_blocks_per_sm > 1 && (_blocks_per_sm - 1) * CUDA_NUM_SM > num_blocks) {
+            break;
+        }
+
+        candiates.push_back(_blocks_per_sm);
+        _blocks_per_sm++;
+    }
+
+    return candiates;
+}
+
+std::vector<uint32_t> get_candidate_num_slices(uint32_t threads_per_block, uint32_t num_blocks, uint32_t max_threads_per_sm) {
+
+    std::vector<uint32_t> candiates;
+
+    uint32_t num_slices = 2;
+
+    while (true) {
+        uint32_t blocks_per_slice = (num_blocks + num_slices - 1) / num_slices;
+
+        if (max_threads_per_sm > 0) {
+            uint32_t blocks_per_sm = (blocks_per_slice + CUDA_NUM_SM - 1) / CUDA_NUM_SM;
+
+            if (threads_per_block * blocks_per_sm > max_threads_per_sm) {
+                num_slices += 1;
+                continue;
+            }
+        }
+
+        candiates.push_back(num_slices);
+
+        if (blocks_per_slice <= CUDA_NUM_SM || num_slices >= 20) {
+            break;
+        }
+
+        num_slices += 1;
+    }
+
+    return candiates;
 }
 
 // =================== Used by Profile Scheduler ===========================
@@ -39,35 +94,23 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(CudaLaunchCa
 {
     std::vector<CudaLaunchConfig> configs;
 
-    // some PTB configs
-    uint32_t _num_blocks_per_sm = 1;
-    while(true) {
-
-        // One kernel should not take all the thread slots
-        if (_num_blocks_per_sm * threads_per_block > CUDA_MAX_NUM_THREADS_PER_SM) {
-            break;
-        }
-        
-        // There is no point going over the total num of blocks
-        // But we will keep the (_num_blocks_per_sm == 1) case
-        if (_num_blocks_per_sm > 1 && (_num_blocks_per_sm - 1) * CUDA_NUM_SM > num_blocks) {
-            break;
-        }
-
-        // regular PTB
-        CudaLaunchConfig ptb_config(false, true, false, false, _num_blocks_per_sm);
-
-        // dynamic PTB
-        CudaLaunchConfig dynamic_ptb_config(false, false, true, false, _num_blocks_per_sm);
-
-        // preemptive PTB
-        CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
+    // PTB configs
+    auto candiate_blocks_per_sm = get_candidate_blocks_per_sm(threads_per_block, num_blocks, CUDA_MAX_NUM_THREADS_PER_SM);
+    for (auto blocks_per_sm : candiate_blocks_per_sm) {
+        auto ptb_config = CudaLaunchConfig::get_ptb_config(blocks_per_sm);
+        auto dynamic_ptb_config = CudaLaunchConfig::get_dynamic_ptb_config(blocks_per_sm);
+        auto preemptive_ptb_config = CudaLaunchConfig::get_preemptive_ptb_config(blocks_per_sm);
 
         configs.push_back(ptb_config);
         configs.push_back(dynamic_ptb_config);
         configs.push_back(preemptive_ptb_config);
+    }
 
-        _num_blocks_per_sm++;
+    // Kernel-sliced configs
+    auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, 0);
+    for (auto num_slices : candidate_num_slices) {
+        auto sliced_config = CudaLaunchConfig::get_sliced_config(num_slices);
+        configs.push_back(sliced_config);
     }
     
     return configs;
@@ -78,31 +121,11 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
 {
     std::vector<CudaLaunchConfig> configs;
 
-    // some PTB configs
-    uint32_t _num_blocks_per_sm = 1;
-    while (true) {
+    auto candiate_blocks_per_sm = get_candidate_blocks_per_sm(threads_per_block, num_blocks, PTB_MAX_NUM_THREADS_PER_SM);
 
-        // One kernel should not take all the thread slots
-        if (_num_blocks_per_sm * threads_per_block > PTB_MAX_NUM_THREADS_PER_SM) {
-            break;
-        }
-        
-        // There is no point going over the total num of blocks
-        // But we will keep the (_num_blocks_per_sm == 1) case
-        if (_num_blocks_per_sm > 1 && (_num_blocks_per_sm - 1) * CUDA_NUM_SM > num_blocks) {
-            break;
-        }
-
-        _num_blocks_per_sm++;
-    }
-
-    // take the last before invalid
-    _num_blocks_per_sm--;
-
-    // regular PTB
-    CudaLaunchConfig ptb_config(false, true, false, false, _num_blocks_per_sm);
-    // dynamic PTB
-    CudaLaunchConfig dynamic_ptb_config(false, false, true, false, _num_blocks_per_sm);
+    // take the largest
+    auto ptb_config = CudaLaunchConfig::get_ptb_config(candiate_blocks_per_sm.back());
+    auto dynamic_ptb_config = CudaLaunchConfig::get_dynamic_ptb_config(candiate_blocks_per_sm.back());
 
     auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[launch_call.func];
 
@@ -116,6 +139,14 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
     }
 
     configs.push_back(dynamic_ptb_config);
+
+    auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, PTB_MAX_NUM_THREADS_PER_SM);
+    if (!candidate_num_slices.empty()) {
+
+        // take least
+        auto sliced_config = CudaLaunchConfig::get_sliced_config(candidate_num_slices[0]);
+        configs.push_back(sliced_config);
+    }
     
     return configs;
 }
@@ -125,29 +156,10 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(CudaLaunc
 {
     std::vector<CudaLaunchConfig> configs;
 
-    // some PTB configs
-    uint32_t _num_blocks_per_sm = 1;
-    while (true) {
-
-        // One kernel should not take all the thread slots
-        if (_num_blocks_per_sm * threads_per_block > PTB_MAX_NUM_THREADS_PER_SM) {
-            break;
-        }
-        
-        // There is no point going over the total num of blocks
-        // But we will keep the (_num_blocks_per_sm == 1) case
-        if (_num_blocks_per_sm > 1 && (_num_blocks_per_sm - 1) * CUDA_NUM_SM > num_blocks) {
-            break;
-        }
-
-        _num_blocks_per_sm++;
-    }
-
-    // take the last before invalid
-    _num_blocks_per_sm--;
+    auto candiate_blocks_per_sm = get_candidate_blocks_per_sm(threads_per_block, num_blocks, PTB_MAX_NUM_THREADS_PER_SM);
 
     // preemptive PTB
-    CudaLaunchConfig preemptive_ptb_config(false, false, false, true, _num_blocks_per_sm);
+    auto preemptive_ptb_config = CudaLaunchConfig::get_preemptive_ptb_config(candiate_blocks_per_sm.back());
     configs.push_back(preemptive_ptb_config);
 
     return configs;
@@ -222,67 +234,11 @@ CUresult CudaLaunchConfig::launch(
 {
     if (use_original) {
 
-        // auto cu_func = TallyServer::server->original_kernel_map[func].func;
-        // assert(cu_func);
+        auto cu_func = TallyServer::server->original_kernel_map[func].func;
+        assert(cu_func);
 
-        // auto err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
-        //                         blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
-
-        
-        auto cu_func = TallyServer::server->sliced_kernel_map[func].func;
-        auto num_args = TallyServer::server->sliced_kernel_map[func].num_args;
-
-        dim3 new_grid_dim;
-        dim3 blockOffset(0, 0, 0);
-
-        uint32_t threads_per_slice = 196608;
-        uint32_t threads_per_block = blockDim.x * blockDim.y * blockDim.z;
-        uint32_t num_blocks = (threads_per_slice + threads_per_block - 1) / threads_per_block;
-
-        if (num_blocks <= gridDim.x) {
-            new_grid_dim = dim3(num_blocks, 1, 1);
-        } else {
-            uint32_t num_blocks_y = (num_blocks + gridDim.x - 1) / gridDim.x;
-            if (num_blocks_y <= gridDim.y) {
-                new_grid_dim = dim3(gridDim.x, num_blocks_y, 1);
-            } else {
-                uint32_t num_blocks_z = (num_blocks_y + gridDim.y - 1) / gridDim.y;
-                new_grid_dim = dim3(gridDim.x, gridDim.y, std::min(num_blocks_z, gridDim.z));
-            }
-        }
-
-        CUresult err;
-        while (blockOffset.x < gridDim.x && blockOffset.y < gridDim.y && blockOffset.z < gridDim.z) {
-
-            void *KernelParams[num_args];
-            for (size_t i = 0; i < num_args - 2; i++) {
-                KernelParams[i] = args[i];
-            }
-            KernelParams[num_args - 2] = &gridDim;
-            KernelParams[num_args - 1] = &blockOffset;
-
-            // This ensure that you won't go over the original grid size
-            dim3 curr_grid_dim (
-                std::min(gridDim.x - blockOffset.x, new_grid_dim.x),
-                std::min(gridDim.y - blockOffset.y, new_grid_dim.y),
-                std::min(gridDim.z - blockOffset.z, new_grid_dim.z)
-            );
-
-            err = lcuLaunchKernel(cu_func, curr_grid_dim.x, curr_grid_dim.y, curr_grid_dim.z,
-                                blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
-
-            blockOffset.x += new_grid_dim.x;
-
-            if (blockOffset.x >= gridDim.x) {
-                blockOffset.x = 0;
-                blockOffset.y += new_grid_dim.y;
-
-                if (blockOffset.y >= gridDim.y) {
-                    blockOffset.y = 0;
-                    blockOffset.z += new_grid_dim.z;
-                }
-            }
-        }
+        auto err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
+                                blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
 
         return err;
         
@@ -299,7 +255,7 @@ CUresult CudaLaunchConfig::launch(
         if (total_blocks < CUDA_NUM_SM) {
             PTB_grid_dim = dim3(total_blocks);
         } else {
-            PTB_grid_dim = dim3(CUDA_NUM_SM * num_blocks_per_sm);
+            PTB_grid_dim = dim3(CUDA_NUM_SM * blocks_per_sm);
         }
 
         void *KernelParams[num_args];
@@ -330,7 +286,7 @@ CUresult CudaLaunchConfig::launch(
         if (total_blocks < CUDA_NUM_SM) {
             PTB_grid_dim = dim3(total_blocks);
         } else {
-            PTB_grid_dim = dim3(CUDA_NUM_SM * num_blocks_per_sm);
+            PTB_grid_dim = dim3(CUDA_NUM_SM * blocks_per_sm);
         }
 
         void *KernelParams[num_args];
@@ -365,7 +321,7 @@ CUresult CudaLaunchConfig::launch(
         if (total_blocks < CUDA_NUM_SM) {
             PTB_grid_dim = dim3(total_blocks);
         } else {
-            PTB_grid_dim = dim3(CUDA_NUM_SM * num_blocks_per_sm);
+            PTB_grid_dim = dim3(CUDA_NUM_SM * blocks_per_sm);
         }
 
         void *KernelParams[num_args];
@@ -382,6 +338,62 @@ CUresult CudaLaunchConfig::launch(
 
         return err;
 
+    } else if (use_sliced) {
+        auto cu_func = TallyServer::server->sliced_kernel_map[func].func;
+        auto num_args = TallyServer::server->sliced_kernel_map[func].num_args;
+
+        dim3 sliced_gridDim;
+        dim3 blockOffset(0, 0, 0);
+
+        uint32_t total_blocks = gridDim.x * gridDim.y * gridDim.z;
+        uint32_t blocks_per_slice = total_blocks / num_slices;
+
+        if (blocks_per_slice <= gridDim.x) {
+            sliced_gridDim = dim3(blocks_per_slice, 1, 1);
+        } else {
+            uint32_t num_blocks_y = (blocks_per_slice + gridDim.x - 1) / gridDim.x;
+            if (num_blocks_y <= gridDim.y) {
+                sliced_gridDim = dim3(gridDim.x, num_blocks_y, 1);
+            } else {
+                uint32_t num_blocks_z = (num_blocks_y + gridDim.y - 1) / gridDim.y;
+                sliced_gridDim = dim3(gridDim.x, gridDim.y, std::min(num_blocks_z, gridDim.z));
+            }
+        }
+
+        CUresult err;
+        while (blockOffset.x < gridDim.x && blockOffset.y < gridDim.y && blockOffset.z < gridDim.z) {
+
+            void *KernelParams[num_args];
+            for (size_t i = 0; i < num_args - 2; i++) {
+                KernelParams[i] = args[i];
+            }
+            KernelParams[num_args - 2] = &gridDim;
+            KernelParams[num_args - 1] = &blockOffset;
+
+            // This ensure that you won't go over the original grid size
+            dim3 curr_grid_dim (
+                std::min(gridDim.x - blockOffset.x, sliced_gridDim.x),
+                std::min(gridDim.y - blockOffset.y, sliced_gridDim.y),
+                std::min(gridDim.z - blockOffset.z, sliced_gridDim.z)
+            );
+
+            err = lcuLaunchKernel(cu_func, curr_grid_dim.x, curr_grid_dim.y, curr_grid_dim.z,
+                                blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
+
+            blockOffset.x += sliced_gridDim.x;
+
+            if (blockOffset.x >= gridDim.x) {
+                blockOffset.x = 0;
+                blockOffset.y += sliced_gridDim.y;
+
+                if (blockOffset.y >= gridDim.y) {
+                    blockOffset.y = 0;
+                    blockOffset.z += sliced_gridDim.z;
+                }
+            }
+        }
+
+        return err;
     } else {
         throw std::runtime_error("Invalid launch config.");
     }

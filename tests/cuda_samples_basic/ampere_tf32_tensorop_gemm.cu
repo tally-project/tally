@@ -313,6 +313,11 @@ int run(Options &options) {
   // Result structure
   Result result;
 
+  // warmup
+  status = gemm_op();
+
+  cudaDeviceSynchronize();
+
   //
   // Construct events
   //

@@ -462,8 +462,8 @@ void TallyServer::tune_kernel_pair_launch(
         for (auto &k2_config : k2_configs) {
 
             if (k1_config.use_preemptive_ptb && k2_config.use_preemptive_ptb) {
-                auto k1_threads_per_sm = k1_block_size * k1_config.num_blocks_per_sm;
-                auto k2_threads_per_sm = k2_block_size * k2_config.num_blocks_per_sm;
+                auto k1_threads_per_sm = k1_block_size * k1_config.blocks_per_sm;
+                auto k2_threads_per_sm = k2_block_size * k2_config.blocks_per_sm;
                 
                 // Prune config pairs that exceed the thread limit
                 if ((k1_threads_per_sm + k2_threads_per_sm) > CUDA_MAX_NUM_THREADS_PER_SM) {
