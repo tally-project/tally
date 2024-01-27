@@ -55,6 +55,8 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
                         auto configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(launch_call, threads_per_block, num_blocks);
 
                         launch_and_measure_kernel(kernel_wrapper, client_id, configs, USE_PTB_THRESHOLD);
+
+                        kernel_wrapper.free_args();
                         client_data.queue_size--;
                         continue;
                     }
@@ -64,12 +66,13 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
 
                 if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
                     auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
-                    cudaMemsetAsync(ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
-                    kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                    cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+                    kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
                 } else {
-                    kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                    kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
                 }
 
+                kernel_wrapper.free_args();
                 client_data.queue_size--;
             }
         }

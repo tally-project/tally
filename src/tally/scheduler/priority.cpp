@@ -18,6 +18,8 @@ public:
     bool running = false;
 
     CudaLaunchConfig config;
+
+    SlicedKernelArgs slice_args;
 };
 
 // Always prioritize to execute kernels from high-priority job.
@@ -86,7 +88,7 @@ void TallyServer::run_priority_scheduler()
                         cudaMemsetAsync(retreat, 0, sizeof(bool), dispatched_kernel_wrapper.launch_stream);
     
                         // Launch the kernel again
-                        dispatched_kernel_wrapper.kernel_to_dispatch(dispatched_kernel.config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                        dispatched_kernel_wrapper.kernel_to_dispatch(dispatched_kernel.config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
                     }
 
                     // wait for it to complete
@@ -124,16 +126,39 @@ void TallyServer::run_priority_scheduler()
                     auto &dispatched_kernel = in_progress_kernels[client_priority];
                     auto &dispatched_kernel_wrapper = dispatched_kernel.kernel_wrapper;
                     auto running = dispatched_kernel.running;
+                    auto &config = dispatched_kernel.config;
 
                     // First check if the kernel is still running
                     // note that the running flag only tells us whether the kernel has been signaled to stop
-                    // it is possible that it has yet terminated
+                    // it is possible that it has not yet terminated
                     if (cudaEventQuery(client_event) != cudaSuccess) {
                         break;
                     }
 
+                    bool finished = false;
+
+                    if (config.use_original) {
+
+                        finished = true;
+
+                    } else if (config.use_preemptive_ptb) {
+
+                        // preemptive kernel was running and now it is finished
+                        if (running) {
+                            finished = true;
+                        }
+
+                    } else if (config.use_sliced) {
+
+                        // all slices have been launched
+                        if (dispatched_kernel.slice_args.launch_idx >= dispatched_kernel.slice_args.block_offsets.size() - 1) {
+                            finished = true;
+                        }
+
+                    }
+
                     // it was running and now it is finished
-                    if (running || dispatched_kernel.config.use_original) {
+                    if (finished) {
 
                         // Erase from in-progress
                         dispatched_kernel_wrapper.free_args();
@@ -143,20 +168,29 @@ void TallyServer::run_priority_scheduler()
                     // we have told it to stop so we will launch it again
                     } else {
 
-                        auto config = dispatched_kernel.config;
+                        if (config.use_sliced) {
 
-                        // Make sure there is no pending event in retreat stream
-                        // think about a previous cudaMemsetAsync(&retreat) has not yet completed,
-                        // then there may be conflicted writes to retreat
-                        cudaStreamSynchronize(retreat_stream);
+                            // point to next slice
+                            dispatched_kernel.slice_args.launch_idx++;
 
-                        // set retreat to 0
-                        auto ptb_args = client_data.stream_to_ptb_args[dispatched_kernel_wrapper.launch_stream];
-                        auto retreat = &(ptb_args->retreat);
-                        cudaMemsetAsync(retreat, 0, sizeof(bool), dispatched_kernel_wrapper.launch_stream);
-    
-                        // Launch the kernel again
-                        dispatched_kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                            // Launch the kernel again
+                            dispatched_kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, &dispatched_kernel.slice_args, false, 0, nullptr, nullptr, -1, true);
+
+                        } else if (config.use_preemptive_ptb) {
+
+                            // Make sure there is no pending event in retreat stream
+                            // think about a previous cudaMemsetAsync(&retreat) has not yet completed,
+                            // then there may be conflicted writes to retreat
+                            cudaStreamSynchronize(retreat_stream);
+
+                            // set retreat to 0
+                            auto ptb_args = client_data.stream_to_ptb_args[dispatched_kernel_wrapper.launch_stream];
+                            auto retreat = &(ptb_args->retreat);
+                            cudaMemsetAsync(retreat, 0, sizeof(bool), dispatched_kernel_wrapper.launch_stream);
+        
+                            // Launch the kernel again
+                            dispatched_kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                        }
 
                         // Monitor the launched kernel
                         cudaEventRecord(client_event, dispatched_kernel_wrapper.launch_stream);
@@ -190,6 +224,7 @@ void TallyServer::run_priority_scheduler()
                     auto &in_progress_kernel_wrapper = dispatched_kernel.kernel_wrapper;
                     auto &in_progress_client_data = client_data_all[in_progress_client_id];
                     auto in_progress_kernel_event = client_events[in_progress_client_id];
+                    auto &in_progress_kernel_config = dispatched_kernel.config;
 
                     // First check whether this kernel has already finished
                     if (cudaEventQuery(in_progress_kernel_event) == cudaSuccess) {
@@ -201,30 +236,33 @@ void TallyServer::run_priority_scheduler()
                         break;
                     }
 
-                    // Set retreat flag
-                    auto ptb_args = in_progress_client_data.stream_to_ptb_args[in_progress_kernel_wrapper.launch_stream];
-                    cudaMemsetAsync(&(ptb_args->retreat), 1, sizeof(bool), retreat_stream);
+                    if (in_progress_kernel_config.use_preemptive_ptb) {
+
+                        // Set retreat flag
+                        auto ptb_args = in_progress_client_data.stream_to_ptb_args[in_progress_kernel_wrapper.launch_stream];
+                        cudaMemsetAsync(&(ptb_args->retreat), 1, sizeof(bool), retreat_stream);
 
 #if defined(MEASURE_PREEMPTION_LATENCY)
-                    auto start = std::chrono::high_resolution_clock::now();
+                        auto start = std::chrono::high_resolution_clock::now();
 
-                    // Fetch progress - this will block as memcpy from device to host
-                    uint32_t progress = 0;
-                    cudaMemcpyAsync(&progress, &(ptb_args->global_idx), sizeof(uint32_t), cudaMemcpyDeviceToHost, in_progress_kernel_wrapper.launch_stream);
+                        // Fetch progress - this will block as memcpy from device to host
+                        uint32_t progress = 0;
+                        cudaMemcpyAsync(&progress, &(ptb_args->global_idx), sizeof(uint32_t), cudaMemcpyDeviceToHost, in_progress_kernel_wrapper.launch_stream);
 
-                    auto end = std::chrono::high_resolution_clock::now();
-                    std::chrono::duration<double, std::milli> duration = end - start;
-                    auto preemption_latency_ms = duration.count();
+                        auto end = std::chrono::high_resolution_clock::now();
+                        std::chrono::duration<double, std::milli> duration = end - start;
+                        auto preemption_latency_ms = duration.count();
 
-                    auto &launch_call = in_progress_kernel_wrapper.launch_call;
-                    auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
-                    auto num_thread_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+                        auto &launch_call = in_progress_kernel_wrapper.launch_call;
+                        auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
+                        auto num_thread_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
 
-                    TALLY_SPD_LOG_ALWAYS("Preempted Kernel " + kernel_name);
-                    TALLY_SPD_LOG_ALWAYS("Number thread blocks: " + std::to_string(num_thread_blocks));
-                    TALLY_SPD_LOG_ALWAYS("Latency: " + std::to_string(preemption_latency_ms) + "ms");
-
+                        TALLY_SPD_LOG_ALWAYS("Preempted Kernel " + kernel_name);
+                        TALLY_SPD_LOG_ALWAYS("Number thread blocks: " + std::to_string(num_thread_blocks));
+                        TALLY_SPD_LOG_ALWAYS("Latency: " + std::to_string(preemption_latency_ms) + "ms");
 #endif
+                    }
+
                     // Mark that this kernel has been signaled to stop
                     dispatched_kernel.running = false;
 
@@ -246,28 +284,41 @@ void TallyServer::run_priority_scheduler()
                     auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
 
                     auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(launch_call, threads_per_block, num_blocks);
-                    launch_and_measure_kernel(kernel_wrapper, client_id, preemptive_ptb_configs, USE_PREEMPTIVE_LATENCY_THRESHOLD);
+                    // sliced configs as alternative if preemptive ptb has too-bad performance
+                    auto sliced_configs = CudaLaunchConfig::get_sliced_configs(launch_call, threads_per_block, num_blocks);
+                    launch_and_measure_kernel(kernel_wrapper, client_id, preemptive_ptb_configs, USE_PREEMPTIVE_LATENCY_THRESHOLD, sliced_configs);
 
                     kernel_wrapper.free_args();
                     client_data.queue_size--;
                     break;
                 }
 
-                PTBArgs *ptb_args = nullptr;
+                PTBKernelArgs *ptb_args = nullptr;
+                SlicedKernelArgs *sliced_args = nullptr;
 
                 if (!is_highest_priority) {
 
                     config = res.config;
 
+                    // bookkeep kernel launch if it is not highest-priority 
+                    in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
+
                     if (config.use_preemptive_ptb) {
                         // set retreat ang global_idx to 0
                         ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
-                        cudaMemsetAsync(ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
+                        cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+                    }
+
+                    // Only launch the first slice
+                    if (config.use_sliced) {
+                        in_progress_kernels[client_priority].slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
+                        sliced_args = &(in_progress_kernels[client_priority].slice_args);
+                        sliced_args->launch_idx = 0;
                     }
                 }
 
                 // Launch the kernel
-                kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, sliced_args, false, 0, nullptr, nullptr, -1, true);
                 
                 cudaEventRecord(client_event, kernel_wrapper.launch_stream);
 
@@ -278,9 +329,6 @@ void TallyServer::run_priority_scheduler()
                     kernel_wrapper.free_args();
                     client_data.queue_size--;
 
-                } else {
-                    // Otherwise, bookkeep kernel launch if it is not highest-priority 
-                    in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
                 }
 
                 break;

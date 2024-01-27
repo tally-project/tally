@@ -227,16 +227,16 @@ struct CudaLaunchKeyConfigPairResult {
             num_threads_1 = key_1.total_threads() / CUDA_NUM_SM;
             num_blocks_1 = key_1.total_blocks() / CUDA_NUM_SM;
         } else {
-            num_threads_1 = key_1.block_size() * config_1.num_blocks_per_sm;
-            num_blocks_1 = config_1.num_blocks_per_sm;
+            num_threads_1 = key_1.block_size() * config_1.blocks_per_sm;
+            num_blocks_1 = config_1.blocks_per_sm;
         }
 
         if (config_2.use_original) {
             num_threads_2 = key_2.total_threads() / CUDA_NUM_SM;
             num_blocks_2 = key_2.total_blocks() / CUDA_NUM_SM;
         } else {
-            num_threads_2 = key_2.block_size() * config_2.num_blocks_per_sm;
-            num_blocks_2 = config_2.num_blocks_per_sm;
+            num_threads_2 = key_2.block_size() * config_2.blocks_per_sm;
+            num_blocks_2 = config_2.blocks_per_sm;
         }
 
         uint64_t sum_threads = num_threads_1 + num_threads_2;

@@ -44,8 +44,10 @@ void serialize(Archive & ar, CudaLaunchConfig & g, const unsigned int version)
     ar & g.use_ptb;
     ar & g.use_dynamic_ptb;
     ar & g.use_preemptive_ptb;
+    ar & g.use_sliced;
 
-    ar & g.num_blocks_per_sm;
+    ar & g.blocks_per_sm;
+    ar & g.num_slices;
 }
 
 template<class Archive>

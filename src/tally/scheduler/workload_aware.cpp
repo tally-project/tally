@@ -29,7 +29,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
     cudaStream_t retreat_stream;
     cudaStreamCreate(&retreat_stream);
 
-    CudaLaunchConfig preemptive_config(false, false, false, true, 4);
+    CudaLaunchConfig preemptive_config = CudaLaunchConfig::get_preemptive_ptb_config(4);
     CudaLaunchConfig original_config = CudaLaunchConfig::default_config;
 
     auto get_single_kernel_result = [this](KernelLaunchWrapper &kernel_wrapper, int32_t client_id) {
@@ -49,7 +49,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
 
                 // Check the latency of this kernel, if it is short, then we fall back to the non-preemtive version
                 float latency_ms;
-                kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &latency_ms, nullptr, 1, true);
+                kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &latency_ms, nullptr, 1, true);
 
                 auto &client_data = client_data_all[client_id];
 
@@ -114,7 +114,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         auto &kernel_wrapper = kernel.kernel_wrapper;
 
         bool clear_retreat = false;
-        PTBArgs *ptb_args = nullptr;
+        PTBKernelArgs *ptb_args = nullptr;
 
         // Check if kernel is already launched
         if (kernel.launched) {
@@ -149,7 +149,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         } else {
             if (config.use_preemptive_ptb || config.use_dynamic_ptb) {
                 ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
-                cudaMemsetAsync(ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
+                cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
                 clear_retreat = true;
             }
         }
@@ -163,7 +163,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
         CHECK_CUDA_ERROR(cudaEventCreateWithFlags(&kernel_wrapper.event, cudaEventDisableTiming));
 
         // Launch the kernel again
-        kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+        kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
 
         // Monitor the launched kernel
         CHECK_CUDA_ERROR(cudaEventRecord(kernel_wrapper.event, kernel_wrapper.launch_stream));

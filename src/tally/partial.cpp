@@ -17,8 +17,9 @@
 
 #define PARTIAL_ARGUMENTS \
     CudaLaunchConfig config, \
-    PTBArgs *ptb_args, \
+    PTBKernelArgs *ptb_args, \
     uint32_t *curr_idx_arr, \
+    SlicedKernelArgs *slice_args, \
     bool repeat, \
     float dur_seconds, \
     float *time_ms, \
@@ -49,14 +50,14 @@ std::pair<partial_t, void *> TallyServer::cudaLaunchKernel_Partial(const void *f
         offset += arg_sizes[i];
     }
 
-    auto partial = [this, func, gridDim, blockDim, __args_arr, sharedMem, stream, args] (PARTIAL_ARGUMENTS) {
+    auto partial = [this, func, gridDim, blockDim, __args_arr, sharedMem, stream] (PARTIAL_ARGUMENTS) {
 
         CUresult err;
 
         if (repeat) {
-            err = config.repeat_launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, dur_seconds, ptb_args, curr_idx_arr, time_ms, iters, total_iters);
+            err = config.repeat_launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, dur_seconds, ptb_args, curr_idx_arr, slice_args, time_ms, iters, total_iters);
         } else {
-            err = config.launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, ptb_args, curr_idx_arr);
+            err = config.launch(func, gridDim, blockDim, (void **) __args_arr, sharedMem, stream, ptb_args, curr_idx_arr, slice_args);
         }
 
         if (exit_if_fail && err) {
