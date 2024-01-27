@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCHEDULER_POLICY=""
+
 cleanup() {
     ./scripts/kill_server.sh
     ./scripts/kill_iox.sh
@@ -8,7 +10,7 @@ cleanup() {
 run_tally_test() {
 
     # Launch tally server in the background
-    ./scripts/start_server.sh &
+    SCHEDULER_POLICY=$SCHEDULER_POLICY ./scripts/start_server.sh &
 
     sleep 5
 

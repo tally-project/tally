@@ -12,9 +12,18 @@
 
 #include <tally/env.h>
 
-struct PTBArgs {
+struct PTBKernelArgs {
     uint32_t global_idx;
 	bool retreat;
+};
+
+struct SlicedKernelArgs {
+    dim3 sliced_gridDim;
+    std::vector<dim3> block_offsets;
+
+    // if < 0, launch all slices together
+    // if >= 0, launch the i-th slice
+    int launch_idx = -1;
 };
 
 inline std::string get_dim3_str(dim3 dim)
@@ -197,6 +206,11 @@ public:
         CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks
     );
 
+    static std::vector<CudaLaunchConfig> get_sliced_configs(
+        CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks
+    );
+
+
     static CudaLaunchConfig get_original_config() {
         CudaLaunchConfig config;
         config.use_original = true;
@@ -276,8 +290,12 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config);
     
-    CUresult launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, PTBArgs *ptb_args, uint32_t *curr_idx_arr=nullptr);
-    CUresult repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, PTBArgs *ptb_args, uint32_t *curr_idx_arr=nullptr, float *time_ms=nullptr, float *iters=nullptr, int32_t max_count=-1); 
+    CUresult launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, PTBKernelArgs *ptb_args=nullptr,
+                    uint32_t *curr_idx_arr=nullptr, SlicedKernelArgs *slice_args=nullptr);
+
+    CUresult repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, PTBKernelArgs *ptb_args=nullptr,
+                           uint32_t *curr_idx_arr=nullptr, SlicedKernelArgs *slice_args=nullptr, float *time_ms=nullptr, float *iters=nullptr,
+                           int32_t max_count=-1); 
 };
 
 struct CudaLaunchCallConfig {
@@ -413,7 +431,7 @@ struct WrappedCUfunction {
     CudaLaunchMetadata meta_data;
 };
 
-using partial_t = std::function<CUresult(CudaLaunchConfig, PTBArgs*, uint32_t*, bool, float, float*, float*, int32_t, bool)>;
+using partial_t = std::function<CUresult(CudaLaunchConfig, PTBKernelArgs*, uint32_t*, SlicedKernelArgs*, bool, float, float*, float*, int32_t, bool)>;
 
 struct KernelLaunchWrapper {
 
@@ -443,5 +461,10 @@ public:
 		free(args);
 	}
 };
+
+std::vector<uint32_t> get_candidate_blocks_per_sm(uint32_t threads_per_block, uint32_t num_blocks, uint32_t max_threads_per_sm);
+std::vector<uint32_t> get_candidate_num_slices(uint32_t threads_per_block, uint32_t num_blocks, uint32_t max_threads_per_sm);
+
+SlicedKernelArgs get_sliced_kernel_args(dim3 gridDim, uint32_t num_slices);
 
 #endif // TALLY_CUDA_LAUNCH_H

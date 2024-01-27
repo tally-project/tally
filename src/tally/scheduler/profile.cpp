@@ -69,10 +69,10 @@ void TallyServer::run_profile_scheduler()
 
                 if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
                     auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
-                    cudaMemsetAsync(ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
-                    kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
+                    cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+                    kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
                 } else {
-                    kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                    kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
                 }
 
                 client_data.queue_size--;
@@ -136,7 +136,7 @@ void TallyServer::run_profile_scheduler()
 
 //         int index = 0;
 
-//         PTBArgs *ptb_args_arrs[2];
+//         PTBKernelArgs *ptb_args_arrs[2];
 //         uint32_t *curr_idx_arrs[2];
 //         KernelLaunchWrapper kernel_wrappers[2];
 //         CudaLaunchCall launch_calls[2];

@@ -157,7 +157,8 @@ void TallyServer::start_worker_server(int32_t client_id) {
 }
 
 void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id,
-                                            std::vector<CudaLaunchConfig> &configs, float use_ptb_threshold)
+                                            std::vector<CudaLaunchConfig> configs, float use_ptb_threshold,
+                                            std::vector<CudaLaunchConfig> alternative_configs)
 {
     // Store temporary data here
     static std::unordered_map<CudaLaunchCallConfig, TempKernelProfileMetrics> temp_perf_data;
@@ -189,7 +190,7 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
         cudaDeviceSynchronize();
 
         auto start = std::chrono::high_resolution_clock::now();
-        kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, false, 0, nullptr, nullptr, 0, true);
+        kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, 0, true);
         cudaDeviceSynchronize();
         auto end = std::chrono::high_resolution_clock::now();
 
@@ -218,6 +219,37 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
         return;
     }
 
+    auto run_config = [&](CudaLaunchConfig &config, TempKernelProfileMetrics &metrics) {
+
+        // prepare ptb args
+        auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+
+        // prepare sliced args
+        SlicedKernelArgs slice_args;
+        if (config.use_sliced) {
+            slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
+        }
+
+        cudaDeviceSynchronize();
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+        if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
+            cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+        }
+
+        kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, &slice_args, false, 0, nullptr, nullptr, -1, true);
+
+        cudaDeviceSynchronize();
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+        time_elapsed = elapsed.count();
+
+        metrics.avg_latency_ms = (metrics.avg_latency_ms * metrics.count + time_elapsed) / (metrics.count + 1);
+        metrics.count += 1;
+    };
+
     CudaLaunchConfig best_config;
     float best_latency_ms = FLT_MAX;
 
@@ -234,33 +266,10 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
             continue;
         }
 
-        CudaLaunchCallConfig call_config(
-            launch_call,
-            config
-        );
-
+        CudaLaunchCallConfig call_config(launch_call, config);
         auto &metrics = temp_perf_data[call_config];
 
-        cudaDeviceSynchronize();
-
-        auto start = std::chrono::high_resolution_clock::now();
-
-        if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
-            auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
-            cudaMemsetAsync(ptb_args, 0, sizeof(PTBArgs), kernel_wrapper.launch_stream);
-            kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, false, 0, nullptr, nullptr, -1, true);
-        } else {
-            kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, false, 0, nullptr, nullptr, 0, true);
-        }
-
-        cudaDeviceSynchronize();
-        auto end = std::chrono::high_resolution_clock::now();
-
-        std::chrono::duration<double, std::milli> elapsed = end - start;
-        time_elapsed = elapsed.count();
-
-        metrics.avg_latency_ms = (metrics.avg_latency_ms * metrics.count + time_elapsed) / (metrics.count + 1);
-        metrics.count += 1;
+        run_config(config, metrics);
 
         if (metrics.count == KERNEL_PROFILE_ITERATIONS) {
             float norm_speed = original_res.metrics.latency_ms / metrics.avg_latency_ms;
@@ -279,8 +288,70 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
     }
 
     float best_norm_speed = original_res.metrics.latency_ms / best_latency_ms;
-    if (best_norm_speed < use_ptb_threshold) {
-        TALLY_SPD_LOG_ALWAYS("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
+
+    // if none of the configs satisfy `use_ptb_threshold`
+    // consider the alternative_configs
+    if (best_norm_speed < use_ptb_threshold && !alternative_configs.empty()) {
+
+        for (auto &config : alternative_configs) {
+
+            auto res = get_single_kernel_perf(launch_call, config, &found);
+            if (found) {
+
+                if (res.metrics.latency_ms < best_latency_ms) {
+                    best_config = config;
+                    best_latency_ms = res.metrics.latency_ms;
+                }
+
+                continue;
+            }
+
+            CudaLaunchCallConfig call_config(launch_call, config);
+            auto &metrics = temp_perf_data[call_config];
+
+            run_config(config, metrics);
+
+            if (metrics.count == KERNEL_PROFILE_ITERATIONS) {
+
+                configs.push_back(config);
+
+                float norm_speed = original_res.metrics.latency_ms / metrics.avg_latency_ms;
+                set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, metrics.avg_latency_ms, 0);
+
+                if (metrics.avg_latency_ms < best_latency_ms) {
+                    best_config = config;
+                    best_latency_ms = metrics.avg_latency_ms;
+                }
+
+                // Will take that
+                if (norm_speed >= use_ptb_threshold) {
+                    TALLY_SPD_LOG_ALWAYS("Fall back to use alternative config.")
+                    break;
+                }
+            }
+
+            // If not last config, return
+            if (config != configs.back() || metrics.count < KERNEL_PROFILE_ITERATIONS) {
+                return;
+            }
+        }
+    }
+
+    // re-compute
+    best_norm_speed = original_res.metrics.latency_ms / best_latency_ms;
+
+    if (best_norm_speed < use_ptb_threshold || configs.empty()) {
+
+        if (configs.empty()) {
+            kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, 0, true);
+            cudaDeviceSynchronize();
+            TALLY_SPD_LOG_ALWAYS("No transformed config is provided. Will Use original config.")
+        }
+
+        if (best_norm_speed < use_ptb_threshold) {
+            TALLY_SPD_LOG_ALWAYS("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
+        }
+        
         best_config = base_config;
         best_norm_speed = 1.;
         best_latency_ms = original_res.metrics.latency_ms;
@@ -290,6 +361,7 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
     set_single_kernel_best_config(launch_call, res);
 
     TALLY_SPD_LOG_ALWAYS("Tuning complete for: " + kernel_str);
+
     for (auto &config : configs) {
         auto res = get_single_kernel_perf(launch_call, config, &found);
         auto norm_speed = res.metrics.norm_speed;
@@ -318,7 +390,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     cudaDeviceSynchronize();
 
-    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
+    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
 
     // In seconds
     float profile_duration = (100 * time_elapsed) / 1000.f;
@@ -333,10 +405,10 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     CudaLaunchConfig base_config = CudaLaunchConfig::default_config;
 
     // warmup
-    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1, true);
+    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1, true);
 
     // profile
-    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1, true);
+    kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, nullptr, true, profile_duration, &time_elapsed, &iters, -1, true);
 
     float base_latency_ms = time_elapsed / iters;
 
@@ -348,8 +420,16 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     for (auto &config : configs) {
 
+        // prepare ptb args
         auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
-        auto err = kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, true, profile_duration, &time_elapsed, &iters, -1, true);
+
+        // prepare sliced args
+        SlicedKernelArgs slice_args;
+        if (config.use_sliced) {
+            slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
+        }
+
+        auto err = kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, &slice_args, true, profile_duration, &time_elapsed, &iters, -1, true);
 
         if (err) {
             return;
@@ -403,7 +483,7 @@ void TallyServer::tune_kernel_pair_launch(
 
     for (int i = 0; i < 2; i++) {
         // Run one time of kernel
-        kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
+        kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
         profile_duration = std::max(profile_duration, (30 * time_elapsed) / 1000.f);
 
         launch_calls[i] = kernel_wrappers[i].launch_call;
@@ -449,7 +529,7 @@ void TallyServer::tune_kernel_pair_launch(
     auto launch_kernel_func = [this, kernel_wrappers, client_ids](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, int32_t total_iters) {
         auto &client_data = client_data_all[client_ids[idx]];
         auto ptb_args = client_data.stream_to_ptb_args[kernel_wrappers[idx].launch_stream];
-        (kernel_wrappers[idx].kernel_to_dispatch)(config, ptb_args, client_data.curr_idx_arr, true, dur_seconds, time_elapsed, iters, total_iters, true);
+        (kernel_wrappers[idx].kernel_to_dispatch)(config, ptb_args, client_data.curr_idx_arr, nullptr, true, dur_seconds, time_elapsed, iters, total_iters, true);
     };
 
     CudaLaunchMetadata null_metadata;
@@ -557,7 +637,7 @@ void TallyServer::client_add_stream(int32_t client_id, cudaStream_t stream)
     client_meta.streams.push_back(stream);
 
     auto &ptb_args = client_meta.stream_to_ptb_args[stream];
-    cudaMalloc(&ptb_args, sizeof(PTBArgs));
+    cudaMalloc(&ptb_args, sizeof(PTBKernelArgs));
 }
 
 const void *TallyServer::get_server_addr_from_client_addr(uint32_t client_id, const void *client_addr)
