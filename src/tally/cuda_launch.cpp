@@ -108,9 +108,21 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(CudaLaunchCa
 
     // Kernel-sliced configs
     auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, 0);
-    
+    if (candidate_num_slices.size() > 10) {
+        for (float percentile = 0.; percentile <= 100.; percentile += 10.) {
 
+            uint32_t index = static_cast<uint32_t>(std::ceil(percentile / 100.0f * candidate_num_slices.size())) - 1;
+            index = std::max(index, 0u);
 
+            auto sliced_config = CudaLaunchConfig::get_sliced_config(candidate_num_slices[index]);
+            configs.push_back(sliced_config);
+        }
+    } else {
+        for (auto num_slices : candidate_num_slices) {
+            auto sliced_config = CudaLaunchConfig::get_sliced_config(num_slices);
+            configs.push_back(sliced_config);
+        }
+    }
     
     return configs;
 }
@@ -148,7 +160,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
 
     configs.push_back(dynamic_ptb_config);
 
-    auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, PTB_MAX_NUM_THREADS_PER_SM);
+    auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, CUDA_MAX_NUM_THREADS_PER_SM);
     if (!candidate_num_slices.empty()) {
 
         // take least
@@ -168,8 +180,10 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(CudaLaunc
     auto candiate_blocks_per_sm = get_candidate_blocks_per_sm(threads_per_block, num_blocks, PTB_MAX_NUM_THREADS_PER_SM);
 
     // preemptive PTB
-    auto preemptive_ptb_config = CudaLaunchConfig::get_preemptive_ptb_config(candiate_blocks_per_sm.back());
-    configs.push_back(preemptive_ptb_config);
+    for (auto blocks_per_sm : candiate_blocks_per_sm) {
+        auto preemptive_ptb_config = CudaLaunchConfig::get_preemptive_ptb_config(blocks_per_sm);
+        configs.push_back(preemptive_ptb_config);
+    }
 
     return configs;
 }
@@ -319,16 +333,12 @@ CUresult CudaLaunchConfig::launch(
         auto cu_func = TallyServer::server->ptb_kernel_map[func].func;
         size_t num_args = TallyServer::server->ptb_kernel_map[func].num_args;
         assert(cu_func);
-
-        dim3 PTB_grid_dim;
         
         uint32_t total_blocks = gridDim.x * gridDim.y * gridDim.z;
-        // Depend on number of PTBs/SM
-        if (total_blocks < CUDA_NUM_SM) {
-            PTB_grid_dim = dim3(total_blocks);
-        } else {
-            PTB_grid_dim = dim3(CUDA_NUM_SM * blocks_per_sm);
-        }
+        uint32_t worker_blocks = std::min(total_blocks, CUDA_NUM_SM * blocks_per_sm);
+        worker_blocks = std::min(max_worker_blocks, worker_blocks);
+
+        dim3 PTB_grid_dim(worker_blocks);
 
         void *KernelParams[num_args];
         for (size_t i = 0; i < num_args - 1; i++) {
@@ -351,15 +361,11 @@ CUresult CudaLaunchConfig::launch(
         
         assert(cu_func);
 
-        dim3 PTB_grid_dim;
-        
         uint32_t total_blocks = gridDim.x * gridDim.y * gridDim.z;
-        // Depend on number of PTBs/SM
-        if (total_blocks < CUDA_NUM_SM) {
-            PTB_grid_dim = dim3(total_blocks);
-        } else {
-            PTB_grid_dim = dim3(CUDA_NUM_SM * blocks_per_sm);
-        }
+        uint32_t worker_blocks = std::min(total_blocks, CUDA_NUM_SM * blocks_per_sm);
+        worker_blocks = std::min(max_worker_blocks, worker_blocks);
+
+        dim3 PTB_grid_dim(worker_blocks);
 
         void *KernelParams[num_args];
         for (size_t i = 0; i < num_args - 3; i++) {
@@ -386,15 +392,11 @@ CUresult CudaLaunchConfig::launch(
 
         assert(cu_func);
 
-        dim3 PTB_grid_dim;
-        
         uint32_t total_blocks = gridDim.x * gridDim.y * gridDim.z;
-        // Depend on number of PTBs/SM
-        if (total_blocks < CUDA_NUM_SM) {
-            PTB_grid_dim = dim3(total_blocks);
-        } else {
-            PTB_grid_dim = dim3(CUDA_NUM_SM * blocks_per_sm);
-        }
+        uint32_t worker_blocks = std::min(total_blocks, CUDA_NUM_SM * blocks_per_sm);
+        worker_blocks = std::min(max_worker_blocks, worker_blocks);
+
+        dim3 PTB_grid_dim(worker_blocks);
 
         void *KernelParams[num_args];
         for (size_t i = 0; i < num_args - 4; i++) {
@@ -447,6 +449,9 @@ CUresult CudaLaunchConfig::launch(
 
         return err;
     } else {
+
+        auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[func];
+        std::cout << kernel_name << std::endl;
         throw std::runtime_error("Invalid launch config.");
     }
 }

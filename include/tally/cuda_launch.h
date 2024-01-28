@@ -188,6 +188,7 @@ public:
 
     // Specific to ptb
     uint32_t blocks_per_sm = 0;
+    uint32_t max_worker_blocks = 10000; // essentially INT_MAX
 
     // Specific to sliced
     uint32_t num_slices = 0;
@@ -254,7 +255,8 @@ public:
             use_dynamic_ptb == other.use_dynamic_ptb &&
             use_preemptive_ptb == other.use_preemptive_ptb &&
             blocks_per_sm == other.blocks_per_sm &&
-            num_slices == other.num_slices
+            num_slices == other.num_slices &&
+            max_worker_blocks == other.max_worker_blocks
         );
     }
 
@@ -267,6 +269,7 @@ public:
             {"use_preemptive_ptb", use_preemptive_ptb},
             {"use_sliced", use_sliced},
             {"blocks_per_sm", blocks_per_sm},
+            {"max_worker_blocks", max_worker_blocks},
             {"num_slices", num_slices},
         });
     }

@@ -39,10 +39,9 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
             if (succeeded) {
 
                 CudaLaunchConfig config = CudaLaunchConfig::default_config;
+                auto &launch_call = kernel_wrapper.launch_call;
 
                 if (!kernel_wrapper.is_library_call) {
-                    
-                    auto launch_call = kernel_wrapper.launch_call;
 
                     // Look up cache for best-performance config
                     bool found_in_cache;
@@ -64,13 +63,17 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
                     config = res.config;
                 }
 
+                PTBKernelArgs *ptb_args = nullptr;
+                SlicedKernelArgs slice_args;;
+
                 if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
-                    auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+                    ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
                     cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
-                    kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
-                } else {
-                    kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                } else if (config.use_sliced) {
+                    slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
                 }
+
+                kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, &slice_args, false, 0, nullptr, nullptr, -1, true);
 
                 kernel_wrapper.free_args();
                 client_data.queue_size--;

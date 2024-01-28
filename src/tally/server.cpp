@@ -158,7 +158,7 @@ void TallyServer::start_worker_server(int32_t client_id) {
 
 void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id,
                                             std::vector<CudaLaunchConfig> configs, float use_ptb_threshold,
-                                            std::vector<CudaLaunchConfig> alternative_configs)
+                                            std::vector<CudaLaunchConfig> alternative_configs, bool is_preemptive)
 {
     // Store temporary data here
     static std::unordered_map<CudaLaunchCallConfig, TempKernelProfileMetrics> temp_perf_data;
@@ -219,6 +219,8 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
         return;
     }
 
+    auto &original_metrics = original_res.metrics;
+
     auto run_config = [&](CudaLaunchConfig &config, TempKernelProfileMetrics &metrics) {
 
         // prepare ptb args
@@ -272,7 +274,7 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
         run_config(config, metrics);
 
         if (metrics.count == KERNEL_PROFILE_ITERATIONS) {
-            float norm_speed = original_res.metrics.latency_ms / metrics.avg_latency_ms;
+            float norm_speed = original_metrics.latency_ms / metrics.avg_latency_ms;
             set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, metrics.avg_latency_ms, 0);
 
             if (metrics.avg_latency_ms < best_latency_ms) {
@@ -287,58 +289,80 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
         }
     }
 
-    float best_norm_speed = original_res.metrics.latency_ms / best_latency_ms;
+    float best_norm_speed = original_metrics.latency_ms / best_latency_ms;
 
-    // if none of the configs satisfy `use_ptb_threshold`
-    // consider the alternative_configs
-    if (best_norm_speed < use_ptb_threshold && !alternative_configs.empty()) {
+    auto num_blocks = launch_call.num_blocks();
+    auto blocks_per_sm = (num_blocks + CUDA_NUM_SM - 1) / CUDA_NUM_SM;
+    auto per_block_latency_ms = original_metrics.latency_ms / (float) blocks_per_sm;
 
-        for (auto &config : alternative_configs) {
+    if (best_norm_speed >= use_ptb_threshold) {
+    
+        if (is_preemptive && per_block_latency_ms > LONG_PER_BLOCK_LATENCY_MS_THRESHOLD) {
+            TALLY_SPD_WARN("Per-block latency: " + std::to_string(per_block_latency_ms) + " ms: " + kernel_str);
 
-            auto res = get_single_kernel_perf(launch_call, config, &found);
-            if (found) {
+            // let us set a max worker blocks if block-level preemtion latency is too long
+            auto max_worker_blocks = (uint32_t) ((LONG_PER_BLOCK_LATENCY_MS_THRESHOLD / per_block_latency_ms) * (float) CUDA_NUM_SM);
+            best_config.max_worker_blocks = std::max(max_worker_blocks, 1u);
+            TALLY_SPD_WARN("Setting max_worker_blocks to " + std::to_string(max_worker_blocks) + ".");
+            set_single_kernel_perf(launch_call, best_config, ptb_kernel_map[launch_call.func].meta_data, best_norm_speed, best_latency_ms, 0);
+        }
 
-                if (res.metrics.latency_ms < best_latency_ms) {
-                    best_config = config;
-                    best_latency_ms = res.metrics.latency_ms;
+    } else {
+
+        // if none of the configs satisfy `use_ptb_threshold`
+        // consider the alternative_configs
+        if (!alternative_configs.empty()) {
+            for (auto &config : alternative_configs) {
+
+                auto res = get_single_kernel_perf(launch_call, config, &found);
+                if (found) {
+
+                    if (res.metrics.latency_ms < best_latency_ms) {
+                        best_config = config;
+                        best_latency_ms = res.metrics.latency_ms;
+                    }
+
+                    continue;
                 }
 
-                continue;
-            }
+                CudaLaunchCallConfig call_config(launch_call, config);
+                auto &metrics = temp_perf_data[call_config];
 
-            CudaLaunchCallConfig call_config(launch_call, config);
-            auto &metrics = temp_perf_data[call_config];
+                run_config(config, metrics);
 
-            run_config(config, metrics);
+                if (metrics.count == KERNEL_PROFILE_ITERATIONS) {
 
-            if (metrics.count == KERNEL_PROFILE_ITERATIONS) {
+                    configs.push_back(config);
 
-                configs.push_back(config);
+                    float norm_speed = original_metrics.latency_ms / metrics.avg_latency_ms;
+                    set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, metrics.avg_latency_ms, 0);
 
-                float norm_speed = original_res.metrics.latency_ms / metrics.avg_latency_ms;
-                set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, metrics.avg_latency_ms, 0);
+                    if (metrics.avg_latency_ms < best_latency_ms) {
+                        best_config = config;
+                        best_latency_ms = metrics.avg_latency_ms;
+                    }
 
-                if (metrics.avg_latency_ms < best_latency_ms) {
-                    best_config = config;
-                    best_latency_ms = metrics.avg_latency_ms;
+                    // Will take that
+                    if (norm_speed >= use_ptb_threshold) {
+                        TALLY_SPD_LOG_ALWAYS("Fall back to use alternative config.")
+                        break;
+                    }
                 }
 
-                // Will take that
-                if (norm_speed >= use_ptb_threshold) {
-                    TALLY_SPD_LOG_ALWAYS("Fall back to use alternative config.")
-                    break;
+                // If not last config, return
+                if (config != configs.back() || metrics.count < KERNEL_PROFILE_ITERATIONS) {
+                    return;
                 }
             }
+        }
 
-            // If not last config, return
-            if (config != configs.back() || metrics.count < KERNEL_PROFILE_ITERATIONS) {
-                return;
-            }
+        if (is_preemptive && per_block_latency_ms > LONG_PER_BLOCK_LATENCY_MS_THRESHOLD) {
+            TALLY_SPD_WARN("Not yet handled when PTB performance does not satisfy `use_ptb_threshold`!");
         }
     }
 
     // re-compute
-    best_norm_speed = original_res.metrics.latency_ms / best_latency_ms;
+    best_norm_speed = original_metrics.latency_ms / best_latency_ms;
 
     if (best_norm_speed < use_ptb_threshold || configs.empty()) {
 
@@ -346,15 +370,13 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
             kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, 0, true);
             cudaDeviceSynchronize();
             TALLY_SPD_LOG_ALWAYS("No transformed config is provided. Will Use original config.")
-        }
-
-        if (best_norm_speed < use_ptb_threshold) {
+        } else if (best_norm_speed < use_ptb_threshold) {
             TALLY_SPD_LOG_ALWAYS("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
         }
         
         best_config = base_config;
         best_norm_speed = 1.;
-        best_latency_ms = original_res.metrics.latency_ms;
+        best_latency_ms = original_metrics.latency_ms;
     }
 
     auto res = get_single_kernel_perf(launch_call, best_config, &found);

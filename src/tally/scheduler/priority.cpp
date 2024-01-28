@@ -286,7 +286,7 @@ void TallyServer::run_priority_scheduler()
                     auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(launch_call, threads_per_block, num_blocks);
                     // sliced configs as alternative if preemptive ptb has too-bad performance
                     auto sliced_configs = CudaLaunchConfig::get_sliced_configs(launch_call, threads_per_block, num_blocks);
-                    launch_and_measure_kernel(kernel_wrapper, client_id, preemptive_ptb_configs, USE_PREEMPTIVE_LATENCY_THRESHOLD, sliced_configs);
+                    launch_and_measure_kernel(kernel_wrapper, client_id, preemptive_ptb_configs, USE_PREEMPTIVE_LATENCY_THRESHOLD, sliced_configs, true);
 
                     kernel_wrapper.free_args();
                     client_data.queue_size--;

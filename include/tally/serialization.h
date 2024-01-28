@@ -47,6 +47,7 @@ void serialize(Archive & ar, CudaLaunchConfig & g, const unsigned int version)
     ar & g.use_sliced;
 
     ar & g.blocks_per_sm;
+    ar & g.max_worker_blocks;
     ar & g.num_slices;
 }
 
