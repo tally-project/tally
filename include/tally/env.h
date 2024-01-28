@@ -22,17 +22,19 @@ static uint32_t CUDA_MAX_SHM_BYTES_PER_SM = 100 * 1024;
 
 static uint32_t FATBIN_MAGIC_NUMBER = 3126193488;
 
-// These can be tuned
-static uint32_t PTB_MAX_NUM_THREADS_PER_SM = 1024;
+static float TIME_SHARE_THRESHOLD = 1.;
 
 // number of times to run a kernel to get performance metrics
 static uint32_t KERNEL_PROFILE_ITERATIONS = 5;
 
-// Time share Threshold
-static float TIME_SHARE_THRESHOLD = 1.f;
-static float USE_PTB_THRESHOLD = 0.9f;
-static float USE_PREEMPTIVE_LATENCY_THRESHOLD = 0.25f;
-static float LONG_PER_BLOCK_LATENCY_MS_THRESHOLD = 0.1f;
+// Priority scheduler parameters
+static uint32_t PRIORITY_PTB_MAX_NUM_THREADS_PER_SM = 1024;
+static float PRIORITY_MAX_ALLOWED_PER_BLOCK_LATENCY_MS = 0.1f;
+static float PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD = 0.1f;
+
+// Sharing scheduler parameters
+static uint32_t SHARING_PTB_MAX_NUM_THREADS_PER_SM = 1024;
+static float SHARING_USE_PTB_THRESHOLD = 0.9f;
 
 extern bool TALLY_INITIALIZED;
 

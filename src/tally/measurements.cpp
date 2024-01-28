@@ -100,6 +100,12 @@ TallyServer::get_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfi
     return CudaLaunchCallConfigResult();
 }
 
+void TallyServer::delete_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config)
+{
+    CudaLaunchCallConfig call_config(launch_call, launch_config);
+    single_kernel_perf_map.erase(call_config);
+}
+
 void TallyServer::set_single_kernel_perf(
     CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, CudaLaunchMetadata meta_data,
     float norm_speed, float latency, uint32_t iters)

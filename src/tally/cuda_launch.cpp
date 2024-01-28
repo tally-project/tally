@@ -75,7 +75,7 @@ std::vector<uint32_t> get_candidate_num_slices(uint32_t threads_per_block, uint3
             }
         }
 
-        if (blocks_per_slice <= CUDA_NUM_SM) {
+        if (blocks_per_slice <= 1) {
             break;
         }
 
@@ -90,8 +90,11 @@ std::vector<uint32_t> get_candidate_num_slices(uint32_t threads_per_block, uint3
 // Note that this tries to profile as many configs as possible
 // Including ones that can take up all the thread slots
 // This should only be used for profiling purposes
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(CudaLaunchCall &launch_call)
 {
+    uint32_t threads_per_block = launch_call.threads_per_block;
+    uint32_t num_blocks = launch_call.num_blocks;
+
     std::vector<CudaLaunchConfig> configs;
 
     // PTB configs
@@ -128,19 +131,22 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(CudaLaunchCa
 }
 
 // =================== Used by Workload Agnostic Sharing Scheduler ===========================
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_configs(CudaLaunchCall &launch_call)
 {
+    uint32_t threads_per_block = launch_call.threads_per_block;
+    uint32_t num_blocks = launch_call.num_blocks;
+
     std::vector<CudaLaunchConfig> configs;
 
     uint32_t blocks_per_sm = (num_blocks + CUDA_NUM_SM - 1) / CUDA_NUM_SM;
     uint32_t threads_per_sm = threads_per_block * blocks_per_sm;
 
     // do not need PTB or sliced kernel
-    if (threads_per_sm <= PTB_MAX_NUM_THREADS_PER_SM) {
+    if (threads_per_sm <= SHARING_PTB_MAX_NUM_THREADS_PER_SM) {
         return configs;
     }
 
-    auto candiate_blocks_per_sm = get_candidate_blocks_per_sm(threads_per_block, num_blocks, PTB_MAX_NUM_THREADS_PER_SM);
+    auto candiate_blocks_per_sm = get_candidate_blocks_per_sm(threads_per_block, num_blocks, SHARING_PTB_MAX_NUM_THREADS_PER_SM);
     auto largest_blocks_per_sm = *std::max_element(candiate_blocks_per_sm.begin(), candiate_blocks_per_sm.end());
 
     // take the largest
@@ -173,32 +179,77 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
 }
 
 // =================== Used by Priority Scheduler ===========================
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(CudaLaunchCall &launch_call, float latency_ms)
 {
+    uint32_t threads_per_block = launch_call.threads_per_block;
+    uint32_t num_blocks = launch_call.num_blocks;
+
+    auto blocks_per_sm = (num_blocks + CUDA_NUM_SM - 1) / CUDA_NUM_SM;
+    auto per_block_latency_ms = latency_ms / (float) blocks_per_sm;
+
+    // per-block latency is too long, so we only launch (< CUDA_NUM_SM) thread blocks
+    if (per_block_latency_ms > PRIORITY_MAX_ALLOWED_PER_BLOCK_LATENCY_MS) {
+
+        auto max_worker_blocks = (uint32_t) ((PRIORITY_MAX_ALLOWED_PER_BLOCK_LATENCY_MS / per_block_latency_ms) * (float) CUDA_NUM_SM);
+
+        auto config = CudaLaunchConfig::get_preemptive_ptb_config(1);
+        config.max_worker_blocks = std::max(max_worker_blocks, 1u);
+
+        return { config };
+    }
+
     std::vector<CudaLaunchConfig> configs;
 
-    auto candiate_blocks_per_sm = get_candidate_blocks_per_sm(threads_per_block, num_blocks, PTB_MAX_NUM_THREADS_PER_SM);
-
-    // preemptive PTB
+    auto candiate_blocks_per_sm = get_candidate_blocks_per_sm(threads_per_block, num_blocks, PRIORITY_PTB_MAX_NUM_THREADS_PER_SM);
     for (auto blocks_per_sm : candiate_blocks_per_sm) {
-        auto preemptive_ptb_config = CudaLaunchConfig::get_preemptive_ptb_config(blocks_per_sm);
-        configs.push_back(preemptive_ptb_config);
+        auto config = CudaLaunchConfig::get_preemptive_ptb_config(blocks_per_sm);
+        configs.push_back(config);
     }
 
     return configs;
 }
 
 // =================== Used by Priority Scheduler ===========================
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_sliced_configs(CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_sliced_configs(CudaLaunchCall &launch_call, float latency_ms)
 {
+    uint32_t threads_per_block = launch_call.threads_per_block;
+    uint32_t num_blocks = launch_call.num_blocks;
+
+    auto blocks_per_sm = (num_blocks + CUDA_NUM_SM - 1) / CUDA_NUM_SM;
+    auto per_block_latency_ms = latency_ms / (float) blocks_per_sm;
+
     std::vector<CudaLaunchConfig> configs;
 
-    auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, PTB_MAX_NUM_THREADS_PER_SM);
+    auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, PRIORITY_PTB_MAX_NUM_THREADS_PER_SM);
 
     // sort by descending order, will take the largest that performance is within range
     std::sort(candidate_num_slices.begin(), candidate_num_slices.end(), std::greater<uint32_t>());
 
-    for (auto num_slices : candidate_num_slices) {
+    for (size_t i = 0; i < candidate_num_slices.size(); i++) {
+
+        uint32_t num_slices = candidate_num_slices[i];
+        uint32_t blocks_per_slice = (num_blocks + num_slices - 1) / num_slices;
+
+        if (i < candidate_num_slices.size() - 1) {
+            if (per_block_latency_ms <= PRIORITY_MAX_ALLOWED_PER_BLOCK_LATENCY_MS) {
+                if (blocks_per_slice < CUDA_NUM_SM) {
+                    continue;
+                }
+            } else {
+                auto max_worker_blocks = (uint32_t) ((PRIORITY_MAX_ALLOWED_PER_BLOCK_LATENCY_MS / per_block_latency_ms) * (float) CUDA_NUM_SM);
+
+                if (i < candidate_num_slices.size() - 1) {
+
+                    // if a smaller num_slices still satisfies max_worker_blocks, we can skip this one
+                    uint32_t next_num_slices = candidate_num_slices[i + 1];
+                    if (next_num_slices <= max_worker_blocks) {
+                        continue;
+                    }
+                
+                }
+            }
+        }
+        
         auto sliced_config = CudaLaunchConfig::get_sliced_config(num_slices);
         configs.push_back(sliced_config);
     }

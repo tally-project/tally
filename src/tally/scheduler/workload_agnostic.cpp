@@ -51,9 +51,9 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
 
                         auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
                         auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
-                        auto configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(launch_call, threads_per_block, num_blocks);
+                        auto configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(launch_call);
 
-                        launch_and_measure_kernel(kernel_wrapper, client_id, configs, USE_PTB_THRESHOLD);
+                        launch_and_measure_kernel(kernel_wrapper, client_id, configs, SHARING_USE_PTB_THRESHOLD);
 
                         kernel_wrapper.free_args();
                         client_data.queue_size--;

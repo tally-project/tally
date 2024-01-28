@@ -147,10 +147,11 @@ public:
 	std::unordered_map<CudaLaunchCallPair, CudaLaunchCallConfigPairResult> kernel_pair_best_config_map;
 
 	void launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> configs,
-								   float use_ptb_threshold, std::vector<CudaLaunchConfig> alternative_configs={}, bool is_preemptive=false);
+								   float fallback_threshold, std::vector<CudaLaunchConfig> alternative_configs={}, bool is_preemptive=false);
 
 	// Set and Get performance cache
 	CudaLaunchCallConfigResult get_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, bool *found);
+	void delete_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config);
 	void set_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, CudaLaunchMetadata meta_data, float norm_speed, float latency, uint32_t iters);
 
 	CudaLaunchCallConfigResult get_single_kernel_best_config(CudaLaunchCall &launch_call, bool *found);

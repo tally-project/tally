@@ -57,7 +57,7 @@ void TallyServer::run_profile_scheduler()
 
                             auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
                             auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
-                            auto configs = CudaLaunchConfig::get_profile_configs(launch_call, threads_per_block, num_blocks);
+                            auto configs = CudaLaunchConfig::get_profile_configs(launch_call);
 
                             tune_kernel_launch(kernel_wrapper, client_id, configs);
                             res = get_single_kernel_best_config(launch_call, &found_in_cache);

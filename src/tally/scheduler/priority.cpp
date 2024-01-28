@@ -280,13 +280,22 @@ void TallyServer::run_priority_scheduler()
                 auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
 
                 if (!found_in_cache) {
-                    auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
-                    auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+                    // Profile original kernel first
+                    bool found_original;
+                    auto original_res = get_single_kernel_perf(launch_call, CudaLaunchConfig::default_config, &found_original);
+                    if (!found_original) {
 
-                    auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(launch_call, threads_per_block, num_blocks);
-                    // sliced configs as alternative if preemptive ptb has too-bad performance
-                    auto sliced_configs = CudaLaunchConfig::get_sliced_configs(launch_call, threads_per_block, num_blocks);
-                    launch_and_measure_kernel(kernel_wrapper, client_id, preemptive_ptb_configs, USE_PREEMPTIVE_LATENCY_THRESHOLD, sliced_configs, true);
+                        launch_and_measure_kernel(kernel_wrapper, client_id, {}, 0.);
+
+                    } else {
+                        auto &original_metrics = original_res.metrics;
+                        auto preemptive_configs = CudaLaunchConfig::get_preemptive_configs(launch_call, original_metrics.latency_ms);
+                        
+                        // sliced configs as alternative if preemptive ptb has too-bad performance
+                        auto sliced_configs = CudaLaunchConfig::get_sliced_configs(launch_call, original_metrics.latency_ms);
+                        
+                        launch_and_measure_kernel(kernel_wrapper, client_id, preemptive_configs, PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD, sliced_configs, true);
+                    }
 
                     kernel_wrapper.free_args();
                     client_data.queue_size--;

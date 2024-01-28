@@ -73,17 +73,18 @@ struct CudaLaunchCall {
     dim3 gridDim;
     dim3 blockDim;
 
+    uint32_t num_blocks;
+    uint32_t threads_per_block;
+
     CudaLaunchCall(){}
 
     CudaLaunchCall(const void *func, dim3 gridDim, dim3 blockDim) :
         func(func),
         gridDim(gridDim),
-        blockDim(blockDim)
+        blockDim(blockDim),
+        num_blocks(gridDim.x * gridDim.y * gridDim.z),
+        threads_per_block(blockDim.x * blockDim.y * blockDim.z)
     {}
-
-    uint32_t num_blocks() {
-        return gridDim.x * gridDim.y * gridDim.z;
-    }
 
     std::string dim_str() {
         return get_dim3_str(gridDim) + "_" + get_dim3_str(blockDim);
@@ -195,22 +196,10 @@ public:
 
     CudaLaunchConfig(){}
 
-    static std::vector<CudaLaunchConfig> get_profile_configs(
-        CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks
-    );
-
-    static std::vector<CudaLaunchConfig> get_workload_agnostic_sharing_configs(
-        CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks
-    );
-
-    static std::vector<CudaLaunchConfig> get_preemptive_configs(
-        CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks
-    );
-
-    static std::vector<CudaLaunchConfig> get_sliced_configs(
-        CudaLaunchCall &launch_call, uint32_t threads_per_block, uint32_t num_blocks
-    );
-
+    static std::vector<CudaLaunchConfig> get_profile_configs(CudaLaunchCall &launch_call);
+    static std::vector<CudaLaunchConfig> get_workload_agnostic_sharing_configs(CudaLaunchCall &launch_call);
+    static std::vector<CudaLaunchConfig> get_preemptive_configs(CudaLaunchCall &launch_call, float latency_ms);
+    static std::vector<CudaLaunchConfig> get_sliced_configs(CudaLaunchCall &launch_call, float latency_ms);
 
     static CudaLaunchConfig get_original_config() {
         CudaLaunchConfig config;
@@ -278,17 +267,32 @@ public:
     {
         if (use_original) {
             return "original";
-        } else if (use_ptb) {
-            return "PTB blocks_per_sm: " + std::to_string(blocks_per_sm);
-        } else if (use_dynamic_ptb) {
-            return "Dynamic PTB blocks_per_sm: " + std::to_string(blocks_per_sm);
-        } else if (use_preemptive_ptb) {
-            return "Preemptive PTB blocks_per_sm: " + std::to_string(blocks_per_sm);
-        } else if (use_sliced) {
-            return "Sliced num_slices: " + std::to_string(num_slices);
-        } else {
-            return "";
         }
+
+        else if (use_ptb || use_dynamic_ptb || use_preemptive_ptb) {
+            auto str_builder = std::string("");
+            if (use_ptb) {
+                str_builder += "PTB: ";
+            } else if (use_dynamic_ptb) {
+                str_builder += "Dynamic PTB: ";
+            } else if (use_preemptive_ptb) {
+                str_builder += "Preemptive PTB: ";
+            }
+
+            if (max_worker_blocks < CUDA_NUM_SM) {
+                str_builder += "Max worker blocks: " + std::to_string(max_worker_blocks);
+            } else {
+                str_builder += "Blocks per SM: " + std::to_string(blocks_per_sm);
+            }
+
+            return str_builder;
+        }
+        
+        else if (use_sliced) {
+            return "Sliced: Num slices: " + std::to_string(num_slices);
+        }
+        
+        return "";
     }
 
     friend std::ostream& operator<<(std::ostream& os, const CudaLaunchConfig& config);

@@ -157,7 +157,7 @@ void TallyServer::start_worker_server(int32_t client_id) {
 }
 
 void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id,
-                                            std::vector<CudaLaunchConfig> configs, float use_ptb_threshold,
+                                            std::vector<CudaLaunchConfig> configs, float fallback_threshold,
                                             std::vector<CudaLaunchConfig> alternative_configs, bool is_preemptive)
 {
     // Store temporary data here
@@ -180,11 +180,7 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
     auto original_res = get_single_kernel_perf(launch_call, base_config, &found);
 
     if (!found) {
-        CudaLaunchCallConfig original_call_config(
-            launch_call,
-            base_config
-        );
-
+        CudaLaunchCallConfig original_call_config(launch_call, base_config);
         auto &metrics = temp_perf_data[original_call_config];
 
         cudaDeviceSynchronize();
@@ -203,19 +199,18 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
 
         warmup_perf_data[original_call_config]++;
 
-        // first 3 is warm up
-        if (warmup_perf_data[original_call_config] < 3) {
+        // first 10 is warm up
+        if (warmup_perf_data[original_call_config] < 5) {
             return;
         }
 
         metrics.avg_latency_ms = (metrics.avg_latency_ms * metrics.count + time_elapsed) / (metrics.count + 1);
         metrics.count += 1;
 
-        if (metrics.count == KERNEL_PROFILE_ITERATIONS) {
+        if (metrics.count >= KERNEL_PROFILE_ITERATIONS) {
             set_single_kernel_perf(launch_call, base_config, original_kernel_map[launch_call.func].meta_data, 1., metrics.avg_latency_ms, 0);
         }
 
-        original_res = get_single_kernel_perf(launch_call, base_config, &found);
         return;
     }
 
@@ -273,13 +268,33 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
 
         run_config(config, metrics);
 
-        if (metrics.count == KERNEL_PROFILE_ITERATIONS) {
+        if (metrics.count >= KERNEL_PROFILE_ITERATIONS) {
             float norm_speed = original_metrics.latency_ms / metrics.avg_latency_ms;
+
+            // Likely the base config is not profiled correctly, so we delete it and do it again.
+            if (norm_speed >= 2.) {
+                delete_single_kernel_perf(launch_call, base_config);
+
+                CudaLaunchCallConfig original_call_config(launch_call, base_config);
+                temp_perf_data.erase(original_call_config);
+                warmup_perf_data.erase(original_call_config);
+
+                TALLY_SPD_WARN("Detecting abnormal norm_speed of " + std::to_string(norm_speed) + " of kernel " + kernel_str);
+                TALLY_SPD_WARN("Deleting measurement for original config.");
+                return;
+            }
+
             set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, metrics.avg_latency_ms, 0);
 
             if (metrics.avg_latency_ms < best_latency_ms) {
                 best_config = config;
                 best_latency_ms = metrics.avg_latency_ms;
+            }
+
+            if (config.max_worker_blocks < CUDA_NUM_SM) {
+                auto blocks_per_sm = (launch_call.num_blocks + CUDA_NUM_SM - 1) / CUDA_NUM_SM;
+                auto per_block_latency_ms = original_metrics.latency_ms / (float) blocks_per_sm;
+                TALLY_SPD_WARN("Setting max_worker_blocks to " + std::to_string(config.max_worker_blocks) + " for " + kernel_str);
             }
         }
 
@@ -291,87 +306,80 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
 
     float best_norm_speed = original_metrics.latency_ms / best_latency_ms;
 
-    auto num_blocks = launch_call.num_blocks();
-    auto blocks_per_sm = (num_blocks + CUDA_NUM_SM - 1) / CUDA_NUM_SM;
-    auto per_block_latency_ms = original_metrics.latency_ms / (float) blocks_per_sm;
+    bool fallback_to_original = true;
 
-    if (best_norm_speed >= use_ptb_threshold) {
-    
-        if (is_preemptive && per_block_latency_ms > LONG_PER_BLOCK_LATENCY_MS_THRESHOLD) {
-            TALLY_SPD_WARN("Per-block latency: " + std::to_string(per_block_latency_ms) + " ms: " + kernel_str);
-
-            // let us set a max worker blocks if block-level preemtion latency is too long
-            auto max_worker_blocks = (uint32_t) ((LONG_PER_BLOCK_LATENCY_MS_THRESHOLD / per_block_latency_ms) * (float) CUDA_NUM_SM);
-            best_config.max_worker_blocks = std::max(max_worker_blocks, 1u);
-            TALLY_SPD_WARN("Setting max_worker_blocks to " + std::to_string(max_worker_blocks) + ".");
-            set_single_kernel_perf(launch_call, best_config, ptb_kernel_map[launch_call.func].meta_data, best_norm_speed, best_latency_ms, 0);
-        }
-
+    if (best_norm_speed >= fallback_threshold) {
+        fallback_to_original = false;
     } else {
-
-        // if none of the configs satisfy `use_ptb_threshold`
-        // consider the alternative_configs
-        if (!alternative_configs.empty()) {
-            for (auto &config : alternative_configs) {
-
-                auto res = get_single_kernel_perf(launch_call, config, &found);
-                if (found) {
-
-                    if (res.metrics.latency_ms < best_latency_ms) {
-                        best_config = config;
-                        best_latency_ms = res.metrics.latency_ms;
-                    }
-
-                    continue;
-                }
-
-                CudaLaunchCallConfig call_config(launch_call, config);
-                auto &metrics = temp_perf_data[call_config];
-
-                run_config(config, metrics);
-
-                if (metrics.count == KERNEL_PROFILE_ITERATIONS) {
-
-                    configs.push_back(config);
-
-                    float norm_speed = original_metrics.latency_ms / metrics.avg_latency_ms;
-                    set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, metrics.avg_latency_ms, 0);
-
-                    if (metrics.avg_latency_ms < best_latency_ms) {
-                        best_config = config;
-                        best_latency_ms = metrics.avg_latency_ms;
-                    }
-
-                    // Will take that
-                    if (norm_speed >= use_ptb_threshold) {
-                        TALLY_SPD_LOG_ALWAYS("Fall back to use alternative config.")
-                        break;
-                    }
-                }
-
-                // If not last config, return
-                if (config != configs.back() || metrics.count < KERNEL_PROFILE_ITERATIONS) {
-                    return;
-                }
+        if (best_config.max_worker_blocks < CUDA_NUM_SM) {
+            auto adjusted_norm_speed = best_norm_speed / ((float) best_config.max_worker_blocks / (float) CUDA_NUM_SM);
+            if (adjusted_norm_speed >= fallback_threshold) {
+                fallback_to_original = false;
             }
-        }
-
-        if (is_preemptive && per_block_latency_ms > LONG_PER_BLOCK_LATENCY_MS_THRESHOLD) {
-            TALLY_SPD_WARN("Not yet handled when PTB performance does not satisfy `use_ptb_threshold`!");
         }
     }
 
-    // re-compute
-    best_norm_speed = original_metrics.latency_ms / best_latency_ms;
+    // if none of the configs satisfy `fallback_threshold`
+    // consider the alternative_configs
+    if (fallback_to_original && !alternative_configs.empty()) {
 
-    if (best_norm_speed < use_ptb_threshold || configs.empty()) {
+        for (auto &config : alternative_configs) {
+
+            auto res = get_single_kernel_perf(launch_call, config, &found);
+            if (found) {
+
+                if (res.metrics.latency_ms < best_latency_ms) {
+                    best_config = config;
+                    best_latency_ms = res.metrics.latency_ms;
+                }
+
+                continue;
+            }
+
+            CudaLaunchCallConfig call_config(launch_call, config);
+            auto &metrics = temp_perf_data[call_config];
+
+            run_config(config, metrics);
+
+            if (metrics.count >= KERNEL_PROFILE_ITERATIONS) {
+
+                configs.push_back(config);
+
+                float norm_speed = original_metrics.latency_ms / metrics.avg_latency_ms;
+                set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, metrics.avg_latency_ms, 0);
+
+                if (metrics.avg_latency_ms < best_latency_ms) {
+                    best_config = config;
+                    best_latency_ms = metrics.avg_latency_ms;
+                }
+
+                // Will take that
+                if (norm_speed >= fallback_threshold) {
+                    TALLY_SPD_WARN("Fall back to use alternative config.")
+                    break;
+                }
+            }
+
+            // If not last config, return
+            if (config != configs.back() || metrics.count < KERNEL_PROFILE_ITERATIONS) {
+                return;
+            }
+        }
+
+        // re-compute
+        best_norm_speed = original_metrics.latency_ms / best_latency_ms;
+        if (best_norm_speed >= fallback_threshold) {
+            fallback_to_original = false;
+        }
+    }
+
+    if (fallback_to_original || configs.empty()) {
 
         if (configs.empty()) {
             kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, 0, true);
-            cudaDeviceSynchronize();
-            TALLY_SPD_LOG_ALWAYS("No transformed config is provided. Will Use original config.")
-        } else if (best_norm_speed < use_ptb_threshold) {
-            TALLY_SPD_LOG_ALWAYS("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
+            TALLY_SPD_WARN("No transformed config is provided. Will Use original config.")
+        } else {
+            TALLY_SPD_WARN("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
         }
         
         best_config = base_config;
@@ -471,11 +479,6 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     }
 
     float best_norm_speed = base_latency_ms / best_latency_ms;
-    if (best_norm_speed < USE_PTB_THRESHOLD) {
-        TALLY_SPD_LOG_ALWAYS("Fall back to original config as transformed kernel norm speed is below threshold: " + std::to_string(best_norm_speed));
-        best_config = base_config;
-        best_norm_speed = 1.;
-    }
 
     bool found_in_cache;
     auto res = get_single_kernel_perf(launch_call, best_config, &found_in_cache);
@@ -492,151 +495,151 @@ void TallyServer::tune_kernel_pair_launch(
     int32_t first_client_id, int32_t second_client_id
 )
 {
-    KernelLaunchWrapper kernel_wrappers[2] { first_kernel_wrapper, second_kernel_wrapper };
-    int32_t client_ids[2] { first_client_id, second_client_id };
-    CudaLaunchCall launch_calls[2];
-    float base_latency_ms[2];
-    std::string kernel_names[2];
+    // KernelLaunchWrapper kernel_wrappers[2] { first_kernel_wrapper, second_kernel_wrapper };
+    // int32_t client_ids[2] { first_client_id, second_client_id };
+    // CudaLaunchCall launch_calls[2];
+    // float base_latency_ms[2];
+    // std::string kernel_names[2];
 
-    float profile_duration = 0.;
-    float time_elapsed;
+    // float profile_duration = 0.;
+    // float time_elapsed;
 
-    cudaDeviceSynchronize();
+    // cudaDeviceSynchronize();
 
-    for (int i = 0; i < 2; i++) {
-        // Run one time of kernel
-        kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
-        profile_duration = std::max(profile_duration, (30 * time_elapsed) / 1000.f);
+    // for (int i = 0; i < 2; i++) {
+    //     // Run one time of kernel
+    //     kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
+    //     profile_duration = std::max(profile_duration, (30 * time_elapsed) / 1000.f);
 
-        launch_calls[i] = kernel_wrappers[i].launch_call;
+    //     launch_calls[i] = kernel_wrappers[i].launch_call;
 
-        bool found_in_cache = false;
-        auto res = get_single_kernel_perf(launch_calls[i], CudaLaunchConfig::default_config, &found_in_cache);
-        if (!found_in_cache) {
-            throw std::runtime_error("should have profiled single kernel performance");
-        }
+    //     bool found_in_cache = false;
+    //     auto res = get_single_kernel_perf(launch_calls[i], CudaLaunchConfig::default_config, &found_in_cache);
+    //     if (!found_in_cache) {
+    //         throw std::runtime_error("should have profiled single kernel performance");
+    //     }
 
-        auto metrics = res.metrics;
-        base_latency_ms[i] = metrics.latency_ms;
+    //     auto metrics = res.metrics;
+    //     base_latency_ms[i] = metrics.latency_ms;
 
-        kernel_names[i] = host_func_to_demangled_kernel_name_map[launch_calls[i].func];
-    }
+    //     kernel_names[i] = host_func_to_demangled_kernel_name_map[launch_calls[i].func];
+    // }
 
-    TALLY_SPD_LOG_ALWAYS("Launch config not found for: \n\t" +
-                  kernel_names[0] + "_" + launch_calls[0].dim_str() + "\n\t" +
-                  kernel_names[1] + "_" + launch_calls[1].dim_str());
+    // TALLY_SPD_LOG_ALWAYS("Launch config not found for: \n\t" +
+    //               kernel_names[0] + "_" + launch_calls[0].dim_str() + "\n\t" +
+    //               kernel_names[1] + "_" + launch_calls[1].dim_str());
 
-    auto start = std::chrono::high_resolution_clock::now();
+    // auto start = std::chrono::high_resolution_clock::now();
 
-    // At least run for 0.5 sec
-    profile_duration = std::max(profile_duration, 0.5f);
+    // // At least run for 0.5 sec
+    // profile_duration = std::max(profile_duration, 0.5f);
 
-    // Maybe don't exceed 5 sec;
-    profile_duration = std::min(profile_duration, 5.f);
+    // // Maybe don't exceed 5 sec;
+    // profile_duration = std::min(profile_duration, 5.f);
 
-    auto k1_blockDim = launch_calls[0].blockDim;
-    auto k2_blockDim = launch_calls[1].blockDim;
+    // auto k1_blockDim = launch_calls[0].blockDim;
+    // auto k2_blockDim = launch_calls[1].blockDim;
 
-    auto k1_gridDim = launch_calls[0].gridDim;
-    auto k2_gridDim = launch_calls[1].gridDim;
+    // auto k1_gridDim = launch_calls[0].gridDim;
+    // auto k2_gridDim = launch_calls[1].gridDim;
 
-    auto k1_block_size = k1_blockDim.x * k1_blockDim.y * k1_blockDim.z;
-    auto k2_block_size = k2_blockDim.x * k2_blockDim.y * k2_blockDim.z;
+    // auto k1_block_size = k1_blockDim.x * k1_blockDim.y * k1_blockDim.z;
+    // auto k2_block_size = k2_blockDim.x * k2_blockDim.y * k2_blockDim.z;
 
-    auto k1_configs = CudaLaunchConfig::get_preemptive_configs(launch_calls[0], k1_block_size, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
-    auto k2_configs = CudaLaunchConfig::get_preemptive_configs(launch_calls[1], k2_block_size, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
+    // auto k1_configs = CudaLaunchConfig::get_preemptive_configs(launch_calls[0], k1_block_size, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
+    // auto k2_configs = CudaLaunchConfig::get_preemptive_configs(launch_calls[1], k2_block_size, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
     
-    auto k1_k2_configs = std::vector<std::vector<CudaLaunchConfig>> {k1_configs, k2_configs};
+    // auto k1_k2_configs = std::vector<std::vector<CudaLaunchConfig>> {k1_configs, k2_configs};
 
-    auto launch_kernel_func = [this, kernel_wrappers, client_ids](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, int32_t total_iters) {
-        auto &client_data = client_data_all[client_ids[idx]];
-        auto ptb_args = client_data.stream_to_ptb_args[kernel_wrappers[idx].launch_stream];
-        (kernel_wrappers[idx].kernel_to_dispatch)(config, ptb_args, client_data.curr_idx_arr, nullptr, true, dur_seconds, time_elapsed, iters, total_iters, true);
-    };
+    // auto launch_kernel_func = [this, kernel_wrappers, client_ids](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, int32_t total_iters) {
+    //     auto &client_data = client_data_all[client_ids[idx]];
+    //     auto ptb_args = client_data.stream_to_ptb_args[kernel_wrappers[idx].launch_stream];
+    //     (kernel_wrappers[idx].kernel_to_dispatch)(config, ptb_args, client_data.curr_idx_arr, nullptr, true, dur_seconds, time_elapsed, iters, total_iters, true);
+    // };
 
-    CudaLaunchMetadata null_metadata;
+    // CudaLaunchMetadata null_metadata;
 
-    // Step 3: get the kernel pair performance for various configs
-    float best_sum_norm_speed = -1.;
-    CudaLaunchCallConfigPairResult best_pair_config;
+    // // Step 3: get the kernel pair performance for various configs
+    // float best_sum_norm_speed = -1.;
+    // CudaLaunchCallConfigPairResult best_pair_config;
 
-    for (auto &k1_config : k1_configs) {
-        for (auto &k2_config : k2_configs) {
+    // for (auto &k1_config : k1_configs) {
+    //     for (auto &k2_config : k2_configs) {
 
-            if (k1_config.use_preemptive_ptb && k2_config.use_preemptive_ptb) {
-                auto k1_threads_per_sm = k1_block_size * k1_config.blocks_per_sm;
-                auto k2_threads_per_sm = k2_block_size * k2_config.blocks_per_sm;
+    //         if (k1_config.use_preemptive_ptb && k2_config.use_preemptive_ptb) {
+    //             auto k1_threads_per_sm = k1_block_size * k1_config.blocks_per_sm;
+    //             auto k2_threads_per_sm = k2_block_size * k2_config.blocks_per_sm;
                 
-                // Prune config pairs that exceed the thread limit
-                if ((k1_threads_per_sm + k2_threads_per_sm) > CUDA_MAX_NUM_THREADS_PER_SM) {
-                    continue;
-                }
-            }
+    //             // Prune config pairs that exceed the thread limit
+    //             if ((k1_threads_per_sm + k2_threads_per_sm) > CUDA_MAX_NUM_THREADS_PER_SM) {
+    //                 continue;
+    //             }
+    //         }
 
-            // First experiment - Get colocated latency and norm speed for each kernel
-            cudaDeviceSynchronize();
+    //         // First experiment - Get colocated latency and norm speed for each kernel
+    //         cudaDeviceSynchronize();
 
-            float iters[2];
-            float time_elapsed[2];
+    //         float iters[2];
+    //         float time_elapsed[2];
 
-            std::thread launch_t_1(launch_kernel_func, 0, k1_config, profile_duration, &(time_elapsed[0]), &(iters[0]), -1);
-            std::thread launch_t_2(launch_kernel_func, 1, k2_config, profile_duration, &(time_elapsed[1]), &(iters[1]), -1);
+    //         std::thread launch_t_1(launch_kernel_func, 0, k1_config, profile_duration, &(time_elapsed[0]), &(iters[0]), -1);
+    //         std::thread launch_t_2(launch_kernel_func, 1, k2_config, profile_duration, &(time_elapsed[1]), &(iters[1]), -1);
 
-            launch_t_1.join();
-            launch_t_2.join();
+    //         launch_t_1.join();
+    //         launch_t_2.join();
 
-            if (std::abs(time_elapsed[0] - time_elapsed[1]) > 0.03 * std::min(time_elapsed[0], time_elapsed[1])) {
-                std::cerr << "Warning: two jobs do not finish at around the same time" << "\n";
-                std::cerr << "time_elapsed_1: " << time_elapsed[0] << " time_elapsed_2: " << time_elapsed[1] << std::endl;
-            }
+    //         if (std::abs(time_elapsed[0] - time_elapsed[1]) > 0.03 * std::min(time_elapsed[0], time_elapsed[1])) {
+    //             std::cerr << "Warning: two jobs do not finish at around the same time" << "\n";
+    //             std::cerr << "time_elapsed_1: " << time_elapsed[0] << " time_elapsed_2: " << time_elapsed[1] << std::endl;
+    //         }
 
-            float k1_latency_ms = time_elapsed[0] / iters[0];
-            float k2_latency_ms = time_elapsed[1] / iters[1];
+    //         float k1_latency_ms = time_elapsed[0] / iters[0];
+    //         float k2_latency_ms = time_elapsed[1] / iters[1];
 
-            float k1_norm_speed = base_latency_ms[0] / k1_latency_ms;
-            float k2_norm_speed = base_latency_ms[1] / k2_latency_ms;
+    //         float k1_norm_speed = base_latency_ms[0] / k1_latency_ms;
+    //         float k2_norm_speed = base_latency_ms[1] / k2_latency_ms;
 
-            // Save the results
-            set_kernel_pair_perf(
-                launch_calls[0], launch_calls[1], k1_config, k2_config, null_metadata, null_metadata,
-                k1_norm_speed, k2_norm_speed, k1_latency_ms, k2_latency_ms, 0, 0, 0, 0
-            );
+    //         // Save the results
+    //         set_kernel_pair_perf(
+    //             launch_calls[0], launch_calls[1], k1_config, k2_config, null_metadata, null_metadata,
+    //             k1_norm_speed, k2_norm_speed, k1_latency_ms, k2_latency_ms, 0, 0, 0, 0
+    //         );
 
-            bool found_in_cache;
-            auto res = get_kernel_pair_perf(launch_calls[0], launch_calls[1], k1_config, k2_config, &found_in_cache);
-            assert(found_in_cache);
+    //         bool found_in_cache;
+    //         auto res = get_kernel_pair_perf(launch_calls[0], launch_calls[1], k1_config, k2_config, &found_in_cache);
+    //         assert(found_in_cache);
 
-            float sum_norm_speed = res.get_sum_norm_speed();
-            if (sum_norm_speed > best_sum_norm_speed) {
-                best_sum_norm_speed = sum_norm_speed;
-                best_pair_config = res;
-            }
-        }
-    }
+    //         float sum_norm_speed = res.get_sum_norm_speed();
+    //         if (sum_norm_speed > best_sum_norm_speed) {
+    //             best_sum_norm_speed = sum_norm_speed;
+    //             best_pair_config = res;
+    //         }
+    //     }
+    // }
 
-    set_kernel_pair_best_config(launch_calls[0], launch_calls[1], best_pair_config);
+    // set_kernel_pair_best_config(launch_calls[0], launch_calls[1], best_pair_config);
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> elapsed = end - start;
+    // auto end = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double, std::milli> elapsed = end - start;
 
-    bool found_in_cache;
-    auto res = get_kernel_pair_best_config(launch_calls[0], launch_calls[1], &found_in_cache);
-    auto launch_configs = res.get_configs(launch_calls[0], launch_calls[1]);
+    // bool found_in_cache;
+    // auto res = get_kernel_pair_best_config(launch_calls[0], launch_calls[1], &found_in_cache);
+    // auto launch_configs = res.get_configs(launch_calls[0], launch_calls[1]);
 
-    bool time_share = std::get<2>(launch_configs);
+    // bool time_share = std::get<2>(launch_configs);
 
-    if (time_share) {
-        TALLY_SPD_LOG_ALWAYS("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Chosen config: time share");
-    } else {
+    // if (time_share) {
+    //     TALLY_SPD_LOG_ALWAYS("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Chosen config: time share");
+    // } else {
 
-        auto config_1 = std::get<0>(launch_configs);
-        auto config_2 = std::get<1>(launch_configs);
+    //     auto config_1 = std::get<0>(launch_configs);
+    //     auto config_2 = std::get<1>(launch_configs);
 
-        TALLY_SPD_LOG_ALWAYS("Tuning complete ("+ std::to_string(elapsed.count()) + " ms).\n" + 
-                     "\tChosen config_1: " + config_1.str() + " config_2: " + config_2.str() + "\n" + 
-                     "\tSum norm speed: " + std::to_string(best_sum_norm_speed)
-        );
-    }
+    //     TALLY_SPD_LOG_ALWAYS("Tuning complete ("+ std::to_string(elapsed.count()) + " ms).\n" + 
+    //                  "\tChosen config_1: " + config_1.str() + " config_2: " + config_2.str() + "\n" + 
+    //                  "\tSum norm speed: " + std::to_string(best_sum_norm_speed)
+    //     );
+    // }
 }
 
 void TallyServer::wait_until_launch_queue_empty(int32_t client_id)
