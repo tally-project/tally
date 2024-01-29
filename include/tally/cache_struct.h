@@ -481,7 +481,7 @@ class PerformanceCache
 public:
     // Single-kernel performance
     std::unordered_map<CudaLaunchKeyConfig, CudaLaunchKeyConfigResult> single_kernel_perf_map;
-    std::unordered_map<CudaLaunchKey, CudaLaunchKeyConfigResult> single_kernel_best_config_map;
+    // std::unordered_map<CudaLaunchKey, CudaLaunchKeyConfigResult> single_kernel_chosen_config_map;
 
     // Kernel pair and the normalized speed
     std::unordered_map<CudaLaunchKeyPair, std::unordered_map<CudaLaunchKeyConfigPair, CudaLaunchKeyConfigPairResult>> kernel_pair_perf_map;
@@ -489,7 +489,7 @@ public:
 
     void set_single_kernel_perf(CudaLaunchKey &launch_key, CudaLaunchConfig &launch_config, CudaLaunchKeyConfigResult &res)
     {
-        CudaLaunchKeyConfig key_config(launch_key,launch_config);
+        CudaLaunchKeyConfig key_config(launch_key, launch_config);
         single_kernel_perf_map[key_config] = res;
         // write_single_kernel_perf_to_file();
 
@@ -502,19 +502,19 @@ public:
         // std::cout << "\n" << std::endl;
     }
 
-    void set_single_kernel_best_config(CudaLaunchKey &launch_key, CudaLaunchKeyConfigResult &res)
-    {
-        single_kernel_best_config_map[launch_key] = res;
-        // write_single_kernel_best_config_to_file();
+    // void set_single_kernel_chosen_config(CudaLaunchKey &launch_key, CudaLaunchKeyConfigResult &res)
+    // {
+    //     single_kernel_chosen_config_map[launch_key] = res;
+    //     // write_single_kernel_best_config_to_file();
 
-        // std::cout << "=============== Single Kernel Best Result ===============" << std::endl;
+    //     // std::cout << "=============== Single Kernel Best Result ===============" << std::endl;
 
-        // std::cout << launch_key << std::endl;
-        // std::cout << res.config << std::endl;
-        // std::cout << res.meta_data << std::endl;
-        // std::cout << res << std::endl;
-        // std::cout << "\n" << std::endl;
-    }
+    //     // std::cout << launch_key << std::endl;
+    //     // std::cout << res.config << std::endl;
+    //     // std::cout << res.meta_data << std::endl;
+    //     // std::cout << res << std::endl;
+    //     // std::cout << "\n" << std::endl;
+    // }
 
     void set_kernel_pair_perf(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, 
                               CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
@@ -593,32 +593,32 @@ public:
         write_json_to_file(json, "single_kernel_perf.json");
     }
 
-    void write_single_kernel_best_config_to_file() const
-    {
-        nlohmann::json json;
+    // void write_single_kernel_best_config_to_file() const
+    // {
+    //     nlohmann::json json;
 
-        for (auto &pair : single_kernel_best_config_map) {
-            auto key = pair.first;
-            auto best_res = pair.second;
+    //     for (auto &pair : single_kernel_chosen_config_map) {
+    //         auto key = pair.first;
+    //         auto best_res = pair.second;
 
-            std::string key_str = key.str();
+    //         std::string key_str = key.str();
 
-            if (!json.contains(key_str)) {
-                json[key_str]["LaunchKey"] = key.json();
-                json[key_str]["Results"] = nlohmann::json::array();
-            }
+    //         if (!json.contains(key_str)) {
+    //             json[key_str]["LaunchKey"] = key.json();
+    //             json[key_str]["Results"] = nlohmann::json::array();
+    //         }
 
-            nlohmann::json entry = nlohmann::json({
-                {"LaunchConfig", best_res.config.json()},
-                {"LaunchMetadata", best_res.meta_data.json()},
-                {"Metrics", best_res.metrics.json()},
-            });
+    //         nlohmann::json entry = nlohmann::json({
+    //             {"LaunchConfig", best_res.config.json()},
+    //             {"LaunchMetadata", best_res.meta_data.json()},
+    //             {"Metrics", best_res.metrics.json()},
+    //         });
 
-            json[key_str]["Results"].push_back(entry);
-        }
+    //         json[key_str]["Results"].push_back(entry);
+    //     }
 
-        write_json_to_file(json, "single_kernel_best_config.json");
-    }
+    //     write_json_to_file(json, "single_kernel_best_config.json");
+    // }
 
     void write_kernel_pair_perf_to_file() const
     {

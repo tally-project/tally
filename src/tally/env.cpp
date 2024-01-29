@@ -13,6 +13,16 @@ bool TALLY_INITIALIZED = false;
 
 TALLY_SCHEDULER_POLICY SCHEDULER_POLICY;
 
+uint32_t PRIORITY_PTB_MAX_NUM_THREADS_PER_SM = 1024;
+float PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS = 0.1f;
+float PRIORITY_FALL_BACK_TO_KERNEL_SLICING_THRESHOLD = 0.3f;
+float PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD = 0.1f;
+
+void set_max_allowed_preemption_latency(float latency_ms)
+{
+    PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS = latency_ms;
+}
+
 void __attribute__((constructor)) register_env_vars()
 {
     if (!TALLY_INITIALIZED) {
@@ -34,6 +44,11 @@ void __attribute__((constructor)) register_env_vars()
             }
         } else {
             SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::NAIVE;
+        }
+
+        if (std::getenv("PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS")) {
+            auto max_latency_ms = std::stof(std::getenv("PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS"));
+            set_max_allowed_preemption_latency(max_latency_ms);
         }
 
         TALLY_INITIALIZED = true;

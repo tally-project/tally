@@ -388,7 +388,7 @@ void TallyServer::launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper,
     }
 
     auto res = get_single_kernel_perf(launch_call, best_config, &found);
-    set_single_kernel_best_config(launch_call, res);
+    set_single_kernel_chosen_config(launch_call, res);
 
     TALLY_SPD_LOG_ALWAYS("Tuning complete for: " + kernel_str);
 
@@ -482,7 +482,7 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
 
     bool found_in_cache;
     auto res = get_single_kernel_perf(launch_call, best_config, &found_in_cache);
-    set_single_kernel_best_config(launch_call, res);
+    set_single_kernel_chosen_config(launch_call, res);
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = end - start;

@@ -28,9 +28,10 @@ static float TIME_SHARE_THRESHOLD = 1.;
 static uint32_t KERNEL_PROFILE_ITERATIONS = 5;
 
 // Priority scheduler parameters
-static uint32_t PRIORITY_PTB_MAX_NUM_THREADS_PER_SM = 1024;
-static float PRIORITY_MAX_ALLOWED_PER_BLOCK_LATENCY_MS = 0.1f;
-static float PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD = 0.1f;
+extern uint32_t PRIORITY_PTB_MAX_NUM_THREADS_PER_SM;
+extern float PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS;
+extern float PRIORITY_FALL_BACK_TO_KERNEL_SLICING_THRESHOLD;
+extern float PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD;
 
 // Sharing scheduler parameters
 static uint32_t SHARING_PTB_MAX_NUM_THREADS_PER_SM = 1024;
@@ -49,5 +50,7 @@ enum TALLY_SCHEDULER_POLICY {
 extern TALLY_SCHEDULER_POLICY SCHEDULER_POLICY;
 
 void __attribute__((constructor)) register_env_vars();
+
+void set_max_allowed_preemption_latency(float latency_ms);
 
 #endif // TALLY_ENV_H

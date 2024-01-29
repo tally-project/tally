@@ -45,7 +45,7 @@ void TallyServer::run_workload_agnostic_sharing_scheduler()
 
                     // Look up cache for best-performance config
                     bool found_in_cache;
-                    auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                    auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
 
                     if (!found_in_cache) {
 

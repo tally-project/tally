@@ -41,7 +41,7 @@ void TallyServer::run_workload_aware_sharing_scheduler()
     //     } else {
     //         // Look up cache for best-performance config
     //         bool found_in_cache;
-    //         res = get_single_kernel_best_config(launch_call, &found_in_cache);
+    //         res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
 
     //         if (!found_in_cache) {
     //             auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
@@ -74,11 +74,11 @@ void TallyServer::run_workload_aware_sharing_scheduler()
     //             if (latency_ms < USE_PREEMPTIVE_LATENCY_THRESHOLD) {
     //                 auto non_preemptive_ptb_configs = CudaLaunchConfig::get_workload_agnostic_sharing_configs(launch_call);
     //                 tune_kernel_launch(kernel_wrapper, client_id, non_preemptive_ptb_configs);
-    //                 res = get_single_kernel_best_config(launch_call, &found_in_cache);
+    //                 res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
     //             } else {
     //                 auto preemptive_ptb_configs = CudaLaunchConfig::get_preemptive_configs(launch_call);
     //                 tune_kernel_launch(kernel_wrapper, client_id, preemptive_ptb_configs);
-    //                 res = get_single_kernel_best_config(launch_call, &found_in_cache);
+    //                 res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
     //             }
     //         }
     //     }

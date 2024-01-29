@@ -141,7 +141,7 @@ public:
 
 	// Performance cache to use at runtime
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
-	std::unordered_map<CudaLaunchCall, CudaLaunchCallConfigResult> single_kernel_best_config_map;
+	std::unordered_map<CudaLaunchCall, CudaLaunchCallConfigResult> single_kernel_chosen_config_map;
 
     std::unordered_map<CudaLaunchCallPair, std::unordered_map<CudaLaunchCallConfigPair, CudaLaunchCallConfigPairResult>> kernel_pair_perf_map;
 	std::unordered_map<CudaLaunchCallPair, CudaLaunchCallConfigPairResult> kernel_pair_best_config_map;
@@ -149,13 +149,18 @@ public:
 	void launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> configs,
 								   float fallback_threshold, std::vector<CudaLaunchConfig> alternative_configs={}, bool is_preemptive=false);
 
+	void priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id);
+
 	// Set and Get performance cache
 	CudaLaunchCallConfigResult get_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, bool *found);
 	void delete_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config);
-	void set_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, CudaLaunchMetadata meta_data, float norm_speed, float latency, uint32_t iters);
+	void set_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config,
+								CudaLaunchMetadata meta_data, float norm_speed, float latency,
+								uint32_t iters=0, float preempt_latency_ms_est=0.);
 
-	CudaLaunchCallConfigResult get_single_kernel_best_config(CudaLaunchCall &launch_call, bool *found);
-	void set_single_kernel_best_config(CudaLaunchCall &launch_call, CudaLaunchCallConfigResult &best_config);
+	CudaLaunchCallConfigResult get_single_kernel_chosen_config(CudaLaunchCall &launch_call, bool *found);
+	void set_single_kernel_chosen_config(CudaLaunchCall &launch_call, CudaLaunchCallConfigResult &best_config);
+	void clear_single_kernel_chosen_configs();
 
     CudaLaunchCallConfigPairResult get_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
 														CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,

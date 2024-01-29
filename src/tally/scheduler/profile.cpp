@@ -51,7 +51,7 @@ void TallyServer::run_profile_scheduler()
 
                         // Look up cache for best-performance config
                         bool found_in_cache;
-                        auto res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                        auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
 
                         if (!found_in_cache) {
 
@@ -60,7 +60,7 @@ void TallyServer::run_profile_scheduler()
                             auto configs = CudaLaunchConfig::get_profile_configs(launch_call);
 
                             tune_kernel_launch(kernel_wrapper, client_id, configs);
-                            res = get_single_kernel_best_config(launch_call, &found_in_cache);
+                            res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
                         }
 
                         config = res.config;
@@ -328,7 +328,7 @@ void TallyServer::run_profile_scheduler()
 //             }
 
 //             if (has_new_config[i]) {
-//                 set_single_kernel_best_config(launch_calls[i], best_configs[i]);
+//                 set_single_kernel_chosen_config(launch_calls[i], best_configs[i]);
 //             }
 //         }
 

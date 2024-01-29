@@ -198,8 +198,8 @@ public:
 
     static std::vector<CudaLaunchConfig> get_profile_configs(CudaLaunchCall &launch_call);
     static std::vector<CudaLaunchConfig> get_workload_agnostic_sharing_configs(CudaLaunchCall &launch_call);
-    static std::vector<CudaLaunchConfig> get_preemptive_configs(CudaLaunchCall &launch_call, float latency_ms);
-    static std::vector<CudaLaunchConfig> get_sliced_configs(CudaLaunchCall &launch_call, float latency_ms);
+    static std::vector<CudaLaunchConfig> get_preemptive_configs(CudaLaunchCall &launch_call);
+    static std::vector<CudaLaunchConfig> get_sliced_configs(CudaLaunchCall &launch_call);
 
     static CudaLaunchConfig get_original_config() {
         CudaLaunchConfig config;
@@ -353,12 +353,18 @@ struct std::hash<CudaLaunchCallConfigPair>
 struct TempKernelProfileMetrics {
     float avg_latency_ms = 0.;
     uint32_t count = 0;
+
+    void add_measurement(float latency_ms) {
+        avg_latency_ms = (avg_latency_ms * count + latency_ms) / (count + 1);
+        count += 1;
+    }
 };
 
 struct KernelProfileMetrics {
     float latency_ms;
     float norm_speed;
     uint32_t iters;
+    float preemption_latency_ms;
 
     nlohmann::json json() const
     {
@@ -366,6 +372,7 @@ struct KernelProfileMetrics {
             {"latency_ms", latency_ms},
             {"norm_speed", norm_speed},
             {"iters", iters},
+            {"preemption_latency_ms", preemption_latency_ms}
         });
     }
 };

@@ -71,6 +71,7 @@ void serialize(Archive & ar, KernelProfileMetrics & g, const unsigned int versio
     ar & g.latency_ms;
     ar & g.norm_speed;
     ar & g.iters;
+    ar & g.preemption_latency_ms;
 }
 
 template<class Archive>
@@ -120,7 +121,7 @@ template<class Archive>
 void serialize(Archive & ar, PerformanceCache & g, const unsigned int version)
 {
     ar & g.single_kernel_perf_map;
-    ar & g.single_kernel_best_config_map;
+    // ar & g.single_kernel_chosen_config_map;
     ar & g.kernel_pair_perf_map;
     ar & g.kernel_pair_best_config_map;
 }

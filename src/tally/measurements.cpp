@@ -28,16 +28,16 @@ void TallyServer::register_measurements()
     }
 
     // Register single-kernel best config cache
-    auto &cached_single_kernel_best_config_map = TallyCache::cache->performance_cache.single_kernel_best_config_map;;
+    // auto &cached_single_kernel_chosen_config_map = TallyCache::cache->performance_cache.single_kernel_chosen_config_map;;
 
-    for (auto &pair : cached_single_kernel_best_config_map) {
-        auto &result = pair.second;
+    // for (auto &pair : cached_single_kernel_chosen_config_map) {
+    //     auto &result = pair.second;
 
-        CudaLaunchCall launch_call = convert_key_to_call(result.key);
-        CudaLaunchCallConfigResult new_result(launch_call, result.config, result.meta_data, result.metrics);
+    //     CudaLaunchCall launch_call = convert_key_to_call(result.key);
+    //     CudaLaunchCallConfigResult new_result(launch_call, result.config, result.meta_data, result.metrics);
 
-        single_kernel_best_config_map[launch_call] = new_result;
-    }
+    //     single_kernel_chosen_config_map[launch_call] = new_result;
+    // }
 
     // Register kernel-pair perf cache
     auto &cached_kernel_pair_perf_map = TallyCache::cache->performance_cache.kernel_pair_perf_map;;
@@ -108,7 +108,7 @@ void TallyServer::delete_single_kernel_perf(CudaLaunchCall &launch_call, CudaLau
 
 void TallyServer::set_single_kernel_perf(
     CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, CudaLaunchMetadata meta_data,
-    float norm_speed, float latency, uint32_t iters)
+    float norm_speed, float latency, uint32_t iters, float preempt_latency_ms_est)
 {
     CudaLaunchCallConfig call_config(
         launch_call,
@@ -119,7 +119,7 @@ void TallyServer::set_single_kernel_perf(
         launch_call,
         launch_config,
         meta_data,
-        KernelProfileMetrics(latency, norm_speed, iters)
+        KernelProfileMetrics(latency, norm_speed, iters, preempt_latency_ms_est)
     );
 
     single_kernel_perf_map[call_config] = result;
@@ -129,27 +129,27 @@ void TallyServer::set_single_kernel_perf(
         launch_key,
         launch_config,
         meta_data,
-        KernelProfileMetrics(latency, norm_speed, iters)
+        result.metrics
     );
 
     TallyCache::cache->performance_cache.set_single_kernel_perf(launch_key, launch_config, cache_res);
     TallyCache::cache->perf_cache_changed = true;
 }
 
-CudaLaunchCallConfigResult TallyServer::get_single_kernel_best_config(CudaLaunchCall &launch_call, bool *found)
+CudaLaunchCallConfigResult TallyServer::get_single_kernel_chosen_config(CudaLaunchCall &launch_call, bool *found)
 {
-    if (single_kernel_best_config_map.find(launch_call) != single_kernel_best_config_map.end()) {
+    if (single_kernel_chosen_config_map.find(launch_call) != single_kernel_chosen_config_map.end()) {
         *found = true;
-        return single_kernel_best_config_map[launch_call];
+        return single_kernel_chosen_config_map[launch_call];
     }
 
     *found = false;
     return CudaLaunchCallConfigResult();
 }
 
-void TallyServer::set_single_kernel_best_config(CudaLaunchCall &launch_call, CudaLaunchCallConfigResult &best_config)
+void TallyServer::set_single_kernel_chosen_config(CudaLaunchCall &launch_call, CudaLaunchCallConfigResult &best_config)
 {
-    single_kernel_best_config_map[launch_call] = best_config;
+    single_kernel_chosen_config_map[launch_call] = best_config;
 
     auto launch_key = convert_call_to_key(launch_call);
 
@@ -160,8 +160,13 @@ void TallyServer::set_single_kernel_best_config(CudaLaunchCall &launch_call, Cud
         best_config.metrics
     );
 
-    TallyCache::cache->performance_cache.set_single_kernel_best_config(launch_key, cache_res);
-    TallyCache::cache->perf_cache_changed = true;
+    // TallyCache::cache->performance_cache.set_single_kernel_chosen_config(launch_key, cache_res);
+    // TallyCache::cache->perf_cache_changed = true;
+}
+
+void TallyServer::clear_single_kernel_chosen_configs()
+{
+    single_kernel_chosen_config_map.clear();
 }
 
 CudaLaunchCallConfigPairResult

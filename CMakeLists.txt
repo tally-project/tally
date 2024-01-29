@@ -148,37 +148,6 @@ target_link_libraries(tally_client PUBLIC
 
 target_compile_definitions(tally_client PRIVATE IS_CLIENT="TRUE")
 
-add_library(tally_client_local SHARED
-    ${PROJECT_SOURCE_DIR}/src/tally/preload/tally_client.cpp
-    ${PROJECT_SOURCE_DIR}/src/tally/preload/generated/tally_client.cpp
-    ${TALLY_SRC_FILES}
-    ${TALLY_CLIENT_SRC_FILES}
-)
-
-target_include_directories(tally_client_local
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
-    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/nccl/build/include
-    PUBLIC  /usr/local/cuda/include
-    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
-)
-
-target_link_libraries(tally_client_local PUBLIC
-    PUBLIC Boost::serialization 
-    PUBLIC Boost::regex
-    iceoryx_posh::iceoryx_posh
-    spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
-)
-
-target_compile_definitions(tally_client_local PRIVATE IS_CLIENT="TRUE")
-target_compile_definitions(tally_client_local PRIVATE RUN_LOCALLY="TRUE")
-
-# Loop over the strings using foreach
-foreach(env_var ${tally_client_env_vars})
-    if(${env_var})
-        target_compile_definitions(tally_client_local PRIVATE ${env_var}=${env_var})
-    endif()
-endforeach()
-
 add_executable(tally_server ${PROJECT_SOURCE_DIR}/src/tally/tally_server.cpp ${TALLY_SERVER_SRC_FILES})
 
 if(ENABLE_LOGGING)

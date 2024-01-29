@@ -72,7 +72,7 @@ public:
 
             save_cache_to_file<PerformanceCache>(performance_cache_file, performance_cache);
             performance_cache.write_single_kernel_perf_to_file();
-            performance_cache.write_single_kernel_best_config_to_file();
+            // performance_cache.write_single_kernel_best_config_to_file();
             performance_cache.write_kernel_pair_perf_to_file();
             performance_cache.write_kernel_pair_best_config_to_file();
 
