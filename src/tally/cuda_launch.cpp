@@ -112,10 +112,10 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(CudaLaunchCa
     // Kernel-sliced configs
     auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, 0);
     if (candidate_num_slices.size() > 10) {
-        for (float percentile = 0.; percentile <= 100.; percentile += 10.) {
+        for (float percentile = 0.; percentile < 100.; percentile += 10.) {
 
-            uint32_t index = static_cast<uint32_t>(std::ceil(percentile / 100.0f * candidate_num_slices.size())) - 1;
-            index = std::max(index, 0u);
+            int index = static_cast<uint32_t>(std::ceil(percentile / 100.0f * candidate_num_slices.size())) - 1;
+            index = std::max(index, 0);
 
             auto sliced_config = CudaLaunchConfig::get_sliced_config(candidate_num_slices[index]);
             configs.push_back(sliced_config);
@@ -209,8 +209,22 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_sliced_configs(CudaLaunchCal
 
     auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, PRIORITY_PTB_MAX_NUM_THREADS_PER_SM);
 
-    // sort by desc order, will take the largest that performance is within range
-    std::sort(candidate_num_slices.begin(), candidate_num_slices.end(), std::greater<uint32_t>());
+    if (candidate_num_slices.size() > 10) {
+        std::vector<uint32_t> tmp_vec;
+
+        for (float percentile = 0.; percentile <= 100.; percentile += 10.) {
+
+            int index = static_cast<uint32_t>(std::ceil(percentile / 100.0f * candidate_num_slices.size())) - 1;
+            index = std::max(index, 0);
+            tmp_vec.push_back(candidate_num_slices[index]);
+
+        }
+
+        candidate_num_slices = tmp_vec;
+    }
+
+    // sort by increasing order, will take the smallest number of slices that preemption latency is within range
+    std::sort(candidate_num_slices.begin(), candidate_num_slices.end());
 
     for (auto num_slices : candidate_num_slices) {
         auto sliced_config = CudaLaunchConfig::get_sliced_config(num_slices);

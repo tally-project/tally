@@ -331,7 +331,12 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
 
             // provision a 30% overhead
             uint32_t num_slices = std::ceil(original_metrics.latency_ms * 1.3 / PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS);
-  
+            
+            // It is possible that the computed num_slices is smaller than the previously tried largest num_slices
+            if (!sliced_configs.empty()) {
+                num_slices = std::max(num_slices, sliced_configs.back().num_slices);
+            }
+
             auto config = CudaLaunchConfig::get_sliced_config(num_slices);
             profiled_configs.push_back(config);
 
