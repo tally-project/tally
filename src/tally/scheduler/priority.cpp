@@ -143,7 +143,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
             float norm_speed = original_metrics.latency_ms / metrics.avg_latency_ms;
 
             // Likely the base config is not profiled correctly, so we delete it and do it again.
-            if (norm_speed >= 1.3) {
+            if (norm_speed >= 1.8) {
                 delete_single_kernel_perf(launch_call, base_config);
 
                 CudaLaunchCallConfig original_call_config(launch_call, base_config);
