@@ -57,35 +57,6 @@ std::vector<uint32_t> get_candidate_blocks_per_sm(uint32_t threads_per_block, ui
     return candiates;
 }
 
-std::vector<uint32_t> get_candidate_num_slices(uint32_t threads_per_block, uint32_t num_blocks, uint32_t max_threads_per_sm) {
-
-    std::vector<uint32_t> candiates;
-
-    uint32_t num_slices = 2;
-
-    while (true) {
-        uint32_t blocks_per_slice = (num_blocks + num_slices - 1) / num_slices;
-
-        if (max_threads_per_sm > 0) {
-            uint32_t blocks_per_sm = (blocks_per_slice + CUDA_NUM_SM - 1) / CUDA_NUM_SM;
-
-            if (threads_per_block * blocks_per_sm > max_threads_per_sm) {
-                num_slices += 1;
-                continue;
-            }
-        }
-
-        if (blocks_per_slice < CUDA_NUM_SM) {
-            break;
-        }
-
-        candiates.push_back(num_slices);
-        num_slices += 1;
-    }
-
-    return candiates;
-}
-
 // =================== Used by Profile Scheduler ===========================
 // Note that this tries to profile as many configs as possible
 // Including ones that can take up all the thread slots
@@ -107,25 +78,17 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_profile_configs(CudaLaunchCa
         configs.push_back(ptb_config);
         configs.push_back(dynamic_ptb_config);
         configs.push_back(preemptive_ptb_config);
-    }
 
-    // Kernel-sliced configs
-    auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, 0);
-    if (candidate_num_slices.size() > 10) {
-        for (float percentile = 0.; percentile < 100.; percentile += 10.) {
+        // get corresponding kernel slicing config
+        uint32_t blocks_per_slice = blocks_per_sm * CUDA_NUM_SM;
+        uint32_t num_slices = (num_blocks + blocks_per_slice - 1) / blocks_per_slice;
 
-            int index = static_cast<uint32_t>(std::ceil(percentile / 100.0f * candidate_num_slices.size())) - 1;
-            index = std::max(index, 0);
-
-            auto sliced_config = CudaLaunchConfig::get_sliced_config(candidate_num_slices[index]);
-            configs.push_back(sliced_config);
-        }
-    } else {
-        for (auto num_slices : candidate_num_slices) {
+        if (num_slices > 1) {
             auto sliced_config = CudaLaunchConfig::get_sliced_config(num_slices);
             configs.push_back(sliced_config);
         }
     }
+    
     
     return configs;
 }
@@ -166,23 +129,27 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_workload_agnostic_sharing_co
 
     configs.push_back(dynamic_ptb_config);
 
-    auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, CUDA_MAX_NUM_THREADS_PER_SM);
-    if (!candidate_num_slices.empty()) {
+    // get corresponding kernel slicing config
+    uint32_t blocks_per_slice = largest_blocks_per_sm * CUDA_NUM_SM;
+    uint32_t num_slices = (num_blocks + blocks_per_slice - 1) / blocks_per_slice;
 
-        // take least
-        auto smallest_num_slices = *std::min_element(candidate_num_slices.begin(), candidate_num_slices.end());
-        auto sliced_config = CudaLaunchConfig::get_sliced_config(smallest_num_slices);
+    if (num_slices > 1) {
+        auto sliced_config = CudaLaunchConfig::get_sliced_config(num_slices);
         configs.push_back(sliced_config);
     }
-    
+
     return configs;
 }
 
 // =================== Used by Priority Scheduler ===========================
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(CudaLaunchCall &launch_call)
+std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_configs(CudaLaunchCall &launch_call)
 {
     uint32_t threads_per_block = launch_call.threads_per_block;
     uint32_t num_blocks = launch_call.num_blocks;
+
+    if (num_blocks <= CUDA_NUM_SM) {
+        return {};
+    }
 
     std::vector<CudaLaunchConfig> configs;
 
@@ -192,43 +159,19 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_preemptive_configs(CudaLaunc
     std::sort(candiate_blocks_per_sm.begin(), candiate_blocks_per_sm.end(), std::greater<uint32_t>());
     
     for (auto blocks_per_sm : candiate_blocks_per_sm) {
-        auto config = CudaLaunchConfig::get_preemptive_ptb_config(blocks_per_sm);
-        configs.push_back(config);
-    }
 
-    return configs;
-}
+        // preemptive config
+        auto preemptive_config = CudaLaunchConfig::get_preemptive_ptb_config(blocks_per_sm);
+        configs.push_back(preemptive_config);
 
-// =================== Used by Priority Scheduler ===========================
-std::vector<CudaLaunchConfig> CudaLaunchConfig::get_sliced_configs(CudaLaunchCall &launch_call)
-{
-    uint32_t threads_per_block = launch_call.threads_per_block;
-    uint32_t num_blocks = launch_call.num_blocks;
+        // get corresponding kernel slicing config
+        uint32_t blocks_per_slice = blocks_per_sm * CUDA_NUM_SM;
+        uint32_t num_slices = (num_blocks + blocks_per_slice - 1) / blocks_per_slice;
 
-    std::vector<CudaLaunchConfig> configs;
-
-    auto candidate_num_slices = get_candidate_num_slices(threads_per_block, num_blocks, PRIORITY_PTB_MAX_NUM_THREADS_PER_SM);
-
-    if (candidate_num_slices.size() > 10) {
-        std::vector<uint32_t> tmp_vec;
-
-        for (float percentile = 0.; percentile <= 100.; percentile += 10.) {
-
-            int index = static_cast<uint32_t>(std::ceil(percentile / 100.0f * candidate_num_slices.size())) - 1;
-            index = std::max(index, 0);
-            tmp_vec.push_back(candidate_num_slices[index]);
-
+        if (num_slices > 1) {
+            auto sliced_config = CudaLaunchConfig::get_sliced_config(num_slices);
+            configs.push_back(sliced_config);
         }
-
-        candidate_num_slices = tmp_vec;
-    }
-
-    // sort by increasing order, will take the smallest number of slices that preemption latency is within range
-    std::sort(candidate_num_slices.begin(), candidate_num_slices.end());
-
-    for (auto num_slices : candidate_num_slices) {
-        auto sliced_config = CudaLaunchConfig::get_sliced_config(num_slices);
-        configs.push_back(sliced_config);
     }
 
     return configs;

@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cfloat>
 #include <random>
+#include <unordered_set>
 
 #include "spdlog/spdlog.h"
 
@@ -29,7 +30,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
     static std::unordered_map<CudaLaunchCallConfig, TempKernelProfileMetrics> temp_perf_data;
     static std::unordered_map<CudaLaunchCallConfig, uint32_t> warmup_perf_data;
 
-    std::vector<CudaLaunchConfig> profiled_configs;
+    std::unordered_set<CudaLaunchConfig> profiled_configs;
 
     auto &launch_call = kernel_wrapper.launch_call;
     auto &client_data = client_data_all[client_id];
@@ -41,7 +42,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
     float iters;
 
     auto base_config = CudaLaunchConfig::default_config;
-    profiled_configs.push_back(base_config);
+    profiled_configs.insert(base_config);
 
     // First profile the original kernel
     bool found;
@@ -68,8 +69,8 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
 
         warmup_perf_data[original_call_config]++;
 
-        // first 5 is warm up
-        if (warmup_perf_data[original_call_config] < 5) {
+        // first 10 is warm up
+        if (warmup_perf_data[original_call_config] < 10) {
             return;
         }
 
@@ -89,17 +90,25 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         // prepare ptb args
         auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
 
-        // prepare sliced args
-        SlicedKernelArgs slice_args;
         if (config.use_sliced) {
-            slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
-        }
+             // prepare sliced args
+            auto slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
 
-        if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
-            cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
-        }
+            // We want to provision the overhead to launch sliced kernel one by one
+            for (size_t i = 0; i < slice_args.block_offsets.size(); i++) {
+                slice_args.launch_idx = i;
+                kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, &slice_args, false, 0, nullptr, nullptr, -1, true);
+                cudaDeviceSynchronize();
+            }
 
-        kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, &slice_args, false, 0, nullptr, nullptr, -1, true);
+        } else {
+
+            if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
+                cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+            }
+
+            kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
+        }
 
         has_executed = true;
     };
@@ -126,7 +135,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
             float norm_speed = original_metrics.latency_ms / metrics.avg_latency_ms;
 
             // Likely the base config is not profiled correctly, so we delete it and do it again.
-            if (norm_speed >= 2.) {
+            if (norm_speed >= 1.3) {
                 delete_single_kernel_perf(launch_call, base_config);
 
                 CudaLaunchCallConfig original_call_config(launch_call, base_config);
@@ -204,59 +213,100 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         set_single_kernel_chosen_config(launch_call, res);
     };
 
-    // Next, profile all preemptive configs
-    auto preemptive_configs = CudaLaunchConfig::get_preemptive_configs(launch_call);
-    bool is_preemptive_usable = false;
+    auto priority_configs = CudaLaunchConfig::get_priority_configs(launch_call);
 
-    for (auto &config : preemptive_configs) {
+    float best_preemptive_norm_speed = -1.;
+    float best_sliced_norm_speed = -1.;
 
-        profiled_configs.push_back(config);
+    // gradually lower the required threshold 
+    for (float perf_threshold = 1.0; perf_threshold >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD; perf_threshold-=0.1) {
 
-        auto res = get_single_kernel_perf(launch_call, config, &found);
-        if (!found) {
-            profile_config(config);
-        }
-        res = get_single_kernel_perf(launch_call, config, &found);
+        // Favor config from priority_configs over original config
+        for (auto &config : priority_configs) {
 
-        // still collecting
-        if (!found) {
-            return;
-        }
+            profiled_configs.insert(config);
 
-        auto &config_metrics = res.metrics;
-        auto preemption_latency_ms = config_metrics.preemption_latency_ms;
+            auto res = get_single_kernel_perf(launch_call, config, &found);
+            if (!found) {
+                profile_config(config);
+            }
+            res = get_single_kernel_perf(launch_call, config, &found);
 
-        // If both norm speed and estimated preemption latency are accepted
-        // set this config as the chosen config
-        if (config_metrics.norm_speed >= PRIORITY_FALL_BACK_TO_KERNEL_SLICING_THRESHOLD) {
-            is_preemptive_usable = true;
+            // still collecting
+            if (!found) {
+                return;
+            }
 
-            if (preemption_latency_ms <= PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS) {
-                set_chosen_config(res);
-                if (!has_executed) {
-                    launch_kernel_with_config(config);
+            auto &config_metrics = res.metrics;
+            auto preemption_latency_ms = config_metrics.preemption_latency_ms;
+
+            // If both norm speed and estimated preemption latency are accepted
+            // set this config as the chosen config
+            if (config_metrics.norm_speed >= perf_threshold) {
+                
+                if (config.use_preemptive_ptb) {
+                    best_preemptive_norm_speed = std::max(best_preemptive_norm_speed, config_metrics.norm_speed);
+                } else if (config.use_sliced) {
+                    best_sliced_norm_speed = std::max(best_sliced_norm_speed, config_metrics.norm_speed);
                 }
+
+                if (preemption_latency_ms <= PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS) {
+                    set_chosen_config(res);
+                    if (!has_executed) {
+                        launch_kernel_with_config(config);
+                    }
+                    return;
+                }
+            }
+
+            // has_executed but not satisfied
+            if (has_executed) {
                 return;
             }
         }
-
-        // has_executed but not satisfied
-        if (has_executed) {
-            return;
-        }
     }
 
-    // If is_preemptive_usable but the estimated preemption latency is too long
-    // We will launch (< CUDA_NUM_SM) thread blocks
-    if (is_preemptive_usable) {
+    // Now if original kernel latency is within PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS
+    // Choose it
+    if (original_metrics.latency_ms <= PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS) {
+        set_chosen_config(original_res);
+        if (!has_executed) {
+            launch_kernel_with_config(base_config);
+        }
+        return;
+    }
 
-        auto config = CudaLaunchConfig::get_preemptive_ptb_config(1);
-        auto preemptive_res = get_single_kernel_perf(launch_call, config, &found);
+    // Otherwise, we will launch (< CUDA_NUM_SM) thread blocks to further restrict the preemption latency
+    if (best_preemptive_norm_speed >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD ||
+        best_sliced_norm_speed >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD
+    ) {
 
-        auto max_worker_blocks = (PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS / preemptive_res.metrics.preemption_latency_ms) * (float) std::min(CUDA_NUM_SM, launch_call.num_blocks);
-        config.max_worker_blocks = std::max((uint32_t)std::floor(max_worker_blocks), 1u);
+        CudaLaunchConfig config;
 
-        profiled_configs.push_back(config);
+        if (best_preemptive_norm_speed >= best_sliced_norm_speed) {
+            config = CudaLaunchConfig::get_preemptive_ptb_config(1);
+            auto preemptive_res = get_single_kernel_perf(launch_call, config, &found);
+
+            auto max_worker_blocks = (PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS / preemptive_res.metrics.preemption_latency_ms) * (float) std::min(CUDA_NUM_SM, launch_call.num_blocks);
+            config.max_worker_blocks = std::max((uint32_t)std::floor(max_worker_blocks), 1u);
+
+            if (config.max_worker_blocks >= launch_call.num_blocks) {
+                config = base_config;
+            }
+        }
+
+        else {
+            // provision a 30% overhead
+            uint32_t num_slices = std::ceil(original_metrics.latency_ms * 1.3 / PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS);
+            num_slices = std::min(num_slices, launch_call.num_blocks);
+            if (num_slices > 1) {
+                config = CudaLaunchConfig::get_sliced_config(num_slices);
+            } else {
+                config = base_config;
+            }
+        }
+
+        profiled_configs.insert(config);
 
         auto res = get_single_kernel_perf(launch_call, config, &found);
         if (!found) {
@@ -274,89 +324,6 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
             launch_kernel_with_config(config);
         }
         return;
-    }
-
-    // if none of the configs satisfy `PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD`
-    // consider kernel slicing
-    bool is_slice_usable = false;
-    auto sliced_configs = CudaLaunchConfig::get_sliced_configs(launch_call);
-
-    if (sliced_configs.empty()) {
-        is_slice_usable = true;
-    }
-
-    for (auto &config : sliced_configs) {
-
-        profiled_configs.push_back(config);
-
-        auto res = get_single_kernel_perf(launch_call, config, &found);
-        if (!found) {
-            profile_config(config);
-        }
-        res = get_single_kernel_perf(launch_call, config, &found);
-
-        // still collecting
-        if (!found) {
-            return;
-        }
-
-        auto &config_metrics = res.metrics;
-        auto latency_ms = config_metrics.latency_ms;
-        auto norm_speed = config_metrics.norm_speed;
-        auto preemption_latency_ms = config_metrics.preemption_latency_ms;
-
-        // If both norm speed and estimated preemption latency are accepted
-        // set this config as the chosen config
-        if (norm_speed >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD) {
-            is_slice_usable = true;
-
-            if (preemption_latency_ms <= PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS) {
-                set_chosen_config(res);
-                if (!has_executed) {
-                    launch_kernel_with_config(config);
-                }
-                return;
-            }
-        }
-
-        // has_executed but not satisfied
-        if (has_executed) {
-            return;
-        }
-    }
-
-    if (is_slice_usable) {
-
-        if (original_metrics.latency_ms > PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS) {
-
-            // provision a 30% overhead
-            uint32_t num_slices = std::ceil(original_metrics.latency_ms * 1.3 / PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS);
-            
-            // It is possible that the computed num_slices is smaller than the previously tried largest num_slices
-            if (!sliced_configs.empty()) {
-                num_slices = std::max(num_slices, sliced_configs.back().num_slices);
-            }
-
-            auto config = CudaLaunchConfig::get_sliced_config(num_slices);
-            profiled_configs.push_back(config);
-
-            auto res = get_single_kernel_perf(launch_call, config, &found);
-            if (!found) {
-                profile_config(config);
-            }
-            res = get_single_kernel_perf(launch_call, config, &found);
-
-            // still collecting
-            if (!found) {
-                return;
-            }
-
-            set_chosen_config(res);
-            if (!has_executed) {
-                launch_kernel_with_config(config);
-            }
-            return;
-        }
     }
 
     // Finally, if nothing works, fall back to use the original kernel

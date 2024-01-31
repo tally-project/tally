@@ -198,8 +198,7 @@ public:
 
     static std::vector<CudaLaunchConfig> get_profile_configs(CudaLaunchCall &launch_call);
     static std::vector<CudaLaunchConfig> get_workload_agnostic_sharing_configs(CudaLaunchCall &launch_call);
-    static std::vector<CudaLaunchConfig> get_preemptive_configs(CudaLaunchCall &launch_call);
-    static std::vector<CudaLaunchConfig> get_sliced_configs(CudaLaunchCall &launch_call);
+    static std::vector<CudaLaunchConfig> get_priority_configs(CudaLaunchCall &launch_call);
 
     static CudaLaunchConfig get_original_config() {
         CudaLaunchConfig config;
@@ -303,6 +302,20 @@ public:
     CUresult repeat_launch(const void *, dim3, dim3, void **, size_t, cudaStream_t, float dur_seconds, PTBKernelArgs *ptb_args=nullptr,
                            uint32_t *curr_idx_arr=nullptr, SlicedKernelArgs *slice_args=nullptr, float *time_ms=nullptr, float *iters=nullptr,
                            int32_t max_count=-1); 
+};
+
+template <>
+struct std::hash<CudaLaunchConfig>
+{
+    std::size_t operator()(const CudaLaunchConfig& k) const
+    {
+        auto _hash = std::hash<bool>()(k.use_original) |
+                     std::hash<bool>()(k.use_preemptive_ptb) |
+                     std::hash<bool>()(k.use_dynamic_ptb) |
+                     std::hash<bool>()(k.use_ptb) |
+                     std::hash<bool>()(k.use_sliced);
+        return _hash;
+    }
 };
 
 struct CudaLaunchCallConfig {
@@ -477,7 +490,6 @@ public:
 };
 
 std::vector<uint32_t> get_candidate_blocks_per_sm(uint32_t threads_per_block, uint32_t num_blocks, uint32_t max_threads_per_sm);
-std::vector<uint32_t> get_candidate_num_slices(uint32_t threads_per_block, uint32_t num_blocks, uint32_t max_threads_per_sm);
 
 SlicedKernelArgs get_sliced_kernel_args(dim3 gridDim, uint32_t num_slices);
 
