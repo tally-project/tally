@@ -30,7 +30,15 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
     static std::unordered_map<CudaLaunchCallConfig, TempKernelProfileMetrics> temp_perf_data;
     static std::unordered_map<CudaLaunchCallConfig, uint32_t> warmup_perf_data;
 
-    std::unordered_set<CudaLaunchConfig> profiled_configs;
+    std::vector<CudaLaunchConfig> profiled_configs;
+
+    auto append_to_profiled_configs = [&](CudaLaunchConfig &config) {
+
+        auto it = std::find(profiled_configs.begin(), profiled_configs.end(), config);
+        if (it == profiled_configs.end()) {
+            profiled_configs.push_back(config);
+        }
+    };
 
     auto &launch_call = kernel_wrapper.launch_call;
     auto &client_data = client_data_all[client_id];
@@ -42,7 +50,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
     float iters;
 
     auto base_config = CudaLaunchConfig::default_config;
-    profiled_configs.insert(base_config);
+    append_to_profiled_configs(base_config);
 
     // First profile the original kernel
     bool found;
@@ -224,7 +232,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         // Favor config from priority_configs over original config
         for (auto &config : priority_configs) {
 
-            profiled_configs.insert(config);
+            append_to_profiled_configs(config);
 
             auto res = get_single_kernel_perf(launch_call, config, &found);
             if (!found) {
@@ -306,7 +314,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
             }
         }
 
-        profiled_configs.insert(config);
+        append_to_profiled_configs(config);
 
         auto res = get_single_kernel_perf(launch_call, config, &found);
         if (!found) {
