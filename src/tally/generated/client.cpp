@@ -11,6 +11,7 @@
 TallyClient *TallyClient::client;
 
 cudaError_t last_err = cudaSuccess;
+bool replace_cublas = false;
 
 __attribute__((__constructor__)) void init_client()
 {
@@ -24,6 +25,10 @@ __attribute__((__constructor__)) void init_client()
             return;
         }
     }
+
+	if (std::getenv("REPLACE_CUBLAS")) {
+		replace_cublas = true;
+	}
 
     TallyClient::client = new TallyClient;
 }

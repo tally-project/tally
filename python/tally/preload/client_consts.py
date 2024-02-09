@@ -170,6 +170,8 @@ CLIENT_PRELOAD_TEMPLATE = """
 
 TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 
+
+
 #ifndef TALLY_SERVER_H
 #define TALLY_SERVER_H
 
@@ -237,7 +239,7 @@ public:
 	std::atomic<bool> has_exit = false;
 
 	std::vector<cudaStream_t> streams;
-	std::map<cudaStream_t, PTBArgs*> stream_to_ptb_args;
+	std::map<cudaStream_t, PTBKernelArgs*> stream_to_ptb_args;
 };
 
 struct ClientPriority {
@@ -307,6 +309,7 @@ public:
     folly::ConcurrentHashMap<const void *, WrappedCUfunction> ptb_kernel_map;
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> dynamic_ptb_kernel_map;
 	folly::ConcurrentHashMap<const void *, WrappedCUfunction> preemptive_ptb_kernel_map;
+	folly::ConcurrentHashMap<const void *, WrappedCUfunction> sliced_kernel_map;
 
 	// Performance cache to use at runtime
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
@@ -315,14 +318,21 @@ public:
     std::unordered_map<CudaLaunchCallPair, std::unordered_map<CudaLaunchCallConfigPair, CudaLaunchCallConfigPairResult>> kernel_pair_perf_map;
 	std::unordered_map<CudaLaunchCallPair, CudaLaunchCallConfigPairResult> kernel_pair_best_config_map;
 
-	void launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> &configs);
+	void launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> configs,
+								   float fallback_threshold, std::vector<CudaLaunchConfig> alternative_configs={}, bool is_preemptive=false);
+
+	void priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id);
 
 	// Set and Get performance cache
 	CudaLaunchCallConfigResult get_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, bool *found);
-	void set_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, CudaLaunchMetadata meta_data, float norm_speed, float latency, uint32_t iters);
+	void delete_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config);
+	void set_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config,
+								CudaLaunchMetadata meta_data, float norm_speed, float latency,
+								uint32_t iters=0, float preempt_latency_ms_est=0.);
 
 	CudaLaunchCallConfigResult get_single_kernel_chosen_config(CudaLaunchCall &launch_call, bool *found);
 	void set_single_kernel_chosen_config(CudaLaunchCall &launch_call, CudaLaunchCallConfigResult &best_config);
+	void clear_single_kernel_chosen_configs();
 
     CudaLaunchCallConfigPairResult get_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
 														CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
@@ -443,6 +453,7 @@ TALLY_CLIENT_SRC_TEMPLATE_TOP = """
 TallyClient *TallyClient::client;
 
 cudaError_t last_err = cudaSuccess;
+bool replace_cublas = false;
 
 __attribute__((__constructor__)) void init_client()
 {
@@ -456,6 +467,10 @@ __attribute__((__constructor__)) void init_client()
             return;
         }
     }
+
+	if (std::getenv("REPLACE_CUBLAS")) {
+		replace_cublas = true;
+	}
 
     TallyClient::client = new TallyClient;
 }

@@ -260,12 +260,13 @@ def gen_func_client_preload(func_sig):
         func_preload_builder += "#if defined(RUN_LOCALLY)\n"
         func_preload_builder += f"\tauto err = l{func_name}({arg_names_str});\n"
 
-        if ret_type == "cublasStatus_t":
-            func_preload_builder += "#elif defined(REPLACE_CUBLAS)\n"
-            func_preload_builder += "\tauto err = CUBLAS_STATUS_SUCCESS;\n"
-            func_preload_builder += "\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": cublas function is not handled when REPLACE_CUBLAS is set.\");\n"
-
         func_preload_builder += "#else\n"
+
+        if ret_type == "cublasStatus_t":
+            func_preload_builder += "\tif (replace_cublas) {\n"
+            func_preload_builder += "\t\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": cublas function is not handled when REPLACE_CUBLAS is set.\");\n"
+            func_preload_builder += "\t}\n"
+
         func_preload_builder += get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type)
         func_preload_builder += f"""
     while(!TallyClient::client->iox_client->take()
@@ -297,12 +298,12 @@ def gen_func_client_preload(func_sig):
         func_preload_builder += "#if defined(RUN_LOCALLY)\n"
         func_preload_builder += f"\tauto err = l{func_name}({arg_names_str});\n"
 
-        if ret_type == "cublasStatus_t":
-            func_preload_builder += "#elif defined(REPLACE_CUBLAS)\n"
-            func_preload_builder += "\tauto err = CUBLAS_STATUS_SUCCESS;\n"
-            func_preload_builder += "\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": cublas function is not handled when REPLACE_CUBLAS is set.\");\n"
-
         func_preload_builder += "#else\n"
+
+        if ret_type == "cublasStatus_t":
+            func_preload_builder += "\tif (replace_cublas) {\n"
+            func_preload_builder += "\t\tthrow std::runtime_error(std::string(__FILE__) + \":\" + std::to_string(__LINE__) + \": cublas function is not handled when REPLACE_CUBLAS is set.\");\n"
+            func_preload_builder += "\t};"
 
         func_preload_builder += get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type)
 

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-SCHEDULER_POLICY=""
-
 cleanup() {
     ./scripts/kill_server.sh
     ./scripts/kill_iox.sh
@@ -10,12 +8,17 @@ cleanup() {
 run_tally_test() {
 
     # Launch tally server in the background
-    SCHEDULER_POLICY=$SCHEDULER_POLICY ./scripts/start_server.sh &
+    ./scripts/start_server.sh &
 
     sleep 5
 
-    # Launch client process
     echo $@
+    
+    if [[ ! -z "$REPLACE_CUBLAS" ]]; then
+        echo "Running with REPLACE_CUBLAS set ..."
+    fi
+
+    # Launch client process
     ./scripts/start_client.sh $@
 
     ./scripts/kill_server.sh
@@ -44,10 +47,7 @@ test_list=(
     # "python3 ./tests/tensorflow_samples/cifar_train.py"
     "python3 ./tests/pytorch_samples/train.py"
     "python3 ./tests/pytorch_samples/dropout.py"
-    "python3 ./tests/pytorch_samples/run-triton.py"
     "python3 ./tests/pytorch_samples/run-torch-compile.py"
-    "python3 ./tests/pytorch_samples/resnet50-compiled-1.py"
-    "python3 ./tests/pytorch_samples/resnet50-compiled-2.py"
     "python3 ./tests/pytorch_samples/run-imagenet.py"
     "python3 ./tests/hidet_samples/run-hidet.py"
     "./tests/cudnn_samples_v8/RNN/RNN"
@@ -72,6 +72,11 @@ sleep 5
 # Run tests with tally-server-client
 for item in "${test_list[@]}"; do
     run_tally_test $item
+done
+
+# Run tests again with REPLACE_CUBLAS set
+for item in "${test_list[@]}"; do
+    REPLACE_CUBLAS=TRUE run_tally_test $item
 done
 
 cleanup

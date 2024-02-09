@@ -47,6 +47,7 @@
 #endif
 
 extern cudaError_t last_err;
+extern bool replace_cublas;
 
 class TallyClient {
 

@@ -14570,10 +14570,11 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetVersion_v2(handle, version);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	}
 
     cublasStatus_t err;
 
@@ -14615,10 +14616,11 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetProperty(type, value);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	}
 
     cublasStatus_t err;
 
@@ -14699,10 +14701,11 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetStream_v2(handle, streamId);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	}
 
     cublasStatus_t err;
 
@@ -14744,10 +14747,11 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetPointerMode_v2(handle, mode);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	}
 
     cublasStatus_t err;
 
@@ -14789,11 +14793,11 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetPointerMode_v2(handle, mode);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
-
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	};
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -14853,10 +14857,11 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetSmCountTarget(handle, smCountTarget);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	}
 
     cublasStatus_t err;
 
@@ -14898,11 +14903,11 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetSmCountTarget(handle, smCountTarget);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
-
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	};
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -14972,11 +14977,11 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetLoggerCallback(userCallback);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
-
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	};
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -15015,10 +15020,11 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetLoggerCallback(userCallback);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	}
 
     cublasStatus_t err;
 
@@ -15059,11 +15065,11 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetVector(n, elemSize, x, incx, devicePtr, incy);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
-
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	};
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -20535,10 +20541,11 @@ cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t* 
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixTransformDescCreate(transformDesc, scaleType);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	}
 
     cublasStatus_t err;
 
@@ -20580,11 +20587,11 @@ cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t 
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixTransformDescDestroy(transformDesc);
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
-
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	};
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -20773,11 +20780,11 @@ cublasStatus_t cublasLtLoggerForceDisable()
 	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtLoggerForceDisable();
-#elif defined(REPLACE_CUBLAS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 #else
-
+	if (replace_cublas) {
+		auto err = CUBLAS_STATUS_SUCCESS;
+		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
+	};
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;

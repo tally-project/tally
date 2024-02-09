@@ -13,7 +13,6 @@ endif()
 option(ENABLE_LOGGING "Enable logging" OFF)
 option(ENABLE_PERFORMANCE_LOGGING "Enable performance-related logging" OFF)
 option(ENABLE_PROFILING "Enable profiling" OFF)
-option(REPLACE_CUBLAS "Replace cublas calls with cutlass calls" ON)
 option(VERIFY_CORRECTNESS "Verify that the results after replacing cublas is correct" OFF)
 option(MEASURE_PREEMPTION_LATENCY "Measure latency of preemption in priority scheduler" OFF)
 
@@ -123,7 +122,7 @@ add_library(tally_client SHARED
 )
 
 # Define a list of strings
-set(tally_client_env_vars "ENABLE_LOGGING" "ENABLE_PERFORMANCE_LOGGING", "ENABLE_PROFILING" "REPLACE_CUBLAS" "VERIFY_CORRECTNESS")
+set(tally_client_env_vars "ENABLE_LOGGING" "ENABLE_PERFORMANCE_LOGGING", "ENABLE_PROFILING" "VERIFY_CORRECTNESS")
 
 # Loop over the strings using foreach
 foreach(env_var ${tally_client_env_vars})

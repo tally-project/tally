@@ -397,7 +397,6 @@ void TallyServer::run_priority_scheduler()
                     auto &dispatched_kernel_wrapper = dispatched_kernel.kernel_wrapper;
                     auto running = dispatched_kernel.running;
 
-                    
                     if (dispatched_kernel.config.use_original) {
                         // do nothing
                     } else if (dispatched_kernel.config.use_preemptive_ptb) {
@@ -610,42 +609,50 @@ void TallyServer::run_priority_scheduler()
 
                 // Now launch the high priority kernel
                 auto config = CudaLaunchConfig::default_config;
-
-                auto &launch_call = kernel_wrapper.launch_call;
-
-                // Do some profiling of the preemptive kernels
-                bool found_in_cache;
-                auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
-
-                if (!found_in_cache) {
-                    priority_launch_and_measure_kernel(kernel_wrapper, client_id);
-
-                    kernel_wrapper.free_args();
-                    client_data.queue_size--;
-                    break;
-                }
-
                 PTBKernelArgs *ptb_args = nullptr;
                 SlicedKernelArgs *sliced_args = nullptr;
 
-                if (!is_highest_priority) {
+                if (kernel_wrapper.is_library_call) {
 
-                    config = res.config;
-
-                    // bookkeep kernel launch if it is not highest-priority 
-                    in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
-
-                    if (config.use_preemptive_ptb) {
-                        // set retreat ang global_idx to 0
-                        ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
-                        cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+                    if (!is_highest_priority) {
+                        TALLY_SPD_WARN("Found library call from low priority job");
                     }
 
-                    // Only launch the first slice
-                    if (config.use_sliced) {
-                        in_progress_kernels[client_priority].slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
-                        sliced_args = &(in_progress_kernels[client_priority].slice_args);
-                        sliced_args->launch_idx = 0;
+                } else {
+
+                    auto &launch_call = kernel_wrapper.launch_call;
+
+                    // Do some profiling of the preemptive kernels
+                    bool found_in_cache;
+                    auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
+
+                    if (!found_in_cache) {
+                        priority_launch_and_measure_kernel(kernel_wrapper, client_id);
+
+                        kernel_wrapper.free_args();
+                        client_data.queue_size--;
+                        break;
+                    }
+
+                    if (!is_highest_priority) {
+
+                        config = res.config;
+
+                        // bookkeep kernel launch if it is not highest-priority 
+                        in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
+
+                        if (config.use_preemptive_ptb) {
+                            // set retreat ang global_idx to 0
+                            ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+                            cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+                        }
+
+                        // Only launch the first slice
+                        if (config.use_sliced) {
+                            in_progress_kernels[client_priority].slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
+                            sliced_args = &(in_progress_kernels[client_priority].slice_args);
+                            sliced_args->launch_idx = 0;
+                        }
                     }
                 }
 

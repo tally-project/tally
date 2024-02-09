@@ -811,114 +811,114 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
     bool launched = false;
     cublasStatus_t err;
 
-#if defined(REPLACE_CUBLAS)
+    if (replace_cublas) {
 
-    auto ctx = cublas_tracer.get_cublasCtx(handle);
+        auto ctx = cublas_tracer.get_cublasCtx(handle);
 
-    if (ctx.mode == CUBLAS_DEFAULT_MATH) { 
+        if (ctx.mode == CUBLAS_DEFAULT_MATH) { 
 
-        TALLY_SPD_LOG("cublasSgemm_v2 replaced with cutlassGemm_f32");
-        load_tally_cutlass_lib();
+            TALLY_SPD_LOG("cublasSgemm_v2 replaced with cutlassGemm_f32");
+            load_tally_cutlass_lib();
 
-        auto cutlass_transa = cublas_op_to_cutlass_op(transa);
-        auto cutlass_transb = cublas_op_to_cutlass_op(transb);
+            auto cutlass_transa = cublas_op_to_cutlass_op(transa);
+            auto cutlass_transb = cublas_op_to_cutlass_op(transb);
 
 #if defined(VERIFY_CORRECTNESS)
 
-        TALLY_LOG_PROFILE("");
-        TALLY_SPD_LOG_PROFILE("cublasSgemm_v2 arguments:");
-        TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
-        TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
+            TALLY_LOG_PROFILE("");
+            TALLY_SPD_LOG_PROFILE("cublasSgemm_v2 arguments:");
+            TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
+            TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
 
-        // Copy array C
-        float *C_copy;
-        cudaMalloc(&C_copy, sizeof(float) * m * n);
-  
-        // warmup
-        cublasSgemm_v2_inner(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C_copy, ldc);
-        cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C_copy, ldc, C_copy, ldc, NULL, NULL, ctx.stream);
+            // Copy array C
+            float *C_copy;
+            cudaMalloc(&C_copy, sizeof(float) * m * n);
+    
+            // warmup
+            cublasSgemm_v2_inner(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C_copy, ldc);
+            cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C_copy, ldc, C_copy, ldc, NULL, NULL, ctx.stream);
 
-        // Copy array C
-        cudaMemcpy(C_copy, C, sizeof(float) * m * n, cudaMemcpyDeviceToDevice);
+            // Copy array C
+            cudaMemcpy(C_copy, C, sizeof(float) * m * n, cudaMemcpyDeviceToDevice);
 
-        cudaDeviceSynchronize();
-        spdlog::set_level(spdlog::level::warn);
-        auto start = std::chrono::high_resolution_clock::now();
+            cudaDeviceSynchronize();
+            spdlog::set_level(spdlog::level::warn);
+            auto start = std::chrono::high_resolution_clock::now();
 #endif
 
-        auto cuda_err = cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, C, ldc, NULL, NULL, ctx.stream);
+            auto cuda_err = cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, B, ldb, *beta, C, ldc, C, ldc, NULL, NULL, ctx.stream);
 
-        if (!cuda_err) {
-            err = CUBLAS_STATUS_SUCCESS;
-        } else {
-            err = CUBLAS_STATUS_INVALID_VALUE;
-        }
-
-        launched = true;
-
-#if defined(VERIFY_CORRECTNESS)
-        cudaDeviceSynchronize();
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> duration = end - start;
-        auto cutlass_ms = duration.count();
-        spdlog::set_level(spdlog::level::info);
-
-        start = std::chrono::high_resolution_clock::now();
-
-        err = cublasSgemm_v2_inner(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C_copy, ldc);
-
-        cudaDeviceSynchronize();
-        end = std::chrono::high_resolution_clock::now();
-        duration =  end - start;
-        auto cublas_ms = duration.count();
-
-        TALLY_SPD_LOG_PROFILE("cutlassGemm_f32: " + std::to_string(cutlass_ms) + "ms");
-        TALLY_SPD_LOG_PROFILE("cublasSgemm_v2: " + std::to_string(cublas_ms) + "ms");
-
-        if ((cublas_ms / cutlass_ms) < 0.5) {
-            TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
-        } else if ((cublas_ms / cutlass_ms) < 0.8) {
-            TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
-        } else {
-            TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
-        }
-        TALLY_LOG_PROFILE("");
-
-        float *h_c_cublas = (float *) malloc(sizeof(float) * m * n);
-        float *h_c_cutlass = (float *) malloc(sizeof(float) * m * n);
-
-        cudaMemcpy(h_c_cublas, C_copy, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
-        cudaMemcpy(h_c_cutlass, C, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
-
-        bool results_match = true;
-
-        for (int i = 0; i < m * n; i++) {
-            if (!numerically_close(h_c_cublas[i], h_c_cutlass[i])) {
-                std::cout << "h_c_cublas[i]: " << h_c_cublas[i] << std::endl;
-                std::cout << "h_c_cutlass[i]: " << h_c_cutlass[i] << std::endl;
-                results_match = false;
-                break;
+            if (!cuda_err) {
+                err = CUBLAS_STATUS_SUCCESS;
+            } else {
+                err = CUBLAS_STATUS_INVALID_VALUE;
             }
+
+            launched = true;
+
+#if defined(VERIFY_CORRECTNESS)
+            cudaDeviceSynchronize();
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> duration = end - start;
+            auto cutlass_ms = duration.count();
+            spdlog::set_level(spdlog::level::info);
+
+            start = std::chrono::high_resolution_clock::now();
+
+            err = cublasSgemm_v2_inner(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C_copy, ldc);
+
+            cudaDeviceSynchronize();
+            end = std::chrono::high_resolution_clock::now();
+            duration =  end - start;
+            auto cublas_ms = duration.count();
+
+            TALLY_SPD_LOG_PROFILE("cutlassGemm_f32: " + std::to_string(cutlass_ms) + "ms");
+            TALLY_SPD_LOG_PROFILE("cublasSgemm_v2: " + std::to_string(cublas_ms) + "ms");
+
+            if ((cublas_ms / cutlass_ms) < 0.5) {
+                TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
+            } else if ((cublas_ms / cutlass_ms) < 0.8) {
+                TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
+            } else {
+                TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
+            }
+            TALLY_LOG_PROFILE("");
+
+            float *h_c_cublas = (float *) malloc(sizeof(float) * m * n);
+            float *h_c_cutlass = (float *) malloc(sizeof(float) * m * n);
+
+            cudaMemcpy(h_c_cublas, C_copy, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+            cudaMemcpy(h_c_cutlass, C, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+
+            bool results_match = true;
+
+            for (int i = 0; i < m * n; i++) {
+                if (!numerically_close(h_c_cublas[i], h_c_cutlass[i])) {
+                    std::cout << "h_c_cublas[i]: " << h_c_cublas[i] << std::endl;
+                    std::cout << "h_c_cutlass[i]: " << h_c_cutlass[i] << std::endl;
+                    results_match = false;
+                    break;
+                }
+            }
+
+            if (!results_match) {
+                TALLY_SPD_WARN("cublas and cutlass results do not match.");
+                // exit(1);
+            } else {
+                TALLY_SPD_LOG("cutlassGemm results match with cublasSgemm_v2");
+            }
+
+            free(h_c_cublas);
+            free(h_c_cutlass);
+            cudaFree(C_copy);
+#endif
         }
 
-        if (!results_match) {
-            TALLY_SPD_WARN("cublas and cutlass results do not match.");
-            // exit(1);
-        } else {
-            TALLY_SPD_LOG("cutlassGemm results match with cublasSgemm_v2");
+        if (!launched) {
+            TALLY_SPD_WARN("Fail to replace cublasSgemm_v2 with cutlass implementation");
+            throw std::runtime_error("Fail to replace cublasSgemm_v2 with cutlass implementation");
         }
-
-        free(h_c_cublas);
-        free(h_c_cutlass);
-        cudaFree(C_copy);
-#endif
     }
-
-    if (!launched) {
-        TALLY_SPD_WARN("Fail to replace cublasSgemm_v2 with cutlass implementation");
-        throw std::runtime_error("Fail to replace cublasSgemm_v2 with cutlass implementation");
-    }
-#endif
 
     if (!launched) {
         err = cublasSgemm_v2_inner(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
@@ -990,238 +990,237 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
     bool launched = false;
     cublasStatus_t err;
 
-#if defined(REPLACE_CUBLAS)
+    if (replace_cublas) {
 
-    auto cublasLt_ctx = cublasLt_tracer.get_cublasLtCtx(lightHandle);
-    auto matmul_desc = cublasLtMatmulDesc_tracer.get_cublasLtMatmulDescCtx(computeDesc);
-    auto matrix_a_layout = cublasLtMatrixLayout_tracer.get_cublasLtMatrixLayoutCtx(Adesc);
-    auto matrix_b_layout = cublasLtMatrixLayout_tracer.get_cublasLtMatrixLayoutCtx(Bdesc);
-    auto matrix_d_layout = cublasLtMatrixLayout_tracer.get_cublasLtMatrixLayoutCtx(Ddesc);
+        auto cublasLt_ctx = cublasLt_tracer.get_cublasLtCtx(lightHandle);
+        auto matmul_desc = cublasLtMatmulDesc_tracer.get_cublasLtMatmulDescCtx(computeDesc);
+        auto matrix_a_layout = cublasLtMatrixLayout_tracer.get_cublasLtMatrixLayoutCtx(Adesc);
+        auto matrix_b_layout = cublasLtMatrixLayout_tracer.get_cublasLtMatrixLayoutCtx(Bdesc);
+        auto matrix_d_layout = cublasLtMatrixLayout_tracer.get_cublasLtMatrixLayoutCtx(Ddesc);
 
-    cublasLtMatrixLayoutCtx matrix_c_layout;
-    if (Cdesc) {
-        matrix_c_layout = cublasLtMatrixLayout_tracer.get_cublasLtMatrixLayoutCtx(Cdesc);
-    } else {
-        matrix_c_layout = matrix_d_layout;
-    }
+        cublasLtMatrixLayoutCtx matrix_c_layout;
+        if (Cdesc) {
+            matrix_c_layout = cublasLtMatrixLayout_tracer.get_cublasLtMatrixLayoutCtx(Cdesc);
+        } else {
+            matrix_c_layout = matrix_d_layout;
+        }
 
-    // Check matmul descriptor is supported
-    if (matmul_desc.scaleType == CUDA_R_32F && matmul_desc.computeType == CUBLAS_COMPUTE_32F) {
+        // Check matmul descriptor is supported
+        if (matmul_desc.scaleType == CUDA_R_32F && matmul_desc.computeType == CUBLAS_COMPUTE_32F) {
 
-        // Check matrix layout is supported
-        if ((matrix_a_layout.type == CUDA_R_32F &&
-             matrix_b_layout.type == CUDA_R_32F &&
-             matrix_c_layout.type == CUDA_R_32F &&
-             matrix_d_layout.type == CUDA_R_32F ) ||
+            // Check matrix layout is supported
+            if ((matrix_a_layout.type == CUDA_R_32F &&
+                matrix_b_layout.type == CUDA_R_32F &&
+                matrix_c_layout.type == CUDA_R_32F &&
+                matrix_d_layout.type == CUDA_R_32F ) ||
 
-            (matrix_a_layout.type == CUDA_R_16F &&
-             matrix_b_layout.type == CUDA_R_16F &&
-             matrix_c_layout.type == CUDA_R_16F &&
-             matrix_d_layout.type == CUDA_R_16F )) {
+                (matrix_a_layout.type == CUDA_R_16F &&
+                matrix_b_layout.type == CUDA_R_16F &&
+                matrix_c_layout.type == CUDA_R_16F &&
+                matrix_d_layout.type == CUDA_R_16F )) {
 
-            if (matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_DEFAULT ||
-                matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_BIAS ) {
+                if (matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_DEFAULT ||
+                    matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_BIAS ) {
 
-                TALLY_SPD_LOG("cublasLtMatmul replaced with cutlassGemm");
-                load_tally_cutlass_lib();
-                
-                uint64_t m = matrix_d_layout.rows;
-                uint64_t n = matrix_d_layout.cols;
-                uint64_t k;
-                if (matmul_desc.cublaslt_matmul_desc_transa == CUBLAS_OP_N) {
-                    k = matrix_a_layout.cols;
-                } else {
-                    k = matrix_a_layout.rows;
-                }
+                    TALLY_SPD_LOG("cublasLtMatmul replaced with cutlassGemm");
+                    load_tally_cutlass_lib();
+                    
+                    uint64_t m = matrix_d_layout.rows;
+                    uint64_t n = matrix_d_layout.cols;
+                    uint64_t k;
+                    if (matmul_desc.cublaslt_matmul_desc_transa == CUBLAS_OP_N) {
+                        k = matrix_a_layout.cols;
+                    } else {
+                        k = matrix_a_layout.rows;
+                    }
 
-                auto cutlass_transa = cublas_op_to_cutlass_op(matmul_desc.cublaslt_matmul_desc_transa);
-                auto cutlass_transb = cublas_op_to_cutlass_op(matmul_desc.cublaslt_matmul_desc_transb);
+                    auto cutlass_transa = cublas_op_to_cutlass_op(matmul_desc.cublaslt_matmul_desc_transa);
+                    auto cutlass_transb = cublas_op_to_cutlass_op(matmul_desc.cublaslt_matmul_desc_transb);
 
-                void *bias = nullptr;
-                if (matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_BIAS) {
-                    bias = matmul_desc.cublaslt_matmul_desc_bias_pointer;
-                    assert(bias);
-                }
-
-#if defined(VERIFY_CORRECTNESS)
-
-                TALLY_LOG_PROFILE("");
-                TALLY_SPD_LOG_PROFILE("cublasLtMatmul arguments:");
-                TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
-                TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(matrix_a_layout.ld) + ", " + std::to_string(matrix_b_layout.ld) + ", " + std::to_string(matrix_c_layout.ld));
-
-                size_t size_bytes;
-                if (matrix_a_layout.type == CUDA_R_32F) {
-                    TALLY_SPD_LOG_PROFILE("Precision: f32");
-                    size_bytes = sizeof(float) * m * n;
-                } else if (matrix_a_layout.type == CUDA_R_16F) {
-                    TALLY_SPD_LOG_PROFILE("Precision: f16");
-                    size_bytes = sizeof(half) * m * n;
-                }
-
-                // Copy array D
-                void *D_copy;
-                cudaMalloc(&D_copy, size_bytes);
-
-                // Swap D and D copy when verifying correctness
-                // because cublasLtMatmul requires C == D if Cdesc == Ddesc
-                void *D_tmp = D_copy;
-                D_copy = D;
-                D = D_tmp;
-
-                // warmup
-                auto status = cublasLtMatmul_inner(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D_copy, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
-                if (status) {
-                    TALLY_SPD_WARN("Error when warming up cublasLtMatmul");
-                }
-                
-                if (matrix_a_layout.type == CUDA_R_32F) {
-                    cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (float *) A, matrix_a_layout.ld,
-                                    (float *) B, matrix_a_layout.ld, *((float *)beta), (float *) C, matrix_c_layout.ld, (float *) D_copy,
-                                    matrix_d_layout.ld, (float *)bias, NULL, stream);
-                } else if (matrix_a_layout.type == CUDA_R_16F) {
-                    cutlassGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *) A, matrix_a_layout.ld,
-                                    (half *) B, matrix_b_layout.ld, *((float *)beta), (half *) C, matrix_c_layout.ld, (half *) D_copy,
-                                    matrix_d_layout.ld, (half *)bias, stream);
-                }
-
-                // Copy array D
-                cudaMemcpy(D_copy, D, size_bytes, cudaMemcpyDeviceToDevice);
-
-                cudaDeviceSynchronize();
-                spdlog::set_level(spdlog::level::warn);
-                auto start = std::chrono::high_resolution_clock::now();
-
-#endif
-                cudaError_t cuda_err;
-
-                if (
-                    matrix_a_layout.type == CUDA_R_32F &&
-                    matrix_b_layout.type == CUDA_R_32F &&
-                    matrix_c_layout.type == CUDA_R_32F &&
-                    matrix_d_layout.type == CUDA_R_32F
-                ) {
-
-                    cuda_err = cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (float *) A, matrix_a_layout.ld,
-                                                (float *) B, matrix_a_layout.ld, *((float *)beta), (float *) C, matrix_c_layout.ld, (float *) D,
-                                                matrix_d_layout.ld, (float *)bias, NULL, stream);
-
-                } else if (
-                    matrix_a_layout.type == CUDA_R_16F &&
-                    matrix_b_layout.type == CUDA_R_16F &&
-                    matrix_c_layout.type == CUDA_R_16F &&
-                    matrix_d_layout.type == CUDA_R_16F
-                ) {
-                    cuda_err = cutlassGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *) A, matrix_a_layout.ld,
-                                                (half *) B, matrix_b_layout.ld, *((float *)beta), (half *) C, matrix_c_layout.ld, (half *) D,
-                                                matrix_d_layout.ld, (half *)bias, stream);
-                }
-
-                if (!cuda_err) {
-                    err = CUBLAS_STATUS_SUCCESS;
-                } else {
-                    err = CUBLAS_STATUS_INVALID_VALUE;
-                }
-
-                launched = true;
+                    void *bias = nullptr;
+                    if (matmul_desc.cublaslt_matmul_desc_epilogue == CUBLASLT_EPILOGUE_BIAS) {
+                        bias = matmul_desc.cublaslt_matmul_desc_bias_pointer;
+                        assert(bias);
+                    }
 
 #if defined(VERIFY_CORRECTNESS)
 
-                cudaDeviceSynchronize();
-                auto end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double, std::milli> duration = end - start;
-                auto cutlass_ms = duration.count();
-                spdlog::set_level(spdlog::level::info);
+                    TALLY_LOG_PROFILE("");
+                    TALLY_SPD_LOG_PROFILE("cublasLtMatmul arguments:");
+                    TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
+                    TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(matrix_a_layout.ld) + ", " + std::to_string(matrix_b_layout.ld) + ", " + std::to_string(matrix_c_layout.ld));
 
-                start = std::chrono::high_resolution_clock::now();
-
-                err = cublasLtMatmul_inner(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D_copy, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
-                if (err) {
-                    TALLY_SPD_WARN("Error when running cublasLtMatmul");
-                }
-
-                cudaDeviceSynchronize();
-                end = std::chrono::high_resolution_clock::now();
-                duration =  end - start;
-                auto cublas_ms = duration.count();
-
-                TALLY_SPD_LOG_PROFILE("cutlassGemm: " + std::to_string(cutlass_ms) + "ms");
-                TALLY_SPD_LOG_PROFILE("cublasLtMatmul: " + std::to_string(cublas_ms) + "ms");
-
-                if ((cublas_ms / cutlass_ms) < 0.5) {
-                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
-                } else if ((cublas_ms / cutlass_ms) < 0.8) {
-                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
-                } else {
-                    TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
-                }
-                TALLY_LOG_PROFILE("");
-
-                void *h_d_cublas = malloc(size_bytes);
-                void *h_d_cutlass = malloc(size_bytes);
-
-                cudaMemcpy(h_d_cublas, D_copy, size_bytes, cudaMemcpyDeviceToHost);
-                cudaMemcpy(h_d_cutlass, D, size_bytes, cudaMemcpyDeviceToHost);
-
-                bool results_match = true;
-
-                for (int i = 0; i < m * n; i++) {
-
-                    float cublas_val;
-                    float cutlass_val;
-
+                    size_t size_bytes;
                     if (matrix_a_layout.type == CUDA_R_32F) {
-                        cublas_val = ((float *)h_d_cublas)[i];
-                        cutlass_val = ((float *)h_d_cutlass)[i];
+                        TALLY_SPD_LOG_PROFILE("Precision: f32");
+                        size_bytes = sizeof(float) * m * n;
                     } else if (matrix_a_layout.type == CUDA_R_16F) {
-                        cublas_val = __half2float(((half *)h_d_cublas)[i]);
-                        cutlass_val = __half2float(((half *)h_d_cutlass)[i]);
+                        TALLY_SPD_LOG_PROFILE("Precision: f16");
+                        size_bytes = sizeof(half) * m * n;
                     }
 
-                    if (!numerically_close(cublas_val, cutlass_val)) {
-                        results_match = false;
-                        std::cout << "cublas_val: " << cublas_val << std::endl;
-                        std::cout << "cutlass_val: " << cutlass_val << std::endl;
-                        break;
-                    }
-                }
+                    // Copy array D
+                    void *D_copy;
+                    cudaMalloc(&D_copy, size_bytes);
 
-                if (!results_match) {
-                    TALLY_SPD_WARN("cublas and cutlass results do not match.");
-                    // exit(1);
-                } else {
-                    TALLY_SPD_LOG("cutlassGemm results match with cublasLtMatmul");
-                }
-                
-                D_copy = D_tmp;
-                free(h_d_cublas);
-                free(h_d_cutlass);
-                cudaFree(D_copy);
+                    // Swap D and D copy when verifying correctness
+                    // because cublasLtMatmul requires C == D if Cdesc == Ddesc
+                    void *D_tmp = D_copy;
+                    D_copy = D;
+                    D = D_tmp;
+
+                    // warmup
+                    auto status = cublasLtMatmul_inner(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D_copy, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
+                    if (status) {
+                        TALLY_SPD_WARN("Error when warming up cublasLtMatmul");
+                    }
+                    
+                    if (matrix_a_layout.type == CUDA_R_32F) {
+                        cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (float *) A, matrix_a_layout.ld,
+                                        (float *) B, matrix_a_layout.ld, *((float *)beta), (float *) C, matrix_c_layout.ld, (float *) D_copy,
+                                        matrix_d_layout.ld, (float *)bias, NULL, stream);
+                    } else if (matrix_a_layout.type == CUDA_R_16F) {
+                        cutlassGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *) A, matrix_a_layout.ld,
+                                        (half *) B, matrix_b_layout.ld, *((float *)beta), (half *) C, matrix_c_layout.ld, (half *) D_copy,
+                                        matrix_d_layout.ld, (half *)bias, stream);
+                    }
+
+                    // Copy array D
+                    cudaMemcpy(D_copy, D, size_bytes, cudaMemcpyDeviceToDevice);
+
+                    cudaDeviceSynchronize();
+                    spdlog::set_level(spdlog::level::warn);
+                    auto start = std::chrono::high_resolution_clock::now();
+
 #endif
+                    cudaError_t cuda_err;
+
+                    if (
+                        matrix_a_layout.type == CUDA_R_32F &&
+                        matrix_b_layout.type == CUDA_R_32F &&
+                        matrix_c_layout.type == CUDA_R_32F &&
+                        matrix_d_layout.type == CUDA_R_32F
+                    ) {
+
+                        cuda_err = cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (float *) A, matrix_a_layout.ld,
+                                                    (float *) B, matrix_a_layout.ld, *((float *)beta), (float *) C, matrix_c_layout.ld, (float *) D,
+                                                    matrix_d_layout.ld, (float *)bias, NULL, stream);
+
+                    } else if (
+                        matrix_a_layout.type == CUDA_R_16F &&
+                        matrix_b_layout.type == CUDA_R_16F &&
+                        matrix_c_layout.type == CUDA_R_16F &&
+                        matrix_d_layout.type == CUDA_R_16F
+                    ) {
+                        cuda_err = cutlassGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *) A, matrix_a_layout.ld,
+                                                    (half *) B, matrix_b_layout.ld, *((float *)beta), (half *) C, matrix_c_layout.ld, (half *) D,
+                                                    matrix_d_layout.ld, (half *)bias, stream);
+                    }
+
+                    if (!cuda_err) {
+                        err = CUBLAS_STATUS_SUCCESS;
+                    } else {
+                        err = CUBLAS_STATUS_INVALID_VALUE;
+                    }
+
+                    launched = true;
+
+#if defined(VERIFY_CORRECTNESS)
+
+                    cudaDeviceSynchronize();
+                    auto end = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double, std::milli> duration = end - start;
+                    auto cutlass_ms = duration.count();
+                    spdlog::set_level(spdlog::level::info);
+
+                    start = std::chrono::high_resolution_clock::now();
+
+                    err = cublasLtMatmul_inner(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D_copy, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
+                    if (err) {
+                        TALLY_SPD_WARN("Error when running cublasLtMatmul");
+                    }
+
+                    cudaDeviceSynchronize();
+                    end = std::chrono::high_resolution_clock::now();
+                    duration =  end - start;
+                    auto cublas_ms = duration.count();
+
+                    TALLY_SPD_LOG_PROFILE("cutlassGemm: " + std::to_string(cutlass_ms) + "ms");
+                    TALLY_SPD_LOG_PROFILE("cublasLtMatmul: " + std::to_string(cublas_ms) + "ms");
+
+                    if ((cublas_ms / cutlass_ms) < 0.5) {
+                        TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
+                    } else if ((cublas_ms / cutlass_ms) < 0.8) {
+                        TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
+                    } else {
+                        TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
+                    }
+                    TALLY_LOG_PROFILE("");
+
+                    void *h_d_cublas = malloc(size_bytes);
+                    void *h_d_cutlass = malloc(size_bytes);
+
+                    cudaMemcpy(h_d_cublas, D_copy, size_bytes, cudaMemcpyDeviceToHost);
+                    cudaMemcpy(h_d_cutlass, D, size_bytes, cudaMemcpyDeviceToHost);
+
+                    bool results_match = true;
+
+                    for (int i = 0; i < m * n; i++) {
+
+                        float cublas_val;
+                        float cutlass_val;
+
+                        if (matrix_a_layout.type == CUDA_R_32F) {
+                            cublas_val = ((float *)h_d_cublas)[i];
+                            cutlass_val = ((float *)h_d_cutlass)[i];
+                        } else if (matrix_a_layout.type == CUDA_R_16F) {
+                            cublas_val = __half2float(((half *)h_d_cublas)[i]);
+                            cutlass_val = __half2float(((half *)h_d_cutlass)[i]);
+                        }
+
+                        if (!numerically_close(cublas_val, cutlass_val)) {
+                            results_match = false;
+                            std::cout << "cublas_val: " << cublas_val << std::endl;
+                            std::cout << "cutlass_val: " << cutlass_val << std::endl;
+                            break;
+                        }
+                    }
+
+                    if (!results_match) {
+                        TALLY_SPD_WARN("cublas and cutlass results do not match.");
+                        // exit(1);
+                    } else {
+                        TALLY_SPD_LOG("cutlassGemm results match with cublasLtMatmul");
+                    }
+                    
+                    D_copy = D_tmp;
+                    free(h_d_cublas);
+                    free(h_d_cutlass);
+                    cudaFree(D_copy);
+#endif
+                } else {
+                    TALLY_SPD_WARN("Epilogue " + std::to_string((int) (matmul_desc.cublaslt_matmul_desc_epilogue)) + " is not supported yet.");
+                }
             } else {
-                TALLY_SPD_WARN("Epilogue " + std::to_string((int) (matmul_desc.cublaslt_matmul_desc_epilogue)) + " is not supported yet.");
+
+                std::cout << "matrix_a_layout.type: " << (int) matrix_a_layout.type << std::endl;
+                std::cout << "matrix_b_layout.type: " << (int) matrix_b_layout.type << std::endl;
+                std::cout << "matrix_c_layout.type: " << (int) matrix_c_layout.type << std::endl;
+                std::cout << "matrix_d_layout.type: " << (int) matrix_d_layout.type << std::endl;
+
+                std::cout << "matmul_desc.cublaslt_matmul_desc_epilogue: " << (int) matmul_desc.cublaslt_matmul_desc_epilogue << std::endl;
+
+                TALLY_SPD_WARN("matrix type is not CUDA_R_32F");
             }
         } else {
-
-            std::cout << "matrix_a_layout.type: " << (int) matrix_a_layout.type << std::endl;
-            std::cout << "matrix_b_layout.type: " << (int) matrix_b_layout.type << std::endl;
-            std::cout << "matrix_c_layout.type: " << (int) matrix_c_layout.type << std::endl;
-            std::cout << "matrix_d_layout.type: " << (int) matrix_d_layout.type << std::endl;
-
-            std::cout << "matmul_desc.cublaslt_matmul_desc_epilogue: " << (int) matmul_desc.cublaslt_matmul_desc_epilogue << std::endl;
-
-            TALLY_SPD_WARN("matrix type is not CUDA_R_32F");
+            TALLY_SPD_WARN("scaleType is not CUDA_R_32F or computeType is not CUBLAS_COMPUTE_32F");
         }
-    } else {
-        TALLY_SPD_WARN("scaleType is not CUDA_R_32F or computeType is not CUBLAS_COMPUTE_32F");
-    }
 
-    if (!launched) {
-        TALLY_SPD_WARN("Fail to replace cublasLtMatmul with cutlass implementation");
-        throw std::runtime_error("Fail to replace cublasLtMatmul with cutlass implementation");
+        if (!launched) {
+            TALLY_SPD_WARN("Fail to replace cublasLtMatmul with cutlass implementation");
+            throw std::runtime_error("Fail to replace cublasLtMatmul with cutlass implementation");
+        }
     }
-
-#endif
 
     if (!launched) {
         err = cublasLtMatmul_inner(lightHandle, computeDesc, alpha, A, Adesc, B, Bdesc, beta, C, Cdesc, D, Ddesc, algo, workspace, workspaceSizeInBytes, stream);
@@ -1243,33 +1242,41 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_SUCCESS;
-
 #else
-    cublasStatus_t err;
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulDescSetAttributeArg) + sizeInBytes;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
-    .and_then([&](auto& requestPayload) {
-        auto header = static_cast<MessageHeader_t*>(requestPayload);
-        header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCSETATTRIBUTE;
-        header->client_id = TallyClient::client->client_id;
-        
-        auto request = (cublasLtMatmulDescSetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-        request->matmulDesc = matmulDesc;
-        request->attr = attr;
-        request->sizeInBytes = sizeInBytes;
-        memcpy(request->buf, buf, sizeInBytes);
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-        TallyClient::client->iox_client->send(header).or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-    })
-    .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    if (err) {
+
+        uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulDescSetAttributeArg) + sizeInBytes;
+
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
+        .and_then([&](auto& requestPayload) {
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCSETATTRIBUTE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasLtMatmulDescSetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+            request->matmulDesc = matmulDesc;
+            request->attr = attr;
+            request->sizeInBytes = sizeInBytes;
+            memcpy(request->buf, buf, sizeInBytes);
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    }
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -1286,33 +1293,40 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatrixLayoutSetAttribute(matLayout, attr, buf, sizeInBytes);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_SUCCESS;
-
 #else
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatrixLayoutSetAttributeArg) + sizeInBytes;
-    cublasStatus_t err;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
-    .and_then([&](auto& requestPayload) {
-        auto header = static_cast<MessageHeader_t*>(requestPayload);
-        header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTSETATTRIBUTE;
-        header->client_id = TallyClient::client->client_id;
-        
-        auto request = (cublasLtMatrixLayoutSetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-        request->matLayout = matLayout;
-        request->attr = attr;
-        request->sizeInBytes = sizeInBytes;
-        memcpy(request->buf, buf, sizeInBytes);
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-        TallyClient::client->iox_client->send(header).or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-    })
-    .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+    if (err) {
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+        uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatrixLayoutSetAttributeArg) + sizeInBytes;
+
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
+        .and_then([&](auto& requestPayload) {
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTSETATTRIBUTE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasLtMatrixLayoutSetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+            request->matLayout = matLayout;
+            request->attr = attr;
+            request->sizeInBytes = sizeInBytes;
+            memcpy(request->buf, buf, sizeInBytes);
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    }
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -1329,34 +1343,41 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatmulPreferenceSetAttribute(pref, attr, buf, sizeInBytes);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_SUCCESS;
-
 #else
-    cublasStatus_t err;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulPreferenceSetAttributeArg) + sizeInBytes;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
-    .and_then([&](auto& requestPayload) {
-        auto header = static_cast<MessageHeader_t*>(requestPayload);
-        header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCESETATTRIBUTE;
-        header->client_id = TallyClient::client->client_id;
-        
-        auto request = (cublasLtMatmulPreferenceSetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-        request->pref = pref;
-        request->attr = attr;
-        request->sizeInBytes = sizeInBytes;
-        memcpy(request->buf, buf, sizeInBytes);
+    if (replace_cublas) {
+#if !defined(VERIFY_CORRECTNESS)
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+#endif
+    }
 
-        TallyClient::client->iox_client->send(header).or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-    })
-    .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+    if (err) {
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+        uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulPreferenceSetAttributeArg) + sizeInBytes;
+
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
+        .and_then([&](auto& requestPayload) {
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCESETATTRIBUTE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasLtMatmulPreferenceSetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+            request->pref = pref;
+            request->attr = attr;
+            request->sizeInBytes = sizeInBytes;
+            memcpy(request->buf, buf, sizeInBytes);
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    }
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -1373,49 +1394,56 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 #if defined(RUN_LOCALLY)
     auto err = lcublasLtMatmulAlgoGetHeuristic(lightHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, preference, requestedAlgoCount, heuristicResultsArray, returnAlgoCount);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_SUCCESS;
-    // Pretend we have set something
-    *returnAlgoCount = 1;
-    heuristicResultsArray[0].state = CUBLAS_STATUS_SUCCESS;
-
 #else
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulAlgoGetHeuristicArg);
-    cublasStatus_t err;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
-    .and_then([&](auto& requestPayload) {
-        auto header = static_cast<MessageHeader_t*>(requestPayload);
-        header->api_id = CUDA_API_ENUM::CUBLASLTMATMULALGOGETHEURISTIC;
-        header->client_id = TallyClient::client->client_id;
-        
-        auto request = (cublasLtMatmulAlgoGetHeuristicArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-        request->lightHandle = lightHandle;
-        request->operationDesc = operationDesc;
-        request->Adesc = Adesc;
-        request->Bdesc = Bdesc;
-        request->Cdesc = Cdesc;
-        request->Ddesc = Ddesc;
-        request->preference = preference;
-        request->requestedAlgoCount = requestedAlgoCount;
-        request->heuristicResultsArray = heuristicResultsArray;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-        TallyClient::client->iox_client->send(header).or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-    })
-    .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+        *returnAlgoCount = 1;
+        heuristicResultsArray[0].state = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cublasLtMatmulAlgoGetHeuristicResponse*>(responsePayload);
-            err = response->err;
-            *returnAlgoCount = response->returnAlgoCount;
-            memcpy(heuristicResultsArray, response->heuristicResultsArray, sizeof(cublasLtMatmulHeuristicResult_t) * response->returnAlgoCount);
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {}
+    if (err) {
+
+        uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulAlgoGetHeuristicArg);
+
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
+        .and_then([&](auto& requestPayload) {
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULALGOGETHEURISTIC;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cublasLtMatmulAlgoGetHeuristicArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+            request->lightHandle = lightHandle;
+            request->operationDesc = operationDesc;
+            request->Adesc = Adesc;
+            request->Bdesc = Bdesc;
+            request->Cdesc = Cdesc;
+            request->Ddesc = Ddesc;
+            request->preference = preference;
+            request->requestedAlgoCount = requestedAlgoCount;
+            request->heuristicResultsArray = heuristicResultsArray;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        while(!TallyClient::client->iox_client->take()
+            .and_then([&](const auto& responsePayload) {
+                auto response = static_cast<const cublasLtMatmulAlgoGetHeuristicResponse*>(responsePayload);
+                err = response->err;
+                *returnAlgoCount = response->returnAlgoCount;
+                memcpy(heuristicResultsArray, response->heuristicResultsArray, sizeof(cublasLtMatmulHeuristicResult_t) * response->returnAlgoCount);
+                TallyClient::client->iox_client->releaseResponse(responsePayload);
+            }))
+        {}
+    }
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -2135,12 +2163,11 @@ cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 #if defined(RUN_LOCALLY)
     auto err = lcublasSgemv_v2(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 
-#elif defined(REPLACE_CUBLAS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_INVALID_VALUE;
-    throw std::runtime_error("Fail to replace cublasSgemv_v2 with cutlass implementation");
-
 #else
+    if (replace_cublas) {
+        throw std::runtime_error("Fail to replace cublasSgemv_v2 with cutlass implementation");
+    }
+
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -2321,11 +2348,11 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 #if defined(RUN_LOCALLY)
     auto err = lcublasSgemmEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
 
-#elif defined(REPLACE_CUBLAS)
-    auto err = CUBLAS_STATUS_INVALID_VALUE;
-    throw std::runtime_error("Fail to replace cublasSgemmEx with cutlass implementation");
-
 #else
+    if (replace_cublas) {
+        throw std::runtime_error("Fail to replace cublasSgemmEx with cutlass implementation");
+    }
+
     cublasStatus_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
@@ -3294,125 +3321,125 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
     bool launched = false;
     cublasStatus_t err;
 
-#if defined(REPLACE_CUBLAS)
+    if (replace_cublas) {
 
-    auto ctx = cublas_tracer.get_cublasCtx(handle);
+        auto ctx = cublas_tracer.get_cublasCtx(handle);
 
-    if (ctx.mode == CUBLAS_DEFAULT_MATH) { 
+        if (ctx.mode == CUBLAS_DEFAULT_MATH) { 
 
-        TALLY_SPD_LOG("cublasSgemmStridedBatched replaced with cutlassStridedBatchedGemm_f32");
-        load_tally_cutlass_lib();
+            TALLY_SPD_LOG("cublasSgemmStridedBatched replaced with cutlassStridedBatchedGemm_f32");
+            load_tally_cutlass_lib();
 
-        auto cutlass_transa = cublas_op_to_cutlass_op(transa);
-        auto cutlass_transb = cublas_op_to_cutlass_op(transb);
+            auto cutlass_transa = cublas_op_to_cutlass_op(transa);
+            auto cutlass_transb = cublas_op_to_cutlass_op(transb);
 
 #if defined(VERIFY_CORRECTNESS)
 
-        TALLY_LOG_PROFILE("");
-        TALLY_SPD_LOG_PROFILE("cublasSgemmStridedBatched arguments:");
-        TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
-        TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
-        TALLY_SPD_LOG_PROFILE("strides: " + std::to_string(strideA) + ", " + std::to_string(strideB) + ", " + std::to_string(strideC));
+            TALLY_LOG_PROFILE("");
+            TALLY_SPD_LOG_PROFILE("cublasSgemmStridedBatched arguments:");
+            TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
+            TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
+            TALLY_SPD_LOG_PROFILE("strides: " + std::to_string(strideA) + ", " + std::to_string(strideB) + ", " + std::to_string(strideC));
 
-        // Copy array C
-        float *C_copy;
-        int num_elems = (batchCount - 1) * strideC + m * n;
-        int size_bytes = num_elems * sizeof(float);
-        cudaMalloc(&C_copy, size_bytes);
+            // Copy array C
+            float *C_copy;
+            int num_elems = (batchCount - 1) * strideC + m * n;
+            int size_bytes = num_elems * sizeof(float);
+            cudaMalloc(&C_copy, size_bytes);
 
-        // warmup
-        cublasSgemmStridedBatched_inner(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C_copy, ldc, strideC, batchCount);
-        cutlassStridedBatchedGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, strideA, B, ldb, strideB, C_copy, ldc, strideC, *beta, batchCount, ctx.stream);
+            // warmup
+            cublasSgemmStridedBatched_inner(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C_copy, ldc, strideC, batchCount);
+            cutlassStridedBatchedGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, strideA, B, ldb, strideB, C_copy, ldc, strideC, *beta, batchCount, ctx.stream);
 
-        cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
+            cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
 
-        cudaDeviceSynchronize();
-        spdlog::set_level(spdlog::level::warn);
-        auto start = std::chrono::high_resolution_clock::now();
+            cudaDeviceSynchronize();
+            spdlog::set_level(spdlog::level::warn);
+            auto start = std::chrono::high_resolution_clock::now();
 #endif
 
-        auto cuda_err = cutlassStridedBatchedGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, strideA, B, ldb, strideB, C, ldc, strideC, *beta, batchCount, ctx.stream);
+            auto cuda_err = cutlassStridedBatchedGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *alpha, A, lda, strideA, B, ldb, strideB, C, ldc, strideC, *beta, batchCount, ctx.stream);
 
-        if (!cuda_err) {
-            err = CUBLAS_STATUS_SUCCESS;
-        } else {
-            err = CUBLAS_STATUS_INVALID_VALUE;
-        }
-
-        launched = true;
-
-#if defined(VERIFY_CORRECTNESS)
-
-        cudaDeviceSynchronize();
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> duration = end - start;
-        auto cutlass_ms = duration.count();
-        spdlog::set_level(spdlog::level::info);
-
-        start = std::chrono::high_resolution_clock::now();
-
-        err = cublasSgemmStridedBatched_inner(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C_copy, ldc, strideC, batchCount);
-
-        cudaDeviceSynchronize();
-        end = std::chrono::high_resolution_clock::now();
-        duration =  end - start;
-        auto cublas_ms = duration.count();
-
-        TALLY_SPD_LOG_PROFILE("cutlassStridedBatchedGemm_f32: " + std::to_string(cutlass_ms) + "ms");
-        TALLY_SPD_LOG_PROFILE("cublasSgemmStridedBatched: " + std::to_string(cublas_ms) + "ms");
-
-        if ((cublas_ms / cutlass_ms) < 0.5) {
-            TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
-        } else if ((cublas_ms / cutlass_ms) < 0.8) {
-            TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
-        } else {
-            TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
-        }
-        TALLY_LOG_PROFILE("");
-
-        float *h_c_cublas = (float *) malloc(size_bytes);
-        float *h_c_cutlass = (float *) malloc(size_bytes);
-
-        cudaMemcpy(h_c_cublas, C_copy, size_bytes, cudaMemcpyDeviceToHost);
-        cudaMemcpy(h_c_cutlass, C, size_bytes, cudaMemcpyDeviceToHost);
-
-        bool results_match = true;
-
-        for (int i = 0; i < num_elems; i++) {
-
-            float cublas_val = h_c_cublas[i];
-            float cutlass_val = h_c_cutlass[i];
-
-            if (!numerically_close(cublas_val, cutlass_val)) {
-                results_match = false;
-                std::cout << "cublas_val: " << cublas_val << std::endl;
-                std::cout << "cutlass_val: " << cutlass_val << std::endl;
-                break;
+            if (!cuda_err) {
+                err = CUBLAS_STATUS_SUCCESS;
+            } else {
+                err = CUBLAS_STATUS_INVALID_VALUE;
             }
-        }
 
-        if (!results_match) {
-            TALLY_SPD_WARN("cublas and cutlass results do not match.");
-            // exit(1);
+            launched = true;
+
+#if defined(VERIFY_CORRECTNESS)
+
+            cudaDeviceSynchronize();
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> duration = end - start;
+            auto cutlass_ms = duration.count();
+            spdlog::set_level(spdlog::level::info);
+
+            start = std::chrono::high_resolution_clock::now();
+
+            err = cublasSgemmStridedBatched_inner(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C_copy, ldc, strideC, batchCount);
+
+            cudaDeviceSynchronize();
+            end = std::chrono::high_resolution_clock::now();
+            duration =  end - start;
+            auto cublas_ms = duration.count();
+
+            TALLY_SPD_LOG_PROFILE("cutlassStridedBatchedGemm_f32: " + std::to_string(cutlass_ms) + "ms");
+            TALLY_SPD_LOG_PROFILE("cublasSgemmStridedBatched: " + std::to_string(cublas_ms) + "ms");
+
+            if ((cublas_ms / cutlass_ms) < 0.5) {
+                TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
+            } else if ((cublas_ms / cutlass_ms) < 0.8) {
+                TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
+            } else {
+                TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
+            }
+            TALLY_LOG_PROFILE("");
+
+            float *h_c_cublas = (float *) malloc(size_bytes);
+            float *h_c_cutlass = (float *) malloc(size_bytes);
+
+            cudaMemcpy(h_c_cublas, C_copy, size_bytes, cudaMemcpyDeviceToHost);
+            cudaMemcpy(h_c_cutlass, C, size_bytes, cudaMemcpyDeviceToHost);
+
+            bool results_match = true;
+
+            for (int i = 0; i < num_elems; i++) {
+
+                float cublas_val = h_c_cublas[i];
+                float cutlass_val = h_c_cutlass[i];
+
+                if (!numerically_close(cublas_val, cutlass_val)) {
+                    results_match = false;
+                    std::cout << "cublas_val: " << cublas_val << std::endl;
+                    std::cout << "cutlass_val: " << cutlass_val << std::endl;
+                    break;
+                }
+            }
+
+            if (!results_match) {
+                TALLY_SPD_WARN("cublas and cutlass results do not match.");
+                // exit(1);
+            } else {
+                TALLY_SPD_LOG("cutlassStridedBatchedGemm_f32 results match with cublasSgemmStridedBatched");
+            }
+            
+            free(h_c_cublas);
+            free(h_c_cutlass);
+            cudaFree(C_copy);
+#endif
+
         } else {
-            TALLY_SPD_LOG("cutlassStridedBatchedGemm_f32 results match with cublasSgemmStridedBatched");
+            TALLY_SPD_WARN("mode is not CUBLAS_DEFAULT_MATH");
         }
-        
-        free(h_c_cublas);
-        free(h_c_cutlass);
-        cudaFree(C_copy);
-#endif
 
-    } else {
-        TALLY_SPD_WARN("mode is not CUBLAS_DEFAULT_MATH");
+        if (!launched) {
+            TALLY_SPD_WARN("Fail to replace cublasSgemmStridedBatched with cutlass implementation");
+            throw std::runtime_error("Fail to replace cublasSgemmStridedBatched with cutlass implementation");
+        }
+
     }
-
-    if (!launched) {
-        TALLY_SPD_WARN("Fail to replace cublasSgemmStridedBatched with cutlass implementation");
-        throw std::runtime_error("Fail to replace cublasSgemmStridedBatched with cutlass implementation");
-    }
-
-#endif
 
     if (!launched) {
 	    err = cublasSgemmStridedBatched_inner(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
@@ -4429,7 +4456,7 @@ CUresult cuGetProcAddress_v2(const char * symbol, void ** pfn, int  cudaVersion,
         // do nothing
     }
     else {
-        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented cuGetProcAddress_v2 lookup.");
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented cuGetProcAddress_v2 lookup: " + symbol_str);
     }
 
 	return res;
@@ -4954,139 +4981,138 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
     bool launched = false;
     cublasStatus_t err;
 
-#if defined(REPLACE_CUBLAS)
+    if (replace_cublas) {
 
-    auto cublasCtx = cublas_tracer.get_cublasCtx(handle);
-    auto math_mode = cublasCtx.mode;
-    auto stream = cublasCtx.stream;
+        auto cublasCtx = cublas_tracer.get_cublasCtx(handle);
+        auto math_mode = cublasCtx.mode;
+        auto stream = cublasCtx.stream;
 
-    if (math_mode == CUBLAS_DEFAULT_MATH) {
+        if (math_mode == CUBLAS_DEFAULT_MATH) {
 
-        if (Atype == CUDA_R_16F &&
-            Btype == CUDA_R_16F &&
-            Ctype == CUDA_R_16F) {
+            if (Atype == CUDA_R_16F &&
+                Btype == CUDA_R_16F &&
+                Ctype == CUDA_R_16F) {
 
-            if (computeType == CUBLAS_COMPUTE_32F) {
+                if (computeType == CUBLAS_COMPUTE_32F) {
 
-                TALLY_SPD_LOG("cublasGemmEx replaced with cutlassGemm_f16");
-                load_tally_cutlass_lib();
+                    TALLY_SPD_LOG("cublasGemmEx replaced with cutlassGemm_f16");
+                    load_tally_cutlass_lib();
 
-                auto cutlass_transa = cublas_op_to_cutlass_op(transa);
-                auto cutlass_transb = cublas_op_to_cutlass_op(transb);
+                    auto cutlass_transa = cublas_op_to_cutlass_op(transa);
+                    auto cutlass_transb = cublas_op_to_cutlass_op(transb);
 
 #if defined(VERIFY_CORRECTNESS)
-                TALLY_LOG_PROFILE("");
-                TALLY_SPD_LOG_PROFILE("cublasGemmEx arguments:");
-                TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
-                TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
-                TALLY_SPD_LOG_PROFILE("Precision: f16");
+                    TALLY_LOG_PROFILE("");
+                    TALLY_SPD_LOG_PROFILE("cublasGemmEx arguments:");
+                    TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
+                    TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
+                    TALLY_SPD_LOG_PROFILE("Precision: f16");
 
-                // Copy array C
-                half *C_copy;
-                cudaMalloc(&C_copy, sizeof(half) * m * n);
+                    // Copy array C
+                    half *C_copy;
+                    cudaMalloc(&C_copy, sizeof(half) * m * n);
 
-                // warmup
-                cublasGemmEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C_copy, Ctype, ldc, computeType, algo);
-                cutlassGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *) A, lda,
-                                (half *) B, ldb, *((float *)beta), (half *) C, ldc, (half *) C_copy,
-                                ldc, NULL, stream);
+                    // warmup
+                    cublasGemmEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C_copy, Ctype, ldc, computeType, algo);
+                    cutlassGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *) A, lda,
+                                    (half *) B, ldb, *((float *)beta), (half *) C, ldc, (half *) C_copy,
+                                    ldc, NULL, stream);
 
 
-                cudaMemcpy(C_copy, C, sizeof(half) * m * n, cudaMemcpyDeviceToDevice);
+                    cudaMemcpy(C_copy, C, sizeof(half) * m * n, cudaMemcpyDeviceToDevice);
 
-                cudaDeviceSynchronize();
-                spdlog::set_level(spdlog::level::warn);
-                auto start = std::chrono::high_resolution_clock::now();
+                    cudaDeviceSynchronize();
+                    spdlog::set_level(spdlog::level::warn);
+                    auto start = std::chrono::high_resolution_clock::now();
 #endif
-                auto cuda_err = cutlassGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *) A, lda,
-                                                (half *) B, ldb, *((float *)beta), (half *) C, ldc, (half *) C,
-                                                ldc, NULL, stream);
+                    auto cuda_err = cutlassGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *) A, lda,
+                                                    (half *) B, ldb, *((float *)beta), (half *) C, ldc, (half *) C,
+                                                    ldc, NULL, stream);
 
-                if (!cuda_err) {
-                    err = CUBLAS_STATUS_SUCCESS;
-                } else {
-                    err = CUBLAS_STATUS_INVALID_VALUE;
-                }
-
-                launched = true;
-
-#if defined(VERIFY_CORRECTNESS)
-
-                cudaDeviceSynchronize();
-                auto end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double, std::milli> duration = end - start;
-                auto cutlass_ms = duration.count();
-                spdlog::set_level(spdlog::level::info);
-
-                start = std::chrono::high_resolution_clock::now();
-
-                err = cublasGemmEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C_copy, Ctype, ldc, computeType, algo);
-
-                cudaDeviceSynchronize();
-                end = std::chrono::high_resolution_clock::now();
-                duration =  end - start;
-                auto cublas_ms = duration.count();
-
-                TALLY_SPD_LOG_PROFILE("cutlassGemm_f16: " + std::to_string(cutlass_ms) + "ms");
-                TALLY_SPD_LOG_PROFILE("cublasGemmEx: " + std::to_string(cublas_ms) + "ms");
-
-                if ((cublas_ms / cutlass_ms) < 0.5) {
-                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
-                } else if ((cublas_ms / cutlass_ms) < 0.8) {
-                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
-                } else {
-                    TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
-                }
-                TALLY_LOG_PROFILE("");
-
-                half *h_c_cublas = (half *) malloc(sizeof(half) * m * n);
-                half *h_c_cutlass = (half *) malloc(sizeof(half) * m * n);
-
-                cudaMemcpy(h_c_cublas, C_copy, sizeof(half) * m * n, cudaMemcpyDeviceToHost);
-                cudaMemcpy(h_c_cutlass, C, sizeof(half) * m * n, cudaMemcpyDeviceToHost);
-
-                bool results_match = true;
-
-                for (int i = 0; i < m * n; i++) {
-                    auto cublas_val = __half2float(h_c_cublas[i]);
-                    auto cutlass_val = __half2float(h_c_cutlass[i]);
-
-                    if (!numerically_close(cublas_val, cutlass_val)) {
-                        std::cout << "cublas_val: " << cublas_val << std::endl;
-                        std::cout << "cutlass_val: " << cutlass_val << std::endl;
-                        results_match = false;
-                        break;
+                    if (!cuda_err) {
+                        err = CUBLAS_STATUS_SUCCESS;
+                    } else {
+                        err = CUBLAS_STATUS_INVALID_VALUE;
                     }
-                }
 
-                if (!results_match) {
-                    TALLY_SPD_WARN("cublas and cutlass results do not match.");
-                    // exit(1);
-                } else {
-                    TALLY_SPD_LOG("cutlassGemm results match with cublasGemmEx");
-                }
+                    launched = true;
 
-                free(h_c_cublas);
-                free(h_c_cutlass);
-                cudaFree(C_copy);
+#if defined(VERIFY_CORRECTNESS)
+
+                    cudaDeviceSynchronize();
+                    auto end = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double, std::milli> duration = end - start;
+                    auto cutlass_ms = duration.count();
+                    spdlog::set_level(spdlog::level::info);
+
+                    start = std::chrono::high_resolution_clock::now();
+
+                    err = cublasGemmEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C_copy, Ctype, ldc, computeType, algo);
+
+                    cudaDeviceSynchronize();
+                    end = std::chrono::high_resolution_clock::now();
+                    duration =  end - start;
+                    auto cublas_ms = duration.count();
+
+                    TALLY_SPD_LOG_PROFILE("cutlassGemm_f16: " + std::to_string(cutlass_ms) + "ms");
+                    TALLY_SPD_LOG_PROFILE("cublasGemmEx: " + std::to_string(cublas_ms) + "ms");
+
+                    if ((cublas_ms / cutlass_ms) < 0.5) {
+                        TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
+                    } else if ((cublas_ms / cutlass_ms) < 0.8) {
+                        TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
+                    } else {
+                        TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
+                    }
+                    TALLY_LOG_PROFILE("");
+
+                    half *h_c_cublas = (half *) malloc(sizeof(half) * m * n);
+                    half *h_c_cutlass = (half *) malloc(sizeof(half) * m * n);
+
+                    cudaMemcpy(h_c_cublas, C_copy, sizeof(half) * m * n, cudaMemcpyDeviceToHost);
+                    cudaMemcpy(h_c_cutlass, C, sizeof(half) * m * n, cudaMemcpyDeviceToHost);
+
+                    bool results_match = true;
+
+                    for (int i = 0; i < m * n; i++) {
+                        auto cublas_val = __half2float(h_c_cublas[i]);
+                        auto cutlass_val = __half2float(h_c_cutlass[i]);
+
+                        if (!numerically_close(cublas_val, cutlass_val)) {
+                            std::cout << "cublas_val: " << cublas_val << std::endl;
+                            std::cout << "cutlass_val: " << cutlass_val << std::endl;
+                            results_match = false;
+                            break;
+                        }
+                    }
+
+                    if (!results_match) {
+                        TALLY_SPD_WARN("cublas and cutlass results do not match.");
+                        // exit(1);
+                    } else {
+                        TALLY_SPD_LOG("cutlassGemm results match with cublasGemmEx");
+                    }
+
+                    free(h_c_cublas);
+                    free(h_c_cutlass);
+                    cudaFree(C_copy);
 #endif
 
+                } else {
+                    TALLY_SPD_WARN("computeType type is not CUBLAS_COMPUTE_32F");
+                }
             } else {
-                TALLY_SPD_WARN("computeType type is not CUBLAS_COMPUTE_32F");
+                TALLY_SPD_WARN("A/B/C type is not CUDA_R_16F");
             }
         } else {
-            TALLY_SPD_WARN("A/B/C type is not CUDA_R_16F");
+            TALLY_SPD_WARN("math_mode is not CUBLAS_DEFAULT_MATH");
         }
-    } else {
-        TALLY_SPD_WARN("math_mode is not CUBLAS_DEFAULT_MATH");
-    }
 
-    if (!launched) {
-        TALLY_SPD_WARN("Fail to replace cublasGemmEx with cutlass implementation");
-        throw std::runtime_error("Fail to replace cublasGemmEx with cutlass implementation");
+        if (!launched) {
+            TALLY_SPD_WARN("Fail to replace cublasGemmEx with cutlass implementation");
+            throw std::runtime_error("Fail to replace cublasGemmEx with cutlass implementation");
+        }
     }
-
-#endif
 
     if (!launched) {
         err = cublasGemmEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc, computeType, algo);
@@ -5285,143 +5311,142 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
     bool launched = false;
     cublasStatus_t err;
 
-#if defined(REPLACE_CUBLAS)
+    if (replace_cublas) {
 
-    auto cublasCtx = cublas_tracer.get_cublasCtx(handle);
-    auto math_mode = cublasCtx.mode;
-    auto stream = cublasCtx.stream;
+        auto cublasCtx = cublas_tracer.get_cublasCtx(handle);
+        auto math_mode = cublasCtx.mode;
+        auto stream = cublasCtx.stream;
 
-    if (math_mode == CUBLAS_DEFAULT_MATH) {
+        if (math_mode == CUBLAS_DEFAULT_MATH) {
 
-        if (Atype == CUDA_R_16F &&
-            Btype == CUDA_R_16F &&
-            Ctype == CUDA_R_16F) {
+            if (Atype == CUDA_R_16F &&
+                Btype == CUDA_R_16F &&
+                Ctype == CUDA_R_16F) {
 
-            if (computeType == CUBLAS_COMPUTE_32F) {
-            
-                TALLY_SPD_LOG("cublasGemmStridedBatchedEx replaced with cutlassStridedBatchedGemm_f16");
-                load_tally_cutlass_lib();
+                if (computeType == CUBLAS_COMPUTE_32F) {
+                
+                    TALLY_SPD_LOG("cublasGemmStridedBatchedEx replaced with cutlassStridedBatchedGemm_f16");
+                    load_tally_cutlass_lib();
 
-                auto cutlass_transa = cublas_op_to_cutlass_op(transa);
-                auto cutlass_transb = cublas_op_to_cutlass_op(transb);
+                    auto cutlass_transa = cublas_op_to_cutlass_op(transa);
+                    auto cutlass_transb = cublas_op_to_cutlass_op(transb);
 
 #if defined(VERIFY_CORRECTNESS)
 
-                TALLY_LOG_PROFILE("");
-                TALLY_SPD_LOG_PROFILE("cublasGemmStridedBatchedEx arguments:");
-                TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
-                TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
-                TALLY_SPD_LOG_PROFILE("batchCount: " + std::to_string(batchCount));
-                TALLY_SPD_LOG_PROFILE("Precision: f16");
+                    TALLY_LOG_PROFILE("");
+                    TALLY_SPD_LOG_PROFILE("cublasGemmStridedBatchedEx arguments:");
+                    TALLY_SPD_LOG_PROFILE("Dim: " + std::to_string(m) + ", " + std::to_string(n) + ", " + std::to_string(k));
+                    TALLY_SPD_LOG_PROFILE("ld: " + std::to_string(lda) + ", " + std::to_string(ldb) + ", " + std::to_string(ldc));
+                    TALLY_SPD_LOG_PROFILE("batchCount: " + std::to_string(batchCount));
+                    TALLY_SPD_LOG_PROFILE("Precision: f16");
 
-                // Copy array C
-                half *C_copy;
-                int num_elems = (batchCount - 1) * strideC + m * n;
-                int size_bytes = num_elems * sizeof(half);
-                cudaMalloc(&C_copy, size_bytes);
+                    // Copy array C
+                    half *C_copy;
+                    int num_elems = (batchCount - 1) * strideC + m * n;
+                    int size_bytes = num_elems * sizeof(half);
+                    cudaMalloc(&C_copy, size_bytes);
 
-                // warmup
-                cublasGemmStridedBatchedEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C_copy, Ctype, ldc, strideC, batchCount, computeType, algo);
-                cutlassStridedBatchedGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *)A, lda, strideA, (half *)B, ldb, strideB, (half *)C_copy, ldc, strideC, *((float *)beta), batchCount, stream);
+                    // warmup
+                    cublasGemmStridedBatchedEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C_copy, Ctype, ldc, strideC, batchCount, computeType, algo);
+                    cutlassStridedBatchedGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *)A, lda, strideA, (half *)B, ldb, strideB, (half *)C_copy, ldc, strideC, *((float *)beta), batchCount, stream);
 
-                cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
+                    cudaMemcpy(C_copy, C, size_bytes, cudaMemcpyDeviceToDevice);
 
-                cudaDeviceSynchronize();
-                spdlog::set_level(spdlog::level::warn);
-                auto start = std::chrono::high_resolution_clock::now();
+                    cudaDeviceSynchronize();
+                    spdlog::set_level(spdlog::level::warn);
+                    auto start = std::chrono::high_resolution_clock::now();
 #endif
 
-                auto cuda_err = cutlassStridedBatchedGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *)A, lda, strideA, (half *)B, ldb, strideB, (half *)C, ldc, strideC, *((float *)beta), batchCount, stream);
+                    auto cuda_err = cutlassStridedBatchedGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *)A, lda, strideA, (half *)B, ldb, strideB, (half *)C, ldc, strideC, *((float *)beta), batchCount, stream);
 
-                if (!cuda_err) {
-                    err = CUBLAS_STATUS_SUCCESS;
-                } else {
-                    err = CUBLAS_STATUS_INVALID_VALUE;
-                }
-
-                launched = true;
-
-#if defined(VERIFY_CORRECTNESS)
-
-                cudaDeviceSynchronize();
-                auto end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double, std::milli> duration = end - start;
-                auto cutlass_ms = duration.count();
-                spdlog::set_level(spdlog::level::info);
-
-                start = std::chrono::high_resolution_clock::now();
-
-                err = cublasGemmStridedBatchedEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C_copy, Ctype, ldc, strideC, batchCount, computeType, algo);
-                
-                cudaDeviceSynchronize();
-                end = std::chrono::high_resolution_clock::now();
-                duration =  end - start;
-                auto cublas_ms = duration.count();
-
-                TALLY_SPD_LOG_PROFILE("cutlassStridedBatchedGemm_f16: " + std::to_string(cutlass_ms) + "ms");
-                TALLY_SPD_LOG_PROFILE("cublasGemmStridedBatchedEx: " + std::to_string(cublas_ms) + "ms");
-
-                if ((cublas_ms / cutlass_ms) < 0.5) {
-                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
-                } else if ((cublas_ms / cutlass_ms) < 0.8) {
-                    TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
-                } else {
-                    TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
-                }
-                TALLY_LOG_PROFILE("");
-
-                half *h_c_cublas = (half *) malloc(size_bytes);
-                half *h_c_cutlass = (half *) malloc(size_bytes);
-
-                cudaMemcpy(h_c_cublas, C_copy, size_bytes, cudaMemcpyDeviceToHost);
-                cudaMemcpy(h_c_cutlass, C, size_bytes, cudaMemcpyDeviceToHost);
-
-                bool results_match = true;
-
-                for (int i = 0; i < num_elems; i++) {
-
-                    float cublas_val =  __half2float(h_c_cublas[i]);
-                    float cutlass_val = __half2float(h_c_cutlass[i]);
-
-                    if (!numerically_close(cublas_val, cutlass_val)) {
-                        results_match = false;
-                        std::cout << "cublas_val: " << cublas_val << std::endl;
-                        std::cout << "cutlass_val: " << cutlass_val << std::endl;
-                        break;
+                    if (!cuda_err) {
+                        err = CUBLAS_STATUS_SUCCESS;
+                    } else {
+                        err = CUBLAS_STATUS_INVALID_VALUE;
                     }
-                }
 
-                if (!results_match) {
-                    TALLY_SPD_WARN("cublas and cutlass results do not match.");
-                    // exit(1);
-                } else {
-                    TALLY_SPD_LOG("cutlassStridedBatchedGemm_f32 results match with cublasSgemmStridedBatched");
-                }
-                
-                free(h_c_cublas);
-                free(h_c_cutlass);
-                cudaFree(C_copy);
+                    launched = true;
+
+#if defined(VERIFY_CORRECTNESS)
+
+                    cudaDeviceSynchronize();
+                    auto end = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double, std::milli> duration = end - start;
+                    auto cutlass_ms = duration.count();
+                    spdlog::set_level(spdlog::level::info);
+
+                    start = std::chrono::high_resolution_clock::now();
+
+                    err = cublasGemmStridedBatchedEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C_copy, Ctype, ldc, strideC, batchCount, computeType, algo);
+                    
+                    cudaDeviceSynchronize();
+                    end = std::chrono::high_resolution_clock::now();
+                    duration =  end - start;
+                    auto cublas_ms = duration.count();
+
+                    TALLY_SPD_LOG_PROFILE("cutlassStridedBatchedGemm_f16: " + std::to_string(cutlass_ms) + "ms");
+                    TALLY_SPD_LOG_PROFILE("cublasGemmStridedBatchedEx: " + std::to_string(cublas_ms) + "ms");
+
+                    if ((cublas_ms / cutlass_ms) < 0.5) {
+                        TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 50% of cublas");
+                    } else if ((cublas_ms / cutlass_ms) < 0.8) {
+                        TALLY_SPD_LOG_PROFILE("cutlass performance does not match at least 80% of cublas");
+                    } else {
+                        TALLY_SPD_LOG_PROFILE("cutlass performance is comparable with cublas");
+                    }
+                    TALLY_LOG_PROFILE("");
+
+                    half *h_c_cublas = (half *) malloc(size_bytes);
+                    half *h_c_cutlass = (half *) malloc(size_bytes);
+
+                    cudaMemcpy(h_c_cublas, C_copy, size_bytes, cudaMemcpyDeviceToHost);
+                    cudaMemcpy(h_c_cutlass, C, size_bytes, cudaMemcpyDeviceToHost);
+
+                    bool results_match = true;
+
+                    for (int i = 0; i < num_elems; i++) {
+
+                        float cublas_val =  __half2float(h_c_cublas[i]);
+                        float cutlass_val = __half2float(h_c_cutlass[i]);
+
+                        if (!numerically_close(cublas_val, cutlass_val)) {
+                            results_match = false;
+                            std::cout << "cublas_val: " << cublas_val << std::endl;
+                            std::cout << "cutlass_val: " << cutlass_val << std::endl;
+                            break;
+                        }
+                    }
+
+                    if (!results_match) {
+                        TALLY_SPD_WARN("cublas and cutlass results do not match.");
+                        // exit(1);
+                    } else {
+                        TALLY_SPD_LOG("cutlassStridedBatchedGemm_f32 results match with cublasSgemmStridedBatched");
+                    }
+                    
+                    free(h_c_cublas);
+                    free(h_c_cutlass);
+                    cudaFree(C_copy);
 #endif
+
+                } else {
+                    TALLY_SPD_WARN("computeType type is not CUBLAS_COMPUTE_32F");
+                }
 
             } else {
-                TALLY_SPD_WARN("computeType type is not CUBLAS_COMPUTE_32F");
+                TALLY_SPD_WARN("A/B/C type is not CUDA_R_16F");
             }
 
         } else {
-            TALLY_SPD_WARN("A/B/C type is not CUDA_R_16F");
+            TALLY_SPD_WARN("math_mode is not CUBLAS_DEFAULT_MATH")
         }
 
-    } else {
-        TALLY_SPD_WARN("math_mode is not CUBLAS_DEFAULT_MATH")
+        if (!launched) {
+            TALLY_SPD_WARN("Fail to replace cublasGemmStridedBatchedEx with cutlass implementation");
+            throw std::runtime_error("Fail to replace cublasGemmStridedBatchedEx with cutlass implementation");
+        }
     }
-
-    if (!launched) {
-        TALLY_SPD_WARN("Fail to replace cublasGemmStridedBatchedEx with cutlass implementation");
-        throw std::runtime_error("Fail to replace cublasGemmStridedBatchedEx with cutlass implementation");
-    }
-
-#endif
-
+    
     if (!launched) {
         err = cublasGemmStridedBatchedEx_inner(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C, Ctype, ldc, strideC, batchCount, computeType, algo);
     }
@@ -6290,31 +6315,37 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetMathMode(handle, mode);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_SUCCESS;
-
 #else
 
-    cublasStatus_t err;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetMathModeArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASSETMATHMODE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasSetMathModeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->handle = handle;
-			request->mode = mode;
+    if (err) {
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetMathModeArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
+
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASSETMATHMODE;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasSetMathModeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->handle = handle;
+                request->mode = mode;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    }
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetMathMode);
@@ -6368,31 +6399,37 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetStream_v2(handle, streamId);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_SUCCESS;
-
 #else
 
-    cublasStatus_t err;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetStream_v2Arg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASSETSTREAM_V2;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasSetStream_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->handle = handle;
-			request->streamId = streamId;
+    if (err) {
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetStream_v2Arg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
+
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASSETSTREAM_V2;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasSetStream_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->handle = handle;
+                request->streamId = streamId;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    }
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetStream_v2);
@@ -6409,34 +6446,39 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_SUCCESS;
-
 #else
 
-    cublasStatus_t err;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetWorkspace_v2Arg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASSETWORKSPACE_V2;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasSetWorkspace_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->handle = handle;
-			request->workspace = workspace;
-			request->workspaceSizeInBytes = workspaceSizeInBytes;
+    if (err) {
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetWorkspace_v2Arg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASSETWORKSPACE_V2;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasSetWorkspace_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->handle = handle;
+                request->workspace = workspace;
+                request->workspaceSizeInBytes = workspaceSizeInBytes;
 
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    }
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasSetWorkspace_v2);
@@ -6451,44 +6493,49 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 	auto err = lcublasLtCreate(lightHandle);
     cublasLt_tracer.handle_cublasLtCreate(*lightHandle);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    auto err = CUBLAS_STATUS_SUCCESS;
-
-    // Just give a opaque pointer as handle
-    *lightHandle = (cublasLtHandle_t)malloc(8);
-    cublasLt_tracer.handle_cublasLtCreate(*lightHandle);
-
 #else
 
-    cublasStatus_t err;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtCreateArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+        *lightHandle = (cublasLtHandle_t)malloc(8);
+        cublasLt_tracer.handle_cublasLtCreate(*lightHandle);
+    }
+#endif
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTCREATE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->lightHandle = lightHandle;
+    if (err) {
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtCreateArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
 
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cublasLtCreateResponse*>(responsePayload);
-			if (lightHandle) { *lightHandle = response->lightHandle; }
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASLTCREATE;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasLtCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->lightHandle = lightHandle;
 
-            err = response->err;
-            cublasLt_tracer.handle_cublasLtCreate(response->lightHandle);
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+        while(!TallyClient::client->iox_client->take()
+            .and_then([&](const auto& responsePayload) {
+                auto response = static_cast<const cublasLtCreateResponse*>(responsePayload);
+                if (lightHandle) { *lightHandle = response->lightHandle; }
+
+                err = response->err;
+                cublasLt_tracer.handle_cublasLtCreate(response->lightHandle);
+
+                TallyClient::client->iox_client->releaseResponse(responsePayload);
+            }))
+        {};
+    }
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
@@ -6505,46 +6552,52 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
 	auto err = lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
     cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(*matmulDesc, computeType, scaleType);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_SUCCESS;
-
-    // opaque pointer
-    *matmulDesc = (cublasLtMatmulDesc_t) malloc(8);
-    cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(*matmulDesc, computeType, scaleType);
-
 #else
-    cublasStatus_t err;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescCreateArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCCREATE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtMatmulDescCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->matmulDesc = matmulDesc;
-			request->computeType = computeType;
-			request->scaleType = scaleType;
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+        // opaque pointer
+        *matmulDesc = (cublasLtMatmulDesc_t) malloc(8);
+        cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(*matmulDesc, computeType, scaleType);
+    }
+#endif
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+    if (err) {
 
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cublasLtMatmulDescCreateResponse*>(responsePayload);
-			if (matmulDesc) { *matmulDesc = response->matmulDesc; }
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescCreateArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
 
-            err = response->err;
-            cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(response->matmulDesc, computeType, scaleType);
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCCREATE;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasLtMatmulDescCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->matmulDesc = matmulDesc;
+                request->computeType = computeType;
+                request->scaleType = scaleType;
 
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        while(!TallyClient::client->iox_client->take()
+            .and_then([&](const auto& responsePayload) {
+                auto response = static_cast<const cublasLtMatmulDescCreateResponse*>(responsePayload);
+                if (matmulDesc) { *matmulDesc = response->matmulDesc; }
+
+                err = response->err;
+                cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(response->matmulDesc, computeType, scaleType);
+
+                TallyClient::client->iox_client->releaseResponse(responsePayload);
+            }))
+        {};
+    }
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
@@ -6561,49 +6614,54 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
 	auto err = lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
     cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(*matLayout, type, rows, cols, ld);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_SUCCESS;
-
-    // opaque pointer
-    *matLayout = (cublasLtMatrixLayout_t) malloc(8);
-    cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(*matLayout, type, rows, cols, ld);
-
 #else
 
-    cublasStatus_t err;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutCreateArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+        // opaque pointer
+        *matLayout = (cublasLtMatrixLayout_t) malloc(8);
+        cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(*matLayout, type, rows, cols, ld);
+    }
+#endif
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTCREATE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtMatrixLayoutCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->matLayout = matLayout;
-			request->type = type;
-			request->rows = rows;
-			request->cols = cols;
-			request->ld = ld;
+    if (err) {
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutCreateArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
 
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cublasLtMatrixLayoutCreateResponse*>(responsePayload);
-			if (matLayout) { *matLayout = response->matLayout; }
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTCREATE;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasLtMatrixLayoutCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->matLayout = matLayout;
+                request->type = type;
+                request->rows = rows;
+                request->cols = cols;
+                request->ld = ld;
 
-            cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(response->matLayout, type, rows, cols, ld);
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+        while(!TallyClient::client->iox_client->take()
+            .and_then([&](const auto& responsePayload) {
+                auto response = static_cast<const cublasLtMatrixLayoutCreateResponse*>(responsePayload);
+                if (matLayout) { *matLayout = response->matLayout; }
+
+                cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(response->matLayout, type, rows, cols, ld);
+
+                err = response->err;
+                TallyClient::client->iox_client->releaseResponse(responsePayload);
+            }))
+        {};
+    }
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutCreate);
@@ -6617,38 +6675,44 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulPreferenceCreate(pref);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-    // do nothing because we won't call cublas anyway
-    auto err = CUBLAS_STATUS_SUCCESS;
-
 #else
 
-    cublasStatus_t err;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceCreateArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCECREATE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtMatmulPreferenceCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->pref = pref;
+    if (err) {
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceCreateArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
 
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cublasLtMatmulPreferenceCreateResponse*>(responsePayload);
-			if (pref) { *pref = response->pref; }
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCECREATE;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasLtMatmulPreferenceCreateArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->pref = pref;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        while(!TallyClient::client->iox_client->take()
+            .and_then([&](const auto& responsePayload) {
+                auto response = static_cast<const cublasLtMatmulPreferenceCreateResponse*>(responsePayload);
+                if (pref) { *pref = response->pref; }
+                err = response->err;
+                TallyClient::client->iox_client->releaseResponse(responsePayload);
+            }))
+        {};
+    }
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceCreate);
@@ -7048,30 +7112,37 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixLayoutDestroy(matLayout);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-
 #else
 
-    cublasStatus_t err;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutDestroyArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTDESTROY;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtMatrixLayoutDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->matLayout = matLayout;
+    if (err) {
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutDestroyArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASLTMATRIXLAYOUTDESTROY;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasLtMatrixLayoutDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->matLayout = matLayout;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    }
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutDestroy);
@@ -7088,29 +7159,37 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulDescDestroy(matmulDesc);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-
 #else
-    cublasStatus_t err;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescDestroyArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCDESTROY;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtMatmulDescDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->matmulDesc = matmulDesc;
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+    if (err) {
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescDestroyArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
+
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASLTMATMULDESCDESTROY;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasLtMatmulDescDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->matmulDesc = matmulDesc;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    }
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescDestroy);
@@ -7141,29 +7220,37 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtDestroy(lightHandle);
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-	auto err = CUBLAS_STATUS_SUCCESS;
 #else
 
-    cublasStatus_t err;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtDestroyArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTDESTROY;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->lightHandle = lightHandle;
+    if (err) {
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtDestroyArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASLTDESTROY;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasLtDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->lightHandle = lightHandle;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    }
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtDestroy);
@@ -7178,39 +7265,47 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetMathMode(handle, mode);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-    cublas_tracer.handle_cublasGetMathMode(handle, mode);
-
 #else
-    cublasStatus_t err;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetMathModeArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASGETMATHMODE;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasGetMathModeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->handle = handle;
-			request->mode = mode;
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+        cublas_tracer.handle_cublasGetMathMode(handle, mode);
+    }
+#endif
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+    if (err) {
 
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cublasGetMathModeResponse*>(responsePayload);
-			if (mode) { *mode = response->mode; }
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetMathModeArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
 
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASGETMATHMODE;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasGetMathModeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->handle = handle;
+                request->mode = mode;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        while(!TallyClient::client->iox_client->take()
+            .and_then([&](const auto& responsePayload) {
+                auto response = static_cast<const cublasGetMathModeResponse*>(responsePayload);
+                if (mode) { *mode = response->mode; }
+
+                err = response->err;
+                TallyClient::client->iox_client->releaseResponse(responsePayload);
+            }))
+        {};
+    }
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasGetMathMode);
@@ -7224,29 +7319,36 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatmulPreferenceDestroy(pref);
 
-#elif defined(REPLACE_CUBLAS) && !defined(VERIFY_CORRECTNESS)
-	auto err = CUBLAS_STATUS_SUCCESS;
-
 #else
-    cublasStatus_t err;
+    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceDestroyArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+#if !defined(VERIFY_CORRECTNESS)
+    if (replace_cublas) {
+        // do nothing because we won't call cublas anyway
+        err = CUBLAS_STATUS_SUCCESS;
+    }
+#endif
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEDESTROY;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cublasLtMatmulPreferenceDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->pref = pref;
+    if (err) {
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceDestroyArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
 
-    IOX_RECV_RETURN_STATUS(cublasStatus_t);
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUBLASLTMATMULPREFERENCEDESTROY;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cublasLtMatmulPreferenceDestroyArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->pref = pref;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        IOX_RECV_RETURN_STATUS(cublasStatus_t);
+    }
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceDestroy);
