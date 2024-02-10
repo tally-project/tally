@@ -13,6 +13,7 @@ CUDA_API_HEADER_FILES = [
     "/usr/local/cuda/include/nvrtc.h",
     "/usr/local/cuda/include/cublasLt.h",
     "/usr/local/cuda/include/curand.h",
+    "/usr/local/cuda/include/cusparse_v2.h",
     nccl_header_path
 ]
 

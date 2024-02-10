@@ -54,12 +54,16 @@ def gen_client_func_decl_def(func_sig):
         handle = "cublasLt_handle"
     elif "cublas" in func_name.lower() or "cublas" in ret_type.lower():
         handle = "cublas_handle"
+    elif "cusparse" in func_name.lower() or "cusparse" in ret_type.lower():
+        handle = "cusparse_handle"
     elif "nvrtc" in func_name.lower():
         handle = "nvrtc_handle"
     elif "nccl" in func_name.lower():
         handle = "nccl_handle"
     elif "curand" in func_name.lower():
         handle = "curand_handle"
+    elif "nvml" in func_name.lower():
+        handle = "nvml_handle"
 
     func_declaration = f"extern {ret_type} (*{preload_func_name}) ({args_str_no_val});\n"
 
@@ -235,7 +239,7 @@ def gen_func_client_preload(func_sig):
         ret_type, func_name, arg_types, arg_names, arg_vals = parse_res
     else:
         return None
-
+    
     arg_types_str = ", ".join(arg_types)
     arg_names_str = ", ".join(arg_names)
     args_str_no_val = gen_func_sig_args_str(arg_types, arg_names)

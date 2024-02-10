@@ -18,7 +18,7 @@ option(MEASURE_PREEMPTION_LATENCY "Measure latency of preemption in priority sch
 
 link_directories(/usr/local/cuda/lib64)
 
-FIND_PACKAGE(Boost COMPONENTS serialization regex REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS serialization regex stacktrace_backtrace REQUIRED)
 
 add_subdirectory(third_party/spdlog)
 add_subdirectory(third_party/iceoryx/iceoryx_meta)
@@ -145,6 +145,7 @@ foreach(tally_client_target IN LISTS tally_client_targets)
     target_link_libraries(${tally_client_target} PUBLIC
         PUBLIC Boost::serialization 
         PUBLIC Boost::regex
+        PUBLIC Boost::stacktrace_backtrace
         iceoryx_posh::iceoryx_posh
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
     )
@@ -181,6 +182,8 @@ target_link_libraries(tally_server PUBLIC
     cudnn
     nccl_lib
     curand
+    cusparse
+    nvidia-ml
     PUBLIC Boost::serialization
     PUBLIC Boost::regex
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>

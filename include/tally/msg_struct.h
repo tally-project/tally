@@ -1469,4 +1469,15 @@ struct cudaDeviceGetAttributeResponse {
 	cudaError_t err;
 };
 
+struct cuGraphInstantiateWithFlagsArg {
+	CUgraphExec * phGraphExec;
+	CUgraph  hGraph;
+	unsigned long long  flags;
+};
+
+struct cuGraphInstantiateWithFlagsResponse {
+	CUgraphExec  phGraphExec;
+	CUresult err;
+};
+
 #endif // TALLY_DEF_H

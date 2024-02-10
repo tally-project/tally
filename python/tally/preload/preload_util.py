@@ -88,7 +88,7 @@ def parse_func_sig(func_sig):
 
     # Extract argument types and names
     args_str, _ = args.rsplit(")", 1)
-    arg_list = split_and_strip(args_str, ", ")
+    arg_list = split_and_strip(args_str, ",")
 
     arg_types = []
     arg_names = []
@@ -160,6 +160,9 @@ def generate_func_sig_from_file(file):
                     func_sig = acc
                 else:
                     continue
+            
+            if "]]" in func_sig:
+                func_sig = func_sig[func_sig.index("]]") + 2:]
             
             if (satisfy_must_contain(func_sig, FUNC_SIG_MUST_CONTAIN) and
                     not any([word in func_sig for word in FUNC_SIG_MUST_NOT_CONTAIN]) and

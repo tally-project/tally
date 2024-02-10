@@ -11,6 +11,7 @@
 #include <cublasLt.h>
 #include <nccl.h>
 #include <curand.h>
+#include <cusparse_v2.h>
 
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
@@ -24,6 +25,7 @@ void *cublasLt_handle;
 void *nvrtc_handle;
 void *nccl_handle;
 void *curand_handle;
+void *cusparse_handle;
 
 void __attribute__((constructor)) register_cuda_handles()
 {
@@ -37,6 +39,7 @@ void __attribute__((constructor)) register_cuda_handles()
 	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
     nvrtc_handle = dlopen(LIBNVRTC_PATH, RTLD_LAZY);
     curand_handle = dlopen(LIBCURAND_PATH, RTLD_LAZY);
+    cusparse_handle = dlopen(LIBCUSPARSE_PATH, RTLD_LAZY);
 	nccl_handle = dlopen(lib_nccl_path.string().c_str(), RTLD_LAZY);
 }
 
@@ -4740,6 +4743,1380 @@ curandStatus_t (*lcurandGetDirectionVectors64) (curandDirectionVectors64_t * vec
 
 curandStatus_t (*lcurandGetScrambleConstants64) (unsigned long long * *  constants) =
 	(curandStatus_t (*) (unsigned long long * *  constants)) dlsym(curand_handle, "curandGetScrambleConstants64");
+
+cusparseStatus_t (*lcusparseCreate) (cusparseHandle_t*  handle) =
+	(cusparseStatus_t (*) (cusparseHandle_t*  handle)) dlsym(cusparse_handle, "cusparseCreate");
+
+cusparseStatus_t (*lcusparseDestroy) (cusparseHandle_t  handle) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle)) dlsym(cusparse_handle, "cusparseDestroy");
+
+cusparseStatus_t (*lcusparseGetVersion) (cusparseHandle_t  handle, int*  version) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int*  version)) dlsym(cusparse_handle, "cusparseGetVersion");
+
+cusparseStatus_t (*lcusparseGetProperty) (libraryPropertyType  type, int*  value) =
+	(cusparseStatus_t (*) (libraryPropertyType  type, int*  value)) dlsym(cusparse_handle, "cusparseGetProperty");
+
+const char* (*lcusparseGetErrorName) (cusparseStatus_t  status) =
+	(const char* (*) (cusparseStatus_t  status)) dlsym(cusparse_handle, "cusparseGetErrorName");
+
+const char* (*lcusparseGetErrorString) (cusparseStatus_t  status) =
+	(const char* (*) (cusparseStatus_t  status)) dlsym(cusparse_handle, "cusparseGetErrorString");
+
+cusparseStatus_t (*lcusparseSetStream) (cusparseHandle_t  handle, cudaStream_t  streamId) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cudaStream_t  streamId)) dlsym(cusparse_handle, "cusparseSetStream");
+
+cusparseStatus_t (*lcusparseGetStream) (cusparseHandle_t  handle, cudaStream_t*  streamId) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cudaStream_t*  streamId)) dlsym(cusparse_handle, "cusparseGetStream");
+
+cusparseStatus_t (*lcusparseGetPointerMode) (cusparseHandle_t  handle, cusparsePointerMode_t*  mode) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparsePointerMode_t*  mode)) dlsym(cusparse_handle, "cusparseGetPointerMode");
+
+cusparseStatus_t (*lcusparseSetPointerMode) (cusparseHandle_t  handle, cusparsePointerMode_t  mode) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparsePointerMode_t  mode)) dlsym(cusparse_handle, "cusparseSetPointerMode");
+
+cusparseStatus_t (*lcusparseLoggerSetCallback) (cusparseLoggerCallback_t  callback) =
+	(cusparseStatus_t (*) (cusparseLoggerCallback_t  callback)) dlsym(cusparse_handle, "cusparseLoggerSetCallback");
+
+cusparseStatus_t (*lcusparseLoggerSetFile) (FILE*  file) =
+	(cusparseStatus_t (*) (FILE*  file)) dlsym(cusparse_handle, "cusparseLoggerSetFile");
+
+cusparseStatus_t (*lcusparseLoggerOpenFile) (const char*  logFile) =
+	(cusparseStatus_t (*) (const char*  logFile)) dlsym(cusparse_handle, "cusparseLoggerOpenFile");
+
+cusparseStatus_t (*lcusparseLoggerSetLevel) (int  level) =
+	(cusparseStatus_t (*) (int  level)) dlsym(cusparse_handle, "cusparseLoggerSetLevel");
+
+cusparseStatus_t (*lcusparseLoggerSetMask) (int  mask) =
+	(cusparseStatus_t (*) (int  mask)) dlsym(cusparse_handle, "cusparseLoggerSetMask");
+
+cusparseStatus_t (*lcusparseLoggerForceDisable) () =
+	(cusparseStatus_t (*) ()) dlsym(cusparse_handle, "cusparseLoggerForceDisable");
+
+cusparseStatus_t (*lcusparseCreateMatDescr) (cusparseMatDescr_t*  descrA) =
+	(cusparseStatus_t (*) (cusparseMatDescr_t*  descrA)) dlsym(cusparse_handle, "cusparseCreateMatDescr");
+
+cusparseStatus_t (*lcusparseDestroyMatDescr) (cusparseMatDescr_t  descrA) =
+	(cusparseStatus_t (*) (cusparseMatDescr_t  descrA)) dlsym(cusparse_handle, "cusparseDestroyMatDescr");
+
+cusparseStatus_t (*lcusparseSetMatType) (cusparseMatDescr_t  descrA, cusparseMatrixType_t  type) =
+	(cusparseStatus_t (*) (cusparseMatDescr_t  descrA, cusparseMatrixType_t  type)) dlsym(cusparse_handle, "cusparseSetMatType");
+
+cusparseMatrixType_t (*lcusparseGetMatType) (const cusparseMatDescr_t  descrA) =
+	(cusparseMatrixType_t (*) (const cusparseMatDescr_t  descrA)) dlsym(cusparse_handle, "cusparseGetMatType");
+
+cusparseStatus_t (*lcusparseSetMatFillMode) (cusparseMatDescr_t  descrA, cusparseFillMode_t  fillMode) =
+	(cusparseStatus_t (*) (cusparseMatDescr_t  descrA, cusparseFillMode_t  fillMode)) dlsym(cusparse_handle, "cusparseSetMatFillMode");
+
+cusparseFillMode_t (*lcusparseGetMatFillMode) (const cusparseMatDescr_t  descrA) =
+	(cusparseFillMode_t (*) (const cusparseMatDescr_t  descrA)) dlsym(cusparse_handle, "cusparseGetMatFillMode");
+
+cusparseStatus_t (*lcusparseSetMatDiagType) (cusparseMatDescr_t  descrA, cusparseDiagType_t  diagType) =
+	(cusparseStatus_t (*) (cusparseMatDescr_t  descrA, cusparseDiagType_t  diagType)) dlsym(cusparse_handle, "cusparseSetMatDiagType");
+
+cusparseDiagType_t (*lcusparseGetMatDiagType) (const cusparseMatDescr_t  descrA) =
+	(cusparseDiagType_t (*) (const cusparseMatDescr_t  descrA)) dlsym(cusparse_handle, "cusparseGetMatDiagType");
+
+cusparseStatus_t (*lcusparseSetMatIndexBase) (cusparseMatDescr_t  descrA, cusparseIndexBase_t  base) =
+	(cusparseStatus_t (*) (cusparseMatDescr_t  descrA, cusparseIndexBase_t  base)) dlsym(cusparse_handle, "cusparseSetMatIndexBase");
+
+cusparseIndexBase_t (*lcusparseGetMatIndexBase) (const cusparseMatDescr_t  descrA) =
+	(cusparseIndexBase_t (*) (const cusparseMatDescr_t  descrA)) dlsym(cusparse_handle, "cusparseGetMatIndexBase");
+
+cusparseStatus_t (*lcusparseCreateCsric02Info) (csric02Info_t*  info) =
+	(cusparseStatus_t (*) (csric02Info_t*  info)) dlsym(cusparse_handle, "cusparseCreateCsric02Info");
+
+cusparseStatus_t (*lcusparseDestroyCsric02Info) (csric02Info_t  info) =
+	(cusparseStatus_t (*) (csric02Info_t  info)) dlsym(cusparse_handle, "cusparseDestroyCsric02Info");
+
+cusparseStatus_t (*lcusparseCreateBsric02Info) (bsric02Info_t*  info) =
+	(cusparseStatus_t (*) (bsric02Info_t*  info)) dlsym(cusparse_handle, "cusparseCreateBsric02Info");
+
+cusparseStatus_t (*lcusparseDestroyBsric02Info) (bsric02Info_t  info) =
+	(cusparseStatus_t (*) (bsric02Info_t  info)) dlsym(cusparse_handle, "cusparseDestroyBsric02Info");
+
+cusparseStatus_t (*lcusparseCreateCsrilu02Info) (csrilu02Info_t*  info) =
+	(cusparseStatus_t (*) (csrilu02Info_t*  info)) dlsym(cusparse_handle, "cusparseCreateCsrilu02Info");
+
+cusparseStatus_t (*lcusparseDestroyCsrilu02Info) (csrilu02Info_t  info) =
+	(cusparseStatus_t (*) (csrilu02Info_t  info)) dlsym(cusparse_handle, "cusparseDestroyCsrilu02Info");
+
+cusparseStatus_t (*lcusparseCreateBsrilu02Info) (bsrilu02Info_t*  info) =
+	(cusparseStatus_t (*) (bsrilu02Info_t*  info)) dlsym(cusparse_handle, "cusparseCreateBsrilu02Info");
+
+cusparseStatus_t (*lcusparseDestroyBsrilu02Info) (bsrilu02Info_t  info) =
+	(cusparseStatus_t (*) (bsrilu02Info_t  info)) dlsym(cusparse_handle, "cusparseDestroyBsrilu02Info");
+
+cusparseStatus_t (*lcusparseCreateBsrsv2Info) (bsrsv2Info_t*  info) =
+	(cusparseStatus_t (*) (bsrsv2Info_t*  info)) dlsym(cusparse_handle, "cusparseCreateBsrsv2Info");
+
+cusparseStatus_t (*lcusparseDestroyBsrsv2Info) (bsrsv2Info_t  info) =
+	(cusparseStatus_t (*) (bsrsv2Info_t  info)) dlsym(cusparse_handle, "cusparseDestroyBsrsv2Info");
+
+cusparseStatus_t (*lcusparseCreateBsrsm2Info) (bsrsm2Info_t*  info) =
+	(cusparseStatus_t (*) (bsrsm2Info_t*  info)) dlsym(cusparse_handle, "cusparseCreateBsrsm2Info");
+
+cusparseStatus_t (*lcusparseDestroyBsrsm2Info) (bsrsm2Info_t  info) =
+	(cusparseStatus_t (*) (bsrsm2Info_t  info)) dlsym(cusparse_handle, "cusparseDestroyBsrsm2Info");
+
+cusparseStatus_t (*lcusparseCreateCsru2csrInfo) (csru2csrInfo_t*  info) =
+	(cusparseStatus_t (*) (csru2csrInfo_t*  info)) dlsym(cusparse_handle, "cusparseCreateCsru2csrInfo");
+
+cusparseStatus_t (*lcusparseDestroyCsru2csrInfo) (csru2csrInfo_t  info) =
+	(cusparseStatus_t (*) (csru2csrInfo_t  info)) dlsym(cusparse_handle, "cusparseDestroyCsru2csrInfo");
+
+cusparseStatus_t (*lcusparseCreateColorInfo) (cusparseColorInfo_t*  info) =
+	(cusparseStatus_t (*) (cusparseColorInfo_t*  info)) dlsym(cusparse_handle, "cusparseCreateColorInfo");
+
+cusparseStatus_t (*lcusparseDestroyColorInfo) (cusparseColorInfo_t  info) =
+	(cusparseStatus_t (*) (cusparseColorInfo_t  info)) dlsym(cusparse_handle, "cusparseDestroyColorInfo");
+
+cusparseStatus_t (*lcusparseCreatePruneInfo) (pruneInfo_t*  info) =
+	(cusparseStatus_t (*) (pruneInfo_t*  info)) dlsym(cusparse_handle, "cusparseCreatePruneInfo");
+
+cusparseStatus_t (*lcusparseDestroyPruneInfo) (pruneInfo_t  info) =
+	(cusparseStatus_t (*) (pruneInfo_t  info)) dlsym(cusparse_handle, "cusparseDestroyPruneInfo");
+
+cusparseStatus_t (*lcusparseSgemvi) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const float*  alpha, const float*  A, int  lda, int  nnz, const float*  xVal, const int*  xInd, const float*  beta, float*  y, cusparseIndexBase_t  idxBase, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const float*  alpha, const float*  A, int  lda, int  nnz, const float*  xVal, const int*  xInd, const float*  beta, float*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSgemvi");
+
+cusparseStatus_t (*lcusparseSgemvi_bufferSize) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)) dlsym(cusparse_handle, "cusparseSgemvi_bufferSize");
+
+cusparseStatus_t (*lcusparseDgemvi) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const double*  alpha, const double*  A, int  lda, int  nnz, const double*  xVal, const int*  xInd, const double*  beta, double*  y, cusparseIndexBase_t  idxBase, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const double*  alpha, const double*  A, int  lda, int  nnz, const double*  xVal, const int*  xInd, const double*  beta, double*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDgemvi");
+
+cusparseStatus_t (*lcusparseDgemvi_bufferSize) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)) dlsym(cusparse_handle, "cusparseDgemvi_bufferSize");
+
+cusparseStatus_t (*lcusparseCgemvi) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, int  nnz, const cuComplex*  xVal, const int*  xInd, const cuComplex*  beta, cuComplex*  y, cusparseIndexBase_t  idxBase, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, int  nnz, const cuComplex*  xVal, const int*  xInd, const cuComplex*  beta, cuComplex*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCgemvi");
+
+cusparseStatus_t (*lcusparseCgemvi_bufferSize) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)) dlsym(cusparse_handle, "cusparseCgemvi_bufferSize");
+
+cusparseStatus_t (*lcusparseZgemvi) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, int  nnz, const cuDoubleComplex*  xVal, const int*  xInd, const cuDoubleComplex*  beta, cuDoubleComplex*  y, cusparseIndexBase_t  idxBase, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, int  nnz, const cuDoubleComplex*  xVal, const int*  xInd, const cuDoubleComplex*  beta, cuDoubleComplex*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZgemvi");
+
+cusparseStatus_t (*lcusparseZgemvi_bufferSize) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)) dlsym(cusparse_handle, "cusparseZgemvi_bufferSize");
+
+cusparseStatus_t (*lcusparseSbsrmv) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const float*  x, const float*  beta, float*  y) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const float*  x, const float*  beta, float*  y)) dlsym(cusparse_handle, "cusparseSbsrmv");
+
+cusparseStatus_t (*lcusparseDbsrmv) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const double*  x, const double*  beta, double*  y) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const double*  x, const double*  beta, double*  y)) dlsym(cusparse_handle, "cusparseDbsrmv");
+
+cusparseStatus_t (*lcusparseCbsrmv) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuComplex*  x, const cuComplex*  beta, cuComplex*  y) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuComplex*  x, const cuComplex*  beta, cuComplex*  y)) dlsym(cusparse_handle, "cusparseCbsrmv");
+
+cusparseStatus_t (*lcusparseZbsrmv) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuDoubleComplex*  x, const cuDoubleComplex*  beta, cuDoubleComplex*  y) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuDoubleComplex*  x, const cuDoubleComplex*  beta, cuDoubleComplex*  y)) dlsym(cusparse_handle, "cusparseZbsrmv");
+
+cusparseStatus_t (*lcusparseSbsrxmv) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const float*  x, const float*  beta, float*  y) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const float*  x, const float*  beta, float*  y)) dlsym(cusparse_handle, "cusparseSbsrxmv");
+
+cusparseStatus_t (*lcusparseDbsrxmv) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const double*  x, const double*  beta, double*  y) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const double*  x, const double*  beta, double*  y)) dlsym(cusparse_handle, "cusparseDbsrxmv");
+
+cusparseStatus_t (*lcusparseCbsrxmv) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuComplex*  x, const cuComplex*  beta, cuComplex*  y) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuComplex*  x, const cuComplex*  beta, cuComplex*  y)) dlsym(cusparse_handle, "cusparseCbsrxmv");
+
+cusparseStatus_t (*lcusparseZbsrxmv) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuDoubleComplex*  x, const cuDoubleComplex*  beta, cuDoubleComplex*  y) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuDoubleComplex*  x, const cuDoubleComplex*  beta, cuDoubleComplex*  y)) dlsym(cusparse_handle, "cusparseZbsrxmv");
+
+cusparseStatus_t (*lcusparseXbsrsv2_zeroPivot) (cusparseHandle_t  handle, bsrsv2Info_t  info, int*  position) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, bsrsv2Info_t  info, int*  position)) dlsym(cusparse_handle, "cusparseXbsrsv2_zeroPivot");
+
+cusparseStatus_t (*lcusparseSbsrsv2_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSbsrsv2_bufferSize");
+
+cusparseStatus_t (*lcusparseDbsrsv2_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDbsrsv2_bufferSize");
+
+cusparseStatus_t (*lcusparseCbsrsv2_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCbsrsv2_bufferSize");
+
+cusparseStatus_t (*lcusparseZbsrsv2_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZbsrsv2_bufferSize");
+
+cusparseStatus_t (*lcusparseSbsrsv2_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseSbsrsv2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDbsrsv2_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseDbsrsv2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCbsrsv2_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseCbsrsv2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZbsrsv2_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseZbsrsv2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSbsrsv2_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSbsrsv2_analysis");
+
+cusparseStatus_t (*lcusparseDbsrsv2_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDbsrsv2_analysis");
+
+cusparseStatus_t (*lcusparseCbsrsv2_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCbsrsv2_analysis");
+
+cusparseStatus_t (*lcusparseZbsrsv2_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZbsrsv2_analysis");
+
+cusparseStatus_t (*lcusparseSbsrsv2_solve) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const float*  f, float*  x, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const float*  f, float*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSbsrsv2_solve");
+
+cusparseStatus_t (*lcusparseDbsrsv2_solve) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const double*  f, double*  x, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const double*  f, double*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDbsrsv2_solve");
+
+cusparseStatus_t (*lcusparseCbsrsv2_solve) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const cuComplex*  f, cuComplex*  x, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const cuComplex*  f, cuComplex*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCbsrsv2_solve");
+
+cusparseStatus_t (*lcusparseZbsrsv2_solve) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const cuDoubleComplex*  f, cuDoubleComplex*  x, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const cuDoubleComplex*  f, cuDoubleComplex*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZbsrsv2_solve");
+
+cusparseStatus_t (*lcusparseSbsrmm) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const float*  B, const int  ldb, const float*  beta, float*  C, int  ldc) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const float*  B, const int  ldb, const float*  beta, float*  C, int  ldc)) dlsym(cusparse_handle, "cusparseSbsrmm");
+
+cusparseStatus_t (*lcusparseDbsrmm) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const double*  B, const int  ldb, const double*  beta, double*  C, int  ldc) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const double*  B, const int  ldb, const double*  beta, double*  C, int  ldc)) dlsym(cusparse_handle, "cusparseDbsrmm");
+
+cusparseStatus_t (*lcusparseCbsrmm) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const cuComplex*  B, const int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const cuComplex*  B, const int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)) dlsym(cusparse_handle, "cusparseCbsrmm");
+
+cusparseStatus_t (*lcusparseZbsrmm) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const cuDoubleComplex*  B, const int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const cuDoubleComplex*  B, const int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)) dlsym(cusparse_handle, "cusparseZbsrmm");
+
+cusparseStatus_t (*lcusparseXbsrsm2_zeroPivot) (cusparseHandle_t  handle, bsrsm2Info_t  info, int*  position) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, bsrsm2Info_t  info, int*  position)) dlsym(cusparse_handle, "cusparseXbsrsm2_zeroPivot");
+
+cusparseStatus_t (*lcusparseSbsrsm2_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSbsrsm2_bufferSize");
+
+cusparseStatus_t (*lcusparseDbsrsm2_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDbsrsm2_bufferSize");
+
+cusparseStatus_t (*lcusparseCbsrsm2_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCbsrsm2_bufferSize");
+
+cusparseStatus_t (*lcusparseZbsrsm2_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZbsrsm2_bufferSize");
+
+cusparseStatus_t (*lcusparseSbsrsm2_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseSbsrsm2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDbsrsm2_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseDbsrsm2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCbsrsm2_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseCbsrsm2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZbsrsm2_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseZbsrsm2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSbsrsm2_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSbsrsm2_analysis");
+
+cusparseStatus_t (*lcusparseDbsrsm2_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDbsrsm2_analysis");
+
+cusparseStatus_t (*lcusparseCbsrsm2_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCbsrsm2_analysis");
+
+cusparseStatus_t (*lcusparseZbsrsm2_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZbsrsm2_analysis");
+
+cusparseStatus_t (*lcusparseSbsrsm2_solve) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const float*  B, int  ldb, float*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const float*  B, int  ldb, float*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSbsrsm2_solve");
+
+cusparseStatus_t (*lcusparseDbsrsm2_solve) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const double*  B, int  ldb, double*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const double*  B, int  ldb, double*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDbsrsm2_solve");
+
+cusparseStatus_t (*lcusparseCbsrsm2_solve) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const cuComplex*  B, int  ldb, cuComplex*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const cuComplex*  B, int  ldb, cuComplex*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCbsrsm2_solve");
+
+cusparseStatus_t (*lcusparseZbsrsm2_solve) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZbsrsm2_solve");
+
+cusparseStatus_t (*lcusparseScsrilu02_numericBoost) (cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, float*  boost_val) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, float*  boost_val)) dlsym(cusparse_handle, "cusparseScsrilu02_numericBoost");
+
+cusparseStatus_t (*lcusparseDcsrilu02_numericBoost) (cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, double*  boost_val) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, double*  boost_val)) dlsym(cusparse_handle, "cusparseDcsrilu02_numericBoost");
+
+cusparseStatus_t (*lcusparseCcsrilu02_numericBoost) (cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, cuComplex*  boost_val) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, cuComplex*  boost_val)) dlsym(cusparse_handle, "cusparseCcsrilu02_numericBoost");
+
+cusparseStatus_t (*lcusparseZcsrilu02_numericBoost) (cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, cuDoubleComplex*  boost_val) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, cuDoubleComplex*  boost_val)) dlsym(cusparse_handle, "cusparseZcsrilu02_numericBoost");
+
+cusparseStatus_t (*lcusparseXcsrilu02_zeroPivot) (cusparseHandle_t  handle, csrilu02Info_t  info, int*  position) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, csrilu02Info_t  info, int*  position)) dlsym(cusparse_handle, "cusparseXcsrilu02_zeroPivot");
+
+cusparseStatus_t (*lcusparseScsrilu02_bufferSize) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseScsrilu02_bufferSize");
+
+cusparseStatus_t (*lcusparseDcsrilu02_bufferSize) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDcsrilu02_bufferSize");
+
+cusparseStatus_t (*lcusparseCcsrilu02_bufferSize) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCcsrilu02_bufferSize");
+
+cusparseStatus_t (*lcusparseZcsrilu02_bufferSize) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZcsrilu02_bufferSize");
+
+cusparseStatus_t (*lcusparseScsrilu02_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseScsrilu02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDcsrilu02_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseDcsrilu02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCcsrilu02_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseCcsrilu02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZcsrilu02_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseZcsrilu02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseScsrilu02_analysis) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseScsrilu02_analysis");
+
+cusparseStatus_t (*lcusparseDcsrilu02_analysis) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDcsrilu02_analysis");
+
+cusparseStatus_t (*lcusparseCcsrilu02_analysis) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCcsrilu02_analysis");
+
+cusparseStatus_t (*lcusparseZcsrilu02_analysis) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZcsrilu02_analysis");
+
+cusparseStatus_t (*lcusparseScsrilu02) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseScsrilu02");
+
+cusparseStatus_t (*lcusparseDcsrilu02) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDcsrilu02");
+
+cusparseStatus_t (*lcusparseCcsrilu02) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCcsrilu02");
+
+cusparseStatus_t (*lcusparseZcsrilu02) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZcsrilu02");
+
+cusparseStatus_t (*lcusparseSbsrilu02_numericBoost) (cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, float*  boost_val) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, float*  boost_val)) dlsym(cusparse_handle, "cusparseSbsrilu02_numericBoost");
+
+cusparseStatus_t (*lcusparseDbsrilu02_numericBoost) (cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, double*  boost_val) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, double*  boost_val)) dlsym(cusparse_handle, "cusparseDbsrilu02_numericBoost");
+
+cusparseStatus_t (*lcusparseCbsrilu02_numericBoost) (cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, cuComplex*  boost_val) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, cuComplex*  boost_val)) dlsym(cusparse_handle, "cusparseCbsrilu02_numericBoost");
+
+cusparseStatus_t (*lcusparseZbsrilu02_numericBoost) (cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, cuDoubleComplex*  boost_val) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, cuDoubleComplex*  boost_val)) dlsym(cusparse_handle, "cusparseZbsrilu02_numericBoost");
+
+cusparseStatus_t (*lcusparseXbsrilu02_zeroPivot) (cusparseHandle_t  handle, bsrilu02Info_t  info, int*  position) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, bsrilu02Info_t  info, int*  position)) dlsym(cusparse_handle, "cusparseXbsrilu02_zeroPivot");
+
+cusparseStatus_t (*lcusparseSbsrilu02_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSbsrilu02_bufferSize");
+
+cusparseStatus_t (*lcusparseDbsrilu02_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDbsrilu02_bufferSize");
+
+cusparseStatus_t (*lcusparseCbsrilu02_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCbsrilu02_bufferSize");
+
+cusparseStatus_t (*lcusparseZbsrilu02_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZbsrilu02_bufferSize");
+
+cusparseStatus_t (*lcusparseSbsrilu02_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseSbsrilu02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDbsrilu02_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseDbsrilu02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCbsrilu02_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseCbsrilu02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZbsrilu02_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseZbsrilu02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSbsrilu02_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSbsrilu02_analysis");
+
+cusparseStatus_t (*lcusparseDbsrilu02_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDbsrilu02_analysis");
+
+cusparseStatus_t (*lcusparseCbsrilu02_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCbsrilu02_analysis");
+
+cusparseStatus_t (*lcusparseZbsrilu02_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZbsrilu02_analysis");
+
+cusparseStatus_t (*lcusparseSbsrilu02) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSbsrilu02");
+
+cusparseStatus_t (*lcusparseDbsrilu02) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDbsrilu02");
+
+cusparseStatus_t (*lcusparseCbsrilu02) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCbsrilu02");
+
+cusparseStatus_t (*lcusparseZbsrilu02) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZbsrilu02");
+
+cusparseStatus_t (*lcusparseXcsric02_zeroPivot) (cusparseHandle_t  handle, csric02Info_t  info, int*  position) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, csric02Info_t  info, int*  position)) dlsym(cusparse_handle, "cusparseXcsric02_zeroPivot");
+
+cusparseStatus_t (*lcusparseScsric02_bufferSize) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseScsric02_bufferSize");
+
+cusparseStatus_t (*lcusparseDcsric02_bufferSize) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDcsric02_bufferSize");
+
+cusparseStatus_t (*lcusparseCcsric02_bufferSize) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCcsric02_bufferSize");
+
+cusparseStatus_t (*lcusparseZcsric02_bufferSize) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZcsric02_bufferSize");
+
+cusparseStatus_t (*lcusparseScsric02_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseScsric02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDcsric02_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseDcsric02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCcsric02_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseCcsric02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZcsric02_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseZcsric02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseScsric02_analysis) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseScsric02_analysis");
+
+cusparseStatus_t (*lcusparseDcsric02_analysis) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDcsric02_analysis");
+
+cusparseStatus_t (*lcusparseCcsric02_analysis) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCcsric02_analysis");
+
+cusparseStatus_t (*lcusparseZcsric02_analysis) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZcsric02_analysis");
+
+cusparseStatus_t (*lcusparseScsric02) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseScsric02");
+
+cusparseStatus_t (*lcusparseDcsric02) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDcsric02");
+
+cusparseStatus_t (*lcusparseCcsric02) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCcsric02");
+
+cusparseStatus_t (*lcusparseZcsric02) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZcsric02");
+
+cusparseStatus_t (*lcusparseXbsric02_zeroPivot) (cusparseHandle_t  handle, bsric02Info_t  info, int*  position) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, bsric02Info_t  info, int*  position)) dlsym(cusparse_handle, "cusparseXbsric02_zeroPivot");
+
+cusparseStatus_t (*lcusparseSbsric02_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSbsric02_bufferSize");
+
+cusparseStatus_t (*lcusparseDbsric02_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDbsric02_bufferSize");
+
+cusparseStatus_t (*lcusparseCbsric02_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCbsric02_bufferSize");
+
+cusparseStatus_t (*lcusparseZbsric02_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZbsric02_bufferSize");
+
+cusparseStatus_t (*lcusparseSbsric02_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseSbsric02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDbsric02_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseDbsric02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCbsric02_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseCbsric02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZbsric02_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseZbsric02_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSbsric02_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)) dlsym(cusparse_handle, "cusparseSbsric02_analysis");
+
+cusparseStatus_t (*lcusparseDbsric02_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)) dlsym(cusparse_handle, "cusparseDbsric02_analysis");
+
+cusparseStatus_t (*lcusparseCbsric02_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)) dlsym(cusparse_handle, "cusparseCbsric02_analysis");
+
+cusparseStatus_t (*lcusparseZbsric02_analysis) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)) dlsym(cusparse_handle, "cusparseZbsric02_analysis");
+
+cusparseStatus_t (*lcusparseSbsric02) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSbsric02");
+
+cusparseStatus_t (*lcusparseDbsric02) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDbsric02");
+
+cusparseStatus_t (*lcusparseCbsric02) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCbsric02");
+
+cusparseStatus_t (*lcusparseZbsric02) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZbsric02");
+
+cusparseStatus_t (*lcusparseSgtsv2_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, const float*  B, int  ldb, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, const float*  B, int  ldb, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSgtsv2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDgtsv2_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, const double*  B, int  ldb, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, const double*  B, int  ldb, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDgtsv2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCgtsv2_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  B, int  ldb, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  B, int  ldb, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCgtsv2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZgtsv2_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  B, int  ldb, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  B, int  ldb, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZgtsv2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSgtsv2) (cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, float*  B, int  ldb, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, float*  B, int  ldb, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSgtsv2");
+
+cusparseStatus_t (*lcusparseDgtsv2) (cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, double*  B, int  ldb, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, double*  B, int  ldb, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDgtsv2");
+
+cusparseStatus_t (*lcusparseCgtsv2) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  B, int  ldb, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  B, int  ldb, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCgtsv2");
+
+cusparseStatus_t (*lcusparseZgtsv2) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  B, int  ldb, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  B, int  ldb, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZgtsv2");
+
+cusparseStatus_t (*lcusparseSgtsv2_nopivot_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, const float*  B, int  ldb, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, const float*  B, int  ldb, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSgtsv2_nopivot_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDgtsv2_nopivot_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, const double*  B, int  ldb, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, const double*  B, int  ldb, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDgtsv2_nopivot_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCgtsv2_nopivot_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  B, int  ldb, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  B, int  ldb, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCgtsv2_nopivot_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZgtsv2_nopivot_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  B, int  ldb, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  B, int  ldb, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZgtsv2_nopivot_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSgtsv2_nopivot) (cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, float*  B, int  ldb, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, float*  B, int  ldb, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSgtsv2_nopivot");
+
+cusparseStatus_t (*lcusparseDgtsv2_nopivot) (cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, double*  B, int  ldb, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, double*  B, int  ldb, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDgtsv2_nopivot");
+
+cusparseStatus_t (*lcusparseCgtsv2_nopivot) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  B, int  ldb, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  B, int  ldb, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCgtsv2_nopivot");
+
+cusparseStatus_t (*lcusparseZgtsv2_nopivot) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  B, int  ldb, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  B, int  ldb, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZgtsv2_nopivot");
+
+cusparseStatus_t (*lcusparseSgtsv2StridedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  m, const float*  dl, const float*  d, const float*  du, const float*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const float*  dl, const float*  d, const float*  du, const float*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSgtsv2StridedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDgtsv2StridedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  m, const double*  dl, const double*  d, const double*  du, const double*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const double*  dl, const double*  d, const double*  du, const double*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDgtsv2StridedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCgtsv2StridedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCgtsv2StridedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZgtsv2StridedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZgtsv2StridedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSgtsv2StridedBatch) (cusparseHandle_t  handle, int  m, const float*  dl, const float*  d, const float*  du, float*  x, int  batchCount, int  batchStride, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const float*  dl, const float*  d, const float*  du, float*  x, int  batchCount, int  batchStride, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSgtsv2StridedBatch");
+
+cusparseStatus_t (*lcusparseDgtsv2StridedBatch) (cusparseHandle_t  handle, int  m, const double*  dl, const double*  d, const double*  du, double*  x, int  batchCount, int  batchStride, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const double*  dl, const double*  d, const double*  du, double*  x, int  batchCount, int  batchStride, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDgtsv2StridedBatch");
+
+cusparseStatus_t (*lcusparseCgtsv2StridedBatch) (cusparseHandle_t  handle, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  x, int  batchCount, int  batchStride, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  x, int  batchCount, int  batchStride, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCgtsv2StridedBatch");
+
+cusparseStatus_t (*lcusparseZgtsv2StridedBatch) (cusparseHandle_t  handle, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  x, int  batchCount, int  batchStride, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  x, int  batchCount, int  batchStride, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZgtsv2StridedBatch");
+
+cusparseStatus_t (*lcusparseSgtsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  algo, int  m, const float*  dl, const float*  d, const float*  du, const float*  x, int  batchCount, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, const float*  dl, const float*  d, const float*  du, const float*  x, int  batchCount, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSgtsvInterleavedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDgtsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  algo, int  m, const double*  dl, const double*  d, const double*  du, const double*  x, int  batchCount, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, const double*  dl, const double*  d, const double*  du, const double*  x, int  batchCount, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDgtsvInterleavedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCgtsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  algo, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCgtsvInterleavedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZgtsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  algo, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZgtsvInterleavedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSgtsvInterleavedBatch) (cusparseHandle_t  handle, int  algo, int  m, float*  dl, float*  d, float*  du, float*  x, int  batchCount, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, float*  dl, float*  d, float*  du, float*  x, int  batchCount, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSgtsvInterleavedBatch");
+
+cusparseStatus_t (*lcusparseDgtsvInterleavedBatch) (cusparseHandle_t  handle, int  algo, int  m, double*  dl, double*  d, double*  du, double*  x, int  batchCount, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, double*  dl, double*  d, double*  du, double*  x, int  batchCount, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDgtsvInterleavedBatch");
+
+cusparseStatus_t (*lcusparseCgtsvInterleavedBatch) (cusparseHandle_t  handle, int  algo, int  m, cuComplex*  dl, cuComplex*  d, cuComplex*  du, cuComplex*  x, int  batchCount, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, cuComplex*  dl, cuComplex*  d, cuComplex*  du, cuComplex*  x, int  batchCount, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCgtsvInterleavedBatch");
+
+cusparseStatus_t (*lcusparseZgtsvInterleavedBatch) (cusparseHandle_t  handle, int  algo, int  m, cuDoubleComplex*  dl, cuDoubleComplex*  d, cuDoubleComplex*  du, cuDoubleComplex*  x, int  batchCount, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, cuDoubleComplex*  dl, cuDoubleComplex*  d, cuDoubleComplex*  du, cuDoubleComplex*  x, int  batchCount, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZgtsvInterleavedBatch");
+
+cusparseStatus_t (*lcusparseSgpsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  algo, int  m, const float*  ds, const float*  dl, const float*  d, const float*  du, const float*  dw, const float*  x, int  batchCount, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, const float*  ds, const float*  dl, const float*  d, const float*  du, const float*  dw, const float*  x, int  batchCount, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSgpsvInterleavedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDgpsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  algo, int  m, const double*  ds, const double*  dl, const double*  d, const double*  du, const double*  dw, const double*  x, int  batchCount, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, const double*  ds, const double*  dl, const double*  d, const double*  du, const double*  dw, const double*  x, int  batchCount, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDgpsvInterleavedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCgpsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  algo, int  m, const cuComplex*  ds, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  dw, const cuComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, const cuComplex*  ds, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  dw, const cuComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCgpsvInterleavedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZgpsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t  handle, int  algo, int  m, const cuDoubleComplex*  ds, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  dw, const cuDoubleComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, const cuDoubleComplex*  ds, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  dw, const cuDoubleComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZgpsvInterleavedBatch_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSgpsvInterleavedBatch) (cusparseHandle_t  handle, int  algo, int  m, float*  ds, float*  dl, float*  d, float*  du, float*  dw, float*  x, int  batchCount, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, float*  ds, float*  dl, float*  d, float*  du, float*  dw, float*  x, int  batchCount, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSgpsvInterleavedBatch");
+
+cusparseStatus_t (*lcusparseDgpsvInterleavedBatch) (cusparseHandle_t  handle, int  algo, int  m, double*  ds, double*  dl, double*  d, double*  du, double*  dw, double*  x, int  batchCount, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, double*  ds, double*  dl, double*  d, double*  du, double*  dw, double*  x, int  batchCount, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDgpsvInterleavedBatch");
+
+cusparseStatus_t (*lcusparseCgpsvInterleavedBatch) (cusparseHandle_t  handle, int  algo, int  m, cuComplex*  ds, cuComplex*  dl, cuComplex*  d, cuComplex*  du, cuComplex*  dw, cuComplex*  x, int  batchCount, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, cuComplex*  ds, cuComplex*  dl, cuComplex*  d, cuComplex*  du, cuComplex*  dw, cuComplex*  x, int  batchCount, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCgpsvInterleavedBatch");
+
+cusparseStatus_t (*lcusparseZgpsvInterleavedBatch) (cusparseHandle_t  handle, int  algo, int  m, cuDoubleComplex*  ds, cuDoubleComplex*  dl, cuDoubleComplex*  d, cuDoubleComplex*  du, cuDoubleComplex*  dw, cuDoubleComplex*  x, int  batchCount, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  algo, int  m, cuDoubleComplex*  ds, cuDoubleComplex*  dl, cuDoubleComplex*  d, cuDoubleComplex*  du, cuDoubleComplex*  dw, cuDoubleComplex*  x, int  batchCount, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZgpsvInterleavedBatch");
+
+cusparseStatus_t (*lcusparseScsrgeam2_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const float*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const float*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const float*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseScsrgeam2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDcsrgeam2_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const double*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const double*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const double*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDcsrgeam2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCcsrgeam2_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const cuComplex*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const cuComplex*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCcsrgeam2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZcsrgeam2_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuDoubleComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuDoubleComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const cuDoubleComplex*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuDoubleComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuDoubleComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const cuDoubleComplex*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZcsrgeam2_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseXcsrgeam2Nnz) (cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, int  nnzA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrB, int  nnzB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  workspace) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, int  nnzA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrB, int  nnzB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  workspace)) dlsym(cusparse_handle, "cusparseXcsrgeam2Nnz");
+
+cusparseStatus_t (*lcusparseScsrgeam2) (cusparseHandle_t  handle, int  m, int  n, const float*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const float*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const float*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseScsrgeam2");
+
+cusparseStatus_t (*lcusparseDcsrgeam2) (cusparseHandle_t  handle, int  m, int  n, const double*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const double*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const double*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDcsrgeam2");
+
+cusparseStatus_t (*lcusparseCcsrgeam2) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCcsrgeam2");
+
+cusparseStatus_t (*lcusparseZcsrgeam2) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuDoubleComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuDoubleComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuDoubleComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuDoubleComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZcsrgeam2");
+
+cusparseStatus_t (*lcusparseScsrcolor) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)) dlsym(cusparse_handle, "cusparseScsrcolor");
+
+cusparseStatus_t (*lcusparseDcsrcolor) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)) dlsym(cusparse_handle, "cusparseDcsrcolor");
+
+cusparseStatus_t (*lcusparseCcsrcolor) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)) dlsym(cusparse_handle, "cusparseCcsrcolor");
+
+cusparseStatus_t (*lcusparseZcsrcolor) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)) dlsym(cusparse_handle, "cusparseZcsrcolor");
+
+cusparseStatus_t (*lcusparseSnnz) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)) dlsym(cusparse_handle, "cusparseSnnz");
+
+cusparseStatus_t (*lcusparseDnnz) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)) dlsym(cusparse_handle, "cusparseDnnz");
+
+cusparseStatus_t (*lcusparseCnnz) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)) dlsym(cusparse_handle, "cusparseCnnz");
+
+cusparseStatus_t (*lcusparseZnnz) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)) dlsym(cusparse_handle, "cusparseZnnz");
+
+cusparseStatus_t (*lcusparseSnnz_compress) (cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const float*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, float  tol) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const float*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, float  tol)) dlsym(cusparse_handle, "cusparseSnnz_compress");
+
+cusparseStatus_t (*lcusparseDnnz_compress) (cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const double*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, double  tol) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const double*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, double  tol)) dlsym(cusparse_handle, "cusparseDnnz_compress");
+
+cusparseStatus_t (*lcusparseCnnz_compress) (cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, cuComplex  tol) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, cuComplex  tol)) dlsym(cusparse_handle, "cusparseCnnz_compress");
+
+cusparseStatus_t (*lcusparseZnnz_compress) (cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, cuDoubleComplex  tol) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, cuDoubleComplex  tol)) dlsym(cusparse_handle, "cusparseZnnz_compress");
+
+cusparseStatus_t (*lcusparseScsr2csr_compress) (cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, float*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, float  tol) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, float*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, float  tol)) dlsym(cusparse_handle, "cusparseScsr2csr_compress");
+
+cusparseStatus_t (*lcusparseDcsr2csr_compress) (cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, double*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, double  tol) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, double*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, double  tol)) dlsym(cusparse_handle, "cusparseDcsr2csr_compress");
+
+cusparseStatus_t (*lcusparseCcsr2csr_compress) (cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, cuComplex*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, cuComplex  tol) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, cuComplex*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, cuComplex  tol)) dlsym(cusparse_handle, "cusparseCcsr2csr_compress");
+
+cusparseStatus_t (*lcusparseZcsr2csr_compress) (cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, cuDoubleComplex*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, cuDoubleComplex  tol) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, cuDoubleComplex*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, cuDoubleComplex  tol)) dlsym(cusparse_handle, "cusparseZcsr2csr_compress");
+
+cusparseStatus_t (*lcusparseXcoo2csr) (cusparseHandle_t  handle, const int*  cooRowInd, int  nnz, int  m, int*  csrSortedRowPtr, cusparseIndexBase_t  idxBase) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, const int*  cooRowInd, int  nnz, int  m, int*  csrSortedRowPtr, cusparseIndexBase_t  idxBase)) dlsym(cusparse_handle, "cusparseXcoo2csr");
+
+cusparseStatus_t (*lcusparseXcsr2coo) (cusparseHandle_t  handle, const int*  csrSortedRowPtr, int  nnz, int  m, int*  cooRowInd, cusparseIndexBase_t  idxBase) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, const int*  csrSortedRowPtr, int  nnz, int  m, int*  cooRowInd, cusparseIndexBase_t  idxBase)) dlsym(cusparse_handle, "cusparseXcsr2coo");
+
+cusparseStatus_t (*lcusparseXcsr2bsrNnz) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int*  nnzTotalDevHostPtr) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int*  nnzTotalDevHostPtr)) dlsym(cusparse_handle, "cusparseXcsr2bsrNnz");
+
+cusparseStatus_t (*lcusparseScsr2bsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)) dlsym(cusparse_handle, "cusparseScsr2bsr");
+
+cusparseStatus_t (*lcusparseDcsr2bsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)) dlsym(cusparse_handle, "cusparseDcsr2bsr");
+
+cusparseStatus_t (*lcusparseCcsr2bsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)) dlsym(cusparse_handle, "cusparseCcsr2bsr");
+
+cusparseStatus_t (*lcusparseZcsr2bsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)) dlsym(cusparse_handle, "cusparseZcsr2bsr");
+
+cusparseStatus_t (*lcusparseSbsr2csr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)) dlsym(cusparse_handle, "cusparseSbsr2csr");
+
+cusparseStatus_t (*lcusparseDbsr2csr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)) dlsym(cusparse_handle, "cusparseDbsr2csr");
+
+cusparseStatus_t (*lcusparseCbsr2csr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)) dlsym(cusparse_handle, "cusparseCbsr2csr");
+
+cusparseStatus_t (*lcusparseZbsr2csr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)) dlsym(cusparse_handle, "cusparseZbsr2csr");
+
+cusparseStatus_t (*lcusparseSgebsr2gebsc_bufferSize) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSgebsr2gebsc_bufferSize");
+
+cusparseStatus_t (*lcusparseDgebsr2gebsc_bufferSize) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDgebsr2gebsc_bufferSize");
+
+cusparseStatus_t (*lcusparseCgebsr2gebsc_bufferSize) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCgebsr2gebsc_bufferSize");
+
+cusparseStatus_t (*lcusparseZgebsr2gebsc_bufferSize) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZgebsr2gebsc_bufferSize");
+
+cusparseStatus_t (*lcusparseSgebsr2gebsc_bufferSizeExt) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseSgebsr2gebsc_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDgebsr2gebsc_bufferSizeExt) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseDgebsr2gebsc_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCgebsr2gebsc_bufferSizeExt) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseCgebsr2gebsc_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZgebsr2gebsc_bufferSizeExt) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseZgebsr2gebsc_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSgebsr2gebsc) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, float*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, float*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSgebsr2gebsc");
+
+cusparseStatus_t (*lcusparseDgebsr2gebsc) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, double*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, double*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDgebsr2gebsc");
+
+cusparseStatus_t (*lcusparseCgebsr2gebsc) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, cuComplex*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, cuComplex*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCgebsr2gebsc");
+
+cusparseStatus_t (*lcusparseZgebsr2gebsc) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, cuDoubleComplex*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, cuDoubleComplex*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZgebsr2gebsc");
+
+cusparseStatus_t (*lcusparseXgebsr2csr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  csrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)) dlsym(cusparse_handle, "cusparseXgebsr2csr");
+
+cusparseStatus_t (*lcusparseSgebsr2csr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)) dlsym(cusparse_handle, "cusparseSgebsr2csr");
+
+cusparseStatus_t (*lcusparseDgebsr2csr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)) dlsym(cusparse_handle, "cusparseDgebsr2csr");
+
+cusparseStatus_t (*lcusparseCgebsr2csr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)) dlsym(cusparse_handle, "cusparseCgebsr2csr");
+
+cusparseStatus_t (*lcusparseZgebsr2csr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)) dlsym(cusparse_handle, "cusparseZgebsr2csr");
+
+cusparseStatus_t (*lcusparseScsr2gebsr_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseScsr2gebsr_bufferSize");
+
+cusparseStatus_t (*lcusparseDcsr2gebsr_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDcsr2gebsr_bufferSize");
+
+cusparseStatus_t (*lcusparseCcsr2gebsr_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCcsr2gebsr_bufferSize");
+
+cusparseStatus_t (*lcusparseZcsr2gebsr_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZcsr2gebsr_bufferSize");
+
+cusparseStatus_t (*lcusparseScsr2gebsr_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseScsr2gebsr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDcsr2gebsr_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseDcsr2gebsr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCcsr2gebsr_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseCcsr2gebsr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZcsr2gebsr_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseZcsr2gebsr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseXcsr2gebsrNnz) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int  rowBlockDim, int  colBlockDim, int*  nnzTotalDevHostPtr, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int  rowBlockDim, int  colBlockDim, int*  nnzTotalDevHostPtr, void*  pBuffer)) dlsym(cusparse_handle, "cusparseXcsr2gebsrNnz");
+
+cusparseStatus_t (*lcusparseScsr2gebsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)) dlsym(cusparse_handle, "cusparseScsr2gebsr");
+
+cusparseStatus_t (*lcusparseDcsr2gebsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDcsr2gebsr");
+
+cusparseStatus_t (*lcusparseCcsr2gebsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCcsr2gebsr");
+
+cusparseStatus_t (*lcusparseZcsr2gebsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZcsr2gebsr");
+
+cusparseStatus_t (*lcusparseSgebsr2gebsr_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSgebsr2gebsr_bufferSize");
+
+cusparseStatus_t (*lcusparseDgebsr2gebsr_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDgebsr2gebsr_bufferSize");
+
+cusparseStatus_t (*lcusparseCgebsr2gebsr_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCgebsr2gebsr_bufferSize");
+
+cusparseStatus_t (*lcusparseZgebsr2gebsr_bufferSize) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZgebsr2gebsr_bufferSize");
+
+cusparseStatus_t (*lcusparseSgebsr2gebsr_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseSgebsr2gebsr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDgebsr2gebsr_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseDgebsr2gebsr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCgebsr2gebsr_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseCgebsr2gebsr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZgebsr2gebsr_bufferSizeExt) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)) dlsym(cusparse_handle, "cusparseZgebsr2gebsr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseXgebsr2gebsrNnz) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int  rowBlockDimC, int  colBlockDimC, int*  nnzTotalDevHostPtr, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int  rowBlockDimC, int  colBlockDimC, int*  nnzTotalDevHostPtr, void*  pBuffer)) dlsym(cusparse_handle, "cusparseXgebsr2gebsrNnz");
+
+cusparseStatus_t (*lcusparseSgebsr2gebsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSgebsr2gebsr");
+
+cusparseStatus_t (*lcusparseDgebsr2gebsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDgebsr2gebsr");
+
+cusparseStatus_t (*lcusparseCgebsr2gebsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCgebsr2gebsr");
+
+cusparseStatus_t (*lcusparseZgebsr2gebsr) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZgebsr2gebsr");
+
+cusparseStatus_t (*lcusparseCreateIdentityPermutation) (cusparseHandle_t  handle, int  n, int*  p) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  n, int*  p)) dlsym(cusparse_handle, "cusparseCreateIdentityPermutation");
+
+cusparseStatus_t (*lcusparseXcoosort_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  cooRowsA, const int*  cooColsA, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  cooRowsA, const int*  cooColsA, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseXcoosort_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseXcoosortByRow) (cusparseHandle_t  handle, int  m, int  n, int  nnz, int*  cooRowsA, int*  cooColsA, int*  P, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, int*  cooRowsA, int*  cooColsA, int*  P, void*  pBuffer)) dlsym(cusparse_handle, "cusparseXcoosortByRow");
+
+cusparseStatus_t (*lcusparseXcoosortByColumn) (cusparseHandle_t  handle, int  m, int  n, int  nnz, int*  cooRowsA, int*  cooColsA, int*  P, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, int*  cooRowsA, int*  cooColsA, int*  P, void*  pBuffer)) dlsym(cusparse_handle, "cusparseXcoosortByColumn");
+
+cusparseStatus_t (*lcusparseXcsrsort_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  csrRowPtrA, const int*  csrColIndA, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  csrRowPtrA, const int*  csrColIndA, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseXcsrsort_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseXcsrsort) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, const int*  csrRowPtrA, int*  csrColIndA, int*  P, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, const int*  csrRowPtrA, int*  csrColIndA, int*  P, void*  pBuffer)) dlsym(cusparse_handle, "cusparseXcsrsort");
+
+cusparseStatus_t (*lcusparseXcscsort_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  cscColPtrA, const int*  cscRowIndA, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  cscColPtrA, const int*  cscRowIndA, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseXcscsort_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseXcscsort) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, const int*  cscColPtrA, int*  cscRowIndA, int*  P, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, const int*  cscColPtrA, int*  cscRowIndA, int*  P, void*  pBuffer)) dlsym(cusparse_handle, "cusparseXcscsort");
+
+cusparseStatus_t (*lcusparseScsru2csr_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnz, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseScsru2csr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDcsru2csr_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnz, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDcsru2csr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseCcsru2csr_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnz, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseCcsru2csr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseZcsru2csr_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnz, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseZcsru2csr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseScsru2csr) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseScsru2csr");
+
+cusparseStatus_t (*lcusparseDcsru2csr) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDcsru2csr");
+
+cusparseStatus_t (*lcusparseCcsru2csr) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCcsru2csr");
+
+cusparseStatus_t (*lcusparseZcsru2csr) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZcsru2csr");
+
+cusparseStatus_t (*lcusparseScsr2csru) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseScsr2csru");
+
+cusparseStatus_t (*lcusparseDcsr2csru) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDcsr2csru");
+
+cusparseStatus_t (*lcusparseCcsr2csru) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseCcsr2csru");
+
+cusparseStatus_t (*lcusparseZcsr2csru) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseZcsr2csru");
+
+cusparseStatus_t (*lcusparseHpruneDense2csr_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseHpruneDense2csr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSpruneDense2csr_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSpruneDense2csr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDpruneDense2csr_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDpruneDense2csr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseHpruneDense2csrNnz) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)) dlsym(cusparse_handle, "cusparseHpruneDense2csrNnz");
+
+cusparseStatus_t (*lcusparseSpruneDense2csrNnz) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSpruneDense2csrNnz");
+
+cusparseStatus_t (*lcusparseDpruneDense2csrNnz) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDpruneDense2csrNnz");
+
+cusparseStatus_t (*lcusparseHpruneDense2csr) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseHpruneDense2csr");
+
+cusparseStatus_t (*lcusparseSpruneDense2csr) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSpruneDense2csr");
+
+cusparseStatus_t (*lcusparseDpruneDense2csr) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDpruneDense2csr");
+
+cusparseStatus_t (*lcusparseHpruneCsr2csr_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseHpruneCsr2csr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSpruneCsr2csr_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSpruneCsr2csr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDpruneCsr2csr_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDpruneCsr2csr_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseHpruneCsr2csrNnz) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)) dlsym(cusparse_handle, "cusparseHpruneCsr2csrNnz");
+
+cusparseStatus_t (*lcusparseSpruneCsr2csrNnz) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSpruneCsr2csrNnz");
+
+cusparseStatus_t (*lcusparseDpruneCsr2csrNnz) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDpruneCsr2csrNnz");
+
+cusparseStatus_t (*lcusparseHpruneCsr2csr) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseHpruneCsr2csr");
+
+cusparseStatus_t (*lcusparseSpruneCsr2csr) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSpruneCsr2csr");
+
+cusparseStatus_t (*lcusparseDpruneCsr2csr) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDpruneCsr2csr");
+
+cusparseStatus_t (*lcusparseHpruneDense2csrByPercentage_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseHpruneDense2csrByPercentage_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSpruneDense2csrByPercentage_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSpruneDense2csrByPercentage_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDpruneDense2csrByPercentage_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDpruneDense2csrByPercentage_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseHpruneDense2csrNnzByPercentage) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseHpruneDense2csrNnzByPercentage");
+
+cusparseStatus_t (*lcusparseSpruneDense2csrNnzByPercentage) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSpruneDense2csrNnzByPercentage");
+
+cusparseStatus_t (*lcusparseDpruneDense2csrNnzByPercentage) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDpruneDense2csrNnzByPercentage");
+
+cusparseStatus_t (*lcusparseHpruneDense2csrByPercentage) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseHpruneDense2csrByPercentage");
+
+cusparseStatus_t (*lcusparseSpruneDense2csrByPercentage) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSpruneDense2csrByPercentage");
+
+cusparseStatus_t (*lcusparseDpruneDense2csrByPercentage) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDpruneDense2csrByPercentage");
+
+cusparseStatus_t (*lcusparseHpruneCsr2csrByPercentage_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseHpruneCsr2csrByPercentage_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseSpruneCsr2csrByPercentage_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseSpruneCsr2csrByPercentage_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseDpruneCsr2csrByPercentage_bufferSizeExt) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)) dlsym(cusparse_handle, "cusparseDpruneCsr2csrByPercentage_bufferSizeExt");
+
+cusparseStatus_t (*lcusparseHpruneCsr2csrNnzByPercentage) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseHpruneCsr2csrNnzByPercentage");
+
+cusparseStatus_t (*lcusparseSpruneCsr2csrNnzByPercentage) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSpruneCsr2csrNnzByPercentage");
+
+cusparseStatus_t (*lcusparseDpruneCsr2csrNnzByPercentage) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDpruneCsr2csrNnzByPercentage");
+
+cusparseStatus_t (*lcusparseHpruneCsr2csrByPercentage) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseHpruneCsr2csrByPercentage");
+
+cusparseStatus_t (*lcusparseSpruneCsr2csrByPercentage) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseSpruneCsr2csrByPercentage");
+
+cusparseStatus_t (*lcusparseDpruneCsr2csrByPercentage) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)) dlsym(cusparse_handle, "cusparseDpruneCsr2csrByPercentage");
+
+cusparseStatus_t (*lcusparseCsr2cscEx2) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const void*  csrVal, const int*  csrRowPtr, const int*  csrColInd, void*  cscVal, int*  cscColPtr, int*  cscRowInd, cudaDataType  valType, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, cusparseCsr2CscAlg_t  alg, void*  buffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const void*  csrVal, const int*  csrRowPtr, const int*  csrColInd, void*  cscVal, int*  cscColPtr, int*  cscRowInd, cudaDataType  valType, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, cusparseCsr2CscAlg_t  alg, void*  buffer)) dlsym(cusparse_handle, "cusparseCsr2cscEx2");
+
+cusparseStatus_t (*lcusparseCsr2cscEx2_bufferSize) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const void*  csrVal, const int*  csrRowPtr, const int*  csrColInd, void*  cscVal, int*  cscColPtr, int*  cscRowInd, cudaDataType  valType, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, cusparseCsr2CscAlg_t  alg, size_t*  bufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, int  m, int  n, int  nnz, const void*  csrVal, const int*  csrRowPtr, const int*  csrColInd, void*  cscVal, int*  cscColPtr, int*  cscRowInd, cudaDataType  valType, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, cusparseCsr2CscAlg_t  alg, size_t*  bufferSize)) dlsym(cusparse_handle, "cusparseCsr2cscEx2_bufferSize");
+
+cusparseStatus_t (*lcusparseCreateSpVec) (cusparseSpVecDescr_t*  spVecDescr, int64_t  size, int64_t  nnz, void*  indices, void*  values, cusparseIndexType_t  idxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseSpVecDescr_t*  spVecDescr, int64_t  size, int64_t  nnz, void*  indices, void*  values, cusparseIndexType_t  idxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateSpVec");
+
+cusparseStatus_t (*lcusparseCreateConstSpVec) (cusparseConstSpVecDescr_t*  spVecDescr, int64_t  size, int64_t  nnz, const void*  indices, const void*  values, cusparseIndexType_t  idxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpVecDescr_t*  spVecDescr, int64_t  size, int64_t  nnz, const void*  indices, const void*  values, cusparseIndexType_t  idxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateConstSpVec");
+
+cusparseStatus_t (*lcusparseDestroySpVec) (cusparseConstSpVecDescr_t  spVecDescr) =
+	(cusparseStatus_t (*) (cusparseConstSpVecDescr_t  spVecDescr)) dlsym(cusparse_handle, "cusparseDestroySpVec");
+
+cusparseStatus_t (*lcusparseSpVecGet) (cusparseSpVecDescr_t  spVecDescr, int64_t*  size, int64_t*  nnz, void**  indices, void**  values, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseSpVecDescr_t  spVecDescr, int64_t*  size, int64_t*  nnz, void**  indices, void**  values, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseSpVecGet");
+
+cusparseStatus_t (*lcusparseConstSpVecGet) (cusparseConstSpVecDescr_t  spVecDescr, int64_t*  size, int64_t*  nnz, const void**  indices, const void**  values, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpVecDescr_t  spVecDescr, int64_t*  size, int64_t*  nnz, const void**  indices, const void**  values, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseConstSpVecGet");
+
+cusparseStatus_t (*lcusparseSpVecGetIndexBase) (cusparseConstSpVecDescr_t  spVecDescr, cusparseIndexBase_t*  idxBase) =
+	(cusparseStatus_t (*) (cusparseConstSpVecDescr_t  spVecDescr, cusparseIndexBase_t*  idxBase)) dlsym(cusparse_handle, "cusparseSpVecGetIndexBase");
+
+cusparseStatus_t (*lcusparseSpVecGetValues) (cusparseSpVecDescr_t  spVecDescr, void**  values) =
+	(cusparseStatus_t (*) (cusparseSpVecDescr_t  spVecDescr, void**  values)) dlsym(cusparse_handle, "cusparseSpVecGetValues");
+
+cusparseStatus_t (*lcusparseConstSpVecGetValues) (cusparseConstSpVecDescr_t  spVecDescr, const void**  values) =
+	(cusparseStatus_t (*) (cusparseConstSpVecDescr_t  spVecDescr, const void**  values)) dlsym(cusparse_handle, "cusparseConstSpVecGetValues");
+
+cusparseStatus_t (*lcusparseSpVecSetValues) (cusparseSpVecDescr_t  spVecDescr, void*  values) =
+	(cusparseStatus_t (*) (cusparseSpVecDescr_t  spVecDescr, void*  values)) dlsym(cusparse_handle, "cusparseSpVecSetValues");
+
+cusparseStatus_t (*lcusparseCreateDnVec) (cusparseDnVecDescr_t*  dnVecDescr, int64_t  size, void*  values, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseDnVecDescr_t*  dnVecDescr, int64_t  size, void*  values, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateDnVec");
+
+cusparseStatus_t (*lcusparseCreateConstDnVec) (cusparseConstDnVecDescr_t*  dnVecDescr, int64_t  size, const void*  values, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseConstDnVecDescr_t*  dnVecDescr, int64_t  size, const void*  values, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateConstDnVec");
+
+cusparseStatus_t (*lcusparseDestroyDnVec) (cusparseConstDnVecDescr_t  dnVecDescr) =
+	(cusparseStatus_t (*) (cusparseConstDnVecDescr_t  dnVecDescr)) dlsym(cusparse_handle, "cusparseDestroyDnVec");
+
+cusparseStatus_t (*lcusparseDnVecGet) (cusparseDnVecDescr_t  dnVecDescr, int64_t*  size, void**  values, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseDnVecDescr_t  dnVecDescr, int64_t*  size, void**  values, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseDnVecGet");
+
+cusparseStatus_t (*lcusparseConstDnVecGet) (cusparseConstDnVecDescr_t  dnVecDescr, int64_t*  size, const void**  values, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseConstDnVecDescr_t  dnVecDescr, int64_t*  size, const void**  values, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseConstDnVecGet");
+
+cusparseStatus_t (*lcusparseDnVecGetValues) (cusparseDnVecDescr_t  dnVecDescr, void**  values) =
+	(cusparseStatus_t (*) (cusparseDnVecDescr_t  dnVecDescr, void**  values)) dlsym(cusparse_handle, "cusparseDnVecGetValues");
+
+cusparseStatus_t (*lcusparseConstDnVecGetValues) (cusparseConstDnVecDescr_t  dnVecDescr, const void**  values) =
+	(cusparseStatus_t (*) (cusparseConstDnVecDescr_t  dnVecDescr, const void**  values)) dlsym(cusparse_handle, "cusparseConstDnVecGetValues");
+
+cusparseStatus_t (*lcusparseDnVecSetValues) (cusparseDnVecDescr_t  dnVecDescr, void*  values) =
+	(cusparseStatus_t (*) (cusparseDnVecDescr_t  dnVecDescr, void*  values)) dlsym(cusparse_handle, "cusparseDnVecSetValues");
+
+cusparseStatus_t (*lcusparseDestroySpMat) (cusparseConstSpMatDescr_t  spMatDescr) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr)) dlsym(cusparse_handle, "cusparseDestroySpMat");
+
+cusparseStatus_t (*lcusparseSpMatGetFormat) (cusparseConstSpMatDescr_t  spMatDescr, cusparseFormat_t*  format) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr, cusparseFormat_t*  format)) dlsym(cusparse_handle, "cusparseSpMatGetFormat");
+
+cusparseStatus_t (*lcusparseSpMatGetIndexBase) (cusparseConstSpMatDescr_t  spMatDescr, cusparseIndexBase_t*  idxBase) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr, cusparseIndexBase_t*  idxBase)) dlsym(cusparse_handle, "cusparseSpMatGetIndexBase");
+
+cusparseStatus_t (*lcusparseSpMatGetValues) (cusparseSpMatDescr_t  spMatDescr, void**  values) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, void**  values)) dlsym(cusparse_handle, "cusparseSpMatGetValues");
+
+cusparseStatus_t (*lcusparseConstSpMatGetValues) (cusparseConstSpMatDescr_t  spMatDescr, const void**  values) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr, const void**  values)) dlsym(cusparse_handle, "cusparseConstSpMatGetValues");
+
+cusparseStatus_t (*lcusparseSpMatSetValues) (cusparseSpMatDescr_t  spMatDescr, void*  values) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, void*  values)) dlsym(cusparse_handle, "cusparseSpMatSetValues");
+
+cusparseStatus_t (*lcusparseSpMatGetSize) (cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz)) dlsym(cusparse_handle, "cusparseSpMatGetSize");
+
+cusparseStatus_t (*lcusparseSpMatGetStridedBatch) (cusparseConstSpMatDescr_t  spMatDescr, int*  batchCount) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr, int*  batchCount)) dlsym(cusparse_handle, "cusparseSpMatGetStridedBatch");
+
+cusparseStatus_t (*lcusparseCooSetStridedBatch) (cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  batchStride) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  batchStride)) dlsym(cusparse_handle, "cusparseCooSetStridedBatch");
+
+cusparseStatus_t (*lcusparseCsrSetStridedBatch) (cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  offsetsBatchStride, int64_t  columnsValuesBatchStride) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  offsetsBatchStride, int64_t  columnsValuesBatchStride)) dlsym(cusparse_handle, "cusparseCsrSetStridedBatch");
+
+cusparseStatus_t (*lcusparseBsrSetStridedBatch) (cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  offsetsBatchStride, int64_t  columnsBatchStride, int64_t  ValuesBatchStride) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  offsetsBatchStride, int64_t  columnsBatchStride, int64_t  ValuesBatchStride)) dlsym(cusparse_handle, "cusparseBsrSetStridedBatch");
+
+cusparseStatus_t (*lcusparseSpMatGetAttribute) (cusparseConstSpMatDescr_t  spMatDescr, cusparseSpMatAttribute_t  attribute, void*  data, size_t  dataSize) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr, cusparseSpMatAttribute_t  attribute, void*  data, size_t  dataSize)) dlsym(cusparse_handle, "cusparseSpMatGetAttribute");
+
+cusparseStatus_t (*lcusparseSpMatSetAttribute) (cusparseSpMatDescr_t  spMatDescr, cusparseSpMatAttribute_t  attribute, void*  data, size_t  dataSize) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, cusparseSpMatAttribute_t  attribute, void*  data, size_t  dataSize)) dlsym(cusparse_handle, "cusparseSpMatSetAttribute");
+
+cusparseStatus_t (*lcusparseCreateCsr) (cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  csrRowOffsets, void*  csrColInd, void*  csrValues, cusparseIndexType_t  csrRowOffsetsType, cusparseIndexType_t  csrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  csrRowOffsets, void*  csrColInd, void*  csrValues, cusparseIndexType_t  csrRowOffsetsType, cusparseIndexType_t  csrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateCsr");
+
+cusparseStatus_t (*lcusparseCreateConstCsr) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  csrRowOffsets, const void*  csrColInd, const void*  csrValues, cusparseIndexType_t  csrRowOffsetsType, cusparseIndexType_t  csrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  csrRowOffsets, const void*  csrColInd, const void*  csrValues, cusparseIndexType_t  csrRowOffsetsType, cusparseIndexType_t  csrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateConstCsr");
+
+cusparseStatus_t (*lcusparseCreateCsc) (cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  cscColOffsets, void*  cscRowInd, void*  cscValues, cusparseIndexType_t  cscColOffsetsType, cusparseIndexType_t  cscRowIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  cscColOffsets, void*  cscRowInd, void*  cscValues, cusparseIndexType_t  cscColOffsetsType, cusparseIndexType_t  cscRowIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateCsc");
+
+cusparseStatus_t (*lcusparseCreateConstCsc) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  cscColOffsets, const void*  cscRowInd, const void*  cscValues, cusparseIndexType_t  cscColOffsetsType, cusparseIndexType_t  cscRowIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  cscColOffsets, const void*  cscRowInd, const void*  cscValues, cusparseIndexType_t  cscColOffsetsType, cusparseIndexType_t  cscRowIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateConstCsc");
+
+cusparseStatus_t (*lcusparseCsrGet) (cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  csrRowOffsets, void**  csrColInd, void**  csrValues, cusparseIndexType_t*  csrRowOffsetsType, cusparseIndexType_t*  csrColIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  csrRowOffsets, void**  csrColInd, void**  csrValues, cusparseIndexType_t*  csrRowOffsetsType, cusparseIndexType_t*  csrColIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseCsrGet");
+
+cusparseStatus_t (*lcusparseConstCsrGet) (cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  csrRowOffsets, const void**  csrColInd, const void**  csrValues, cusparseIndexType_t*  csrRowOffsetsType, cusparseIndexType_t*  csrColIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  csrRowOffsets, const void**  csrColInd, const void**  csrValues, cusparseIndexType_t*  csrRowOffsetsType, cusparseIndexType_t*  csrColIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseConstCsrGet");
+
+cusparseStatus_t (*lcusparseCscGet) (cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  cscColOffsets, void**  cscRowInd, void**  cscValues, cusparseIndexType_t*  cscColOffsetsType, cusparseIndexType_t*  cscRowIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  cscColOffsets, void**  cscRowInd, void**  cscValues, cusparseIndexType_t*  cscColOffsetsType, cusparseIndexType_t*  cscRowIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseCscGet");
+
+cusparseStatus_t (*lcusparseConstCscGet) (cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  cscColOffsets, const void**  cscRowInd, const void**  cscValues, cusparseIndexType_t*  cscColOffsetsType, cusparseIndexType_t*  cscRowIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  cscColOffsets, const void**  cscRowInd, const void**  cscValues, cusparseIndexType_t*  cscColOffsetsType, cusparseIndexType_t*  cscRowIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseConstCscGet");
+
+cusparseStatus_t (*lcusparseCsrSetPointers) (cusparseSpMatDescr_t  spMatDescr, void*  csrRowOffsets, void*  csrColInd, void*  csrValues) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, void*  csrRowOffsets, void*  csrColInd, void*  csrValues)) dlsym(cusparse_handle, "cusparseCsrSetPointers");
+
+cusparseStatus_t (*lcusparseCscSetPointers) (cusparseSpMatDescr_t  spMatDescr, void*  cscColOffsets, void*  cscRowInd, void*  cscValues) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, void*  cscColOffsets, void*  cscRowInd, void*  cscValues)) dlsym(cusparse_handle, "cusparseCscSetPointers");
+
+cusparseStatus_t (*lcusparseCreateBsr) (cusparseSpMatDescr_t*  spMatDescr, int64_t  brows, int64_t  bcols, int64_t  bnnz, int64_t  rowBlockSize, int64_t  colBlockSize, void*  bsrRowOffsets, void*  bsrColInd, void*  bsrValues, cusparseIndexType_t  bsrRowOffsetsType, cusparseIndexType_t  bsrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType, cusparseOrder_t  order) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t*  spMatDescr, int64_t  brows, int64_t  bcols, int64_t  bnnz, int64_t  rowBlockSize, int64_t  colBlockSize, void*  bsrRowOffsets, void*  bsrColInd, void*  bsrValues, cusparseIndexType_t  bsrRowOffsetsType, cusparseIndexType_t  bsrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType, cusparseOrder_t  order)) dlsym(cusparse_handle, "cusparseCreateBsr");
+
+cusparseStatus_t (*lcusparseCreateConstBsr) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  brows, int64_t  bcols, int64_t  bnnz, int64_t  rowBlockDim, int64_t  colBlockDim, const void*  bsrRowOffsets, const void*  bsrColInd, const void*  bsrValues, cusparseIndexType_t  bsrRowOffsetsType, cusparseIndexType_t  bsrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType, cusparseOrder_t  order) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  brows, int64_t  bcols, int64_t  bnnz, int64_t  rowBlockDim, int64_t  colBlockDim, const void*  bsrRowOffsets, const void*  bsrColInd, const void*  bsrValues, cusparseIndexType_t  bsrRowOffsetsType, cusparseIndexType_t  bsrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType, cusparseOrder_t  order)) dlsym(cusparse_handle, "cusparseCreateConstBsr");
+
+cusparseStatus_t (*lcusparseCreateCoo) (cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  cooRowInd, void*  cooColInd, void*  cooValues, cusparseIndexType_t  cooIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  cooRowInd, void*  cooColInd, void*  cooValues, cusparseIndexType_t  cooIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateCoo");
+
+cusparseStatus_t (*lcusparseCreateConstCoo) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  cooRowInd, const void*  cooColInd, const void*  cooValues, cusparseIndexType_t  cooIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  cooRowInd, const void*  cooColInd, const void*  cooValues, cusparseIndexType_t  cooIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateConstCoo");
+
+cusparseStatus_t (*lcusparseCooGet) (cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  cooRowInd, void**  cooColInd, void**  cooValues, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  cooRowInd, void**  cooColInd, void**  cooValues, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseCooGet");
+
+cusparseStatus_t (*lcusparseConstCooGet) (cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  cooRowInd, const void**  cooColInd, const void**  cooValues, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  cooRowInd, const void**  cooColInd, const void**  cooValues, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseConstCooGet");
+
+cusparseStatus_t (*lcusparseCooSetPointers) (cusparseSpMatDescr_t  spMatDescr, void*  cooRows, void*  cooColumns, void*  cooValues) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, void*  cooRows, void*  cooColumns, void*  cooValues)) dlsym(cusparse_handle, "cusparseCooSetPointers");
+
+cusparseStatus_t (*lcusparseCreateBlockedEll) (cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  ellBlockSize, int64_t  ellCols, void*  ellColInd, void*  ellValue, cusparseIndexType_t  ellIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  ellBlockSize, int64_t  ellCols, void*  ellColInd, void*  ellValue, cusparseIndexType_t  ellIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateBlockedEll");
+
+cusparseStatus_t (*lcusparseCreateConstBlockedEll) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  ellBlockSize, int64_t  ellCols, const void*  ellColInd, const void*  ellValue, cusparseIndexType_t  ellIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  ellBlockSize, int64_t  ellCols, const void*  ellColInd, const void*  ellValue, cusparseIndexType_t  ellIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateConstBlockedEll");
+
+cusparseStatus_t (*lcusparseBlockedEllGet) (cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ellBlockSize, int64_t*  ellCols, void**  ellColInd, void**  ellValue, cusparseIndexType_t*  ellIdxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ellBlockSize, int64_t*  ellCols, void**  ellColInd, void**  ellValue, cusparseIndexType_t*  ellIdxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseBlockedEllGet");
+
+cusparseStatus_t (*lcusparseConstBlockedEllGet) (cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ellBlockSize, int64_t*  ellCols, const void**  ellColInd, const void**  ellValue, cusparseIndexType_t*  ellIdxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ellBlockSize, int64_t*  ellCols, const void**  ellColInd, const void**  ellValue, cusparseIndexType_t*  ellIdxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)) dlsym(cusparse_handle, "cusparseConstBlockedEllGet");
+
+cusparseStatus_t (*lcusparseCreateSlicedEll) (cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, int64_t  sellValuesSize, int64_t  sliceSize, void*  sellSliceOffsets, void*  sellColInd, void*  sellValues, cusparseIndexType_t  sellSliceOffsetsType, cusparseIndexType_t  sellColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, int64_t  sellValuesSize, int64_t  sliceSize, void*  sellSliceOffsets, void*  sellColInd, void*  sellValues, cusparseIndexType_t  sellSliceOffsetsType, cusparseIndexType_t  sellColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateSlicedEll");
+
+cusparseStatus_t (*lcusparseCreateConstSlicedEll) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, int64_t  sellValuesSize, int64_t  sliceSize, const void*  sellSliceOffsets, const void*  sellColInd, const void*  sellValues, cusparseIndexType_t  sellSliceOffsetsType, cusparseIndexType_t  sellColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType) =
+	(cusparseStatus_t (*) (cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, int64_t  sellValuesSize, int64_t  sliceSize, const void*  sellSliceOffsets, const void*  sellColInd, const void*  sellValues, cusparseIndexType_t  sellSliceOffsetsType, cusparseIndexType_t  sellColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)) dlsym(cusparse_handle, "cusparseCreateConstSlicedEll");
+
+cusparseStatus_t (*lcusparseCreateDnMat) (cusparseDnMatDescr_t*  dnMatDescr, int64_t  rows, int64_t  cols, int64_t  ld, void*  values, cudaDataType  valueType, cusparseOrder_t  order) =
+	(cusparseStatus_t (*) (cusparseDnMatDescr_t*  dnMatDescr, int64_t  rows, int64_t  cols, int64_t  ld, void*  values, cudaDataType  valueType, cusparseOrder_t  order)) dlsym(cusparse_handle, "cusparseCreateDnMat");
+
+cusparseStatus_t (*lcusparseCreateConstDnMat) (cusparseConstDnMatDescr_t*  dnMatDescr, int64_t  rows, int64_t  cols, int64_t  ld, const void*  values, cudaDataType  valueType, cusparseOrder_t  order) =
+	(cusparseStatus_t (*) (cusparseConstDnMatDescr_t*  dnMatDescr, int64_t  rows, int64_t  cols, int64_t  ld, const void*  values, cudaDataType  valueType, cusparseOrder_t  order)) dlsym(cusparse_handle, "cusparseCreateConstDnMat");
+
+cusparseStatus_t (*lcusparseDestroyDnMat) (cusparseConstDnMatDescr_t  dnMatDescr) =
+	(cusparseStatus_t (*) (cusparseConstDnMatDescr_t  dnMatDescr)) dlsym(cusparse_handle, "cusparseDestroyDnMat");
+
+cusparseStatus_t (*lcusparseDnMatGet) (cusparseDnMatDescr_t  dnMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ld, void**  values, cudaDataType*  type, cusparseOrder_t*  order) =
+	(cusparseStatus_t (*) (cusparseDnMatDescr_t  dnMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ld, void**  values, cudaDataType*  type, cusparseOrder_t*  order)) dlsym(cusparse_handle, "cusparseDnMatGet");
+
+cusparseStatus_t (*lcusparseConstDnMatGet) (cusparseConstDnMatDescr_t  dnMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ld, const void**  values, cudaDataType*  type, cusparseOrder_t*  order) =
+	(cusparseStatus_t (*) (cusparseConstDnMatDescr_t  dnMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ld, const void**  values, cudaDataType*  type, cusparseOrder_t*  order)) dlsym(cusparse_handle, "cusparseConstDnMatGet");
+
+cusparseStatus_t (*lcusparseDnMatGetValues) (cusparseDnMatDescr_t  dnMatDescr, void**  values) =
+	(cusparseStatus_t (*) (cusparseDnMatDescr_t  dnMatDescr, void**  values)) dlsym(cusparse_handle, "cusparseDnMatGetValues");
+
+cusparseStatus_t (*lcusparseConstDnMatGetValues) (cusparseConstDnMatDescr_t  dnMatDescr, const void**  values) =
+	(cusparseStatus_t (*) (cusparseConstDnMatDescr_t  dnMatDescr, const void**  values)) dlsym(cusparse_handle, "cusparseConstDnMatGetValues");
+
+cusparseStatus_t (*lcusparseDnMatSetValues) (cusparseDnMatDescr_t  dnMatDescr, void*  values) =
+	(cusparseStatus_t (*) (cusparseDnMatDescr_t  dnMatDescr, void*  values)) dlsym(cusparse_handle, "cusparseDnMatSetValues");
+
+cusparseStatus_t (*lcusparseDnMatSetStridedBatch) (cusparseDnMatDescr_t  dnMatDescr, int  batchCount, int64_t  batchStride) =
+	(cusparseStatus_t (*) (cusparseDnMatDescr_t  dnMatDescr, int  batchCount, int64_t  batchStride)) dlsym(cusparse_handle, "cusparseDnMatSetStridedBatch");
+
+cusparseStatus_t (*lcusparseDnMatGetStridedBatch) (cusparseConstDnMatDescr_t  dnMatDescr, int*  batchCount, int64_t*  batchStride) =
+	(cusparseStatus_t (*) (cusparseConstDnMatDescr_t  dnMatDescr, int*  batchCount, int64_t*  batchStride)) dlsym(cusparse_handle, "cusparseDnMatGetStridedBatch");
+
+cusparseStatus_t (*lcusparseAxpby) (cusparseHandle_t  handle, const void*  alpha, cusparseConstSpVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, const void*  alpha, cusparseConstSpVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY)) dlsym(cusparse_handle, "cusparseAxpby");
+
+cusparseStatus_t (*lcusparseGather) (cusparseHandle_t  handle, cusparseConstDnVecDescr_t  vecY, cusparseSpVecDescr_t  vecX) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseConstDnVecDescr_t  vecY, cusparseSpVecDescr_t  vecX)) dlsym(cusparse_handle, "cusparseGather");
+
+cusparseStatus_t (*lcusparseScatter) (cusparseHandle_t  handle, cusparseConstSpVecDescr_t  vecX, cusparseDnVecDescr_t  vecY) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseConstSpVecDescr_t  vecX, cusparseDnVecDescr_t  vecY)) dlsym(cusparse_handle, "cusparseScatter");
+
+cusparseStatus_t (*lcusparseRot) (cusparseHandle_t  handle, const void*  c_coeff, const void*  s_coeff, cusparseSpVecDescr_t  vecX, cusparseDnVecDescr_t  vecY) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, const void*  c_coeff, const void*  s_coeff, cusparseSpVecDescr_t  vecX, cusparseDnVecDescr_t  vecY)) dlsym(cusparse_handle, "cusparseRot");
+
+cusparseStatus_t (*lcusparseSpVV_bufferSize) (cusparseHandle_t  handle, cusparseOperation_t  opX, cusparseConstSpVecDescr_t  vecX, cusparseConstDnVecDescr_t  vecY, const void*  result, cudaDataType  computeType, size_t*  bufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opX, cusparseConstSpVecDescr_t  vecX, cusparseConstDnVecDescr_t  vecY, const void*  result, cudaDataType  computeType, size_t*  bufferSize)) dlsym(cusparse_handle, "cusparseSpVV_bufferSize");
+
+cusparseStatus_t (*lcusparseSpVV) (cusparseHandle_t  handle, cusparseOperation_t  opX, cusparseConstSpVecDescr_t  vecX, cusparseConstDnVecDescr_t  vecY, void*  result, cudaDataType  computeType, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opX, cusparseConstSpVecDescr_t  vecX, cusparseConstDnVecDescr_t  vecY, void*  result, cudaDataType  computeType, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseSpVV");
+
+cusparseStatus_t (*lcusparseSparseToDense_bufferSize) (cusparseHandle_t  handle, cusparseConstSpMatDescr_t  matA, cusparseDnMatDescr_t  matB, cusparseSparseToDenseAlg_t  alg, size_t*  bufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseConstSpMatDescr_t  matA, cusparseDnMatDescr_t  matB, cusparseSparseToDenseAlg_t  alg, size_t*  bufferSize)) dlsym(cusparse_handle, "cusparseSparseToDense_bufferSize");
+
+cusparseStatus_t (*lcusparseSparseToDense) (cusparseHandle_t  handle, cusparseConstSpMatDescr_t  matA, cusparseDnMatDescr_t  matB, cusparseSparseToDenseAlg_t  alg, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseConstSpMatDescr_t  matA, cusparseDnMatDescr_t  matB, cusparseSparseToDenseAlg_t  alg, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseSparseToDense");
+
+cusparseStatus_t (*lcusparseDenseToSparse_bufferSize) (cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, size_t*  bufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, size_t*  bufferSize)) dlsym(cusparse_handle, "cusparseDenseToSparse_bufferSize");
+
+cusparseStatus_t (*lcusparseDenseToSparse_analysis) (cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseDenseToSparse_analysis");
+
+cusparseStatus_t (*lcusparseDenseToSparse_convert) (cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseDenseToSparse_convert");
+
+cusparseStatus_t (*lcusparseSpMV) (cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpMVAlg_t  alg, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpMVAlg_t  alg, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseSpMV");
+
+cusparseStatus_t (*lcusparseSpMV_bufferSize) (cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpMVAlg_t  alg, size_t*  bufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpMVAlg_t  alg, size_t*  bufferSize)) dlsym(cusparse_handle, "cusparseSpMV_bufferSize");
+
+cusparseStatus_t (*lcusparseSpSV_createDescr) (cusparseSpSVDescr_t*  descr) =
+	(cusparseStatus_t (*) (cusparseSpSVDescr_t*  descr)) dlsym(cusparse_handle, "cusparseSpSV_createDescr");
+
+cusparseStatus_t (*lcusparseSpSV_destroyDescr) (cusparseSpSVDescr_t  descr) =
+	(cusparseStatus_t (*) (cusparseSpSVDescr_t  descr)) dlsym(cusparse_handle, "cusparseSpSV_destroyDescr");
+
+cusparseStatus_t (*lcusparseSpSV_bufferSize) (cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr, size_t*  bufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr, size_t*  bufferSize)) dlsym(cusparse_handle, "cusparseSpSV_bufferSize");
+
+cusparseStatus_t (*lcusparseSpSV_analysis) (cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseSpSV_analysis");
+
+cusparseStatus_t (*lcusparseSpSV_solve) (cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr)) dlsym(cusparse_handle, "cusparseSpSV_solve");
+
+cusparseStatus_t (*lcusparseSpSV_updateMatrix) (cusparseHandle_t  handle, cusparseSpSVDescr_t  spsvDescr, void*  newValues, cusparseSpSVUpdate_t  updatePart) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseSpSVDescr_t  spsvDescr, void*  newValues, cusparseSpSVUpdate_t  updatePart)) dlsym(cusparse_handle, "cusparseSpSV_updateMatrix");
+
+cusparseStatus_t (*lcusparseSpSM_createDescr) (cusparseSpSMDescr_t*  descr) =
+	(cusparseStatus_t (*) (cusparseSpSMDescr_t*  descr)) dlsym(cusparse_handle, "cusparseSpSM_createDescr");
+
+cusparseStatus_t (*lcusparseSpSM_destroyDescr) (cusparseSpSMDescr_t  descr) =
+	(cusparseStatus_t (*) (cusparseSpSMDescr_t  descr)) dlsym(cusparse_handle, "cusparseSpSM_destroyDescr");
+
+cusparseStatus_t (*lcusparseSpSM_bufferSize) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr, size_t*  bufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr, size_t*  bufferSize)) dlsym(cusparse_handle, "cusparseSpSM_bufferSize");
+
+cusparseStatus_t (*lcusparseSpSM_analysis) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseSpSM_analysis");
+
+cusparseStatus_t (*lcusparseSpSM_solve) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr)) dlsym(cusparse_handle, "cusparseSpSM_solve");
+
+cusparseStatus_t (*lcusparseSpMM_bufferSize) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, size_t*  bufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, size_t*  bufferSize)) dlsym(cusparse_handle, "cusparseSpMM_bufferSize");
+
+cusparseStatus_t (*lcusparseSpMM_preprocess) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseSpMM_preprocess");
+
+cusparseStatus_t (*lcusparseSpMM) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseSpMM");
+
+cusparseStatus_t (*lcusparseSpGEMM_createDescr) (cusparseSpGEMMDescr_t*  descr) =
+	(cusparseStatus_t (*) (cusparseSpGEMMDescr_t*  descr)) dlsym(cusparse_handle, "cusparseSpGEMM_createDescr");
+
+cusparseStatus_t (*lcusparseSpGEMM_destroyDescr) (cusparseSpGEMMDescr_t  descr) =
+	(cusparseStatus_t (*) (cusparseSpGEMMDescr_t  descr)) dlsym(cusparse_handle, "cusparseSpGEMM_destroyDescr");
+
+cusparseStatus_t (*lcusparseSpGEMM_workEstimation) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize1, void*  externalBuffer1) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize1, void*  externalBuffer1)) dlsym(cusparse_handle, "cusparseSpGEMM_workEstimation");
+
+cusparseStatus_t (*lcusparseSpGEMM_getNumProducts) (cusparseSpGEMMDescr_t  spgemmDescr, int64_t*  num_prods) =
+	(cusparseStatus_t (*) (cusparseSpGEMMDescr_t  spgemmDescr, int64_t*  num_prods)) dlsym(cusparse_handle, "cusparseSpGEMM_getNumProducts");
+
+cusparseStatus_t (*lcusparseSpGEMM_estimateMemory) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, float  chunk_fraction, size_t*  bufferSize3, void*  externalBuffer3, size_t*  bufferSize2) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, float  chunk_fraction, size_t*  bufferSize3, void*  externalBuffer3, size_t*  bufferSize2)) dlsym(cusparse_handle, "cusparseSpGEMM_estimateMemory");
+
+cusparseStatus_t (*lcusparseSpGEMM_compute) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize2, void*  externalBuffer2) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize2, void*  externalBuffer2)) dlsym(cusparse_handle, "cusparseSpGEMM_compute");
+
+cusparseStatus_t (*lcusparseSpGEMM_copy) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr)) dlsym(cusparse_handle, "cusparseSpGEMM_copy");
+
+cusparseStatus_t (*lcusparseSpGEMMreuse_workEstimation) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize1, void*  externalBuffer1) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize1, void*  externalBuffer1)) dlsym(cusparse_handle, "cusparseSpGEMMreuse_workEstimation");
+
+cusparseStatus_t (*lcusparseSpGEMMreuse_nnz) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize2, void*  externalBuffer2, size_t*  bufferSize3, void*  externalBuffer3, size_t*  bufferSize4, void*  externalBuffer4) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize2, void*  externalBuffer2, size_t*  bufferSize3, void*  externalBuffer3, size_t*  bufferSize4, void*  externalBuffer4)) dlsym(cusparse_handle, "cusparseSpGEMMreuse_nnz");
+
+cusparseStatus_t (*lcusparseSpGEMMreuse_copy) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize5, void*  externalBuffer5) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize5, void*  externalBuffer5)) dlsym(cusparse_handle, "cusparseSpGEMMreuse_copy");
+
+cusparseStatus_t (*lcusparseSpGEMMreuse_compute) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr)) dlsym(cusparse_handle, "cusparseSpGEMMreuse_compute");
+
+cusparseStatus_t (*lcusparseSDDMM_bufferSize) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, size_t*  bufferSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, size_t*  bufferSize)) dlsym(cusparse_handle, "cusparseSDDMM_bufferSize");
+
+cusparseStatus_t (*lcusparseSDDMM_preprocess) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseSDDMM_preprocess");
+
+cusparseStatus_t (*lcusparseSDDMM) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseSDDMM");
+
+cusparseStatus_t (*lcusparseSpMMOp_createPlan) (cusparseHandle_t  handle, cusparseSpMMOpPlan_t*  plan, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMOpAlg_t  alg, const void*  addOperationNvvmBuffer, size_t  addOperationBufferSize, const void*  mulOperationNvvmBuffer, size_t  mulOperationBufferSize, const void*  epilogueNvvmBuffer, size_t  epilogueBufferSize, size_t*  SpMMWorkspaceSize) =
+	(cusparseStatus_t (*) (cusparseHandle_t  handle, cusparseSpMMOpPlan_t*  plan, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMOpAlg_t  alg, const void*  addOperationNvvmBuffer, size_t  addOperationBufferSize, const void*  mulOperationNvvmBuffer, size_t  mulOperationBufferSize, const void*  epilogueNvvmBuffer, size_t  epilogueBufferSize, size_t*  SpMMWorkspaceSize)) dlsym(cusparse_handle, "cusparseSpMMOp_createPlan");
+
+cusparseStatus_t (*lcusparseSpMMOp) (cusparseSpMMOpPlan_t  plan, void*  externalBuffer) =
+	(cusparseStatus_t (*) (cusparseSpMMOpPlan_t  plan, void*  externalBuffer)) dlsym(cusparse_handle, "cusparseSpMMOp");
+
+cusparseStatus_t (*lcusparseSpMMOp_destroyPlan) (cusparseSpMMOpPlan_t  plan) =
+	(cusparseStatus_t (*) (cusparseSpMMOpPlan_t  plan)) dlsym(cusparse_handle, "cusparseSpMMOp_destroyPlan");
 
 ncclResult_t (*lncclMemAlloc) (void**  ptr, size_t  size) =
 	(ncclResult_t (*) (void**  ptr, size_t  size)) dlsym(nccl_handle, "ncclMemAlloc");

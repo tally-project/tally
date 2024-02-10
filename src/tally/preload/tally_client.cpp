@@ -16,6 +16,8 @@
 #include <unordered_map>
 #include <elf.h>
 
+#include <boost/stacktrace.hpp>
+
 #include <cuda_runtime.h>
 #include <cuda.h>
 #include <cublas_v2.h>
@@ -169,7 +171,7 @@ void *dlopen(const char *filename, int flag)
 
     if (filename) {
         std::string f_name(filename);
-        // TALLY_SPD_LOG("dlopen: " + f_name);
+        // TALLY_SPD_LOG_ALWAYS("dlopen: " + f_name);
 
         if (std::find(preload_libs.begin(), preload_libs.end(), f_name) != preload_libs.end()) {
 
@@ -205,7 +207,7 @@ void *dlsym(void * handle, const char * symbol)
     assert(ldlsym);
 
     std::string symbol_str(symbol);
-    // TALLY_SPD_LOG("dlsym: " + symbol_str);
+    // TALLY_SPD_LOG_ALWAYS("dlsym: " + symbol_str);
 
     if (symbol_str == "cuGetProcAddress") {
         symbol_str = symbol_str + "_v11030";
@@ -815,7 +817,9 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 
         auto ctx = cublas_tracer.get_cublasCtx(handle);
 
-        if (ctx.mode == CUBLAS_DEFAULT_MATH) { 
+        // let's use the same implementation for cuda core and tf32
+        // as replace_cublas is for experiment purpose only
+        if (ctx.mode == CUBLAS_DEFAULT_MATH || ctx.mode == CUBLAS_TF32_TENSOR_OP_MATH) { 
 
             TALLY_SPD_LOG("cublasSgemm_v2 replaced with cutlassGemm_f32");
             load_tally_cutlass_lib();
@@ -1006,7 +1010,10 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
         }
 
         // Check matmul descriptor is supported
-        if (matmul_desc.scaleType == CUDA_R_32F && matmul_desc.computeType == CUBLAS_COMPUTE_32F) {
+        if (matmul_desc.scaleType == CUDA_R_32F &&
+            (matmul_desc.computeType == CUBLAS_COMPUTE_32F ||
+             matmul_desc.computeType == CUBLAS_COMPUTE_32F_FAST_TF32)
+        ) {
 
             // Check matrix layout is supported
             if ((matrix_a_layout.type == CUDA_R_32F &&
@@ -1213,7 +1220,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                 TALLY_SPD_WARN("matrix type is not CUDA_R_32F");
             }
         } else {
-            TALLY_SPD_WARN("scaleType is not CUDA_R_32F or computeType is not CUBLAS_COMPUTE_32F");
+            TALLY_SPD_WARN("scaleType or computeType is not handled");
         }
 
         if (!launched) {
@@ -6268,6 +6275,7 @@ CUresult cuGraphLaunch(CUgraphExec  hGraphExec, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuGraphLaunch hooked");
 	TALLY_CLIENT_PROFILE_START;
+
 #if defined(RUN_LOCALLY)
 	auto err = lcuGraphLaunch(hGraphExec, hStream);
 #else
@@ -7595,6 +7603,62 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetAttribute);
 	return err;
+}
+
+CUresult cuGraphInstantiateWithFlags(CUgraphExec * phGraphExec, CUgraph  hGraph, unsigned long long  flags)
+{
+	TALLY_SPD_LOG("cuGraphInstantiateWithFlags hooked");
+	TALLY_CLIENT_PROFILE_START;
+
+#if defined(RUN_LOCALLY)
+	auto err = lcuGraphInstantiateWithFlags(phGraphExec, hGraph, flags);
+#else
+
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphInstantiateWithFlagsArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUGRAPHINSTANTIATEWITHFLAGS;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuGraphInstantiateWithFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->phGraphExec = phGraphExec;
+			request->hGraph = hGraph;
+			request->flags = flags;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cuGraphInstantiateWithFlagsResponse*>(responsePayload);
+			if (phGraphExec) { *phGraphExec = response->phGraphExec; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuGraphInstantiateWithFlags);
+	return err;
+}
+
+CUresult cuGetExportTable(const void ** ppExportTable, const CUuuid * pExportTableId)
+{
+	TALLY_SPD_LOG("cuGetExportTable hooked");
+#if defined(RUN_LOCALLY)
+	return lcuGetExportTable(ppExportTable, pExportTableId);
+#else
+    TALLY_SPD_WARN("cuGetExportTable is a internal CUDA call. Must override from higher-level API.");
+	std::cout << boost::stacktrace::stacktrace() << std::endl;
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
 }
 
 }

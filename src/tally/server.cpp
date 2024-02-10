@@ -5133,3 +5133,35 @@ void TallyServer::handle_cudaDeviceGetAttribute(void *__args, iox::popo::Untyped
         .or_else(
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
+
+void TallyServer::handle_cuGraphInstantiateWithFlags(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuGraphInstantiateWithFlags");
+	auto args = (struct cuGraphInstantiateWithFlagsArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    iox_server->loan(requestHeader, sizeof(cuGraphInstantiateWithFlagsResponse), alignof(cuGraphInstantiateWithFlagsResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuGraphInstantiateWithFlagsResponse*>(responsePayload);
+            // response->err = cuGraphInstantiateWithFlags(
+			// 	(args->phGraphExec ? &(response->phGraphExec) : NULL),
+			// 	args->hGraph,
+			// 	args->flags
+			// );
+
+            TALLY_SPD_WARN("Failing cuGraphInstantiateWithFlags intentionally");
+            response->err = CUDA_ERROR_INVALID_VALUE;
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuGetExportTable(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuGetExportTable");
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+}

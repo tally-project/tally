@@ -12,6 +12,7 @@
 #include <cublasLt.h>
 #include <nccl.h>
 #include <curand.h>
+#include <cusparse_v2.h>
 
 
 struct cuDriverGetVersionArg {
@@ -402,17 +403,6 @@ struct cuEventElapsedTimeResponse {
 
 struct cuDestroyExternalMemoryArg {
 	CUexternalMemory  extMem;
-};
-
-struct cuGraphInstantiateWithFlagsArg {
-	CUgraphExec * phGraphExec;
-	CUgraph  hGraph;
-	unsigned long long  flags;
-};
-
-struct cuGraphInstantiateWithFlagsResponse {
-	CUgraphExec  phGraphExec;
-	CUresult err;
 };
 
 struct cuGraphExecDestroyArg {
@@ -810,11 +800,6 @@ struct cudaGraphInstantiateWithFlagsResponse {
 };
 
 struct cudaGraphUploadArg {
-	cudaGraphExec_t  graphExec;
-	cudaStream_t  stream;
-};
-
-struct cudaGraphLaunchArg {
 	cudaGraphExec_t  graphExec;
 	cudaStream_t  stream;
 };

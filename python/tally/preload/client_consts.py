@@ -30,6 +30,7 @@ API_DECL_TEMPLATE_TOP = """
 #include <cublasLt.h>
 #include <nccl.h>
 #include <curand.h>
+#include <cusparse_v2.h>
 
 """
 
@@ -58,6 +59,7 @@ API_DEF_TEMPLATE_TOP = """
 #include <cublasLt.h>
 #include <nccl.h>
 #include <curand.h>
+#include <cusparse_v2.h>
 
 #include <tally/generated/cuda_api.h>
 #include <tally/env.h>
@@ -71,6 +73,7 @@ void *cublasLt_handle;
 void *nvrtc_handle;
 void *nccl_handle;
 void *curand_handle;
+void *cusparse_handle;
 
 void __attribute__((constructor)) register_cuda_handles()
 {
@@ -84,6 +87,7 @@ void __attribute__((constructor)) register_cuda_handles()
 	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
     nvrtc_handle = dlopen(LIBNVRTC_PATH, RTLD_LAZY);
     curand_handle = dlopen(LIBCURAND_PATH, RTLD_LAZY);
+    cusparse_handle = dlopen(LIBCUSPARSE_PATH, RTLD_LAZY);
 	nccl_handle = dlopen(lib_nccl_path.string().c_str(), RTLD_LAZY);
 }
 
@@ -122,6 +126,7 @@ MSG_STRUCT_TEMPLATE_TOP = """
 #include <cublasLt.h>
 #include <nccl.h>
 #include <curand.h>
+#include <cusparse_v2.h>
 
 
 """
@@ -156,6 +161,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 #include <cublasLt.h>
 #include <nccl.h>
 #include <curand.h>
+#include <cusparse_v2.h>
 
 #include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
@@ -194,6 +200,7 @@ TALLY_SERVER_HEADER_TEMPLATE_TOP = """
 #include <cublasLt.h>
 #include <nccl.h>
 #include <curand.h>
+#include <cusparse_v2.h>
 
 #include <readerwriterqueue.h>
 
@@ -492,6 +499,8 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuGetExportTable",
+    "cuGraphInstantiateWithFlags",
     "cudaDeviceGetAttribute",
     "cuCtxCreate_v2",
     "cuCtxGetCurrent",
@@ -652,7 +661,7 @@ FORWARD_API_CALLS = [
     "cuEventRecord",
     "cuStreamBeginCapture_v2",
     "cudaGraphUpload",
-    "cudaGraphLaunch",
+    # "cudaGraphLaunch",
     "cudaGraphExecDestroy",
     "cudaGraphDestroy",
     "cudnnRestoreDropoutDescriptor",
@@ -760,7 +769,6 @@ CUDA_GET_1_PARAM_FUNCS = [
     "cublasLtMatrixTransformDescCreate",
     "cuEventElapsedTime",
     "cuEventCreate",
-    "cuGraphInstantiateWithFlags",
     "cuModuleGetLoadingMode",
     "cudaGraphInstantiateWithFlags",
     "cublasGetLoggerCallback",

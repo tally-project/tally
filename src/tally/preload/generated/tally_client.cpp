@@ -23,6 +23,7 @@
 #include <cublasLt.h>
 #include <nccl.h>
 #include <curand.h>
+#include <cusparse_v2.h>
 
 #include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
@@ -4211,49 +4212,6 @@ CUresult cuGraphDestroyNode(CUgraphNode  hNode)
 #endif
 }
 
-CUresult cuGraphInstantiateWithFlags(CUgraphExec * phGraphExec, CUgraph  hGraph, unsigned long long  flags)
-{
-	TALLY_SPD_LOG("cuGraphInstantiateWithFlags hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcuGraphInstantiateWithFlags(phGraphExec, hGraph, flags);
-#else
-
-    CUresult err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuGraphInstantiateWithFlagsArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUGRAPHINSTANTIATEWITHFLAGS;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuGraphInstantiateWithFlagsArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->phGraphExec = phGraphExec;
-			request->hGraph = hGraph;
-			request->flags = flags;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cuGraphInstantiateWithFlagsResponse*>(responsePayload);
-			if (phGraphExec) { *phGraphExec = response->phGraphExec; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuGraphInstantiateWithFlags);
-	return err;
-}
-
 CUresult cuGraphInstantiateWithParams(CUgraphExec * phGraphExec, CUgraph  hGraph, CUDA_GRAPH_INSTANTIATE_PARAMS * instantiateParams)
 {
 	TALLY_SPD_LOG("cuGraphInstantiateWithParams hooked");
@@ -5252,16 +5210,6 @@ CUresult cuCoredumpSetAttributeGlobal(CUcoredumpSettings  attrib, void * value, 
 	TALLY_SPD_LOG("cuCoredumpSetAttributeGlobal hooked");
 #if defined(RUN_LOCALLY)
 	return lcuCoredumpSetAttributeGlobal(attrib, value, size);
-#else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-#endif
-}
-
-CUresult cuGetExportTable(const void ** ppExportTable, const CUuuid * pExportTableId)
-{
-	TALLY_SPD_LOG("cuGetExportTable hooked");
-#if defined(RUN_LOCALLY)
-	return lcuGetExportTable(ppExportTable, pExportTableId);
 #else
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
@@ -9325,43 +9273,11 @@ cudaError_t cudaGraphUpload(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 cudaError_t cudaGraphLaunch(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaGraphLaunch hooked");
-	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
-	auto err = lcudaGraphLaunch(graphExec, stream);
+	return lcudaGraphLaunch(graphExec, stream);
 #else
-
-    cudaError_t err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaGraphLaunchArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDAGRAPHLAUNCH;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cudaGraphLaunchArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->graphExec = graphExec;
-			request->stream = stream;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const cudaError_t*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
-	last_err = err;
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGraphLaunch);
-	return err;
 }
 
 cudaError_t cudaGraphExecDestroy(cudaGraphExec_t  graphExec)
@@ -14572,7 +14488,6 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 	auto err = lcublasGetVersion_v2(handle, version);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -14618,7 +14533,6 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 	auto err = lcublasGetProperty(type, value);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -14703,7 +14617,6 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 	auto err = lcublasGetStream_v2(handle, streamId);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -14749,7 +14662,6 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	auto err = lcublasGetPointerMode_v2(handle, mode);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -14795,7 +14707,6 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 	auto err = lcublasSetPointerMode_v2(handle, mode);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -14859,7 +14770,6 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
 	auto err = lcublasGetSmCountTarget(handle, smCountTarget);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -14905,7 +14815,6 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 	auto err = lcublasSetSmCountTarget(handle, smCountTarget);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -14979,7 +14888,6 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 	auto err = lcublasSetLoggerCallback(userCallback);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -15022,7 +14930,6 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 	auto err = lcublasGetLoggerCallback(userCallback);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -15067,7 +14974,6 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 	auto err = lcublasSetVector(n, elemSize, x, incx, devicePtr, incy);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -20543,7 +20449,6 @@ cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t* 
 	auto err = lcublasLtMatrixTransformDescCreate(transformDesc, scaleType);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -20589,7 +20494,6 @@ cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t 
 	auto err = lcublasLtMatrixTransformDescDestroy(transformDesc);
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -20782,7 +20686,6 @@ cublasStatus_t cublasLtLoggerForceDisable()
 	auto err = lcublasLtLoggerForceDisable();
 #else
 	if (replace_cublas) {
-		auto err = CUBLAS_STATUS_SUCCESS;
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -21164,6 +21067,4586 @@ curandStatus_t curandGetScrambleConstants64(unsigned long long * *  constants)
 	TALLY_SPD_LOG("curandGetScrambleConstants64 hooked");
 #if defined(RUN_LOCALLY)
 	return lcurandGetScrambleConstants64(constants);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreate(cusparseHandle_t*  handle)
+{
+	TALLY_SPD_LOG("cusparseCreate hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreate(handle);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroy(cusparseHandle_t  handle)
+{
+	TALLY_SPD_LOG("cusparseDestroy hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroy(handle);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseGetVersion(cusparseHandle_t  handle, int*  version)
+{
+	TALLY_SPD_LOG("cusparseGetVersion hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGetVersion(handle, version);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseGetProperty(libraryPropertyType  type, int*  value)
+{
+	TALLY_SPD_LOG("cusparseGetProperty hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGetProperty(type, value);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+const char* cusparseGetErrorName(cusparseStatus_t  status)
+{
+	TALLY_SPD_LOG("cusparseGetErrorName hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGetErrorName(status);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+const char* cusparseGetErrorString(cusparseStatus_t  status)
+{
+	TALLY_SPD_LOG("cusparseGetErrorString hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGetErrorString(status);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSetStream(cusparseHandle_t  handle, cudaStream_t  streamId)
+{
+	TALLY_SPD_LOG("cusparseSetStream hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSetStream(handle, streamId);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseGetStream(cusparseHandle_t  handle, cudaStream_t*  streamId)
+{
+	TALLY_SPD_LOG("cusparseGetStream hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGetStream(handle, streamId);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseGetPointerMode(cusparseHandle_t  handle, cusparsePointerMode_t*  mode)
+{
+	TALLY_SPD_LOG("cusparseGetPointerMode hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGetPointerMode(handle, mode);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSetPointerMode(cusparseHandle_t  handle, cusparsePointerMode_t  mode)
+{
+	TALLY_SPD_LOG("cusparseSetPointerMode hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSetPointerMode(handle, mode);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseLoggerSetCallback(cusparseLoggerCallback_t  callback)
+{
+	TALLY_SPD_LOG("cusparseLoggerSetCallback hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseLoggerSetCallback(callback);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseLoggerSetFile(FILE*  file)
+{
+	TALLY_SPD_LOG("cusparseLoggerSetFile hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseLoggerSetFile(file);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseLoggerOpenFile(const char*  logFile)
+{
+	TALLY_SPD_LOG("cusparseLoggerOpenFile hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseLoggerOpenFile(logFile);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseLoggerSetLevel(int  level)
+{
+	TALLY_SPD_LOG("cusparseLoggerSetLevel hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseLoggerSetLevel(level);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseLoggerSetMask(int  mask)
+{
+	TALLY_SPD_LOG("cusparseLoggerSetMask hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseLoggerSetMask(mask);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseLoggerForceDisable()
+{
+	TALLY_SPD_LOG("cusparseLoggerForceDisable hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseLoggerForceDisable();
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateMatDescr(cusparseMatDescr_t*  descrA)
+{
+	TALLY_SPD_LOG("cusparseCreateMatDescr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateMatDescr(descrA);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyMatDescr(cusparseMatDescr_t  descrA)
+{
+	TALLY_SPD_LOG("cusparseDestroyMatDescr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyMatDescr(descrA);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSetMatType(cusparseMatDescr_t  descrA, cusparseMatrixType_t  type)
+{
+	TALLY_SPD_LOG("cusparseSetMatType hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSetMatType(descrA, type);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseMatrixType_t cusparseGetMatType(const cusparseMatDescr_t  descrA)
+{
+	TALLY_SPD_LOG("cusparseGetMatType hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGetMatType(descrA);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSetMatFillMode(cusparseMatDescr_t  descrA, cusparseFillMode_t  fillMode)
+{
+	TALLY_SPD_LOG("cusparseSetMatFillMode hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSetMatFillMode(descrA, fillMode);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseFillMode_t cusparseGetMatFillMode(const cusparseMatDescr_t  descrA)
+{
+	TALLY_SPD_LOG("cusparseGetMatFillMode hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGetMatFillMode(descrA);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSetMatDiagType(cusparseMatDescr_t  descrA, cusparseDiagType_t  diagType)
+{
+	TALLY_SPD_LOG("cusparseSetMatDiagType hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSetMatDiagType(descrA, diagType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseDiagType_t cusparseGetMatDiagType(const cusparseMatDescr_t  descrA)
+{
+	TALLY_SPD_LOG("cusparseGetMatDiagType hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGetMatDiagType(descrA);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSetMatIndexBase(cusparseMatDescr_t  descrA, cusparseIndexBase_t  base)
+{
+	TALLY_SPD_LOG("cusparseSetMatIndexBase hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSetMatIndexBase(descrA, base);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseIndexBase_t cusparseGetMatIndexBase(const cusparseMatDescr_t  descrA)
+{
+	TALLY_SPD_LOG("cusparseGetMatIndexBase hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGetMatIndexBase(descrA);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateCsric02Info(csric02Info_t*  info)
+{
+	TALLY_SPD_LOG("cusparseCreateCsric02Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateCsric02Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyCsric02Info(csric02Info_t  info)
+{
+	TALLY_SPD_LOG("cusparseDestroyCsric02Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyCsric02Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateBsric02Info(bsric02Info_t*  info)
+{
+	TALLY_SPD_LOG("cusparseCreateBsric02Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateBsric02Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyBsric02Info(bsric02Info_t  info)
+{
+	TALLY_SPD_LOG("cusparseDestroyBsric02Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyBsric02Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateCsrilu02Info(csrilu02Info_t*  info)
+{
+	TALLY_SPD_LOG("cusparseCreateCsrilu02Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateCsrilu02Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyCsrilu02Info(csrilu02Info_t  info)
+{
+	TALLY_SPD_LOG("cusparseDestroyCsrilu02Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyCsrilu02Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateBsrilu02Info(bsrilu02Info_t*  info)
+{
+	TALLY_SPD_LOG("cusparseCreateBsrilu02Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateBsrilu02Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyBsrilu02Info(bsrilu02Info_t  info)
+{
+	TALLY_SPD_LOG("cusparseDestroyBsrilu02Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyBsrilu02Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateBsrsv2Info(bsrsv2Info_t*  info)
+{
+	TALLY_SPD_LOG("cusparseCreateBsrsv2Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateBsrsv2Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyBsrsv2Info(bsrsv2Info_t  info)
+{
+	TALLY_SPD_LOG("cusparseDestroyBsrsv2Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyBsrsv2Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateBsrsm2Info(bsrsm2Info_t*  info)
+{
+	TALLY_SPD_LOG("cusparseCreateBsrsm2Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateBsrsm2Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyBsrsm2Info(bsrsm2Info_t  info)
+{
+	TALLY_SPD_LOG("cusparseDestroyBsrsm2Info hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyBsrsm2Info(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateCsru2csrInfo(csru2csrInfo_t*  info)
+{
+	TALLY_SPD_LOG("cusparseCreateCsru2csrInfo hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateCsru2csrInfo(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyCsru2csrInfo(csru2csrInfo_t  info)
+{
+	TALLY_SPD_LOG("cusparseDestroyCsru2csrInfo hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyCsru2csrInfo(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateColorInfo(cusparseColorInfo_t*  info)
+{
+	TALLY_SPD_LOG("cusparseCreateColorInfo hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateColorInfo(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyColorInfo(cusparseColorInfo_t  info)
+{
+	TALLY_SPD_LOG("cusparseDestroyColorInfo hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyColorInfo(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreatePruneInfo(pruneInfo_t*  info)
+{
+	TALLY_SPD_LOG("cusparseCreatePruneInfo hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreatePruneInfo(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyPruneInfo(pruneInfo_t  info)
+{
+	TALLY_SPD_LOG("cusparseDestroyPruneInfo hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyPruneInfo(info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const float*  alpha, const float*  A, int  lda, int  nnz, const float*  xVal, const int*  xInd, const float*  beta, float*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSgemvi hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseSgemvi_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const double*  alpha, const double*  A, int  lda, int  nnz, const double*  xVal, const int*  xInd, const double*  beta, double*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDgemvi hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseDgemvi_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, int  nnz, const cuComplex*  xVal, const int*  xInd, const cuComplex*  beta, cuComplex*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCgemvi hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseCgemvi_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, int  nnz, const cuDoubleComplex*  xVal, const int*  xInd, const cuDoubleComplex*  beta, cuDoubleComplex*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZgemvi hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseZgemvi_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const float*  x, const float*  beta, float*  y)
+{
+	TALLY_SPD_LOG("cusparseSbsrmv hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const double*  x, const double*  beta, double*  y)
+{
+	TALLY_SPD_LOG("cusparseDbsrmv hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuComplex*  x, const cuComplex*  beta, cuComplex*  y)
+{
+	TALLY_SPD_LOG("cusparseCbsrmv hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuDoubleComplex*  x, const cuDoubleComplex*  beta, cuDoubleComplex*  y)
+{
+	TALLY_SPD_LOG("cusparseZbsrmv hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const float*  x, const float*  beta, float*  y)
+{
+	TALLY_SPD_LOG("cusparseSbsrxmv hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const double*  x, const double*  beta, double*  y)
+{
+	TALLY_SPD_LOG("cusparseDbsrxmv hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuComplex*  x, const cuComplex*  beta, cuComplex*  y)
+{
+	TALLY_SPD_LOG("cusparseCbsrxmv hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuDoubleComplex*  x, const cuDoubleComplex*  beta, cuDoubleComplex*  y)
+{
+	TALLY_SPD_LOG("cusparseZbsrxmv hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXbsrsv2_zeroPivot(cusparseHandle_t  handle, bsrsv2Info_t  info, int*  position)
+{
+	TALLY_SPD_LOG("cusparseXbsrsv2_zeroPivot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXbsrsv2_zeroPivot(handle, info, position);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSbsrsv2_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDbsrsv2_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCbsrsv2_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZbsrsv2_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseSbsrsv2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseDbsrsv2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseCbsrsv2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseZbsrsv2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSbsrsv2_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDbsrsv2_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCbsrsv2_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZbsrsv2_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const float*  f, float*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSbsrsv2_solve hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const double*  f, double*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDbsrsv2_solve hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const cuComplex*  f, cuComplex*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCbsrsv2_solve hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const cuDoubleComplex*  f, cuDoubleComplex*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZbsrsv2_solve hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const float*  B, const int  ldb, const float*  beta, float*  C, int  ldc)
+{
+	TALLY_SPD_LOG("cusparseSbsrmm hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const double*  B, const int  ldb, const double*  beta, double*  C, int  ldc)
+{
+	TALLY_SPD_LOG("cusparseDbsrmm hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const cuComplex*  B, const int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
+{
+	TALLY_SPD_LOG("cusparseCbsrmm hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const cuDoubleComplex*  B, const int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
+{
+	TALLY_SPD_LOG("cusparseZbsrmm hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXbsrsm2_zeroPivot(cusparseHandle_t  handle, bsrsm2Info_t  info, int*  position)
+{
+	TALLY_SPD_LOG("cusparseXbsrsm2_zeroPivot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXbsrsm2_zeroPivot(handle, info, position);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSbsrsm2_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDbsrsm2_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCbsrsm2_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZbsrsm2_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseSbsrsm2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseDbsrsm2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseCbsrsm2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseZbsrsm2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSbsrsm2_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDbsrsm2_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCbsrsm2_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZbsrsm2_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const float*  B, int  ldb, float*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSbsrsm2_solve hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const double*  B, int  ldb, double*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDbsrsm2_solve hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const cuComplex*  B, int  ldb, cuComplex*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCbsrsm2_solve hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZbsrsm2_solve hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, float*  boost_val)
+{
+	TALLY_SPD_LOG("cusparseScsrilu02_numericBoost hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, double*  boost_val)
+{
+	TALLY_SPD_LOG("cusparseDcsrilu02_numericBoost hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, cuComplex*  boost_val)
+{
+	TALLY_SPD_LOG("cusparseCcsrilu02_numericBoost hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, cuDoubleComplex*  boost_val)
+{
+	TALLY_SPD_LOG("cusparseZcsrilu02_numericBoost hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcsrilu02_zeroPivot(cusparseHandle_t  handle, csrilu02Info_t  info, int*  position)
+{
+	TALLY_SPD_LOG("cusparseXcsrilu02_zeroPivot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcsrilu02_zeroPivot(handle, info, position);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseScsrilu02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDcsrilu02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCcsrilu02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZcsrilu02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseScsrilu02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseDcsrilu02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseCcsrilu02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseZcsrilu02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseScsrilu02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDcsrilu02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCcsrilu02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZcsrilu02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseScsrilu02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDcsrilu02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCcsrilu02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZcsrilu02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, float*  boost_val)
+{
+	TALLY_SPD_LOG("cusparseSbsrilu02_numericBoost hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, double*  boost_val)
+{
+	TALLY_SPD_LOG("cusparseDbsrilu02_numericBoost hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, cuComplex*  boost_val)
+{
+	TALLY_SPD_LOG("cusparseCbsrilu02_numericBoost hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, cuDoubleComplex*  boost_val)
+{
+	TALLY_SPD_LOG("cusparseZbsrilu02_numericBoost hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXbsrilu02_zeroPivot(cusparseHandle_t  handle, bsrilu02Info_t  info, int*  position)
+{
+	TALLY_SPD_LOG("cusparseXbsrilu02_zeroPivot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXbsrilu02_zeroPivot(handle, info, position);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSbsrilu02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDbsrilu02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCbsrilu02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZbsrilu02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseSbsrilu02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseDbsrilu02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseCbsrilu02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseZbsrilu02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSbsrilu02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDbsrilu02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCbsrilu02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZbsrilu02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSbsrilu02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDbsrilu02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCbsrilu02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZbsrilu02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcsric02_zeroPivot(cusparseHandle_t  handle, csric02Info_t  info, int*  position)
+{
+	TALLY_SPD_LOG("cusparseXcsric02_zeroPivot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcsric02_zeroPivot(handle, info, position);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseScsric02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDcsric02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCcsric02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZcsric02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseScsric02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseDcsric02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseCcsric02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseZcsric02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseScsric02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDcsric02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCcsric02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZcsric02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseScsric02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDcsric02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCcsric02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZcsric02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXbsric02_zeroPivot(cusparseHandle_t  handle, bsric02Info_t  info, int*  position)
+{
+	TALLY_SPD_LOG("cusparseXbsric02_zeroPivot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXbsric02_zeroPivot(handle, info, position);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSbsric02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDbsric02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCbsric02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZbsric02_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseSbsric02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseDbsric02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseCbsric02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseZbsric02_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
+{
+	TALLY_SPD_LOG("cusparseSbsric02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
+{
+	TALLY_SPD_LOG("cusparseDbsric02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
+{
+	TALLY_SPD_LOG("cusparseCbsric02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
+{
+	TALLY_SPD_LOG("cusparseZbsric02_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSbsric02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDbsric02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCbsric02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZbsric02 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, const float*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSgtsv2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, const double*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDgtsv2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCgtsv2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZgtsv2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgtsv2(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, float*  B, int  ldb, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSgtsv2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgtsv2(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, double*  B, int  ldb, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDgtsv2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgtsv2(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  B, int  ldb, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCgtsv2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgtsv2(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  B, int  ldb, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZgtsv2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, const float*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSgtsv2_nopivot_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, const double*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDgtsv2_nopivot_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCgtsv2_nopivot_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZgtsv2_nopivot_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, float*  B, int  ldb, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSgtsv2_nopivot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, double*  B, int  ldb, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDgtsv2_nopivot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  B, int  ldb, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCgtsv2_nopivot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  B, int  ldb, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZgtsv2_nopivot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const float*  dl, const float*  d, const float*  du, const float*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSgtsv2StridedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const double*  dl, const double*  d, const double*  du, const double*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDgtsv2StridedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCgtsv2StridedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZgtsv2StridedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const float*  dl, const float*  d, const float*  du, float*  x, int  batchCount, int  batchStride, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSgtsv2StridedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const double*  dl, const double*  d, const double*  du, double*  x, int  batchCount, int  batchStride, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDgtsv2StridedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  x, int  batchCount, int  batchStride, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCgtsv2StridedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  x, int  batchCount, int  batchStride, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZgtsv2StridedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const float*  dl, const float*  d, const float*  du, const float*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSgtsvInterleavedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const double*  dl, const double*  d, const double*  du, const double*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDgtsvInterleavedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCgtsvInterleavedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZgtsvInterleavedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, float*  dl, float*  d, float*  du, float*  x, int  batchCount, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSgtsvInterleavedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, double*  dl, double*  d, double*  du, double*  x, int  batchCount, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDgtsvInterleavedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuComplex*  dl, cuComplex*  d, cuComplex*  du, cuComplex*  x, int  batchCount, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCgtsvInterleavedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuDoubleComplex*  dl, cuDoubleComplex*  d, cuDoubleComplex*  du, cuDoubleComplex*  x, int  batchCount, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZgtsvInterleavedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const float*  ds, const float*  dl, const float*  d, const float*  du, const float*  dw, const float*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSgpsvInterleavedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const double*  ds, const double*  dl, const double*  d, const double*  du, const double*  dw, const double*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDgpsvInterleavedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuComplex*  ds, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  dw, const cuComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCgpsvInterleavedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuDoubleComplex*  ds, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  dw, const cuDoubleComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZgpsvInterleavedBatch_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, float*  ds, float*  dl, float*  d, float*  du, float*  dw, float*  x, int  batchCount, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSgpsvInterleavedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, double*  ds, double*  dl, double*  d, double*  du, double*  dw, double*  x, int  batchCount, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDgpsvInterleavedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuComplex*  ds, cuComplex*  dl, cuComplex*  d, cuComplex*  du, cuComplex*  dw, cuComplex*  x, int  batchCount, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCgpsvInterleavedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuDoubleComplex*  ds, cuDoubleComplex*  dl, cuDoubleComplex*  d, cuDoubleComplex*  du, cuDoubleComplex*  dw, cuDoubleComplex*  x, int  batchCount, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZgpsvInterleavedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const float*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseScsrgeam2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const double*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDcsrgeam2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const cuComplex*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCcsrgeam2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuDoubleComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuDoubleComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const cuDoubleComplex*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZcsrgeam2_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcsrgeam2Nnz(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, int  nnzA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrB, int  nnzB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  workspace)
+{
+	TALLY_SPD_LOG("cusparseXcsrgeam2Nnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcsrgeam2Nnz(handle, m, n, descrA, nnzA, csrSortedRowPtrA, csrSortedColIndA, descrB, nnzB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, workspace);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsrgeam2(cusparseHandle_t  handle, int  m, int  n, const float*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const float*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseScsrgeam2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsrgeam2(cusparseHandle_t  handle, int  m, int  n, const double*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const double*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDcsrgeam2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsrgeam2(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCcsrgeam2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsrgeam2(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuDoubleComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuDoubleComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZcsrgeam2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
+{
+	TALLY_SPD_LOG("cusparseScsrcolor hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
+{
+	TALLY_SPD_LOG("cusparseDcsrcolor hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
+{
+	TALLY_SPD_LOG("cusparseCcsrcolor hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
+{
+	TALLY_SPD_LOG("cusparseZcsrcolor hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
+{
+	TALLY_SPD_LOG("cusparseSnnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
+{
+	TALLY_SPD_LOG("cusparseDnnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
+{
+	TALLY_SPD_LOG("cusparseCnnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
+{
+	TALLY_SPD_LOG("cusparseZnnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const float*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, float  tol)
+{
+	TALLY_SPD_LOG("cusparseSnnz_compress hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const double*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, double  tol)
+{
+	TALLY_SPD_LOG("cusparseDnnz_compress hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, cuComplex  tol)
+{
+	TALLY_SPD_LOG("cusparseCnnz_compress hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, cuDoubleComplex  tol)
+{
+	TALLY_SPD_LOG("cusparseZnnz_compress hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, float*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, float  tol)
+{
+	TALLY_SPD_LOG("cusparseScsr2csr_compress hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, double*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, double  tol)
+{
+	TALLY_SPD_LOG("cusparseDcsr2csr_compress hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, cuComplex*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, cuComplex  tol)
+{
+	TALLY_SPD_LOG("cusparseCcsr2csr_compress hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, cuDoubleComplex*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, cuDoubleComplex  tol)
+{
+	TALLY_SPD_LOG("cusparseZcsr2csr_compress hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcoo2csr(cusparseHandle_t  handle, const int*  cooRowInd, int  nnz, int  m, int*  csrSortedRowPtr, cusparseIndexBase_t  idxBase)
+{
+	TALLY_SPD_LOG("cusparseXcoo2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcoo2csr(handle, cooRowInd, nnz, m, csrSortedRowPtr, idxBase);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcsr2coo(cusparseHandle_t  handle, const int*  csrSortedRowPtr, int  nnz, int  m, int*  cooRowInd, cusparseIndexBase_t  idxBase)
+{
+	TALLY_SPD_LOG("cusparseXcsr2coo hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcsr2coo(handle, csrSortedRowPtr, nnz, m, cooRowInd, idxBase);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcsr2bsrNnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int*  nnzTotalDevHostPtr)
+{
+	TALLY_SPD_LOG("cusparseXcsr2bsrNnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcsr2bsrNnz(handle, dirA, m, n, descrA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedRowPtrC, nnzTotalDevHostPtr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseScsr2bsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseDcsr2bsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseCcsr2bsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseZcsr2bsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseSbsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseDbsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseCbsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseZbsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSgebsr2gebsc_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDgebsr2gebsc_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCgebsr2gebsc_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZgebsr2gebsc_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseSgebsr2gebsc_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseDgebsr2gebsc_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseCgebsr2gebsc_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseZgebsr2gebsc_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, float*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSgebsr2gebsc hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, double*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDgebsr2gebsc hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, cuComplex*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCgebsr2gebsc hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, cuDoubleComplex*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZgebsr2gebsc hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseXgebsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedRowPtrC, csrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseSgebsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseDgebsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseCgebsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	TALLY_SPD_LOG("cusparseZgebsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseScsr2gebsr_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDcsr2gebsr_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCcsr2gebsr_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZcsr2gebsr_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseScsr2gebsr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseDcsr2gebsr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseCcsr2gebsr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseZcsr2gebsr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcsr2gebsrNnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int  rowBlockDim, int  colBlockDim, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseXcsr2gebsrNnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcsr2gebsrNnz(handle, dirA, m, n, descrA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedRowPtrC, rowBlockDim, colBlockDim, nnzTotalDevHostPtr, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseScsr2gebsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDcsr2gebsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCcsr2gebsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZcsr2gebsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSgebsr2gebsr_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDgebsr2gebsr_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCgebsr2gebsr_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZgebsr2gebsr_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseSgebsr2gebsr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseDgebsr2gebsr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseCgebsr2gebsr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
+{
+	TALLY_SPD_LOG("cusparseZgebsr2gebsr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXgebsr2gebsrNnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int  rowBlockDimC, int  colBlockDimC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseXgebsr2gebsrNnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXgebsr2gebsrNnz(handle, dirA, mb, nb, nnzb, descrA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedRowPtrC, rowBlockDimC, colBlockDimC, nnzTotalDevHostPtr, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSgebsr2gebsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDgebsr2gebsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCgebsr2gebsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZgebsr2gebsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateIdentityPermutation(cusparseHandle_t  handle, int  n, int*  p)
+{
+	TALLY_SPD_LOG("cusparseCreateIdentityPermutation hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateIdentityPermutation(handle, n, p);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcoosort_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  cooRowsA, const int*  cooColsA, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseXcoosort_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcoosort_bufferSizeExt(handle, m, n, nnz, cooRowsA, cooColsA, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcoosortByRow(cusparseHandle_t  handle, int  m, int  n, int  nnz, int*  cooRowsA, int*  cooColsA, int*  P, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseXcoosortByRow hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcoosortByRow(handle, m, n, nnz, cooRowsA, cooColsA, P, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcoosortByColumn(cusparseHandle_t  handle, int  m, int  n, int  nnz, int*  cooRowsA, int*  cooColsA, int*  P, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseXcoosortByColumn hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcoosortByColumn(handle, m, n, nnz, cooRowsA, cooColsA, P, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcsrsort_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  csrRowPtrA, const int*  csrColIndA, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseXcsrsort_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcsrsort_bufferSizeExt(handle, m, n, nnz, csrRowPtrA, csrColIndA, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcsrsort(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, const int*  csrRowPtrA, int*  csrColIndA, int*  P, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseXcsrsort hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcsrsort(handle, m, n, nnz, descrA, csrRowPtrA, csrColIndA, P, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcscsort_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  cscColPtrA, const int*  cscRowIndA, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseXcscsort_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcscsort_bufferSizeExt(handle, m, n, nnz, cscColPtrA, cscRowIndA, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseXcscsort(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, const int*  cscColPtrA, int*  cscRowIndA, int*  P, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseXcscsort hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseXcscsort(handle, m, n, nnz, descrA, cscColPtrA, cscRowIndA, P, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseScsru2csr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDcsru2csr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseCcsru2csr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseZcsru2csr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseScsru2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDcsru2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCcsru2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZcsru2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseScsr2csru hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDcsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDcsr2csru hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDcsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCcsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseCcsr2csru hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCcsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseZcsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseZcsr2csru hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseZcsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseHpruneDense2csr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneDense2csr_bufferSizeExt(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSpruneDense2csr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneDense2csr_bufferSizeExt(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDpruneDense2csr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneDense2csr_bufferSizeExt(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneDense2csrNnz(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseHpruneDense2csrNnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneDense2csrNnz(handle, m, n, A, lda, threshold, descrC, csrRowPtrC, nnzTotalDevHostPtr, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneDense2csrNnz(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpruneDense2csrNnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneDense2csrNnz(handle, m, n, A, lda, threshold, descrC, csrRowPtrC, nnzTotalDevHostPtr, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneDense2csrNnz(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDpruneDense2csrNnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneDense2csrNnz(handle, m, n, A, lda, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneDense2csr(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseHpruneDense2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneDense2csr(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneDense2csr(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpruneDense2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneDense2csr(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneDense2csr(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDpruneDense2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneDense2csr(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseHpruneCsr2csr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneCsr2csr_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSpruneCsr2csr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneCsr2csr_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDpruneCsr2csr_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneCsr2csr_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseHpruneCsr2csrNnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneCsr2csrNnz(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpruneCsr2csrNnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneCsr2csrNnz(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDpruneCsr2csrNnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneCsr2csrNnz(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseHpruneCsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneCsr2csr(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpruneCsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneCsr2csr(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDpruneCsr2csr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneCsr2csr(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneDense2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseHpruneDense2csrByPercentage_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneDense2csrByPercentage_bufferSizeExt(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneDense2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSpruneDense2csrByPercentage_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneDense2csrByPercentage_bufferSizeExt(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneDense2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDpruneDense2csrByPercentage_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneDense2csrByPercentage_bufferSizeExt(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneDense2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseHpruneDense2csrNnzByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneDense2csrNnzByPercentage(handle, m, n, A, lda, percentage, descrC, csrRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneDense2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpruneDense2csrNnzByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneDense2csrNnzByPercentage(handle, m, n, A, lda, percentage, descrC, csrRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneDense2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDpruneDense2csrNnzByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneDense2csrNnzByPercentage(handle, m, n, A, lda, percentage, descrC, csrRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneDense2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseHpruneDense2csrByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneDense2csrByPercentage(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneDense2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpruneDense2csrByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneDense2csrByPercentage(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneDense2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDpruneDense2csrByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneDense2csrByPercentage(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseHpruneCsr2csrByPercentage_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneCsr2csrByPercentage_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseSpruneCsr2csrByPercentage_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneCsr2csrByPercentage_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	TALLY_SPD_LOG("cusparseDpruneCsr2csrByPercentage_bufferSizeExt hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneCsr2csrByPercentage_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseHpruneCsr2csrNnzByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneCsr2csrNnzByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpruneCsr2csrNnzByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneCsr2csrNnzByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDpruneCsr2csrNnzByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneCsr2csrNnzByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseHpruneCsr2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseHpruneCsr2csrByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseHpruneCsr2csrByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpruneCsr2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpruneCsr2csrByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpruneCsr2csrByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDpruneCsr2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	TALLY_SPD_LOG("cusparseDpruneCsr2csrByPercentage hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDpruneCsr2csrByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCsr2cscEx2(cusparseHandle_t  handle, int  m, int  n, int  nnz, const void*  csrVal, const int*  csrRowPtr, const int*  csrColInd, void*  cscVal, int*  cscColPtr, int*  cscRowInd, cudaDataType  valType, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, cusparseCsr2CscAlg_t  alg, void*  buffer)
+{
+	TALLY_SPD_LOG("cusparseCsr2cscEx2 hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCsr2cscEx2(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, cscVal, cscColPtr, cscRowInd, valType, copyValues, idxBase, alg, buffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCsr2cscEx2_bufferSize(cusparseHandle_t  handle, int  m, int  n, int  nnz, const void*  csrVal, const int*  csrRowPtr, const int*  csrColInd, void*  cscVal, int*  cscColPtr, int*  cscRowInd, cudaDataType  valType, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, cusparseCsr2CscAlg_t  alg, size_t*  bufferSize)
+{
+	TALLY_SPD_LOG("cusparseCsr2cscEx2_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCsr2cscEx2_bufferSize(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, cscVal, cscColPtr, cscRowInd, valType, copyValues, idxBase, alg, bufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateSpVec(cusparseSpVecDescr_t*  spVecDescr, int64_t  size, int64_t  nnz, void*  indices, void*  values, cusparseIndexType_t  idxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateSpVec hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateSpVec(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateConstSpVec(cusparseConstSpVecDescr_t*  spVecDescr, int64_t  size, int64_t  nnz, const void*  indices, const void*  values, cusparseIndexType_t  idxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateConstSpVec hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateConstSpVec(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroySpVec(cusparseConstSpVecDescr_t  spVecDescr)
+{
+	TALLY_SPD_LOG("cusparseDestroySpVec hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroySpVec(spVecDescr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpVecGet(cusparseSpVecDescr_t  spVecDescr, int64_t*  size, int64_t*  nnz, void**  indices, void**  values, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseSpVecGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpVecGet(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstSpVecGet(cusparseConstSpVecDescr_t  spVecDescr, int64_t*  size, int64_t*  nnz, const void**  indices, const void**  values, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseConstSpVecGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstSpVecGet(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpVecGetIndexBase(cusparseConstSpVecDescr_t  spVecDescr, cusparseIndexBase_t*  idxBase)
+{
+	TALLY_SPD_LOG("cusparseSpVecGetIndexBase hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpVecGetIndexBase(spVecDescr, idxBase);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpVecGetValues(cusparseSpVecDescr_t  spVecDescr, void**  values)
+{
+	TALLY_SPD_LOG("cusparseSpVecGetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpVecGetValues(spVecDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstSpVecGetValues(cusparseConstSpVecDescr_t  spVecDescr, const void**  values)
+{
+	TALLY_SPD_LOG("cusparseConstSpVecGetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstSpVecGetValues(spVecDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpVecSetValues(cusparseSpVecDescr_t  spVecDescr, void*  values)
+{
+	TALLY_SPD_LOG("cusparseSpVecSetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpVecSetValues(spVecDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateDnVec(cusparseDnVecDescr_t*  dnVecDescr, int64_t  size, void*  values, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateDnVec hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateDnVec(dnVecDescr, size, values, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateConstDnVec(cusparseConstDnVecDescr_t*  dnVecDescr, int64_t  size, const void*  values, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateConstDnVec hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateConstDnVec(dnVecDescr, size, values, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyDnVec(cusparseConstDnVecDescr_t  dnVecDescr)
+{
+	TALLY_SPD_LOG("cusparseDestroyDnVec hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyDnVec(dnVecDescr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDnVecGet(cusparseDnVecDescr_t  dnVecDescr, int64_t*  size, void**  values, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseDnVecGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDnVecGet(dnVecDescr, size, values, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstDnVecGet(cusparseConstDnVecDescr_t  dnVecDescr, int64_t*  size, const void**  values, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseConstDnVecGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstDnVecGet(dnVecDescr, size, values, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDnVecGetValues(cusparseDnVecDescr_t  dnVecDescr, void**  values)
+{
+	TALLY_SPD_LOG("cusparseDnVecGetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDnVecGetValues(dnVecDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstDnVecGetValues(cusparseConstDnVecDescr_t  dnVecDescr, const void**  values)
+{
+	TALLY_SPD_LOG("cusparseConstDnVecGetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstDnVecGetValues(dnVecDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDnVecSetValues(cusparseDnVecDescr_t  dnVecDescr, void*  values)
+{
+	TALLY_SPD_LOG("cusparseDnVecSetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDnVecSetValues(dnVecDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroySpMat(cusparseConstSpMatDescr_t  spMatDescr)
+{
+	TALLY_SPD_LOG("cusparseDestroySpMat hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroySpMat(spMatDescr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMatGetFormat(cusparseConstSpMatDescr_t  spMatDescr, cusparseFormat_t*  format)
+{
+	TALLY_SPD_LOG("cusparseSpMatGetFormat hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMatGetFormat(spMatDescr, format);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMatGetIndexBase(cusparseConstSpMatDescr_t  spMatDescr, cusparseIndexBase_t*  idxBase)
+{
+	TALLY_SPD_LOG("cusparseSpMatGetIndexBase hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMatGetIndexBase(spMatDescr, idxBase);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMatGetValues(cusparseSpMatDescr_t  spMatDescr, void**  values)
+{
+	TALLY_SPD_LOG("cusparseSpMatGetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMatGetValues(spMatDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstSpMatGetValues(cusparseConstSpMatDescr_t  spMatDescr, const void**  values)
+{
+	TALLY_SPD_LOG("cusparseConstSpMatGetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstSpMatGetValues(spMatDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMatSetValues(cusparseSpMatDescr_t  spMatDescr, void*  values)
+{
+	TALLY_SPD_LOG("cusparseSpMatSetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMatSetValues(spMatDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMatGetSize(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz)
+{
+	TALLY_SPD_LOG("cusparseSpMatGetSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMatGetSize(spMatDescr, rows, cols, nnz);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMatGetStridedBatch(cusparseConstSpMatDescr_t  spMatDescr, int*  batchCount)
+{
+	TALLY_SPD_LOG("cusparseSpMatGetStridedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMatGetStridedBatch(spMatDescr, batchCount);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCooSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  batchStride)
+{
+	TALLY_SPD_LOG("cusparseCooSetStridedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCooSetStridedBatch(spMatDescr, batchCount, batchStride);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCsrSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  offsetsBatchStride, int64_t  columnsValuesBatchStride)
+{
+	TALLY_SPD_LOG("cusparseCsrSetStridedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCsrSetStridedBatch(spMatDescr, batchCount, offsetsBatchStride, columnsValuesBatchStride);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseBsrSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  offsetsBatchStride, int64_t  columnsBatchStride, int64_t  ValuesBatchStride)
+{
+	TALLY_SPD_LOG("cusparseBsrSetStridedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseBsrSetStridedBatch(spMatDescr, batchCount, offsetsBatchStride, columnsBatchStride, ValuesBatchStride);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMatGetAttribute(cusparseConstSpMatDescr_t  spMatDescr, cusparseSpMatAttribute_t  attribute, void*  data, size_t  dataSize)
+{
+	TALLY_SPD_LOG("cusparseSpMatGetAttribute hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMatGetAttribute(spMatDescr, attribute, data, dataSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMatSetAttribute(cusparseSpMatDescr_t  spMatDescr, cusparseSpMatAttribute_t  attribute, void*  data, size_t  dataSize)
+{
+	TALLY_SPD_LOG("cusparseSpMatSetAttribute hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMatSetAttribute(spMatDescr, attribute, data, dataSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateCsr(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  csrRowOffsets, void*  csrColInd, void*  csrValues, cusparseIndexType_t  csrRowOffsetsType, cusparseIndexType_t  csrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateCsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateCsr(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateConstCsr(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  csrRowOffsets, const void*  csrColInd, const void*  csrValues, cusparseIndexType_t  csrRowOffsetsType, cusparseIndexType_t  csrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateConstCsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateConstCsr(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateCsc(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  cscColOffsets, void*  cscRowInd, void*  cscValues, cusparseIndexType_t  cscColOffsetsType, cusparseIndexType_t  cscRowIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateCsc hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateCsc(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateConstCsc(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  cscColOffsets, const void*  cscRowInd, const void*  cscValues, cusparseIndexType_t  cscColOffsetsType, cusparseIndexType_t  cscRowIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateConstCsc hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateConstCsc(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCsrGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  csrRowOffsets, void**  csrColInd, void**  csrValues, cusparseIndexType_t*  csrRowOffsetsType, cusparseIndexType_t*  csrColIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseCsrGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCsrGet(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstCsrGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  csrRowOffsets, const void**  csrColInd, const void**  csrValues, cusparseIndexType_t*  csrRowOffsetsType, cusparseIndexType_t*  csrColIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseConstCsrGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstCsrGet(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCscGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  cscColOffsets, void**  cscRowInd, void**  cscValues, cusparseIndexType_t*  cscColOffsetsType, cusparseIndexType_t*  cscRowIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseCscGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCscGet(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstCscGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  cscColOffsets, const void**  cscRowInd, const void**  cscValues, cusparseIndexType_t*  cscColOffsetsType, cusparseIndexType_t*  cscRowIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseConstCscGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstCscGet(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCsrSetPointers(cusparseSpMatDescr_t  spMatDescr, void*  csrRowOffsets, void*  csrColInd, void*  csrValues)
+{
+	TALLY_SPD_LOG("cusparseCsrSetPointers hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCsrSetPointers(spMatDescr, csrRowOffsets, csrColInd, csrValues);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCscSetPointers(cusparseSpMatDescr_t  spMatDescr, void*  cscColOffsets, void*  cscRowInd, void*  cscValues)
+{
+	TALLY_SPD_LOG("cusparseCscSetPointers hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCscSetPointers(spMatDescr, cscColOffsets, cscRowInd, cscValues);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateBsr(cusparseSpMatDescr_t*  spMatDescr, int64_t  brows, int64_t  bcols, int64_t  bnnz, int64_t  rowBlockSize, int64_t  colBlockSize, void*  bsrRowOffsets, void*  bsrColInd, void*  bsrValues, cusparseIndexType_t  bsrRowOffsetsType, cusparseIndexType_t  bsrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType, cusparseOrder_t  order)
+{
+	TALLY_SPD_LOG("cusparseCreateBsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateBsr(spMatDescr, brows, bcols, bnnz, rowBlockSize, colBlockSize, bsrRowOffsets, bsrColInd, bsrValues, bsrRowOffsetsType, bsrColIndType, idxBase, valueType, order);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateConstBsr(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  brows, int64_t  bcols, int64_t  bnnz, int64_t  rowBlockDim, int64_t  colBlockDim, const void*  bsrRowOffsets, const void*  bsrColInd, const void*  bsrValues, cusparseIndexType_t  bsrRowOffsetsType, cusparseIndexType_t  bsrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType, cusparseOrder_t  order)
+{
+	TALLY_SPD_LOG("cusparseCreateConstBsr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateConstBsr(spMatDescr, brows, bcols, bnnz, rowBlockDim, colBlockDim, bsrRowOffsets, bsrColInd, bsrValues, bsrRowOffsetsType, bsrColIndType, idxBase, valueType, order);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateCoo(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  cooRowInd, void*  cooColInd, void*  cooValues, cusparseIndexType_t  cooIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateCoo hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateCoo(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, cooIdxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateConstCoo(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  cooRowInd, const void*  cooColInd, const void*  cooValues, cusparseIndexType_t  cooIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateConstCoo hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateConstCoo(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, cooIdxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCooGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  cooRowInd, void**  cooColInd, void**  cooValues, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseCooGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCooGet(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, idxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstCooGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  cooRowInd, const void**  cooColInd, const void**  cooValues, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseConstCooGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstCooGet(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, idxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCooSetPointers(cusparseSpMatDescr_t  spMatDescr, void*  cooRows, void*  cooColumns, void*  cooValues)
+{
+	TALLY_SPD_LOG("cusparseCooSetPointers hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCooSetPointers(spMatDescr, cooRows, cooColumns, cooValues);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateBlockedEll(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  ellBlockSize, int64_t  ellCols, void*  ellColInd, void*  ellValue, cusparseIndexType_t  ellIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateBlockedEll hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateBlockedEll(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateConstBlockedEll(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  ellBlockSize, int64_t  ellCols, const void*  ellColInd, const void*  ellValue, cusparseIndexType_t  ellIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateConstBlockedEll hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateConstBlockedEll(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseBlockedEllGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ellBlockSize, int64_t*  ellCols, void**  ellColInd, void**  ellValue, cusparseIndexType_t*  ellIdxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseBlockedEllGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseBlockedEllGet(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstBlockedEllGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ellBlockSize, int64_t*  ellCols, const void**  ellColInd, const void**  ellValue, cusparseIndexType_t*  ellIdxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	TALLY_SPD_LOG("cusparseConstBlockedEllGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstBlockedEllGet(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateSlicedEll(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, int64_t  sellValuesSize, int64_t  sliceSize, void*  sellSliceOffsets, void*  sellColInd, void*  sellValues, cusparseIndexType_t  sellSliceOffsetsType, cusparseIndexType_t  sellColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateSlicedEll hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateSlicedEll(spMatDescr, rows, cols, nnz, sellValuesSize, sliceSize, sellSliceOffsets, sellColInd, sellValues, sellSliceOffsetsType, sellColIndType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateConstSlicedEll(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, int64_t  sellValuesSize, int64_t  sliceSize, const void*  sellSliceOffsets, const void*  sellColInd, const void*  sellValues, cusparseIndexType_t  sellSliceOffsetsType, cusparseIndexType_t  sellColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	TALLY_SPD_LOG("cusparseCreateConstSlicedEll hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateConstSlicedEll(spMatDescr, rows, cols, nnz, sellValuesSize, sliceSize, sellSliceOffsets, sellColInd, sellValues, sellSliceOffsetsType, sellColIndType, idxBase, valueType);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateDnMat(cusparseDnMatDescr_t*  dnMatDescr, int64_t  rows, int64_t  cols, int64_t  ld, void*  values, cudaDataType  valueType, cusparseOrder_t  order)
+{
+	TALLY_SPD_LOG("cusparseCreateDnMat hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateDnMat(dnMatDescr, rows, cols, ld, values, valueType, order);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseCreateConstDnMat(cusparseConstDnMatDescr_t*  dnMatDescr, int64_t  rows, int64_t  cols, int64_t  ld, const void*  values, cudaDataType  valueType, cusparseOrder_t  order)
+{
+	TALLY_SPD_LOG("cusparseCreateConstDnMat hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseCreateConstDnMat(dnMatDescr, rows, cols, ld, values, valueType, order);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDestroyDnMat(cusparseConstDnMatDescr_t  dnMatDescr)
+{
+	TALLY_SPD_LOG("cusparseDestroyDnMat hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDestroyDnMat(dnMatDescr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDnMatGet(cusparseDnMatDescr_t  dnMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ld, void**  values, cudaDataType*  type, cusparseOrder_t*  order)
+{
+	TALLY_SPD_LOG("cusparseDnMatGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDnMatGet(dnMatDescr, rows, cols, ld, values, type, order);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstDnMatGet(cusparseConstDnMatDescr_t  dnMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ld, const void**  values, cudaDataType*  type, cusparseOrder_t*  order)
+{
+	TALLY_SPD_LOG("cusparseConstDnMatGet hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstDnMatGet(dnMatDescr, rows, cols, ld, values, type, order);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDnMatGetValues(cusparseDnMatDescr_t  dnMatDescr, void**  values)
+{
+	TALLY_SPD_LOG("cusparseDnMatGetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDnMatGetValues(dnMatDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseConstDnMatGetValues(cusparseConstDnMatDescr_t  dnMatDescr, const void**  values)
+{
+	TALLY_SPD_LOG("cusparseConstDnMatGetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseConstDnMatGetValues(dnMatDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDnMatSetValues(cusparseDnMatDescr_t  dnMatDescr, void*  values)
+{
+	TALLY_SPD_LOG("cusparseDnMatSetValues hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDnMatSetValues(dnMatDescr, values);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDnMatSetStridedBatch(cusparseDnMatDescr_t  dnMatDescr, int  batchCount, int64_t  batchStride)
+{
+	TALLY_SPD_LOG("cusparseDnMatSetStridedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDnMatSetStridedBatch(dnMatDescr, batchCount, batchStride);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDnMatGetStridedBatch(cusparseConstDnMatDescr_t  dnMatDescr, int*  batchCount, int64_t*  batchStride)
+{
+	TALLY_SPD_LOG("cusparseDnMatGetStridedBatch hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDnMatGetStridedBatch(dnMatDescr, batchCount, batchStride);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseAxpby(cusparseHandle_t  handle, const void*  alpha, cusparseConstSpVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY)
+{
+	TALLY_SPD_LOG("cusparseAxpby hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseAxpby(handle, alpha, vecX, beta, vecY);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseGather(cusparseHandle_t  handle, cusparseConstDnVecDescr_t  vecY, cusparseSpVecDescr_t  vecX)
+{
+	TALLY_SPD_LOG("cusparseGather hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseGather(handle, vecY, vecX);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseScatter(cusparseHandle_t  handle, cusparseConstSpVecDescr_t  vecX, cusparseDnVecDescr_t  vecY)
+{
+	TALLY_SPD_LOG("cusparseScatter hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseScatter(handle, vecX, vecY);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseRot(cusparseHandle_t  handle, const void*  c_coeff, const void*  s_coeff, cusparseSpVecDescr_t  vecX, cusparseDnVecDescr_t  vecY)
+{
+	TALLY_SPD_LOG("cusparseRot hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseRot(handle, c_coeff, s_coeff, vecX, vecY);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpVV_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opX, cusparseConstSpVecDescr_t  vecX, cusparseConstDnVecDescr_t  vecY, const void*  result, cudaDataType  computeType, size_t*  bufferSize)
+{
+	TALLY_SPD_LOG("cusparseSpVV_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpVV_bufferSize(handle, opX, vecX, vecY, result, computeType, bufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpVV(cusparseHandle_t  handle, cusparseOperation_t  opX, cusparseConstSpVecDescr_t  vecX, cusparseConstDnVecDescr_t  vecY, void*  result, cudaDataType  computeType, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpVV hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpVV(handle, opX, vecX, vecY, result, computeType, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSparseToDense_bufferSize(cusparseHandle_t  handle, cusparseConstSpMatDescr_t  matA, cusparseDnMatDescr_t  matB, cusparseSparseToDenseAlg_t  alg, size_t*  bufferSize)
+{
+	TALLY_SPD_LOG("cusparseSparseToDense_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSparseToDense_bufferSize(handle, matA, matB, alg, bufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSparseToDense(cusparseHandle_t  handle, cusparseConstSpMatDescr_t  matA, cusparseDnMatDescr_t  matB, cusparseSparseToDenseAlg_t  alg, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseSparseToDense hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSparseToDense(handle, matA, matB, alg, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDenseToSparse_bufferSize(cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, size_t*  bufferSize)
+{
+	TALLY_SPD_LOG("cusparseDenseToSparse_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDenseToSparse_bufferSize(handle, matA, matB, alg, bufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDenseToSparse_analysis(cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseDenseToSparse_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDenseToSparse_analysis(handle, matA, matB, alg, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseDenseToSparse_convert(cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseDenseToSparse_convert hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseDenseToSparse_convert(handle, matA, matB, alg, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMV(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpMVAlg_t  alg, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpMV hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMV(handle, opA, alpha, matA, vecX, beta, vecY, computeType, alg, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMV_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpMVAlg_t  alg, size_t*  bufferSize)
+{
+	TALLY_SPD_LOG("cusparseSpMV_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMV_bufferSize(handle, opA, alpha, matA, vecX, beta, vecY, computeType, alg, bufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSV_createDescr(cusparseSpSVDescr_t*  descr)
+{
+	TALLY_SPD_LOG("cusparseSpSV_createDescr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSV_createDescr(descr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSV_destroyDescr(cusparseSpSVDescr_t  descr)
+{
+	TALLY_SPD_LOG("cusparseSpSV_destroyDescr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSV_destroyDescr(descr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSV_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr, size_t*  bufferSize)
+{
+	TALLY_SPD_LOG("cusparseSpSV_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSV_bufferSize(handle, opA, alpha, matA, vecX, vecY, computeType, alg, spsvDescr, bufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSV_analysis(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpSV_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSV_analysis(handle, opA, alpha, matA, vecX, vecY, computeType, alg, spsvDescr, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSV_solve(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr)
+{
+	TALLY_SPD_LOG("cusparseSpSV_solve hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSV_solve(handle, opA, alpha, matA, vecX, vecY, computeType, alg, spsvDescr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSV_updateMatrix(cusparseHandle_t  handle, cusparseSpSVDescr_t  spsvDescr, void*  newValues, cusparseSpSVUpdate_t  updatePart)
+{
+	TALLY_SPD_LOG("cusparseSpSV_updateMatrix hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSV_updateMatrix(handle, spsvDescr, newValues, updatePart);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSM_createDescr(cusparseSpSMDescr_t*  descr)
+{
+	TALLY_SPD_LOG("cusparseSpSM_createDescr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSM_createDescr(descr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSM_destroyDescr(cusparseSpSMDescr_t  descr)
+{
+	TALLY_SPD_LOG("cusparseSpSM_destroyDescr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSM_destroyDescr(descr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSM_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr, size_t*  bufferSize)
+{
+	TALLY_SPD_LOG("cusparseSpSM_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSM_bufferSize(handle, opA, opB, alpha, matA, matB, matC, computeType, alg, spsmDescr, bufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSM_analysis(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpSM_analysis hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSM_analysis(handle, opA, opB, alpha, matA, matB, matC, computeType, alg, spsmDescr, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpSM_solve(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr)
+{
+	TALLY_SPD_LOG("cusparseSpSM_solve hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpSM_solve(handle, opA, opB, alpha, matA, matB, matC, computeType, alg, spsmDescr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMM_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, size_t*  bufferSize)
+{
+	TALLY_SPD_LOG("cusparseSpMM_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMM_bufferSize(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, bufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMM_preprocess(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpMM_preprocess hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMM_preprocess(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMM(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpMM hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMM(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMM_createDescr(cusparseSpGEMMDescr_t*  descr)
+{
+	TALLY_SPD_LOG("cusparseSpGEMM_createDescr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMM_createDescr(descr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMM_destroyDescr(cusparseSpGEMMDescr_t  descr)
+{
+	TALLY_SPD_LOG("cusparseSpGEMM_destroyDescr hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMM_destroyDescr(descr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMM_workEstimation(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize1, void*  externalBuffer1)
+{
+	TALLY_SPD_LOG("cusparseSpGEMM_workEstimation hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMM_workEstimation(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr, bufferSize1, externalBuffer1);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMM_getNumProducts(cusparseSpGEMMDescr_t  spgemmDescr, int64_t*  num_prods)
+{
+	TALLY_SPD_LOG("cusparseSpGEMM_getNumProducts hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMM_getNumProducts(spgemmDescr, num_prods);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMM_estimateMemory(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, float  chunk_fraction, size_t*  bufferSize3, void*  externalBuffer3, size_t*  bufferSize2)
+{
+	TALLY_SPD_LOG("cusparseSpGEMM_estimateMemory hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMM_estimateMemory(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr, chunk_fraction, bufferSize3, externalBuffer3, bufferSize2);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMM_compute(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize2, void*  externalBuffer2)
+{
+	TALLY_SPD_LOG("cusparseSpGEMM_compute hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMM_compute(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr, bufferSize2, externalBuffer2);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMM_copy(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr)
+{
+	TALLY_SPD_LOG("cusparseSpGEMM_copy hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMM_copy(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMMreuse_workEstimation(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize1, void*  externalBuffer1)
+{
+	TALLY_SPD_LOG("cusparseSpGEMMreuse_workEstimation hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMMreuse_workEstimation(handle, opA, opB, matA, matB, matC, alg, spgemmDescr, bufferSize1, externalBuffer1);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMMreuse_nnz(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize2, void*  externalBuffer2, size_t*  bufferSize3, void*  externalBuffer3, size_t*  bufferSize4, void*  externalBuffer4)
+{
+	TALLY_SPD_LOG("cusparseSpGEMMreuse_nnz hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMMreuse_nnz(handle, opA, opB, matA, matB, matC, alg, spgemmDescr, bufferSize2, externalBuffer2, bufferSize3, externalBuffer3, bufferSize4, externalBuffer4);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMMreuse_copy(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize5, void*  externalBuffer5)
+{
+	TALLY_SPD_LOG("cusparseSpGEMMreuse_copy hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMMreuse_copy(handle, opA, opB, matA, matB, matC, alg, spgemmDescr, bufferSize5, externalBuffer5);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpGEMMreuse_compute(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr)
+{
+	TALLY_SPD_LOG("cusparseSpGEMMreuse_compute hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpGEMMreuse_compute(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSDDMM_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, size_t*  bufferSize)
+{
+	TALLY_SPD_LOG("cusparseSDDMM_bufferSize hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSDDMM_bufferSize(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, bufferSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSDDMM_preprocess(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseSDDMM_preprocess hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSDDMM_preprocess(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSDDMM(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseSDDMM hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSDDMM(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMMOp_createPlan(cusparseHandle_t  handle, cusparseSpMMOpPlan_t*  plan, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMOpAlg_t  alg, const void*  addOperationNvvmBuffer, size_t  addOperationBufferSize, const void*  mulOperationNvvmBuffer, size_t  mulOperationBufferSize, const void*  epilogueNvvmBuffer, size_t  epilogueBufferSize, size_t*  SpMMWorkspaceSize)
+{
+	TALLY_SPD_LOG("cusparseSpMMOp_createPlan hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMMOp_createPlan(handle, plan, opA, opB, matA, matB, matC, computeType, alg, addOperationNvvmBuffer, addOperationBufferSize, mulOperationNvvmBuffer, mulOperationBufferSize, epilogueNvvmBuffer, epilogueBufferSize, SpMMWorkspaceSize);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMMOp(cusparseSpMMOpPlan_t  plan, void*  externalBuffer)
+{
+	TALLY_SPD_LOG("cusparseSpMMOp hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMMOp(plan, externalBuffer);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+cusparseStatus_t cusparseSpMMOp_destroyPlan(cusparseSpMMOpPlan_t  plan)
+{
+	TALLY_SPD_LOG("cusparseSpMMOp_destroyPlan hooked");
+#if defined(RUN_LOCALLY)
+	return lcusparseSpMMOp_destroyPlan(plan);
 #else
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif

@@ -53940,6 +53940,16036 @@ curandStatus_t curandGetScrambleConstants64(unsigned long long * *  constants)
 	return res;
 }
 
+cusparseStatus_t cusparseCreate(cusparseHandle_t*  handle)
+{
+	static cusparseStatus_t (*lcusparseCreate) (cusparseHandle_t* );
+	if (!lcusparseCreate) {
+		lcusparseCreate = (cusparseStatus_t (*) (cusparseHandle_t* )) dlsym(RTLD_NEXT, "cusparseCreate");
+		tracer._kernel_map[(void *) lcusparseCreate] = std::string("cusparseCreate");
+	}
+	assert(lcusparseCreate);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreate(handle);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreate);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroy(cusparseHandle_t  handle)
+{
+	static cusparseStatus_t (*lcusparseDestroy) (cusparseHandle_t );
+	if (!lcusparseDestroy) {
+		lcusparseDestroy = (cusparseStatus_t (*) (cusparseHandle_t )) dlsym(RTLD_NEXT, "cusparseDestroy");
+		tracer._kernel_map[(void *) lcusparseDestroy] = std::string("cusparseDestroy");
+	}
+	assert(lcusparseDestroy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroy(handle);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroy);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseGetVersion(cusparseHandle_t  handle, int*  version)
+{
+	static cusparseStatus_t (*lcusparseGetVersion) (cusparseHandle_t , int* );
+	if (!lcusparseGetVersion) {
+		lcusparseGetVersion = (cusparseStatus_t (*) (cusparseHandle_t , int* )) dlsym(RTLD_NEXT, "cusparseGetVersion");
+		tracer._kernel_map[(void *) lcusparseGetVersion] = std::string("cusparseGetVersion");
+	}
+	assert(lcusparseGetVersion);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseGetVersion(handle, version);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGetVersion);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseGetProperty(libraryPropertyType  type, int*  value)
+{
+	static cusparseStatus_t (*lcusparseGetProperty) (libraryPropertyType , int* );
+	if (!lcusparseGetProperty) {
+		lcusparseGetProperty = (cusparseStatus_t (*) (libraryPropertyType , int* )) dlsym(RTLD_NEXT, "cusparseGetProperty");
+		tracer._kernel_map[(void *) lcusparseGetProperty] = std::string("cusparseGetProperty");
+	}
+	assert(lcusparseGetProperty);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseGetProperty(type, value);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGetProperty);
+	}
+	return res;
+}
+
+const char* cusparseGetErrorName(cusparseStatus_t  status)
+{
+	static const char* (*lcusparseGetErrorName) (cusparseStatus_t );
+	if (!lcusparseGetErrorName) {
+		lcusparseGetErrorName = (const char* (*) (cusparseStatus_t )) dlsym(RTLD_NEXT, "cusparseGetErrorName");
+		tracer._kernel_map[(void *) lcusparseGetErrorName] = std::string("cusparseGetErrorName");
+	}
+	assert(lcusparseGetErrorName);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	const char* res = 
+		lcusparseGetErrorName(status);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGetErrorName);
+	}
+	return res;
+}
+
+const char* cusparseGetErrorString(cusparseStatus_t  status)
+{
+	static const char* (*lcusparseGetErrorString) (cusparseStatus_t );
+	if (!lcusparseGetErrorString) {
+		lcusparseGetErrorString = (const char* (*) (cusparseStatus_t )) dlsym(RTLD_NEXT, "cusparseGetErrorString");
+		tracer._kernel_map[(void *) lcusparseGetErrorString] = std::string("cusparseGetErrorString");
+	}
+	assert(lcusparseGetErrorString);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	const char* res = 
+		lcusparseGetErrorString(status);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGetErrorString);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSetStream(cusparseHandle_t  handle, cudaStream_t  streamId)
+{
+	static cusparseStatus_t (*lcusparseSetStream) (cusparseHandle_t , cudaStream_t );
+	if (!lcusparseSetStream) {
+		lcusparseSetStream = (cusparseStatus_t (*) (cusparseHandle_t , cudaStream_t )) dlsym(RTLD_NEXT, "cusparseSetStream");
+		tracer._kernel_map[(void *) lcusparseSetStream] = std::string("cusparseSetStream");
+	}
+	assert(lcusparseSetStream);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSetStream(handle, streamId);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSetStream);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseGetStream(cusparseHandle_t  handle, cudaStream_t*  streamId)
+{
+	static cusparseStatus_t (*lcusparseGetStream) (cusparseHandle_t , cudaStream_t* );
+	if (!lcusparseGetStream) {
+		lcusparseGetStream = (cusparseStatus_t (*) (cusparseHandle_t , cudaStream_t* )) dlsym(RTLD_NEXT, "cusparseGetStream");
+		tracer._kernel_map[(void *) lcusparseGetStream] = std::string("cusparseGetStream");
+	}
+	assert(lcusparseGetStream);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseGetStream(handle, streamId);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGetStream);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseGetPointerMode(cusparseHandle_t  handle, cusparsePointerMode_t*  mode)
+{
+	static cusparseStatus_t (*lcusparseGetPointerMode) (cusparseHandle_t , cusparsePointerMode_t* );
+	if (!lcusparseGetPointerMode) {
+		lcusparseGetPointerMode = (cusparseStatus_t (*) (cusparseHandle_t , cusparsePointerMode_t* )) dlsym(RTLD_NEXT, "cusparseGetPointerMode");
+		tracer._kernel_map[(void *) lcusparseGetPointerMode] = std::string("cusparseGetPointerMode");
+	}
+	assert(lcusparseGetPointerMode);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseGetPointerMode(handle, mode);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGetPointerMode);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSetPointerMode(cusparseHandle_t  handle, cusparsePointerMode_t  mode)
+{
+	static cusparseStatus_t (*lcusparseSetPointerMode) (cusparseHandle_t , cusparsePointerMode_t );
+	if (!lcusparseSetPointerMode) {
+		lcusparseSetPointerMode = (cusparseStatus_t (*) (cusparseHandle_t , cusparsePointerMode_t )) dlsym(RTLD_NEXT, "cusparseSetPointerMode");
+		tracer._kernel_map[(void *) lcusparseSetPointerMode] = std::string("cusparseSetPointerMode");
+	}
+	assert(lcusparseSetPointerMode);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSetPointerMode(handle, mode);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSetPointerMode);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseLoggerSetCallback(cusparseLoggerCallback_t  callback)
+{
+	static cusparseStatus_t (*lcusparseLoggerSetCallback) (cusparseLoggerCallback_t );
+	if (!lcusparseLoggerSetCallback) {
+		lcusparseLoggerSetCallback = (cusparseStatus_t (*) (cusparseLoggerCallback_t )) dlsym(RTLD_NEXT, "cusparseLoggerSetCallback");
+		tracer._kernel_map[(void *) lcusparseLoggerSetCallback] = std::string("cusparseLoggerSetCallback");
+	}
+	assert(lcusparseLoggerSetCallback);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseLoggerSetCallback(callback);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseLoggerSetCallback);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseLoggerSetFile(FILE*  file)
+{
+	static cusparseStatus_t (*lcusparseLoggerSetFile) (FILE* );
+	if (!lcusparseLoggerSetFile) {
+		lcusparseLoggerSetFile = (cusparseStatus_t (*) (FILE* )) dlsym(RTLD_NEXT, "cusparseLoggerSetFile");
+		tracer._kernel_map[(void *) lcusparseLoggerSetFile] = std::string("cusparseLoggerSetFile");
+	}
+	assert(lcusparseLoggerSetFile);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseLoggerSetFile(file);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseLoggerSetFile);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseLoggerOpenFile(const char*  logFile)
+{
+	static cusparseStatus_t (*lcusparseLoggerOpenFile) (const char* );
+	if (!lcusparseLoggerOpenFile) {
+		lcusparseLoggerOpenFile = (cusparseStatus_t (*) (const char* )) dlsym(RTLD_NEXT, "cusparseLoggerOpenFile");
+		tracer._kernel_map[(void *) lcusparseLoggerOpenFile] = std::string("cusparseLoggerOpenFile");
+	}
+	assert(lcusparseLoggerOpenFile);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseLoggerOpenFile(logFile);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseLoggerOpenFile);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseLoggerSetLevel(int  level)
+{
+	static cusparseStatus_t (*lcusparseLoggerSetLevel) (int );
+	if (!lcusparseLoggerSetLevel) {
+		lcusparseLoggerSetLevel = (cusparseStatus_t (*) (int )) dlsym(RTLD_NEXT, "cusparseLoggerSetLevel");
+		tracer._kernel_map[(void *) lcusparseLoggerSetLevel] = std::string("cusparseLoggerSetLevel");
+	}
+	assert(lcusparseLoggerSetLevel);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseLoggerSetLevel(level);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseLoggerSetLevel);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseLoggerSetMask(int  mask)
+{
+	static cusparseStatus_t (*lcusparseLoggerSetMask) (int );
+	if (!lcusparseLoggerSetMask) {
+		lcusparseLoggerSetMask = (cusparseStatus_t (*) (int )) dlsym(RTLD_NEXT, "cusparseLoggerSetMask");
+		tracer._kernel_map[(void *) lcusparseLoggerSetMask] = std::string("cusparseLoggerSetMask");
+	}
+	assert(lcusparseLoggerSetMask);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseLoggerSetMask(mask);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseLoggerSetMask);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseLoggerForceDisable()
+{
+	static cusparseStatus_t (*lcusparseLoggerForceDisable) ();
+	if (!lcusparseLoggerForceDisable) {
+		lcusparseLoggerForceDisable = (cusparseStatus_t (*) ()) dlsym(RTLD_NEXT, "cusparseLoggerForceDisable");
+		tracer._kernel_map[(void *) lcusparseLoggerForceDisable] = std::string("cusparseLoggerForceDisable");
+	}
+	assert(lcusparseLoggerForceDisable);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseLoggerForceDisable();
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseLoggerForceDisable);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateMatDescr(cusparseMatDescr_t*  descrA)
+{
+	static cusparseStatus_t (*lcusparseCreateMatDescr) (cusparseMatDescr_t* );
+	if (!lcusparseCreateMatDescr) {
+		lcusparseCreateMatDescr = (cusparseStatus_t (*) (cusparseMatDescr_t* )) dlsym(RTLD_NEXT, "cusparseCreateMatDescr");
+		tracer._kernel_map[(void *) lcusparseCreateMatDescr] = std::string("cusparseCreateMatDescr");
+	}
+	assert(lcusparseCreateMatDescr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateMatDescr(descrA);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateMatDescr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyMatDescr(cusparseMatDescr_t  descrA)
+{
+	static cusparseStatus_t (*lcusparseDestroyMatDescr) (cusparseMatDescr_t );
+	if (!lcusparseDestroyMatDescr) {
+		lcusparseDestroyMatDescr = (cusparseStatus_t (*) (cusparseMatDescr_t )) dlsym(RTLD_NEXT, "cusparseDestroyMatDescr");
+		tracer._kernel_map[(void *) lcusparseDestroyMatDescr] = std::string("cusparseDestroyMatDescr");
+	}
+	assert(lcusparseDestroyMatDescr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyMatDescr(descrA);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyMatDescr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSetMatType(cusparseMatDescr_t  descrA, cusparseMatrixType_t  type)
+{
+	static cusparseStatus_t (*lcusparseSetMatType) (cusparseMatDescr_t , cusparseMatrixType_t );
+	if (!lcusparseSetMatType) {
+		lcusparseSetMatType = (cusparseStatus_t (*) (cusparseMatDescr_t , cusparseMatrixType_t )) dlsym(RTLD_NEXT, "cusparseSetMatType");
+		tracer._kernel_map[(void *) lcusparseSetMatType] = std::string("cusparseSetMatType");
+	}
+	assert(lcusparseSetMatType);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSetMatType(descrA, type);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSetMatType);
+	}
+	return res;
+}
+
+cusparseMatrixType_t cusparseGetMatType(const cusparseMatDescr_t  descrA)
+{
+	static cusparseMatrixType_t (*lcusparseGetMatType) (const cusparseMatDescr_t );
+	if (!lcusparseGetMatType) {
+		lcusparseGetMatType = (cusparseMatrixType_t (*) (const cusparseMatDescr_t )) dlsym(RTLD_NEXT, "cusparseGetMatType");
+		tracer._kernel_map[(void *) lcusparseGetMatType] = std::string("cusparseGetMatType");
+	}
+	assert(lcusparseGetMatType);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseMatrixType_t res = 
+		lcusparseGetMatType(descrA);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGetMatType);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSetMatFillMode(cusparseMatDescr_t  descrA, cusparseFillMode_t  fillMode)
+{
+	static cusparseStatus_t (*lcusparseSetMatFillMode) (cusparseMatDescr_t , cusparseFillMode_t );
+	if (!lcusparseSetMatFillMode) {
+		lcusparseSetMatFillMode = (cusparseStatus_t (*) (cusparseMatDescr_t , cusparseFillMode_t )) dlsym(RTLD_NEXT, "cusparseSetMatFillMode");
+		tracer._kernel_map[(void *) lcusparseSetMatFillMode] = std::string("cusparseSetMatFillMode");
+	}
+	assert(lcusparseSetMatFillMode);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSetMatFillMode(descrA, fillMode);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSetMatFillMode);
+	}
+	return res;
+}
+
+cusparseFillMode_t cusparseGetMatFillMode(const cusparseMatDescr_t  descrA)
+{
+	static cusparseFillMode_t (*lcusparseGetMatFillMode) (const cusparseMatDescr_t );
+	if (!lcusparseGetMatFillMode) {
+		lcusparseGetMatFillMode = (cusparseFillMode_t (*) (const cusparseMatDescr_t )) dlsym(RTLD_NEXT, "cusparseGetMatFillMode");
+		tracer._kernel_map[(void *) lcusparseGetMatFillMode] = std::string("cusparseGetMatFillMode");
+	}
+	assert(lcusparseGetMatFillMode);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseFillMode_t res = 
+		lcusparseGetMatFillMode(descrA);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGetMatFillMode);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSetMatDiagType(cusparseMatDescr_t  descrA, cusparseDiagType_t  diagType)
+{
+	static cusparseStatus_t (*lcusparseSetMatDiagType) (cusparseMatDescr_t , cusparseDiagType_t );
+	if (!lcusparseSetMatDiagType) {
+		lcusparseSetMatDiagType = (cusparseStatus_t (*) (cusparseMatDescr_t , cusparseDiagType_t )) dlsym(RTLD_NEXT, "cusparseSetMatDiagType");
+		tracer._kernel_map[(void *) lcusparseSetMatDiagType] = std::string("cusparseSetMatDiagType");
+	}
+	assert(lcusparseSetMatDiagType);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSetMatDiagType(descrA, diagType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSetMatDiagType);
+	}
+	return res;
+}
+
+cusparseDiagType_t cusparseGetMatDiagType(const cusparseMatDescr_t  descrA)
+{
+	static cusparseDiagType_t (*lcusparseGetMatDiagType) (const cusparseMatDescr_t );
+	if (!lcusparseGetMatDiagType) {
+		lcusparseGetMatDiagType = (cusparseDiagType_t (*) (const cusparseMatDescr_t )) dlsym(RTLD_NEXT, "cusparseGetMatDiagType");
+		tracer._kernel_map[(void *) lcusparseGetMatDiagType] = std::string("cusparseGetMatDiagType");
+	}
+	assert(lcusparseGetMatDiagType);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseDiagType_t res = 
+		lcusparseGetMatDiagType(descrA);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGetMatDiagType);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSetMatIndexBase(cusparseMatDescr_t  descrA, cusparseIndexBase_t  base)
+{
+	static cusparseStatus_t (*lcusparseSetMatIndexBase) (cusparseMatDescr_t , cusparseIndexBase_t );
+	if (!lcusparseSetMatIndexBase) {
+		lcusparseSetMatIndexBase = (cusparseStatus_t (*) (cusparseMatDescr_t , cusparseIndexBase_t )) dlsym(RTLD_NEXT, "cusparseSetMatIndexBase");
+		tracer._kernel_map[(void *) lcusparseSetMatIndexBase] = std::string("cusparseSetMatIndexBase");
+	}
+	assert(lcusparseSetMatIndexBase);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSetMatIndexBase(descrA, base);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSetMatIndexBase);
+	}
+	return res;
+}
+
+cusparseIndexBase_t cusparseGetMatIndexBase(const cusparseMatDescr_t  descrA)
+{
+	static cusparseIndexBase_t (*lcusparseGetMatIndexBase) (const cusparseMatDescr_t );
+	if (!lcusparseGetMatIndexBase) {
+		lcusparseGetMatIndexBase = (cusparseIndexBase_t (*) (const cusparseMatDescr_t )) dlsym(RTLD_NEXT, "cusparseGetMatIndexBase");
+		tracer._kernel_map[(void *) lcusparseGetMatIndexBase] = std::string("cusparseGetMatIndexBase");
+	}
+	assert(lcusparseGetMatIndexBase);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseIndexBase_t res = 
+		lcusparseGetMatIndexBase(descrA);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGetMatIndexBase);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateCsric02Info(csric02Info_t*  info)
+{
+	static cusparseStatus_t (*lcusparseCreateCsric02Info) (csric02Info_t* );
+	if (!lcusparseCreateCsric02Info) {
+		lcusparseCreateCsric02Info = (cusparseStatus_t (*) (csric02Info_t* )) dlsym(RTLD_NEXT, "cusparseCreateCsric02Info");
+		tracer._kernel_map[(void *) lcusparseCreateCsric02Info] = std::string("cusparseCreateCsric02Info");
+	}
+	assert(lcusparseCreateCsric02Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateCsric02Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateCsric02Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyCsric02Info(csric02Info_t  info)
+{
+	static cusparseStatus_t (*lcusparseDestroyCsric02Info) (csric02Info_t );
+	if (!lcusparseDestroyCsric02Info) {
+		lcusparseDestroyCsric02Info = (cusparseStatus_t (*) (csric02Info_t )) dlsym(RTLD_NEXT, "cusparseDestroyCsric02Info");
+		tracer._kernel_map[(void *) lcusparseDestroyCsric02Info] = std::string("cusparseDestroyCsric02Info");
+	}
+	assert(lcusparseDestroyCsric02Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyCsric02Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyCsric02Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateBsric02Info(bsric02Info_t*  info)
+{
+	static cusparseStatus_t (*lcusparseCreateBsric02Info) (bsric02Info_t* );
+	if (!lcusparseCreateBsric02Info) {
+		lcusparseCreateBsric02Info = (cusparseStatus_t (*) (bsric02Info_t* )) dlsym(RTLD_NEXT, "cusparseCreateBsric02Info");
+		tracer._kernel_map[(void *) lcusparseCreateBsric02Info] = std::string("cusparseCreateBsric02Info");
+	}
+	assert(lcusparseCreateBsric02Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateBsric02Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateBsric02Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyBsric02Info(bsric02Info_t  info)
+{
+	static cusparseStatus_t (*lcusparseDestroyBsric02Info) (bsric02Info_t );
+	if (!lcusparseDestroyBsric02Info) {
+		lcusparseDestroyBsric02Info = (cusparseStatus_t (*) (bsric02Info_t )) dlsym(RTLD_NEXT, "cusparseDestroyBsric02Info");
+		tracer._kernel_map[(void *) lcusparseDestroyBsric02Info] = std::string("cusparseDestroyBsric02Info");
+	}
+	assert(lcusparseDestroyBsric02Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyBsric02Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyBsric02Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateCsrilu02Info(csrilu02Info_t*  info)
+{
+	static cusparseStatus_t (*lcusparseCreateCsrilu02Info) (csrilu02Info_t* );
+	if (!lcusparseCreateCsrilu02Info) {
+		lcusparseCreateCsrilu02Info = (cusparseStatus_t (*) (csrilu02Info_t* )) dlsym(RTLD_NEXT, "cusparseCreateCsrilu02Info");
+		tracer._kernel_map[(void *) lcusparseCreateCsrilu02Info] = std::string("cusparseCreateCsrilu02Info");
+	}
+	assert(lcusparseCreateCsrilu02Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateCsrilu02Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateCsrilu02Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyCsrilu02Info(csrilu02Info_t  info)
+{
+	static cusparseStatus_t (*lcusparseDestroyCsrilu02Info) (csrilu02Info_t );
+	if (!lcusparseDestroyCsrilu02Info) {
+		lcusparseDestroyCsrilu02Info = (cusparseStatus_t (*) (csrilu02Info_t )) dlsym(RTLD_NEXT, "cusparseDestroyCsrilu02Info");
+		tracer._kernel_map[(void *) lcusparseDestroyCsrilu02Info] = std::string("cusparseDestroyCsrilu02Info");
+	}
+	assert(lcusparseDestroyCsrilu02Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyCsrilu02Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyCsrilu02Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateBsrilu02Info(bsrilu02Info_t*  info)
+{
+	static cusparseStatus_t (*lcusparseCreateBsrilu02Info) (bsrilu02Info_t* );
+	if (!lcusparseCreateBsrilu02Info) {
+		lcusparseCreateBsrilu02Info = (cusparseStatus_t (*) (bsrilu02Info_t* )) dlsym(RTLD_NEXT, "cusparseCreateBsrilu02Info");
+		tracer._kernel_map[(void *) lcusparseCreateBsrilu02Info] = std::string("cusparseCreateBsrilu02Info");
+	}
+	assert(lcusparseCreateBsrilu02Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateBsrilu02Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateBsrilu02Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyBsrilu02Info(bsrilu02Info_t  info)
+{
+	static cusparseStatus_t (*lcusparseDestroyBsrilu02Info) (bsrilu02Info_t );
+	if (!lcusparseDestroyBsrilu02Info) {
+		lcusparseDestroyBsrilu02Info = (cusparseStatus_t (*) (bsrilu02Info_t )) dlsym(RTLD_NEXT, "cusparseDestroyBsrilu02Info");
+		tracer._kernel_map[(void *) lcusparseDestroyBsrilu02Info] = std::string("cusparseDestroyBsrilu02Info");
+	}
+	assert(lcusparseDestroyBsrilu02Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyBsrilu02Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyBsrilu02Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateBsrsv2Info(bsrsv2Info_t*  info)
+{
+	static cusparseStatus_t (*lcusparseCreateBsrsv2Info) (bsrsv2Info_t* );
+	if (!lcusparseCreateBsrsv2Info) {
+		lcusparseCreateBsrsv2Info = (cusparseStatus_t (*) (bsrsv2Info_t* )) dlsym(RTLD_NEXT, "cusparseCreateBsrsv2Info");
+		tracer._kernel_map[(void *) lcusparseCreateBsrsv2Info] = std::string("cusparseCreateBsrsv2Info");
+	}
+	assert(lcusparseCreateBsrsv2Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateBsrsv2Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateBsrsv2Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyBsrsv2Info(bsrsv2Info_t  info)
+{
+	static cusparseStatus_t (*lcusparseDestroyBsrsv2Info) (bsrsv2Info_t );
+	if (!lcusparseDestroyBsrsv2Info) {
+		lcusparseDestroyBsrsv2Info = (cusparseStatus_t (*) (bsrsv2Info_t )) dlsym(RTLD_NEXT, "cusparseDestroyBsrsv2Info");
+		tracer._kernel_map[(void *) lcusparseDestroyBsrsv2Info] = std::string("cusparseDestroyBsrsv2Info");
+	}
+	assert(lcusparseDestroyBsrsv2Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyBsrsv2Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyBsrsv2Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateBsrsm2Info(bsrsm2Info_t*  info)
+{
+	static cusparseStatus_t (*lcusparseCreateBsrsm2Info) (bsrsm2Info_t* );
+	if (!lcusparseCreateBsrsm2Info) {
+		lcusparseCreateBsrsm2Info = (cusparseStatus_t (*) (bsrsm2Info_t* )) dlsym(RTLD_NEXT, "cusparseCreateBsrsm2Info");
+		tracer._kernel_map[(void *) lcusparseCreateBsrsm2Info] = std::string("cusparseCreateBsrsm2Info");
+	}
+	assert(lcusparseCreateBsrsm2Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateBsrsm2Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateBsrsm2Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyBsrsm2Info(bsrsm2Info_t  info)
+{
+	static cusparseStatus_t (*lcusparseDestroyBsrsm2Info) (bsrsm2Info_t );
+	if (!lcusparseDestroyBsrsm2Info) {
+		lcusparseDestroyBsrsm2Info = (cusparseStatus_t (*) (bsrsm2Info_t )) dlsym(RTLD_NEXT, "cusparseDestroyBsrsm2Info");
+		tracer._kernel_map[(void *) lcusparseDestroyBsrsm2Info] = std::string("cusparseDestroyBsrsm2Info");
+	}
+	assert(lcusparseDestroyBsrsm2Info);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyBsrsm2Info(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyBsrsm2Info);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateCsru2csrInfo(csru2csrInfo_t*  info)
+{
+	static cusparseStatus_t (*lcusparseCreateCsru2csrInfo) (csru2csrInfo_t* );
+	if (!lcusparseCreateCsru2csrInfo) {
+		lcusparseCreateCsru2csrInfo = (cusparseStatus_t (*) (csru2csrInfo_t* )) dlsym(RTLD_NEXT, "cusparseCreateCsru2csrInfo");
+		tracer._kernel_map[(void *) lcusparseCreateCsru2csrInfo] = std::string("cusparseCreateCsru2csrInfo");
+	}
+	assert(lcusparseCreateCsru2csrInfo);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateCsru2csrInfo(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateCsru2csrInfo);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyCsru2csrInfo(csru2csrInfo_t  info)
+{
+	static cusparseStatus_t (*lcusparseDestroyCsru2csrInfo) (csru2csrInfo_t );
+	if (!lcusparseDestroyCsru2csrInfo) {
+		lcusparseDestroyCsru2csrInfo = (cusparseStatus_t (*) (csru2csrInfo_t )) dlsym(RTLD_NEXT, "cusparseDestroyCsru2csrInfo");
+		tracer._kernel_map[(void *) lcusparseDestroyCsru2csrInfo] = std::string("cusparseDestroyCsru2csrInfo");
+	}
+	assert(lcusparseDestroyCsru2csrInfo);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyCsru2csrInfo(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyCsru2csrInfo);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateColorInfo(cusparseColorInfo_t*  info)
+{
+	static cusparseStatus_t (*lcusparseCreateColorInfo) (cusparseColorInfo_t* );
+	if (!lcusparseCreateColorInfo) {
+		lcusparseCreateColorInfo = (cusparseStatus_t (*) (cusparseColorInfo_t* )) dlsym(RTLD_NEXT, "cusparseCreateColorInfo");
+		tracer._kernel_map[(void *) lcusparseCreateColorInfo] = std::string("cusparseCreateColorInfo");
+	}
+	assert(lcusparseCreateColorInfo);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateColorInfo(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateColorInfo);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyColorInfo(cusparseColorInfo_t  info)
+{
+	static cusparseStatus_t (*lcusparseDestroyColorInfo) (cusparseColorInfo_t );
+	if (!lcusparseDestroyColorInfo) {
+		lcusparseDestroyColorInfo = (cusparseStatus_t (*) (cusparseColorInfo_t )) dlsym(RTLD_NEXT, "cusparseDestroyColorInfo");
+		tracer._kernel_map[(void *) lcusparseDestroyColorInfo] = std::string("cusparseDestroyColorInfo");
+	}
+	assert(lcusparseDestroyColorInfo);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyColorInfo(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyColorInfo);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreatePruneInfo(pruneInfo_t*  info)
+{
+	static cusparseStatus_t (*lcusparseCreatePruneInfo) (pruneInfo_t* );
+	if (!lcusparseCreatePruneInfo) {
+		lcusparseCreatePruneInfo = (cusparseStatus_t (*) (pruneInfo_t* )) dlsym(RTLD_NEXT, "cusparseCreatePruneInfo");
+		tracer._kernel_map[(void *) lcusparseCreatePruneInfo] = std::string("cusparseCreatePruneInfo");
+	}
+	assert(lcusparseCreatePruneInfo);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreatePruneInfo(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreatePruneInfo);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyPruneInfo(pruneInfo_t  info)
+{
+	static cusparseStatus_t (*lcusparseDestroyPruneInfo) (pruneInfo_t );
+	if (!lcusparseDestroyPruneInfo) {
+		lcusparseDestroyPruneInfo = (cusparseStatus_t (*) (pruneInfo_t )) dlsym(RTLD_NEXT, "cusparseDestroyPruneInfo");
+		tracer._kernel_map[(void *) lcusparseDestroyPruneInfo] = std::string("cusparseDestroyPruneInfo");
+	}
+	assert(lcusparseDestroyPruneInfo);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyPruneInfo(info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyPruneInfo);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const float*  alpha, const float*  A, int  lda, int  nnz, const float*  xVal, const int*  xInd, const float*  beta, float*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSgemvi) (cusparseHandle_t , cusparseOperation_t , int , int , const float* , const float* , int , int , const float* , const int* , const float* , float* , cusparseIndexBase_t , void* );
+	if (!lcusparseSgemvi) {
+		lcusparseSgemvi = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , int , int , const float* , const float* , int , int , const float* , const int* , const float* , float* , cusparseIndexBase_t , void* )) dlsym(RTLD_NEXT, "cusparseSgemvi");
+		tracer._kernel_map[(void *) lcusparseSgemvi] = std::string("cusparseSgemvi");
+	}
+	assert(lcusparseSgemvi);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgemvi);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseSgemvi_bufferSize) (cusparseHandle_t , cusparseOperation_t , int , int , int , int* );
+	if (!lcusparseSgemvi_bufferSize) {
+		lcusparseSgemvi_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , int , int , int , int* )) dlsym(RTLD_NEXT, "cusparseSgemvi_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSgemvi_bufferSize] = std::string("cusparseSgemvi_bufferSize");
+	}
+	assert(lcusparseSgemvi_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgemvi_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const double*  alpha, const double*  A, int  lda, int  nnz, const double*  xVal, const int*  xInd, const double*  beta, double*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDgemvi) (cusparseHandle_t , cusparseOperation_t , int , int , const double* , const double* , int , int , const double* , const int* , const double* , double* , cusparseIndexBase_t , void* );
+	if (!lcusparseDgemvi) {
+		lcusparseDgemvi = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , int , int , const double* , const double* , int , int , const double* , const int* , const double* , double* , cusparseIndexBase_t , void* )) dlsym(RTLD_NEXT, "cusparseDgemvi");
+		tracer._kernel_map[(void *) lcusparseDgemvi] = std::string("cusparseDgemvi");
+	}
+	assert(lcusparseDgemvi);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgemvi);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseDgemvi_bufferSize) (cusparseHandle_t , cusparseOperation_t , int , int , int , int* );
+	if (!lcusparseDgemvi_bufferSize) {
+		lcusparseDgemvi_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , int , int , int , int* )) dlsym(RTLD_NEXT, "cusparseDgemvi_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDgemvi_bufferSize] = std::string("cusparseDgemvi_bufferSize");
+	}
+	assert(lcusparseDgemvi_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgemvi_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, int  nnz, const cuComplex*  xVal, const int*  xInd, const cuComplex*  beta, cuComplex*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCgemvi) (cusparseHandle_t , cusparseOperation_t , int , int , const cuComplex* , const cuComplex* , int , int , const cuComplex* , const int* , const cuComplex* , cuComplex* , cusparseIndexBase_t , void* );
+	if (!lcusparseCgemvi) {
+		lcusparseCgemvi = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , int , int , const cuComplex* , const cuComplex* , int , int , const cuComplex* , const int* , const cuComplex* , cuComplex* , cusparseIndexBase_t , void* )) dlsym(RTLD_NEXT, "cusparseCgemvi");
+		tracer._kernel_map[(void *) lcusparseCgemvi] = std::string("cusparseCgemvi");
+	}
+	assert(lcusparseCgemvi);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgemvi);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseCgemvi_bufferSize) (cusparseHandle_t , cusparseOperation_t , int , int , int , int* );
+	if (!lcusparseCgemvi_bufferSize) {
+		lcusparseCgemvi_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , int , int , int , int* )) dlsym(RTLD_NEXT, "cusparseCgemvi_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCgemvi_bufferSize] = std::string("cusparseCgemvi_bufferSize");
+	}
+	assert(lcusparseCgemvi_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgemvi_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, int  nnz, const cuDoubleComplex*  xVal, const int*  xInd, const cuDoubleComplex*  beta, cuDoubleComplex*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZgemvi) (cusparseHandle_t , cusparseOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , int , const cuDoubleComplex* , const int* , const cuDoubleComplex* , cuDoubleComplex* , cusparseIndexBase_t , void* );
+	if (!lcusparseZgemvi) {
+		lcusparseZgemvi = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , int , int , const cuDoubleComplex* , const int* , const cuDoubleComplex* , cuDoubleComplex* , cusparseIndexBase_t , void* )) dlsym(RTLD_NEXT, "cusparseZgemvi");
+		tracer._kernel_map[(void *) lcusparseZgemvi] = std::string("cusparseZgemvi");
+	}
+	assert(lcusparseZgemvi);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgemvi);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseZgemvi_bufferSize) (cusparseHandle_t , cusparseOperation_t , int , int , int , int* );
+	if (!lcusparseZgemvi_bufferSize) {
+		lcusparseZgemvi_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , int , int , int , int* )) dlsym(RTLD_NEXT, "cusparseZgemvi_bufferSize");
+		tracer._kernel_map[(void *) lcusparseZgemvi_bufferSize] = std::string("cusparseZgemvi_bufferSize");
+	}
+	assert(lcusparseZgemvi_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgemvi_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const float*  x, const float*  beta, float*  y)
+{
+	static cusparseStatus_t (*lcusparseSbsrmv) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , int , const float* , const float* , float* );
+	if (!lcusparseSbsrmv) {
+		lcusparseSbsrmv = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , int , const float* , const float* , float* )) dlsym(RTLD_NEXT, "cusparseSbsrmv");
+		tracer._kernel_map[(void *) lcusparseSbsrmv] = std::string("cusparseSbsrmv");
+	}
+	assert(lcusparseSbsrmv);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrmv);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const double*  x, const double*  beta, double*  y)
+{
+	static cusparseStatus_t (*lcusparseDbsrmv) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , int , const double* , const double* , double* );
+	if (!lcusparseDbsrmv) {
+		lcusparseDbsrmv = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , int , const double* , const double* , double* )) dlsym(RTLD_NEXT, "cusparseDbsrmv");
+		tracer._kernel_map[(void *) lcusparseDbsrmv] = std::string("cusparseDbsrmv");
+	}
+	assert(lcusparseDbsrmv);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrmv);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuComplex*  x, const cuComplex*  beta, cuComplex*  y)
+{
+	static cusparseStatus_t (*lcusparseCbsrmv) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , const cuComplex* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , const cuComplex* , const cuComplex* , cuComplex* );
+	if (!lcusparseCbsrmv) {
+		lcusparseCbsrmv = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , const cuComplex* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , const cuComplex* , const cuComplex* , cuComplex* )) dlsym(RTLD_NEXT, "cusparseCbsrmv");
+		tracer._kernel_map[(void *) lcusparseCbsrmv] = std::string("cusparseCbsrmv");
+	}
+	assert(lcusparseCbsrmv);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrmv);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuDoubleComplex*  x, const cuDoubleComplex*  beta, cuDoubleComplex*  y)
+{
+	static cusparseStatus_t (*lcusparseZbsrmv) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , const cuDoubleComplex* , const cuDoubleComplex* , cuDoubleComplex* );
+	if (!lcusparseZbsrmv) {
+		lcusparseZbsrmv = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , const cuDoubleComplex* , const cuDoubleComplex* , cuDoubleComplex* )) dlsym(RTLD_NEXT, "cusparseZbsrmv");
+		tracer._kernel_map[(void *) lcusparseZbsrmv] = std::string("cusparseZbsrmv");
+	}
+	assert(lcusparseZbsrmv);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrmv);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const float*  x, const float*  beta, float*  y)
+{
+	static cusparseStatus_t (*lcusparseSbsrxmv) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , const int* , const int* , int , const float* , const float* , float* );
+	if (!lcusparseSbsrxmv) {
+		lcusparseSbsrxmv = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , const int* , const int* , int , const float* , const float* , float* )) dlsym(RTLD_NEXT, "cusparseSbsrxmv");
+		tracer._kernel_map[(void *) lcusparseSbsrxmv] = std::string("cusparseSbsrxmv");
+	}
+	assert(lcusparseSbsrxmv);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrxmv);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const double*  x, const double*  beta, double*  y)
+{
+	static cusparseStatus_t (*lcusparseDbsrxmv) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , const int* , const int* , int , const double* , const double* , double* );
+	if (!lcusparseDbsrxmv) {
+		lcusparseDbsrxmv = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , const int* , const int* , int , const double* , const double* , double* )) dlsym(RTLD_NEXT, "cusparseDbsrxmv");
+		tracer._kernel_map[(void *) lcusparseDbsrxmv] = std::string("cusparseDbsrxmv");
+	}
+	assert(lcusparseDbsrxmv);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrxmv);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuComplex*  x, const cuComplex*  beta, cuComplex*  y)
+{
+	static cusparseStatus_t (*lcusparseCbsrxmv) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , int , const cuComplex* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , const int* , const int* , int , const cuComplex* , const cuComplex* , cuComplex* );
+	if (!lcusparseCbsrxmv) {
+		lcusparseCbsrxmv = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , int , const cuComplex* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , const int* , const int* , int , const cuComplex* , const cuComplex* , cuComplex* )) dlsym(RTLD_NEXT, "cusparseCbsrxmv");
+		tracer._kernel_map[(void *) lcusparseCbsrxmv] = std::string("cusparseCbsrxmv");
+	}
+	assert(lcusparseCbsrxmv);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrxmv);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuDoubleComplex*  x, const cuDoubleComplex*  beta, cuDoubleComplex*  y)
+{
+	static cusparseStatus_t (*lcusparseZbsrxmv) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , const int* , const int* , int , const cuDoubleComplex* , const cuDoubleComplex* , cuDoubleComplex* );
+	if (!lcusparseZbsrxmv) {
+		lcusparseZbsrxmv = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , const int* , const int* , int , const cuDoubleComplex* , const cuDoubleComplex* , cuDoubleComplex* )) dlsym(RTLD_NEXT, "cusparseZbsrxmv");
+		tracer._kernel_map[(void *) lcusparseZbsrxmv] = std::string("cusparseZbsrxmv");
+	}
+	assert(lcusparseZbsrxmv);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrxmv);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXbsrsv2_zeroPivot(cusparseHandle_t  handle, bsrsv2Info_t  info, int*  position)
+{
+	static cusparseStatus_t (*lcusparseXbsrsv2_zeroPivot) (cusparseHandle_t , bsrsv2Info_t , int* );
+	if (!lcusparseXbsrsv2_zeroPivot) {
+		lcusparseXbsrsv2_zeroPivot = (cusparseStatus_t (*) (cusparseHandle_t , bsrsv2Info_t , int* )) dlsym(RTLD_NEXT, "cusparseXbsrsv2_zeroPivot");
+		tracer._kernel_map[(void *) lcusparseXbsrsv2_zeroPivot] = std::string("cusparseXbsrsv2_zeroPivot");
+	}
+	assert(lcusparseXbsrsv2_zeroPivot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXbsrsv2_zeroPivot(handle, info, position);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXbsrsv2_zeroPivot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSbsrsv2_bufferSize) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrsv2Info_t , int* );
+	if (!lcusparseSbsrsv2_bufferSize) {
+		lcusparseSbsrsv2_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrsv2Info_t , int* )) dlsym(RTLD_NEXT, "cusparseSbsrsv2_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSbsrsv2_bufferSize] = std::string("cusparseSbsrsv2_bufferSize");
+	}
+	assert(lcusparseSbsrsv2_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrsv2_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDbsrsv2_bufferSize) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrsv2Info_t , int* );
+	if (!lcusparseDbsrsv2_bufferSize) {
+		lcusparseDbsrsv2_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrsv2Info_t , int* )) dlsym(RTLD_NEXT, "cusparseDbsrsv2_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDbsrsv2_bufferSize] = std::string("cusparseDbsrsv2_bufferSize");
+	}
+	assert(lcusparseDbsrsv2_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrsv2_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCbsrsv2_bufferSize) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrsv2Info_t , int* );
+	if (!lcusparseCbsrsv2_bufferSize) {
+		lcusparseCbsrsv2_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrsv2Info_t , int* )) dlsym(RTLD_NEXT, "cusparseCbsrsv2_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCbsrsv2_bufferSize] = std::string("cusparseCbsrsv2_bufferSize");
+	}
+	assert(lcusparseCbsrsv2_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrsv2_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZbsrsv2_bufferSize) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrsv2Info_t , int* );
+	if (!lcusparseZbsrsv2_bufferSize) {
+		lcusparseZbsrsv2_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrsv2Info_t , int* )) dlsym(RTLD_NEXT, "cusparseZbsrsv2_bufferSize");
+		tracer._kernel_map[(void *) lcusparseZbsrsv2_bufferSize] = std::string("cusparseZbsrsv2_bufferSize");
+	}
+	assert(lcusparseZbsrsv2_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrsv2_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseSbsrsv2_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrsv2Info_t , size_t* );
+	if (!lcusparseSbsrsv2_bufferSizeExt) {
+		lcusparseSbsrsv2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrsv2Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSbsrsv2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSbsrsv2_bufferSizeExt] = std::string("cusparseSbsrsv2_bufferSizeExt");
+	}
+	assert(lcusparseSbsrsv2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrsv2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseDbsrsv2_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrsv2Info_t , size_t* );
+	if (!lcusparseDbsrsv2_bufferSizeExt) {
+		lcusparseDbsrsv2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrsv2Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseDbsrsv2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDbsrsv2_bufferSizeExt] = std::string("cusparseDbsrsv2_bufferSizeExt");
+	}
+	assert(lcusparseDbsrsv2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrsv2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseCbsrsv2_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrsv2Info_t , size_t* );
+	if (!lcusparseCbsrsv2_bufferSizeExt) {
+		lcusparseCbsrsv2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrsv2Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseCbsrsv2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCbsrsv2_bufferSizeExt] = std::string("cusparseCbsrsv2_bufferSizeExt");
+	}
+	assert(lcusparseCbsrsv2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrsv2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseZbsrsv2_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrsv2Info_t , size_t* );
+	if (!lcusparseZbsrsv2_bufferSizeExt) {
+		lcusparseZbsrsv2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrsv2Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseZbsrsv2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZbsrsv2_bufferSizeExt] = std::string("cusparseZbsrsv2_bufferSizeExt");
+	}
+	assert(lcusparseZbsrsv2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrsv2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSbsrsv2_analysis) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , bsrsv2Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseSbsrsv2_analysis) {
+		lcusparseSbsrsv2_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , bsrsv2Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseSbsrsv2_analysis");
+		tracer._kernel_map[(void *) lcusparseSbsrsv2_analysis] = std::string("cusparseSbsrsv2_analysis");
+	}
+	assert(lcusparseSbsrsv2_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrsv2_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDbsrsv2_analysis) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , bsrsv2Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDbsrsv2_analysis) {
+		lcusparseDbsrsv2_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , bsrsv2Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDbsrsv2_analysis");
+		tracer._kernel_map[(void *) lcusparseDbsrsv2_analysis] = std::string("cusparseDbsrsv2_analysis");
+	}
+	assert(lcusparseDbsrsv2_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrsv2_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCbsrsv2_analysis) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , bsrsv2Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCbsrsv2_analysis) {
+		lcusparseCbsrsv2_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , bsrsv2Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCbsrsv2_analysis");
+		tracer._kernel_map[(void *) lcusparseCbsrsv2_analysis] = std::string("cusparseCbsrsv2_analysis");
+	}
+	assert(lcusparseCbsrsv2_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrsv2_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZbsrsv2_analysis) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , bsrsv2Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZbsrsv2_analysis) {
+		lcusparseZbsrsv2_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , bsrsv2Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZbsrsv2_analysis");
+		tracer._kernel_map[(void *) lcusparseZbsrsv2_analysis] = std::string("cusparseZbsrsv2_analysis");
+	}
+	assert(lcusparseZbsrsv2_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrsv2_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const float*  f, float*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSbsrsv2_solve) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , int , bsrsv2Info_t , const float* , float* , cusparseSolvePolicy_t , void* );
+	if (!lcusparseSbsrsv2_solve) {
+		lcusparseSbsrsv2_solve = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , int , bsrsv2Info_t , const float* , float* , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseSbsrsv2_solve");
+		tracer._kernel_map[(void *) lcusparseSbsrsv2_solve] = std::string("cusparseSbsrsv2_solve");
+	}
+	assert(lcusparseSbsrsv2_solve);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrsv2_solve);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const double*  f, double*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDbsrsv2_solve) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , int , bsrsv2Info_t , const double* , double* , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDbsrsv2_solve) {
+		lcusparseDbsrsv2_solve = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , int , bsrsv2Info_t , const double* , double* , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDbsrsv2_solve");
+		tracer._kernel_map[(void *) lcusparseDbsrsv2_solve] = std::string("cusparseDbsrsv2_solve");
+	}
+	assert(lcusparseDbsrsv2_solve);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrsv2_solve);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const cuComplex*  f, cuComplex*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCbsrsv2_solve) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cuComplex* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , bsrsv2Info_t , const cuComplex* , cuComplex* , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCbsrsv2_solve) {
+		lcusparseCbsrsv2_solve = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cuComplex* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , bsrsv2Info_t , const cuComplex* , cuComplex* , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCbsrsv2_solve");
+		tracer._kernel_map[(void *) lcusparseCbsrsv2_solve] = std::string("cusparseCbsrsv2_solve");
+	}
+	assert(lcusparseCbsrsv2_solve);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrsv2_solve);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const cuDoubleComplex*  f, cuDoubleComplex*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZbsrsv2_solve) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , bsrsv2Info_t , const cuDoubleComplex* , cuDoubleComplex* , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZbsrsv2_solve) {
+		lcusparseZbsrsv2_solve = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , bsrsv2Info_t , const cuDoubleComplex* , cuDoubleComplex* , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZbsrsv2_solve");
+		tracer._kernel_map[(void *) lcusparseZbsrsv2_solve] = std::string("cusparseZbsrsv2_solve");
+	}
+	assert(lcusparseZbsrsv2_solve);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrsv2_solve);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const float*  B, const int  ldb, const float*  beta, float*  C, int  ldc)
+{
+	static cusparseStatus_t (*lcusparseSbsrmm) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , const int , const float* , const int , const float* , float* , int );
+	if (!lcusparseSbsrmm) {
+		lcusparseSbsrmm = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , const int , const float* , const int , const float* , float* , int )) dlsym(RTLD_NEXT, "cusparseSbsrmm");
+		tracer._kernel_map[(void *) lcusparseSbsrmm] = std::string("cusparseSbsrmm");
+	}
+	assert(lcusparseSbsrmm);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrmm);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const double*  B, const int  ldb, const double*  beta, double*  C, int  ldc)
+{
+	static cusparseStatus_t (*lcusparseDbsrmm) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , const int , const double* , const int , const double* , double* , int );
+	if (!lcusparseDbsrmm) {
+		lcusparseDbsrmm = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , const int , const double* , const int , const double* , double* , int )) dlsym(RTLD_NEXT, "cusparseDbsrmm");
+		tracer._kernel_map[(void *) lcusparseDbsrmm] = std::string("cusparseDbsrmm");
+	}
+	assert(lcusparseDbsrmm);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrmm);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const cuComplex*  B, const int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
+{
+	static cusparseStatus_t (*lcusparseCbsrmm) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , int , const cuComplex* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , const int , const cuComplex* , const int , const cuComplex* , cuComplex* , int );
+	if (!lcusparseCbsrmm) {
+		lcusparseCbsrmm = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , int , const cuComplex* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , const int , const cuComplex* , const int , const cuComplex* , cuComplex* , int )) dlsym(RTLD_NEXT, "cusparseCbsrmm");
+		tracer._kernel_map[(void *) lcusparseCbsrmm] = std::string("cusparseCbsrmm");
+	}
+	assert(lcusparseCbsrmm);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrmm);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const cuDoubleComplex*  B, const int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
+{
+	static cusparseStatus_t (*lcusparseZbsrmm) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , const int , const cuDoubleComplex* , const int , const cuDoubleComplex* , cuDoubleComplex* , int );
+	if (!lcusparseZbsrmm) {
+		lcusparseZbsrmm = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , const int , const cuDoubleComplex* , const int , const cuDoubleComplex* , cuDoubleComplex* , int )) dlsym(RTLD_NEXT, "cusparseZbsrmm");
+		tracer._kernel_map[(void *) lcusparseZbsrmm] = std::string("cusparseZbsrmm");
+	}
+	assert(lcusparseZbsrmm);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrmm);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXbsrsm2_zeroPivot(cusparseHandle_t  handle, bsrsm2Info_t  info, int*  position)
+{
+	static cusparseStatus_t (*lcusparseXbsrsm2_zeroPivot) (cusparseHandle_t , bsrsm2Info_t , int* );
+	if (!lcusparseXbsrsm2_zeroPivot) {
+		lcusparseXbsrsm2_zeroPivot = (cusparseStatus_t (*) (cusparseHandle_t , bsrsm2Info_t , int* )) dlsym(RTLD_NEXT, "cusparseXbsrsm2_zeroPivot");
+		tracer._kernel_map[(void *) lcusparseXbsrsm2_zeroPivot] = std::string("cusparseXbsrsm2_zeroPivot");
+	}
+	assert(lcusparseXbsrsm2_zeroPivot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXbsrsm2_zeroPivot(handle, info, position);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXbsrsm2_zeroPivot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSbsrsm2_bufferSize) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrsm2Info_t , int* );
+	if (!lcusparseSbsrsm2_bufferSize) {
+		lcusparseSbsrsm2_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrsm2Info_t , int* )) dlsym(RTLD_NEXT, "cusparseSbsrsm2_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSbsrsm2_bufferSize] = std::string("cusparseSbsrsm2_bufferSize");
+	}
+	assert(lcusparseSbsrsm2_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrsm2_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDbsrsm2_bufferSize) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrsm2Info_t , int* );
+	if (!lcusparseDbsrsm2_bufferSize) {
+		lcusparseDbsrsm2_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrsm2Info_t , int* )) dlsym(RTLD_NEXT, "cusparseDbsrsm2_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDbsrsm2_bufferSize] = std::string("cusparseDbsrsm2_bufferSize");
+	}
+	assert(lcusparseDbsrsm2_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrsm2_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCbsrsm2_bufferSize) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrsm2Info_t , int* );
+	if (!lcusparseCbsrsm2_bufferSize) {
+		lcusparseCbsrsm2_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrsm2Info_t , int* )) dlsym(RTLD_NEXT, "cusparseCbsrsm2_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCbsrsm2_bufferSize] = std::string("cusparseCbsrsm2_bufferSize");
+	}
+	assert(lcusparseCbsrsm2_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrsm2_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZbsrsm2_bufferSize) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrsm2Info_t , int* );
+	if (!lcusparseZbsrsm2_bufferSize) {
+		lcusparseZbsrsm2_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrsm2Info_t , int* )) dlsym(RTLD_NEXT, "cusparseZbsrsm2_bufferSize");
+		tracer._kernel_map[(void *) lcusparseZbsrsm2_bufferSize] = std::string("cusparseZbsrsm2_bufferSize");
+	}
+	assert(lcusparseZbsrsm2_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrsm2_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseSbsrsm2_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrsm2Info_t , size_t* );
+	if (!lcusparseSbsrsm2_bufferSizeExt) {
+		lcusparseSbsrsm2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrsm2Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSbsrsm2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSbsrsm2_bufferSizeExt] = std::string("cusparseSbsrsm2_bufferSizeExt");
+	}
+	assert(lcusparseSbsrsm2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrsm2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseDbsrsm2_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrsm2Info_t , size_t* );
+	if (!lcusparseDbsrsm2_bufferSizeExt) {
+		lcusparseDbsrsm2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrsm2Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseDbsrsm2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDbsrsm2_bufferSizeExt] = std::string("cusparseDbsrsm2_bufferSizeExt");
+	}
+	assert(lcusparseDbsrsm2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrsm2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseCbsrsm2_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrsm2Info_t , size_t* );
+	if (!lcusparseCbsrsm2_bufferSizeExt) {
+		lcusparseCbsrsm2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrsm2Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseCbsrsm2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCbsrsm2_bufferSizeExt] = std::string("cusparseCbsrsm2_bufferSizeExt");
+	}
+	assert(lcusparseCbsrsm2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrsm2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseZbsrsm2_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrsm2Info_t , size_t* );
+	if (!lcusparseZbsrsm2_bufferSizeExt) {
+		lcusparseZbsrsm2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrsm2Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseZbsrsm2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZbsrsm2_bufferSizeExt] = std::string("cusparseZbsrsm2_bufferSizeExt");
+	}
+	assert(lcusparseZbsrsm2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrsm2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSbsrsm2_analysis) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , bsrsm2Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseSbsrsm2_analysis) {
+		lcusparseSbsrsm2_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , bsrsm2Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseSbsrsm2_analysis");
+		tracer._kernel_map[(void *) lcusparseSbsrsm2_analysis] = std::string("cusparseSbsrsm2_analysis");
+	}
+	assert(lcusparseSbsrsm2_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrsm2_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDbsrsm2_analysis) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , bsrsm2Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDbsrsm2_analysis) {
+		lcusparseDbsrsm2_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , bsrsm2Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDbsrsm2_analysis");
+		tracer._kernel_map[(void *) lcusparseDbsrsm2_analysis] = std::string("cusparseDbsrsm2_analysis");
+	}
+	assert(lcusparseDbsrsm2_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrsm2_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCbsrsm2_analysis) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , bsrsm2Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCbsrsm2_analysis) {
+		lcusparseCbsrsm2_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , bsrsm2Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCbsrsm2_analysis");
+		tracer._kernel_map[(void *) lcusparseCbsrsm2_analysis] = std::string("cusparseCbsrsm2_analysis");
+	}
+	assert(lcusparseCbsrsm2_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrsm2_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZbsrsm2_analysis) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , bsrsm2Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZbsrsm2_analysis) {
+		lcusparseZbsrsm2_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , bsrsm2Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZbsrsm2_analysis");
+		tracer._kernel_map[(void *) lcusparseZbsrsm2_analysis] = std::string("cusparseZbsrsm2_analysis");
+	}
+	assert(lcusparseZbsrsm2_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrsm2_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const float*  B, int  ldb, float*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSbsrsm2_solve) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , int , bsrsm2Info_t , const float* , int , float* , int , cusparseSolvePolicy_t , void* );
+	if (!lcusparseSbsrsm2_solve) {
+		lcusparseSbsrsm2_solve = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , int , bsrsm2Info_t , const float* , int , float* , int , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseSbsrsm2_solve");
+		tracer._kernel_map[(void *) lcusparseSbsrsm2_solve] = std::string("cusparseSbsrsm2_solve");
+	}
+	assert(lcusparseSbsrsm2_solve);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrsm2_solve);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const double*  B, int  ldb, double*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDbsrsm2_solve) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , int , bsrsm2Info_t , const double* , int , double* , int , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDbsrsm2_solve) {
+		lcusparseDbsrsm2_solve = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , int , bsrsm2Info_t , const double* , int , double* , int , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDbsrsm2_solve");
+		tracer._kernel_map[(void *) lcusparseDbsrsm2_solve] = std::string("cusparseDbsrsm2_solve");
+	}
+	assert(lcusparseDbsrsm2_solve);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrsm2_solve);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const cuComplex*  B, int  ldb, cuComplex*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCbsrsm2_solve) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cuComplex* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , bsrsm2Info_t , const cuComplex* , int , cuComplex* , int , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCbsrsm2_solve) {
+		lcusparseCbsrsm2_solve = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cuComplex* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , bsrsm2Info_t , const cuComplex* , int , cuComplex* , int , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCbsrsm2_solve");
+		tracer._kernel_map[(void *) lcusparseCbsrsm2_solve] = std::string("cusparseCbsrsm2_solve");
+	}
+	assert(lcusparseCbsrsm2_solve);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrsm2_solve);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZbsrsm2_solve) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , bsrsm2Info_t , const cuDoubleComplex* , int , cuDoubleComplex* , int , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZbsrsm2_solve) {
+		lcusparseZbsrsm2_solve = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , cusparseOperation_t , cusparseOperation_t , int , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , bsrsm2Info_t , const cuDoubleComplex* , int , cuDoubleComplex* , int , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZbsrsm2_solve");
+		tracer._kernel_map[(void *) lcusparseZbsrsm2_solve] = std::string("cusparseZbsrsm2_solve");
+	}
+	assert(lcusparseZbsrsm2_solve);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrsm2_solve);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, float*  boost_val)
+{
+	static cusparseStatus_t (*lcusparseScsrilu02_numericBoost) (cusparseHandle_t , csrilu02Info_t , int , double* , float* );
+	if (!lcusparseScsrilu02_numericBoost) {
+		lcusparseScsrilu02_numericBoost = (cusparseStatus_t (*) (cusparseHandle_t , csrilu02Info_t , int , double* , float* )) dlsym(RTLD_NEXT, "cusparseScsrilu02_numericBoost");
+		tracer._kernel_map[(void *) lcusparseScsrilu02_numericBoost] = std::string("cusparseScsrilu02_numericBoost");
+	}
+	assert(lcusparseScsrilu02_numericBoost);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsrilu02_numericBoost);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, double*  boost_val)
+{
+	static cusparseStatus_t (*lcusparseDcsrilu02_numericBoost) (cusparseHandle_t , csrilu02Info_t , int , double* , double* );
+	if (!lcusparseDcsrilu02_numericBoost) {
+		lcusparseDcsrilu02_numericBoost = (cusparseStatus_t (*) (cusparseHandle_t , csrilu02Info_t , int , double* , double* )) dlsym(RTLD_NEXT, "cusparseDcsrilu02_numericBoost");
+		tracer._kernel_map[(void *) lcusparseDcsrilu02_numericBoost] = std::string("cusparseDcsrilu02_numericBoost");
+	}
+	assert(lcusparseDcsrilu02_numericBoost);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsrilu02_numericBoost);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, cuComplex*  boost_val)
+{
+	static cusparseStatus_t (*lcusparseCcsrilu02_numericBoost) (cusparseHandle_t , csrilu02Info_t , int , double* , cuComplex* );
+	if (!lcusparseCcsrilu02_numericBoost) {
+		lcusparseCcsrilu02_numericBoost = (cusparseStatus_t (*) (cusparseHandle_t , csrilu02Info_t , int , double* , cuComplex* )) dlsym(RTLD_NEXT, "cusparseCcsrilu02_numericBoost");
+		tracer._kernel_map[(void *) lcusparseCcsrilu02_numericBoost] = std::string("cusparseCcsrilu02_numericBoost");
+	}
+	assert(lcusparseCcsrilu02_numericBoost);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsrilu02_numericBoost);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, cuDoubleComplex*  boost_val)
+{
+	static cusparseStatus_t (*lcusparseZcsrilu02_numericBoost) (cusparseHandle_t , csrilu02Info_t , int , double* , cuDoubleComplex* );
+	if (!lcusparseZcsrilu02_numericBoost) {
+		lcusparseZcsrilu02_numericBoost = (cusparseStatus_t (*) (cusparseHandle_t , csrilu02Info_t , int , double* , cuDoubleComplex* )) dlsym(RTLD_NEXT, "cusparseZcsrilu02_numericBoost");
+		tracer._kernel_map[(void *) lcusparseZcsrilu02_numericBoost] = std::string("cusparseZcsrilu02_numericBoost");
+	}
+	assert(lcusparseZcsrilu02_numericBoost);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsrilu02_numericBoost);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcsrilu02_zeroPivot(cusparseHandle_t  handle, csrilu02Info_t  info, int*  position)
+{
+	static cusparseStatus_t (*lcusparseXcsrilu02_zeroPivot) (cusparseHandle_t , csrilu02Info_t , int* );
+	if (!lcusparseXcsrilu02_zeroPivot) {
+		lcusparseXcsrilu02_zeroPivot = (cusparseStatus_t (*) (cusparseHandle_t , csrilu02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseXcsrilu02_zeroPivot");
+		tracer._kernel_map[(void *) lcusparseXcsrilu02_zeroPivot] = std::string("cusparseXcsrilu02_zeroPivot");
+	}
+	assert(lcusparseXcsrilu02_zeroPivot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcsrilu02_zeroPivot(handle, info, position);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcsrilu02_zeroPivot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseScsrilu02_bufferSize) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csrilu02Info_t , int* );
+	if (!lcusparseScsrilu02_bufferSize) {
+		lcusparseScsrilu02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csrilu02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseScsrilu02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseScsrilu02_bufferSize] = std::string("cusparseScsrilu02_bufferSize");
+	}
+	assert(lcusparseScsrilu02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsrilu02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDcsrilu02_bufferSize) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csrilu02Info_t , int* );
+	if (!lcusparseDcsrilu02_bufferSize) {
+		lcusparseDcsrilu02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csrilu02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseDcsrilu02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDcsrilu02_bufferSize] = std::string("cusparseDcsrilu02_bufferSize");
+	}
+	assert(lcusparseDcsrilu02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsrilu02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCcsrilu02_bufferSize) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csrilu02Info_t , int* );
+	if (!lcusparseCcsrilu02_bufferSize) {
+		lcusparseCcsrilu02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csrilu02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseCcsrilu02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCcsrilu02_bufferSize] = std::string("cusparseCcsrilu02_bufferSize");
+	}
+	assert(lcusparseCcsrilu02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsrilu02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZcsrilu02_bufferSize) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csrilu02Info_t , int* );
+	if (!lcusparseZcsrilu02_bufferSize) {
+		lcusparseZcsrilu02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csrilu02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseZcsrilu02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseZcsrilu02_bufferSize] = std::string("cusparseZcsrilu02_bufferSize");
+	}
+	assert(lcusparseZcsrilu02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsrilu02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseScsrilu02_bufferSizeExt) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csrilu02Info_t , size_t* );
+	if (!lcusparseScsrilu02_bufferSizeExt) {
+		lcusparseScsrilu02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csrilu02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseScsrilu02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseScsrilu02_bufferSizeExt] = std::string("cusparseScsrilu02_bufferSizeExt");
+	}
+	assert(lcusparseScsrilu02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsrilu02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseDcsrilu02_bufferSizeExt) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csrilu02Info_t , size_t* );
+	if (!lcusparseDcsrilu02_bufferSizeExt) {
+		lcusparseDcsrilu02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csrilu02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseDcsrilu02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDcsrilu02_bufferSizeExt] = std::string("cusparseDcsrilu02_bufferSizeExt");
+	}
+	assert(lcusparseDcsrilu02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsrilu02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseCcsrilu02_bufferSizeExt) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csrilu02Info_t , size_t* );
+	if (!lcusparseCcsrilu02_bufferSizeExt) {
+		lcusparseCcsrilu02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csrilu02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseCcsrilu02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCcsrilu02_bufferSizeExt] = std::string("cusparseCcsrilu02_bufferSizeExt");
+	}
+	assert(lcusparseCcsrilu02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsrilu02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseZcsrilu02_bufferSizeExt) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csrilu02Info_t , size_t* );
+	if (!lcusparseZcsrilu02_bufferSizeExt) {
+		lcusparseZcsrilu02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csrilu02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseZcsrilu02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZcsrilu02_bufferSizeExt] = std::string("cusparseZcsrilu02_bufferSizeExt");
+	}
+	assert(lcusparseZcsrilu02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsrilu02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseScsrilu02_analysis) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseScsrilu02_analysis) {
+		lcusparseScsrilu02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseScsrilu02_analysis");
+		tracer._kernel_map[(void *) lcusparseScsrilu02_analysis] = std::string("cusparseScsrilu02_analysis");
+	}
+	assert(lcusparseScsrilu02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsrilu02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDcsrilu02_analysis) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDcsrilu02_analysis) {
+		lcusparseDcsrilu02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDcsrilu02_analysis");
+		tracer._kernel_map[(void *) lcusparseDcsrilu02_analysis] = std::string("cusparseDcsrilu02_analysis");
+	}
+	assert(lcusparseDcsrilu02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsrilu02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCcsrilu02_analysis) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCcsrilu02_analysis) {
+		lcusparseCcsrilu02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCcsrilu02_analysis");
+		tracer._kernel_map[(void *) lcusparseCcsrilu02_analysis] = std::string("cusparseCcsrilu02_analysis");
+	}
+	assert(lcusparseCcsrilu02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsrilu02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZcsrilu02_analysis) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZcsrilu02_analysis) {
+		lcusparseZcsrilu02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZcsrilu02_analysis");
+		tracer._kernel_map[(void *) lcusparseZcsrilu02_analysis] = std::string("cusparseZcsrilu02_analysis");
+	}
+	assert(lcusparseZcsrilu02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsrilu02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseScsrilu02) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseScsrilu02) {
+		lcusparseScsrilu02 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseScsrilu02");
+		tracer._kernel_map[(void *) lcusparseScsrilu02] = std::string("cusparseScsrilu02");
+	}
+	assert(lcusparseScsrilu02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsrilu02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDcsrilu02) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDcsrilu02) {
+		lcusparseDcsrilu02 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDcsrilu02");
+		tracer._kernel_map[(void *) lcusparseDcsrilu02] = std::string("cusparseDcsrilu02");
+	}
+	assert(lcusparseDcsrilu02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsrilu02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCcsrilu02) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCcsrilu02) {
+		lcusparseCcsrilu02 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCcsrilu02");
+		tracer._kernel_map[(void *) lcusparseCcsrilu02] = std::string("cusparseCcsrilu02");
+	}
+	assert(lcusparseCcsrilu02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsrilu02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZcsrilu02) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZcsrilu02) {
+		lcusparseZcsrilu02 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZcsrilu02");
+		tracer._kernel_map[(void *) lcusparseZcsrilu02] = std::string("cusparseZcsrilu02");
+	}
+	assert(lcusparseZcsrilu02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsrilu02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, float*  boost_val)
+{
+	static cusparseStatus_t (*lcusparseSbsrilu02_numericBoost) (cusparseHandle_t , bsrilu02Info_t , int , double* , float* );
+	if (!lcusparseSbsrilu02_numericBoost) {
+		lcusparseSbsrilu02_numericBoost = (cusparseStatus_t (*) (cusparseHandle_t , bsrilu02Info_t , int , double* , float* )) dlsym(RTLD_NEXT, "cusparseSbsrilu02_numericBoost");
+		tracer._kernel_map[(void *) lcusparseSbsrilu02_numericBoost] = std::string("cusparseSbsrilu02_numericBoost");
+	}
+	assert(lcusparseSbsrilu02_numericBoost);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrilu02_numericBoost);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, double*  boost_val)
+{
+	static cusparseStatus_t (*lcusparseDbsrilu02_numericBoost) (cusparseHandle_t , bsrilu02Info_t , int , double* , double* );
+	if (!lcusparseDbsrilu02_numericBoost) {
+		lcusparseDbsrilu02_numericBoost = (cusparseStatus_t (*) (cusparseHandle_t , bsrilu02Info_t , int , double* , double* )) dlsym(RTLD_NEXT, "cusparseDbsrilu02_numericBoost");
+		tracer._kernel_map[(void *) lcusparseDbsrilu02_numericBoost] = std::string("cusparseDbsrilu02_numericBoost");
+	}
+	assert(lcusparseDbsrilu02_numericBoost);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrilu02_numericBoost);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, cuComplex*  boost_val)
+{
+	static cusparseStatus_t (*lcusparseCbsrilu02_numericBoost) (cusparseHandle_t , bsrilu02Info_t , int , double* , cuComplex* );
+	if (!lcusparseCbsrilu02_numericBoost) {
+		lcusparseCbsrilu02_numericBoost = (cusparseStatus_t (*) (cusparseHandle_t , bsrilu02Info_t , int , double* , cuComplex* )) dlsym(RTLD_NEXT, "cusparseCbsrilu02_numericBoost");
+		tracer._kernel_map[(void *) lcusparseCbsrilu02_numericBoost] = std::string("cusparseCbsrilu02_numericBoost");
+	}
+	assert(lcusparseCbsrilu02_numericBoost);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrilu02_numericBoost);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, cuDoubleComplex*  boost_val)
+{
+	static cusparseStatus_t (*lcusparseZbsrilu02_numericBoost) (cusparseHandle_t , bsrilu02Info_t , int , double* , cuDoubleComplex* );
+	if (!lcusparseZbsrilu02_numericBoost) {
+		lcusparseZbsrilu02_numericBoost = (cusparseStatus_t (*) (cusparseHandle_t , bsrilu02Info_t , int , double* , cuDoubleComplex* )) dlsym(RTLD_NEXT, "cusparseZbsrilu02_numericBoost");
+		tracer._kernel_map[(void *) lcusparseZbsrilu02_numericBoost] = std::string("cusparseZbsrilu02_numericBoost");
+	}
+	assert(lcusparseZbsrilu02_numericBoost);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrilu02_numericBoost);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXbsrilu02_zeroPivot(cusparseHandle_t  handle, bsrilu02Info_t  info, int*  position)
+{
+	static cusparseStatus_t (*lcusparseXbsrilu02_zeroPivot) (cusparseHandle_t , bsrilu02Info_t , int* );
+	if (!lcusparseXbsrilu02_zeroPivot) {
+		lcusparseXbsrilu02_zeroPivot = (cusparseStatus_t (*) (cusparseHandle_t , bsrilu02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseXbsrilu02_zeroPivot");
+		tracer._kernel_map[(void *) lcusparseXbsrilu02_zeroPivot] = std::string("cusparseXbsrilu02_zeroPivot");
+	}
+	assert(lcusparseXbsrilu02_zeroPivot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXbsrilu02_zeroPivot(handle, info, position);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXbsrilu02_zeroPivot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSbsrilu02_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrilu02Info_t , int* );
+	if (!lcusparseSbsrilu02_bufferSize) {
+		lcusparseSbsrilu02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrilu02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseSbsrilu02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSbsrilu02_bufferSize] = std::string("cusparseSbsrilu02_bufferSize");
+	}
+	assert(lcusparseSbsrilu02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrilu02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDbsrilu02_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrilu02Info_t , int* );
+	if (!lcusparseDbsrilu02_bufferSize) {
+		lcusparseDbsrilu02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrilu02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseDbsrilu02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDbsrilu02_bufferSize] = std::string("cusparseDbsrilu02_bufferSize");
+	}
+	assert(lcusparseDbsrilu02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrilu02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCbsrilu02_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrilu02Info_t , int* );
+	if (!lcusparseCbsrilu02_bufferSize) {
+		lcusparseCbsrilu02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrilu02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseCbsrilu02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCbsrilu02_bufferSize] = std::string("cusparseCbsrilu02_bufferSize");
+	}
+	assert(lcusparseCbsrilu02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrilu02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZbsrilu02_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrilu02Info_t , int* );
+	if (!lcusparseZbsrilu02_bufferSize) {
+		lcusparseZbsrilu02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrilu02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseZbsrilu02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseZbsrilu02_bufferSize] = std::string("cusparseZbsrilu02_bufferSize");
+	}
+	assert(lcusparseZbsrilu02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrilu02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseSbsrilu02_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrilu02Info_t , size_t* );
+	if (!lcusparseSbsrilu02_bufferSizeExt) {
+		lcusparseSbsrilu02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrilu02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSbsrilu02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSbsrilu02_bufferSizeExt] = std::string("cusparseSbsrilu02_bufferSizeExt");
+	}
+	assert(lcusparseSbsrilu02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrilu02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseDbsrilu02_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrilu02Info_t , size_t* );
+	if (!lcusparseDbsrilu02_bufferSizeExt) {
+		lcusparseDbsrilu02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrilu02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseDbsrilu02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDbsrilu02_bufferSizeExt] = std::string("cusparseDbsrilu02_bufferSizeExt");
+	}
+	assert(lcusparseDbsrilu02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrilu02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseCbsrilu02_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrilu02Info_t , size_t* );
+	if (!lcusparseCbsrilu02_bufferSizeExt) {
+		lcusparseCbsrilu02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrilu02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseCbsrilu02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCbsrilu02_bufferSizeExt] = std::string("cusparseCbsrilu02_bufferSizeExt");
+	}
+	assert(lcusparseCbsrilu02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrilu02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseZbsrilu02_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrilu02Info_t , size_t* );
+	if (!lcusparseZbsrilu02_bufferSizeExt) {
+		lcusparseZbsrilu02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrilu02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseZbsrilu02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZbsrilu02_bufferSizeExt] = std::string("cusparseZbsrilu02_bufferSizeExt");
+	}
+	assert(lcusparseZbsrilu02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrilu02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSbsrilu02_analysis) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseSbsrilu02_analysis) {
+		lcusparseSbsrilu02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseSbsrilu02_analysis");
+		tracer._kernel_map[(void *) lcusparseSbsrilu02_analysis] = std::string("cusparseSbsrilu02_analysis");
+	}
+	assert(lcusparseSbsrilu02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrilu02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDbsrilu02_analysis) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDbsrilu02_analysis) {
+		lcusparseDbsrilu02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDbsrilu02_analysis");
+		tracer._kernel_map[(void *) lcusparseDbsrilu02_analysis] = std::string("cusparseDbsrilu02_analysis");
+	}
+	assert(lcusparseDbsrilu02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrilu02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCbsrilu02_analysis) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCbsrilu02_analysis) {
+		lcusparseCbsrilu02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCbsrilu02_analysis");
+		tracer._kernel_map[(void *) lcusparseCbsrilu02_analysis] = std::string("cusparseCbsrilu02_analysis");
+	}
+	assert(lcusparseCbsrilu02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrilu02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZbsrilu02_analysis) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZbsrilu02_analysis) {
+		lcusparseZbsrilu02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZbsrilu02_analysis");
+		tracer._kernel_map[(void *) lcusparseZbsrilu02_analysis] = std::string("cusparseZbsrilu02_analysis");
+	}
+	assert(lcusparseZbsrilu02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrilu02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSbsrilu02) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseSbsrilu02) {
+		lcusparseSbsrilu02 = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseSbsrilu02");
+		tracer._kernel_map[(void *) lcusparseSbsrilu02] = std::string("cusparseSbsrilu02");
+	}
+	assert(lcusparseSbsrilu02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsrilu02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDbsrilu02) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDbsrilu02) {
+		lcusparseDbsrilu02 = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDbsrilu02");
+		tracer._kernel_map[(void *) lcusparseDbsrilu02] = std::string("cusparseDbsrilu02");
+	}
+	assert(lcusparseDbsrilu02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsrilu02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCbsrilu02) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCbsrilu02) {
+		lcusparseCbsrilu02 = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCbsrilu02");
+		tracer._kernel_map[(void *) lcusparseCbsrilu02] = std::string("cusparseCbsrilu02");
+	}
+	assert(lcusparseCbsrilu02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsrilu02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZbsrilu02) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZbsrilu02) {
+		lcusparseZbsrilu02 = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsrilu02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZbsrilu02");
+		tracer._kernel_map[(void *) lcusparseZbsrilu02] = std::string("cusparseZbsrilu02");
+	}
+	assert(lcusparseZbsrilu02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsrilu02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcsric02_zeroPivot(cusparseHandle_t  handle, csric02Info_t  info, int*  position)
+{
+	static cusparseStatus_t (*lcusparseXcsric02_zeroPivot) (cusparseHandle_t , csric02Info_t , int* );
+	if (!lcusparseXcsric02_zeroPivot) {
+		lcusparseXcsric02_zeroPivot = (cusparseStatus_t (*) (cusparseHandle_t , csric02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseXcsric02_zeroPivot");
+		tracer._kernel_map[(void *) lcusparseXcsric02_zeroPivot] = std::string("cusparseXcsric02_zeroPivot");
+	}
+	assert(lcusparseXcsric02_zeroPivot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcsric02_zeroPivot(handle, info, position);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcsric02_zeroPivot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseScsric02_bufferSize) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csric02Info_t , int* );
+	if (!lcusparseScsric02_bufferSize) {
+		lcusparseScsric02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csric02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseScsric02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseScsric02_bufferSize] = std::string("cusparseScsric02_bufferSize");
+	}
+	assert(lcusparseScsric02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsric02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDcsric02_bufferSize) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csric02Info_t , int* );
+	if (!lcusparseDcsric02_bufferSize) {
+		lcusparseDcsric02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csric02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseDcsric02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDcsric02_bufferSize] = std::string("cusparseDcsric02_bufferSize");
+	}
+	assert(lcusparseDcsric02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsric02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCcsric02_bufferSize) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csric02Info_t , int* );
+	if (!lcusparseCcsric02_bufferSize) {
+		lcusparseCcsric02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csric02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseCcsric02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCcsric02_bufferSize] = std::string("cusparseCcsric02_bufferSize");
+	}
+	assert(lcusparseCcsric02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsric02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZcsric02_bufferSize) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csric02Info_t , int* );
+	if (!lcusparseZcsric02_bufferSize) {
+		lcusparseZcsric02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csric02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseZcsric02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseZcsric02_bufferSize] = std::string("cusparseZcsric02_bufferSize");
+	}
+	assert(lcusparseZcsric02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsric02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseScsric02_bufferSizeExt) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csric02Info_t , size_t* );
+	if (!lcusparseScsric02_bufferSizeExt) {
+		lcusparseScsric02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csric02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseScsric02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseScsric02_bufferSizeExt] = std::string("cusparseScsric02_bufferSizeExt");
+	}
+	assert(lcusparseScsric02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsric02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseDcsric02_bufferSizeExt) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csric02Info_t , size_t* );
+	if (!lcusparseDcsric02_bufferSizeExt) {
+		lcusparseDcsric02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csric02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseDcsric02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDcsric02_bufferSizeExt] = std::string("cusparseDcsric02_bufferSizeExt");
+	}
+	assert(lcusparseDcsric02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsric02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseCcsric02_bufferSizeExt) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csric02Info_t , size_t* );
+	if (!lcusparseCcsric02_bufferSizeExt) {
+		lcusparseCcsric02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csric02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseCcsric02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCcsric02_bufferSizeExt] = std::string("cusparseCcsric02_bufferSizeExt");
+	}
+	assert(lcusparseCcsric02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsric02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseZcsric02_bufferSizeExt) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csric02Info_t , size_t* );
+	if (!lcusparseZcsric02_bufferSizeExt) {
+		lcusparseZcsric02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csric02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseZcsric02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZcsric02_bufferSizeExt] = std::string("cusparseZcsric02_bufferSizeExt");
+	}
+	assert(lcusparseZcsric02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsric02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseScsric02_analysis) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseScsric02_analysis) {
+		lcusparseScsric02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseScsric02_analysis");
+		tracer._kernel_map[(void *) lcusparseScsric02_analysis] = std::string("cusparseScsric02_analysis");
+	}
+	assert(lcusparseScsric02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsric02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDcsric02_analysis) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDcsric02_analysis) {
+		lcusparseDcsric02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDcsric02_analysis");
+		tracer._kernel_map[(void *) lcusparseDcsric02_analysis] = std::string("cusparseDcsric02_analysis");
+	}
+	assert(lcusparseDcsric02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsric02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCcsric02_analysis) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCcsric02_analysis) {
+		lcusparseCcsric02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCcsric02_analysis");
+		tracer._kernel_map[(void *) lcusparseCcsric02_analysis] = std::string("cusparseCcsric02_analysis");
+	}
+	assert(lcusparseCcsric02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsric02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZcsric02_analysis) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZcsric02_analysis) {
+		lcusparseZcsric02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZcsric02_analysis");
+		tracer._kernel_map[(void *) lcusparseZcsric02_analysis] = std::string("cusparseZcsric02_analysis");
+	}
+	assert(lcusparseZcsric02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsric02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseScsric02) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseScsric02) {
+		lcusparseScsric02 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseScsric02");
+		tracer._kernel_map[(void *) lcusparseScsric02] = std::string("cusparseScsric02");
+	}
+	assert(lcusparseScsric02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsric02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDcsric02) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDcsric02) {
+		lcusparseDcsric02 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDcsric02");
+		tracer._kernel_map[(void *) lcusparseDcsric02] = std::string("cusparseDcsric02");
+	}
+	assert(lcusparseDcsric02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsric02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCcsric02) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCcsric02) {
+		lcusparseCcsric02 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCcsric02");
+		tracer._kernel_map[(void *) lcusparseCcsric02] = std::string("cusparseCcsric02");
+	}
+	assert(lcusparseCcsric02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsric02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZcsric02) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZcsric02) {
+		lcusparseZcsric02 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , csric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZcsric02");
+		tracer._kernel_map[(void *) lcusparseZcsric02] = std::string("cusparseZcsric02");
+	}
+	assert(lcusparseZcsric02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsric02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXbsric02_zeroPivot(cusparseHandle_t  handle, bsric02Info_t  info, int*  position)
+{
+	static cusparseStatus_t (*lcusparseXbsric02_zeroPivot) (cusparseHandle_t , bsric02Info_t , int* );
+	if (!lcusparseXbsric02_zeroPivot) {
+		lcusparseXbsric02_zeroPivot = (cusparseStatus_t (*) (cusparseHandle_t , bsric02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseXbsric02_zeroPivot");
+		tracer._kernel_map[(void *) lcusparseXbsric02_zeroPivot] = std::string("cusparseXbsric02_zeroPivot");
+	}
+	assert(lcusparseXbsric02_zeroPivot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXbsric02_zeroPivot(handle, info, position);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXbsric02_zeroPivot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSbsric02_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsric02Info_t , int* );
+	if (!lcusparseSbsric02_bufferSize) {
+		lcusparseSbsric02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsric02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseSbsric02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSbsric02_bufferSize] = std::string("cusparseSbsric02_bufferSize");
+	}
+	assert(lcusparseSbsric02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsric02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDbsric02_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsric02Info_t , int* );
+	if (!lcusparseDbsric02_bufferSize) {
+		lcusparseDbsric02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsric02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseDbsric02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDbsric02_bufferSize] = std::string("cusparseDbsric02_bufferSize");
+	}
+	assert(lcusparseDbsric02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsric02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCbsric02_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsric02Info_t , int* );
+	if (!lcusparseCbsric02_bufferSize) {
+		lcusparseCbsric02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsric02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseCbsric02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCbsric02_bufferSize] = std::string("cusparseCbsric02_bufferSize");
+	}
+	assert(lcusparseCbsric02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsric02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZbsric02_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsric02Info_t , int* );
+	if (!lcusparseZbsric02_bufferSize) {
+		lcusparseZbsric02_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsric02Info_t , int* )) dlsym(RTLD_NEXT, "cusparseZbsric02_bufferSize");
+		tracer._kernel_map[(void *) lcusparseZbsric02_bufferSize] = std::string("cusparseZbsric02_bufferSize");
+	}
+	assert(lcusparseZbsric02_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsric02_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseSbsric02_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsric02Info_t , size_t* );
+	if (!lcusparseSbsric02_bufferSizeExt) {
+		lcusparseSbsric02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsric02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSbsric02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSbsric02_bufferSizeExt] = std::string("cusparseSbsric02_bufferSizeExt");
+	}
+	assert(lcusparseSbsric02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsric02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseDbsric02_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsric02Info_t , size_t* );
+	if (!lcusparseDbsric02_bufferSizeExt) {
+		lcusparseDbsric02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsric02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseDbsric02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDbsric02_bufferSizeExt] = std::string("cusparseDbsric02_bufferSizeExt");
+	}
+	assert(lcusparseDbsric02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsric02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseCbsric02_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsric02Info_t , size_t* );
+	if (!lcusparseCbsric02_bufferSizeExt) {
+		lcusparseCbsric02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsric02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseCbsric02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCbsric02_bufferSizeExt] = std::string("cusparseCbsric02_bufferSizeExt");
+	}
+	assert(lcusparseCbsric02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsric02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseZbsric02_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsric02Info_t , size_t* );
+	if (!lcusparseZbsric02_bufferSizeExt) {
+		lcusparseZbsric02_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsric02Info_t , size_t* )) dlsym(RTLD_NEXT, "cusparseZbsric02_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZbsric02_bufferSizeExt] = std::string("cusparseZbsric02_bufferSizeExt");
+	}
+	assert(lcusparseZbsric02_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsric02_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
+{
+	static cusparseStatus_t (*lcusparseSbsric02_analysis) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseSbsric02_analysis) {
+		lcusparseSbsric02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseSbsric02_analysis");
+		tracer._kernel_map[(void *) lcusparseSbsric02_analysis] = std::string("cusparseSbsric02_analysis");
+	}
+	assert(lcusparseSbsric02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsric02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
+{
+	static cusparseStatus_t (*lcusparseDbsric02_analysis) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDbsric02_analysis) {
+		lcusparseDbsric02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDbsric02_analysis");
+		tracer._kernel_map[(void *) lcusparseDbsric02_analysis] = std::string("cusparseDbsric02_analysis");
+	}
+	assert(lcusparseDbsric02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsric02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
+{
+	static cusparseStatus_t (*lcusparseCbsric02_analysis) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCbsric02_analysis) {
+		lcusparseCbsric02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCbsric02_analysis");
+		tracer._kernel_map[(void *) lcusparseCbsric02_analysis] = std::string("cusparseCbsric02_analysis");
+	}
+	assert(lcusparseCbsric02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsric02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
+{
+	static cusparseStatus_t (*lcusparseZbsric02_analysis) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZbsric02_analysis) {
+		lcusparseZbsric02_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZbsric02_analysis");
+		tracer._kernel_map[(void *) lcusparseZbsric02_analysis] = std::string("cusparseZbsric02_analysis");
+	}
+	assert(lcusparseZbsric02_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsric02_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSbsric02) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseSbsric02) {
+		lcusparseSbsric02 = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , float* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseSbsric02");
+		tracer._kernel_map[(void *) lcusparseSbsric02] = std::string("cusparseSbsric02");
+	}
+	assert(lcusparseSbsric02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsric02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDbsric02) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseDbsric02) {
+		lcusparseDbsric02 = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , double* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseDbsric02");
+		tracer._kernel_map[(void *) lcusparseDbsric02] = std::string("cusparseDbsric02");
+	}
+	assert(lcusparseDbsric02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsric02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCbsric02) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseCbsric02) {
+		lcusparseCbsric02 = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuComplex* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseCbsric02");
+		tracer._kernel_map[(void *) lcusparseCbsric02] = std::string("cusparseCbsric02");
+	}
+	assert(lcusparseCbsric02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsric02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZbsric02) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* );
+	if (!lcusparseZbsric02) {
+		lcusparseZbsric02 = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , const int* , int , bsric02Info_t , cusparseSolvePolicy_t , void* )) dlsym(RTLD_NEXT, "cusparseZbsric02");
+		tracer._kernel_map[(void *) lcusparseZbsric02] = std::string("cusparseZbsric02");
+	}
+	assert(lcusparseZbsric02);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsric02);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, const float*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSgtsv2_bufferSizeExt) (cusparseHandle_t , int , int , const float* , const float* , const float* , const float* , int , size_t* );
+	if (!lcusparseSgtsv2_bufferSizeExt) {
+		lcusparseSgtsv2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , const float* , const float* , const float* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseSgtsv2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSgtsv2_bufferSizeExt] = std::string("cusparseSgtsv2_bufferSizeExt");
+	}
+	assert(lcusparseSgtsv2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgtsv2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, const double*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDgtsv2_bufferSizeExt) (cusparseHandle_t , int , int , const double* , const double* , const double* , const double* , int , size_t* );
+	if (!lcusparseDgtsv2_bufferSizeExt) {
+		lcusparseDgtsv2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , const double* , const double* , const double* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseDgtsv2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDgtsv2_bufferSizeExt] = std::string("cusparseDgtsv2_bufferSizeExt");
+	}
+	assert(lcusparseDgtsv2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgtsv2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCgtsv2_bufferSizeExt) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , int , size_t* );
+	if (!lcusparseCgtsv2_bufferSizeExt) {
+		lcusparseCgtsv2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseCgtsv2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCgtsv2_bufferSizeExt] = std::string("cusparseCgtsv2_bufferSizeExt");
+	}
+	assert(lcusparseCgtsv2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgtsv2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZgtsv2_bufferSizeExt) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , size_t* );
+	if (!lcusparseZgtsv2_bufferSizeExt) {
+		lcusparseZgtsv2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseZgtsv2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZgtsv2_bufferSizeExt] = std::string("cusparseZgtsv2_bufferSizeExt");
+	}
+	assert(lcusparseZgtsv2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgtsv2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgtsv2(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, float*  B, int  ldb, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSgtsv2) (cusparseHandle_t , int , int , const float* , const float* , const float* , float* , int , void* );
+	if (!lcusparseSgtsv2) {
+		lcusparseSgtsv2 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , const float* , const float* , float* , int , void* )) dlsym(RTLD_NEXT, "cusparseSgtsv2");
+		tracer._kernel_map[(void *) lcusparseSgtsv2] = std::string("cusparseSgtsv2");
+	}
+	assert(lcusparseSgtsv2);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgtsv2);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgtsv2(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, double*  B, int  ldb, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDgtsv2) (cusparseHandle_t , int , int , const double* , const double* , const double* , double* , int , void* );
+	if (!lcusparseDgtsv2) {
+		lcusparseDgtsv2 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , const double* , const double* , double* , int , void* )) dlsym(RTLD_NEXT, "cusparseDgtsv2");
+		tracer._kernel_map[(void *) lcusparseDgtsv2] = std::string("cusparseDgtsv2");
+	}
+	assert(lcusparseDgtsv2);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgtsv2);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgtsv2(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  B, int  ldb, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCgtsv2) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , cuComplex* , int , void* );
+	if (!lcusparseCgtsv2) {
+		lcusparseCgtsv2 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , cuComplex* , int , void* )) dlsym(RTLD_NEXT, "cusparseCgtsv2");
+		tracer._kernel_map[(void *) lcusparseCgtsv2] = std::string("cusparseCgtsv2");
+	}
+	assert(lcusparseCgtsv2);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgtsv2);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgtsv2(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  B, int  ldb, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZgtsv2) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , cuDoubleComplex* , int , void* );
+	if (!lcusparseZgtsv2) {
+		lcusparseZgtsv2 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , cuDoubleComplex* , int , void* )) dlsym(RTLD_NEXT, "cusparseZgtsv2");
+		tracer._kernel_map[(void *) lcusparseZgtsv2] = std::string("cusparseZgtsv2");
+	}
+	assert(lcusparseZgtsv2);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgtsv2);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, const float*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSgtsv2_nopivot_bufferSizeExt) (cusparseHandle_t , int , int , const float* , const float* , const float* , const float* , int , size_t* );
+	if (!lcusparseSgtsv2_nopivot_bufferSizeExt) {
+		lcusparseSgtsv2_nopivot_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , const float* , const float* , const float* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseSgtsv2_nopivot_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSgtsv2_nopivot_bufferSizeExt] = std::string("cusparseSgtsv2_nopivot_bufferSizeExt");
+	}
+	assert(lcusparseSgtsv2_nopivot_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgtsv2_nopivot_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, const double*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDgtsv2_nopivot_bufferSizeExt) (cusparseHandle_t , int , int , const double* , const double* , const double* , const double* , int , size_t* );
+	if (!lcusparseDgtsv2_nopivot_bufferSizeExt) {
+		lcusparseDgtsv2_nopivot_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , const double* , const double* , const double* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseDgtsv2_nopivot_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDgtsv2_nopivot_bufferSizeExt] = std::string("cusparseDgtsv2_nopivot_bufferSizeExt");
+	}
+	assert(lcusparseDgtsv2_nopivot_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgtsv2_nopivot_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCgtsv2_nopivot_bufferSizeExt) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , int , size_t* );
+	if (!lcusparseCgtsv2_nopivot_bufferSizeExt) {
+		lcusparseCgtsv2_nopivot_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseCgtsv2_nopivot_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCgtsv2_nopivot_bufferSizeExt] = std::string("cusparseCgtsv2_nopivot_bufferSizeExt");
+	}
+	assert(lcusparseCgtsv2_nopivot_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgtsv2_nopivot_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZgtsv2_nopivot_bufferSizeExt) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , size_t* );
+	if (!lcusparseZgtsv2_nopivot_bufferSizeExt) {
+		lcusparseZgtsv2_nopivot_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseZgtsv2_nopivot_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZgtsv2_nopivot_bufferSizeExt] = std::string("cusparseZgtsv2_nopivot_bufferSizeExt");
+	}
+	assert(lcusparseZgtsv2_nopivot_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgtsv2_nopivot_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, float*  B, int  ldb, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSgtsv2_nopivot) (cusparseHandle_t , int , int , const float* , const float* , const float* , float* , int , void* );
+	if (!lcusparseSgtsv2_nopivot) {
+		lcusparseSgtsv2_nopivot = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , const float* , const float* , float* , int , void* )) dlsym(RTLD_NEXT, "cusparseSgtsv2_nopivot");
+		tracer._kernel_map[(void *) lcusparseSgtsv2_nopivot] = std::string("cusparseSgtsv2_nopivot");
+	}
+	assert(lcusparseSgtsv2_nopivot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgtsv2_nopivot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, double*  B, int  ldb, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDgtsv2_nopivot) (cusparseHandle_t , int , int , const double* , const double* , const double* , double* , int , void* );
+	if (!lcusparseDgtsv2_nopivot) {
+		lcusparseDgtsv2_nopivot = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , const double* , const double* , double* , int , void* )) dlsym(RTLD_NEXT, "cusparseDgtsv2_nopivot");
+		tracer._kernel_map[(void *) lcusparseDgtsv2_nopivot] = std::string("cusparseDgtsv2_nopivot");
+	}
+	assert(lcusparseDgtsv2_nopivot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgtsv2_nopivot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  B, int  ldb, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCgtsv2_nopivot) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , cuComplex* , int , void* );
+	if (!lcusparseCgtsv2_nopivot) {
+		lcusparseCgtsv2_nopivot = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , cuComplex* , int , void* )) dlsym(RTLD_NEXT, "cusparseCgtsv2_nopivot");
+		tracer._kernel_map[(void *) lcusparseCgtsv2_nopivot] = std::string("cusparseCgtsv2_nopivot");
+	}
+	assert(lcusparseCgtsv2_nopivot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgtsv2_nopivot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  B, int  ldb, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZgtsv2_nopivot) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , cuDoubleComplex* , int , void* );
+	if (!lcusparseZgtsv2_nopivot) {
+		lcusparseZgtsv2_nopivot = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , cuDoubleComplex* , int , void* )) dlsym(RTLD_NEXT, "cusparseZgtsv2_nopivot");
+		tracer._kernel_map[(void *) lcusparseZgtsv2_nopivot] = std::string("cusparseZgtsv2_nopivot");
+	}
+	assert(lcusparseZgtsv2_nopivot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgtsv2_nopivot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const float*  dl, const float*  d, const float*  du, const float*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSgtsv2StridedBatch_bufferSizeExt) (cusparseHandle_t , int , const float* , const float* , const float* , const float* , int , int , size_t* );
+	if (!lcusparseSgtsv2StridedBatch_bufferSizeExt) {
+		lcusparseSgtsv2StridedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , const float* , const float* , const float* , const float* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseSgtsv2StridedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSgtsv2StridedBatch_bufferSizeExt] = std::string("cusparseSgtsv2StridedBatch_bufferSizeExt");
+	}
+	assert(lcusparseSgtsv2StridedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgtsv2StridedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const double*  dl, const double*  d, const double*  du, const double*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDgtsv2StridedBatch_bufferSizeExt) (cusparseHandle_t , int , const double* , const double* , const double* , const double* , int , int , size_t* );
+	if (!lcusparseDgtsv2StridedBatch_bufferSizeExt) {
+		lcusparseDgtsv2StridedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , const double* , const double* , const double* , const double* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseDgtsv2StridedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDgtsv2StridedBatch_bufferSizeExt] = std::string("cusparseDgtsv2StridedBatch_bufferSizeExt");
+	}
+	assert(lcusparseDgtsv2StridedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgtsv2StridedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCgtsv2StridedBatch_bufferSizeExt) (cusparseHandle_t , int , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , int , int , size_t* );
+	if (!lcusparseCgtsv2StridedBatch_bufferSizeExt) {
+		lcusparseCgtsv2StridedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseCgtsv2StridedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCgtsv2StridedBatch_bufferSizeExt] = std::string("cusparseCgtsv2StridedBatch_bufferSizeExt");
+	}
+	assert(lcusparseCgtsv2StridedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgtsv2StridedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZgtsv2StridedBatch_bufferSizeExt) (cusparseHandle_t , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , int , size_t* );
+	if (!lcusparseZgtsv2StridedBatch_bufferSizeExt) {
+		lcusparseZgtsv2StridedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseZgtsv2StridedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZgtsv2StridedBatch_bufferSizeExt] = std::string("cusparseZgtsv2StridedBatch_bufferSizeExt");
+	}
+	assert(lcusparseZgtsv2StridedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgtsv2StridedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const float*  dl, const float*  d, const float*  du, float*  x, int  batchCount, int  batchStride, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSgtsv2StridedBatch) (cusparseHandle_t , int , const float* , const float* , const float* , float* , int , int , void* );
+	if (!lcusparseSgtsv2StridedBatch) {
+		lcusparseSgtsv2StridedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , const float* , const float* , const float* , float* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseSgtsv2StridedBatch");
+		tracer._kernel_map[(void *) lcusparseSgtsv2StridedBatch] = std::string("cusparseSgtsv2StridedBatch");
+	}
+	assert(lcusparseSgtsv2StridedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgtsv2StridedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const double*  dl, const double*  d, const double*  du, double*  x, int  batchCount, int  batchStride, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDgtsv2StridedBatch) (cusparseHandle_t , int , const double* , const double* , const double* , double* , int , int , void* );
+	if (!lcusparseDgtsv2StridedBatch) {
+		lcusparseDgtsv2StridedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , const double* , const double* , const double* , double* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseDgtsv2StridedBatch");
+		tracer._kernel_map[(void *) lcusparseDgtsv2StridedBatch] = std::string("cusparseDgtsv2StridedBatch");
+	}
+	assert(lcusparseDgtsv2StridedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgtsv2StridedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  x, int  batchCount, int  batchStride, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCgtsv2StridedBatch) (cusparseHandle_t , int , const cuComplex* , const cuComplex* , const cuComplex* , cuComplex* , int , int , void* );
+	if (!lcusparseCgtsv2StridedBatch) {
+		lcusparseCgtsv2StridedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , const cuComplex* , const cuComplex* , const cuComplex* , cuComplex* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseCgtsv2StridedBatch");
+		tracer._kernel_map[(void *) lcusparseCgtsv2StridedBatch] = std::string("cusparseCgtsv2StridedBatch");
+	}
+	assert(lcusparseCgtsv2StridedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgtsv2StridedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  x, int  batchCount, int  batchStride, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZgtsv2StridedBatch) (cusparseHandle_t , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , cuDoubleComplex* , int , int , void* );
+	if (!lcusparseZgtsv2StridedBatch) {
+		lcusparseZgtsv2StridedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , cuDoubleComplex* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseZgtsv2StridedBatch");
+		tracer._kernel_map[(void *) lcusparseZgtsv2StridedBatch] = std::string("cusparseZgtsv2StridedBatch");
+	}
+	assert(lcusparseZgtsv2StridedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgtsv2StridedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const float*  dl, const float*  d, const float*  du, const float*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSgtsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t , int , int , const float* , const float* , const float* , const float* , int , size_t* );
+	if (!lcusparseSgtsvInterleavedBatch_bufferSizeExt) {
+		lcusparseSgtsvInterleavedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , const float* , const float* , const float* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseSgtsvInterleavedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSgtsvInterleavedBatch_bufferSizeExt] = std::string("cusparseSgtsvInterleavedBatch_bufferSizeExt");
+	}
+	assert(lcusparseSgtsvInterleavedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgtsvInterleavedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const double*  dl, const double*  d, const double*  du, const double*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDgtsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t , int , int , const double* , const double* , const double* , const double* , int , size_t* );
+	if (!lcusparseDgtsvInterleavedBatch_bufferSizeExt) {
+		lcusparseDgtsvInterleavedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , const double* , const double* , const double* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseDgtsvInterleavedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDgtsvInterleavedBatch_bufferSizeExt] = std::string("cusparseDgtsvInterleavedBatch_bufferSizeExt");
+	}
+	assert(lcusparseDgtsvInterleavedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgtsvInterleavedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCgtsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , int , size_t* );
+	if (!lcusparseCgtsvInterleavedBatch_bufferSizeExt) {
+		lcusparseCgtsvInterleavedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseCgtsvInterleavedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCgtsvInterleavedBatch_bufferSizeExt] = std::string("cusparseCgtsvInterleavedBatch_bufferSizeExt");
+	}
+	assert(lcusparseCgtsvInterleavedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgtsvInterleavedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZgtsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , size_t* );
+	if (!lcusparseZgtsvInterleavedBatch_bufferSizeExt) {
+		lcusparseZgtsvInterleavedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseZgtsvInterleavedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZgtsvInterleavedBatch_bufferSizeExt] = std::string("cusparseZgtsvInterleavedBatch_bufferSizeExt");
+	}
+	assert(lcusparseZgtsvInterleavedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgtsvInterleavedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, float*  dl, float*  d, float*  du, float*  x, int  batchCount, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSgtsvInterleavedBatch) (cusparseHandle_t , int , int , float* , float* , float* , float* , int , void* );
+	if (!lcusparseSgtsvInterleavedBatch) {
+		lcusparseSgtsvInterleavedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , int , float* , float* , float* , float* , int , void* )) dlsym(RTLD_NEXT, "cusparseSgtsvInterleavedBatch");
+		tracer._kernel_map[(void *) lcusparseSgtsvInterleavedBatch] = std::string("cusparseSgtsvInterleavedBatch");
+	}
+	assert(lcusparseSgtsvInterleavedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgtsvInterleavedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, double*  dl, double*  d, double*  du, double*  x, int  batchCount, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDgtsvInterleavedBatch) (cusparseHandle_t , int , int , double* , double* , double* , double* , int , void* );
+	if (!lcusparseDgtsvInterleavedBatch) {
+		lcusparseDgtsvInterleavedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , int , double* , double* , double* , double* , int , void* )) dlsym(RTLD_NEXT, "cusparseDgtsvInterleavedBatch");
+		tracer._kernel_map[(void *) lcusparseDgtsvInterleavedBatch] = std::string("cusparseDgtsvInterleavedBatch");
+	}
+	assert(lcusparseDgtsvInterleavedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgtsvInterleavedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuComplex*  dl, cuComplex*  d, cuComplex*  du, cuComplex*  x, int  batchCount, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCgtsvInterleavedBatch) (cusparseHandle_t , int , int , cuComplex* , cuComplex* , cuComplex* , cuComplex* , int , void* );
+	if (!lcusparseCgtsvInterleavedBatch) {
+		lcusparseCgtsvInterleavedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , int , cuComplex* , cuComplex* , cuComplex* , cuComplex* , int , void* )) dlsym(RTLD_NEXT, "cusparseCgtsvInterleavedBatch");
+		tracer._kernel_map[(void *) lcusparseCgtsvInterleavedBatch] = std::string("cusparseCgtsvInterleavedBatch");
+	}
+	assert(lcusparseCgtsvInterleavedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgtsvInterleavedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuDoubleComplex*  dl, cuDoubleComplex*  d, cuDoubleComplex*  du, cuDoubleComplex*  x, int  batchCount, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZgtsvInterleavedBatch) (cusparseHandle_t , int , int , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , int , void* );
+	if (!lcusparseZgtsvInterleavedBatch) {
+		lcusparseZgtsvInterleavedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , int , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , int , void* )) dlsym(RTLD_NEXT, "cusparseZgtsvInterleavedBatch");
+		tracer._kernel_map[(void *) lcusparseZgtsvInterleavedBatch] = std::string("cusparseZgtsvInterleavedBatch");
+	}
+	assert(lcusparseZgtsvInterleavedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgtsvInterleavedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const float*  ds, const float*  dl, const float*  d, const float*  du, const float*  dw, const float*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSgpsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t , int , int , const float* , const float* , const float* , const float* , const float* , const float* , int , size_t* );
+	if (!lcusparseSgpsvInterleavedBatch_bufferSizeExt) {
+		lcusparseSgpsvInterleavedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , const float* , const float* , const float* , const float* , const float* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseSgpsvInterleavedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSgpsvInterleavedBatch_bufferSizeExt] = std::string("cusparseSgpsvInterleavedBatch_bufferSizeExt");
+	}
+	assert(lcusparseSgpsvInterleavedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgpsvInterleavedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const double*  ds, const double*  dl, const double*  d, const double*  du, const double*  dw, const double*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDgpsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t , int , int , const double* , const double* , const double* , const double* , const double* , const double* , int , size_t* );
+	if (!lcusparseDgpsvInterleavedBatch_bufferSizeExt) {
+		lcusparseDgpsvInterleavedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , const double* , const double* , const double* , const double* , const double* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseDgpsvInterleavedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDgpsvInterleavedBatch_bufferSizeExt] = std::string("cusparseDgpsvInterleavedBatch_bufferSizeExt");
+	}
+	assert(lcusparseDgpsvInterleavedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgpsvInterleavedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuComplex*  ds, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  dw, const cuComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCgpsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , int , size_t* );
+	if (!lcusparseCgpsvInterleavedBatch_bufferSizeExt) {
+		lcusparseCgpsvInterleavedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , const cuComplex* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseCgpsvInterleavedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCgpsvInterleavedBatch_bufferSizeExt] = std::string("cusparseCgpsvInterleavedBatch_bufferSizeExt");
+	}
+	assert(lcusparseCgpsvInterleavedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgpsvInterleavedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuDoubleComplex*  ds, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  dw, const cuDoubleComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZgpsvInterleavedBatch_bufferSizeExt) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , size_t* );
+	if (!lcusparseZgpsvInterleavedBatch_bufferSizeExt) {
+		lcusparseZgpsvInterleavedBatch_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , const cuDoubleComplex* , int , size_t* )) dlsym(RTLD_NEXT, "cusparseZgpsvInterleavedBatch_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZgpsvInterleavedBatch_bufferSizeExt] = std::string("cusparseZgpsvInterleavedBatch_bufferSizeExt");
+	}
+	assert(lcusparseZgpsvInterleavedBatch_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgpsvInterleavedBatch_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, float*  ds, float*  dl, float*  d, float*  du, float*  dw, float*  x, int  batchCount, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSgpsvInterleavedBatch) (cusparseHandle_t , int , int , float* , float* , float* , float* , float* , float* , int , void* );
+	if (!lcusparseSgpsvInterleavedBatch) {
+		lcusparseSgpsvInterleavedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , int , float* , float* , float* , float* , float* , float* , int , void* )) dlsym(RTLD_NEXT, "cusparseSgpsvInterleavedBatch");
+		tracer._kernel_map[(void *) lcusparseSgpsvInterleavedBatch] = std::string("cusparseSgpsvInterleavedBatch");
+	}
+	assert(lcusparseSgpsvInterleavedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgpsvInterleavedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, double*  ds, double*  dl, double*  d, double*  du, double*  dw, double*  x, int  batchCount, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDgpsvInterleavedBatch) (cusparseHandle_t , int , int , double* , double* , double* , double* , double* , double* , int , void* );
+	if (!lcusparseDgpsvInterleavedBatch) {
+		lcusparseDgpsvInterleavedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , int , double* , double* , double* , double* , double* , double* , int , void* )) dlsym(RTLD_NEXT, "cusparseDgpsvInterleavedBatch");
+		tracer._kernel_map[(void *) lcusparseDgpsvInterleavedBatch] = std::string("cusparseDgpsvInterleavedBatch");
+	}
+	assert(lcusparseDgpsvInterleavedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgpsvInterleavedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuComplex*  ds, cuComplex*  dl, cuComplex*  d, cuComplex*  du, cuComplex*  dw, cuComplex*  x, int  batchCount, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCgpsvInterleavedBatch) (cusparseHandle_t , int , int , cuComplex* , cuComplex* , cuComplex* , cuComplex* , cuComplex* , cuComplex* , int , void* );
+	if (!lcusparseCgpsvInterleavedBatch) {
+		lcusparseCgpsvInterleavedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , int , cuComplex* , cuComplex* , cuComplex* , cuComplex* , cuComplex* , cuComplex* , int , void* )) dlsym(RTLD_NEXT, "cusparseCgpsvInterleavedBatch");
+		tracer._kernel_map[(void *) lcusparseCgpsvInterleavedBatch] = std::string("cusparseCgpsvInterleavedBatch");
+	}
+	assert(lcusparseCgpsvInterleavedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgpsvInterleavedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuDoubleComplex*  ds, cuDoubleComplex*  dl, cuDoubleComplex*  d, cuDoubleComplex*  du, cuDoubleComplex*  dw, cuDoubleComplex*  x, int  batchCount, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZgpsvInterleavedBatch) (cusparseHandle_t , int , int , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , int , void* );
+	if (!lcusparseZgpsvInterleavedBatch) {
+		lcusparseZgpsvInterleavedBatch = (cusparseStatus_t (*) (cusparseHandle_t , int , int , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , cuDoubleComplex* , int , void* )) dlsym(RTLD_NEXT, "cusparseZgpsvInterleavedBatch");
+		tracer._kernel_map[(void *) lcusparseZgpsvInterleavedBatch] = std::string("cusparseZgpsvInterleavedBatch");
+	}
+	assert(lcusparseZgpsvInterleavedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgpsvInterleavedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const float*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseScsrgeam2_bufferSizeExt) (cusparseHandle_t , int , int , const float* , const cusparseMatDescr_t , int , const float* , const int* , const int* , const float* , const cusparseMatDescr_t , int , const float* , const int* , const int* , const cusparseMatDescr_t , const float* , const int* , const int* , size_t* );
+	if (!lcusparseScsrgeam2_bufferSizeExt) {
+		lcusparseScsrgeam2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , const cusparseMatDescr_t , int , const float* , const int* , const int* , const float* , const cusparseMatDescr_t , int , const float* , const int* , const int* , const cusparseMatDescr_t , const float* , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseScsrgeam2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseScsrgeam2_bufferSizeExt] = std::string("cusparseScsrgeam2_bufferSizeExt");
+	}
+	assert(lcusparseScsrgeam2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsrgeam2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const double*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDcsrgeam2_bufferSizeExt) (cusparseHandle_t , int , int , const double* , const cusparseMatDescr_t , int , const double* , const int* , const int* , const double* , const cusparseMatDescr_t , int , const double* , const int* , const int* , const cusparseMatDescr_t , const double* , const int* , const int* , size_t* );
+	if (!lcusparseDcsrgeam2_bufferSizeExt) {
+		lcusparseDcsrgeam2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , const cusparseMatDescr_t , int , const double* , const int* , const int* , const double* , const cusparseMatDescr_t , int , const double* , const int* , const int* , const cusparseMatDescr_t , const double* , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseDcsrgeam2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDcsrgeam2_bufferSizeExt] = std::string("cusparseDcsrgeam2_bufferSizeExt");
+	}
+	assert(lcusparseDcsrgeam2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsrgeam2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const cuComplex*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCcsrgeam2_bufferSizeExt) (cusparseHandle_t , int , int , const cuComplex* , const cusparseMatDescr_t , int , const cuComplex* , const int* , const int* , const cuComplex* , const cusparseMatDescr_t , int , const cuComplex* , const int* , const int* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , size_t* );
+	if (!lcusparseCcsrgeam2_bufferSizeExt) {
+		lcusparseCcsrgeam2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuComplex* , const cusparseMatDescr_t , int , const cuComplex* , const int* , const int* , const cuComplex* , const cusparseMatDescr_t , int , const cuComplex* , const int* , const int* , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseCcsrgeam2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCcsrgeam2_bufferSizeExt] = std::string("cusparseCcsrgeam2_bufferSizeExt");
+	}
+	assert(lcusparseCcsrgeam2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsrgeam2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuDoubleComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuDoubleComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const cuDoubleComplex*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZcsrgeam2_bufferSizeExt) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , int , const cuDoubleComplex* , const int* , const int* , const cuDoubleComplex* , const cusparseMatDescr_t , int , const cuDoubleComplex* , const int* , const int* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , size_t* );
+	if (!lcusparseZcsrgeam2_bufferSizeExt) {
+		lcusparseZcsrgeam2_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , int , const cuDoubleComplex* , const int* , const int* , const cuDoubleComplex* , const cusparseMatDescr_t , int , const cuDoubleComplex* , const int* , const int* , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseZcsrgeam2_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZcsrgeam2_bufferSizeExt] = std::string("cusparseZcsrgeam2_bufferSizeExt");
+	}
+	assert(lcusparseZcsrgeam2_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsrgeam2_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcsrgeam2Nnz(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, int  nnzA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrB, int  nnzB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  workspace)
+{
+	static cusparseStatus_t (*lcusparseXcsrgeam2Nnz) (cusparseHandle_t , int , int , const cusparseMatDescr_t , int , const int* , const int* , const cusparseMatDescr_t , int , const int* , const int* , const cusparseMatDescr_t , int* , int* , void* );
+	if (!lcusparseXcsrgeam2Nnz) {
+		lcusparseXcsrgeam2Nnz = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , int , const int* , const int* , const cusparseMatDescr_t , int , const int* , const int* , const cusparseMatDescr_t , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseXcsrgeam2Nnz");
+		tracer._kernel_map[(void *) lcusparseXcsrgeam2Nnz] = std::string("cusparseXcsrgeam2Nnz");
+	}
+	assert(lcusparseXcsrgeam2Nnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcsrgeam2Nnz(handle, m, n, descrA, nnzA, csrSortedRowPtrA, csrSortedColIndA, descrB, nnzB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, workspace);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcsrgeam2Nnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsrgeam2(cusparseHandle_t  handle, int  m, int  n, const float*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const float*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseScsrgeam2) (cusparseHandle_t , int , int , const float* , const cusparseMatDescr_t , int , const float* , const int* , const int* , const float* , const cusparseMatDescr_t , int , const float* , const int* , const int* , const cusparseMatDescr_t , float* , int* , int* , void* );
+	if (!lcusparseScsrgeam2) {
+		lcusparseScsrgeam2 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , const cusparseMatDescr_t , int , const float* , const int* , const int* , const float* , const cusparseMatDescr_t , int , const float* , const int* , const int* , const cusparseMatDescr_t , float* , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseScsrgeam2");
+		tracer._kernel_map[(void *) lcusparseScsrgeam2] = std::string("cusparseScsrgeam2");
+	}
+	assert(lcusparseScsrgeam2);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsrgeam2);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsrgeam2(cusparseHandle_t  handle, int  m, int  n, const double*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const double*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDcsrgeam2) (cusparseHandle_t , int , int , const double* , const cusparseMatDescr_t , int , const double* , const int* , const int* , const double* , const cusparseMatDescr_t , int , const double* , const int* , const int* , const cusparseMatDescr_t , double* , int* , int* , void* );
+	if (!lcusparseDcsrgeam2) {
+		lcusparseDcsrgeam2 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , const cusparseMatDescr_t , int , const double* , const int* , const int* , const double* , const cusparseMatDescr_t , int , const double* , const int* , const int* , const cusparseMatDescr_t , double* , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseDcsrgeam2");
+		tracer._kernel_map[(void *) lcusparseDcsrgeam2] = std::string("cusparseDcsrgeam2");
+	}
+	assert(lcusparseDcsrgeam2);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsrgeam2);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsrgeam2(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCcsrgeam2) (cusparseHandle_t , int , int , const cuComplex* , const cusparseMatDescr_t , int , const cuComplex* , const int* , const int* , const cuComplex* , const cusparseMatDescr_t , int , const cuComplex* , const int* , const int* , const cusparseMatDescr_t , cuComplex* , int* , int* , void* );
+	if (!lcusparseCcsrgeam2) {
+		lcusparseCcsrgeam2 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuComplex* , const cusparseMatDescr_t , int , const cuComplex* , const int* , const int* , const cuComplex* , const cusparseMatDescr_t , int , const cuComplex* , const int* , const int* , const cusparseMatDescr_t , cuComplex* , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseCcsrgeam2");
+		tracer._kernel_map[(void *) lcusparseCcsrgeam2] = std::string("cusparseCcsrgeam2");
+	}
+	assert(lcusparseCcsrgeam2);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsrgeam2);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsrgeam2(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuDoubleComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuDoubleComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZcsrgeam2) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , int , const cuDoubleComplex* , const int* , const int* , const cuDoubleComplex* , const cusparseMatDescr_t , int , const cuDoubleComplex* , const int* , const int* , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* , void* );
+	if (!lcusparseZcsrgeam2) {
+		lcusparseZcsrgeam2 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cuDoubleComplex* , const cusparseMatDescr_t , int , const cuDoubleComplex* , const int* , const int* , const cuDoubleComplex* , const cusparseMatDescr_t , int , const cuDoubleComplex* , const int* , const int* , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseZcsrgeam2");
+		tracer._kernel_map[(void *) lcusparseZcsrgeam2] = std::string("cusparseZcsrgeam2");
+	}
+	assert(lcusparseZcsrgeam2);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsrgeam2);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
+{
+	static cusparseStatus_t (*lcusparseScsrcolor) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , const float* , int* , int* , int* , const cusparseColorInfo_t );
+	if (!lcusparseScsrcolor) {
+		lcusparseScsrcolor = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , const float* , int* , int* , int* , const cusparseColorInfo_t )) dlsym(RTLD_NEXT, "cusparseScsrcolor");
+		tracer._kernel_map[(void *) lcusparseScsrcolor] = std::string("cusparseScsrcolor");
+	}
+	assert(lcusparseScsrcolor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsrcolor);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
+{
+	static cusparseStatus_t (*lcusparseDcsrcolor) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , const double* , int* , int* , int* , const cusparseColorInfo_t );
+	if (!lcusparseDcsrcolor) {
+		lcusparseDcsrcolor = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , const double* , int* , int* , int* , const cusparseColorInfo_t )) dlsym(RTLD_NEXT, "cusparseDcsrcolor");
+		tracer._kernel_map[(void *) lcusparseDcsrcolor] = std::string("cusparseDcsrcolor");
+	}
+	assert(lcusparseDcsrcolor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsrcolor);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
+{
+	static cusparseStatus_t (*lcusparseCcsrcolor) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , const float* , int* , int* , int* , const cusparseColorInfo_t );
+	if (!lcusparseCcsrcolor) {
+		lcusparseCcsrcolor = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , const float* , int* , int* , int* , const cusparseColorInfo_t )) dlsym(RTLD_NEXT, "cusparseCcsrcolor");
+		tracer._kernel_map[(void *) lcusparseCcsrcolor] = std::string("cusparseCcsrcolor");
+	}
+	assert(lcusparseCcsrcolor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsrcolor);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
+{
+	static cusparseStatus_t (*lcusparseZcsrcolor) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , const double* , int* , int* , int* , const cusparseColorInfo_t );
+	if (!lcusparseZcsrcolor) {
+		lcusparseZcsrcolor = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , const double* , int* , int* , int* , const cusparseColorInfo_t )) dlsym(RTLD_NEXT, "cusparseZcsrcolor");
+		tracer._kernel_map[(void *) lcusparseZcsrcolor] = std::string("cusparseZcsrcolor");
+	}
+	assert(lcusparseZcsrcolor);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsrcolor);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
+{
+	static cusparseStatus_t (*lcusparseSnnz) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , int , int* , int* );
+	if (!lcusparseSnnz) {
+		lcusparseSnnz = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , int , int* , int* )) dlsym(RTLD_NEXT, "cusparseSnnz");
+		tracer._kernel_map[(void *) lcusparseSnnz] = std::string("cusparseSnnz");
+	}
+	assert(lcusparseSnnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSnnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
+{
+	static cusparseStatus_t (*lcusparseDnnz) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , int , int* , int* );
+	if (!lcusparseDnnz) {
+		lcusparseDnnz = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , int , int* , int* )) dlsym(RTLD_NEXT, "cusparseDnnz");
+		tracer._kernel_map[(void *) lcusparseDnnz] = std::string("cusparseDnnz");
+	}
+	assert(lcusparseDnnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDnnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
+{
+	static cusparseStatus_t (*lcusparseCnnz) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , int , int* , int* );
+	if (!lcusparseCnnz) {
+		lcusparseCnnz = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , int , int* , int* )) dlsym(RTLD_NEXT, "cusparseCnnz");
+		tracer._kernel_map[(void *) lcusparseCnnz] = std::string("cusparseCnnz");
+	}
+	assert(lcusparseCnnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCnnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
+{
+	static cusparseStatus_t (*lcusparseZnnz) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , int , int* , int* );
+	if (!lcusparseZnnz) {
+		lcusparseZnnz = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , int , int* , int* )) dlsym(RTLD_NEXT, "cusparseZnnz");
+		tracer._kernel_map[(void *) lcusparseZnnz] = std::string("cusparseZnnz");
+	}
+	assert(lcusparseZnnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZnnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const float*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, float  tol)
+{
+	static cusparseStatus_t (*lcusparseSnnz_compress) (cusparseHandle_t , int , const cusparseMatDescr_t , const float* , const int* , int* , int* , float );
+	if (!lcusparseSnnz_compress) {
+		lcusparseSnnz_compress = (cusparseStatus_t (*) (cusparseHandle_t , int , const cusparseMatDescr_t , const float* , const int* , int* , int* , float )) dlsym(RTLD_NEXT, "cusparseSnnz_compress");
+		tracer._kernel_map[(void *) lcusparseSnnz_compress] = std::string("cusparseSnnz_compress");
+	}
+	assert(lcusparseSnnz_compress);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSnnz_compress);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const double*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, double  tol)
+{
+	static cusparseStatus_t (*lcusparseDnnz_compress) (cusparseHandle_t , int , const cusparseMatDescr_t , const double* , const int* , int* , int* , double );
+	if (!lcusparseDnnz_compress) {
+		lcusparseDnnz_compress = (cusparseStatus_t (*) (cusparseHandle_t , int , const cusparseMatDescr_t , const double* , const int* , int* , int* , double )) dlsym(RTLD_NEXT, "cusparseDnnz_compress");
+		tracer._kernel_map[(void *) lcusparseDnnz_compress] = std::string("cusparseDnnz_compress");
+	}
+	assert(lcusparseDnnz_compress);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDnnz_compress);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, cuComplex  tol)
+{
+	static cusparseStatus_t (*lcusparseCnnz_compress) (cusparseHandle_t , int , const cusparseMatDescr_t , const cuComplex* , const int* , int* , int* , cuComplex );
+	if (!lcusparseCnnz_compress) {
+		lcusparseCnnz_compress = (cusparseStatus_t (*) (cusparseHandle_t , int , const cusparseMatDescr_t , const cuComplex* , const int* , int* , int* , cuComplex )) dlsym(RTLD_NEXT, "cusparseCnnz_compress");
+		tracer._kernel_map[(void *) lcusparseCnnz_compress] = std::string("cusparseCnnz_compress");
+	}
+	assert(lcusparseCnnz_compress);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCnnz_compress);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, cuDoubleComplex  tol)
+{
+	static cusparseStatus_t (*lcusparseZnnz_compress) (cusparseHandle_t , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , int* , int* , cuDoubleComplex );
+	if (!lcusparseZnnz_compress) {
+		lcusparseZnnz_compress = (cusparseStatus_t (*) (cusparseHandle_t , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , int* , int* , cuDoubleComplex )) dlsym(RTLD_NEXT, "cusparseZnnz_compress");
+		tracer._kernel_map[(void *) lcusparseZnnz_compress] = std::string("cusparseZnnz_compress");
+	}
+	assert(lcusparseZnnz_compress);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZnnz_compress);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, float*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, float  tol)
+{
+	static cusparseStatus_t (*lcusparseScsr2csr_compress) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , const int* , float* , int* , int* , float );
+	if (!lcusparseScsr2csr_compress) {
+		lcusparseScsr2csr_compress = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , const int* , float* , int* , int* , float )) dlsym(RTLD_NEXT, "cusparseScsr2csr_compress");
+		tracer._kernel_map[(void *) lcusparseScsr2csr_compress] = std::string("cusparseScsr2csr_compress");
+	}
+	assert(lcusparseScsr2csr_compress);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsr2csr_compress);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, double*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, double  tol)
+{
+	static cusparseStatus_t (*lcusparseDcsr2csr_compress) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , const int* , double* , int* , int* , double );
+	if (!lcusparseDcsr2csr_compress) {
+		lcusparseDcsr2csr_compress = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , const int* , double* , int* , int* , double )) dlsym(RTLD_NEXT, "cusparseDcsr2csr_compress");
+		tracer._kernel_map[(void *) lcusparseDcsr2csr_compress] = std::string("cusparseDcsr2csr_compress");
+	}
+	assert(lcusparseDcsr2csr_compress);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsr2csr_compress);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, cuComplex*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, cuComplex  tol)
+{
+	static cusparseStatus_t (*lcusparseCcsr2csr_compress) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , const int* , cuComplex* , int* , int* , cuComplex );
+	if (!lcusparseCcsr2csr_compress) {
+		lcusparseCcsr2csr_compress = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , const int* , cuComplex* , int* , int* , cuComplex )) dlsym(RTLD_NEXT, "cusparseCcsr2csr_compress");
+		tracer._kernel_map[(void *) lcusparseCcsr2csr_compress] = std::string("cusparseCcsr2csr_compress");
+	}
+	assert(lcusparseCcsr2csr_compress);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsr2csr_compress);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, cuDoubleComplex*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, cuDoubleComplex  tol)
+{
+	static cusparseStatus_t (*lcusparseZcsr2csr_compress) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , const int* , cuDoubleComplex* , int* , int* , cuDoubleComplex );
+	if (!lcusparseZcsr2csr_compress) {
+		lcusparseZcsr2csr_compress = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , const int* , cuDoubleComplex* , int* , int* , cuDoubleComplex )) dlsym(RTLD_NEXT, "cusparseZcsr2csr_compress");
+		tracer._kernel_map[(void *) lcusparseZcsr2csr_compress] = std::string("cusparseZcsr2csr_compress");
+	}
+	assert(lcusparseZcsr2csr_compress);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsr2csr_compress);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcoo2csr(cusparseHandle_t  handle, const int*  cooRowInd, int  nnz, int  m, int*  csrSortedRowPtr, cusparseIndexBase_t  idxBase)
+{
+	static cusparseStatus_t (*lcusparseXcoo2csr) (cusparseHandle_t , const int* , int , int , int* , cusparseIndexBase_t );
+	if (!lcusparseXcoo2csr) {
+		lcusparseXcoo2csr = (cusparseStatus_t (*) (cusparseHandle_t , const int* , int , int , int* , cusparseIndexBase_t )) dlsym(RTLD_NEXT, "cusparseXcoo2csr");
+		tracer._kernel_map[(void *) lcusparseXcoo2csr] = std::string("cusparseXcoo2csr");
+	}
+	assert(lcusparseXcoo2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcoo2csr(handle, cooRowInd, nnz, m, csrSortedRowPtr, idxBase);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcoo2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcsr2coo(cusparseHandle_t  handle, const int*  csrSortedRowPtr, int  nnz, int  m, int*  cooRowInd, cusparseIndexBase_t  idxBase)
+{
+	static cusparseStatus_t (*lcusparseXcsr2coo) (cusparseHandle_t , const int* , int , int , int* , cusparseIndexBase_t );
+	if (!lcusparseXcsr2coo) {
+		lcusparseXcsr2coo = (cusparseStatus_t (*) (cusparseHandle_t , const int* , int , int , int* , cusparseIndexBase_t )) dlsym(RTLD_NEXT, "cusparseXcsr2coo");
+		tracer._kernel_map[(void *) lcusparseXcsr2coo] = std::string("cusparseXcsr2coo");
+	}
+	assert(lcusparseXcsr2coo);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcsr2coo(handle, csrSortedRowPtr, nnz, m, cooRowInd, idxBase);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcsr2coo);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcsr2bsrNnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int*  nnzTotalDevHostPtr)
+{
+	static cusparseStatus_t (*lcusparseXcsr2bsrNnz) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const int* , const int* , int , const cusparseMatDescr_t , int* , int* );
+	if (!lcusparseXcsr2bsrNnz) {
+		lcusparseXcsr2bsrNnz = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const int* , const int* , int , const cusparseMatDescr_t , int* , int* )) dlsym(RTLD_NEXT, "cusparseXcsr2bsrNnz");
+		tracer._kernel_map[(void *) lcusparseXcsr2bsrNnz] = std::string("cusparseXcsr2bsrNnz");
+	}
+	assert(lcusparseXcsr2bsrNnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcsr2bsrNnz(handle, dirA, m, n, descrA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedRowPtrC, nnzTotalDevHostPtr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcsr2bsrNnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseScsr2bsr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , const cusparseMatDescr_t , float* , int* , int* );
+	if (!lcusparseScsr2bsr) {
+		lcusparseScsr2bsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , const cusparseMatDescr_t , float* , int* , int* )) dlsym(RTLD_NEXT, "cusparseScsr2bsr");
+		tracer._kernel_map[(void *) lcusparseScsr2bsr] = std::string("cusparseScsr2bsr");
+	}
+	assert(lcusparseScsr2bsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsr2bsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseDcsr2bsr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , const cusparseMatDescr_t , double* , int* , int* );
+	if (!lcusparseDcsr2bsr) {
+		lcusparseDcsr2bsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , const cusparseMatDescr_t , double* , int* , int* )) dlsym(RTLD_NEXT, "cusparseDcsr2bsr");
+		tracer._kernel_map[(void *) lcusparseDcsr2bsr] = std::string("cusparseDcsr2bsr");
+	}
+	assert(lcusparseDcsr2bsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsr2bsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseCcsr2bsr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , const cusparseMatDescr_t , cuComplex* , int* , int* );
+	if (!lcusparseCcsr2bsr) {
+		lcusparseCcsr2bsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , const cusparseMatDescr_t , cuComplex* , int* , int* )) dlsym(RTLD_NEXT, "cusparseCcsr2bsr");
+		tracer._kernel_map[(void *) lcusparseCcsr2bsr] = std::string("cusparseCcsr2bsr");
+	}
+	assert(lcusparseCcsr2bsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsr2bsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseZcsr2bsr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* );
+	if (!lcusparseZcsr2bsr) {
+		lcusparseZcsr2bsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* )) dlsym(RTLD_NEXT, "cusparseZcsr2bsr");
+		tracer._kernel_map[(void *) lcusparseZcsr2bsr] = std::string("cusparseZcsr2bsr");
+	}
+	assert(lcusparseZcsr2bsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsr2bsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseSbsr2csr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , const cusparseMatDescr_t , float* , int* , int* );
+	if (!lcusparseSbsr2csr) {
+		lcusparseSbsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , const cusparseMatDescr_t , float* , int* , int* )) dlsym(RTLD_NEXT, "cusparseSbsr2csr");
+		tracer._kernel_map[(void *) lcusparseSbsr2csr] = std::string("cusparseSbsr2csr");
+	}
+	assert(lcusparseSbsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSbsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseDbsr2csr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , const cusparseMatDescr_t , double* , int* , int* );
+	if (!lcusparseDbsr2csr) {
+		lcusparseDbsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , const cusparseMatDescr_t , double* , int* , int* )) dlsym(RTLD_NEXT, "cusparseDbsr2csr");
+		tracer._kernel_map[(void *) lcusparseDbsr2csr] = std::string("cusparseDbsr2csr");
+	}
+	assert(lcusparseDbsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDbsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseCbsr2csr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , const cusparseMatDescr_t , cuComplex* , int* , int* );
+	if (!lcusparseCbsr2csr) {
+		lcusparseCbsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , const cusparseMatDescr_t , cuComplex* , int* , int* )) dlsym(RTLD_NEXT, "cusparseCbsr2csr");
+		tracer._kernel_map[(void *) lcusparseCbsr2csr] = std::string("cusparseCbsr2csr");
+	}
+	assert(lcusparseCbsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCbsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseZbsr2csr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* );
+	if (!lcusparseZbsr2csr) {
+		lcusparseZbsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* )) dlsym(RTLD_NEXT, "cusparseZbsr2csr");
+		tracer._kernel_map[(void *) lcusparseZbsr2csr] = std::string("cusparseZbsr2csr");
+	}
+	assert(lcusparseZbsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZbsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSgebsr2gebsc_bufferSize) (cusparseHandle_t , int , int , int , const float* , const int* , const int* , int , int , int* );
+	if (!lcusparseSgebsr2gebsc_bufferSize) {
+		lcusparseSgebsr2gebsc_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const float* , const int* , const int* , int , int , int* )) dlsym(RTLD_NEXT, "cusparseSgebsr2gebsc_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSgebsr2gebsc_bufferSize] = std::string("cusparseSgebsr2gebsc_bufferSize");
+	}
+	assert(lcusparseSgebsr2gebsc_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgebsr2gebsc_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDgebsr2gebsc_bufferSize) (cusparseHandle_t , int , int , int , const double* , const int* , const int* , int , int , int* );
+	if (!lcusparseDgebsr2gebsc_bufferSize) {
+		lcusparseDgebsr2gebsc_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const double* , const int* , const int* , int , int , int* )) dlsym(RTLD_NEXT, "cusparseDgebsr2gebsc_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDgebsr2gebsc_bufferSize] = std::string("cusparseDgebsr2gebsc_bufferSize");
+	}
+	assert(lcusparseDgebsr2gebsc_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgebsr2gebsc_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCgebsr2gebsc_bufferSize) (cusparseHandle_t , int , int , int , const cuComplex* , const int* , const int* , int , int , int* );
+	if (!lcusparseCgebsr2gebsc_bufferSize) {
+		lcusparseCgebsr2gebsc_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cuComplex* , const int* , const int* , int , int , int* )) dlsym(RTLD_NEXT, "cusparseCgebsr2gebsc_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCgebsr2gebsc_bufferSize] = std::string("cusparseCgebsr2gebsc_bufferSize");
+	}
+	assert(lcusparseCgebsr2gebsc_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgebsr2gebsc_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZgebsr2gebsc_bufferSize) (cusparseHandle_t , int , int , int , const cuDoubleComplex* , const int* , const int* , int , int , int* );
+	if (!lcusparseZgebsr2gebsc_bufferSize) {
+		lcusparseZgebsr2gebsc_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cuDoubleComplex* , const int* , const int* , int , int , int* )) dlsym(RTLD_NEXT, "cusparseZgebsr2gebsc_bufferSize");
+		tracer._kernel_map[(void *) lcusparseZgebsr2gebsc_bufferSize] = std::string("cusparseZgebsr2gebsc_bufferSize");
+	}
+	assert(lcusparseZgebsr2gebsc_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgebsr2gebsc_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseSgebsr2gebsc_bufferSizeExt) (cusparseHandle_t , int , int , int , const float* , const int* , const int* , int , int , size_t* );
+	if (!lcusparseSgebsr2gebsc_bufferSizeExt) {
+		lcusparseSgebsr2gebsc_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const float* , const int* , const int* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseSgebsr2gebsc_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSgebsr2gebsc_bufferSizeExt] = std::string("cusparseSgebsr2gebsc_bufferSizeExt");
+	}
+	assert(lcusparseSgebsr2gebsc_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgebsr2gebsc_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseDgebsr2gebsc_bufferSizeExt) (cusparseHandle_t , int , int , int , const double* , const int* , const int* , int , int , size_t* );
+	if (!lcusparseDgebsr2gebsc_bufferSizeExt) {
+		lcusparseDgebsr2gebsc_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const double* , const int* , const int* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseDgebsr2gebsc_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDgebsr2gebsc_bufferSizeExt] = std::string("cusparseDgebsr2gebsc_bufferSizeExt");
+	}
+	assert(lcusparseDgebsr2gebsc_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgebsr2gebsc_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseCgebsr2gebsc_bufferSizeExt) (cusparseHandle_t , int , int , int , const cuComplex* , const int* , const int* , int , int , size_t* );
+	if (!lcusparseCgebsr2gebsc_bufferSizeExt) {
+		lcusparseCgebsr2gebsc_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cuComplex* , const int* , const int* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseCgebsr2gebsc_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCgebsr2gebsc_bufferSizeExt] = std::string("cusparseCgebsr2gebsc_bufferSizeExt");
+	}
+	assert(lcusparseCgebsr2gebsc_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgebsr2gebsc_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseZgebsr2gebsc_bufferSizeExt) (cusparseHandle_t , int , int , int , const cuDoubleComplex* , const int* , const int* , int , int , size_t* );
+	if (!lcusparseZgebsr2gebsc_bufferSizeExt) {
+		lcusparseZgebsr2gebsc_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cuDoubleComplex* , const int* , const int* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseZgebsr2gebsc_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZgebsr2gebsc_bufferSizeExt] = std::string("cusparseZgebsr2gebsc_bufferSizeExt");
+	}
+	assert(lcusparseZgebsr2gebsc_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgebsr2gebsc_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, float*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSgebsr2gebsc) (cusparseHandle_t , int , int , int , const float* , const int* , const int* , int , int , float* , int* , int* , cusparseAction_t , cusparseIndexBase_t , void* );
+	if (!lcusparseSgebsr2gebsc) {
+		lcusparseSgebsr2gebsc = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const float* , const int* , const int* , int , int , float* , int* , int* , cusparseAction_t , cusparseIndexBase_t , void* )) dlsym(RTLD_NEXT, "cusparseSgebsr2gebsc");
+		tracer._kernel_map[(void *) lcusparseSgebsr2gebsc] = std::string("cusparseSgebsr2gebsc");
+	}
+	assert(lcusparseSgebsr2gebsc);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgebsr2gebsc);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, double*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDgebsr2gebsc) (cusparseHandle_t , int , int , int , const double* , const int* , const int* , int , int , double* , int* , int* , cusparseAction_t , cusparseIndexBase_t , void* );
+	if (!lcusparseDgebsr2gebsc) {
+		lcusparseDgebsr2gebsc = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const double* , const int* , const int* , int , int , double* , int* , int* , cusparseAction_t , cusparseIndexBase_t , void* )) dlsym(RTLD_NEXT, "cusparseDgebsr2gebsc");
+		tracer._kernel_map[(void *) lcusparseDgebsr2gebsc] = std::string("cusparseDgebsr2gebsc");
+	}
+	assert(lcusparseDgebsr2gebsc);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgebsr2gebsc);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, cuComplex*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCgebsr2gebsc) (cusparseHandle_t , int , int , int , const cuComplex* , const int* , const int* , int , int , cuComplex* , int* , int* , cusparseAction_t , cusparseIndexBase_t , void* );
+	if (!lcusparseCgebsr2gebsc) {
+		lcusparseCgebsr2gebsc = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cuComplex* , const int* , const int* , int , int , cuComplex* , int* , int* , cusparseAction_t , cusparseIndexBase_t , void* )) dlsym(RTLD_NEXT, "cusparseCgebsr2gebsc");
+		tracer._kernel_map[(void *) lcusparseCgebsr2gebsc] = std::string("cusparseCgebsr2gebsc");
+	}
+	assert(lcusparseCgebsr2gebsc);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgebsr2gebsc);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, cuDoubleComplex*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZgebsr2gebsc) (cusparseHandle_t , int , int , int , const cuDoubleComplex* , const int* , const int* , int , int , cuDoubleComplex* , int* , int* , cusparseAction_t , cusparseIndexBase_t , void* );
+	if (!lcusparseZgebsr2gebsc) {
+		lcusparseZgebsr2gebsc = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cuDoubleComplex* , const int* , const int* , int , int , cuDoubleComplex* , int* , int* , cusparseAction_t , cusparseIndexBase_t , void* )) dlsym(RTLD_NEXT, "cusparseZgebsr2gebsc");
+		tracer._kernel_map[(void *) lcusparseZgebsr2gebsc] = std::string("cusparseZgebsr2gebsc");
+	}
+	assert(lcusparseZgebsr2gebsc);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgebsr2gebsc);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseXgebsr2csr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const int* , const int* , int , int , const cusparseMatDescr_t , int* , int* );
+	if (!lcusparseXgebsr2csr) {
+		lcusparseXgebsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const int* , const int* , int , int , const cusparseMatDescr_t , int* , int* )) dlsym(RTLD_NEXT, "cusparseXgebsr2csr");
+		tracer._kernel_map[(void *) lcusparseXgebsr2csr] = std::string("cusparseXgebsr2csr");
+	}
+	assert(lcusparseXgebsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedRowPtrC, csrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXgebsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseSgebsr2csr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , const cusparseMatDescr_t , float* , int* , int* );
+	if (!lcusparseSgebsr2csr) {
+		lcusparseSgebsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , const cusparseMatDescr_t , float* , int* , int* )) dlsym(RTLD_NEXT, "cusparseSgebsr2csr");
+		tracer._kernel_map[(void *) lcusparseSgebsr2csr] = std::string("cusparseSgebsr2csr");
+	}
+	assert(lcusparseSgebsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgebsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseDgebsr2csr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , const cusparseMatDescr_t , double* , int* , int* );
+	if (!lcusparseDgebsr2csr) {
+		lcusparseDgebsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , const cusparseMatDescr_t , double* , int* , int* )) dlsym(RTLD_NEXT, "cusparseDgebsr2csr");
+		tracer._kernel_map[(void *) lcusparseDgebsr2csr] = std::string("cusparseDgebsr2csr");
+	}
+	assert(lcusparseDgebsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgebsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseCgebsr2csr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , const cusparseMatDescr_t , cuComplex* , int* , int* );
+	if (!lcusparseCgebsr2csr) {
+		lcusparseCgebsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , const cusparseMatDescr_t , cuComplex* , int* , int* )) dlsym(RTLD_NEXT, "cusparseCgebsr2csr");
+		tracer._kernel_map[(void *) lcusparseCgebsr2csr] = std::string("cusparseCgebsr2csr");
+	}
+	assert(lcusparseCgebsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgebsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
+{
+	static cusparseStatus_t (*lcusparseZgebsr2csr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* );
+	if (!lcusparseZgebsr2csr) {
+		lcusparseZgebsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* )) dlsym(RTLD_NEXT, "cusparseZgebsr2csr");
+		tracer._kernel_map[(void *) lcusparseZgebsr2csr] = std::string("cusparseZgebsr2csr");
+	}
+	assert(lcusparseZgebsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgebsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseScsr2gebsr_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , int* );
+	if (!lcusparseScsr2gebsr_bufferSize) {
+		lcusparseScsr2gebsr_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , int* )) dlsym(RTLD_NEXT, "cusparseScsr2gebsr_bufferSize");
+		tracer._kernel_map[(void *) lcusparseScsr2gebsr_bufferSize] = std::string("cusparseScsr2gebsr_bufferSize");
+	}
+	assert(lcusparseScsr2gebsr_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsr2gebsr_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDcsr2gebsr_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , int* );
+	if (!lcusparseDcsr2gebsr_bufferSize) {
+		lcusparseDcsr2gebsr_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , int* )) dlsym(RTLD_NEXT, "cusparseDcsr2gebsr_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDcsr2gebsr_bufferSize] = std::string("cusparseDcsr2gebsr_bufferSize");
+	}
+	assert(lcusparseDcsr2gebsr_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsr2gebsr_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCcsr2gebsr_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , int* );
+	if (!lcusparseCcsr2gebsr_bufferSize) {
+		lcusparseCcsr2gebsr_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , int* )) dlsym(RTLD_NEXT, "cusparseCcsr2gebsr_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCcsr2gebsr_bufferSize] = std::string("cusparseCcsr2gebsr_bufferSize");
+	}
+	assert(lcusparseCcsr2gebsr_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsr2gebsr_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZcsr2gebsr_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , int* );
+	if (!lcusparseZcsr2gebsr_bufferSize) {
+		lcusparseZcsr2gebsr_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , int* )) dlsym(RTLD_NEXT, "cusparseZcsr2gebsr_bufferSize");
+		tracer._kernel_map[(void *) lcusparseZcsr2gebsr_bufferSize] = std::string("cusparseZcsr2gebsr_bufferSize");
+	}
+	assert(lcusparseZcsr2gebsr_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsr2gebsr_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseScsr2gebsr_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , size_t* );
+	if (!lcusparseScsr2gebsr_bufferSizeExt) {
+		lcusparseScsr2gebsr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseScsr2gebsr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseScsr2gebsr_bufferSizeExt] = std::string("cusparseScsr2gebsr_bufferSizeExt");
+	}
+	assert(lcusparseScsr2gebsr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsr2gebsr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseDcsr2gebsr_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , size_t* );
+	if (!lcusparseDcsr2gebsr_bufferSizeExt) {
+		lcusparseDcsr2gebsr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseDcsr2gebsr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDcsr2gebsr_bufferSizeExt] = std::string("cusparseDcsr2gebsr_bufferSizeExt");
+	}
+	assert(lcusparseDcsr2gebsr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsr2gebsr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseCcsr2gebsr_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , size_t* );
+	if (!lcusparseCcsr2gebsr_bufferSizeExt) {
+		lcusparseCcsr2gebsr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseCcsr2gebsr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCcsr2gebsr_bufferSizeExt] = std::string("cusparseCcsr2gebsr_bufferSizeExt");
+	}
+	assert(lcusparseCcsr2gebsr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsr2gebsr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseZcsr2gebsr_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , size_t* );
+	if (!lcusparseZcsr2gebsr_bufferSizeExt) {
+		lcusparseZcsr2gebsr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseZcsr2gebsr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZcsr2gebsr_bufferSizeExt] = std::string("cusparseZcsr2gebsr_bufferSizeExt");
+	}
+	assert(lcusparseZcsr2gebsr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsr2gebsr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcsr2gebsrNnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int  rowBlockDim, int  colBlockDim, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseXcsr2gebsrNnz) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const int* , const int* , const cusparseMatDescr_t , int* , int , int , int* , void* );
+	if (!lcusparseXcsr2gebsrNnz) {
+		lcusparseXcsr2gebsrNnz = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const int* , const int* , const cusparseMatDescr_t , int* , int , int , int* , void* )) dlsym(RTLD_NEXT, "cusparseXcsr2gebsrNnz");
+		tracer._kernel_map[(void *) lcusparseXcsr2gebsrNnz] = std::string("cusparseXcsr2gebsrNnz");
+	}
+	assert(lcusparseXcsr2gebsrNnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcsr2gebsrNnz(handle, dirA, m, n, descrA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedRowPtrC, rowBlockDim, colBlockDim, nnzTotalDevHostPtr, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcsr2gebsrNnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseScsr2gebsr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , const cusparseMatDescr_t , float* , int* , int* , int , int , void* );
+	if (!lcusparseScsr2gebsr) {
+		lcusparseScsr2gebsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , const cusparseMatDescr_t , float* , int* , int* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseScsr2gebsr");
+		tracer._kernel_map[(void *) lcusparseScsr2gebsr] = std::string("cusparseScsr2gebsr");
+	}
+	assert(lcusparseScsr2gebsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsr2gebsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDcsr2gebsr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , const cusparseMatDescr_t , double* , int* , int* , int , int , void* );
+	if (!lcusparseDcsr2gebsr) {
+		lcusparseDcsr2gebsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , const cusparseMatDescr_t , double* , int* , int* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseDcsr2gebsr");
+		tracer._kernel_map[(void *) lcusparseDcsr2gebsr] = std::string("cusparseDcsr2gebsr");
+	}
+	assert(lcusparseDcsr2gebsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsr2gebsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCcsr2gebsr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , const cusparseMatDescr_t , cuComplex* , int* , int* , int , int , void* );
+	if (!lcusparseCcsr2gebsr) {
+		lcusparseCcsr2gebsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , const cusparseMatDescr_t , cuComplex* , int* , int* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseCcsr2gebsr");
+		tracer._kernel_map[(void *) lcusparseCcsr2gebsr] = std::string("cusparseCcsr2gebsr");
+	}
+	assert(lcusparseCcsr2gebsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsr2gebsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZcsr2gebsr) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* , int , int , void* );
+	if (!lcusparseZcsr2gebsr) {
+		lcusparseZcsr2gebsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseZcsr2gebsr");
+		tracer._kernel_map[(void *) lcusparseZcsr2gebsr] = std::string("cusparseZcsr2gebsr");
+	}
+	assert(lcusparseZcsr2gebsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsr2gebsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSgebsr2gebsr_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , int , int , int* );
+	if (!lcusparseSgebsr2gebsr_bufferSize) {
+		lcusparseSgebsr2gebsr_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , int , int , int* )) dlsym(RTLD_NEXT, "cusparseSgebsr2gebsr_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSgebsr2gebsr_bufferSize] = std::string("cusparseSgebsr2gebsr_bufferSize");
+	}
+	assert(lcusparseSgebsr2gebsr_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgebsr2gebsr_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDgebsr2gebsr_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , int , int , int* );
+	if (!lcusparseDgebsr2gebsr_bufferSize) {
+		lcusparseDgebsr2gebsr_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , int , int , int* )) dlsym(RTLD_NEXT, "cusparseDgebsr2gebsr_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDgebsr2gebsr_bufferSize] = std::string("cusparseDgebsr2gebsr_bufferSize");
+	}
+	assert(lcusparseDgebsr2gebsr_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgebsr2gebsr_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCgebsr2gebsr_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , int , int , int* );
+	if (!lcusparseCgebsr2gebsr_bufferSize) {
+		lcusparseCgebsr2gebsr_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , int , int , int* )) dlsym(RTLD_NEXT, "cusparseCgebsr2gebsr_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCgebsr2gebsr_bufferSize] = std::string("cusparseCgebsr2gebsr_bufferSize");
+	}
+	assert(lcusparseCgebsr2gebsr_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgebsr2gebsr_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZgebsr2gebsr_bufferSize) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , int , int , int* );
+	if (!lcusparseZgebsr2gebsr_bufferSize) {
+		lcusparseZgebsr2gebsr_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , int , int , int* )) dlsym(RTLD_NEXT, "cusparseZgebsr2gebsr_bufferSize");
+		tracer._kernel_map[(void *) lcusparseZgebsr2gebsr_bufferSize] = std::string("cusparseZgebsr2gebsr_bufferSize");
+	}
+	assert(lcusparseZgebsr2gebsr_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgebsr2gebsr_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseSgebsr2gebsr_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , int , int , size_t* );
+	if (!lcusparseSgebsr2gebsr_bufferSizeExt) {
+		lcusparseSgebsr2gebsr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseSgebsr2gebsr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSgebsr2gebsr_bufferSizeExt] = std::string("cusparseSgebsr2gebsr_bufferSizeExt");
+	}
+	assert(lcusparseSgebsr2gebsr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgebsr2gebsr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseDgebsr2gebsr_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , int , int , size_t* );
+	if (!lcusparseDgebsr2gebsr_bufferSizeExt) {
+		lcusparseDgebsr2gebsr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseDgebsr2gebsr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDgebsr2gebsr_bufferSizeExt] = std::string("cusparseDgebsr2gebsr_bufferSizeExt");
+	}
+	assert(lcusparseDgebsr2gebsr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgebsr2gebsr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseCgebsr2gebsr_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , int , int , size_t* );
+	if (!lcusparseCgebsr2gebsr_bufferSizeExt) {
+		lcusparseCgebsr2gebsr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseCgebsr2gebsr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCgebsr2gebsr_bufferSizeExt] = std::string("cusparseCgebsr2gebsr_bufferSizeExt");
+	}
+	assert(lcusparseCgebsr2gebsr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgebsr2gebsr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
+{
+	static cusparseStatus_t (*lcusparseZgebsr2gebsr_bufferSizeExt) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , int , int , size_t* );
+	if (!lcusparseZgebsr2gebsr_bufferSizeExt) {
+		lcusparseZgebsr2gebsr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , int , int , size_t* )) dlsym(RTLD_NEXT, "cusparseZgebsr2gebsr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZgebsr2gebsr_bufferSizeExt] = std::string("cusparseZgebsr2gebsr_bufferSizeExt");
+	}
+	assert(lcusparseZgebsr2gebsr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgebsr2gebsr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXgebsr2gebsrNnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int  rowBlockDimC, int  colBlockDimC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseXgebsr2gebsrNnz) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const int* , const int* , int , int , const cusparseMatDescr_t , int* , int , int , int* , void* );
+	if (!lcusparseXgebsr2gebsrNnz) {
+		lcusparseXgebsr2gebsrNnz = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const int* , const int* , int , int , const cusparseMatDescr_t , int* , int , int , int* , void* )) dlsym(RTLD_NEXT, "cusparseXgebsr2gebsrNnz");
+		tracer._kernel_map[(void *) lcusparseXgebsr2gebsrNnz] = std::string("cusparseXgebsr2gebsrNnz");
+	}
+	assert(lcusparseXgebsr2gebsrNnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXgebsr2gebsrNnz(handle, dirA, mb, nb, nnzb, descrA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedRowPtrC, rowBlockDimC, colBlockDimC, nnzTotalDevHostPtr, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXgebsr2gebsrNnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSgebsr2gebsr) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , const cusparseMatDescr_t , float* , int* , int* , int , int , void* );
+	if (!lcusparseSgebsr2gebsr) {
+		lcusparseSgebsr2gebsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , int , int , const cusparseMatDescr_t , float* , int* , int* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseSgebsr2gebsr");
+		tracer._kernel_map[(void *) lcusparseSgebsr2gebsr] = std::string("cusparseSgebsr2gebsr");
+	}
+	assert(lcusparseSgebsr2gebsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSgebsr2gebsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDgebsr2gebsr) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , const cusparseMatDescr_t , double* , int* , int* , int , int , void* );
+	if (!lcusparseDgebsr2gebsr) {
+		lcusparseDgebsr2gebsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , int , int , const cusparseMatDescr_t , double* , int* , int* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseDgebsr2gebsr");
+		tracer._kernel_map[(void *) lcusparseDgebsr2gebsr] = std::string("cusparseDgebsr2gebsr");
+	}
+	assert(lcusparseDgebsr2gebsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDgebsr2gebsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCgebsr2gebsr) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , const cusparseMatDescr_t , cuComplex* , int* , int* , int , int , void* );
+	if (!lcusparseCgebsr2gebsr) {
+		lcusparseCgebsr2gebsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuComplex* , const int* , const int* , int , int , const cusparseMatDescr_t , cuComplex* , int* , int* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseCgebsr2gebsr");
+		tracer._kernel_map[(void *) lcusparseCgebsr2gebsr] = std::string("cusparseCgebsr2gebsr");
+	}
+	assert(lcusparseCgebsr2gebsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCgebsr2gebsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZgebsr2gebsr) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* , int , int , void* );
+	if (!lcusparseZgebsr2gebsr) {
+		lcusparseZgebsr2gebsr = (cusparseStatus_t (*) (cusparseHandle_t , cusparseDirection_t , int , int , int , const cusparseMatDescr_t , const cuDoubleComplex* , const int* , const int* , int , int , const cusparseMatDescr_t , cuDoubleComplex* , int* , int* , int , int , void* )) dlsym(RTLD_NEXT, "cusparseZgebsr2gebsr");
+		tracer._kernel_map[(void *) lcusparseZgebsr2gebsr] = std::string("cusparseZgebsr2gebsr");
+	}
+	assert(lcusparseZgebsr2gebsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZgebsr2gebsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateIdentityPermutation(cusparseHandle_t  handle, int  n, int*  p)
+{
+	static cusparseStatus_t (*lcusparseCreateIdentityPermutation) (cusparseHandle_t , int , int* );
+	if (!lcusparseCreateIdentityPermutation) {
+		lcusparseCreateIdentityPermutation = (cusparseStatus_t (*) (cusparseHandle_t , int , int* )) dlsym(RTLD_NEXT, "cusparseCreateIdentityPermutation");
+		tracer._kernel_map[(void *) lcusparseCreateIdentityPermutation] = std::string("cusparseCreateIdentityPermutation");
+	}
+	assert(lcusparseCreateIdentityPermutation);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateIdentityPermutation(handle, n, p);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateIdentityPermutation);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcoosort_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  cooRowsA, const int*  cooColsA, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseXcoosort_bufferSizeExt) (cusparseHandle_t , int , int , int , const int* , const int* , size_t* );
+	if (!lcusparseXcoosort_bufferSizeExt) {
+		lcusparseXcoosort_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseXcoosort_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseXcoosort_bufferSizeExt] = std::string("cusparseXcoosort_bufferSizeExt");
+	}
+	assert(lcusparseXcoosort_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcoosort_bufferSizeExt(handle, m, n, nnz, cooRowsA, cooColsA, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcoosort_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcoosortByRow(cusparseHandle_t  handle, int  m, int  n, int  nnz, int*  cooRowsA, int*  cooColsA, int*  P, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseXcoosortByRow) (cusparseHandle_t , int , int , int , int* , int* , int* , void* );
+	if (!lcusparseXcoosortByRow) {
+		lcusparseXcoosortByRow = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , int* , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseXcoosortByRow");
+		tracer._kernel_map[(void *) lcusparseXcoosortByRow] = std::string("cusparseXcoosortByRow");
+	}
+	assert(lcusparseXcoosortByRow);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcoosortByRow(handle, m, n, nnz, cooRowsA, cooColsA, P, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcoosortByRow);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcoosortByColumn(cusparseHandle_t  handle, int  m, int  n, int  nnz, int*  cooRowsA, int*  cooColsA, int*  P, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseXcoosortByColumn) (cusparseHandle_t , int , int , int , int* , int* , int* , void* );
+	if (!lcusparseXcoosortByColumn) {
+		lcusparseXcoosortByColumn = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , int* , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseXcoosortByColumn");
+		tracer._kernel_map[(void *) lcusparseXcoosortByColumn] = std::string("cusparseXcoosortByColumn");
+	}
+	assert(lcusparseXcoosortByColumn);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcoosortByColumn(handle, m, n, nnz, cooRowsA, cooColsA, P, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcoosortByColumn);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcsrsort_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  csrRowPtrA, const int*  csrColIndA, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseXcsrsort_bufferSizeExt) (cusparseHandle_t , int , int , int , const int* , const int* , size_t* );
+	if (!lcusparseXcsrsort_bufferSizeExt) {
+		lcusparseXcsrsort_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseXcsrsort_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseXcsrsort_bufferSizeExt] = std::string("cusparseXcsrsort_bufferSizeExt");
+	}
+	assert(lcusparseXcsrsort_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcsrsort_bufferSizeExt(handle, m, n, nnz, csrRowPtrA, csrColIndA, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcsrsort_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcsrsort(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, const int*  csrRowPtrA, int*  csrColIndA, int*  P, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseXcsrsort) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const int* , int* , int* , void* );
+	if (!lcusparseXcsrsort) {
+		lcusparseXcsrsort = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const int* , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseXcsrsort");
+		tracer._kernel_map[(void *) lcusparseXcsrsort] = std::string("cusparseXcsrsort");
+	}
+	assert(lcusparseXcsrsort);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcsrsort(handle, m, n, nnz, descrA, csrRowPtrA, csrColIndA, P, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcsrsort);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcscsort_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  cscColPtrA, const int*  cscRowIndA, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseXcscsort_bufferSizeExt) (cusparseHandle_t , int , int , int , const int* , const int* , size_t* );
+	if (!lcusparseXcscsort_bufferSizeExt) {
+		lcusparseXcscsort_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseXcscsort_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseXcscsort_bufferSizeExt] = std::string("cusparseXcscsort_bufferSizeExt");
+	}
+	assert(lcusparseXcscsort_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcscsort_bufferSizeExt(handle, m, n, nnz, cscColPtrA, cscRowIndA, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcscsort_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseXcscsort(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, const int*  cscColPtrA, int*  cscRowIndA, int*  P, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseXcscsort) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const int* , int* , int* , void* );
+	if (!lcusparseXcscsort) {
+		lcusparseXcscsort = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const int* , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseXcscsort");
+		tracer._kernel_map[(void *) lcusparseXcscsort] = std::string("cusparseXcscsort");
+	}
+	assert(lcusparseXcscsort);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseXcscsort(handle, m, n, nnz, descrA, cscColPtrA, cscRowIndA, P, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseXcscsort);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseScsru2csr_bufferSizeExt) (cusparseHandle_t , int , int , int , float* , const int* , int* , csru2csrInfo_t , size_t* );
+	if (!lcusparseScsru2csr_bufferSizeExt) {
+		lcusparseScsru2csr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , float* , const int* , int* , csru2csrInfo_t , size_t* )) dlsym(RTLD_NEXT, "cusparseScsru2csr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseScsru2csr_bufferSizeExt] = std::string("cusparseScsru2csr_bufferSizeExt");
+	}
+	assert(lcusparseScsru2csr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsru2csr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDcsru2csr_bufferSizeExt) (cusparseHandle_t , int , int , int , double* , const int* , int* , csru2csrInfo_t , size_t* );
+	if (!lcusparseDcsru2csr_bufferSizeExt) {
+		lcusparseDcsru2csr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , double* , const int* , int* , csru2csrInfo_t , size_t* )) dlsym(RTLD_NEXT, "cusparseDcsru2csr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDcsru2csr_bufferSizeExt] = std::string("cusparseDcsru2csr_bufferSizeExt");
+	}
+	assert(lcusparseDcsru2csr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsru2csr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseCcsru2csr_bufferSizeExt) (cusparseHandle_t , int , int , int , cuComplex* , const int* , int* , csru2csrInfo_t , size_t* );
+	if (!lcusparseCcsru2csr_bufferSizeExt) {
+		lcusparseCcsru2csr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , cuComplex* , const int* , int* , csru2csrInfo_t , size_t* )) dlsym(RTLD_NEXT, "cusparseCcsru2csr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseCcsru2csr_bufferSizeExt] = std::string("cusparseCcsru2csr_bufferSizeExt");
+	}
+	assert(lcusparseCcsru2csr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsru2csr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseZcsru2csr_bufferSizeExt) (cusparseHandle_t , int , int , int , cuDoubleComplex* , const int* , int* , csru2csrInfo_t , size_t* );
+	if (!lcusparseZcsru2csr_bufferSizeExt) {
+		lcusparseZcsru2csr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , cuDoubleComplex* , const int* , int* , csru2csrInfo_t , size_t* )) dlsym(RTLD_NEXT, "cusparseZcsru2csr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseZcsru2csr_bufferSizeExt] = std::string("cusparseZcsru2csr_bufferSizeExt");
+	}
+	assert(lcusparseZcsru2csr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsru2csr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseScsru2csr) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , float* , const int* , int* , csru2csrInfo_t , void* );
+	if (!lcusparseScsru2csr) {
+		lcusparseScsru2csr = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , float* , const int* , int* , csru2csrInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseScsru2csr");
+		tracer._kernel_map[(void *) lcusparseScsru2csr] = std::string("cusparseScsru2csr");
+	}
+	assert(lcusparseScsru2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsru2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDcsru2csr) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , double* , const int* , int* , csru2csrInfo_t , void* );
+	if (!lcusparseDcsru2csr) {
+		lcusparseDcsru2csr = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , double* , const int* , int* , csru2csrInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseDcsru2csr");
+		tracer._kernel_map[(void *) lcusparseDcsru2csr] = std::string("cusparseDcsru2csr");
+	}
+	assert(lcusparseDcsru2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsru2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCcsru2csr) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , cuComplex* , const int* , int* , csru2csrInfo_t , void* );
+	if (!lcusparseCcsru2csr) {
+		lcusparseCcsru2csr = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , cuComplex* , const int* , int* , csru2csrInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseCcsru2csr");
+		tracer._kernel_map[(void *) lcusparseCcsru2csr] = std::string("cusparseCcsru2csr");
+	}
+	assert(lcusparseCcsru2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsru2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZcsru2csr) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , int* , csru2csrInfo_t , void* );
+	if (!lcusparseZcsru2csr) {
+		lcusparseZcsru2csr = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , int* , csru2csrInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseZcsru2csr");
+		tracer._kernel_map[(void *) lcusparseZcsru2csr] = std::string("cusparseZcsru2csr");
+	}
+	assert(lcusparseZcsru2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsru2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseScsr2csru) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , float* , const int* , int* , csru2csrInfo_t , void* );
+	if (!lcusparseScsr2csru) {
+		lcusparseScsr2csru = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , float* , const int* , int* , csru2csrInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseScsr2csru");
+		tracer._kernel_map[(void *) lcusparseScsr2csru] = std::string("cusparseScsr2csru");
+	}
+	assert(lcusparseScsr2csru);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScsr2csru);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDcsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDcsr2csru) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , double* , const int* , int* , csru2csrInfo_t , void* );
+	if (!lcusparseDcsr2csru) {
+		lcusparseDcsr2csru = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , double* , const int* , int* , csru2csrInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseDcsr2csru");
+		tracer._kernel_map[(void *) lcusparseDcsr2csru] = std::string("cusparseDcsr2csru");
+	}
+	assert(lcusparseDcsr2csru);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDcsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDcsr2csru);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCcsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseCcsr2csru) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , cuComplex* , const int* , int* , csru2csrInfo_t , void* );
+	if (!lcusparseCcsr2csru) {
+		lcusparseCcsr2csru = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , cuComplex* , const int* , int* , csru2csrInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseCcsr2csru");
+		tracer._kernel_map[(void *) lcusparseCcsr2csru] = std::string("cusparseCcsr2csru");
+	}
+	assert(lcusparseCcsr2csru);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCcsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCcsr2csru);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseZcsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseZcsr2csru) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , int* , csru2csrInfo_t , void* );
+	if (!lcusparseZcsr2csru) {
+		lcusparseZcsr2csru = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , cuDoubleComplex* , const int* , int* , csru2csrInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseZcsr2csru");
+		tracer._kernel_map[(void *) lcusparseZcsr2csru] = std::string("cusparseZcsr2csru");
+	}
+	assert(lcusparseZcsr2csru);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseZcsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseZcsr2csru);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseHpruneDense2csr_bufferSizeExt) (cusparseHandle_t , int , int , const __half* , int , const __half* , const cusparseMatDescr_t , const __half* , const int* , const int* , size_t* );
+	if (!lcusparseHpruneDense2csr_bufferSizeExt) {
+		lcusparseHpruneDense2csr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const __half* , int , const __half* , const cusparseMatDescr_t , const __half* , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseHpruneDense2csr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseHpruneDense2csr_bufferSizeExt] = std::string("cusparseHpruneDense2csr_bufferSizeExt");
+	}
+	assert(lcusparseHpruneDense2csr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneDense2csr_bufferSizeExt(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneDense2csr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSpruneDense2csr_bufferSizeExt) (cusparseHandle_t , int , int , const float* , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , size_t* );
+	if (!lcusparseSpruneDense2csr_bufferSizeExt) {
+		lcusparseSpruneDense2csr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , int , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseSpruneDense2csr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSpruneDense2csr_bufferSizeExt] = std::string("cusparseSpruneDense2csr_bufferSizeExt");
+	}
+	assert(lcusparseSpruneDense2csr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneDense2csr_bufferSizeExt(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneDense2csr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDpruneDense2csr_bufferSizeExt) (cusparseHandle_t , int , int , const double* , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , size_t* );
+	if (!lcusparseDpruneDense2csr_bufferSizeExt) {
+		lcusparseDpruneDense2csr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , int , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseDpruneDense2csr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDpruneDense2csr_bufferSizeExt] = std::string("cusparseDpruneDense2csr_bufferSizeExt");
+	}
+	assert(lcusparseDpruneDense2csr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneDense2csr_bufferSizeExt(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneDense2csr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneDense2csrNnz(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseHpruneDense2csrNnz) (cusparseHandle_t , int , int , const __half* , int , const __half* , const cusparseMatDescr_t , int* , int* , void* );
+	if (!lcusparseHpruneDense2csrNnz) {
+		lcusparseHpruneDense2csrNnz = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const __half* , int , const __half* , const cusparseMatDescr_t , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseHpruneDense2csrNnz");
+		tracer._kernel_map[(void *) lcusparseHpruneDense2csrNnz] = std::string("cusparseHpruneDense2csrNnz");
+	}
+	assert(lcusparseHpruneDense2csrNnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneDense2csrNnz(handle, m, n, A, lda, threshold, descrC, csrRowPtrC, nnzTotalDevHostPtr, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneDense2csrNnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneDense2csrNnz(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpruneDense2csrNnz) (cusparseHandle_t , int , int , const float* , int , const float* , const cusparseMatDescr_t , int* , int* , void* );
+	if (!lcusparseSpruneDense2csrNnz) {
+		lcusparseSpruneDense2csrNnz = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , int , const float* , const cusparseMatDescr_t , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseSpruneDense2csrNnz");
+		tracer._kernel_map[(void *) lcusparseSpruneDense2csrNnz] = std::string("cusparseSpruneDense2csrNnz");
+	}
+	assert(lcusparseSpruneDense2csrNnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneDense2csrNnz(handle, m, n, A, lda, threshold, descrC, csrRowPtrC, nnzTotalDevHostPtr, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneDense2csrNnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneDense2csrNnz(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDpruneDense2csrNnz) (cusparseHandle_t , int , int , const double* , int , const double* , const cusparseMatDescr_t , int* , int* , void* );
+	if (!lcusparseDpruneDense2csrNnz) {
+		lcusparseDpruneDense2csrNnz = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , int , const double* , const cusparseMatDescr_t , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseDpruneDense2csrNnz");
+		tracer._kernel_map[(void *) lcusparseDpruneDense2csrNnz] = std::string("cusparseDpruneDense2csrNnz");
+	}
+	assert(lcusparseDpruneDense2csrNnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneDense2csrNnz(handle, m, n, A, lda, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneDense2csrNnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneDense2csr(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseHpruneDense2csr) (cusparseHandle_t , int , int , const __half* , int , const __half* , const cusparseMatDescr_t , __half* , const int* , int* , void* );
+	if (!lcusparseHpruneDense2csr) {
+		lcusparseHpruneDense2csr = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const __half* , int , const __half* , const cusparseMatDescr_t , __half* , const int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseHpruneDense2csr");
+		tracer._kernel_map[(void *) lcusparseHpruneDense2csr] = std::string("cusparseHpruneDense2csr");
+	}
+	assert(lcusparseHpruneDense2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneDense2csr(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneDense2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneDense2csr(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpruneDense2csr) (cusparseHandle_t , int , int , const float* , int , const float* , const cusparseMatDescr_t , float* , const int* , int* , void* );
+	if (!lcusparseSpruneDense2csr) {
+		lcusparseSpruneDense2csr = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , int , const float* , const cusparseMatDescr_t , float* , const int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseSpruneDense2csr");
+		tracer._kernel_map[(void *) lcusparseSpruneDense2csr] = std::string("cusparseSpruneDense2csr");
+	}
+	assert(lcusparseSpruneDense2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneDense2csr(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneDense2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneDense2csr(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDpruneDense2csr) (cusparseHandle_t , int , int , const double* , int , const double* , const cusparseMatDescr_t , double* , const int* , int* , void* );
+	if (!lcusparseDpruneDense2csr) {
+		lcusparseDpruneDense2csr = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , int , const double* , const cusparseMatDescr_t , double* , const int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseDpruneDense2csr");
+		tracer._kernel_map[(void *) lcusparseDpruneDense2csr] = std::string("cusparseDpruneDense2csr");
+	}
+	assert(lcusparseDpruneDense2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneDense2csr(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneDense2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseHpruneCsr2csr_bufferSizeExt) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , const __half* , const cusparseMatDescr_t , const __half* , const int* , const int* , size_t* );
+	if (!lcusparseHpruneCsr2csr_bufferSizeExt) {
+		lcusparseHpruneCsr2csr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , const __half* , const cusparseMatDescr_t , const __half* , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseHpruneCsr2csr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseHpruneCsr2csr_bufferSizeExt] = std::string("cusparseHpruneCsr2csr_bufferSizeExt");
+	}
+	assert(lcusparseHpruneCsr2csr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneCsr2csr_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneCsr2csr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSpruneCsr2csr_bufferSizeExt) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , size_t* );
+	if (!lcusparseSpruneCsr2csr_bufferSizeExt) {
+		lcusparseSpruneCsr2csr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , const float* , const cusparseMatDescr_t , const float* , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseSpruneCsr2csr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSpruneCsr2csr_bufferSizeExt] = std::string("cusparseSpruneCsr2csr_bufferSizeExt");
+	}
+	assert(lcusparseSpruneCsr2csr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneCsr2csr_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneCsr2csr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDpruneCsr2csr_bufferSizeExt) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , size_t* );
+	if (!lcusparseDpruneCsr2csr_bufferSizeExt) {
+		lcusparseDpruneCsr2csr_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , const double* , const cusparseMatDescr_t , const double* , const int* , const int* , size_t* )) dlsym(RTLD_NEXT, "cusparseDpruneCsr2csr_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDpruneCsr2csr_bufferSizeExt] = std::string("cusparseDpruneCsr2csr_bufferSizeExt");
+	}
+	assert(lcusparseDpruneCsr2csr_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneCsr2csr_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneCsr2csr_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseHpruneCsr2csrNnz) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , const __half* , const cusparseMatDescr_t , int* , int* , void* );
+	if (!lcusparseHpruneCsr2csrNnz) {
+		lcusparseHpruneCsr2csrNnz = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , const __half* , const cusparseMatDescr_t , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseHpruneCsr2csrNnz");
+		tracer._kernel_map[(void *) lcusparseHpruneCsr2csrNnz] = std::string("cusparseHpruneCsr2csrNnz");
+	}
+	assert(lcusparseHpruneCsr2csrNnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneCsr2csrNnz(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneCsr2csrNnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpruneCsr2csrNnz) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , const float* , const cusparseMatDescr_t , int* , int* , void* );
+	if (!lcusparseSpruneCsr2csrNnz) {
+		lcusparseSpruneCsr2csrNnz = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , const float* , const cusparseMatDescr_t , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseSpruneCsr2csrNnz");
+		tracer._kernel_map[(void *) lcusparseSpruneCsr2csrNnz] = std::string("cusparseSpruneCsr2csrNnz");
+	}
+	assert(lcusparseSpruneCsr2csrNnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneCsr2csrNnz(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneCsr2csrNnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDpruneCsr2csrNnz) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , const double* , const cusparseMatDescr_t , int* , int* , void* );
+	if (!lcusparseDpruneCsr2csrNnz) {
+		lcusparseDpruneCsr2csrNnz = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , const double* , const cusparseMatDescr_t , int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseDpruneCsr2csrNnz");
+		tracer._kernel_map[(void *) lcusparseDpruneCsr2csrNnz] = std::string("cusparseDpruneCsr2csrNnz");
+	}
+	assert(lcusparseDpruneCsr2csrNnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneCsr2csrNnz(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneCsr2csrNnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseHpruneCsr2csr) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , const __half* , const cusparseMatDescr_t , __half* , const int* , int* , void* );
+	if (!lcusparseHpruneCsr2csr) {
+		lcusparseHpruneCsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , const __half* , const cusparseMatDescr_t , __half* , const int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseHpruneCsr2csr");
+		tracer._kernel_map[(void *) lcusparseHpruneCsr2csr] = std::string("cusparseHpruneCsr2csr");
+	}
+	assert(lcusparseHpruneCsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneCsr2csr(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneCsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpruneCsr2csr) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , const float* , const cusparseMatDescr_t , float* , const int* , int* , void* );
+	if (!lcusparseSpruneCsr2csr) {
+		lcusparseSpruneCsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , const float* , const cusparseMatDescr_t , float* , const int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseSpruneCsr2csr");
+		tracer._kernel_map[(void *) lcusparseSpruneCsr2csr] = std::string("cusparseSpruneCsr2csr");
+	}
+	assert(lcusparseSpruneCsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneCsr2csr(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneCsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDpruneCsr2csr) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , const double* , const cusparseMatDescr_t , double* , const int* , int* , void* );
+	if (!lcusparseDpruneCsr2csr) {
+		lcusparseDpruneCsr2csr = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , const double* , const cusparseMatDescr_t , double* , const int* , int* , void* )) dlsym(RTLD_NEXT, "cusparseDpruneCsr2csr");
+		tracer._kernel_map[(void *) lcusparseDpruneCsr2csr] = std::string("cusparseDpruneCsr2csr");
+	}
+	assert(lcusparseDpruneCsr2csr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneCsr2csr(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneCsr2csr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneDense2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseHpruneDense2csrByPercentage_bufferSizeExt) (cusparseHandle_t , int , int , const __half* , int , float , const cusparseMatDescr_t , const __half* , const int* , const int* , pruneInfo_t , size_t* );
+	if (!lcusparseHpruneDense2csrByPercentage_bufferSizeExt) {
+		lcusparseHpruneDense2csrByPercentage_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const __half* , int , float , const cusparseMatDescr_t , const __half* , const int* , const int* , pruneInfo_t , size_t* )) dlsym(RTLD_NEXT, "cusparseHpruneDense2csrByPercentage_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseHpruneDense2csrByPercentage_bufferSizeExt] = std::string("cusparseHpruneDense2csrByPercentage_bufferSizeExt");
+	}
+	assert(lcusparseHpruneDense2csrByPercentage_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneDense2csrByPercentage_bufferSizeExt(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneDense2csrByPercentage_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneDense2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSpruneDense2csrByPercentage_bufferSizeExt) (cusparseHandle_t , int , int , const float* , int , float , const cusparseMatDescr_t , const float* , const int* , const int* , pruneInfo_t , size_t* );
+	if (!lcusparseSpruneDense2csrByPercentage_bufferSizeExt) {
+		lcusparseSpruneDense2csrByPercentage_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , int , float , const cusparseMatDescr_t , const float* , const int* , const int* , pruneInfo_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSpruneDense2csrByPercentage_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSpruneDense2csrByPercentage_bufferSizeExt] = std::string("cusparseSpruneDense2csrByPercentage_bufferSizeExt");
+	}
+	assert(lcusparseSpruneDense2csrByPercentage_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneDense2csrByPercentage_bufferSizeExt(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneDense2csrByPercentage_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneDense2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDpruneDense2csrByPercentage_bufferSizeExt) (cusparseHandle_t , int , int , const double* , int , float , const cusparseMatDescr_t , const double* , const int* , const int* , pruneInfo_t , size_t* );
+	if (!lcusparseDpruneDense2csrByPercentage_bufferSizeExt) {
+		lcusparseDpruneDense2csrByPercentage_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , int , float , const cusparseMatDescr_t , const double* , const int* , const int* , pruneInfo_t , size_t* )) dlsym(RTLD_NEXT, "cusparseDpruneDense2csrByPercentage_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDpruneDense2csrByPercentage_bufferSizeExt] = std::string("cusparseDpruneDense2csrByPercentage_bufferSizeExt");
+	}
+	assert(lcusparseDpruneDense2csrByPercentage_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneDense2csrByPercentage_bufferSizeExt(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneDense2csrByPercentage_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneDense2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseHpruneDense2csrNnzByPercentage) (cusparseHandle_t , int , int , const __half* , int , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* );
+	if (!lcusparseHpruneDense2csrNnzByPercentage) {
+		lcusparseHpruneDense2csrNnzByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const __half* , int , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseHpruneDense2csrNnzByPercentage");
+		tracer._kernel_map[(void *) lcusparseHpruneDense2csrNnzByPercentage] = std::string("cusparseHpruneDense2csrNnzByPercentage");
+	}
+	assert(lcusparseHpruneDense2csrNnzByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneDense2csrNnzByPercentage(handle, m, n, A, lda, percentage, descrC, csrRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneDense2csrNnzByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneDense2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpruneDense2csrNnzByPercentage) (cusparseHandle_t , int , int , const float* , int , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* );
+	if (!lcusparseSpruneDense2csrNnzByPercentage) {
+		lcusparseSpruneDense2csrNnzByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , int , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseSpruneDense2csrNnzByPercentage");
+		tracer._kernel_map[(void *) lcusparseSpruneDense2csrNnzByPercentage] = std::string("cusparseSpruneDense2csrNnzByPercentage");
+	}
+	assert(lcusparseSpruneDense2csrNnzByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneDense2csrNnzByPercentage(handle, m, n, A, lda, percentage, descrC, csrRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneDense2csrNnzByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneDense2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDpruneDense2csrNnzByPercentage) (cusparseHandle_t , int , int , const double* , int , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* );
+	if (!lcusparseDpruneDense2csrNnzByPercentage) {
+		lcusparseDpruneDense2csrNnzByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , int , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseDpruneDense2csrNnzByPercentage");
+		tracer._kernel_map[(void *) lcusparseDpruneDense2csrNnzByPercentage] = std::string("cusparseDpruneDense2csrNnzByPercentage");
+	}
+	assert(lcusparseDpruneDense2csrNnzByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneDense2csrNnzByPercentage(handle, m, n, A, lda, percentage, descrC, csrRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneDense2csrNnzByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneDense2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseHpruneDense2csrByPercentage) (cusparseHandle_t , int , int , const __half* , int , float , const cusparseMatDescr_t , __half* , const int* , int* , pruneInfo_t , void* );
+	if (!lcusparseHpruneDense2csrByPercentage) {
+		lcusparseHpruneDense2csrByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const __half* , int , float , const cusparseMatDescr_t , __half* , const int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseHpruneDense2csrByPercentage");
+		tracer._kernel_map[(void *) lcusparseHpruneDense2csrByPercentage] = std::string("cusparseHpruneDense2csrByPercentage");
+	}
+	assert(lcusparseHpruneDense2csrByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneDense2csrByPercentage(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneDense2csrByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneDense2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpruneDense2csrByPercentage) (cusparseHandle_t , int , int , const float* , int , float , const cusparseMatDescr_t , float* , const int* , int* , pruneInfo_t , void* );
+	if (!lcusparseSpruneDense2csrByPercentage) {
+		lcusparseSpruneDense2csrByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const float* , int , float , const cusparseMatDescr_t , float* , const int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseSpruneDense2csrByPercentage");
+		tracer._kernel_map[(void *) lcusparseSpruneDense2csrByPercentage] = std::string("cusparseSpruneDense2csrByPercentage");
+	}
+	assert(lcusparseSpruneDense2csrByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneDense2csrByPercentage(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneDense2csrByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneDense2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDpruneDense2csrByPercentage) (cusparseHandle_t , int , int , const double* , int , float , const cusparseMatDescr_t , double* , const int* , int* , pruneInfo_t , void* );
+	if (!lcusparseDpruneDense2csrByPercentage) {
+		lcusparseDpruneDense2csrByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , const double* , int , float , const cusparseMatDescr_t , double* , const int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseDpruneDense2csrByPercentage");
+		tracer._kernel_map[(void *) lcusparseDpruneDense2csrByPercentage] = std::string("cusparseDpruneDense2csrByPercentage");
+	}
+	assert(lcusparseDpruneDense2csrByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneDense2csrByPercentage(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneDense2csrByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseHpruneCsr2csrByPercentage_bufferSizeExt) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , float , const cusparseMatDescr_t , const __half* , const int* , const int* , pruneInfo_t , size_t* );
+	if (!lcusparseHpruneCsr2csrByPercentage_bufferSizeExt) {
+		lcusparseHpruneCsr2csrByPercentage_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , float , const cusparseMatDescr_t , const __half* , const int* , const int* , pruneInfo_t , size_t* )) dlsym(RTLD_NEXT, "cusparseHpruneCsr2csrByPercentage_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseHpruneCsr2csrByPercentage_bufferSizeExt] = std::string("cusparseHpruneCsr2csrByPercentage_bufferSizeExt");
+	}
+	assert(lcusparseHpruneCsr2csrByPercentage_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneCsr2csrByPercentage_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneCsr2csrByPercentage_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseSpruneCsr2csrByPercentage_bufferSizeExt) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , float , const cusparseMatDescr_t , const float* , const int* , const int* , pruneInfo_t , size_t* );
+	if (!lcusparseSpruneCsr2csrByPercentage_bufferSizeExt) {
+		lcusparseSpruneCsr2csrByPercentage_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , float , const cusparseMatDescr_t , const float* , const int* , const int* , pruneInfo_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSpruneCsr2csrByPercentage_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseSpruneCsr2csrByPercentage_bufferSizeExt] = std::string("cusparseSpruneCsr2csrByPercentage_bufferSizeExt");
+	}
+	assert(lcusparseSpruneCsr2csrByPercentage_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneCsr2csrByPercentage_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneCsr2csrByPercentage_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
+{
+	static cusparseStatus_t (*lcusparseDpruneCsr2csrByPercentage_bufferSizeExt) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , float , const cusparseMatDescr_t , const double* , const int* , const int* , pruneInfo_t , size_t* );
+	if (!lcusparseDpruneCsr2csrByPercentage_bufferSizeExt) {
+		lcusparseDpruneCsr2csrByPercentage_bufferSizeExt = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , float , const cusparseMatDescr_t , const double* , const int* , const int* , pruneInfo_t , size_t* )) dlsym(RTLD_NEXT, "cusparseDpruneCsr2csrByPercentage_bufferSizeExt");
+		tracer._kernel_map[(void *) lcusparseDpruneCsr2csrByPercentage_bufferSizeExt] = std::string("cusparseDpruneCsr2csrByPercentage_bufferSizeExt");
+	}
+	assert(lcusparseDpruneCsr2csrByPercentage_bufferSizeExt);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneCsr2csrByPercentage_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneCsr2csrByPercentage_bufferSizeExt);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseHpruneCsr2csrNnzByPercentage) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* );
+	if (!lcusparseHpruneCsr2csrNnzByPercentage) {
+		lcusparseHpruneCsr2csrNnzByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseHpruneCsr2csrNnzByPercentage");
+		tracer._kernel_map[(void *) lcusparseHpruneCsr2csrNnzByPercentage] = std::string("cusparseHpruneCsr2csrNnzByPercentage");
+	}
+	assert(lcusparseHpruneCsr2csrNnzByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneCsr2csrNnzByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneCsr2csrNnzByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpruneCsr2csrNnzByPercentage) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* );
+	if (!lcusparseSpruneCsr2csrNnzByPercentage) {
+		lcusparseSpruneCsr2csrNnzByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseSpruneCsr2csrNnzByPercentage");
+		tracer._kernel_map[(void *) lcusparseSpruneCsr2csrNnzByPercentage] = std::string("cusparseSpruneCsr2csrNnzByPercentage");
+	}
+	assert(lcusparseSpruneCsr2csrNnzByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneCsr2csrNnzByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneCsr2csrNnzByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDpruneCsr2csrNnzByPercentage) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* );
+	if (!lcusparseDpruneCsr2csrNnzByPercentage) {
+		lcusparseDpruneCsr2csrNnzByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , float , const cusparseMatDescr_t , int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseDpruneCsr2csrNnzByPercentage");
+		tracer._kernel_map[(void *) lcusparseDpruneCsr2csrNnzByPercentage] = std::string("cusparseDpruneCsr2csrNnzByPercentage");
+	}
+	assert(lcusparseDpruneCsr2csrNnzByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneCsr2csrNnzByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneCsr2csrNnzByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseHpruneCsr2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseHpruneCsr2csrByPercentage) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , float , const cusparseMatDescr_t , __half* , const int* , int* , pruneInfo_t , void* );
+	if (!lcusparseHpruneCsr2csrByPercentage) {
+		lcusparseHpruneCsr2csrByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const __half* , const int* , const int* , float , const cusparseMatDescr_t , __half* , const int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseHpruneCsr2csrByPercentage");
+		tracer._kernel_map[(void *) lcusparseHpruneCsr2csrByPercentage] = std::string("cusparseHpruneCsr2csrByPercentage");
+	}
+	assert(lcusparseHpruneCsr2csrByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseHpruneCsr2csrByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseHpruneCsr2csrByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpruneCsr2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpruneCsr2csrByPercentage) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , float , const cusparseMatDescr_t , float* , const int* , int* , pruneInfo_t , void* );
+	if (!lcusparseSpruneCsr2csrByPercentage) {
+		lcusparseSpruneCsr2csrByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const float* , const int* , const int* , float , const cusparseMatDescr_t , float* , const int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseSpruneCsr2csrByPercentage");
+		tracer._kernel_map[(void *) lcusparseSpruneCsr2csrByPercentage] = std::string("cusparseSpruneCsr2csrByPercentage");
+	}
+	assert(lcusparseSpruneCsr2csrByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpruneCsr2csrByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpruneCsr2csrByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDpruneCsr2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
+{
+	static cusparseStatus_t (*lcusparseDpruneCsr2csrByPercentage) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , float , const cusparseMatDescr_t , double* , const int* , int* , pruneInfo_t , void* );
+	if (!lcusparseDpruneCsr2csrByPercentage) {
+		lcusparseDpruneCsr2csrByPercentage = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const cusparseMatDescr_t , const double* , const int* , const int* , float , const cusparseMatDescr_t , double* , const int* , int* , pruneInfo_t , void* )) dlsym(RTLD_NEXT, "cusparseDpruneCsr2csrByPercentage");
+		tracer._kernel_map[(void *) lcusparseDpruneCsr2csrByPercentage] = std::string("cusparseDpruneCsr2csrByPercentage");
+	}
+	assert(lcusparseDpruneCsr2csrByPercentage);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDpruneCsr2csrByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDpruneCsr2csrByPercentage);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCsr2cscEx2(cusparseHandle_t  handle, int  m, int  n, int  nnz, const void*  csrVal, const int*  csrRowPtr, const int*  csrColInd, void*  cscVal, int*  cscColPtr, int*  cscRowInd, cudaDataType  valType, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, cusparseCsr2CscAlg_t  alg, void*  buffer)
+{
+	static cusparseStatus_t (*lcusparseCsr2cscEx2) (cusparseHandle_t , int , int , int , const void* , const int* , const int* , void* , int* , int* , cudaDataType , cusparseAction_t , cusparseIndexBase_t , cusparseCsr2CscAlg_t , void* );
+	if (!lcusparseCsr2cscEx2) {
+		lcusparseCsr2cscEx2 = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const void* , const int* , const int* , void* , int* , int* , cudaDataType , cusparseAction_t , cusparseIndexBase_t , cusparseCsr2CscAlg_t , void* )) dlsym(RTLD_NEXT, "cusparseCsr2cscEx2");
+		tracer._kernel_map[(void *) lcusparseCsr2cscEx2] = std::string("cusparseCsr2cscEx2");
+	}
+	assert(lcusparseCsr2cscEx2);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCsr2cscEx2(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, cscVal, cscColPtr, cscRowInd, valType, copyValues, idxBase, alg, buffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCsr2cscEx2);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCsr2cscEx2_bufferSize(cusparseHandle_t  handle, int  m, int  n, int  nnz, const void*  csrVal, const int*  csrRowPtr, const int*  csrColInd, void*  cscVal, int*  cscColPtr, int*  cscRowInd, cudaDataType  valType, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, cusparseCsr2CscAlg_t  alg, size_t*  bufferSize)
+{
+	static cusparseStatus_t (*lcusparseCsr2cscEx2_bufferSize) (cusparseHandle_t , int , int , int , const void* , const int* , const int* , void* , int* , int* , cudaDataType , cusparseAction_t , cusparseIndexBase_t , cusparseCsr2CscAlg_t , size_t* );
+	if (!lcusparseCsr2cscEx2_bufferSize) {
+		lcusparseCsr2cscEx2_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , int , int , int , const void* , const int* , const int* , void* , int* , int* , cudaDataType , cusparseAction_t , cusparseIndexBase_t , cusparseCsr2CscAlg_t , size_t* )) dlsym(RTLD_NEXT, "cusparseCsr2cscEx2_bufferSize");
+		tracer._kernel_map[(void *) lcusparseCsr2cscEx2_bufferSize] = std::string("cusparseCsr2cscEx2_bufferSize");
+	}
+	assert(lcusparseCsr2cscEx2_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCsr2cscEx2_bufferSize(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, cscVal, cscColPtr, cscRowInd, valType, copyValues, idxBase, alg, bufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCsr2cscEx2_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateSpVec(cusparseSpVecDescr_t*  spVecDescr, int64_t  size, int64_t  nnz, void*  indices, void*  values, cusparseIndexType_t  idxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateSpVec) (cusparseSpVecDescr_t* , int64_t , int64_t , void* , void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateSpVec) {
+		lcusparseCreateSpVec = (cusparseStatus_t (*) (cusparseSpVecDescr_t* , int64_t , int64_t , void* , void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateSpVec");
+		tracer._kernel_map[(void *) lcusparseCreateSpVec] = std::string("cusparseCreateSpVec");
+	}
+	assert(lcusparseCreateSpVec);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateSpVec(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateSpVec);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateConstSpVec(cusparseConstSpVecDescr_t*  spVecDescr, int64_t  size, int64_t  nnz, const void*  indices, const void*  values, cusparseIndexType_t  idxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateConstSpVec) (cusparseConstSpVecDescr_t* , int64_t , int64_t , const void* , const void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateConstSpVec) {
+		lcusparseCreateConstSpVec = (cusparseStatus_t (*) (cusparseConstSpVecDescr_t* , int64_t , int64_t , const void* , const void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateConstSpVec");
+		tracer._kernel_map[(void *) lcusparseCreateConstSpVec] = std::string("cusparseCreateConstSpVec");
+	}
+	assert(lcusparseCreateConstSpVec);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateConstSpVec(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateConstSpVec);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroySpVec(cusparseConstSpVecDescr_t  spVecDescr)
+{
+	static cusparseStatus_t (*lcusparseDestroySpVec) (cusparseConstSpVecDescr_t );
+	if (!lcusparseDestroySpVec) {
+		lcusparseDestroySpVec = (cusparseStatus_t (*) (cusparseConstSpVecDescr_t )) dlsym(RTLD_NEXT, "cusparseDestroySpVec");
+		tracer._kernel_map[(void *) lcusparseDestroySpVec] = std::string("cusparseDestroySpVec");
+	}
+	assert(lcusparseDestroySpVec);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroySpVec(spVecDescr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroySpVec);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpVecGet(cusparseSpVecDescr_t  spVecDescr, int64_t*  size, int64_t*  nnz, void**  indices, void**  values, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseSpVecGet) (cusparseSpVecDescr_t , int64_t* , int64_t* , void** , void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* );
+	if (!lcusparseSpVecGet) {
+		lcusparseSpVecGet = (cusparseStatus_t (*) (cusparseSpVecDescr_t , int64_t* , int64_t* , void** , void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseSpVecGet");
+		tracer._kernel_map[(void *) lcusparseSpVecGet] = std::string("cusparseSpVecGet");
+	}
+	assert(lcusparseSpVecGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpVecGet(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpVecGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstSpVecGet(cusparseConstSpVecDescr_t  spVecDescr, int64_t*  size, int64_t*  nnz, const void**  indices, const void**  values, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseConstSpVecGet) (cusparseConstSpVecDescr_t , int64_t* , int64_t* , const void** , const void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* );
+	if (!lcusparseConstSpVecGet) {
+		lcusparseConstSpVecGet = (cusparseStatus_t (*) (cusparseConstSpVecDescr_t , int64_t* , int64_t* , const void** , const void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseConstSpVecGet");
+		tracer._kernel_map[(void *) lcusparseConstSpVecGet] = std::string("cusparseConstSpVecGet");
+	}
+	assert(lcusparseConstSpVecGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstSpVecGet(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstSpVecGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpVecGetIndexBase(cusparseConstSpVecDescr_t  spVecDescr, cusparseIndexBase_t*  idxBase)
+{
+	static cusparseStatus_t (*lcusparseSpVecGetIndexBase) (cusparseConstSpVecDescr_t , cusparseIndexBase_t* );
+	if (!lcusparseSpVecGetIndexBase) {
+		lcusparseSpVecGetIndexBase = (cusparseStatus_t (*) (cusparseConstSpVecDescr_t , cusparseIndexBase_t* )) dlsym(RTLD_NEXT, "cusparseSpVecGetIndexBase");
+		tracer._kernel_map[(void *) lcusparseSpVecGetIndexBase] = std::string("cusparseSpVecGetIndexBase");
+	}
+	assert(lcusparseSpVecGetIndexBase);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpVecGetIndexBase(spVecDescr, idxBase);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpVecGetIndexBase);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpVecGetValues(cusparseSpVecDescr_t  spVecDescr, void**  values)
+{
+	static cusparseStatus_t (*lcusparseSpVecGetValues) (cusparseSpVecDescr_t , void** );
+	if (!lcusparseSpVecGetValues) {
+		lcusparseSpVecGetValues = (cusparseStatus_t (*) (cusparseSpVecDescr_t , void** )) dlsym(RTLD_NEXT, "cusparseSpVecGetValues");
+		tracer._kernel_map[(void *) lcusparseSpVecGetValues] = std::string("cusparseSpVecGetValues");
+	}
+	assert(lcusparseSpVecGetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpVecGetValues(spVecDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpVecGetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstSpVecGetValues(cusparseConstSpVecDescr_t  spVecDescr, const void**  values)
+{
+	static cusparseStatus_t (*lcusparseConstSpVecGetValues) (cusparseConstSpVecDescr_t , const void** );
+	if (!lcusparseConstSpVecGetValues) {
+		lcusparseConstSpVecGetValues = (cusparseStatus_t (*) (cusparseConstSpVecDescr_t , const void** )) dlsym(RTLD_NEXT, "cusparseConstSpVecGetValues");
+		tracer._kernel_map[(void *) lcusparseConstSpVecGetValues] = std::string("cusparseConstSpVecGetValues");
+	}
+	assert(lcusparseConstSpVecGetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstSpVecGetValues(spVecDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstSpVecGetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpVecSetValues(cusparseSpVecDescr_t  spVecDescr, void*  values)
+{
+	static cusparseStatus_t (*lcusparseSpVecSetValues) (cusparseSpVecDescr_t , void* );
+	if (!lcusparseSpVecSetValues) {
+		lcusparseSpVecSetValues = (cusparseStatus_t (*) (cusparseSpVecDescr_t , void* )) dlsym(RTLD_NEXT, "cusparseSpVecSetValues");
+		tracer._kernel_map[(void *) lcusparseSpVecSetValues] = std::string("cusparseSpVecSetValues");
+	}
+	assert(lcusparseSpVecSetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpVecSetValues(spVecDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpVecSetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateDnVec(cusparseDnVecDescr_t*  dnVecDescr, int64_t  size, void*  values, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateDnVec) (cusparseDnVecDescr_t* , int64_t , void* , cudaDataType );
+	if (!lcusparseCreateDnVec) {
+		lcusparseCreateDnVec = (cusparseStatus_t (*) (cusparseDnVecDescr_t* , int64_t , void* , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateDnVec");
+		tracer._kernel_map[(void *) lcusparseCreateDnVec] = std::string("cusparseCreateDnVec");
+	}
+	assert(lcusparseCreateDnVec);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateDnVec(dnVecDescr, size, values, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateDnVec);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateConstDnVec(cusparseConstDnVecDescr_t*  dnVecDescr, int64_t  size, const void*  values, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateConstDnVec) (cusparseConstDnVecDescr_t* , int64_t , const void* , cudaDataType );
+	if (!lcusparseCreateConstDnVec) {
+		lcusparseCreateConstDnVec = (cusparseStatus_t (*) (cusparseConstDnVecDescr_t* , int64_t , const void* , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateConstDnVec");
+		tracer._kernel_map[(void *) lcusparseCreateConstDnVec] = std::string("cusparseCreateConstDnVec");
+	}
+	assert(lcusparseCreateConstDnVec);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateConstDnVec(dnVecDescr, size, values, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateConstDnVec);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyDnVec(cusparseConstDnVecDescr_t  dnVecDescr)
+{
+	static cusparseStatus_t (*lcusparseDestroyDnVec) (cusparseConstDnVecDescr_t );
+	if (!lcusparseDestroyDnVec) {
+		lcusparseDestroyDnVec = (cusparseStatus_t (*) (cusparseConstDnVecDescr_t )) dlsym(RTLD_NEXT, "cusparseDestroyDnVec");
+		tracer._kernel_map[(void *) lcusparseDestroyDnVec] = std::string("cusparseDestroyDnVec");
+	}
+	assert(lcusparseDestroyDnVec);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyDnVec(dnVecDescr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyDnVec);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDnVecGet(cusparseDnVecDescr_t  dnVecDescr, int64_t*  size, void**  values, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseDnVecGet) (cusparseDnVecDescr_t , int64_t* , void** , cudaDataType* );
+	if (!lcusparseDnVecGet) {
+		lcusparseDnVecGet = (cusparseStatus_t (*) (cusparseDnVecDescr_t , int64_t* , void** , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseDnVecGet");
+		tracer._kernel_map[(void *) lcusparseDnVecGet] = std::string("cusparseDnVecGet");
+	}
+	assert(lcusparseDnVecGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDnVecGet(dnVecDescr, size, values, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDnVecGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstDnVecGet(cusparseConstDnVecDescr_t  dnVecDescr, int64_t*  size, const void**  values, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseConstDnVecGet) (cusparseConstDnVecDescr_t , int64_t* , const void** , cudaDataType* );
+	if (!lcusparseConstDnVecGet) {
+		lcusparseConstDnVecGet = (cusparseStatus_t (*) (cusparseConstDnVecDescr_t , int64_t* , const void** , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseConstDnVecGet");
+		tracer._kernel_map[(void *) lcusparseConstDnVecGet] = std::string("cusparseConstDnVecGet");
+	}
+	assert(lcusparseConstDnVecGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstDnVecGet(dnVecDescr, size, values, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstDnVecGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDnVecGetValues(cusparseDnVecDescr_t  dnVecDescr, void**  values)
+{
+	static cusparseStatus_t (*lcusparseDnVecGetValues) (cusparseDnVecDescr_t , void** );
+	if (!lcusparseDnVecGetValues) {
+		lcusparseDnVecGetValues = (cusparseStatus_t (*) (cusparseDnVecDescr_t , void** )) dlsym(RTLD_NEXT, "cusparseDnVecGetValues");
+		tracer._kernel_map[(void *) lcusparseDnVecGetValues] = std::string("cusparseDnVecGetValues");
+	}
+	assert(lcusparseDnVecGetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDnVecGetValues(dnVecDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDnVecGetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstDnVecGetValues(cusparseConstDnVecDescr_t  dnVecDescr, const void**  values)
+{
+	static cusparseStatus_t (*lcusparseConstDnVecGetValues) (cusparseConstDnVecDescr_t , const void** );
+	if (!lcusparseConstDnVecGetValues) {
+		lcusparseConstDnVecGetValues = (cusparseStatus_t (*) (cusparseConstDnVecDescr_t , const void** )) dlsym(RTLD_NEXT, "cusparseConstDnVecGetValues");
+		tracer._kernel_map[(void *) lcusparseConstDnVecGetValues] = std::string("cusparseConstDnVecGetValues");
+	}
+	assert(lcusparseConstDnVecGetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstDnVecGetValues(dnVecDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstDnVecGetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDnVecSetValues(cusparseDnVecDescr_t  dnVecDescr, void*  values)
+{
+	static cusparseStatus_t (*lcusparseDnVecSetValues) (cusparseDnVecDescr_t , void* );
+	if (!lcusparseDnVecSetValues) {
+		lcusparseDnVecSetValues = (cusparseStatus_t (*) (cusparseDnVecDescr_t , void* )) dlsym(RTLD_NEXT, "cusparseDnVecSetValues");
+		tracer._kernel_map[(void *) lcusparseDnVecSetValues] = std::string("cusparseDnVecSetValues");
+	}
+	assert(lcusparseDnVecSetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDnVecSetValues(dnVecDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDnVecSetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroySpMat(cusparseConstSpMatDescr_t  spMatDescr)
+{
+	static cusparseStatus_t (*lcusparseDestroySpMat) (cusparseConstSpMatDescr_t );
+	if (!lcusparseDestroySpMat) {
+		lcusparseDestroySpMat = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t )) dlsym(RTLD_NEXT, "cusparseDestroySpMat");
+		tracer._kernel_map[(void *) lcusparseDestroySpMat] = std::string("cusparseDestroySpMat");
+	}
+	assert(lcusparseDestroySpMat);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroySpMat(spMatDescr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroySpMat);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMatGetFormat(cusparseConstSpMatDescr_t  spMatDescr, cusparseFormat_t*  format)
+{
+	static cusparseStatus_t (*lcusparseSpMatGetFormat) (cusparseConstSpMatDescr_t , cusparseFormat_t* );
+	if (!lcusparseSpMatGetFormat) {
+		lcusparseSpMatGetFormat = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t , cusparseFormat_t* )) dlsym(RTLD_NEXT, "cusparseSpMatGetFormat");
+		tracer._kernel_map[(void *) lcusparseSpMatGetFormat] = std::string("cusparseSpMatGetFormat");
+	}
+	assert(lcusparseSpMatGetFormat);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMatGetFormat(spMatDescr, format);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMatGetFormat);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMatGetIndexBase(cusparseConstSpMatDescr_t  spMatDescr, cusparseIndexBase_t*  idxBase)
+{
+	static cusparseStatus_t (*lcusparseSpMatGetIndexBase) (cusparseConstSpMatDescr_t , cusparseIndexBase_t* );
+	if (!lcusparseSpMatGetIndexBase) {
+		lcusparseSpMatGetIndexBase = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t , cusparseIndexBase_t* )) dlsym(RTLD_NEXT, "cusparseSpMatGetIndexBase");
+		tracer._kernel_map[(void *) lcusparseSpMatGetIndexBase] = std::string("cusparseSpMatGetIndexBase");
+	}
+	assert(lcusparseSpMatGetIndexBase);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMatGetIndexBase(spMatDescr, idxBase);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMatGetIndexBase);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMatGetValues(cusparseSpMatDescr_t  spMatDescr, void**  values)
+{
+	static cusparseStatus_t (*lcusparseSpMatGetValues) (cusparseSpMatDescr_t , void** );
+	if (!lcusparseSpMatGetValues) {
+		lcusparseSpMatGetValues = (cusparseStatus_t (*) (cusparseSpMatDescr_t , void** )) dlsym(RTLD_NEXT, "cusparseSpMatGetValues");
+		tracer._kernel_map[(void *) lcusparseSpMatGetValues] = std::string("cusparseSpMatGetValues");
+	}
+	assert(lcusparseSpMatGetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMatGetValues(spMatDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMatGetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstSpMatGetValues(cusparseConstSpMatDescr_t  spMatDescr, const void**  values)
+{
+	static cusparseStatus_t (*lcusparseConstSpMatGetValues) (cusparseConstSpMatDescr_t , const void** );
+	if (!lcusparseConstSpMatGetValues) {
+		lcusparseConstSpMatGetValues = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t , const void** )) dlsym(RTLD_NEXT, "cusparseConstSpMatGetValues");
+		tracer._kernel_map[(void *) lcusparseConstSpMatGetValues] = std::string("cusparseConstSpMatGetValues");
+	}
+	assert(lcusparseConstSpMatGetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstSpMatGetValues(spMatDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstSpMatGetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMatSetValues(cusparseSpMatDescr_t  spMatDescr, void*  values)
+{
+	static cusparseStatus_t (*lcusparseSpMatSetValues) (cusparseSpMatDescr_t , void* );
+	if (!lcusparseSpMatSetValues) {
+		lcusparseSpMatSetValues = (cusparseStatus_t (*) (cusparseSpMatDescr_t , void* )) dlsym(RTLD_NEXT, "cusparseSpMatSetValues");
+		tracer._kernel_map[(void *) lcusparseSpMatSetValues] = std::string("cusparseSpMatSetValues");
+	}
+	assert(lcusparseSpMatSetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMatSetValues(spMatDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMatSetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMatGetSize(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz)
+{
+	static cusparseStatus_t (*lcusparseSpMatGetSize) (cusparseConstSpMatDescr_t , int64_t* , int64_t* , int64_t* );
+	if (!lcusparseSpMatGetSize) {
+		lcusparseSpMatGetSize = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t , int64_t* , int64_t* , int64_t* )) dlsym(RTLD_NEXT, "cusparseSpMatGetSize");
+		tracer._kernel_map[(void *) lcusparseSpMatGetSize] = std::string("cusparseSpMatGetSize");
+	}
+	assert(lcusparseSpMatGetSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMatGetSize(spMatDescr, rows, cols, nnz);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMatGetSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMatGetStridedBatch(cusparseConstSpMatDescr_t  spMatDescr, int*  batchCount)
+{
+	static cusparseStatus_t (*lcusparseSpMatGetStridedBatch) (cusparseConstSpMatDescr_t , int* );
+	if (!lcusparseSpMatGetStridedBatch) {
+		lcusparseSpMatGetStridedBatch = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t , int* )) dlsym(RTLD_NEXT, "cusparseSpMatGetStridedBatch");
+		tracer._kernel_map[(void *) lcusparseSpMatGetStridedBatch] = std::string("cusparseSpMatGetStridedBatch");
+	}
+	assert(lcusparseSpMatGetStridedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMatGetStridedBatch(spMatDescr, batchCount);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMatGetStridedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCooSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  batchStride)
+{
+	static cusparseStatus_t (*lcusparseCooSetStridedBatch) (cusparseSpMatDescr_t , int , int64_t );
+	if (!lcusparseCooSetStridedBatch) {
+		lcusparseCooSetStridedBatch = (cusparseStatus_t (*) (cusparseSpMatDescr_t , int , int64_t )) dlsym(RTLD_NEXT, "cusparseCooSetStridedBatch");
+		tracer._kernel_map[(void *) lcusparseCooSetStridedBatch] = std::string("cusparseCooSetStridedBatch");
+	}
+	assert(lcusparseCooSetStridedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCooSetStridedBatch(spMatDescr, batchCount, batchStride);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCooSetStridedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCsrSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  offsetsBatchStride, int64_t  columnsValuesBatchStride)
+{
+	static cusparseStatus_t (*lcusparseCsrSetStridedBatch) (cusparseSpMatDescr_t , int , int64_t , int64_t );
+	if (!lcusparseCsrSetStridedBatch) {
+		lcusparseCsrSetStridedBatch = (cusparseStatus_t (*) (cusparseSpMatDescr_t , int , int64_t , int64_t )) dlsym(RTLD_NEXT, "cusparseCsrSetStridedBatch");
+		tracer._kernel_map[(void *) lcusparseCsrSetStridedBatch] = std::string("cusparseCsrSetStridedBatch");
+	}
+	assert(lcusparseCsrSetStridedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCsrSetStridedBatch(spMatDescr, batchCount, offsetsBatchStride, columnsValuesBatchStride);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCsrSetStridedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseBsrSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  offsetsBatchStride, int64_t  columnsBatchStride, int64_t  ValuesBatchStride)
+{
+	static cusparseStatus_t (*lcusparseBsrSetStridedBatch) (cusparseSpMatDescr_t , int , int64_t , int64_t , int64_t );
+	if (!lcusparseBsrSetStridedBatch) {
+		lcusparseBsrSetStridedBatch = (cusparseStatus_t (*) (cusparseSpMatDescr_t , int , int64_t , int64_t , int64_t )) dlsym(RTLD_NEXT, "cusparseBsrSetStridedBatch");
+		tracer._kernel_map[(void *) lcusparseBsrSetStridedBatch] = std::string("cusparseBsrSetStridedBatch");
+	}
+	assert(lcusparseBsrSetStridedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseBsrSetStridedBatch(spMatDescr, batchCount, offsetsBatchStride, columnsBatchStride, ValuesBatchStride);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseBsrSetStridedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMatGetAttribute(cusparseConstSpMatDescr_t  spMatDescr, cusparseSpMatAttribute_t  attribute, void*  data, size_t  dataSize)
+{
+	static cusparseStatus_t (*lcusparseSpMatGetAttribute) (cusparseConstSpMatDescr_t , cusparseSpMatAttribute_t , void* , size_t );
+	if (!lcusparseSpMatGetAttribute) {
+		lcusparseSpMatGetAttribute = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t , cusparseSpMatAttribute_t , void* , size_t )) dlsym(RTLD_NEXT, "cusparseSpMatGetAttribute");
+		tracer._kernel_map[(void *) lcusparseSpMatGetAttribute] = std::string("cusparseSpMatGetAttribute");
+	}
+	assert(lcusparseSpMatGetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMatGetAttribute(spMatDescr, attribute, data, dataSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMatGetAttribute);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMatSetAttribute(cusparseSpMatDescr_t  spMatDescr, cusparseSpMatAttribute_t  attribute, void*  data, size_t  dataSize)
+{
+	static cusparseStatus_t (*lcusparseSpMatSetAttribute) (cusparseSpMatDescr_t , cusparseSpMatAttribute_t , void* , size_t );
+	if (!lcusparseSpMatSetAttribute) {
+		lcusparseSpMatSetAttribute = (cusparseStatus_t (*) (cusparseSpMatDescr_t , cusparseSpMatAttribute_t , void* , size_t )) dlsym(RTLD_NEXT, "cusparseSpMatSetAttribute");
+		tracer._kernel_map[(void *) lcusparseSpMatSetAttribute] = std::string("cusparseSpMatSetAttribute");
+	}
+	assert(lcusparseSpMatSetAttribute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMatSetAttribute(spMatDescr, attribute, data, dataSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMatSetAttribute);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateCsr(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  csrRowOffsets, void*  csrColInd, void*  csrValues, cusparseIndexType_t  csrRowOffsetsType, cusparseIndexType_t  csrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateCsr) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , void* , void* , void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateCsr) {
+		lcusparseCreateCsr = (cusparseStatus_t (*) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , void* , void* , void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateCsr");
+		tracer._kernel_map[(void *) lcusparseCreateCsr] = std::string("cusparseCreateCsr");
+	}
+	assert(lcusparseCreateCsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateCsr(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateCsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateConstCsr(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  csrRowOffsets, const void*  csrColInd, const void*  csrValues, cusparseIndexType_t  csrRowOffsetsType, cusparseIndexType_t  csrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateConstCsr) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , const void* , const void* , const void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateConstCsr) {
+		lcusparseCreateConstCsr = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , const void* , const void* , const void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateConstCsr");
+		tracer._kernel_map[(void *) lcusparseCreateConstCsr] = std::string("cusparseCreateConstCsr");
+	}
+	assert(lcusparseCreateConstCsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateConstCsr(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateConstCsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateCsc(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  cscColOffsets, void*  cscRowInd, void*  cscValues, cusparseIndexType_t  cscColOffsetsType, cusparseIndexType_t  cscRowIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateCsc) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , void* , void* , void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateCsc) {
+		lcusparseCreateCsc = (cusparseStatus_t (*) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , void* , void* , void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateCsc");
+		tracer._kernel_map[(void *) lcusparseCreateCsc] = std::string("cusparseCreateCsc");
+	}
+	assert(lcusparseCreateCsc);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateCsc(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateCsc);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateConstCsc(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  cscColOffsets, const void*  cscRowInd, const void*  cscValues, cusparseIndexType_t  cscColOffsetsType, cusparseIndexType_t  cscRowIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateConstCsc) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , const void* , const void* , const void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateConstCsc) {
+		lcusparseCreateConstCsc = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , const void* , const void* , const void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateConstCsc");
+		tracer._kernel_map[(void *) lcusparseCreateConstCsc] = std::string("cusparseCreateConstCsc");
+	}
+	assert(lcusparseCreateConstCsc);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateConstCsc(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateConstCsc);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCsrGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  csrRowOffsets, void**  csrColInd, void**  csrValues, cusparseIndexType_t*  csrRowOffsetsType, cusparseIndexType_t*  csrColIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseCsrGet) (cusparseSpMatDescr_t , int64_t* , int64_t* , int64_t* , void** , void** , void** , cusparseIndexType_t* , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* );
+	if (!lcusparseCsrGet) {
+		lcusparseCsrGet = (cusparseStatus_t (*) (cusparseSpMatDescr_t , int64_t* , int64_t* , int64_t* , void** , void** , void** , cusparseIndexType_t* , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseCsrGet");
+		tracer._kernel_map[(void *) lcusparseCsrGet] = std::string("cusparseCsrGet");
+	}
+	assert(lcusparseCsrGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCsrGet(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCsrGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstCsrGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  csrRowOffsets, const void**  csrColInd, const void**  csrValues, cusparseIndexType_t*  csrRowOffsetsType, cusparseIndexType_t*  csrColIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseConstCsrGet) (cusparseConstSpMatDescr_t , int64_t* , int64_t* , int64_t* , const void** , const void** , const void** , cusparseIndexType_t* , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* );
+	if (!lcusparseConstCsrGet) {
+		lcusparseConstCsrGet = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t , int64_t* , int64_t* , int64_t* , const void** , const void** , const void** , cusparseIndexType_t* , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseConstCsrGet");
+		tracer._kernel_map[(void *) lcusparseConstCsrGet] = std::string("cusparseConstCsrGet");
+	}
+	assert(lcusparseConstCsrGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstCsrGet(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstCsrGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCscGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  cscColOffsets, void**  cscRowInd, void**  cscValues, cusparseIndexType_t*  cscColOffsetsType, cusparseIndexType_t*  cscRowIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseCscGet) (cusparseSpMatDescr_t , int64_t* , int64_t* , int64_t* , void** , void** , void** , cusparseIndexType_t* , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* );
+	if (!lcusparseCscGet) {
+		lcusparseCscGet = (cusparseStatus_t (*) (cusparseSpMatDescr_t , int64_t* , int64_t* , int64_t* , void** , void** , void** , cusparseIndexType_t* , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseCscGet");
+		tracer._kernel_map[(void *) lcusparseCscGet] = std::string("cusparseCscGet");
+	}
+	assert(lcusparseCscGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCscGet(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCscGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstCscGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  cscColOffsets, const void**  cscRowInd, const void**  cscValues, cusparseIndexType_t*  cscColOffsetsType, cusparseIndexType_t*  cscRowIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseConstCscGet) (cusparseConstSpMatDescr_t , int64_t* , int64_t* , int64_t* , const void** , const void** , const void** , cusparseIndexType_t* , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* );
+	if (!lcusparseConstCscGet) {
+		lcusparseConstCscGet = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t , int64_t* , int64_t* , int64_t* , const void** , const void** , const void** , cusparseIndexType_t* , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseConstCscGet");
+		tracer._kernel_map[(void *) lcusparseConstCscGet] = std::string("cusparseConstCscGet");
+	}
+	assert(lcusparseConstCscGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstCscGet(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstCscGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCsrSetPointers(cusparseSpMatDescr_t  spMatDescr, void*  csrRowOffsets, void*  csrColInd, void*  csrValues)
+{
+	static cusparseStatus_t (*lcusparseCsrSetPointers) (cusparseSpMatDescr_t , void* , void* , void* );
+	if (!lcusparseCsrSetPointers) {
+		lcusparseCsrSetPointers = (cusparseStatus_t (*) (cusparseSpMatDescr_t , void* , void* , void* )) dlsym(RTLD_NEXT, "cusparseCsrSetPointers");
+		tracer._kernel_map[(void *) lcusparseCsrSetPointers] = std::string("cusparseCsrSetPointers");
+	}
+	assert(lcusparseCsrSetPointers);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCsrSetPointers(spMatDescr, csrRowOffsets, csrColInd, csrValues);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCsrSetPointers);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCscSetPointers(cusparseSpMatDescr_t  spMatDescr, void*  cscColOffsets, void*  cscRowInd, void*  cscValues)
+{
+	static cusparseStatus_t (*lcusparseCscSetPointers) (cusparseSpMatDescr_t , void* , void* , void* );
+	if (!lcusparseCscSetPointers) {
+		lcusparseCscSetPointers = (cusparseStatus_t (*) (cusparseSpMatDescr_t , void* , void* , void* )) dlsym(RTLD_NEXT, "cusparseCscSetPointers");
+		tracer._kernel_map[(void *) lcusparseCscSetPointers] = std::string("cusparseCscSetPointers");
+	}
+	assert(lcusparseCscSetPointers);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCscSetPointers(spMatDescr, cscColOffsets, cscRowInd, cscValues);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCscSetPointers);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateBsr(cusparseSpMatDescr_t*  spMatDescr, int64_t  brows, int64_t  bcols, int64_t  bnnz, int64_t  rowBlockSize, int64_t  colBlockSize, void*  bsrRowOffsets, void*  bsrColInd, void*  bsrValues, cusparseIndexType_t  bsrRowOffsetsType, cusparseIndexType_t  bsrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType, cusparseOrder_t  order)
+{
+	static cusparseStatus_t (*lcusparseCreateBsr) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , int64_t , void* , void* , void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType , cusparseOrder_t );
+	if (!lcusparseCreateBsr) {
+		lcusparseCreateBsr = (cusparseStatus_t (*) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , int64_t , void* , void* , void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType , cusparseOrder_t )) dlsym(RTLD_NEXT, "cusparseCreateBsr");
+		tracer._kernel_map[(void *) lcusparseCreateBsr] = std::string("cusparseCreateBsr");
+	}
+	assert(lcusparseCreateBsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateBsr(spMatDescr, brows, bcols, bnnz, rowBlockSize, colBlockSize, bsrRowOffsets, bsrColInd, bsrValues, bsrRowOffsetsType, bsrColIndType, idxBase, valueType, order);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateBsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateConstBsr(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  brows, int64_t  bcols, int64_t  bnnz, int64_t  rowBlockDim, int64_t  colBlockDim, const void*  bsrRowOffsets, const void*  bsrColInd, const void*  bsrValues, cusparseIndexType_t  bsrRowOffsetsType, cusparseIndexType_t  bsrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType, cusparseOrder_t  order)
+{
+	static cusparseStatus_t (*lcusparseCreateConstBsr) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , int64_t , const void* , const void* , const void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType , cusparseOrder_t );
+	if (!lcusparseCreateConstBsr) {
+		lcusparseCreateConstBsr = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , int64_t , const void* , const void* , const void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType , cusparseOrder_t )) dlsym(RTLD_NEXT, "cusparseCreateConstBsr");
+		tracer._kernel_map[(void *) lcusparseCreateConstBsr] = std::string("cusparseCreateConstBsr");
+	}
+	assert(lcusparseCreateConstBsr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateConstBsr(spMatDescr, brows, bcols, bnnz, rowBlockDim, colBlockDim, bsrRowOffsets, bsrColInd, bsrValues, bsrRowOffsetsType, bsrColIndType, idxBase, valueType, order);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateConstBsr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateCoo(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  cooRowInd, void*  cooColInd, void*  cooValues, cusparseIndexType_t  cooIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateCoo) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , void* , void* , void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateCoo) {
+		lcusparseCreateCoo = (cusparseStatus_t (*) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , void* , void* , void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateCoo");
+		tracer._kernel_map[(void *) lcusparseCreateCoo] = std::string("cusparseCreateCoo");
+	}
+	assert(lcusparseCreateCoo);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateCoo(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, cooIdxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateCoo);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateConstCoo(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  cooRowInd, const void*  cooColInd, const void*  cooValues, cusparseIndexType_t  cooIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateConstCoo) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , const void* , const void* , const void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateConstCoo) {
+		lcusparseCreateConstCoo = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , const void* , const void* , const void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateConstCoo");
+		tracer._kernel_map[(void *) lcusparseCreateConstCoo] = std::string("cusparseCreateConstCoo");
+	}
+	assert(lcusparseCreateConstCoo);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateConstCoo(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, cooIdxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateConstCoo);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCooGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  cooRowInd, void**  cooColInd, void**  cooValues, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseCooGet) (cusparseSpMatDescr_t , int64_t* , int64_t* , int64_t* , void** , void** , void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* );
+	if (!lcusparseCooGet) {
+		lcusparseCooGet = (cusparseStatus_t (*) (cusparseSpMatDescr_t , int64_t* , int64_t* , int64_t* , void** , void** , void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseCooGet");
+		tracer._kernel_map[(void *) lcusparseCooGet] = std::string("cusparseCooGet");
+	}
+	assert(lcusparseCooGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCooGet(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, idxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCooGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstCooGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  cooRowInd, const void**  cooColInd, const void**  cooValues, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseConstCooGet) (cusparseConstSpMatDescr_t , int64_t* , int64_t* , int64_t* , const void** , const void** , const void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* );
+	if (!lcusparseConstCooGet) {
+		lcusparseConstCooGet = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t , int64_t* , int64_t* , int64_t* , const void** , const void** , const void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseConstCooGet");
+		tracer._kernel_map[(void *) lcusparseConstCooGet] = std::string("cusparseConstCooGet");
+	}
+	assert(lcusparseConstCooGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstCooGet(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, idxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstCooGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCooSetPointers(cusparseSpMatDescr_t  spMatDescr, void*  cooRows, void*  cooColumns, void*  cooValues)
+{
+	static cusparseStatus_t (*lcusparseCooSetPointers) (cusparseSpMatDescr_t , void* , void* , void* );
+	if (!lcusparseCooSetPointers) {
+		lcusparseCooSetPointers = (cusparseStatus_t (*) (cusparseSpMatDescr_t , void* , void* , void* )) dlsym(RTLD_NEXT, "cusparseCooSetPointers");
+		tracer._kernel_map[(void *) lcusparseCooSetPointers] = std::string("cusparseCooSetPointers");
+	}
+	assert(lcusparseCooSetPointers);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCooSetPointers(spMatDescr, cooRows, cooColumns, cooValues);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCooSetPointers);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateBlockedEll(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  ellBlockSize, int64_t  ellCols, void*  ellColInd, void*  ellValue, cusparseIndexType_t  ellIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateBlockedEll) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , void* , void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateBlockedEll) {
+		lcusparseCreateBlockedEll = (cusparseStatus_t (*) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , void* , void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateBlockedEll");
+		tracer._kernel_map[(void *) lcusparseCreateBlockedEll] = std::string("cusparseCreateBlockedEll");
+	}
+	assert(lcusparseCreateBlockedEll);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateBlockedEll(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateBlockedEll);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateConstBlockedEll(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  ellBlockSize, int64_t  ellCols, const void*  ellColInd, const void*  ellValue, cusparseIndexType_t  ellIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateConstBlockedEll) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , const void* , const void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateConstBlockedEll) {
+		lcusparseCreateConstBlockedEll = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , const void* , const void* , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateConstBlockedEll");
+		tracer._kernel_map[(void *) lcusparseCreateConstBlockedEll] = std::string("cusparseCreateConstBlockedEll");
+	}
+	assert(lcusparseCreateConstBlockedEll);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateConstBlockedEll(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateConstBlockedEll);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseBlockedEllGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ellBlockSize, int64_t*  ellCols, void**  ellColInd, void**  ellValue, cusparseIndexType_t*  ellIdxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseBlockedEllGet) (cusparseSpMatDescr_t , int64_t* , int64_t* , int64_t* , int64_t* , void** , void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* );
+	if (!lcusparseBlockedEllGet) {
+		lcusparseBlockedEllGet = (cusparseStatus_t (*) (cusparseSpMatDescr_t , int64_t* , int64_t* , int64_t* , int64_t* , void** , void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseBlockedEllGet");
+		tracer._kernel_map[(void *) lcusparseBlockedEllGet] = std::string("cusparseBlockedEllGet");
+	}
+	assert(lcusparseBlockedEllGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseBlockedEllGet(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseBlockedEllGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstBlockedEllGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ellBlockSize, int64_t*  ellCols, const void**  ellColInd, const void**  ellValue, cusparseIndexType_t*  ellIdxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
+{
+	static cusparseStatus_t (*lcusparseConstBlockedEllGet) (cusparseConstSpMatDescr_t , int64_t* , int64_t* , int64_t* , int64_t* , const void** , const void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* );
+	if (!lcusparseConstBlockedEllGet) {
+		lcusparseConstBlockedEllGet = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t , int64_t* , int64_t* , int64_t* , int64_t* , const void** , const void** , cusparseIndexType_t* , cusparseIndexBase_t* , cudaDataType* )) dlsym(RTLD_NEXT, "cusparseConstBlockedEllGet");
+		tracer._kernel_map[(void *) lcusparseConstBlockedEllGet] = std::string("cusparseConstBlockedEllGet");
+	}
+	assert(lcusparseConstBlockedEllGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstBlockedEllGet(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstBlockedEllGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateSlicedEll(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, int64_t  sellValuesSize, int64_t  sliceSize, void*  sellSliceOffsets, void*  sellColInd, void*  sellValues, cusparseIndexType_t  sellSliceOffsetsType, cusparseIndexType_t  sellColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateSlicedEll) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , int64_t , void* , void* , void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateSlicedEll) {
+		lcusparseCreateSlicedEll = (cusparseStatus_t (*) (cusparseSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , int64_t , void* , void* , void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateSlicedEll");
+		tracer._kernel_map[(void *) lcusparseCreateSlicedEll] = std::string("cusparseCreateSlicedEll");
+	}
+	assert(lcusparseCreateSlicedEll);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateSlicedEll(spMatDescr, rows, cols, nnz, sellValuesSize, sliceSize, sellSliceOffsets, sellColInd, sellValues, sellSliceOffsetsType, sellColIndType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateSlicedEll);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateConstSlicedEll(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, int64_t  sellValuesSize, int64_t  sliceSize, const void*  sellSliceOffsets, const void*  sellColInd, const void*  sellValues, cusparseIndexType_t  sellSliceOffsetsType, cusparseIndexType_t  sellColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
+{
+	static cusparseStatus_t (*lcusparseCreateConstSlicedEll) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , int64_t , const void* , const void* , const void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType );
+	if (!lcusparseCreateConstSlicedEll) {
+		lcusparseCreateConstSlicedEll = (cusparseStatus_t (*) (cusparseConstSpMatDescr_t* , int64_t , int64_t , int64_t , int64_t , int64_t , const void* , const void* , const void* , cusparseIndexType_t , cusparseIndexType_t , cusparseIndexBase_t , cudaDataType )) dlsym(RTLD_NEXT, "cusparseCreateConstSlicedEll");
+		tracer._kernel_map[(void *) lcusparseCreateConstSlicedEll] = std::string("cusparseCreateConstSlicedEll");
+	}
+	assert(lcusparseCreateConstSlicedEll);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateConstSlicedEll(spMatDescr, rows, cols, nnz, sellValuesSize, sliceSize, sellSliceOffsets, sellColInd, sellValues, sellSliceOffsetsType, sellColIndType, idxBase, valueType);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateConstSlicedEll);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateDnMat(cusparseDnMatDescr_t*  dnMatDescr, int64_t  rows, int64_t  cols, int64_t  ld, void*  values, cudaDataType  valueType, cusparseOrder_t  order)
+{
+	static cusparseStatus_t (*lcusparseCreateDnMat) (cusparseDnMatDescr_t* , int64_t , int64_t , int64_t , void* , cudaDataType , cusparseOrder_t );
+	if (!lcusparseCreateDnMat) {
+		lcusparseCreateDnMat = (cusparseStatus_t (*) (cusparseDnMatDescr_t* , int64_t , int64_t , int64_t , void* , cudaDataType , cusparseOrder_t )) dlsym(RTLD_NEXT, "cusparseCreateDnMat");
+		tracer._kernel_map[(void *) lcusparseCreateDnMat] = std::string("cusparseCreateDnMat");
+	}
+	assert(lcusparseCreateDnMat);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateDnMat(dnMatDescr, rows, cols, ld, values, valueType, order);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateDnMat);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseCreateConstDnMat(cusparseConstDnMatDescr_t*  dnMatDescr, int64_t  rows, int64_t  cols, int64_t  ld, const void*  values, cudaDataType  valueType, cusparseOrder_t  order)
+{
+	static cusparseStatus_t (*lcusparseCreateConstDnMat) (cusparseConstDnMatDescr_t* , int64_t , int64_t , int64_t , const void* , cudaDataType , cusparseOrder_t );
+	if (!lcusparseCreateConstDnMat) {
+		lcusparseCreateConstDnMat = (cusparseStatus_t (*) (cusparseConstDnMatDescr_t* , int64_t , int64_t , int64_t , const void* , cudaDataType , cusparseOrder_t )) dlsym(RTLD_NEXT, "cusparseCreateConstDnMat");
+		tracer._kernel_map[(void *) lcusparseCreateConstDnMat] = std::string("cusparseCreateConstDnMat");
+	}
+	assert(lcusparseCreateConstDnMat);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseCreateConstDnMat(dnMatDescr, rows, cols, ld, values, valueType, order);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseCreateConstDnMat);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDestroyDnMat(cusparseConstDnMatDescr_t  dnMatDescr)
+{
+	static cusparseStatus_t (*lcusparseDestroyDnMat) (cusparseConstDnMatDescr_t );
+	if (!lcusparseDestroyDnMat) {
+		lcusparseDestroyDnMat = (cusparseStatus_t (*) (cusparseConstDnMatDescr_t )) dlsym(RTLD_NEXT, "cusparseDestroyDnMat");
+		tracer._kernel_map[(void *) lcusparseDestroyDnMat] = std::string("cusparseDestroyDnMat");
+	}
+	assert(lcusparseDestroyDnMat);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDestroyDnMat(dnMatDescr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDestroyDnMat);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDnMatGet(cusparseDnMatDescr_t  dnMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ld, void**  values, cudaDataType*  type, cusparseOrder_t*  order)
+{
+	static cusparseStatus_t (*lcusparseDnMatGet) (cusparseDnMatDescr_t , int64_t* , int64_t* , int64_t* , void** , cudaDataType* , cusparseOrder_t* );
+	if (!lcusparseDnMatGet) {
+		lcusparseDnMatGet = (cusparseStatus_t (*) (cusparseDnMatDescr_t , int64_t* , int64_t* , int64_t* , void** , cudaDataType* , cusparseOrder_t* )) dlsym(RTLD_NEXT, "cusparseDnMatGet");
+		tracer._kernel_map[(void *) lcusparseDnMatGet] = std::string("cusparseDnMatGet");
+	}
+	assert(lcusparseDnMatGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDnMatGet(dnMatDescr, rows, cols, ld, values, type, order);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDnMatGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstDnMatGet(cusparseConstDnMatDescr_t  dnMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ld, const void**  values, cudaDataType*  type, cusparseOrder_t*  order)
+{
+	static cusparseStatus_t (*lcusparseConstDnMatGet) (cusparseConstDnMatDescr_t , int64_t* , int64_t* , int64_t* , const void** , cudaDataType* , cusparseOrder_t* );
+	if (!lcusparseConstDnMatGet) {
+		lcusparseConstDnMatGet = (cusparseStatus_t (*) (cusparseConstDnMatDescr_t , int64_t* , int64_t* , int64_t* , const void** , cudaDataType* , cusparseOrder_t* )) dlsym(RTLD_NEXT, "cusparseConstDnMatGet");
+		tracer._kernel_map[(void *) lcusparseConstDnMatGet] = std::string("cusparseConstDnMatGet");
+	}
+	assert(lcusparseConstDnMatGet);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstDnMatGet(dnMatDescr, rows, cols, ld, values, type, order);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstDnMatGet);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDnMatGetValues(cusparseDnMatDescr_t  dnMatDescr, void**  values)
+{
+	static cusparseStatus_t (*lcusparseDnMatGetValues) (cusparseDnMatDescr_t , void** );
+	if (!lcusparseDnMatGetValues) {
+		lcusparseDnMatGetValues = (cusparseStatus_t (*) (cusparseDnMatDescr_t , void** )) dlsym(RTLD_NEXT, "cusparseDnMatGetValues");
+		tracer._kernel_map[(void *) lcusparseDnMatGetValues] = std::string("cusparseDnMatGetValues");
+	}
+	assert(lcusparseDnMatGetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDnMatGetValues(dnMatDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDnMatGetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseConstDnMatGetValues(cusparseConstDnMatDescr_t  dnMatDescr, const void**  values)
+{
+	static cusparseStatus_t (*lcusparseConstDnMatGetValues) (cusparseConstDnMatDescr_t , const void** );
+	if (!lcusparseConstDnMatGetValues) {
+		lcusparseConstDnMatGetValues = (cusparseStatus_t (*) (cusparseConstDnMatDescr_t , const void** )) dlsym(RTLD_NEXT, "cusparseConstDnMatGetValues");
+		tracer._kernel_map[(void *) lcusparseConstDnMatGetValues] = std::string("cusparseConstDnMatGetValues");
+	}
+	assert(lcusparseConstDnMatGetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseConstDnMatGetValues(dnMatDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseConstDnMatGetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDnMatSetValues(cusparseDnMatDescr_t  dnMatDescr, void*  values)
+{
+	static cusparseStatus_t (*lcusparseDnMatSetValues) (cusparseDnMatDescr_t , void* );
+	if (!lcusparseDnMatSetValues) {
+		lcusparseDnMatSetValues = (cusparseStatus_t (*) (cusparseDnMatDescr_t , void* )) dlsym(RTLD_NEXT, "cusparseDnMatSetValues");
+		tracer._kernel_map[(void *) lcusparseDnMatSetValues] = std::string("cusparseDnMatSetValues");
+	}
+	assert(lcusparseDnMatSetValues);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDnMatSetValues(dnMatDescr, values);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDnMatSetValues);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDnMatSetStridedBatch(cusparseDnMatDescr_t  dnMatDescr, int  batchCount, int64_t  batchStride)
+{
+	static cusparseStatus_t (*lcusparseDnMatSetStridedBatch) (cusparseDnMatDescr_t , int , int64_t );
+	if (!lcusparseDnMatSetStridedBatch) {
+		lcusparseDnMatSetStridedBatch = (cusparseStatus_t (*) (cusparseDnMatDescr_t , int , int64_t )) dlsym(RTLD_NEXT, "cusparseDnMatSetStridedBatch");
+		tracer._kernel_map[(void *) lcusparseDnMatSetStridedBatch] = std::string("cusparseDnMatSetStridedBatch");
+	}
+	assert(lcusparseDnMatSetStridedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDnMatSetStridedBatch(dnMatDescr, batchCount, batchStride);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDnMatSetStridedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDnMatGetStridedBatch(cusparseConstDnMatDescr_t  dnMatDescr, int*  batchCount, int64_t*  batchStride)
+{
+	static cusparseStatus_t (*lcusparseDnMatGetStridedBatch) (cusparseConstDnMatDescr_t , int* , int64_t* );
+	if (!lcusparseDnMatGetStridedBatch) {
+		lcusparseDnMatGetStridedBatch = (cusparseStatus_t (*) (cusparseConstDnMatDescr_t , int* , int64_t* )) dlsym(RTLD_NEXT, "cusparseDnMatGetStridedBatch");
+		tracer._kernel_map[(void *) lcusparseDnMatGetStridedBatch] = std::string("cusparseDnMatGetStridedBatch");
+	}
+	assert(lcusparseDnMatGetStridedBatch);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDnMatGetStridedBatch(dnMatDescr, batchCount, batchStride);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDnMatGetStridedBatch);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseAxpby(cusparseHandle_t  handle, const void*  alpha, cusparseConstSpVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY)
+{
+	static cusparseStatus_t (*lcusparseAxpby) (cusparseHandle_t , const void* , cusparseConstSpVecDescr_t , const void* , cusparseDnVecDescr_t );
+	if (!lcusparseAxpby) {
+		lcusparseAxpby = (cusparseStatus_t (*) (cusparseHandle_t , const void* , cusparseConstSpVecDescr_t , const void* , cusparseDnVecDescr_t )) dlsym(RTLD_NEXT, "cusparseAxpby");
+		tracer._kernel_map[(void *) lcusparseAxpby] = std::string("cusparseAxpby");
+	}
+	assert(lcusparseAxpby);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseAxpby(handle, alpha, vecX, beta, vecY);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseAxpby);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseGather(cusparseHandle_t  handle, cusparseConstDnVecDescr_t  vecY, cusparseSpVecDescr_t  vecX)
+{
+	static cusparseStatus_t (*lcusparseGather) (cusparseHandle_t , cusparseConstDnVecDescr_t , cusparseSpVecDescr_t );
+	if (!lcusparseGather) {
+		lcusparseGather = (cusparseStatus_t (*) (cusparseHandle_t , cusparseConstDnVecDescr_t , cusparseSpVecDescr_t )) dlsym(RTLD_NEXT, "cusparseGather");
+		tracer._kernel_map[(void *) lcusparseGather] = std::string("cusparseGather");
+	}
+	assert(lcusparseGather);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseGather(handle, vecY, vecX);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseGather);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseScatter(cusparseHandle_t  handle, cusparseConstSpVecDescr_t  vecX, cusparseDnVecDescr_t  vecY)
+{
+	static cusparseStatus_t (*lcusparseScatter) (cusparseHandle_t , cusparseConstSpVecDescr_t , cusparseDnVecDescr_t );
+	if (!lcusparseScatter) {
+		lcusparseScatter = (cusparseStatus_t (*) (cusparseHandle_t , cusparseConstSpVecDescr_t , cusparseDnVecDescr_t )) dlsym(RTLD_NEXT, "cusparseScatter");
+		tracer._kernel_map[(void *) lcusparseScatter] = std::string("cusparseScatter");
+	}
+	assert(lcusparseScatter);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseScatter(handle, vecX, vecY);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseScatter);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseRot(cusparseHandle_t  handle, const void*  c_coeff, const void*  s_coeff, cusparseSpVecDescr_t  vecX, cusparseDnVecDescr_t  vecY)
+{
+	static cusparseStatus_t (*lcusparseRot) (cusparseHandle_t , const void* , const void* , cusparseSpVecDescr_t , cusparseDnVecDescr_t );
+	if (!lcusparseRot) {
+		lcusparseRot = (cusparseStatus_t (*) (cusparseHandle_t , const void* , const void* , cusparseSpVecDescr_t , cusparseDnVecDescr_t )) dlsym(RTLD_NEXT, "cusparseRot");
+		tracer._kernel_map[(void *) lcusparseRot] = std::string("cusparseRot");
+	}
+	assert(lcusparseRot);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseRot(handle, c_coeff, s_coeff, vecX, vecY);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseRot);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpVV_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opX, cusparseConstSpVecDescr_t  vecX, cusparseConstDnVecDescr_t  vecY, const void*  result, cudaDataType  computeType, size_t*  bufferSize)
+{
+	static cusparseStatus_t (*lcusparseSpVV_bufferSize) (cusparseHandle_t , cusparseOperation_t , cusparseConstSpVecDescr_t , cusparseConstDnVecDescr_t , const void* , cudaDataType , size_t* );
+	if (!lcusparseSpVV_bufferSize) {
+		lcusparseSpVV_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseConstSpVecDescr_t , cusparseConstDnVecDescr_t , const void* , cudaDataType , size_t* )) dlsym(RTLD_NEXT, "cusparseSpVV_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSpVV_bufferSize] = std::string("cusparseSpVV_bufferSize");
+	}
+	assert(lcusparseSpVV_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpVV_bufferSize(handle, opX, vecX, vecY, result, computeType, bufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpVV_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpVV(cusparseHandle_t  handle, cusparseOperation_t  opX, cusparseConstSpVecDescr_t  vecX, cusparseConstDnVecDescr_t  vecY, void*  result, cudaDataType  computeType, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpVV) (cusparseHandle_t , cusparseOperation_t , cusparseConstSpVecDescr_t , cusparseConstDnVecDescr_t , void* , cudaDataType , void* );
+	if (!lcusparseSpVV) {
+		lcusparseSpVV = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseConstSpVecDescr_t , cusparseConstDnVecDescr_t , void* , cudaDataType , void* )) dlsym(RTLD_NEXT, "cusparseSpVV");
+		tracer._kernel_map[(void *) lcusparseSpVV] = std::string("cusparseSpVV");
+	}
+	assert(lcusparseSpVV);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpVV(handle, opX, vecX, vecY, result, computeType, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpVV);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSparseToDense_bufferSize(cusparseHandle_t  handle, cusparseConstSpMatDescr_t  matA, cusparseDnMatDescr_t  matB, cusparseSparseToDenseAlg_t  alg, size_t*  bufferSize)
+{
+	static cusparseStatus_t (*lcusparseSparseToDense_bufferSize) (cusparseHandle_t , cusparseConstSpMatDescr_t , cusparseDnMatDescr_t , cusparseSparseToDenseAlg_t , size_t* );
+	if (!lcusparseSparseToDense_bufferSize) {
+		lcusparseSparseToDense_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseConstSpMatDescr_t , cusparseDnMatDescr_t , cusparseSparseToDenseAlg_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSparseToDense_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSparseToDense_bufferSize] = std::string("cusparseSparseToDense_bufferSize");
+	}
+	assert(lcusparseSparseToDense_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSparseToDense_bufferSize(handle, matA, matB, alg, bufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSparseToDense_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSparseToDense(cusparseHandle_t  handle, cusparseConstSpMatDescr_t  matA, cusparseDnMatDescr_t  matB, cusparseSparseToDenseAlg_t  alg, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseSparseToDense) (cusparseHandle_t , cusparseConstSpMatDescr_t , cusparseDnMatDescr_t , cusparseSparseToDenseAlg_t , void* );
+	if (!lcusparseSparseToDense) {
+		lcusparseSparseToDense = (cusparseStatus_t (*) (cusparseHandle_t , cusparseConstSpMatDescr_t , cusparseDnMatDescr_t , cusparseSparseToDenseAlg_t , void* )) dlsym(RTLD_NEXT, "cusparseSparseToDense");
+		tracer._kernel_map[(void *) lcusparseSparseToDense] = std::string("cusparseSparseToDense");
+	}
+	assert(lcusparseSparseToDense);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSparseToDense(handle, matA, matB, alg, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSparseToDense);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDenseToSparse_bufferSize(cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, size_t*  bufferSize)
+{
+	static cusparseStatus_t (*lcusparseDenseToSparse_bufferSize) (cusparseHandle_t , cusparseConstDnMatDescr_t , cusparseSpMatDescr_t , cusparseDenseToSparseAlg_t , size_t* );
+	if (!lcusparseDenseToSparse_bufferSize) {
+		lcusparseDenseToSparse_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseConstDnMatDescr_t , cusparseSpMatDescr_t , cusparseDenseToSparseAlg_t , size_t* )) dlsym(RTLD_NEXT, "cusparseDenseToSparse_bufferSize");
+		tracer._kernel_map[(void *) lcusparseDenseToSparse_bufferSize] = std::string("cusparseDenseToSparse_bufferSize");
+	}
+	assert(lcusparseDenseToSparse_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDenseToSparse_bufferSize(handle, matA, matB, alg, bufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDenseToSparse_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDenseToSparse_analysis(cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseDenseToSparse_analysis) (cusparseHandle_t , cusparseConstDnMatDescr_t , cusparseSpMatDescr_t , cusparseDenseToSparseAlg_t , void* );
+	if (!lcusparseDenseToSparse_analysis) {
+		lcusparseDenseToSparse_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseConstDnMatDescr_t , cusparseSpMatDescr_t , cusparseDenseToSparseAlg_t , void* )) dlsym(RTLD_NEXT, "cusparseDenseToSparse_analysis");
+		tracer._kernel_map[(void *) lcusparseDenseToSparse_analysis] = std::string("cusparseDenseToSparse_analysis");
+	}
+	assert(lcusparseDenseToSparse_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDenseToSparse_analysis(handle, matA, matB, alg, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDenseToSparse_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseDenseToSparse_convert(cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseDenseToSparse_convert) (cusparseHandle_t , cusparseConstDnMatDescr_t , cusparseSpMatDescr_t , cusparseDenseToSparseAlg_t , void* );
+	if (!lcusparseDenseToSparse_convert) {
+		lcusparseDenseToSparse_convert = (cusparseStatus_t (*) (cusparseHandle_t , cusparseConstDnMatDescr_t , cusparseSpMatDescr_t , cusparseDenseToSparseAlg_t , void* )) dlsym(RTLD_NEXT, "cusparseDenseToSparse_convert");
+		tracer._kernel_map[(void *) lcusparseDenseToSparse_convert] = std::string("cusparseDenseToSparse_convert");
+	}
+	assert(lcusparseDenseToSparse_convert);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseDenseToSparse_convert(handle, matA, matB, alg, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseDenseToSparse_convert);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMV(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpMVAlg_t  alg, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpMV) (cusparseHandle_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnVecDescr_t , const void* , cusparseDnVecDescr_t , cudaDataType , cusparseSpMVAlg_t , void* );
+	if (!lcusparseSpMV) {
+		lcusparseSpMV = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnVecDescr_t , const void* , cusparseDnVecDescr_t , cudaDataType , cusparseSpMVAlg_t , void* )) dlsym(RTLD_NEXT, "cusparseSpMV");
+		tracer._kernel_map[(void *) lcusparseSpMV] = std::string("cusparseSpMV");
+	}
+	assert(lcusparseSpMV);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMV(handle, opA, alpha, matA, vecX, beta, vecY, computeType, alg, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMV);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMV_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpMVAlg_t  alg, size_t*  bufferSize)
+{
+	static cusparseStatus_t (*lcusparseSpMV_bufferSize) (cusparseHandle_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnVecDescr_t , const void* , cusparseDnVecDescr_t , cudaDataType , cusparseSpMVAlg_t , size_t* );
+	if (!lcusparseSpMV_bufferSize) {
+		lcusparseSpMV_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnVecDescr_t , const void* , cusparseDnVecDescr_t , cudaDataType , cusparseSpMVAlg_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSpMV_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSpMV_bufferSize] = std::string("cusparseSpMV_bufferSize");
+	}
+	assert(lcusparseSpMV_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMV_bufferSize(handle, opA, alpha, matA, vecX, beta, vecY, computeType, alg, bufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMV_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSV_createDescr(cusparseSpSVDescr_t*  descr)
+{
+	static cusparseStatus_t (*lcusparseSpSV_createDescr) (cusparseSpSVDescr_t* );
+	if (!lcusparseSpSV_createDescr) {
+		lcusparseSpSV_createDescr = (cusparseStatus_t (*) (cusparseSpSVDescr_t* )) dlsym(RTLD_NEXT, "cusparseSpSV_createDescr");
+		tracer._kernel_map[(void *) lcusparseSpSV_createDescr] = std::string("cusparseSpSV_createDescr");
+	}
+	assert(lcusparseSpSV_createDescr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSV_createDescr(descr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSV_createDescr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSV_destroyDescr(cusparseSpSVDescr_t  descr)
+{
+	static cusparseStatus_t (*lcusparseSpSV_destroyDescr) (cusparseSpSVDescr_t );
+	if (!lcusparseSpSV_destroyDescr) {
+		lcusparseSpSV_destroyDescr = (cusparseStatus_t (*) (cusparseSpSVDescr_t )) dlsym(RTLD_NEXT, "cusparseSpSV_destroyDescr");
+		tracer._kernel_map[(void *) lcusparseSpSV_destroyDescr] = std::string("cusparseSpSV_destroyDescr");
+	}
+	assert(lcusparseSpSV_destroyDescr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSV_destroyDescr(descr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSV_destroyDescr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSV_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr, size_t*  bufferSize)
+{
+	static cusparseStatus_t (*lcusparseSpSV_bufferSize) (cusparseHandle_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnVecDescr_t , cusparseDnVecDescr_t , cudaDataType , cusparseSpSVAlg_t , cusparseSpSVDescr_t , size_t* );
+	if (!lcusparseSpSV_bufferSize) {
+		lcusparseSpSV_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnVecDescr_t , cusparseDnVecDescr_t , cudaDataType , cusparseSpSVAlg_t , cusparseSpSVDescr_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSpSV_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSpSV_bufferSize] = std::string("cusparseSpSV_bufferSize");
+	}
+	assert(lcusparseSpSV_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSV_bufferSize(handle, opA, alpha, matA, vecX, vecY, computeType, alg, spsvDescr, bufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSV_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSV_analysis(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpSV_analysis) (cusparseHandle_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnVecDescr_t , cusparseDnVecDescr_t , cudaDataType , cusparseSpSVAlg_t , cusparseSpSVDescr_t , void* );
+	if (!lcusparseSpSV_analysis) {
+		lcusparseSpSV_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnVecDescr_t , cusparseDnVecDescr_t , cudaDataType , cusparseSpSVAlg_t , cusparseSpSVDescr_t , void* )) dlsym(RTLD_NEXT, "cusparseSpSV_analysis");
+		tracer._kernel_map[(void *) lcusparseSpSV_analysis] = std::string("cusparseSpSV_analysis");
+	}
+	assert(lcusparseSpSV_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSV_analysis(handle, opA, alpha, matA, vecX, vecY, computeType, alg, spsvDescr, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSV_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSV_solve(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr)
+{
+	static cusparseStatus_t (*lcusparseSpSV_solve) (cusparseHandle_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnVecDescr_t , cusparseDnVecDescr_t , cudaDataType , cusparseSpSVAlg_t , cusparseSpSVDescr_t );
+	if (!lcusparseSpSV_solve) {
+		lcusparseSpSV_solve = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnVecDescr_t , cusparseDnVecDescr_t , cudaDataType , cusparseSpSVAlg_t , cusparseSpSVDescr_t )) dlsym(RTLD_NEXT, "cusparseSpSV_solve");
+		tracer._kernel_map[(void *) lcusparseSpSV_solve] = std::string("cusparseSpSV_solve");
+	}
+	assert(lcusparseSpSV_solve);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSV_solve(handle, opA, alpha, matA, vecX, vecY, computeType, alg, spsvDescr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSV_solve);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSV_updateMatrix(cusparseHandle_t  handle, cusparseSpSVDescr_t  spsvDescr, void*  newValues, cusparseSpSVUpdate_t  updatePart)
+{
+	static cusparseStatus_t (*lcusparseSpSV_updateMatrix) (cusparseHandle_t , cusparseSpSVDescr_t , void* , cusparseSpSVUpdate_t );
+	if (!lcusparseSpSV_updateMatrix) {
+		lcusparseSpSV_updateMatrix = (cusparseStatus_t (*) (cusparseHandle_t , cusparseSpSVDescr_t , void* , cusparseSpSVUpdate_t )) dlsym(RTLD_NEXT, "cusparseSpSV_updateMatrix");
+		tracer._kernel_map[(void *) lcusparseSpSV_updateMatrix] = std::string("cusparseSpSV_updateMatrix");
+	}
+	assert(lcusparseSpSV_updateMatrix);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSV_updateMatrix(handle, spsvDescr, newValues, updatePart);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSV_updateMatrix);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSM_createDescr(cusparseSpSMDescr_t*  descr)
+{
+	static cusparseStatus_t (*lcusparseSpSM_createDescr) (cusparseSpSMDescr_t* );
+	if (!lcusparseSpSM_createDescr) {
+		lcusparseSpSM_createDescr = (cusparseStatus_t (*) (cusparseSpSMDescr_t* )) dlsym(RTLD_NEXT, "cusparseSpSM_createDescr");
+		tracer._kernel_map[(void *) lcusparseSpSM_createDescr] = std::string("cusparseSpSM_createDescr");
+	}
+	assert(lcusparseSpSM_createDescr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSM_createDescr(descr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSM_createDescr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSM_destroyDescr(cusparseSpSMDescr_t  descr)
+{
+	static cusparseStatus_t (*lcusparseSpSM_destroyDescr) (cusparseSpSMDescr_t );
+	if (!lcusparseSpSM_destroyDescr) {
+		lcusparseSpSM_destroyDescr = (cusparseStatus_t (*) (cusparseSpSMDescr_t )) dlsym(RTLD_NEXT, "cusparseSpSM_destroyDescr");
+		tracer._kernel_map[(void *) lcusparseSpSM_destroyDescr] = std::string("cusparseSpSM_destroyDescr");
+	}
+	assert(lcusparseSpSM_destroyDescr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSM_destroyDescr(descr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSM_destroyDescr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSM_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr, size_t*  bufferSize)
+{
+	static cusparseStatus_t (*lcusparseSpSM_bufferSize) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , cusparseDnMatDescr_t , cudaDataType , cusparseSpSMAlg_t , cusparseSpSMDescr_t , size_t* );
+	if (!lcusparseSpSM_bufferSize) {
+		lcusparseSpSM_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , cusparseDnMatDescr_t , cudaDataType , cusparseSpSMAlg_t , cusparseSpSMDescr_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSpSM_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSpSM_bufferSize] = std::string("cusparseSpSM_bufferSize");
+	}
+	assert(lcusparseSpSM_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSM_bufferSize(handle, opA, opB, alpha, matA, matB, matC, computeType, alg, spsmDescr, bufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSM_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSM_analysis(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpSM_analysis) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , cusparseDnMatDescr_t , cudaDataType , cusparseSpSMAlg_t , cusparseSpSMDescr_t , void* );
+	if (!lcusparseSpSM_analysis) {
+		lcusparseSpSM_analysis = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , cusparseDnMatDescr_t , cudaDataType , cusparseSpSMAlg_t , cusparseSpSMDescr_t , void* )) dlsym(RTLD_NEXT, "cusparseSpSM_analysis");
+		tracer._kernel_map[(void *) lcusparseSpSM_analysis] = std::string("cusparseSpSM_analysis");
+	}
+	assert(lcusparseSpSM_analysis);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSM_analysis(handle, opA, opB, alpha, matA, matB, matC, computeType, alg, spsmDescr, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSM_analysis);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpSM_solve(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr)
+{
+	static cusparseStatus_t (*lcusparseSpSM_solve) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , cusparseDnMatDescr_t , cudaDataType , cusparseSpSMAlg_t , cusparseSpSMDescr_t );
+	if (!lcusparseSpSM_solve) {
+		lcusparseSpSM_solve = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , cusparseDnMatDescr_t , cudaDataType , cusparseSpSMAlg_t , cusparseSpSMDescr_t )) dlsym(RTLD_NEXT, "cusparseSpSM_solve");
+		tracer._kernel_map[(void *) lcusparseSpSM_solve] = std::string("cusparseSpSM_solve");
+	}
+	assert(lcusparseSpSM_solve);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpSM_solve(handle, opA, opB, alpha, matA, matB, matC, computeType, alg, spsmDescr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpSM_solve);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMM_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, size_t*  bufferSize)
+{
+	static cusparseStatus_t (*lcusparseSpMM_bufferSize) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseDnMatDescr_t , cudaDataType , cusparseSpMMAlg_t , size_t* );
+	if (!lcusparseSpMM_bufferSize) {
+		lcusparseSpMM_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseDnMatDescr_t , cudaDataType , cusparseSpMMAlg_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSpMM_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSpMM_bufferSize] = std::string("cusparseSpMM_bufferSize");
+	}
+	assert(lcusparseSpMM_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMM_bufferSize(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, bufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMM_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMM_preprocess(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpMM_preprocess) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseDnMatDescr_t , cudaDataType , cusparseSpMMAlg_t , void* );
+	if (!lcusparseSpMM_preprocess) {
+		lcusparseSpMM_preprocess = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseDnMatDescr_t , cudaDataType , cusparseSpMMAlg_t , void* )) dlsym(RTLD_NEXT, "cusparseSpMM_preprocess");
+		tracer._kernel_map[(void *) lcusparseSpMM_preprocess] = std::string("cusparseSpMM_preprocess");
+	}
+	assert(lcusparseSpMM_preprocess);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMM_preprocess(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMM_preprocess);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMM(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpMM) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseDnMatDescr_t , cudaDataType , cusparseSpMMAlg_t , void* );
+	if (!lcusparseSpMM) {
+		lcusparseSpMM = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseDnMatDescr_t , cudaDataType , cusparseSpMMAlg_t , void* )) dlsym(RTLD_NEXT, "cusparseSpMM");
+		tracer._kernel_map[(void *) lcusparseSpMM] = std::string("cusparseSpMM");
+	}
+	assert(lcusparseSpMM);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMM(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMM);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMM_createDescr(cusparseSpGEMMDescr_t*  descr)
+{
+	static cusparseStatus_t (*lcusparseSpGEMM_createDescr) (cusparseSpGEMMDescr_t* );
+	if (!lcusparseSpGEMM_createDescr) {
+		lcusparseSpGEMM_createDescr = (cusparseStatus_t (*) (cusparseSpGEMMDescr_t* )) dlsym(RTLD_NEXT, "cusparseSpGEMM_createDescr");
+		tracer._kernel_map[(void *) lcusparseSpGEMM_createDescr] = std::string("cusparseSpGEMM_createDescr");
+	}
+	assert(lcusparseSpGEMM_createDescr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMM_createDescr(descr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMM_createDescr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMM_destroyDescr(cusparseSpGEMMDescr_t  descr)
+{
+	static cusparseStatus_t (*lcusparseSpGEMM_destroyDescr) (cusparseSpGEMMDescr_t );
+	if (!lcusparseSpGEMM_destroyDescr) {
+		lcusparseSpGEMM_destroyDescr = (cusparseStatus_t (*) (cusparseSpGEMMDescr_t )) dlsym(RTLD_NEXT, "cusparseSpGEMM_destroyDescr");
+		tracer._kernel_map[(void *) lcusparseSpGEMM_destroyDescr] = std::string("cusparseSpGEMM_destroyDescr");
+	}
+	assert(lcusparseSpGEMM_destroyDescr);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMM_destroyDescr(descr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMM_destroyDescr);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMM_workEstimation(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize1, void*  externalBuffer1)
+{
+	static cusparseStatus_t (*lcusparseSpGEMM_workEstimation) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , size_t* , void* );
+	if (!lcusparseSpGEMM_workEstimation) {
+		lcusparseSpGEMM_workEstimation = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , size_t* , void* )) dlsym(RTLD_NEXT, "cusparseSpGEMM_workEstimation");
+		tracer._kernel_map[(void *) lcusparseSpGEMM_workEstimation] = std::string("cusparseSpGEMM_workEstimation");
+	}
+	assert(lcusparseSpGEMM_workEstimation);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMM_workEstimation(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr, bufferSize1, externalBuffer1);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMM_workEstimation);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMM_getNumProducts(cusparseSpGEMMDescr_t  spgemmDescr, int64_t*  num_prods)
+{
+	static cusparseStatus_t (*lcusparseSpGEMM_getNumProducts) (cusparseSpGEMMDescr_t , int64_t* );
+	if (!lcusparseSpGEMM_getNumProducts) {
+		lcusparseSpGEMM_getNumProducts = (cusparseStatus_t (*) (cusparseSpGEMMDescr_t , int64_t* )) dlsym(RTLD_NEXT, "cusparseSpGEMM_getNumProducts");
+		tracer._kernel_map[(void *) lcusparseSpGEMM_getNumProducts] = std::string("cusparseSpGEMM_getNumProducts");
+	}
+	assert(lcusparseSpGEMM_getNumProducts);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMM_getNumProducts(spgemmDescr, num_prods);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMM_getNumProducts);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMM_estimateMemory(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, float  chunk_fraction, size_t*  bufferSize3, void*  externalBuffer3, size_t*  bufferSize2)
+{
+	static cusparseStatus_t (*lcusparseSpGEMM_estimateMemory) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , float , size_t* , void* , size_t* );
+	if (!lcusparseSpGEMM_estimateMemory) {
+		lcusparseSpGEMM_estimateMemory = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , float , size_t* , void* , size_t* )) dlsym(RTLD_NEXT, "cusparseSpGEMM_estimateMemory");
+		tracer._kernel_map[(void *) lcusparseSpGEMM_estimateMemory] = std::string("cusparseSpGEMM_estimateMemory");
+	}
+	assert(lcusparseSpGEMM_estimateMemory);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMM_estimateMemory(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr, chunk_fraction, bufferSize3, externalBuffer3, bufferSize2);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMM_estimateMemory);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMM_compute(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize2, void*  externalBuffer2)
+{
+	static cusparseStatus_t (*lcusparseSpGEMM_compute) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , size_t* , void* );
+	if (!lcusparseSpGEMM_compute) {
+		lcusparseSpGEMM_compute = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , size_t* , void* )) dlsym(RTLD_NEXT, "cusparseSpGEMM_compute");
+		tracer._kernel_map[(void *) lcusparseSpGEMM_compute] = std::string("cusparseSpGEMM_compute");
+	}
+	assert(lcusparseSpGEMM_compute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMM_compute(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr, bufferSize2, externalBuffer2);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMM_compute);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMM_copy(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr)
+{
+	static cusparseStatus_t (*lcusparseSpGEMM_copy) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t );
+	if (!lcusparseSpGEMM_copy) {
+		lcusparseSpGEMM_copy = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t )) dlsym(RTLD_NEXT, "cusparseSpGEMM_copy");
+		tracer._kernel_map[(void *) lcusparseSpGEMM_copy] = std::string("cusparseSpGEMM_copy");
+	}
+	assert(lcusparseSpGEMM_copy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMM_copy(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMM_copy);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMMreuse_workEstimation(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize1, void*  externalBuffer1)
+{
+	static cusparseStatus_t (*lcusparseSpGEMMreuse_workEstimation) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , cusparseSpMatDescr_t , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , size_t* , void* );
+	if (!lcusparseSpGEMMreuse_workEstimation) {
+		lcusparseSpGEMMreuse_workEstimation = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , cusparseSpMatDescr_t , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , size_t* , void* )) dlsym(RTLD_NEXT, "cusparseSpGEMMreuse_workEstimation");
+		tracer._kernel_map[(void *) lcusparseSpGEMMreuse_workEstimation] = std::string("cusparseSpGEMMreuse_workEstimation");
+	}
+	assert(lcusparseSpGEMMreuse_workEstimation);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMMreuse_workEstimation(handle, opA, opB, matA, matB, matC, alg, spgemmDescr, bufferSize1, externalBuffer1);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMMreuse_workEstimation);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMMreuse_nnz(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize2, void*  externalBuffer2, size_t*  bufferSize3, void*  externalBuffer3, size_t*  bufferSize4, void*  externalBuffer4)
+{
+	static cusparseStatus_t (*lcusparseSpGEMMreuse_nnz) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , cusparseSpMatDescr_t , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , size_t* , void* , size_t* , void* , size_t* , void* );
+	if (!lcusparseSpGEMMreuse_nnz) {
+		lcusparseSpGEMMreuse_nnz = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , cusparseSpMatDescr_t , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , size_t* , void* , size_t* , void* , size_t* , void* )) dlsym(RTLD_NEXT, "cusparseSpGEMMreuse_nnz");
+		tracer._kernel_map[(void *) lcusparseSpGEMMreuse_nnz] = std::string("cusparseSpGEMMreuse_nnz");
+	}
+	assert(lcusparseSpGEMMreuse_nnz);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMMreuse_nnz(handle, opA, opB, matA, matB, matC, alg, spgemmDescr, bufferSize2, externalBuffer2, bufferSize3, externalBuffer3, bufferSize4, externalBuffer4);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMMreuse_nnz);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMMreuse_copy(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize5, void*  externalBuffer5)
+{
+	static cusparseStatus_t (*lcusparseSpGEMMreuse_copy) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , cusparseSpMatDescr_t , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , size_t* , void* );
+	if (!lcusparseSpGEMMreuse_copy) {
+		lcusparseSpGEMMreuse_copy = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , cusparseSpMatDescr_t , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t , size_t* , void* )) dlsym(RTLD_NEXT, "cusparseSpGEMMreuse_copy");
+		tracer._kernel_map[(void *) lcusparseSpGEMMreuse_copy] = std::string("cusparseSpGEMMreuse_copy");
+	}
+	assert(lcusparseSpGEMMreuse_copy);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMMreuse_copy(handle, opA, opB, matA, matB, matC, alg, spgemmDescr, bufferSize5, externalBuffer5);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMMreuse_copy);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpGEMMreuse_compute(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr)
+{
+	static cusparseStatus_t (*lcusparseSpGEMMreuse_compute) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t );
+	if (!lcusparseSpGEMMreuse_compute) {
+		lcusparseSpGEMMreuse_compute = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstSpMatDescr_t , cusparseConstSpMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSpGEMMAlg_t , cusparseSpGEMMDescr_t )) dlsym(RTLD_NEXT, "cusparseSpGEMMreuse_compute");
+		tracer._kernel_map[(void *) lcusparseSpGEMMreuse_compute] = std::string("cusparseSpGEMMreuse_compute");
+	}
+	assert(lcusparseSpGEMMreuse_compute);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpGEMMreuse_compute(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpGEMMreuse_compute);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSDDMM_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, size_t*  bufferSize)
+{
+	static cusparseStatus_t (*lcusparseSDDMM_bufferSize) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstDnMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSDDMMAlg_t , size_t* );
+	if (!lcusparseSDDMM_bufferSize) {
+		lcusparseSDDMM_bufferSize = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstDnMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSDDMMAlg_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSDDMM_bufferSize");
+		tracer._kernel_map[(void *) lcusparseSDDMM_bufferSize] = std::string("cusparseSDDMM_bufferSize");
+	}
+	assert(lcusparseSDDMM_bufferSize);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSDDMM_bufferSize(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, bufferSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSDDMM_bufferSize);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSDDMM_preprocess(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseSDDMM_preprocess) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstDnMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSDDMMAlg_t , void* );
+	if (!lcusparseSDDMM_preprocess) {
+		lcusparseSDDMM_preprocess = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstDnMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSDDMMAlg_t , void* )) dlsym(RTLD_NEXT, "cusparseSDDMM_preprocess");
+		tracer._kernel_map[(void *) lcusparseSDDMM_preprocess] = std::string("cusparseSDDMM_preprocess");
+	}
+	assert(lcusparseSDDMM_preprocess);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSDDMM_preprocess(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSDDMM_preprocess);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSDDMM(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseSDDMM) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstDnMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSDDMMAlg_t , void* );
+	if (!lcusparseSDDMM) {
+		lcusparseSDDMM = (cusparseStatus_t (*) (cusparseHandle_t , cusparseOperation_t , cusparseOperation_t , const void* , cusparseConstDnMatDescr_t , cusparseConstDnMatDescr_t , const void* , cusparseSpMatDescr_t , cudaDataType , cusparseSDDMMAlg_t , void* )) dlsym(RTLD_NEXT, "cusparseSDDMM");
+		tracer._kernel_map[(void *) lcusparseSDDMM] = std::string("cusparseSDDMM");
+	}
+	assert(lcusparseSDDMM);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSDDMM(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSDDMM);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMMOp_createPlan(cusparseHandle_t  handle, cusparseSpMMOpPlan_t*  plan, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMOpAlg_t  alg, const void*  addOperationNvvmBuffer, size_t  addOperationBufferSize, const void*  mulOperationNvvmBuffer, size_t  mulOperationBufferSize, const void*  epilogueNvvmBuffer, size_t  epilogueBufferSize, size_t*  SpMMWorkspaceSize)
+{
+	static cusparseStatus_t (*lcusparseSpMMOp_createPlan) (cusparseHandle_t , cusparseSpMMOpPlan_t* , cusparseOperation_t , cusparseOperation_t , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , cusparseDnMatDescr_t , cudaDataType , cusparseSpMMOpAlg_t , const void* , size_t , const void* , size_t , const void* , size_t , size_t* );
+	if (!lcusparseSpMMOp_createPlan) {
+		lcusparseSpMMOp_createPlan = (cusparseStatus_t (*) (cusparseHandle_t , cusparseSpMMOpPlan_t* , cusparseOperation_t , cusparseOperation_t , cusparseConstSpMatDescr_t , cusparseConstDnMatDescr_t , cusparseDnMatDescr_t , cudaDataType , cusparseSpMMOpAlg_t , const void* , size_t , const void* , size_t , const void* , size_t , size_t* )) dlsym(RTLD_NEXT, "cusparseSpMMOp_createPlan");
+		tracer._kernel_map[(void *) lcusparseSpMMOp_createPlan] = std::string("cusparseSpMMOp_createPlan");
+	}
+	assert(lcusparseSpMMOp_createPlan);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMMOp_createPlan(handle, plan, opA, opB, matA, matB, matC, computeType, alg, addOperationNvvmBuffer, addOperationBufferSize, mulOperationNvvmBuffer, mulOperationBufferSize, epilogueNvvmBuffer, epilogueBufferSize, SpMMWorkspaceSize);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMMOp_createPlan);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMMOp(cusparseSpMMOpPlan_t  plan, void*  externalBuffer)
+{
+	static cusparseStatus_t (*lcusparseSpMMOp) (cusparseSpMMOpPlan_t , void* );
+	if (!lcusparseSpMMOp) {
+		lcusparseSpMMOp = (cusparseStatus_t (*) (cusparseSpMMOpPlan_t , void* )) dlsym(RTLD_NEXT, "cusparseSpMMOp");
+		tracer._kernel_map[(void *) lcusparseSpMMOp] = std::string("cusparseSpMMOp");
+	}
+	assert(lcusparseSpMMOp);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMMOp(plan, externalBuffer);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMMOp);
+	}
+	return res;
+}
+
+cusparseStatus_t cusparseSpMMOp_destroyPlan(cusparseSpMMOpPlan_t  plan)
+{
+	static cusparseStatus_t (*lcusparseSpMMOp_destroyPlan) (cusparseSpMMOpPlan_t );
+	if (!lcusparseSpMMOp_destroyPlan) {
+		lcusparseSpMMOp_destroyPlan = (cusparseStatus_t (*) (cusparseSpMMOpPlan_t )) dlsym(RTLD_NEXT, "cusparseSpMMOp_destroyPlan");
+		tracer._kernel_map[(void *) lcusparseSpMMOp_destroyPlan] = std::string("cusparseSpMMOp_destroyPlan");
+	}
+	assert(lcusparseSpMMOp_destroyPlan);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	cusparseStatus_t res = 
+		lcusparseSpMMOp_destroyPlan(plan);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcusparseSpMMOp_destroyPlan);
+	}
+	return res;
+}
+
 ncclResult_t ncclMemAlloc(void**  ptr, size_t  size)
 {
 	static ncclResult_t (*lncclMemAlloc) (void** , size_t );

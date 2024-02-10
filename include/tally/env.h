@@ -11,6 +11,7 @@ static const char* LIBCUBLAS_PATH = "/usr/local/cuda/lib64/libcublas.so";
 static const char* LIBCUBLASLT_PATH = "/usr/local/cuda/lib64/libcublasLt.so";
 static const char* LIBNVRTC_PATH = "/usr/local/cuda/lib64/libnvrtc.so";
 static const char* LIBCURAND_PATH = "/usr/local/cuda/lib64/libcurand.so";
+static const char* LIBCUSPARSE_PATH = "/usr/local/cuda/lib64/libcusparse.so";
 
 // These should be queried by CUDA API 
 // But just set them here for now
