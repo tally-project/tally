@@ -655,15 +655,13 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     TALLY_SPD_LOG("cudaLaunchKernel hooked");
     TALLY_CLIENT_PROFILE_START;
 
-    auto kernel_name = TallyClient::client->host_func_to_demangled_kernel_name_map[func];
-    TALLY_SPD_LOG_PROFILE(kernel_name);
+    TALLY_SPD_LOG_PROFILE(TallyClient::client->host_func_to_demangled_kernel_name_map[func]);
     TALLY_SPD_LOG_PROFILE("gridDim: (" + std::to_string(gridDim.x) + ", " + std::to_string(gridDim.y) + ", " + std::to_string(gridDim.z) + ")");
     TALLY_SPD_LOG_PROFILE("blockDim: (" + std::to_string(blockDim.x) + ", " + std::to_string(blockDim.y) + ", " + std::to_string(blockDim.z) + ")");
 
 #if defined(RUN_LOCALLY)
     auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
 #else
-    assert(TallyClient::client->_kernel_addr_to_args.find(func) != TallyClient::client->_kernel_addr_to_args.end());
 
     auto &params_info = TallyClient::client->_kernel_addr_to_args[func];
     uint32_t params_size =  std::accumulate(params_info.begin(), params_info.end(), 0);
@@ -697,7 +695,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     err = cudaSuccess;
-    IOX_RECV_RETURN_STATUS(cudaError_t);
+    // IOX_RECV_RETURN_STATUS(cudaError_t);
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -756,7 +754,7 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(CUresult);
+    // IOX_RECV_RETURN_STATUS(CUresult);
     err = CUDA_SUCCESS;
 #endif
 

@@ -771,17 +771,17 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
         )
     );
 
-    iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
-        .and_then([&](auto& responsePayload) {
+    // iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
+    //     .and_then([&](auto& responsePayload) {
 
-            auto response = static_cast<cudaError_t*>(responsePayload);
-            *response = cudaSuccess;
+    //         auto response = static_cast<cudaError_t*>(responsePayload);
+    //         *response = cudaSuccess;
 
-            iox_server->send(response).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
-        })
-        .or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+    //         iox_server->send(response).or_else(
+    //             [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+    //     })
+    //     .or_else(
+    //         [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -823,17 +823,17 @@ void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *
         )
     );
 
-    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
-        .and_then([&](auto& responsePayload) {
+    // iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+    //     .and_then([&](auto& responsePayload) {
 
-            auto response = static_cast<CUresult*>(responsePayload);
-            *response = CUDA_SUCCESS;
+    //         auto response = static_cast<CUresult*>(responsePayload);
+    //         *response = CUDA_SUCCESS;
 
-            iox_server->send(response).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
-        })
-        .or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+    //         iox_server->send(response).or_else(
+    //             [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+    //     })
+    //     .or_else(
+    //         [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::register_cu_modules(uint32_t cubin_uid)
@@ -3550,8 +3550,8 @@ void TallyServer::handle_cudaMemset(void *__args, iox::popo::UntypedServer *iox_
             );
             CHECK_CUDA_ERROR(*response);
 
-            // Make sure wait util cudaMemset finished, because cudaMemset is synchronous
-            cudaStreamSynchronize(client_data_all[client_id].default_stream);
+            // The cudaMemset functions are asynchronous with respect to the host except when the
+            // target memory is pinned host memory.
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3851,8 +3851,8 @@ void TallyServer::handle_cuMemsetD8_v2(void *__args, iox::popo::UntypedServer *i
             );
             CHECK_CUDA_ERROR(*response);
 
-            // Make sure cuMemset is finished, because cuMemset is synchronous
-            cudaStreamSynchronize(client_data_all[client_id].default_stream);
+            // The cudaMemset functions are asynchronous with respect to the host except when the
+            // target memory is pinned host memory.
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -3936,8 +3936,8 @@ void TallyServer::handle_cuMemsetD32_v2(void *__args, iox::popo::UntypedServer *
             );
             CHECK_CUDA_ERROR(*response);
 
-            // Make sure cuMemset is finished, because cuMemset is synchronous
-            cudaStreamSynchronize(client_data_all[client_id].default_stream);
+            // The cudaMemset functions are asynchronous with respect to the host except when the
+            // target memory is pinned host memory.
 
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
@@ -5013,6 +5013,7 @@ void TallyServer::handle_cudaMemsetAsync(void *__args, iox::popo::UntypedServer 
 				args->count,
 				__stream
             );
+            
             CHECK_CUDA_ERROR(*response);
             iox_server->send(response).or_else(
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
