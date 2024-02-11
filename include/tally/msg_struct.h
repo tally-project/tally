@@ -1480,4 +1480,29 @@ struct cuGraphInstantiateWithFlagsResponse {
 	CUresult err;
 };
 
+struct cudaStreamIsCapturingArg {
+	cudaStream_t  stream;
+	enum cudaStreamCaptureStatus * pCaptureStatus;
+};
+
+struct cudaStreamIsCapturingResponse {
+	enum cudaStreamCaptureStatus  pCaptureStatus;
+	cudaError_t err;
+};
+
+struct cuStreamBeginCapture_v2Arg {
+	CUstream  hStream;
+	CUstreamCaptureMode  mode;
+};
+
+struct cuStreamIsCapturingArg {
+	CUstream  hStream;
+	CUstreamCaptureStatus * captureStatus;
+};
+
+struct cuStreamIsCapturingResponse {
+	CUstreamCaptureStatus  captureStatus;
+	CUresult err;
+};
+
 #endif // TALLY_DEF_H

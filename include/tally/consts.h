@@ -28,7 +28,8 @@
         "dmesg", \
         "ninja", \
         "/usr/bin/python3 /home/zhaowe58/.local/lib/python3.10/site-packages/cpuinfo/cpuinfo.py --json", \
-        "cat /proc/cpuinfo" \
+        "cat /proc/cpuinfo", \
+        "nvidia-smi" \
     };
 
 #endif // TALLY_CONSTS_H

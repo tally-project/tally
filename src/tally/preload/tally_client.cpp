@@ -43,6 +43,8 @@
 
 int cuda_device = 0;
 unsigned int device_ctx_flags = 0;
+std::unordered_map<cudaStream_t, enum cudaStreamCaptureStatus> stream_capture_status_map;
+std::unordered_map<CUdeviceptr, std::unordered_map<CUpointer_attribute, std::string>> cuPointerAttributeMap;
 
 cublasTracer cublas_tracer;
 cublasLtTracer cublasLt_tracer;
@@ -4245,35 +4247,45 @@ CUresult cuPointerGetAttribute(void * data, CUpointer_attribute  attribute, CUde
 #else
 
     CUresult err;
+    size_t attribute_size = get_cupointer_attribute_size(attribute);
 
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuPointerGetAttributeArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
+    if (cuPointerAttributeMap.find(ptr) != cuPointerAttributeMap.end() &&
+        cuPointerAttributeMap[ptr].find(attribute) != cuPointerAttributeMap[ptr].end()
+    ) {
+        auto ptr_data = cuPointerAttributeMap[ptr][attribute];
+        memcpy(data, ptr_data.c_str(), attribute_size);
+    } else {
 
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUPOINTERGETATTRIBUTE;
-            header->client_id = TallyClient::client->client_id;
+        IOX_CLIENT_ACQUIRE_LOCK;
+        TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuPointerGetAttributeArg), alignof(MessageHeader_t))
+            .and_then([&](auto& requestPayload) {
+
+                auto header = static_cast<MessageHeader_t*>(requestPayload);
+                header->api_id = CUDA_API_ENUM::CUPOINTERGETATTRIBUTE;
+                header->client_id = TallyClient::client->client_id;
+                
+                auto request = (cuPointerGetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+                request->attribute = attribute;
+                request->ptr = ptr;
+
+                TallyClient::client->iox_client->send(header).or_else(
+                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+            })
+            .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+        while(!TallyClient::client->iox_client->take()
+            .and_then([&](const auto& responsePayload) {
+                auto response = static_cast<const cuPointerGetAttributeResponse*>(responsePayload);
             
-            auto request = (cuPointerGetAttributeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->attribute = attribute;
-            request->ptr = ptr;
+                memcpy(data, response->data, attribute_size);
 
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+                err = response->err;
+                TallyClient::client->iox_client->releaseResponse(responsePayload);
+            }))
+        {};
 
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cuPointerGetAttributeResponse*>(responsePayload);
-			
-            size_t attribute_size = get_cupointer_attribute_size(attribute);
-            memcpy(data, response->data, attribute_size);
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
+        cuPointerAttributeMap[ptr][attribute] = std::string((char *)data, attribute_size);
+    }
 
 #endif
 
@@ -4881,6 +4893,9 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     IOX_RECV_RETURN_STATUS(cudaError_t);
+
+    stream_capture_status_map[stream] = cudaStreamCaptureStatusActive;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamBeginCapture);
@@ -6221,6 +6236,9 @@ CUresult cuStreamEndCapture(CUstream  hStream, CUgraph * phGraph)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
+
+    stream_capture_status_map[hStream] = cudaStreamCaptureStatusNone;
+
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuStreamEndCapture);
@@ -6263,6 +6281,8 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
             TallyClient::client->iox_client->releaseResponse(responsePayload);
         }))
     {};
+
+    stream_capture_status_map[stream] = cudaStreamCaptureStatusNone;
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaStreamEndCapture);
@@ -7659,6 +7679,100 @@ CUresult cuGetExportTable(const void ** ppExportTable, const CUuuid * pExportTab
 	std::cout << boost::stacktrace::stacktrace() << std::endl;
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif
+}
+
+cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus)
+{
+	TALLY_SPD_LOG("cudaStreamIsCapturing hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcudaStreamIsCapturing(stream, pCaptureStatus);
+#else
+
+    cudaError_t err = cudaSuccess;
+
+    if (stream_capture_status_map.find(stream) == stream_capture_status_map.end()){
+        stream_capture_status_map[stream] = cudaStreamCaptureStatusNone;
+    }
+
+    *pCaptureStatus = stream_capture_status_map[stream];
+
+#endif
+	last_err = err;
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudaStreamIsCapturing);
+	return err;
+}
+
+CUresult cuStreamBeginCapture_v2(CUstream  hStream, CUstreamCaptureMode  mode)
+{
+	TALLY_SPD_LOG("cuStreamBeginCapture_v2 hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuStreamBeginCapture_v2(hStream, mode);
+#else
+
+    CUresult err;
+
+    IOX_CLIENT_ACQUIRE_LOCK;
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamBeginCapture_v2Arg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUSTREAMBEGINCAPTURE_V2;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cuStreamBeginCapture_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->hStream = hStream;
+			request->mode = mode;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const CUresult*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
+
+    stream_capture_status_map[hStream] = cudaStreamCaptureStatusActive;
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuStreamBeginCapture_v2);
+	return err;
+}
+
+CUresult cuStreamIsCapturing(CUstream  hStream, CUstreamCaptureStatus * captureStatus)
+{
+	TALLY_SPD_LOG("cuStreamIsCapturing hooked");
+	TALLY_CLIENT_PROFILE_START;
+#if defined(RUN_LOCALLY)
+	auto err = lcuStreamIsCapturing(hStream, captureStatus);
+#else
+
+    CUresult err = CUDA_SUCCESS;
+
+    if (stream_capture_status_map.find(hStream) == stream_capture_status_map.end()) {
+        *captureStatus = CU_STREAM_CAPTURE_STATUS_NONE;
+    } else {
+        auto status = stream_capture_status_map[hStream];
+
+        if (status == cudaStreamCaptureStatusNone) {
+            *captureStatus = CU_STREAM_CAPTURE_STATUS_NONE;
+        } else if (status == cudaStreamCaptureStatusActive) {
+            *captureStatus = CU_STREAM_CAPTURE_STATUS_ACTIVE;
+        }
+    }
+
+#endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cuStreamIsCapturing);
+	return err;
 }
 
 }

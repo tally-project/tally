@@ -499,6 +499,10 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cuStreamIsCapturing",
+    "cuStreamBeginCapture_v2",
+    "cudaStreamBeginCapture",
+    "cudaStreamIsCapturing",
     "cuGetExportTable",
     "cuGraphInstantiateWithFlags",
     "cudaDeviceGetAttribute",
@@ -557,7 +561,6 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
     "cudaStreamCreate",
     "cudaStreamCreateWithFlags",
     "cudaStreamCreateWithPriority",
-    "cudaStreamBeginCapture",
     "cudaMemset",
     "cuMemFree_v2",
     "cuMemAllocAsync",
@@ -659,7 +662,6 @@ FORWARD_API_CALLS = [
     "cuEventDestroy_v2",
     "cuStreamWaitEvent",
     "cuEventRecord",
-    "cuStreamBeginCapture_v2",
     "cudaGraphUpload",
     # "cudaGraphLaunch",
     "cudaGraphExecDestroy",
@@ -836,7 +838,6 @@ UNSUPPORTED_FUNCS = [
 
 CUDA_GET_2_PARAM_FUNCS = [
     "ncclCommGetAsyncError",
-    "cuStreamIsCapturing",
     "cudnnGetRNNBiasMode",
     "cudnnGetRNNMatrixMathType",
     "cublasGetSmCountTarget",
@@ -847,7 +848,6 @@ CUDA_GET_2_PARAM_FUNCS = [
     "cudaStreamGetPriority",
     "cudnnDropoutGetStatesSize",
     "cudnnGetFilterSizeInBytes",
-    "cudaStreamIsCapturing",
     "cublasGetVersion_v2",
     "cudnnGetStream",
     "cudnnBackendCreateDescriptor",

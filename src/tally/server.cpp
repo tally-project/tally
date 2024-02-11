@@ -5165,3 +5165,98 @@ void TallyServer::handle_cuGetExportTable(void *__args, iox::popo::UntypedServer
 	TALLY_SPD_LOG("Received request: cuGetExportTable");
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 }
+
+void TallyServer::handle_cudaStreamIsCapturing(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cudaStreamIsCapturing");
+	auto args = (struct cudaStreamIsCapturingArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    cudaStream_t __stream = args->stream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cudaStreamIsCapturingResponse), alignof(cudaStreamIsCapturingResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudaStreamIsCapturingResponse*>(responsePayload);
+            response->err = cudaStreamIsCapturing(
+				__stream,
+				(args->pCaptureStatus ? &(response->pCaptureStatus) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuStreamBeginCapture_v2(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuStreamBeginCapture_v2");
+	auto args = (struct cuStreamBeginCapture_v2Arg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(CUresult), alignof(CUresult))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<CUresult*>(responsePayload);
+            *response = cuStreamBeginCapture_v2(
+				__stream,
+				args->mode
+            );
+            CHECK_CUDA_ERROR(*response);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}
+
+void TallyServer::handle_cuStreamIsCapturing(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
+{
+	TALLY_SPD_LOG("Received request: cuStreamIsCapturing");
+	auto args = (struct cuStreamIsCapturingArg *) __args;
+	auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_uid = msg_header->client_id;
+
+    CUstream __stream = args->hStream;
+
+    // If client submits to default stream, set to a re-assigned stream
+    if (__stream == nullptr) {
+        __stream = client_data_all[client_uid].default_stream;
+    }
+
+    iox_server->loan(requestHeader, sizeof(cuStreamIsCapturingResponse), alignof(cuStreamIsCapturingResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cuStreamIsCapturingResponse*>(responsePayload);
+            response->err = cuStreamIsCapturing(
+				__stream,
+				(args->captureStatus ? &(response->captureStatus) : NULL)
+			);
+
+            CHECK_CUDA_ERROR(response->err);
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+}

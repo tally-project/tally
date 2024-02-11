@@ -620,21 +620,21 @@ void TallyServer::run_priority_scheduler()
 
                 } else {
 
-                    auto &launch_call = kernel_wrapper.launch_call;
-
-                    // Do some profiling of the preemptive kernels
-                    bool found_in_cache;
-                    auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
-
-                    if (!found_in_cache) {
-                        priority_launch_and_measure_kernel(kernel_wrapper, client_id);
-
-                        kernel_wrapper.free_args();
-                        client_data.queue_size--;
-                        break;
-                    }
-
                     if (!is_highest_priority) {
+
+                        auto &launch_call = kernel_wrapper.launch_call;
+
+                        // Do some profiling of the preemptive kernels
+                        bool found_in_cache;
+                        auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
+
+                        if (!found_in_cache) {
+                            priority_launch_and_measure_kernel(kernel_wrapper, client_id);
+
+                            kernel_wrapper.free_args();
+                            client_data.queue_size--;
+                            break;
+                        }
 
                         config = res.config;
 

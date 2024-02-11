@@ -2932,47 +2932,6 @@ CUresult cuStreamAddCallback(CUstream  hStream, CUstreamCallback  callback, void
 #endif
 }
 
-CUresult cuStreamBeginCapture_v2(CUstream  hStream, CUstreamCaptureMode  mode)
-{
-	TALLY_SPD_LOG("cuStreamBeginCapture_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcuStreamBeginCapture_v2(hStream, mode);
-#else
-
-    CUresult err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamBeginCapture_v2Arg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUSTREAMBEGINCAPTURE_V2;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuStreamBeginCapture_v2Arg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->hStream = hStream;
-			request->mode = mode;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            
-            auto response = static_cast<const CUresult*>(responsePayload);
-            err = *response;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamBeginCapture_v2);
-	return err;
-}
-
 CUresult cuThreadExchangeStreamCaptureMode(CUstreamCaptureMode * mode)
 {
 	TALLY_SPD_LOG("cuThreadExchangeStreamCaptureMode hooked");
@@ -3011,48 +2970,6 @@ CUresult cuThreadExchangeStreamCaptureMode(CUstreamCaptureMode * mode)
 #endif
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuThreadExchangeStreamCaptureMode);
-	return err;
-}
-
-CUresult cuStreamIsCapturing(CUstream  hStream, CUstreamCaptureStatus * captureStatus)
-{
-	TALLY_SPD_LOG("cuStreamIsCapturing hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcuStreamIsCapturing(hStream, captureStatus);
-#else
-
-    CUresult err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cuStreamIsCapturingArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUSTREAMISCAPTURING;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cuStreamIsCapturingArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->hStream = hStream;
-			request->captureStatus = captureStatus;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cuStreamIsCapturingResponse*>(responsePayload);
-			if (captureStatus) { *captureStatus = response->captureStatus; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamIsCapturing);
 	return err;
 }
 
@@ -6819,49 +6736,6 @@ cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mod
 	last_err = err;
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cudaThreadExchangeStreamCaptureMode);
-	return err;
-}
-
-cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureStatus * pCaptureStatus)
-{
-	TALLY_SPD_LOG("cudaStreamIsCapturing hooked");
-	TALLY_CLIENT_PROFILE_START;
-#if defined(RUN_LOCALLY)
-	auto err = lcudaStreamIsCapturing(stream, pCaptureStatus);
-#else
-
-    cudaError_t err;
-
-    IOX_CLIENT_ACQUIRE_LOCK;
-    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaStreamIsCapturingArg), alignof(MessageHeader_t))
-        .and_then([&](auto& requestPayload) {
-
-            auto header = static_cast<MessageHeader_t*>(requestPayload);
-            header->api_id = CUDA_API_ENUM::CUDASTREAMISCAPTURING;
-            header->client_id = TallyClient::client->client_id;
-            
-            auto request = (cudaStreamIsCapturingArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
-			request->stream = stream;
-			request->pCaptureStatus = pCaptureStatus;
-
-            TallyClient::client->iox_client->send(header).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
-        })
-        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-
-    while(!TallyClient::client->iox_client->take()
-        .and_then([&](const auto& responsePayload) {
-            auto response = static_cast<const cudaStreamIsCapturingResponse*>(responsePayload);
-			if (pCaptureStatus) { *pCaptureStatus = response->pCaptureStatus; }
-
-            err = response->err;
-            TallyClient::client->iox_client->releaseResponse(responsePayload);
-        }))
-    {};
-#endif
-	last_err = err;
-	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamIsCapturing);
 	return err;
 }
 

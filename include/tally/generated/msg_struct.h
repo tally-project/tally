@@ -339,27 +339,12 @@ struct cuStreamWaitEventArg {
 	unsigned int  Flags;
 };
 
-struct cuStreamBeginCapture_v2Arg {
-	CUstream  hStream;
-	CUstreamCaptureMode  mode;
-};
-
 struct cuThreadExchangeStreamCaptureModeArg {
 	CUstreamCaptureMode * mode;
 };
 
 struct cuThreadExchangeStreamCaptureModeResponse {
 	CUstreamCaptureMode  mode;
-	CUresult err;
-};
-
-struct cuStreamIsCapturingArg {
-	CUstream  hStream;
-	CUstreamCaptureStatus * captureStatus;
-};
-
-struct cuStreamIsCapturingResponse {
-	CUstreamCaptureStatus  captureStatus;
 	CUresult err;
 };
 
@@ -679,16 +664,6 @@ struct cudaThreadExchangeStreamCaptureModeArg {
 
 struct cudaThreadExchangeStreamCaptureModeResponse {
 	enum cudaStreamCaptureMode  mode;
-	cudaError_t err;
-};
-
-struct cudaStreamIsCapturingArg {
-	cudaStream_t  stream;
-	enum cudaStreamCaptureStatus * pCaptureStatus;
-};
-
-struct cudaStreamIsCapturingResponse {
-	enum cudaStreamCaptureStatus  pCaptureStatus;
 	cudaError_t err;
 };
 
