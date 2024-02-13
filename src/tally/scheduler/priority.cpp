@@ -612,17 +612,13 @@ void TallyServer::run_priority_scheduler()
                 PTBKernelArgs *ptb_args = nullptr;
                 SlicedKernelArgs *sliced_args = nullptr;
 
-                if (kernel_wrapper.is_library_call) {
+                if (!is_highest_priority) {
 
-                    if (!is_highest_priority) {
+                    auto &launch_call = kernel_wrapper.launch_call;
+
+                    if (kernel_wrapper.is_library_call) {
                         TALLY_SPD_WARN("Found library call from low priority job");
-                    }
-
-                } else {
-
-                    if (!is_highest_priority) {
-
-                        auto &launch_call = kernel_wrapper.launch_call;
+                    } else {
 
                         // Do some profiling of the preemptive kernels
                         bool found_in_cache;
@@ -637,22 +633,22 @@ void TallyServer::run_priority_scheduler()
                         }
 
                         config = res.config;
+                    }
 
-                        // bookkeep kernel launch if it is not highest-priority 
-                        in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
+                    // bookkeep kernel launch if it is not highest-priority 
+                    in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
 
-                        if (config.use_preemptive_ptb) {
-                            // set retreat ang global_idx to 0
-                            ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
-                            cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
-                        }
+                    if (config.use_preemptive_ptb) {
+                        // set retreat ang global_idx to 0
+                        ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+                        cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+                    }
 
-                        // Only launch the first slice
-                        if (config.use_sliced) {
-                            in_progress_kernels[client_priority].slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
-                            sliced_args = &(in_progress_kernels[client_priority].slice_args);
-                            sliced_args->launch_idx = 0;
-                        }
+                    // Only launch the first slice
+                    if (config.use_sliced) {
+                        in_progress_kernels[client_priority].slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
+                        sliced_args = &(in_progress_kernels[client_priority].slice_args);
+                        sliced_args->launch_idx = 0;
                     }
                 }
 
