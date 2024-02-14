@@ -162,7 +162,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
                     } else {
 
                         auto latency_ms = metrics.avg_latency_ms;
-                        auto batch_size = config.blocks_per_sm * std::min(CUDA_NUM_SM, launch_call.num_blocks);
+                        auto batch_size = config.blocks_per_sm * std::min((uint32_t)CUDA_NUM_SM, launch_call.num_blocks);
                         auto num_batches = (launch_call.num_blocks + batch_size - 1) / batch_size;
                         preemption_latency_ms =  latency_ms / (float) num_batches;
                     }
@@ -296,7 +296,8 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
             config = CudaLaunchConfig::get_preemptive_ptb_config(1);
             auto preemptive_res = get_single_kernel_perf(launch_call, config, &found);
 
-            auto max_worker_blocks = (PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS / preemptive_res.metrics.preemption_latency_ms) * (float) std::min(CUDA_NUM_SM, launch_call.num_blocks);
+            auto max_worker_blocks = (PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS / preemptive_res.metrics.preemption_latency_ms) *
+                                     (float) std::min((uint32_t)CUDA_NUM_SM, launch_call.num_blocks);
             config.max_worker_blocks = std::max((uint32_t)std::floor(max_worker_blocks), 1u);
 
             if (config.max_worker_blocks >= launch_call.num_blocks) {

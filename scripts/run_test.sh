@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export CUDA_VISIBLE_DEVICES=2
-
 cleanup() {
     ./scripts/kill_server.sh
     ./scripts/kill_iox.sh

@@ -1,7 +1,11 @@
 #ifndef TALLY_CONSTS_H
 #define TALLY_CONSTS_H
 
+#include <string>
+#include <vector>
+
 // Hacky way to check whether the process should use the preload library
+// Later we will change this to laze-loading of client
 #define NO_INIT_PROCESS_KEYWORDS_VEC \
     const std::vector<std::string> no_init_process_keywords = { \
         "-std=c++", \

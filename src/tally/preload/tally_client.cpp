@@ -754,7 +754,7 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(CUresult);
+    // IOX_RECV_RETURN_STATUS(CUresult);
     err = CUDA_SUCCESS;
 #endif
 

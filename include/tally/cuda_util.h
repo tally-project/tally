@@ -9,9 +9,10 @@
 #include <map>
 #include <elf.h>
 
+#include <nlohmann/json.hpp>
+
 #include <tally/util.h>
 #include <tally/msg_struct.h>
-#include <tally/cuda_launch.h>
 #include <tally/generated/cuda_api.h>
 #include <tally/cutlass/cutlass_struct.h>
 
@@ -20,18 +21,62 @@
 #include <cudnn.h>
 #include <fatbinary_section.h>
 
+// These should be queried by CUDA API 
+// But just set them here for now
+extern std::string CUDA_COMPUTE_VERSION;
+extern int CUDA_NUM_SM;
+extern int CUDA_MAX_NUM_THREADS_PER_SM;
+extern int CUDA_MAX_NUM_REGISTERS_PER_SM;
+extern int CUDA_MAX_SHM_BYTES_PER_SM;
+
+extern uint32_t FATBIN_MAGIC_NUMBER;
+
+extern bool CUDA_SPECS_INITIALIZED;
+
 struct mem_region {
     void *addr;
     size_t size;
 };
 
-// Implicitly initialize CUDA context
-inline void implicit_init_cuda_ctx()
+struct CudaLaunchMetadata {
+    int max_threads_per_block = 0;
+    int static_shmem_size_bytes = 0;
+    int num_regs = 0;
+    int max_dynamic_shmem_size_bytes = 0;
+
+    // runtime passed in through cudaLaunchKernel
+    int dynamic_shmem_size_bytes = 0;
+
+    nlohmann::json json() const
+    {
+        return nlohmann::json({
+            {"max_threads_per_block", max_threads_per_block},
+            {"static_shmem_size_bytes", static_shmem_size_bytes},
+            {"num_regs", num_regs},
+            {"max_dynamic_shmem_size_bytes", max_dynamic_shmem_size_bytes},
+            {"dynamic_shmem_size_bytes", dynamic_shmem_size_bytes},
+        });
+    }
+};
+
+static std::ostream& operator<<(std::ostream& os, const CudaLaunchMetadata& meta)
 {
-    float *arr;
-    cudaMalloc(&arr, sizeof(float));
-    cudaFree(arr);
+    os << "CudaLaunchMetadata: \n";
+    os << "\tmax_threads_per_block: " << meta.max_threads_per_block << "\n";
+    os << "\tstatic_shmem_size_bytes: " << meta.static_shmem_size_bytes << "\n";
+    os << "\tnum_regs: " << meta.num_regs << "\n";
+    os << "\tmax_dynamic_shmem_size_bytes: " << meta.max_dynamic_shmem_size_bytes << "\n";
+    os << "\tdynamic_shmem_size_bytes: " << meta.dynamic_shmem_size_bytes;
+
+    return os;
 }
+
+struct WrappedCUfunction {
+    CUfunction func;
+    uint32_t num_args;
+
+    CudaLaunchMetadata meta_data;
+};
 
 enum CUDA_MODULE_TYPE {
     PTX_STRING,
@@ -39,29 +84,28 @@ enum CUDA_MODULE_TYPE {
     ELF
 };
 
-inline CUDA_MODULE_TYPE get_cuda_module_type(const void * image)
+#define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
+
+template <typename T>
+void check(T err, const char* const func, const char* const file, const int line)
 {
-    // Test if it is fatbin
-    auto fbh = (fatBinaryHeader *) image;
-    if (fbh->magic == FATBIN_MAGIC_NUMBER) {
-        return CUDA_MODULE_TYPE::FATBIN;
+    if (err)
+    {
+        std::cerr << "CUDA Error at: " << file << ":" << line << std::endl;
+        if constexpr (std::is_same<T, cudaError_t>::value) {
+            std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
+        } else if constexpr (std::is_same<T, CUresult>::value) {
+            const char *err_msg;
+            cuGetErrorString(err, &err_msg);
+            std::cerr << err_msg << " " << func << std::endl;
+        }
     }
-
-    // Test if it is in-memory elf format
-    auto hdr = (Elf64_Ehdr *) image;
-    if (hdr->e_ident[EI_MAG0] == ELFMAG0 && hdr->e_ident[EI_MAG1] == ELFMAG1 ||
-        hdr->e_ident[EI_MAG2] == ELFMAG2 && hdr->e_ident[EI_MAG3] == ELFMAG3) {
-        return CUDA_MODULE_TYPE::ELF;
-    }
-
-    // Test if it is ptx string
-    std::string image_str((char *)image);
-    if (containsSubstring(image_str, ".target")) {
-        return CUDA_MODULE_TYPE::PTX_STRING;
-    }
-
-    throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Cannot identify cuda module.");
 }
+
+// Implicitly initialize CUDA context
+void implicit_init_cuda_ctx();
+void register_cuda_specs();
+CUDA_MODULE_TYPE get_cuda_module_type(const void * image);
 
 inline cutlassOperation_t cublas_op_to_cutlass_op(cublasOperation_t op)
 {
@@ -170,25 +214,6 @@ inline void free_mem_region(std::vector<mem_region> &dev_addr_map, void *addr)
     }
 
     assert(false);
-}
-
-
-#define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
-
-template <typename T>
-void check(T err, const char* const func, const char* const file, const int line)
-{
-    if (err)
-    {
-        std::cerr << "CUDA Error at: " << file << ":" << line << std::endl;
-        if constexpr (std::is_same<T, cudaError_t>::value) {
-            std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
-        } else if constexpr (std::is_same<T, CUresult>::value) {
-            const char *err_msg;
-            cuGetErrorString(err, &err_msg);
-            std::cerr << err_msg << " " << func << std::endl;
-        }
-    }
 }
 
 inline size_t get_cudnn_attribute_size(cudnnBackendAttributeType_t type)
@@ -544,7 +569,6 @@ void register_kernels_from_ptx_fatbin(
 };
 
 std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_from_elf(std::string elf_path);
-
 std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_from_elf_str(std::string elf_str);
 
 #endif // TALLY_CUDA_UTIL_H

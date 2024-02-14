@@ -1,9 +1,12 @@
 #include <thread>
 
 #include "tally/log.h"
+#include "tally/cuda_util.h"
 #include "tally/generated/server.h"
 
 int main(int argc, char ** argv) {
+
+    register_cuda_specs();
 
     // Main server thread, will spawn one server thread for each client
     std::thread main_server_t(&TallyServer::start_main_server, TallyServer::server);

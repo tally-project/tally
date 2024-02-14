@@ -1,23 +1,35 @@
 #include <string>
 #include <iostream>
 
+#include <cuda_runtime.h>
+
 #include <tally/env.h>
 
 #define REGISTER_UINT32_ENV_VAR(NAME, DEFAULT_VAL) \
     NAME = std::getenv(#NAME) ? std::stoi(std::getenv(#NAME)) : DEFAULT_VAL;
 
+#define REGISTER_FLOAT_ENV_VAR(NAME, DEFAULT_VAL) \
+    NAME = std::getenv(#NAME) ? std::stof(std::getenv(#NAME)) : DEFAULT_VAL;
+
 #define REGISTER_BOOL_ENV_VAR(NAME, DEFAULT_VAL) \
     NAME = std::getenv(#NAME) ? (std::string(std::getenv(#NAME)) == "TRUE") : DEFAULT_VAL;
 
 bool TALLY_INITIALIZED = false;
-
 TALLY_SCHEDULER_POLICY SCHEDULER_POLICY;
 
-uint32_t PRIORITY_PTB_MAX_NUM_THREADS_PER_SM = 1024;
-float PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS = 0.1f;
-float PRIORITY_FALL_BACK_TO_KERNEL_SLICING_THRESHOLD = 0.3f;
-float PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD = 0.1f;
+float TIME_SHARE_THRESHOLD = 1.;
 
+// number of times to run a kernel to get performance metrics
+uint32_t KERNEL_PROFILE_ITERATIONS;
+
+uint32_t PRIORITY_PTB_MAX_NUM_THREADS_PER_SM;
+float PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS;
+float PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD;
+
+uint32_t SHARING_PTB_MAX_NUM_THREADS_PER_SM;
+float SHARING_USE_PTB_THRESHOLD;
+
+// Later it should be adjustable at runtime
 void set_max_allowed_preemption_latency(float latency_ms)
 {
     PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS = latency_ms;
@@ -27,6 +39,7 @@ void __attribute__((constructor)) register_env_vars()
 {
     if (!TALLY_INITIALIZED) {
 
+        // Init scheduler policy
         if (std::getenv("SCHEDULER_POLICY")) {
             auto policy_str = std::string(std::getenv("SCHEDULER_POLICY"));
             if (policy_str == "NAIVE") {
@@ -46,10 +59,14 @@ void __attribute__((constructor)) register_env_vars()
             SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::NAIVE;
         }
 
-        if (std::getenv("PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS")) {
-            auto max_latency_ms = std::stof(std::getenv("PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS"));
-            set_max_allowed_preemption_latency(max_latency_ms);
-        }
+        // init max allowed preemption latency for priority scheduler
+        REGISTER_FLOAT_ENV_VAR(PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS, 0.1f);
+        REGISTER_FLOAT_ENV_VAR(PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD, 0.1f);
+        REGISTER_FLOAT_ENV_VAR(SHARING_USE_PTB_THRESHOLD, 0.9f);
+ 
+        REGISTER_UINT32_ENV_VAR(KERNEL_PROFILE_ITERATIONS, 5);
+        REGISTER_UINT32_ENV_VAR(PRIORITY_PTB_MAX_NUM_THREADS_PER_SM, 1024);
+        REGISTER_UINT32_ENV_VAR(SHARING_PTB_MAX_NUM_THREADS_PER_SM, 1024);
 
         TALLY_INITIALIZED = true;
     }
