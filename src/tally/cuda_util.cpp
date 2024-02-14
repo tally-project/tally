@@ -41,8 +41,9 @@ std::string get_fatbin_str_from_ptx_str(std::string &ptx_str)
    return a vector of the generated file names */
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path)
 {
-    exec("cuobjdump -xptx all " + cubin_path);
-    auto output = exec("cuobjdump " + cubin_path + " -lptx");
+    auto arch_str = "-arch sm_" + std::string(CUDA_COMPUTE_VERSION);
+    exec("cuobjdump " + arch_str + " -xptx all " + cubin_path);
+    auto output = exec("cuobjdump " + cubin_path + " -lptx " + arch_str);
 
     std::stringstream ss(output.first);
     std::vector<std::string> names;

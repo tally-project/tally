@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export CUDA_VISIBLE_DEVICES=2
+
 cleanup() {
     ./scripts/kill_server.sh
     ./scripts/kill_iox.sh
@@ -43,8 +45,6 @@ test_list=(
     "./build/tests/batched_gemm_cutlass"
     "./build/tests/turing_tensorop_gemm"
     "./build/tests/ampere_tf32_tensorop_gemm"
-    # "python3 ./tests/tensorflow_samples/tf_basic.py"
-    # "python3 ./tests/tensorflow_samples/cifar_train.py"
     "python3 ./tests/pytorch_samples/train.py"
     "python3 ./tests/pytorch_samples/dropout.py"
     "python3 ./tests/pytorch_samples/run-torch-compile.py"
@@ -53,9 +53,11 @@ test_list=(
     "./tests/cudnn_samples_v8/RNN/RNN"
     "./tests/cudnn_samples_v8/RNN_v8.0/RNN"
     "./tests/cudnn_samples_v8/conv_sample/conv_sample"
-    # "./tests/cudnn_samples_v8/mnistCUDNN/mnistCUDNN"
     "./tests/cudnn_samples_v8/multiHeadAttention/multiHeadAttention -attnTrain1 -attnDataType0 -attnNumHeads3 -attnBatchSize6 -attnBeamSize1 -attnQsize8 -attnKsize8 -attnVsize8 -attnProjQsize2 -attnProjKsize2 -attnProjVsize2 -attnProjOsize8 -attnResLink0 -attnSeqLenQ3 -attnSeqLenK10"
     "./build/bin/samples"
+    # "python3 ./tests/tensorflow_samples/tf_basic.py"
+    # "python3 ./tests/tensorflow_samples/cifar_train.py"
+    # "./tests/cudnn_samples_v8/mnistCUDNN/mnistCUDNN"
 )
 
 # Set up

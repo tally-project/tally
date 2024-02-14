@@ -771,17 +771,17 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
         )
     );
 
-    iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
-        .and_then([&](auto& responsePayload) {
+    // iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
+    //     .and_then([&](auto& responsePayload) {
 
-            auto response = static_cast<cudaError_t*>(responsePayload);
-            *response = cudaSuccess;
+    //         auto response = static_cast<cudaError_t*>(responsePayload);
+    //         *response = cudaSuccess;
 
-            iox_server->send(response).or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
-        })
-        .or_else(
-            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+    //         iox_server->send(response).or_else(
+    //             [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+    //     })
+    //     .or_else(
+    //         [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)

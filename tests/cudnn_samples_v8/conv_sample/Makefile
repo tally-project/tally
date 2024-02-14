@@ -133,7 +133,7 @@ ALL_LDFLAGS += $(addprefix -Xlinker ,$(EXTRA_LDFLAGS))
 
 # Common includes and paths for CUDA
 INCLUDES := -I$(CUDA_PATH)/include -I$(CUDA_PATH)/targets/ppc64le-linux/include
-LIBRARIES := -L$(CUDA_PATH)/lib64 -L$(CUDA_PATH)/targets/ppc64le-linux/lib
+LIBRARIES := -L$(CUDA_PATH)/lib64 -L$(CUDA_PATH)/lib -L$(CUDA_PATH)/targets/ppc64le-linux/lib
 
 ################################################################################
 
@@ -154,13 +154,13 @@ endif
 
 ifeq ($(GENCODE_FLAGS),)
 # Generate SASS code for each SM architecture listed in $(SMS)
-$(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
+$(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm) -gencode arch=compute_$(sm),code=compute_$(sm)))
 
-# Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
-HIGHEST_SM := $(lastword $(sort $(SMS)))
-ifneq ($(HIGHEST_SM),)
-GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
-endif
+# # Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
+# HIGHEST_SM := $(lastword $(sort $(SMS)))
+# ifneq ($(HIGHEST_SM),)
+# GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
+# endif
 endif
 
 ifeq ($(CUBLASLT), true)

@@ -22,7 +22,11 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
     
     // Extract elf code from cubin file
     std::string tmp_elf_file_name = get_tmp_file_path(".elf", elf_filename);
-    exec("cuobjdump " + cubin_tmp_path + " -elf > " + tmp_elf_file_name);
+    exec(
+        "cuobjdump " + cubin_tmp_path + " -elf" + 
+            " -arch sm_" + std::string(CUDA_COMPUTE_VERSION) +
+            " > " + tmp_elf_file_name
+    );
 
     // If already exists, return early
     if (TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size)) {
