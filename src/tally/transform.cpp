@@ -8,7 +8,6 @@
 #include <tally/util.h>
 #include <tally/transform.h>
 
-#include <boost/timer/progress_display.hpp>
 #include <boost/regex.hpp>
 
 // Transform the kernel to make sure threads return at the same time
