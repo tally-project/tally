@@ -16,14 +16,19 @@ option(ENABLE_PROFILING "Enable profiling" OFF)
 option(VERIFY_CORRECTNESS "Verify that the results after replacing cublas is correct" OFF)
 option(MEASURE_PREEMPTION_LATENCY "Measure latency of preemption in priority scheduler" OFF)
 
+link_directories(/usr/local/cuda/lib)
 link_directories(/usr/local/cuda/lib64)
+link_directories(/usr/local/cuda/targets/x86_64-linux/lib/stubs)
+
+set(ENV{CUDNN_PATH} /usr/local/cuda/lib)
 
 FIND_PACKAGE(Boost COMPONENTS serialization regex stacktrace_backtrace REQUIRED)
+FIND_PACKAGE(folly REQUIRED)
+find_package(gflags CONFIG REQUIRED)
 
 add_subdirectory(third_party/spdlog)
 add_subdirectory(third_party/iceoryx/iceoryx_meta)
 add_subdirectory(third_party/json)
-add_subdirectory(third_party/folly)
 add_subdirectory(third_party/readerwriterqueue)
 
 include(GNUInstallDirs)
@@ -38,9 +43,9 @@ include(IceoryxPlatformSettings)
 
 include(FindCUDA/select_compute_arch)
 CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
-string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
-string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
+string(REPLACE " " "" INSTALLED_GPU_CCS_1 ${INSTALLED_GPU_CCS_1})
+string(REPLACE "." "" INSTALLED_GPU_CCS_1 ${INSTALLED_GPU_CCS_1})
+string(SUBSTRING ${INSTALLED_GPU_CCS_1} 0 2 CUDA_ARCH_LIST)
 message(CUDA_ARCH_LIST="${CUDA_ARCH_LIST}")
 
 set(TALLY_CUTLASS_SRC_FILES
@@ -167,9 +172,10 @@ endif()
 
 target_include_directories(tally_server
     PUBLIC ${PROJECT_SOURCE_DIR}/third_party/nccl/build/include
-    PUBLIC  /usr/local/cuda/include
-    PUBLIC  ${PROJECT_SOURCE_DIR}/include
+    PUBLIC /usr/local/cuda/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
+    PUBLIC ${FOLLY_INCLUDE_DIR}
 )
 
 target_link_libraries(tally_server PUBLIC
@@ -188,7 +194,7 @@ target_link_libraries(tally_server PUBLIC
     PUBLIC Boost::regex
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
     iceoryx_posh::iceoryx_posh
-    folly
+    ${FOLLY_LIBRARIES}
     readerwriterqueue
 )
 

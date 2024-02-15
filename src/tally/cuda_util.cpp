@@ -10,6 +10,63 @@
 #include <tally/cuda_launch.h>
 #include <tally/generated/cuda_api.h>
 
+bool CUDA_SPECS_INITIALIZED = false;
+
+std::string CUDA_COMPUTE_VERSION;
+int CUDA_NUM_SM;
+int CUDA_MAX_NUM_THREADS_PER_SM;
+int CUDA_MAX_NUM_REGISTERS_PER_SM;
+int CUDA_MAX_SHM_BYTES_PER_SM;
+
+uint32_t FATBIN_MAGIC_NUMBER = 3126193488;
+
+void implicit_init_cuda_ctx()
+{
+    int deviceCount = 0;
+    cudaGetDeviceCount(&deviceCount);
+}
+
+void register_cuda_specs()
+{
+    if (!CUDA_SPECS_INITIALIZED) {
+        
+        cudaDeviceProp deviceProp;
+        cudaGetDeviceProperties(&deviceProp, 0);
+
+        CUDA_COMPUTE_VERSION = std::to_string(deviceProp.major) + std::to_string(deviceProp.minor);
+        CUDA_NUM_SM = deviceProp.multiProcessorCount;
+        CUDA_MAX_NUM_THREADS_PER_SM = deviceProp.maxThreadsPerMultiProcessor;
+        CUDA_MAX_NUM_REGISTERS_PER_SM = deviceProp.regsPerMultiprocessor;
+        CUDA_MAX_SHM_BYTES_PER_SM = deviceProp.sharedMemPerMultiprocessor;
+
+        CUDA_SPECS_INITIALIZED = true;
+    }
+}
+
+CUDA_MODULE_TYPE get_cuda_module_type(const void * image)
+{
+    // Test if it is fatbin
+    auto fbh = (fatBinaryHeader *) image;
+    if (fbh->magic == FATBIN_MAGIC_NUMBER) {
+        return CUDA_MODULE_TYPE::FATBIN;
+    }
+
+    // Test if it is in-memory elf format
+    auto hdr = (Elf64_Ehdr *) image;
+    if (hdr->e_ident[EI_MAG0] == ELFMAG0 && hdr->e_ident[EI_MAG1] == ELFMAG1 ||
+        hdr->e_ident[EI_MAG2] == ELFMAG2 && hdr->e_ident[EI_MAG3] == ELFMAG3) {
+        return CUDA_MODULE_TYPE::ELF;
+    }
+
+    // Test if it is ptx string
+    std::string image_str((char *)image);
+    if (containsSubstring(image_str, ".target")) {
+        return CUDA_MODULE_TYPE::PTX_STRING;
+    }
+
+    throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Cannot identify cuda module.");
+}
+
 std::string get_fatbin_str_from_ptx_str(std::string &ptx_str)
 {
     write_str_to_file("/tmp/output.ptx", ptx_str);
@@ -41,8 +98,9 @@ std::string get_fatbin_str_from_ptx_str(std::string &ptx_str)
    return a vector of the generated file names */
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path)
 {
-    exec("cuobjdump -xptx all " + cubin_path);
-    auto output = exec("cuobjdump " + cubin_path + " -lptx");
+    auto arch_str = "-arch sm_" + std::string(CUDA_COMPUTE_VERSION);
+    exec("cuobjdump " + arch_str + " -xptx all " + cubin_path);
+    auto output = exec("cuobjdump " + cubin_path + " -lptx " + arch_str);
 
     std::stringstream ss(output.first);
     std::vector<std::string> names;

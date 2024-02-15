@@ -67,6 +67,9 @@ void *tally_handle = nullptr;
 
 std::pair<const char *, size_t> get_fatbin_from_ptx(std::string &ptx_str)
 {
+    // Make sure CUDA specs are initiliazed
+    register_cuda_specs();
+
     size_t str_len = ptx_str.size();
 
     if (ptx_to_fatbin_map.find(str_len) != ptx_to_fatbin_map.end()) {
@@ -695,7 +698,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     err = cudaSuccess;
-    IOX_RECV_RETURN_STATUS(cudaError_t);
+    // IOX_RECV_RETURN_STATUS(cudaError_t);
 #endif
 
     TALLY_CLIENT_PROFILE_END;
@@ -754,7 +757,7 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
-    IOX_RECV_RETURN_STATUS(CUresult);
+    // IOX_RECV_RETURN_STATUS(CUresult);
     err = CUDA_SUCCESS;
 #endif
 
@@ -3561,8 +3564,9 @@ cudaError_t cudaSetDevice(int  device)
     // Record it locally so that cudaGetDevice do not have to query the server
     cuda_device = device;
 
-#ifndef RUN_LOCALLY
-
+#if defined(RUN_LOCALLY)
+	err = lcudaSetDevice(device);
+#else
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaSetDeviceArg), alignof(cudaSetDeviceArg))
         .and_then([&](auto& requestPayload) {

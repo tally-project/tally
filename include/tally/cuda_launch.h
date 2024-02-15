@@ -11,6 +11,7 @@
 #include <nlohmann/json.hpp>
 
 #include <tally/env.h>
+#include <tally/cuda_util.h>
 
 struct PTBKernelArgs {
     uint32_t global_idx;
@@ -32,39 +33,6 @@ inline std::string get_dim3_str(dim3 dim)
                                 std::to_string(dim.y) + ", " +
                                 std::to_string(dim.z) + ")";
     return dim_str;
-}
-
-struct CudaLaunchMetadata {
-    int max_threads_per_block = 0;
-    int static_shmem_size_bytes = 0;
-    int num_regs = 0;
-    int max_dynamic_shmem_size_bytes = 0;
-
-    // runtime passed in through cudaLaunchKernel
-    int dynamic_shmem_size_bytes = 0;
-
-    nlohmann::json json() const
-    {
-        return nlohmann::json({
-            {"max_threads_per_block", max_threads_per_block},
-            {"static_shmem_size_bytes", static_shmem_size_bytes},
-            {"num_regs", num_regs},
-            {"max_dynamic_shmem_size_bytes", max_dynamic_shmem_size_bytes},
-            {"dynamic_shmem_size_bytes", dynamic_shmem_size_bytes},
-        });
-    }
-};
-
-static std::ostream& operator<<(std::ostream& os, const CudaLaunchMetadata& meta)
-{
-    os << "CudaLaunchMetadata: \n";
-    os << "\tmax_threads_per_block: " << meta.max_threads_per_block << "\n";
-    os << "\tstatic_shmem_size_bytes: " << meta.static_shmem_size_bytes << "\n";
-    os << "\tnum_regs: " << meta.num_regs << "\n";
-    os << "\tmax_dynamic_shmem_size_bytes: " << meta.max_dynamic_shmem_size_bytes << "\n";
-    os << "\tdynamic_shmem_size_bytes: " << meta.dynamic_shmem_size_bytes;
-
-    return os;
 }
 
 // Used at runtime as key to launch configuration
@@ -449,13 +417,6 @@ struct CudaLaunchCallConfigPairResult {
 
         return std::make_tuple<CudaLaunchConfig, CudaLaunchConfig, bool>(std::move(config_1), std::move(config_2), std::move(time_share));
     }
-};
-
-struct WrappedCUfunction {
-    CUfunction func;
-    uint32_t num_args;
-
-    CudaLaunchMetadata meta_data;
 };
 
 using partial_t = std::function<CUresult(CudaLaunchConfig, PTBKernelArgs*, uint32_t*, SlicedKernelArgs*, bool, float, float*, float*, int32_t, bool)>;

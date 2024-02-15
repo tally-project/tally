@@ -1,6 +1,7 @@
 
 #include <dlfcn.h>
 #include <iostream>
+#include <fstream>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -27,20 +28,47 @@ void *nccl_handle;
 void *curand_handle;
 void *cusparse_handle;
 
+#define REGISTER_HANDLE(HANDLE, LIB_NAME)									\
+	for (auto &path : CUDA_SEARCH_PATHS) {									\
+		auto lib_path = path + LIB_NAME;									\
+		std::ifstream f(lib_path.c_str());									\
+		if (f.good()) {														\
+			HANDLE = dlopen(lib_path.c_str(), RTLD_LAZY);					\
+			if (HANDLE)	break;												\
+		}																	\
+	}																		\
+	if (!HANDLE) throw std::runtime_error("Fail to load " + LIB_NAME);
+
+
 void __attribute__((constructor)) register_cuda_handles()
 {
+	const std::string LIB_CUDART_NAME = "libcudart.so";
+	const std::string LIB_CUDA_NAME = "libcuda.so.1";
+	const std::string LIB_CUDNN_NAME = "libcudnn.so";
+	const std::string LIB_CUBLAS_NAME = "libcublas.so";
+	const std::string LIB_CUBLASLT_NAME = "libcublasLt.so";
+	const std::string LIB_NVRTC_NAME = "libnvrtc.so";
+	const std::string LIB_CURAND_NAME = "libcurand.so";
+	const std::string LIB_CUSPARSE_NAME = "libcusparse.so";
+
+	const std::vector<std::string> CUDA_SEARCH_PATHS = {
+		"/usr/local/cuda/lib64/",
+		"/usr/lib/x86_64-linux-gnu/",
+		"/usr/local/cuda/lib/",
+	};
+	
 	auto tally_home_dir = get_tally_home_dir();
 	auto lib_nccl_path = tally_home_dir / "third_party/nccl/build/lib/libnccl.so";
-
-	cuda_handle = dlopen(LIBCUDA_PATH, RTLD_LAZY);
-	cudart_handle = dlopen(LIBCUDART_PATH, RTLD_LAZY);
-	cudnn_handle = dlopen(LIBCUDNN_PATH, RTLD_LAZY);
-	cublas_handle = dlopen(LIBCUBLAS_PATH, RTLD_LAZY);
-	cublasLt_handle = dlopen(LIBCUBLASLT_PATH, RTLD_LAZY);
-    nvrtc_handle = dlopen(LIBNVRTC_PATH, RTLD_LAZY);
-    curand_handle = dlopen(LIBCURAND_PATH, RTLD_LAZY);
-    cusparse_handle = dlopen(LIBCUSPARSE_PATH, RTLD_LAZY);
 	nccl_handle = dlopen(lib_nccl_path.string().c_str(), RTLD_LAZY);
+
+	REGISTER_HANDLE(cuda_handle, LIB_CUDA_NAME);
+	REGISTER_HANDLE(cudart_handle, LIB_CUDART_NAME);
+	REGISTER_HANDLE(cudnn_handle, LIB_CUDNN_NAME);
+	REGISTER_HANDLE(cublas_handle, LIB_CUBLAS_NAME);
+	REGISTER_HANDLE(cublasLt_handle, LIB_CUBLASLT_NAME);
+	REGISTER_HANDLE(nvrtc_handle, LIB_NVRTC_NAME);
+	REGISTER_HANDLE(curand_handle, LIB_CURAND_NAME);
+	REGISTER_HANDLE(cusparse_handle, LIB_CUSPARSE_NAME);
 }
 
 CUresult (*lcuGetErrorString) (CUresult  error, const char ** pStr) =

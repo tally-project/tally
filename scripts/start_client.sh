@@ -1,5 +1,8 @@
 #!/bin/bash
 
+shopt -s expand_aliases
+alias python3="python3.9"
+
 TALLY_CACHE_PATH=${HOME%%/}/.cache/tally/.tally_cache
 TALLY_CACHE_CLIENT_PATH=${HOME%%/}/.cache/tally/.tally_cache_client
 
