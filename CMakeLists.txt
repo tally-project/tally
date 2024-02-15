@@ -18,7 +18,7 @@ option(MEASURE_PREEMPTION_LATENCY "Measure latency of preemption in priority sch
 
 link_directories(/usr/local/cuda/lib)
 link_directories(/usr/local/cuda/lib64)
-link_directories(/usr/local/cuda-12.2/targets/x86_64-linux/lib/stubs)
+link_directories(/usr/local/cuda/targets/x86_64-linux/lib/stubs)
 
 set(ENV{CUDNN_PATH} /usr/local/cuda/lib)
 
