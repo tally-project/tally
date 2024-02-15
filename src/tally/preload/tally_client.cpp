@@ -67,6 +67,9 @@ void *tally_handle = nullptr;
 
 std::pair<const char *, size_t> get_fatbin_from_ptx(std::string &ptx_str)
 {
+    // Make sure CUDA specs are initiliazed
+    register_cuda_specs();
+
     size_t str_len = ptx_str.size();
 
     if (ptx_to_fatbin_map.find(str_len) != ptx_to_fatbin_map.end()) {
