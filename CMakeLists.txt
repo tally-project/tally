@@ -23,6 +23,8 @@ link_directories(/usr/local/cuda-12.2/targets/x86_64-linux/lib/stubs)
 set(ENV{CUDNN_PATH} /usr/local/cuda/lib)
 
 FIND_PACKAGE(Boost COMPONENTS serialization regex stacktrace_backtrace REQUIRED)
+FIND_PACKAGE(folly REQUIRED)
+find_package(gflags CONFIG REQUIRED)
 
 add_subdirectory(third_party/spdlog)
 add_subdirectory(third_party/iceoryx/iceoryx_meta)
@@ -170,9 +172,10 @@ endif()
 
 target_include_directories(tally_server
     PUBLIC ${PROJECT_SOURCE_DIR}/third_party/nccl/build/include
-    PUBLIC  /usr/local/cuda/include
-    PUBLIC  ${PROJECT_SOURCE_DIR}/include
+    PUBLIC /usr/local/cuda/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
     PUBLIC ${PROJECT_SOURCE_DIR}/third_party/json/single_include
+    PUBLIC ${FOLLY_INCLUDE_DIR}
 )
 
 target_link_libraries(tally_server PUBLIC
@@ -191,10 +194,7 @@ target_link_libraries(tally_server PUBLIC
     PUBLIC Boost::regex
     spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
     iceoryx_posh::iceoryx_posh
-    folly
-    glog
-    gflags
-    fmt
+    ${FOLLY_LIBRARIES}
     readerwriterqueue
 )
 
