@@ -3568,6 +3568,7 @@ cudaError_t cudaSetDevice(int  device)
 	auto err = lcudaSetDevice(device);
 
 #else
+    cudaError_t err;
 
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaSetDeviceArg), alignof(cudaSetDeviceArg))
