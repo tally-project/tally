@@ -3565,11 +3565,8 @@ cudaError_t cudaSetDevice(int  device)
     cuda_device = device;
 
 #if defined(RUN_LOCALLY)
-	auto err = lcudaSetDevice(device);
-
+	err = lcudaSetDevice(device);
 #else
-    cudaError_t err;
-
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaSetDeviceArg), alignof(cudaSetDeviceArg))
         .and_then([&](auto& requestPayload) {
