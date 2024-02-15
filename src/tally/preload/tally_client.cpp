@@ -3561,7 +3561,10 @@ cudaError_t cudaSetDevice(int  device)
     // Record it locally so that cudaGetDevice do not have to query the server
     cuda_device = device;
 
-#ifndef RUN_LOCALLY
+#if defined(RUN_LOCALLY)
+	auto err = lcudaSetDevice(device);
+
+#else
 
     IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudaSetDeviceArg), alignof(cudaSetDeviceArg))
