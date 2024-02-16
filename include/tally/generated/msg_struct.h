@@ -952,6 +952,54 @@ struct cudnnGetOpTensorDescriptorResponse {
 	cudnnStatus_t err;
 };
 
+struct cudnnCreateReduceTensorDescriptorArg {
+	cudnnReduceTensorDescriptor_t * reduceTensorDesc;
+};
+
+struct cudnnCreateReduceTensorDescriptorResponse {
+	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnSetReduceTensorDescriptorArg {
+	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+	cudnnReduceTensorOp_t  reduceTensorOp;
+	cudnnDataType_t  reduceTensorCompType;
+	cudnnNanPropagation_t  reduceTensorNanOpt;
+	cudnnReduceTensorIndices_t  reduceTensorIndices;
+	cudnnIndicesType_t  reduceTensorIndicesType;
+};
+
+struct cudnnDestroyReduceTensorDescriptorArg {
+	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+};
+
+struct cudnnGetReductionIndicesSizeArg {
+	cudnnHandle_t  handle;
+	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+	cudnnTensorDescriptor_t  aDesc;
+	cudnnTensorDescriptor_t  cDesc;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetReductionIndicesSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetReductionWorkspaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+	cudnnTensorDescriptor_t  aDesc;
+	cudnnTensorDescriptor_t  cDesc;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetReductionWorkspaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
 struct cudnnCreateFilterDescriptorArg {
 	cudnnFilterDescriptor_t * filterDesc;
 };

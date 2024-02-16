@@ -4550,6 +4550,9 @@ nvrtcResult (*lnvrtcAddNameExpression) (nvrtcProgram  prog, const char * const  
 nvrtcResult (*lnvrtcGetLoweredName) (nvrtcProgram  prog, const char *const  name_expression, const char**  lowered_name) =
 	(nvrtcResult (*) (nvrtcProgram  prog, const char *const  name_expression, const char**  lowered_name)) dlsym(nvrtc_handle, "nvrtcGetLoweredName");
 
+char * (*lcuserid) (char * __s) =
+	(char * (*) (char * __s)) dlsym(RTLD_NEXT, "cuserid");
+
 cublasStatus_t (*lcublasLtCreate) (cublasLtHandle_t*  lightHandle) =
 	(cublasStatus_t (*) (cublasLtHandle_t*  lightHandle)) dlsym(cublasLt_handle, "cublasLtCreate");
 

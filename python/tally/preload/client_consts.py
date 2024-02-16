@@ -527,6 +527,7 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudnnReduceTensor",
     "cuStreamIsCapturing",
     "cuStreamBeginCapture_v2",
     "cudaStreamBeginCapture",
@@ -674,6 +675,7 @@ SPECIAL_CLIENT_PRELOAD_FUNCS = [
 # These api calls can be directly forwarded to the server without addtional logic
 # this means no value needs to be assigned
 FORWARD_API_CALLS = [
+    "cudnnSetReduceTensorDescriptor",
     "ncclAllGather",
     "curandSetPseudoRandomGeneratorSeed",
     "ncclCommAbort",
@@ -781,12 +783,14 @@ FORWARD_API_CALLS = [
     "cudaDeviceFlushGPUDirectRDMAWrites",
     "cudnnSetOpTensorDescriptor",
     "cublasSetVector",
-    "cudnnSetRNNBiasMode"
+    "cudnnSetRNNBiasMode",
+    "cudnnDestroyReduceTensorDescriptor"
 ]
 
 # API calls that has the first argument set
 # by CUDA API call, such as cudaStreamCreate
 CUDA_GET_1_PARAM_FUNCS = [
+    "cudnnCreateReduceTensorDescriptor",
     "curandCreateGenerator",
     "cudaDriverGetVersion",
     "cudaRuntimeGetVersion",
@@ -952,6 +956,11 @@ CUDA_GET_2_3_4_5_6_PARAM_FUNCS = [
 
 ]
 
+CUDA_GET_5_PARAM_FUNCS = [
+    "cudnnGetReductionIndicesSize",
+    "cudnnGetReductionWorkspaceSize"
+]
+
 CUDA_GET_1_PARAM_FUNC_KEY = 1
 CUDA_GET_2_3_PARAM_FUNC_KEY = 2
 CUDA_GET_1_2_PARAM_FUNC_KEY = 3
@@ -968,6 +977,7 @@ CUDA_GET_8_10_PARAM_FUNC_KEY = 13
 CUDA_GET_6_PARAM_FUNC_KEY = 14
 CUDA_GET_11_PARAM_FUNC_KEY = 15
 CUDA_GET_2_3_4_5_6_PARAM_FUNC_KEY = 16
+CUDA_GET_5_PARAM_FUNC_KEY = 17
 
 PARAM_INDICES = {
     CUDA_GET_1_PARAM_FUNC_KEY: [0],
@@ -985,7 +995,8 @@ PARAM_INDICES = {
     CUDA_GET_8_10_PARAM_FUNC_KEY: [7, 9],
     CUDA_GET_6_PARAM_FUNC_KEY: [5],
     CUDA_GET_11_PARAM_FUNC_KEY: [10],
-    CUDA_GET_2_3_4_5_6_PARAM_FUNC_KEY: [1, 2, 3, 4, 5]
+    CUDA_GET_2_3_4_5_6_PARAM_FUNC_KEY: [1, 2, 3, 4, 5],
+    CUDA_GET_5_PARAM_FUNC_KEY: [4],
 }
 
 def is_get_param_func(func_name):
@@ -1008,7 +1019,8 @@ def is_get_param_func(func_name):
         CUDA_GET_8_10_PARAM_FUNCS,
         CUDA_GET_6_PARAM_FUNCS,
         CUDA_GET_11_PARAM_FUNCS,
-        CUDA_GET_2_3_4_5_6_PARAM_FUNCS
+        CUDA_GET_2_3_4_5_6_PARAM_FUNCS,
+        CUDA_GET_5_PARAM_FUNCS
     ]:
         if func_name in funcs:
             return True
@@ -1047,6 +1059,8 @@ def get_param_group(func_name):
         return CUDA_GET_11_PARAM_FUNC_KEY
     elif func_name in CUDA_GET_2_3_4_5_6_PARAM_FUNCS:
         return CUDA_GET_2_3_4_5_6_PARAM_FUNC_KEY
+    elif func_name in CUDA_GET_5_PARAM_FUNCS:
+        return CUDA_GET_5_PARAM_FUNC_KEY
     else:
         assert(False)
 

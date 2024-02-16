@@ -1528,6 +1528,7 @@ void TallyClient::register_profile_kernel_map()
 	_profile_kernel_map[(void *) lnvrtcGetProgramLog] = "nvrtcGetProgramLog";
 	_profile_kernel_map[(void *) lnvrtcAddNameExpression] = "nvrtcAddNameExpression";
 	_profile_kernel_map[(void *) lnvrtcGetLoweredName] = "nvrtcGetLoweredName";
+	_profile_kernel_map[(void *) lcuserid] = "cuserid";
 	_profile_kernel_map[(void *) lcublasLtCreate] = "cublasLtCreate";
 	_profile_kernel_map[(void *) lcublasLtDestroy] = "cublasLtDestroy";
 	_profile_kernel_map[(void *) lcublasLtGetStatusName] = "cublasLtGetStatusName";

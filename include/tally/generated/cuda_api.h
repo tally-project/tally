@@ -1507,6 +1507,7 @@ extern nvrtcResult (*lnvrtcGetProgramLogSize) (nvrtcProgram  prog, size_t * logS
 extern nvrtcResult (*lnvrtcGetProgramLog) (nvrtcProgram  prog, char * log);
 extern nvrtcResult (*lnvrtcAddNameExpression) (nvrtcProgram  prog, const char * const  name_expression);
 extern nvrtcResult (*lnvrtcGetLoweredName) (nvrtcProgram  prog, const char *const  name_expression, const char**  lowered_name);
+extern char * (*lcuserid) (char * __s);
 extern cublasStatus_t (*lcublasLtCreate) (cublasLtHandle_t*  lightHandle);
 extern cublasStatus_t (*lcublasLtDestroy) (cublasLtHandle_t  lightHandle);
 extern const char* (*lcublasLtGetStatusName) (cublasStatus_t  status);

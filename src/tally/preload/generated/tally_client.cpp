@@ -10252,21 +10252,87 @@ cudnnStatus_t cudnnOpTensor(cudnnHandle_t  handle, const cudnnOpTensorDescriptor
 cudnnStatus_t cudnnCreateReduceTensorDescriptor(cudnnReduceTensorDescriptor_t * reduceTensorDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateReduceTensorDescriptor hooked");
+	TALLY_CLIENT_PROFILE_START;
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
-	return lcudnnCreateReduceTensorDescriptor(reduceTensorDesc);
+	auto err = lcudnnCreateReduceTensorDescriptor(reduceTensorDesc);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnCreateReduceTensorDescriptorArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNCREATEREDUCETENSORDESCRIPTOR;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudnnCreateReduceTensorDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->reduceTensorDesc = reduceTensorDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnCreateReduceTensorDescriptorResponse*>(responsePayload);
+			if (reduceTensorDesc) { *reduceTensorDesc = response->reduceTensorDesc; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateReduceTensorDescriptor);
+	return err;
 }
 
 cudnnStatus_t cudnnSetReduceTensorDescriptor(cudnnReduceTensorDescriptor_t  reduceTensorDesc, cudnnReduceTensorOp_t  reduceTensorOp, cudnnDataType_t  reduceTensorCompType, cudnnNanPropagation_t  reduceTensorNanOpt, cudnnReduceTensorIndices_t  reduceTensorIndices, cudnnIndicesType_t  reduceTensorIndicesType)
 {
 	TALLY_SPD_LOG("cudnnSetReduceTensorDescriptor hooked");
+	TALLY_CLIENT_PROFILE_START;
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
-	return lcudnnSetReduceTensorDescriptor(reduceTensorDesc, reduceTensorOp, reduceTensorCompType, reduceTensorNanOpt, reduceTensorIndices, reduceTensorIndicesType);
+	auto err = lcudnnSetReduceTensorDescriptor(reduceTensorDesc, reduceTensorOp, reduceTensorCompType, reduceTensorNanOpt, reduceTensorIndices, reduceTensorIndicesType);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnSetReduceTensorDescriptorArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNSETREDUCETENSORDESCRIPTOR;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudnnSetReduceTensorDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->reduceTensorDesc = reduceTensorDesc;
+			request->reduceTensorOp = reduceTensorOp;
+			request->reduceTensorCompType = reduceTensorCompType;
+			request->reduceTensorNanOpt = reduceTensorNanOpt;
+			request->reduceTensorIndices = reduceTensorIndices;
+			request->reduceTensorIndicesType = reduceTensorIndicesType;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnSetReduceTensorDescriptor);
+	return err;
 }
 
 cudnnStatus_t cudnnGetReduceTensorDescriptor(const cudnnReduceTensorDescriptor_t  reduceTensorDesc, cudnnReduceTensorOp_t * reduceTensorOp, cudnnDataType_t * reduceTensorCompType, cudnnNanPropagation_t * reduceTensorNanOpt, cudnnReduceTensorIndices_t * reduceTensorIndices, cudnnIndicesType_t * reduceTensorIndicesType)
@@ -10282,41 +10348,131 @@ cudnnStatus_t cudnnGetReduceTensorDescriptor(const cudnnReduceTensorDescriptor_t
 cudnnStatus_t cudnnDestroyReduceTensorDescriptor(cudnnReduceTensorDescriptor_t  reduceTensorDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyReduceTensorDescriptor hooked");
+	TALLY_CLIENT_PROFILE_START;
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
-	return lcudnnDestroyReduceTensorDescriptor(reduceTensorDesc);
+	auto err = lcudnnDestroyReduceTensorDescriptor(reduceTensorDesc);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnDestroyReduceTensorDescriptorArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNDESTROYREDUCETENSORDESCRIPTOR;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudnnDestroyReduceTensorDescriptorArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->reduceTensorDesc = reduceTensorDesc;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            
+            auto response = static_cast<const cudnnStatus_t*>(responsePayload);
+            err = *response;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyReduceTensorDescriptor);
+	return err;
 }
 
 cudnnStatus_t cudnnGetReductionIndicesSize(cudnnHandle_t  handle, const cudnnReduceTensorDescriptor_t  reduceTensorDesc, const cudnnTensorDescriptor_t  aDesc, const cudnnTensorDescriptor_t  cDesc, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetReductionIndicesSize hooked");
+	TALLY_CLIENT_PROFILE_START;
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
-	return lcudnnGetReductionIndicesSize(handle, reduceTensorDesc, aDesc, cDesc, sizeInBytes);
+	auto err = lcudnnGetReductionIndicesSize(handle, reduceTensorDesc, aDesc, cDesc, sizeInBytes);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetReductionIndicesSizeArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETREDUCTIONINDICESSIZE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudnnGetReductionIndicesSizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->handle = handle;
+			request->reduceTensorDesc = reduceTensorDesc;
+			request->aDesc = aDesc;
+			request->cDesc = cDesc;
+			request->sizeInBytes = sizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetReductionIndicesSizeResponse*>(responsePayload);
+			if (sizeInBytes) { *sizeInBytes = response->sizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnGetReductionIndicesSize);
+	return err;
 }
 
 cudnnStatus_t cudnnGetReductionWorkspaceSize(cudnnHandle_t  handle, const cudnnReduceTensorDescriptor_t  reduceTensorDesc, const cudnnTensorDescriptor_t  aDesc, const cudnnTensorDescriptor_t  cDesc, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetReductionWorkspaceSize hooked");
+	TALLY_CLIENT_PROFILE_START;
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
-	return lcudnnGetReductionWorkspaceSize(handle, reduceTensorDesc, aDesc, cDesc, sizeInBytes);
+	auto err = lcudnnGetReductionWorkspaceSize(handle, reduceTensorDesc, aDesc, cDesc, sizeInBytes);
 #else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
-#endif
-}
 
-cudnnStatus_t cudnnReduceTensor(cudnnHandle_t  handle, const cudnnReduceTensorDescriptor_t  reduceTensorDesc, void * indices, size_t  indicesSizeInBytes, void * workspace, size_t  workspaceSizeInBytes, const void * alpha, const cudnnTensorDescriptor_t  aDesc, const void * A, const void * beta, const cudnnTensorDescriptor_t  cDesc, void * C)
-{
-	TALLY_SPD_LOG("cudnnReduceTensor hooked");
-#if defined(RUN_LOCALLY)
-	return lcudnnReduceTensor(handle, reduceTensorDesc, indices, indicesSizeInBytes, workspace, workspaceSizeInBytes, alpha, aDesc, A, beta, cDesc, C);
-#else
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+    cudnnStatus_t err;
+
+    TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cudnnGetReductionWorkspaceSizeArg), alignof(MessageHeader_t))
+        .and_then([&](auto& requestPayload) {
+
+            auto header = static_cast<MessageHeader_t*>(requestPayload);
+            header->api_id = CUDA_API_ENUM::CUDNNGETREDUCTIONWORKSPACESIZE;
+            header->client_id = TallyClient::client->client_id;
+            
+            auto request = (cudnnGetReductionWorkspaceSizeArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
+			request->handle = handle;
+			request->reduceTensorDesc = reduceTensorDesc;
+			request->aDesc = aDesc;
+			request->cDesc = cDesc;
+			request->sizeInBytes = sizeInBytes;
+
+            TallyClient::client->iox_client->send(header).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
+        })
+        .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const cudnnGetReductionWorkspaceSizeResponse*>(responsePayload);
+			if (sizeInBytes) { *sizeInBytes = response->sizeInBytes; }
+
+            err = response->err;
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {};
 #endif
+	TALLY_CLIENT_PROFILE_END;
+	TALLY_CLIENT_TRACE_API_CALL(cudnnGetReductionWorkspaceSize);
+	return err;
 }
 
 cudnnStatus_t cudnnSetTensor(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  yDesc, void * y, const void * valuePtr)
@@ -20112,6 +20268,16 @@ nvrtcResult nvrtcGetLoweredName(nvrtcProgram  prog, const char *const  name_expr
 	TALLY_SPD_LOG("nvrtcGetLoweredName hooked");
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetLoweredName(prog, name_expression, lowered_name);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
+}
+
+char * cuserid(char * __s)
+{
+	TALLY_SPD_LOG("cuserid hooked");
+#if defined(RUN_LOCALLY)
+	return lcuserid(__s);
 #else
 	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
 #endif

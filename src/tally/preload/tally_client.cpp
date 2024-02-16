@@ -395,10 +395,10 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-#endif
 
     TallyClient::client->_kernel_addr_to_args[hostFun] = TallyClient::client->_kernel_name_to_args[deviceFunName];
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
+#endif
 }
 
 void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
@@ -409,8 +409,6 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
     return l__cudaRegisterFatBinaryEnd(fatCubinHandle);
 
 #else
-    
-    
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t), alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
 
@@ -422,9 +420,9 @@ void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
                 [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Request: ", error); });
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
-#endif
 
     return l__cudaRegisterFatBinaryEnd(fatCubinHandle);
+#endif
 }
 
 cudaError_t cudaMalloc(void ** devPtr, size_t  size)
@@ -7903,6 +7901,16 @@ CUresult cuStreamIsCapturing(CUstream  hStream, CUstreamCaptureStatus * captureS
 	TALLY_CLIENT_PROFILE_END;
 	TALLY_CLIENT_TRACE_API_CALL(cuStreamIsCapturing);
 	return err;
+}
+
+cudnnStatus_t cudnnReduceTensor(cudnnHandle_t  handle, const cudnnReduceTensorDescriptor_t  reduceTensorDesc, void * indices, size_t  indicesSizeInBytes, void * workspace, size_t  workspaceSizeInBytes, const void * alpha, const cudnnTensorDescriptor_t  aDesc, const void * A, const void * beta, const cudnnTensorDescriptor_t  cDesc, void * C)
+{
+	TALLY_SPD_LOG("cudnnReduceTensor hooked");
+#if defined(RUN_LOCALLY)
+	return lcudnnReduceTensor(handle, reduceTensorDesc, indices, indicesSizeInBytes, workspace, workspaceSizeInBytes, alpha, aDesc, A, beta, cDesc, C);
+#else
+	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+#endif
 }
 
 }

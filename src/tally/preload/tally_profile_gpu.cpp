@@ -51350,6 +51350,41 @@ nvrtcResult nvrtcGetLoweredName(nvrtcProgram  prog, const char *const  name_expr
 	return res;
 }
 
+char * cuserid(char * __s)
+{
+	static char * (*lcuserid) (char *);
+	if (!lcuserid) {
+		lcuserid = (char * (*) (char *)) dlsym(RTLD_NEXT, "cuserid");
+		tracer._kernel_map[(void *) lcuserid] = std::string("cuserid");
+	}
+	assert(lcuserid);
+
+    float _time_ms = 0.0f;
+
+    cudaEvent_t _start, _stop;
+    if (tracer.profile_start) {
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_stop);
+        cudaDeviceSynchronize();
+
+        cudaEventRecord(_start);
+    }
+	char * res = 
+		lcuserid(__s);
+
+    if (tracer.profile_start) {
+        cudaEventRecord(_stop);
+        cudaEventSynchronize(_stop);
+        cudaEventElapsedTime(&_time_ms, _start, _stop);
+
+        tracer._kernel_time.push_back(_time_ms);
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuserid);
+	}
+	return res;
+}
+
 cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 {
 	static cublasStatus_t (*lcublasLtCreate) (cublasLtHandle_t* );

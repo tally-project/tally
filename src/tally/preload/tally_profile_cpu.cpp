@@ -38356,6 +38356,32 @@ nvrtcResult nvrtcGetLoweredName(nvrtcProgram  prog, const char *const  name_expr
 	return res;
 }
 
+char * cuserid(char * __s)
+{
+	static char * (*lcuserid) (char *);
+	if (!lcuserid) {
+		lcuserid = (char * (*) (char *)) dlsym(RTLD_NEXT, "cuserid");
+		tracer._kernel_map[(void *) lcuserid] = std::string("cuserid");
+	}
+	assert(lcuserid);
+
+    time_point_t _start;
+    if (tracer.profile_start) {
+        _start = std::chrono::high_resolution_clock::now();
+    }
+	char * res = 
+		lcuserid(__s);
+
+    if (tracer.profile_start) {
+        auto _end = std::chrono::high_resolution_clock::now();
+        tracer._cpu_timestamps.push_back({ _start, _end });
+    }
+	if (tracer.profile_start) {
+		tracer._kernel_seq.push_back((void *)lcuserid);
+	}
+	return res;
+}
+
 cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 {
 	static cublasStatus_t (*lcublasLtCreate) (cublasLtHandle_t* );
