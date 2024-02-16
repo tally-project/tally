@@ -59,7 +59,7 @@ public:
 
     int32_t client_id;
 
-    std::mutex iox_mtx;
+    std::recursive_mutex iox_mtx;
 
     // For performance measurements
     std::vector<const void *> _profile_kernel_seq;

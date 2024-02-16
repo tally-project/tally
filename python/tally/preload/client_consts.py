@@ -1055,7 +1055,6 @@ def get_preload_func_template_iox(func_name, arg_names, arg_types, ret_type):
     func_preload_builder = f"""
     {ret_type} err;
 
-    IOX_CLIENT_ACQUIRE_LOCK;
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof({func_name}Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {{
 

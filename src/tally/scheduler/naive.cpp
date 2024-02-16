@@ -14,8 +14,9 @@ void TallyServer::run_naive_scheduler()
 {
     TALLY_SPD_LOG_ALWAYS("Running naive scheduler ...");
 
-    CudaLaunchConfig config = CudaLaunchConfig::default_config;
+    // CudaLaunchConfig config = CudaLaunchConfig::default_config;
     // CudaLaunchConfig config = CudaLaunchConfig::get_ptb_config(4);
+    CudaLaunchConfig config = CudaLaunchConfig::get_sliced_config(8);
 
     KernelLaunchWrapper kernel_wrapper;
 
@@ -47,6 +48,11 @@ void TallyServer::run_naive_scheduler()
                     auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
                     cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
                     kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                }
+                else if (config.use_sliced)
+                {
+                    auto sliced_args = get_sliced_kernel_args(kernel_wrapper.launch_call.gridDim, config.num_slices);
+                    kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, &sliced_args, false, 0, nullptr, nullptr, -1, true);
                 }
 
                 kernel_wrapper.free_args();

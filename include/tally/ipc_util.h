@@ -15,6 +15,6 @@
     {}
 
 #define IOX_CLIENT_ACQUIRE_LOCK \
-    std::lock_guard<std::mutex> guard(TallyClient::client->iox_mtx);
+    std::lock_guard<std::recursive_mutex> guard(TallyClient::client->iox_mtx);
 
 #endif // TALLY_IPC_UTIL_H
