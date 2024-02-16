@@ -79,11 +79,8 @@ std::pair<partial_t, void *> TallyServer::cudaLaunchKernel_Partial(const void *f
     return std::make_pair(partial, (void *) args);
 }
 
-std::pair<partial_t, void *> TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *__args)
+std::pair<partial_t, void *> TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2Arg *args)
 {
-    auto args = (cublasSgemm_v2Arg *) malloc(sizeof(cublasSgemm_v2Arg));
-    memcpy(args, __args, sizeof(cublasSgemm_v2Arg));
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemm_v2(
@@ -112,15 +109,11 @@ std::pair<partial_t, void *> TallyServer::cublasSgemm_v2_Partial(cublasSgemm_v2A
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardWeights_Partial(cudnnRNNBackwardWeightsArg *args)
 {
-    size_t args_len = sizeof(cudnnRNNBackwardWeightsArg) + sizeof(cudnnTensorDescriptor_t) * __args->seqLength * 2;
-    auto args = (cudnnRNNBackwardWeightsArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardWeights(
@@ -150,15 +143,11 @@ std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardWeights_Partial(cudnnR
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNBackwardDataArg *args)
 {
-    size_t args_len = sizeof(cudnnRNNBackwardDataArg) + sizeof(cudnnTensorDescriptor_t) * __args->seqLength * 3;
-    auto args = (cudnnRNNBackwardDataArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardData(
@@ -200,15 +189,11 @@ std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardData_Partial(cudnnRNNB
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNForwardTraining_Partial(cudnnRNNForwardTrainingArg *args)
 {
-    size_t args_len = sizeof(cudnnRNNForwardTrainingArg) + sizeof(cudnnTensorDescriptor_t) * __args->seqLength * 2;
-    auto args = (cudnnRNNForwardTrainingArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNForwardTraining(
@@ -244,15 +229,11 @@ std::pair<partial_t, void *> TallyServer::cudnnRNNForwardTraining_Partial(cudnnR
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDataArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnBackwardData_Partial(cudnnMultiHeadAttnBackwardDataArg *args)
 {
-    size_t args_len = sizeof(cudnnMultiHeadAttnBackwardDataArg) + sizeof(int) * __args->winIdxLen * 2;
-    auto args = (cudnnMultiHeadAttnBackwardDataArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnMultiHeadAttnBackwardData(
@@ -290,15 +271,11 @@ std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnBackwardData_Partial
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnForward_Partial(cudnnMultiHeadAttnForwardArg *args)
 {
-    size_t args_len = sizeof(cudnnMultiHeadAttnForwardArg) + sizeof(int) * __args->winIdxLen * 2;
-    auto args = (cudnnMultiHeadAttnForwardArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnMultiHeadAttnForward(
@@ -335,15 +312,11 @@ std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnForward_Partial(cudn
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg *__args)
+std::pair<partial_t, void *> TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg *args)
 {
-    size_t args_len = sizeof(struct cublasSgemmExArg);
-    auto args = (cublasSgemmExArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemmEx(
@@ -375,15 +348,11 @@ std::pair<partial_t, void *> TallyServer::cublasSgemmEx_Partial(cublasSgemmExArg
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnTransformTensor_Partial(cudnnTransformTensorArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnTransformTensor_Partial(cudnnTransformTensorArg *args)
 {
-    size_t args_len = sizeof(cudnnTransformTensorArg);
-    auto args = (cudnnTransformTensorArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnTransformTensor(
@@ -405,15 +374,11 @@ std::pair<partial_t, void *> TallyServer::cudnnTransformTensor_Partial(cudnnTran
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2Arg *__args)
+std::pair<partial_t, void *> TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2Arg *args)
 {
-    size_t args_len = sizeof(cublasSgemv_v2Arg);
-    auto args = (cublasSgemv_v2Arg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemv_v2(
@@ -440,15 +405,11 @@ std::pair<partial_t, void *> TallyServer::cublasSgemv_v2_Partial(cublasSgemv_v2A
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnLRNCrossChannelForward_Partial(cudnnLRNCrossChannelForwardArg *args)
 {
-    size_t args_len = sizeof(cudnnLRNCrossChannelForwardArg);
-    auto args = (cudnnLRNCrossChannelForwardArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnLRNCrossChannelForward(
@@ -472,15 +433,11 @@ std::pair<partial_t, void *> TallyServer::cudnnLRNCrossChannelForward_Partial(cu
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftmaxForwardArg *args)
 {
-    size_t args_len = sizeof(cudnnSoftmaxForwardArg);
-    auto args = (cudnnSoftmaxForwardArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnSoftmaxForward(
@@ -504,15 +461,11 @@ std::pair<partial_t, void *> TallyServer::cudnnSoftmaxForward_Partial(cudnnSoftm
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnAddTensor_Partial(cudnnAddTensorArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnAddTensor_Partial(cudnnAddTensorArg *args)
 {
-    size_t args_len = sizeof(cudnnAddTensorArg);
-    auto args = (cudnnAddTensorArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnAddTensor(
@@ -534,15 +487,11 @@ std::pair<partial_t, void *> TallyServer::cudnnAddTensor_Partial(cudnnAddTensorA
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *__args)
+std::pair<partial_t, void *> TallyServer::cublasLtMatmul_Partial(cublasLtMatmulArg *args)
 {
-    size_t args_len = sizeof(cublasLtMatmulArg);
-    auto args = (cublasLtMatmulArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasLtMatmul(
@@ -573,15 +522,11 @@ std::pair<partial_t, void *> TallyServer::cublasLtMatmul_Partial(cublasLtMatmulA
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnActivationForward_Partial(cudnnActivationForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnActivationForward_Partial(cudnnActivationForwardArg *args)
 {
-    size_t args_len = sizeof(cudnnActivationForwardArg);
-    auto args = (cudnnActivationForwardArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnActivationForward(
@@ -604,15 +549,11 @@ std::pair<partial_t, void *> TallyServer::cudnnActivationForward_Partial(cudnnAc
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnConvolutionForward_Partial(cudnnConvolutionForwardArg *args)
 {
-    size_t args_len = sizeof(cudnnConvolutionForwardArg);
-    auto args = (cudnnConvolutionForwardArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnConvolutionForward(
@@ -640,15 +581,11 @@ std::pair<partial_t, void *> TallyServer::cudnnConvolutionForward_Partial(cudnnC
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnPoolingForward_Partial(cudnnPoolingForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnPoolingForward_Partial(cudnnPoolingForwardArg *args)
 {
-    size_t args_len = sizeof(cudnnPoolingForwardArg);
-    auto args = (cudnnPoolingForwardArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnPoolingForward(
@@ -671,15 +608,11 @@ std::pair<partial_t, void *> TallyServer::cudnnPoolingForward_Partial(cudnnPooli
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwardWeightsArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnBackwardWeights_Partial(cudnnMultiHeadAttnBackwardWeightsArg *args)
 {
-    size_t args_len = sizeof(cudnnMultiHeadAttnBackwardWeightsArg);
-    auto args = (cudnnMultiHeadAttnBackwardWeightsArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnMultiHeadAttnBackwardWeights(
@@ -712,15 +645,11 @@ std::pair<partial_t, void *> TallyServer::cudnnMultiHeadAttnBackwardWeights_Part
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnReorderFilterAndBias_Partial(cudnnReorderFilterAndBiasArg *args)
 {
-    size_t args_len = sizeof(cudnnReorderFilterAndBiasArg);
-    auto args = (cudnnReorderFilterAndBiasArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnReorderFilterAndBias(
@@ -743,15 +672,11 @@ std::pair<partial_t, void *> TallyServer::cudnnReorderFilterAndBias_Partial(cudn
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormalizationForwardTrainingExArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnBatchNormalizationForwardTrainingEx_Partial(cudnnBatchNormalizationForwardTrainingExArg *args)
 {
-    size_t args_len = sizeof(cudnnBatchNormalizationForwardTrainingExArg);
-    auto args = (cudnnBatchNormalizationForwardTrainingExArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnBatchNormalizationForwardTrainingEx(
@@ -791,15 +716,11 @@ std::pair<partial_t, void *> TallyServer::cudnnBatchNormalizationForwardTraining
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBackwardExArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnBatchNormalizationBackwardEx_Partial(cudnnBatchNormalizationBackwardExArg *args)
 {
-    size_t args_len = sizeof(cudnnBatchNormalizationBackwardExArg);
-    auto args = (cudnnBatchNormalizationBackwardExArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnBatchNormalizationBackwardEx(
@@ -844,15 +765,11 @@ std::pair<partial_t, void *> TallyServer::cudnnBatchNormalizationBackwardEx_Part
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardWeights_v8_Partial(cudnnRNNBackwardWeights_v8Arg *args)
 {
-    size_t args_len = sizeof(cudnnRNNBackwardWeights_v8Arg);
-    auto args = (cudnnRNNBackwardWeights_v8Arg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardWeights_v8(
@@ -883,15 +800,11 @@ std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardWeights_v8_Partial(cud
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnRNNBackwardData_v8Arg *args)
 {
-    size_t args_len = sizeof(cudnnRNNBackwardData_v8Arg);
-    auto args = (cudnnRNNBackwardData_v8Arg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNBackwardData_v8(
@@ -928,15 +841,11 @@ std::pair<partial_t, void *> TallyServer::cudnnRNNBackwardData_v8_Partial(cudnnR
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnRNNForward_Partial(cudnnRNNForwardArg *__args)
+std::pair<partial_t, void *> TallyServer::cudnnRNNForward_Partial(cudnnRNNForwardArg *args)
 {
-    size_t args_len = sizeof(cudnnRNNForwardArg);
-    auto args = (cudnnRNNForwardArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cudnnRNNForward(
@@ -971,15 +880,11 @@ std::pair<partial_t, void *> TallyServer::cudnnRNNForward_Partial(cudnnRNNForwar
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cudnnBackendExecute_Partial(cudnnBackendExecuteArg *__args, cudnnStatus_t *err)
+std::pair<partial_t, void *> TallyServer::cudnnBackendExecute_Partial(cudnnBackendExecuteArg *args, cudnnStatus_t *err)
 {
-    size_t args_len = sizeof(cudnnBackendExecuteArg);
-    auto args = (cudnnBackendExecuteArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [args, err] (PARTIAL_ARGUMENTS) {
 
         *err = cudnnBackendExecute(
@@ -997,15 +902,11 @@ std::pair<partial_t, void *> TallyServer::cudnnBackendExecute_Partial(cudnnBacke
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cublasGemmEx_Partial(cublasGemmExArg *__args)
+std::pair<partial_t, void *> TallyServer::cublasGemmEx_Partial(cublasGemmExArg *args)
 {
-    size_t args_len = sizeof(cublasGemmExArg);
-    auto args = (cublasGemmExArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasGemmEx(
@@ -1039,15 +940,11 @@ std::pair<partial_t, void *> TallyServer::cublasGemmEx_Partial(cublasGemmExArg *
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *__args)
+std::pair<partial_t, void *> TallyServer::cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *args)
 {
-    size_t args_len = sizeof(cublasGemmStridedBatchedExArg);
-    auto args = (cublasGemmStridedBatchedExArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasGemmStridedBatchedEx(
@@ -1085,15 +982,11 @@ std::pair<partial_t, void *> TallyServer::cublasGemmStridedBatchedEx_Partial(cub
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
-std::pair<partial_t, void *> TallyServer::cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *__args)
+std::pair<partial_t, void *> TallyServer::cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *args)
 {
-    size_t args_len = sizeof(cublasSgemmStridedBatchedArg);
-    auto args = (cublasSgemmStridedBatchedArg *) malloc(args_len);
-    memcpy(args, __args, args_len);
-
     auto partial = [this, args] (PARTIAL_ARGUMENTS) {
 
         auto err = cublasSgemmStridedBatched(
@@ -1126,7 +1019,7 @@ std::pair<partial_t, void *> TallyServer::cublasSgemmStridedBatched_Partial(cubl
         }
     };
 
-    return std::make_pair(partial, (void *) args);
+    return std::make_pair(partial, nullptr);
 }
 
 std::pair<partial_t, void *> TallyServer::cudnnReduceTensor_Partial(cudnnReduceTensorArg *args, void *indices)
