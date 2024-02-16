@@ -348,7 +348,10 @@ void *get_workspace(size_t size, cudaStream_t stream) {
         }
 
         void *workspace;
-        cudaMalloc(&workspace, size);
+        auto err = cudaMalloc(&workspace, size);
+        if (err) {
+            throw std::runtime_error("Fail to allocate memory for workspace");
+        }
         workspace_map[stream].first = size;
         workspace_map[stream].second = workspace;
     }

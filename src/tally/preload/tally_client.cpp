@@ -433,7 +433,6 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 
 #if defined(RUN_LOCALLY)
     auto err = lcudaMalloc(devPtr, size);
-
 #else
     uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cudaMallocArg);
     cudaError_t err;
@@ -667,6 +666,7 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 
 #if defined(RUN_LOCALLY)
     auto err = lcudaLaunchKernel(func, gridDim, blockDim, args, sharedMem, stream);
+
 #else
 
     auto &params_info = TallyClient::client->_kernel_addr_to_args[func];
@@ -674,7 +674,6 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct cudaLaunchKernelArg) + params_size;
     
     cudaError_t err;
-    
     
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
@@ -1038,7 +1037,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 
                     TALLY_SPD_LOG("cublasLtMatmul replaced with cutlassGemm");
                     load_tally_cutlass_lib();
-                    
+
                     uint64_t m = matrix_d_layout.rows;
                     uint64_t n = matrix_d_layout.cols;
                     uint64_t k;
@@ -1076,6 +1075,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                     // Copy array D
                     void *D_copy;
                     cudaMalloc(&D_copy, size_bytes);
+                    cudaMemcpy(D_copy, D, size_bytes, cudaMemcpyDeviceToDevice);
 
                     // Swap D and D copy when verifying correctness
                     // because cublasLtMatmul requires C == D if Cdesc == Ddesc
@@ -1091,7 +1091,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                     
                     if (matrix_a_layout.type == CUDA_R_32F) {
                         cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (float *) A, matrix_a_layout.ld,
-                                        (float *) B, matrix_a_layout.ld, *((float *)beta), (float *) C, matrix_c_layout.ld, (float *) D_copy,
+                                        (float *) B, matrix_b_layout.ld, *((float *)beta), (float *) C, matrix_c_layout.ld, (float *) D_copy,
                                         matrix_d_layout.ld, (float *)bias, NULL, stream);
                     } else if (matrix_a_layout.type == CUDA_R_16F) {
                         cutlassGemm_f16(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (half *) A, matrix_a_layout.ld,
@@ -1117,7 +1117,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
                     ) {
 
                         cuda_err = cutlassGemm_f32(cutlass_transa, cutlass_transb, m, n, k, *((float *)alpha), (float *) A, matrix_a_layout.ld,
-                                                    (float *) B, matrix_a_layout.ld, *((float *)beta), (float *) C, matrix_c_layout.ld, (float *) D,
+                                                    (float *) B, matrix_b_layout.ld, *((float *)beta), (float *) C, matrix_c_layout.ld, (float *) D,
                                                     matrix_d_layout.ld, (float *)bias, NULL, stream);
 
                     } else if (
@@ -1194,6 +1194,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
 
                         if (!numerically_close(cublas_val, cutlass_val)) {
                             results_match = false;
+                            std::cout << "i: " << i << std::endl;
                             std::cout << "cublas_val: " << cublas_val << std::endl;
                             std::cout << "cutlass_val: " << cutlass_val << std::endl;
                             break;

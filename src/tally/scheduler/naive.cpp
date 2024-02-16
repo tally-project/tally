@@ -14,9 +14,9 @@ void TallyServer::run_naive_scheduler()
 {
     TALLY_SPD_LOG_ALWAYS("Running naive scheduler ...");
 
-    // CudaLaunchConfig config = CudaLaunchConfig::default_config;
+    CudaLaunchConfig config = CudaLaunchConfig::default_config;
     // CudaLaunchConfig config = CudaLaunchConfig::get_ptb_config(4);
-    CudaLaunchConfig config = CudaLaunchConfig::get_sliced_config(8);
+    // CudaLaunchConfig config = CudaLaunchConfig::get_sliced_config(8);
 
     KernelLaunchWrapper kernel_wrapper;
 
@@ -41,7 +41,7 @@ void TallyServer::run_naive_scheduler()
 
                 if (config.use_original || kernel_wrapper.is_library_call)
                 {
-                    kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
                 }
                 else if (config.use_dynamic_ptb || config.use_preemptive_ptb)
                 {
