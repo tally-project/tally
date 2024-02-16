@@ -1128,3 +1128,34 @@ std::pair<partial_t, void *> TallyServer::cublasSgemmStridedBatched_Partial(cubl
 
     return std::make_pair(partial, (void *) args);
 }
+
+std::pair<partial_t, void *> TallyServer::cudnnReduceTensor_Partial(cudnnReduceTensorArg *args, void *indices)
+{
+    auto partial = [this, args, indices] (PARTIAL_ARGUMENTS) {
+
+        auto err = cudnnReduceTensor(
+            args->handle,
+            args->reduceTensorDesc,
+            indices,
+            args->indicesSizeInBytes,
+            args->workspace,
+            args->workspaceSizeInBytes,
+            &args->alpha,
+            args->aDesc,
+            args->A,
+            &args->beta,
+            args->cDesc,
+            args->C
+        );
+
+        CHECK_ERR_LOG_AND_EXIT(err, "Fail to launch kernel.");
+
+        if (!err) {
+            return CUDA_SUCCESS;
+        } else {
+            return CUDA_ERROR_INVALID_VALUE;
+        }
+    };
+
+    return std::make_pair(partial, nullptr);
+}

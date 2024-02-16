@@ -41,6 +41,7 @@ extern "C" {
 CUresult cuGetErrorString(CUresult  error, const char ** pStr)
 {
 	TALLY_SPD_LOG("cuGetErrorString hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGetErrorString(error, pStr);
 #else
@@ -51,6 +52,7 @@ CUresult cuGetErrorString(CUresult  error, const char ** pStr)
 CUresult cuGetErrorName(CUresult  error, const char ** pStr)
 {
 	TALLY_SPD_LOG("cuGetErrorName hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGetErrorName(error, pStr);
 #else
@@ -61,6 +63,7 @@ CUresult cuGetErrorName(CUresult  error, const char ** pStr)
 CUresult cuInit(unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuInit hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuInit(Flags);
 #else
@@ -71,8 +74,8 @@ CUresult cuInit(unsigned int  Flags)
 CUresult cuDriverGetVersion(int * driverVersion)
 {
 	TALLY_SPD_LOG("cuDriverGetVersion hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDriverGetVersion(driverVersion);
 #else
@@ -112,8 +115,8 @@ CUresult cuDriverGetVersion(int * driverVersion)
 CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 {
 	TALLY_SPD_LOG("cuDeviceGet hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGet(device, ordinal);
 #else
@@ -154,8 +157,8 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
 CUresult cuDeviceGetCount(int * count)
 {
 	TALLY_SPD_LOG("cuDeviceGetCount hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetCount(count);
 #else
@@ -195,8 +198,8 @@ CUresult cuDeviceGetCount(int * count)
 CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceGetUuid hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetUuid(uuid, dev);
 #else
@@ -237,8 +240,8 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
 CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceGetUuid_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetUuid_v2(uuid, dev);
 #else
@@ -279,8 +282,8 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
 CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceGetLuid hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetLuid(luid, deviceNodeMask, dev);
 #else
@@ -323,8 +326,8 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
 CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceTotalMem_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceTotalMem_v2(bytes, dev);
 #else
@@ -365,8 +368,8 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
 CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray_format  format, unsigned  numChannels, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceGetTexture1DLinearMaxWidth hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetTexture1DLinearMaxWidth(maxWidthInElements, format, numChannels, dev);
 #else
@@ -409,8 +412,8 @@ CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray
 CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceGetAttribute hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetAttribute(pi, attrib, dev);
 #else
@@ -452,6 +455,7 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
 CUresult cuDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, CUdevice  dev, int  flags)
 {
 	TALLY_SPD_LOG("cuDeviceGetNvSciSyncAttributes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuDeviceGetNvSciSyncAttributes(nvSciSyncAttrList, dev, flags);
 #else
@@ -462,8 +466,8 @@ CUresult cuDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, CUdevice  dev,
 CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 {
 	TALLY_SPD_LOG("cuDeviceSetMemPool hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceSetMemPool(dev, pool);
 #else
@@ -503,8 +507,8 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
 CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceGetMemPool hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetMemPool(pool, dev);
 #else
@@ -545,8 +549,8 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
 CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceGetDefaultMemPool hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetDefaultMemPool(pool_out, dev);
 #else
@@ -587,8 +591,8 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
 CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceGetExecAffinitySupport hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetExecAffinitySupport(pi, type, dev);
 #else
@@ -630,8 +634,8 @@ CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUde
 CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CUflushGPUDirectRDMAWritesScope  scope)
 {
 	TALLY_SPD_LOG("cuFlushGPUDirectRDMAWrites hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuFlushGPUDirectRDMAWrites(target, scope);
 #else
@@ -671,8 +675,8 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
 CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceGetProperties hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetProperties(prop, dev);
 #else
@@ -713,8 +717,8 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
 CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceComputeCapability hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceComputeCapability(major, minor, dev);
 #else
@@ -757,8 +761,8 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
 CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDevicePrimaryCtxRetain hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxRetain(pctx, dev);
 #else
@@ -799,8 +803,8 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
 CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDevicePrimaryCtxRelease_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxRelease_v2(dev);
 #else
@@ -839,8 +843,8 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
 CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDevicePrimaryCtxReset_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDevicePrimaryCtxReset_v2(dev);
 #else
@@ -879,6 +883,7 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
 CUresult cuCtxCreate_v3(CUcontext * pctx, CUexecAffinityParam * paramsArray, int  numParams, unsigned int  flags, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuCtxCreate_v3 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCtxCreate_v3(pctx, paramsArray, numParams, flags, dev);
 #else
@@ -889,6 +894,7 @@ CUresult cuCtxCreate_v3(CUcontext * pctx, CUexecAffinityParam * paramsArray, int
 CUresult cuCtxDestroy_v2(CUcontext  ctx)
 {
 	TALLY_SPD_LOG("cuCtxDestroy_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCtxDestroy_v2(ctx);
 #else
@@ -899,8 +905,8 @@ CUresult cuCtxDestroy_v2(CUcontext  ctx)
 CUresult cuCtxPushCurrent_v2(CUcontext  ctx)
 {
 	TALLY_SPD_LOG("cuCtxPushCurrent_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxPushCurrent_v2(ctx);
 #else
@@ -939,8 +945,8 @@ CUresult cuCtxPushCurrent_v2(CUcontext  ctx)
 CUresult cuCtxPopCurrent_v2(CUcontext * pctx)
 {
 	TALLY_SPD_LOG("cuCtxPopCurrent_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxPopCurrent_v2(pctx);
 #else
@@ -980,6 +986,7 @@ CUresult cuCtxPopCurrent_v2(CUcontext * pctx)
 CUresult cuCtxSetCurrent(CUcontext  ctx)
 {
 	TALLY_SPD_LOG("cuCtxSetCurrent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCtxSetCurrent(ctx);
 #else
@@ -990,8 +997,8 @@ CUresult cuCtxSetCurrent(CUcontext  ctx)
 CUresult cuCtxGetFlags(unsigned int * flags)
 {
 	TALLY_SPD_LOG("cuCtxGetFlags hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetFlags(flags);
 #else
@@ -1031,6 +1038,7 @@ CUresult cuCtxGetFlags(unsigned int * flags)
 CUresult cuCtxSetFlags(unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuCtxSetFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCtxSetFlags(flags);
 #else
@@ -1041,6 +1049,7 @@ CUresult cuCtxSetFlags(unsigned int  flags)
 CUresult cuCtxGetId(CUcontext  ctx, unsigned long long * ctxId)
 {
 	TALLY_SPD_LOG("cuCtxGetId hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCtxGetId(ctx, ctxId);
 #else
@@ -1051,8 +1060,8 @@ CUresult cuCtxGetId(CUcontext  ctx, unsigned long long * ctxId)
 CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
 {
 	TALLY_SPD_LOG("cuCtxSetLimit hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetLimit(limit, value);
 #else
@@ -1092,8 +1101,8 @@ CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
 CUresult cuCtxGetLimit(size_t * pvalue, CUlimit  limit)
 {
 	TALLY_SPD_LOG("cuCtxGetLimit hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetLimit(pvalue, limit);
 #else
@@ -1134,8 +1143,8 @@ CUresult cuCtxGetLimit(size_t * pvalue, CUlimit  limit)
 CUresult cuCtxGetCacheConfig(CUfunc_cache * pconfig)
 {
 	TALLY_SPD_LOG("cuCtxGetCacheConfig hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetCacheConfig(pconfig);
 #else
@@ -1175,8 +1184,8 @@ CUresult cuCtxGetCacheConfig(CUfunc_cache * pconfig)
 CUresult cuCtxSetCacheConfig(CUfunc_cache  config)
 {
 	TALLY_SPD_LOG("cuCtxSetCacheConfig hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetCacheConfig(config);
 #else
@@ -1215,8 +1224,8 @@ CUresult cuCtxSetCacheConfig(CUfunc_cache  config)
 CUresult cuCtxGetSharedMemConfig(CUsharedconfig * pConfig)
 {
 	TALLY_SPD_LOG("cuCtxGetSharedMemConfig hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetSharedMemConfig(pConfig);
 #else
@@ -1256,8 +1265,8 @@ CUresult cuCtxGetSharedMemConfig(CUsharedconfig * pConfig)
 CUresult cuCtxSetSharedMemConfig(CUsharedconfig  config)
 {
 	TALLY_SPD_LOG("cuCtxSetSharedMemConfig hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxSetSharedMemConfig(config);
 #else
@@ -1296,8 +1305,8 @@ CUresult cuCtxSetSharedMemConfig(CUsharedconfig  config)
 CUresult cuCtxGetStreamPriorityRange(int * leastPriority, int * greatestPriority)
 {
 	TALLY_SPD_LOG("cuCtxGetStreamPriorityRange hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetStreamPriorityRange(leastPriority, greatestPriority);
 #else
@@ -1339,8 +1348,8 @@ CUresult cuCtxGetStreamPriorityRange(int * leastPriority, int * greatestPriority
 CUresult cuCtxResetPersistingL2Cache()
 {
 	TALLY_SPD_LOG("cuCtxResetPersistingL2Cache hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxResetPersistingL2Cache();
 #else
@@ -1378,8 +1387,8 @@ CUresult cuCtxResetPersistingL2Cache()
 CUresult cuCtxGetExecAffinity(CUexecAffinityParam * pExecAffinity, CUexecAffinityType  type)
 {
 	TALLY_SPD_LOG("cuCtxGetExecAffinity hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxGetExecAffinity(pExecAffinity, type);
 #else
@@ -1420,8 +1429,8 @@ CUresult cuCtxGetExecAffinity(CUexecAffinityParam * pExecAffinity, CUexecAffinit
 CUresult cuCtxAttach(CUcontext * pctx, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuCtxAttach hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxAttach(pctx, flags);
 #else
@@ -1462,8 +1471,8 @@ CUresult cuCtxAttach(CUcontext * pctx, unsigned int  flags)
 CUresult cuCtxDetach(CUcontext  ctx)
 {
 	TALLY_SPD_LOG("cuCtxDetach hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuCtxDetach(ctx);
 #else
@@ -1502,6 +1511,7 @@ CUresult cuCtxDetach(CUcontext  ctx)
 CUresult cuModuleLoad(CUmodule * module, const char * fname)
 {
 	TALLY_SPD_LOG("cuModuleLoad hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuModuleLoad(module, fname);
 #else
@@ -1512,8 +1522,8 @@ CUresult cuModuleLoad(CUmodule * module, const char * fname)
 CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
 {
 	TALLY_SPD_LOG("cuModuleGetLoadingMode hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuModuleGetLoadingMode(mode);
 #else
@@ -1553,6 +1563,7 @@ CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
 CUresult cuLinkCreate_v2(unsigned int  numOptions, CUjit_option * options, void ** optionValues, CUlinkState * stateOut)
 {
 	TALLY_SPD_LOG("cuLinkCreate_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLinkCreate_v2(numOptions, options, optionValues, stateOut);
 #else
@@ -1563,6 +1574,7 @@ CUresult cuLinkCreate_v2(unsigned int  numOptions, CUjit_option * options, void 
 CUresult cuLinkAddData_v2(CUlinkState  state, CUjitInputType  type, void * data, size_t  size, const char * name, unsigned int  numOptions, CUjit_option * options, void ** optionValues)
 {
 	TALLY_SPD_LOG("cuLinkAddData_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLinkAddData_v2(state, type, data, size, name, numOptions, options, optionValues);
 #else
@@ -1573,6 +1585,7 @@ CUresult cuLinkAddData_v2(CUlinkState  state, CUjitInputType  type, void * data,
 CUresult cuLinkAddFile_v2(CUlinkState  state, CUjitInputType  type, const char * path, unsigned int  numOptions, CUjit_option * options, void ** optionValues)
 {
 	TALLY_SPD_LOG("cuLinkAddFile_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLinkAddFile_v2(state, type, path, numOptions, options, optionValues);
 #else
@@ -1583,6 +1596,7 @@ CUresult cuLinkAddFile_v2(CUlinkState  state, CUjitInputType  type, const char *
 CUresult cuLinkComplete(CUlinkState  state, void ** cubinOut, size_t * sizeOut)
 {
 	TALLY_SPD_LOG("cuLinkComplete hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLinkComplete(state, cubinOut, sizeOut);
 #else
@@ -1593,6 +1607,7 @@ CUresult cuLinkComplete(CUlinkState  state, void ** cubinOut, size_t * sizeOut)
 CUresult cuLinkDestroy(CUlinkState  state)
 {
 	TALLY_SPD_LOG("cuLinkDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLinkDestroy(state);
 #else
@@ -1603,6 +1618,7 @@ CUresult cuLinkDestroy(CUlinkState  state)
 CUresult cuModuleGetTexRef(CUtexref * pTexRef, CUmodule  hmod, const char * name)
 {
 	TALLY_SPD_LOG("cuModuleGetTexRef hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuModuleGetTexRef(pTexRef, hmod, name);
 #else
@@ -1613,6 +1629,7 @@ CUresult cuModuleGetTexRef(CUtexref * pTexRef, CUmodule  hmod, const char * name
 CUresult cuModuleGetSurfRef(CUsurfref * pSurfRef, CUmodule  hmod, const char * name)
 {
 	TALLY_SPD_LOG("cuModuleGetSurfRef hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuModuleGetSurfRef(pSurfRef, hmod, name);
 #else
@@ -1623,6 +1640,7 @@ CUresult cuModuleGetSurfRef(CUsurfref * pSurfRef, CUmodule  hmod, const char * n
 CUresult cuLibraryLoadData(CUlibrary * library, const void * code, CUjit_option * jitOptions, void ** jitOptionsValues, unsigned int  numJitOptions, CUlibraryOption * libraryOptions, void**  libraryOptionValues, unsigned int  numLibraryOptions)
 {
 	TALLY_SPD_LOG("cuLibraryLoadData hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLibraryLoadData(library, code, jitOptions, jitOptionsValues, numJitOptions, libraryOptions, libraryOptionValues, numLibraryOptions);
 #else
@@ -1633,6 +1651,7 @@ CUresult cuLibraryLoadData(CUlibrary * library, const void * code, CUjit_option 
 CUresult cuLibraryLoadFromFile(CUlibrary * library, const char * fileName, CUjit_option * jitOptions, void ** jitOptionsValues, unsigned int  numJitOptions, CUlibraryOption * libraryOptions, void ** libraryOptionValues, unsigned int  numLibraryOptions)
 {
 	TALLY_SPD_LOG("cuLibraryLoadFromFile hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLibraryLoadFromFile(library, fileName, jitOptions, jitOptionsValues, numJitOptions, libraryOptions, libraryOptionValues, numLibraryOptions);
 #else
@@ -1643,6 +1662,7 @@ CUresult cuLibraryLoadFromFile(CUlibrary * library, const char * fileName, CUjit
 CUresult cuLibraryUnload(CUlibrary  library)
 {
 	TALLY_SPD_LOG("cuLibraryUnload hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLibraryUnload(library);
 #else
@@ -1653,6 +1673,7 @@ CUresult cuLibraryUnload(CUlibrary  library)
 CUresult cuLibraryGetKernel(CUkernel * pKernel, CUlibrary  library, const char * name)
 {
 	TALLY_SPD_LOG("cuLibraryGetKernel hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLibraryGetKernel(pKernel, library, name);
 #else
@@ -1663,6 +1684,7 @@ CUresult cuLibraryGetKernel(CUkernel * pKernel, CUlibrary  library, const char *
 CUresult cuLibraryGetModule(CUmodule * pMod, CUlibrary  library)
 {
 	TALLY_SPD_LOG("cuLibraryGetModule hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLibraryGetModule(pMod, library);
 #else
@@ -1673,6 +1695,7 @@ CUresult cuLibraryGetModule(CUmodule * pMod, CUlibrary  library)
 CUresult cuKernelGetFunction(CUfunction * pFunc, CUkernel  kernel)
 {
 	TALLY_SPD_LOG("cuKernelGetFunction hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuKernelGetFunction(pFunc, kernel);
 #else
@@ -1683,6 +1706,7 @@ CUresult cuKernelGetFunction(CUfunction * pFunc, CUkernel  kernel)
 CUresult cuLibraryGetGlobal(CUdeviceptr * dptr, size_t * bytes, CUlibrary  library, const char * name)
 {
 	TALLY_SPD_LOG("cuLibraryGetGlobal hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLibraryGetGlobal(dptr, bytes, library, name);
 #else
@@ -1693,6 +1717,7 @@ CUresult cuLibraryGetGlobal(CUdeviceptr * dptr, size_t * bytes, CUlibrary  libra
 CUresult cuLibraryGetManaged(CUdeviceptr * dptr, size_t * bytes, CUlibrary  library, const char * name)
 {
 	TALLY_SPD_LOG("cuLibraryGetManaged hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLibraryGetManaged(dptr, bytes, library, name);
 #else
@@ -1703,6 +1728,7 @@ CUresult cuLibraryGetManaged(CUdeviceptr * dptr, size_t * bytes, CUlibrary  libr
 CUresult cuLibraryGetUnifiedFunction(void ** fptr, CUlibrary  library, const char * symbol)
 {
 	TALLY_SPD_LOG("cuLibraryGetUnifiedFunction hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLibraryGetUnifiedFunction(fptr, library, symbol);
 #else
@@ -1713,6 +1739,7 @@ CUresult cuLibraryGetUnifiedFunction(void ** fptr, CUlibrary  library, const cha
 CUresult cuKernelGetAttribute(int * pi, CUfunction_attribute  attrib, CUkernel  kernel, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuKernelGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuKernelGetAttribute(pi, attrib, kernel, dev);
 #else
@@ -1723,6 +1750,7 @@ CUresult cuKernelGetAttribute(int * pi, CUfunction_attribute  attrib, CUkernel  
 CUresult cuKernelSetAttribute(CUfunction_attribute  attrib, int  val, CUkernel  kernel, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuKernelSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuKernelSetAttribute(attrib, val, kernel, dev);
 #else
@@ -1733,6 +1761,7 @@ CUresult cuKernelSetAttribute(CUfunction_attribute  attrib, int  val, CUkernel  
 CUresult cuKernelSetCacheConfig(CUkernel  kernel, CUfunc_cache  config, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuKernelSetCacheConfig hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuKernelSetCacheConfig(kernel, config, dev);
 #else
@@ -1743,8 +1772,8 @@ CUresult cuKernelSetCacheConfig(CUkernel  kernel, CUfunc_cache  config, CUdevice
 CUresult cuMemGetInfo_v2(size_t * free, size_t * total)
 {
 	TALLY_SPD_LOG("cuMemGetInfo_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemGetInfo_v2(free, total);
 #else
@@ -1786,6 +1815,7 @@ CUresult cuMemGetInfo_v2(size_t * free, size_t * total)
 CUresult cuMemAllocPitch_v2(CUdeviceptr * dptr, size_t * pPitch, size_t  WidthInBytes, size_t  Height, unsigned int  ElementSizeBytes)
 {
 	TALLY_SPD_LOG("cuMemAllocPitch_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemAllocPitch_v2(dptr, pPitch, WidthInBytes, Height, ElementSizeBytes);
 #else
@@ -1796,6 +1826,7 @@ CUresult cuMemAllocPitch_v2(CUdeviceptr * dptr, size_t * pPitch, size_t  WidthIn
 CUresult cuMemGetAddressRange_v2(CUdeviceptr * pbase, size_t * psize, CUdeviceptr  dptr)
 {
 	TALLY_SPD_LOG("cuMemGetAddressRange_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemGetAddressRange_v2(pbase, psize, dptr);
 #else
@@ -1806,6 +1837,7 @@ CUresult cuMemGetAddressRange_v2(CUdeviceptr * pbase, size_t * psize, CUdevicept
 CUresult cuMemAllocHost_v2(void ** pp, size_t  bytesize)
 {
 	TALLY_SPD_LOG("cuMemAllocHost_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemAllocHost_v2(pp, bytesize);
 #else
@@ -1816,6 +1848,7 @@ CUresult cuMemAllocHost_v2(void ** pp, size_t  bytesize)
 CUresult cuMemFreeHost(void * p)
 {
 	TALLY_SPD_LOG("cuMemFreeHost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemFreeHost(p);
 #else
@@ -1826,6 +1859,7 @@ CUresult cuMemFreeHost(void * p)
 CUresult cuMemHostGetDevicePointer_v2(CUdeviceptr * pdptr, void * p, unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuMemHostGetDevicePointer_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemHostGetDevicePointer_v2(pdptr, p, Flags);
 #else
@@ -1836,6 +1870,7 @@ CUresult cuMemHostGetDevicePointer_v2(CUdeviceptr * pdptr, void * p, unsigned in
 CUresult cuMemHostGetFlags(unsigned int * pFlags, void * p)
 {
 	TALLY_SPD_LOG("cuMemHostGetFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemHostGetFlags(pFlags, p);
 #else
@@ -1846,6 +1881,7 @@ CUresult cuMemHostGetFlags(unsigned int * pFlags, void * p)
 CUresult cuMemAllocManaged(CUdeviceptr * dptr, size_t  bytesize, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuMemAllocManaged hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemAllocManaged(dptr, bytesize, flags);
 #else
@@ -1856,6 +1892,7 @@ CUresult cuMemAllocManaged(CUdeviceptr * dptr, size_t  bytesize, unsigned int  f
 CUresult cuDeviceGetByPCIBusId(CUdevice * dev, const char * pciBusId)
 {
 	TALLY_SPD_LOG("cuDeviceGetByPCIBusId hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuDeviceGetByPCIBusId(dev, pciBusId);
 #else
@@ -1866,8 +1903,8 @@ CUresult cuDeviceGetByPCIBusId(CUdevice * dev, const char * pciBusId)
 CUresult cuDeviceGetPCIBusId(char * pciBusId, int  len, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuDeviceGetPCIBusId hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDeviceGetPCIBusId(pciBusId, len, dev);
 #else
@@ -1909,6 +1946,7 @@ CUresult cuDeviceGetPCIBusId(char * pciBusId, int  len, CUdevice  dev)
 CUresult cuIpcGetEventHandle(CUipcEventHandle * pHandle, CUevent  event)
 {
 	TALLY_SPD_LOG("cuIpcGetEventHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuIpcGetEventHandle(pHandle, event);
 #else
@@ -1919,6 +1957,7 @@ CUresult cuIpcGetEventHandle(CUipcEventHandle * pHandle, CUevent  event)
 CUresult cuIpcOpenEventHandle(CUevent * phEvent, CUipcEventHandle  handle)
 {
 	TALLY_SPD_LOG("cuIpcOpenEventHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuIpcOpenEventHandle(phEvent, handle);
 #else
@@ -1929,6 +1968,7 @@ CUresult cuIpcOpenEventHandle(CUevent * phEvent, CUipcEventHandle  handle)
 CUresult cuIpcGetMemHandle(CUipcMemHandle * pHandle, CUdeviceptr  dptr)
 {
 	TALLY_SPD_LOG("cuIpcGetMemHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuIpcGetMemHandle(pHandle, dptr);
 #else
@@ -1939,6 +1979,7 @@ CUresult cuIpcGetMemHandle(CUipcMemHandle * pHandle, CUdeviceptr  dptr)
 CUresult cuIpcOpenMemHandle_v2(CUdeviceptr * pdptr, CUipcMemHandle  handle, unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuIpcOpenMemHandle_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuIpcOpenMemHandle_v2(pdptr, handle, Flags);
 #else
@@ -1949,6 +1990,7 @@ CUresult cuIpcOpenMemHandle_v2(CUdeviceptr * pdptr, CUipcMemHandle  handle, unsi
 CUresult cuIpcCloseMemHandle(CUdeviceptr  dptr)
 {
 	TALLY_SPD_LOG("cuIpcCloseMemHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuIpcCloseMemHandle(dptr);
 #else
@@ -1959,6 +2001,7 @@ CUresult cuIpcCloseMemHandle(CUdeviceptr  dptr)
 CUresult cuMemHostRegister_v2(void * p, size_t  bytesize, unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuMemHostRegister_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemHostRegister_v2(p, bytesize, Flags);
 #else
@@ -1969,6 +2012,7 @@ CUresult cuMemHostRegister_v2(void * p, size_t  bytesize, unsigned int  Flags)
 CUresult cuMemHostUnregister(void * p)
 {
 	TALLY_SPD_LOG("cuMemHostUnregister hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemHostUnregister(p);
 #else
@@ -1979,6 +2023,7 @@ CUresult cuMemHostUnregister(void * p)
 CUresult cuMemcpyPeer(CUdeviceptr  dstDevice, CUcontext  dstContext, CUdeviceptr  srcDevice, CUcontext  srcContext, size_t  ByteCount)
 {
 	TALLY_SPD_LOG("cuMemcpyPeer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyPeer(dstDevice, dstContext, srcDevice, srcContext, ByteCount);
 #else
@@ -1989,6 +2034,7 @@ CUresult cuMemcpyPeer(CUdeviceptr  dstDevice, CUcontext  dstContext, CUdeviceptr
 CUresult cuMemcpyHtoD_v2(CUdeviceptr  dstDevice, const void * srcHost, size_t  ByteCount)
 {
 	TALLY_SPD_LOG("cuMemcpyHtoD_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyHtoD_v2(dstDevice, srcHost, ByteCount);
 #else
@@ -1999,6 +2045,7 @@ CUresult cuMemcpyHtoD_v2(CUdeviceptr  dstDevice, const void * srcHost, size_t  B
 CUresult cuMemcpyDtoH_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  ByteCount)
 {
 	TALLY_SPD_LOG("cuMemcpyDtoH_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyDtoH_v2(dstHost, srcDevice, ByteCount);
 #else
@@ -2009,6 +2056,7 @@ CUresult cuMemcpyDtoH_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  ByteCou
 CUresult cuMemcpyDtoD_v2(CUdeviceptr  dstDevice, CUdeviceptr  srcDevice, size_t  ByteCount)
 {
 	TALLY_SPD_LOG("cuMemcpyDtoD_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyDtoD_v2(dstDevice, srcDevice, ByteCount);
 #else
@@ -2019,6 +2067,7 @@ CUresult cuMemcpyDtoD_v2(CUdeviceptr  dstDevice, CUdeviceptr  srcDevice, size_t 
 CUresult cuMemcpyDtoA_v2(CUarray  dstArray, size_t  dstOffset, CUdeviceptr  srcDevice, size_t  ByteCount)
 {
 	TALLY_SPD_LOG("cuMemcpyDtoA_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyDtoA_v2(dstArray, dstOffset, srcDevice, ByteCount);
 #else
@@ -2029,6 +2078,7 @@ CUresult cuMemcpyDtoA_v2(CUarray  dstArray, size_t  dstOffset, CUdeviceptr  srcD
 CUresult cuMemcpyAtoD_v2(CUdeviceptr  dstDevice, CUarray  srcArray, size_t  srcOffset, size_t  ByteCount)
 {
 	TALLY_SPD_LOG("cuMemcpyAtoD_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyAtoD_v2(dstDevice, srcArray, srcOffset, ByteCount);
 #else
@@ -2039,6 +2089,7 @@ CUresult cuMemcpyAtoD_v2(CUdeviceptr  dstDevice, CUarray  srcArray, size_t  srcO
 CUresult cuMemcpyHtoA_v2(CUarray  dstArray, size_t  dstOffset, const void * srcHost, size_t  ByteCount)
 {
 	TALLY_SPD_LOG("cuMemcpyHtoA_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyHtoA_v2(dstArray, dstOffset, srcHost, ByteCount);
 #else
@@ -2049,6 +2100,7 @@ CUresult cuMemcpyHtoA_v2(CUarray  dstArray, size_t  dstOffset, const void * srcH
 CUresult cuMemcpyAtoH_v2(void * dstHost, CUarray  srcArray, size_t  srcOffset, size_t  ByteCount)
 {
 	TALLY_SPD_LOG("cuMemcpyAtoH_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyAtoH_v2(dstHost, srcArray, srcOffset, ByteCount);
 #else
@@ -2059,6 +2111,7 @@ CUresult cuMemcpyAtoH_v2(void * dstHost, CUarray  srcArray, size_t  srcOffset, s
 CUresult cuMemcpyAtoA_v2(CUarray  dstArray, size_t  dstOffset, CUarray  srcArray, size_t  srcOffset, size_t  ByteCount)
 {
 	TALLY_SPD_LOG("cuMemcpyAtoA_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyAtoA_v2(dstArray, dstOffset, srcArray, srcOffset, ByteCount);
 #else
@@ -2069,6 +2122,7 @@ CUresult cuMemcpyAtoA_v2(CUarray  dstArray, size_t  dstOffset, CUarray  srcArray
 CUresult cuMemcpy2D_v2(const CUDA_MEMCPY2D * pCopy)
 {
 	TALLY_SPD_LOG("cuMemcpy2D_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpy2D_v2(pCopy);
 #else
@@ -2079,6 +2133,7 @@ CUresult cuMemcpy2D_v2(const CUDA_MEMCPY2D * pCopy)
 CUresult cuMemcpy2DUnaligned_v2(const CUDA_MEMCPY2D * pCopy)
 {
 	TALLY_SPD_LOG("cuMemcpy2DUnaligned_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpy2DUnaligned_v2(pCopy);
 #else
@@ -2089,6 +2144,7 @@ CUresult cuMemcpy2DUnaligned_v2(const CUDA_MEMCPY2D * pCopy)
 CUresult cuMemcpy3D_v2(const CUDA_MEMCPY3D * pCopy)
 {
 	TALLY_SPD_LOG("cuMemcpy3D_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpy3D_v2(pCopy);
 #else
@@ -2099,6 +2155,7 @@ CUresult cuMemcpy3D_v2(const CUDA_MEMCPY3D * pCopy)
 CUresult cuMemcpy3DPeer(const CUDA_MEMCPY3D_PEER * pCopy)
 {
 	TALLY_SPD_LOG("cuMemcpy3DPeer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpy3DPeer(pCopy);
 #else
@@ -2109,6 +2166,7 @@ CUresult cuMemcpy3DPeer(const CUDA_MEMCPY3D_PEER * pCopy)
 CUresult cuMemcpyPeerAsync(CUdeviceptr  dstDevice, CUcontext  dstContext, CUdeviceptr  srcDevice, CUcontext  srcContext, size_t  ByteCount, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemcpyPeerAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyPeerAsync(dstDevice, dstContext, srcDevice, srcContext, ByteCount, hStream);
 #else
@@ -2119,6 +2177,7 @@ CUresult cuMemcpyPeerAsync(CUdeviceptr  dstDevice, CUcontext  dstContext, CUdevi
 CUresult cuMemcpyHtoAAsync_v2(CUarray  dstArray, size_t  dstOffset, const void * srcHost, size_t  ByteCount, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemcpyHtoAAsync_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyHtoAAsync_v2(dstArray, dstOffset, srcHost, ByteCount, hStream);
 #else
@@ -2129,6 +2188,7 @@ CUresult cuMemcpyHtoAAsync_v2(CUarray  dstArray, size_t  dstOffset, const void *
 CUresult cuMemcpyAtoHAsync_v2(void * dstHost, CUarray  srcArray, size_t  srcOffset, size_t  ByteCount, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemcpyAtoHAsync_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpyAtoHAsync_v2(dstHost, srcArray, srcOffset, ByteCount, hStream);
 #else
@@ -2139,6 +2199,7 @@ CUresult cuMemcpyAtoHAsync_v2(void * dstHost, CUarray  srcArray, size_t  srcOffs
 CUresult cuMemcpy2DAsync_v2(const CUDA_MEMCPY2D * pCopy, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemcpy2DAsync_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpy2DAsync_v2(pCopy, hStream);
 #else
@@ -2149,6 +2210,7 @@ CUresult cuMemcpy2DAsync_v2(const CUDA_MEMCPY2D * pCopy, CUstream  hStream)
 CUresult cuMemcpy3DAsync_v2(const CUDA_MEMCPY3D * pCopy, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemcpy3DAsync_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpy3DAsync_v2(pCopy, hStream);
 #else
@@ -2159,6 +2221,7 @@ CUresult cuMemcpy3DAsync_v2(const CUDA_MEMCPY3D * pCopy, CUstream  hStream)
 CUresult cuMemcpy3DPeerAsync(const CUDA_MEMCPY3D_PEER * pCopy, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemcpy3DPeerAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemcpy3DPeerAsync(pCopy, hStream);
 #else
@@ -2169,6 +2232,7 @@ CUresult cuMemcpy3DPeerAsync(const CUDA_MEMCPY3D_PEER * pCopy, CUstream  hStream
 CUresult cuMemsetD16_v2(CUdeviceptr  dstDevice, unsigned short  us, size_t  N)
 {
 	TALLY_SPD_LOG("cuMemsetD16_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemsetD16_v2(dstDevice, us, N);
 #else
@@ -2179,6 +2243,7 @@ CUresult cuMemsetD16_v2(CUdeviceptr  dstDevice, unsigned short  us, size_t  N)
 CUresult cuMemsetD2D8_v2(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned char  uc, size_t  Width, size_t  Height)
 {
 	TALLY_SPD_LOG("cuMemsetD2D8_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemsetD2D8_v2(dstDevice, dstPitch, uc, Width, Height);
 #else
@@ -2189,6 +2254,7 @@ CUresult cuMemsetD2D8_v2(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned char
 CUresult cuMemsetD2D16_v2(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned short  us, size_t  Width, size_t  Height)
 {
 	TALLY_SPD_LOG("cuMemsetD2D16_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemsetD2D16_v2(dstDevice, dstPitch, us, Width, Height);
 #else
@@ -2199,6 +2265,7 @@ CUresult cuMemsetD2D16_v2(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned sho
 CUresult cuMemsetD2D32_v2(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned int  ui, size_t  Width, size_t  Height)
 {
 	TALLY_SPD_LOG("cuMemsetD2D32_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemsetD2D32_v2(dstDevice, dstPitch, ui, Width, Height);
 #else
@@ -2209,6 +2276,7 @@ CUresult cuMemsetD2D32_v2(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned int
 CUresult cuMemsetD8Async(CUdeviceptr  dstDevice, unsigned char  uc, size_t  N, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemsetD8Async hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemsetD8Async(dstDevice, uc, N, hStream);
 #else
@@ -2219,6 +2287,7 @@ CUresult cuMemsetD8Async(CUdeviceptr  dstDevice, unsigned char  uc, size_t  N, C
 CUresult cuMemsetD16Async(CUdeviceptr  dstDevice, unsigned short  us, size_t  N, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemsetD16Async hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemsetD16Async(dstDevice, us, N, hStream);
 #else
@@ -2229,6 +2298,7 @@ CUresult cuMemsetD16Async(CUdeviceptr  dstDevice, unsigned short  us, size_t  N,
 CUresult cuMemsetD2D8Async(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned char  uc, size_t  Width, size_t  Height, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemsetD2D8Async hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemsetD2D8Async(dstDevice, dstPitch, uc, Width, Height, hStream);
 #else
@@ -2239,6 +2309,7 @@ CUresult cuMemsetD2D8Async(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned ch
 CUresult cuMemsetD2D16Async(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned short  us, size_t  Width, size_t  Height, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemsetD2D16Async hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemsetD2D16Async(dstDevice, dstPitch, us, Width, Height, hStream);
 #else
@@ -2249,6 +2320,7 @@ CUresult cuMemsetD2D16Async(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned s
 CUresult cuMemsetD2D32Async(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned int  ui, size_t  Width, size_t  Height, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemsetD2D32Async hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemsetD2D32Async(dstDevice, dstPitch, ui, Width, Height, hStream);
 #else
@@ -2259,6 +2331,7 @@ CUresult cuMemsetD2D32Async(CUdeviceptr  dstDevice, size_t  dstPitch, unsigned i
 CUresult cuArrayCreate_v2(CUarray * pHandle, const CUDA_ARRAY_DESCRIPTOR * pAllocateArray)
 {
 	TALLY_SPD_LOG("cuArrayCreate_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuArrayCreate_v2(pHandle, pAllocateArray);
 #else
@@ -2269,6 +2342,7 @@ CUresult cuArrayCreate_v2(CUarray * pHandle, const CUDA_ARRAY_DESCRIPTOR * pAllo
 CUresult cuArrayGetDescriptor_v2(CUDA_ARRAY_DESCRIPTOR * pArrayDescriptor, CUarray  hArray)
 {
 	TALLY_SPD_LOG("cuArrayGetDescriptor_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuArrayGetDescriptor_v2(pArrayDescriptor, hArray);
 #else
@@ -2279,6 +2353,7 @@ CUresult cuArrayGetDescriptor_v2(CUDA_ARRAY_DESCRIPTOR * pArrayDescriptor, CUarr
 CUresult cuArrayGetSparseProperties(CUDA_ARRAY_SPARSE_PROPERTIES * sparseProperties, CUarray  array)
 {
 	TALLY_SPD_LOG("cuArrayGetSparseProperties hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuArrayGetSparseProperties(sparseProperties, array);
 #else
@@ -2289,6 +2364,7 @@ CUresult cuArrayGetSparseProperties(CUDA_ARRAY_SPARSE_PROPERTIES * sparsePropert
 CUresult cuMipmappedArrayGetSparseProperties(CUDA_ARRAY_SPARSE_PROPERTIES * sparseProperties, CUmipmappedArray  mipmap)
 {
 	TALLY_SPD_LOG("cuMipmappedArrayGetSparseProperties hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMipmappedArrayGetSparseProperties(sparseProperties, mipmap);
 #else
@@ -2299,6 +2375,7 @@ CUresult cuMipmappedArrayGetSparseProperties(CUDA_ARRAY_SPARSE_PROPERTIES * spar
 CUresult cuArrayGetMemoryRequirements(CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryRequirements, CUarray  array, CUdevice  device)
 {
 	TALLY_SPD_LOG("cuArrayGetMemoryRequirements hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuArrayGetMemoryRequirements(memoryRequirements, array, device);
 #else
@@ -2309,6 +2386,7 @@ CUresult cuArrayGetMemoryRequirements(CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryReq
 CUresult cuMipmappedArrayGetMemoryRequirements(CUDA_ARRAY_MEMORY_REQUIREMENTS * memoryRequirements, CUmipmappedArray  mipmap, CUdevice  device)
 {
 	TALLY_SPD_LOG("cuMipmappedArrayGetMemoryRequirements hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMipmappedArrayGetMemoryRequirements(memoryRequirements, mipmap, device);
 #else
@@ -2319,6 +2397,7 @@ CUresult cuMipmappedArrayGetMemoryRequirements(CUDA_ARRAY_MEMORY_REQUIREMENTS * 
 CUresult cuArrayGetPlane(CUarray * pPlaneArray, CUarray  hArray, unsigned int  planeIdx)
 {
 	TALLY_SPD_LOG("cuArrayGetPlane hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuArrayGetPlane(pPlaneArray, hArray, planeIdx);
 #else
@@ -2329,6 +2408,7 @@ CUresult cuArrayGetPlane(CUarray * pPlaneArray, CUarray  hArray, unsigned int  p
 CUresult cuArrayDestroy(CUarray  hArray)
 {
 	TALLY_SPD_LOG("cuArrayDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuArrayDestroy(hArray);
 #else
@@ -2339,6 +2419,7 @@ CUresult cuArrayDestroy(CUarray  hArray)
 CUresult cuArray3DCreate_v2(CUarray * pHandle, const CUDA_ARRAY3D_DESCRIPTOR * pAllocateArray)
 {
 	TALLY_SPD_LOG("cuArray3DCreate_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuArray3DCreate_v2(pHandle, pAllocateArray);
 #else
@@ -2349,6 +2430,7 @@ CUresult cuArray3DCreate_v2(CUarray * pHandle, const CUDA_ARRAY3D_DESCRIPTOR * p
 CUresult cuArray3DGetDescriptor_v2(CUDA_ARRAY3D_DESCRIPTOR * pArrayDescriptor, CUarray  hArray)
 {
 	TALLY_SPD_LOG("cuArray3DGetDescriptor_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuArray3DGetDescriptor_v2(pArrayDescriptor, hArray);
 #else
@@ -2359,6 +2441,7 @@ CUresult cuArray3DGetDescriptor_v2(CUDA_ARRAY3D_DESCRIPTOR * pArrayDescriptor, C
 CUresult cuMipmappedArrayCreate(CUmipmappedArray * pHandle, const CUDA_ARRAY3D_DESCRIPTOR * pMipmappedArrayDesc, unsigned int  numMipmapLevels)
 {
 	TALLY_SPD_LOG("cuMipmappedArrayCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMipmappedArrayCreate(pHandle, pMipmappedArrayDesc, numMipmapLevels);
 #else
@@ -2369,6 +2452,7 @@ CUresult cuMipmappedArrayCreate(CUmipmappedArray * pHandle, const CUDA_ARRAY3D_D
 CUresult cuMipmappedArrayGetLevel(CUarray * pLevelArray, CUmipmappedArray  hMipmappedArray, unsigned int  level)
 {
 	TALLY_SPD_LOG("cuMipmappedArrayGetLevel hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMipmappedArrayGetLevel(pLevelArray, hMipmappedArray, level);
 #else
@@ -2379,6 +2463,7 @@ CUresult cuMipmappedArrayGetLevel(CUarray * pLevelArray, CUmipmappedArray  hMipm
 CUresult cuMipmappedArrayDestroy(CUmipmappedArray  hMipmappedArray)
 {
 	TALLY_SPD_LOG("cuMipmappedArrayDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMipmappedArrayDestroy(hMipmappedArray);
 #else
@@ -2389,6 +2474,7 @@ CUresult cuMipmappedArrayDestroy(CUmipmappedArray  hMipmappedArray)
 CUresult cuMemGetHandleForAddressRange(void * handle, CUdeviceptr  dptr, size_t  size, CUmemRangeHandleType  handleType, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cuMemGetHandleForAddressRange hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemGetHandleForAddressRange(handle, dptr, size, handleType, flags);
 #else
@@ -2399,6 +2485,7 @@ CUresult cuMemGetHandleForAddressRange(void * handle, CUdeviceptr  dptr, size_t 
 CUresult cuMemAddressReserve(CUdeviceptr * ptr, size_t  size, size_t  alignment, CUdeviceptr  addr, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cuMemAddressReserve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemAddressReserve(ptr, size, alignment, addr, flags);
 #else
@@ -2409,6 +2496,7 @@ CUresult cuMemAddressReserve(CUdeviceptr * ptr, size_t  size, size_t  alignment,
 CUresult cuMemAddressFree(CUdeviceptr  ptr, size_t  size)
 {
 	TALLY_SPD_LOG("cuMemAddressFree hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemAddressFree(ptr, size);
 #else
@@ -2419,6 +2507,7 @@ CUresult cuMemAddressFree(CUdeviceptr  ptr, size_t  size)
 CUresult cuMemCreate(CUmemGenericAllocationHandle * handle, size_t  size, const CUmemAllocationProp * prop, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cuMemCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemCreate(handle, size, prop, flags);
 #else
@@ -2429,6 +2518,7 @@ CUresult cuMemCreate(CUmemGenericAllocationHandle * handle, size_t  size, const 
 CUresult cuMemRelease(CUmemGenericAllocationHandle  handle)
 {
 	TALLY_SPD_LOG("cuMemRelease hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemRelease(handle);
 #else
@@ -2439,6 +2529,7 @@ CUresult cuMemRelease(CUmemGenericAllocationHandle  handle)
 CUresult cuMemMap(CUdeviceptr  ptr, size_t  size, size_t  offset, CUmemGenericAllocationHandle  handle, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cuMemMap hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemMap(ptr, size, offset, handle, flags);
 #else
@@ -2449,6 +2540,7 @@ CUresult cuMemMap(CUdeviceptr  ptr, size_t  size, size_t  offset, CUmemGenericAl
 CUresult cuMemMapArrayAsync(CUarrayMapInfo * mapInfoList, unsigned int  count, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemMapArrayAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemMapArrayAsync(mapInfoList, count, hStream);
 #else
@@ -2459,6 +2551,7 @@ CUresult cuMemMapArrayAsync(CUarrayMapInfo * mapInfoList, unsigned int  count, C
 CUresult cuMemUnmap(CUdeviceptr  ptr, size_t  size)
 {
 	TALLY_SPD_LOG("cuMemUnmap hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemUnmap(ptr, size);
 #else
@@ -2469,6 +2562,7 @@ CUresult cuMemUnmap(CUdeviceptr  ptr, size_t  size)
 CUresult cuMemSetAccess(CUdeviceptr  ptr, size_t  size, const CUmemAccessDesc * desc, size_t  count)
 {
 	TALLY_SPD_LOG("cuMemSetAccess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemSetAccess(ptr, size, desc, count);
 #else
@@ -2479,6 +2573,7 @@ CUresult cuMemSetAccess(CUdeviceptr  ptr, size_t  size, const CUmemAccessDesc * 
 CUresult cuMemGetAccess(unsigned long long * flags, const CUmemLocation * location, CUdeviceptr  ptr)
 {
 	TALLY_SPD_LOG("cuMemGetAccess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemGetAccess(flags, location, ptr);
 #else
@@ -2489,6 +2584,7 @@ CUresult cuMemGetAccess(unsigned long long * flags, const CUmemLocation * locati
 CUresult cuMemExportToShareableHandle(void * shareableHandle, CUmemGenericAllocationHandle  handle, CUmemAllocationHandleType  handleType, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cuMemExportToShareableHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemExportToShareableHandle(shareableHandle, handle, handleType, flags);
 #else
@@ -2499,6 +2595,7 @@ CUresult cuMemExportToShareableHandle(void * shareableHandle, CUmemGenericAlloca
 CUresult cuMemImportFromShareableHandle(CUmemGenericAllocationHandle * handle, void * osHandle, CUmemAllocationHandleType  shHandleType)
 {
 	TALLY_SPD_LOG("cuMemImportFromShareableHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemImportFromShareableHandle(handle, osHandle, shHandleType);
 #else
@@ -2509,6 +2606,7 @@ CUresult cuMemImportFromShareableHandle(CUmemGenericAllocationHandle * handle, v
 CUresult cuMemGetAllocationGranularity(size_t * granularity, const CUmemAllocationProp * prop, CUmemAllocationGranularity_flags  option)
 {
 	TALLY_SPD_LOG("cuMemGetAllocationGranularity hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemGetAllocationGranularity(granularity, prop, option);
 #else
@@ -2519,6 +2617,7 @@ CUresult cuMemGetAllocationGranularity(size_t * granularity, const CUmemAllocati
 CUresult cuMemGetAllocationPropertiesFromHandle(CUmemAllocationProp * prop, CUmemGenericAllocationHandle  handle)
 {
 	TALLY_SPD_LOG("cuMemGetAllocationPropertiesFromHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemGetAllocationPropertiesFromHandle(prop, handle);
 #else
@@ -2529,6 +2628,7 @@ CUresult cuMemGetAllocationPropertiesFromHandle(CUmemAllocationProp * prop, CUme
 CUresult cuMemRetainAllocationHandle(CUmemGenericAllocationHandle * handle, void * addr)
 {
 	TALLY_SPD_LOG("cuMemRetainAllocationHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemRetainAllocationHandle(handle, addr);
 #else
@@ -2539,6 +2639,7 @@ CUresult cuMemRetainAllocationHandle(CUmemGenericAllocationHandle * handle, void
 CUresult cuMemFreeAsync(CUdeviceptr  dptr, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemFreeAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemFreeAsync(dptr, hStream);
 #else
@@ -2549,6 +2650,7 @@ CUresult cuMemFreeAsync(CUdeviceptr  dptr, CUstream  hStream)
 CUresult cuMemPoolTrimTo(CUmemoryPool  pool, size_t  minBytesToKeep)
 {
 	TALLY_SPD_LOG("cuMemPoolTrimTo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolTrimTo(pool, minBytesToKeep);
 #else
@@ -2559,6 +2661,7 @@ CUresult cuMemPoolTrimTo(CUmemoryPool  pool, size_t  minBytesToKeep)
 CUresult cuMemPoolSetAttribute(CUmemoryPool  pool, CUmemPool_attribute  attr, void * value)
 {
 	TALLY_SPD_LOG("cuMemPoolSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolSetAttribute(pool, attr, value);
 #else
@@ -2569,6 +2672,7 @@ CUresult cuMemPoolSetAttribute(CUmemoryPool  pool, CUmemPool_attribute  attr, vo
 CUresult cuMemPoolGetAttribute(CUmemoryPool  pool, CUmemPool_attribute  attr, void * value)
 {
 	TALLY_SPD_LOG("cuMemPoolGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolGetAttribute(pool, attr, value);
 #else
@@ -2579,6 +2683,7 @@ CUresult cuMemPoolGetAttribute(CUmemoryPool  pool, CUmemPool_attribute  attr, vo
 CUresult cuMemPoolSetAccess(CUmemoryPool  pool, const CUmemAccessDesc * map, size_t  count)
 {
 	TALLY_SPD_LOG("cuMemPoolSetAccess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolSetAccess(pool, map, count);
 #else
@@ -2589,6 +2694,7 @@ CUresult cuMemPoolSetAccess(CUmemoryPool  pool, const CUmemAccessDesc * map, siz
 CUresult cuMemPoolGetAccess(CUmemAccess_flags * flags, CUmemoryPool  memPool, CUmemLocation * location)
 {
 	TALLY_SPD_LOG("cuMemPoolGetAccess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolGetAccess(flags, memPool, location);
 #else
@@ -2599,6 +2705,7 @@ CUresult cuMemPoolGetAccess(CUmemAccess_flags * flags, CUmemoryPool  memPool, CU
 CUresult cuMemPoolCreate(CUmemoryPool * pool, const CUmemPoolProps * poolProps)
 {
 	TALLY_SPD_LOG("cuMemPoolCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolCreate(pool, poolProps);
 #else
@@ -2609,6 +2716,7 @@ CUresult cuMemPoolCreate(CUmemoryPool * pool, const CUmemPoolProps * poolProps)
 CUresult cuMemPoolDestroy(CUmemoryPool  pool)
 {
 	TALLY_SPD_LOG("cuMemPoolDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolDestroy(pool);
 #else
@@ -2619,8 +2727,8 @@ CUresult cuMemPoolDestroy(CUmemoryPool  pool)
 CUresult cuMemAllocFromPoolAsync(CUdeviceptr * dptr, size_t  bytesize, CUmemoryPool  pool, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemAllocFromPoolAsync hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuMemAllocFromPoolAsync(dptr, bytesize, pool, hStream);
 #else
@@ -2663,6 +2771,7 @@ CUresult cuMemAllocFromPoolAsync(CUdeviceptr * dptr, size_t  bytesize, CUmemoryP
 CUresult cuMemPoolExportToShareableHandle(void * handle_out, CUmemoryPool  pool, CUmemAllocationHandleType  handleType, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cuMemPoolExportToShareableHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolExportToShareableHandle(handle_out, pool, handleType, flags);
 #else
@@ -2673,6 +2782,7 @@ CUresult cuMemPoolExportToShareableHandle(void * handle_out, CUmemoryPool  pool,
 CUresult cuMemPoolImportFromShareableHandle(CUmemoryPool * pool_out, void * handle, CUmemAllocationHandleType  handleType, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cuMemPoolImportFromShareableHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolImportFromShareableHandle(pool_out, handle, handleType, flags);
 #else
@@ -2683,6 +2793,7 @@ CUresult cuMemPoolImportFromShareableHandle(CUmemoryPool * pool_out, void * hand
 CUresult cuMemPoolExportPointer(CUmemPoolPtrExportData * shareData_out, CUdeviceptr  ptr)
 {
 	TALLY_SPD_LOG("cuMemPoolExportPointer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolExportPointer(shareData_out, ptr);
 #else
@@ -2693,6 +2804,7 @@ CUresult cuMemPoolExportPointer(CUmemPoolPtrExportData * shareData_out, CUdevice
 CUresult cuMemPoolImportPointer(CUdeviceptr * ptr_out, CUmemoryPool  pool, CUmemPoolPtrExportData * shareData)
 {
 	TALLY_SPD_LOG("cuMemPoolImportPointer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPoolImportPointer(ptr_out, pool, shareData);
 #else
@@ -2703,6 +2815,7 @@ CUresult cuMemPoolImportPointer(CUdeviceptr * ptr_out, CUmemoryPool  pool, CUmem
 CUresult cuMulticastCreate(CUmemGenericAllocationHandle * mcHandle, const CUmulticastObjectProp * prop)
 {
 	TALLY_SPD_LOG("cuMulticastCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMulticastCreate(mcHandle, prop);
 #else
@@ -2713,6 +2826,7 @@ CUresult cuMulticastCreate(CUmemGenericAllocationHandle * mcHandle, const CUmult
 CUresult cuMulticastAddDevice(CUmemGenericAllocationHandle  mcHandle, CUdevice  dev)
 {
 	TALLY_SPD_LOG("cuMulticastAddDevice hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMulticastAddDevice(mcHandle, dev);
 #else
@@ -2723,6 +2837,7 @@ CUresult cuMulticastAddDevice(CUmemGenericAllocationHandle  mcHandle, CUdevice  
 CUresult cuMulticastBindMem(CUmemGenericAllocationHandle  mcHandle, size_t  mcOffset, CUmemGenericAllocationHandle  memHandle, size_t  memOffset, size_t  size, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cuMulticastBindMem hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMulticastBindMem(mcHandle, mcOffset, memHandle, memOffset, size, flags);
 #else
@@ -2733,6 +2848,7 @@ CUresult cuMulticastBindMem(CUmemGenericAllocationHandle  mcHandle, size_t  mcOf
 CUresult cuMulticastBindAddr(CUmemGenericAllocationHandle  mcHandle, size_t  mcOffset, CUdeviceptr  memptr, size_t  size, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cuMulticastBindAddr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMulticastBindAddr(mcHandle, mcOffset, memptr, size, flags);
 #else
@@ -2743,6 +2859,7 @@ CUresult cuMulticastBindAddr(CUmemGenericAllocationHandle  mcHandle, size_t  mcO
 CUresult cuMulticastUnbind(CUmemGenericAllocationHandle  mcHandle, CUdevice  dev, size_t  mcOffset, size_t  size)
 {
 	TALLY_SPD_LOG("cuMulticastUnbind hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMulticastUnbind(mcHandle, dev, mcOffset, size);
 #else
@@ -2753,6 +2870,7 @@ CUresult cuMulticastUnbind(CUmemGenericAllocationHandle  mcHandle, CUdevice  dev
 CUresult cuMulticastGetGranularity(size_t * granularity, const CUmulticastObjectProp * prop, CUmulticastGranularity_flags  option)
 {
 	TALLY_SPD_LOG("cuMulticastGetGranularity hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMulticastGetGranularity(granularity, prop, option);
 #else
@@ -2763,6 +2881,7 @@ CUresult cuMulticastGetGranularity(size_t * granularity, const CUmulticastObject
 CUresult cuMemPrefetchAsync(CUdeviceptr  devPtr, size_t  count, CUdevice  dstDevice, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemPrefetchAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPrefetchAsync(devPtr, count, dstDevice, hStream);
 #else
@@ -2773,6 +2892,7 @@ CUresult cuMemPrefetchAsync(CUdeviceptr  devPtr, size_t  count, CUdevice  dstDev
 CUresult cuMemPrefetchAsync_v2(CUdeviceptr  devPtr, size_t  count, CUmemLocation  location, unsigned int  flags, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuMemPrefetchAsync_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemPrefetchAsync_v2(devPtr, count, location, flags, hStream);
 #else
@@ -2783,6 +2903,7 @@ CUresult cuMemPrefetchAsync_v2(CUdeviceptr  devPtr, size_t  count, CUmemLocation
 CUresult cuMemAdvise(CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, CUdevice  device)
 {
 	TALLY_SPD_LOG("cuMemAdvise hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemAdvise(devPtr, count, advice, device);
 #else
@@ -2793,6 +2914,7 @@ CUresult cuMemAdvise(CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, C
 CUresult cuMemAdvise_v2(CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice, CUmemLocation  location)
 {
 	TALLY_SPD_LOG("cuMemAdvise_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemAdvise_v2(devPtr, count, advice, location);
 #else
@@ -2803,6 +2925,7 @@ CUresult cuMemAdvise_v2(CUdeviceptr  devPtr, size_t  count, CUmem_advise  advice
 CUresult cuMemRangeGetAttribute(void * data, size_t  dataSize, CUmem_range_attribute  attribute, CUdeviceptr  devPtr, size_t  count)
 {
 	TALLY_SPD_LOG("cuMemRangeGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemRangeGetAttribute(data, dataSize, attribute, devPtr, count);
 #else
@@ -2813,6 +2936,7 @@ CUresult cuMemRangeGetAttribute(void * data, size_t  dataSize, CUmem_range_attri
 CUresult cuMemRangeGetAttributes(void ** data, size_t * dataSizes, CUmem_range_attribute * attributes, size_t  numAttributes, CUdeviceptr  devPtr, size_t  count)
 {
 	TALLY_SPD_LOG("cuMemRangeGetAttributes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuMemRangeGetAttributes(data, dataSizes, attributes, numAttributes, devPtr, count);
 #else
@@ -2823,6 +2947,7 @@ CUresult cuMemRangeGetAttributes(void ** data, size_t * dataSizes, CUmem_range_a
 CUresult cuPointerSetAttribute(const void * value, CUpointer_attribute  attribute, CUdeviceptr  ptr)
 {
 	TALLY_SPD_LOG("cuPointerSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuPointerSetAttribute(value, attribute, ptr);
 #else
@@ -2833,6 +2958,7 @@ CUresult cuPointerSetAttribute(const void * value, CUpointer_attribute  attribut
 CUresult cuPointerGetAttributes(unsigned int  numAttributes, CUpointer_attribute * attributes, void ** data, CUdeviceptr  ptr)
 {
 	TALLY_SPD_LOG("cuPointerGetAttributes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuPointerGetAttributes(numAttributes, attributes, data, ptr);
 #else
@@ -2843,6 +2969,7 @@ CUresult cuPointerGetAttributes(unsigned int  numAttributes, CUpointer_attribute
 CUresult cuStreamGetPriority(CUstream  hStream, int * priority)
 {
 	TALLY_SPD_LOG("cuStreamGetPriority hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamGetPriority(hStream, priority);
 #else
@@ -2853,6 +2980,7 @@ CUresult cuStreamGetPriority(CUstream  hStream, int * priority)
 CUresult cuStreamGetFlags(CUstream  hStream, unsigned int * flags)
 {
 	TALLY_SPD_LOG("cuStreamGetFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamGetFlags(hStream, flags);
 #else
@@ -2863,6 +2991,7 @@ CUresult cuStreamGetFlags(CUstream  hStream, unsigned int * flags)
 CUresult cuStreamGetId(CUstream  hStream, unsigned long long * streamId)
 {
 	TALLY_SPD_LOG("cuStreamGetId hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamGetId(hStream, streamId);
 #else
@@ -2873,6 +3002,7 @@ CUresult cuStreamGetId(CUstream  hStream, unsigned long long * streamId)
 CUresult cuStreamGetCtx(CUstream  hStream, CUcontext * pctx)
 {
 	TALLY_SPD_LOG("cuStreamGetCtx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamGetCtx(hStream, pctx);
 #else
@@ -2883,8 +3013,8 @@ CUresult cuStreamGetCtx(CUstream  hStream, CUcontext * pctx)
 CUresult cuStreamWaitEvent(CUstream  hStream, CUevent  hEvent, unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuStreamWaitEvent hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuStreamWaitEvent(hStream, hEvent, Flags);
 #else
@@ -2925,6 +3055,7 @@ CUresult cuStreamWaitEvent(CUstream  hStream, CUevent  hEvent, unsigned int  Fla
 CUresult cuStreamAddCallback(CUstream  hStream, CUstreamCallback  callback, void * userData, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuStreamAddCallback hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamAddCallback(hStream, callback, userData, flags);
 #else
@@ -2935,8 +3066,8 @@ CUresult cuStreamAddCallback(CUstream  hStream, CUstreamCallback  callback, void
 CUresult cuThreadExchangeStreamCaptureMode(CUstreamCaptureMode * mode)
 {
 	TALLY_SPD_LOG("cuThreadExchangeStreamCaptureMode hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuThreadExchangeStreamCaptureMode(mode);
 #else
@@ -2976,6 +3107,7 @@ CUresult cuThreadExchangeStreamCaptureMode(CUstreamCaptureMode * mode)
 CUresult cuStreamGetCaptureInfo_v2(CUstream  hStream, CUstreamCaptureStatus * captureStatus_out, cuuint64_t * id_out, CUgraph * graph_out, const CUgraphNode ** dependencies_out, size_t * numDependencies_out)
 {
 	TALLY_SPD_LOG("cuStreamGetCaptureInfo_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamGetCaptureInfo_v2(hStream, captureStatus_out, id_out, graph_out, dependencies_out, numDependencies_out);
 #else
@@ -2986,6 +3118,7 @@ CUresult cuStreamGetCaptureInfo_v2(CUstream  hStream, CUstreamCaptureStatus * ca
 CUresult cuStreamUpdateCaptureDependencies(CUstream  hStream, CUgraphNode * dependencies, size_t  numDependencies, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuStreamUpdateCaptureDependencies hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamUpdateCaptureDependencies(hStream, dependencies, numDependencies, flags);
 #else
@@ -2996,6 +3129,7 @@ CUresult cuStreamUpdateCaptureDependencies(CUstream  hStream, CUgraphNode * depe
 CUresult cuStreamAttachMemAsync(CUstream  hStream, CUdeviceptr  dptr, size_t  length, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuStreamAttachMemAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamAttachMemAsync(hStream, dptr, length, flags);
 #else
@@ -3006,6 +3140,7 @@ CUresult cuStreamAttachMemAsync(CUstream  hStream, CUdeviceptr  dptr, size_t  le
 CUresult cuStreamQuery(CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuStreamQuery hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamQuery(hStream);
 #else
@@ -3016,6 +3151,7 @@ CUresult cuStreamQuery(CUstream  hStream)
 CUresult cuStreamDestroy_v2(CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuStreamDestroy_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamDestroy_v2(hStream);
 #else
@@ -3026,6 +3162,7 @@ CUresult cuStreamDestroy_v2(CUstream  hStream)
 CUresult cuStreamCopyAttributes(CUstream  dst, CUstream  src)
 {
 	TALLY_SPD_LOG("cuStreamCopyAttributes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamCopyAttributes(dst, src);
 #else
@@ -3036,6 +3173,7 @@ CUresult cuStreamCopyAttributes(CUstream  dst, CUstream  src)
 CUresult cuStreamGetAttribute(CUstream  hStream, CUstreamAttrID  attr, CUstreamAttrValue * value_out)
 {
 	TALLY_SPD_LOG("cuStreamGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamGetAttribute(hStream, attr, value_out);
 #else
@@ -3046,6 +3184,7 @@ CUresult cuStreamGetAttribute(CUstream  hStream, CUstreamAttrID  attr, CUstreamA
 CUresult cuStreamSetAttribute(CUstream  hStream, CUstreamAttrID  attr, const CUstreamAttrValue * value)
 {
 	TALLY_SPD_LOG("cuStreamSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamSetAttribute(hStream, attr, value);
 #else
@@ -3056,8 +3195,8 @@ CUresult cuStreamSetAttribute(CUstream  hStream, CUstreamAttrID  attr, const CUs
 CUresult cuEventCreate(CUevent * phEvent, unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuEventCreate hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuEventCreate(phEvent, Flags);
 #else
@@ -3098,8 +3237,8 @@ CUresult cuEventCreate(CUevent * phEvent, unsigned int  Flags)
 CUresult cuEventRecord(CUevent  hEvent, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuEventRecord hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuEventRecord(hEvent, hStream);
 #else
@@ -3139,6 +3278,7 @@ CUresult cuEventRecord(CUevent  hEvent, CUstream  hStream)
 CUresult cuEventRecordWithFlags(CUevent  hEvent, CUstream  hStream, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuEventRecordWithFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuEventRecordWithFlags(hEvent, hStream, flags);
 #else
@@ -3149,8 +3289,8 @@ CUresult cuEventRecordWithFlags(CUevent  hEvent, CUstream  hStream, unsigned int
 CUresult cuEventQuery(CUevent  hEvent)
 {
 	TALLY_SPD_LOG("cuEventQuery hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuEventQuery(hEvent);
 #else
@@ -3189,8 +3329,8 @@ CUresult cuEventQuery(CUevent  hEvent)
 CUresult cuEventSynchronize(CUevent  hEvent)
 {
 	TALLY_SPD_LOG("cuEventSynchronize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuEventSynchronize(hEvent);
 #else
@@ -3229,8 +3369,8 @@ CUresult cuEventSynchronize(CUevent  hEvent)
 CUresult cuEventDestroy_v2(CUevent  hEvent)
 {
 	TALLY_SPD_LOG("cuEventDestroy_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuEventDestroy_v2(hEvent);
 #else
@@ -3269,8 +3409,8 @@ CUresult cuEventDestroy_v2(CUevent  hEvent)
 CUresult cuEventElapsedTime(float * pMilliseconds, CUevent  hStart, CUevent  hEnd)
 {
 	TALLY_SPD_LOG("cuEventElapsedTime hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuEventElapsedTime(pMilliseconds, hStart, hEnd);
 #else
@@ -3312,6 +3452,7 @@ CUresult cuEventElapsedTime(float * pMilliseconds, CUevent  hStart, CUevent  hEn
 CUresult cuImportExternalMemory(CUexternalMemory * extMem_out, const CUDA_EXTERNAL_MEMORY_HANDLE_DESC * memHandleDesc)
 {
 	TALLY_SPD_LOG("cuImportExternalMemory hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuImportExternalMemory(extMem_out, memHandleDesc);
 #else
@@ -3322,6 +3463,7 @@ CUresult cuImportExternalMemory(CUexternalMemory * extMem_out, const CUDA_EXTERN
 CUresult cuExternalMemoryGetMappedBuffer(CUdeviceptr * devPtr, CUexternalMemory  extMem, const CUDA_EXTERNAL_MEMORY_BUFFER_DESC * bufferDesc)
 {
 	TALLY_SPD_LOG("cuExternalMemoryGetMappedBuffer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuExternalMemoryGetMappedBuffer(devPtr, extMem, bufferDesc);
 #else
@@ -3332,6 +3474,7 @@ CUresult cuExternalMemoryGetMappedBuffer(CUdeviceptr * devPtr, CUexternalMemory 
 CUresult cuExternalMemoryGetMappedMipmappedArray(CUmipmappedArray * mipmap, CUexternalMemory  extMem, const CUDA_EXTERNAL_MEMORY_MIPMAPPED_ARRAY_DESC * mipmapDesc)
 {
 	TALLY_SPD_LOG("cuExternalMemoryGetMappedMipmappedArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuExternalMemoryGetMappedMipmappedArray(mipmap, extMem, mipmapDesc);
 #else
@@ -3342,8 +3485,8 @@ CUresult cuExternalMemoryGetMappedMipmappedArray(CUmipmappedArray * mipmap, CUex
 CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
 {
 	TALLY_SPD_LOG("cuDestroyExternalMemory hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuDestroyExternalMemory(extMem);
 #else
@@ -3382,6 +3525,7 @@ CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
 CUresult cuImportExternalSemaphore(CUexternalSemaphore * extSem_out, const CUDA_EXTERNAL_SEMAPHORE_HANDLE_DESC * semHandleDesc)
 {
 	TALLY_SPD_LOG("cuImportExternalSemaphore hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuImportExternalSemaphore(extSem_out, semHandleDesc);
 #else
@@ -3392,6 +3536,7 @@ CUresult cuImportExternalSemaphore(CUexternalSemaphore * extSem_out, const CUDA_
 CUresult cuSignalExternalSemaphoresAsync(const CUexternalSemaphore * extSemArray, const CUDA_EXTERNAL_SEMAPHORE_SIGNAL_PARAMS * paramsArray, unsigned int  numExtSems, CUstream  stream)
 {
 	TALLY_SPD_LOG("cuSignalExternalSemaphoresAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuSignalExternalSemaphoresAsync(extSemArray, paramsArray, numExtSems, stream);
 #else
@@ -3402,6 +3547,7 @@ CUresult cuSignalExternalSemaphoresAsync(const CUexternalSemaphore * extSemArray
 CUresult cuWaitExternalSemaphoresAsync(const CUexternalSemaphore * extSemArray, const CUDA_EXTERNAL_SEMAPHORE_WAIT_PARAMS * paramsArray, unsigned int  numExtSems, CUstream  stream)
 {
 	TALLY_SPD_LOG("cuWaitExternalSemaphoresAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuWaitExternalSemaphoresAsync(extSemArray, paramsArray, numExtSems, stream);
 #else
@@ -3412,6 +3558,7 @@ CUresult cuWaitExternalSemaphoresAsync(const CUexternalSemaphore * extSemArray, 
 CUresult cuDestroyExternalSemaphore(CUexternalSemaphore  extSem)
 {
 	TALLY_SPD_LOG("cuDestroyExternalSemaphore hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuDestroyExternalSemaphore(extSem);
 #else
@@ -3422,6 +3569,7 @@ CUresult cuDestroyExternalSemaphore(CUexternalSemaphore  extSem)
 CUresult cuStreamWaitValue32_v2(CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuStreamWaitValue32_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamWaitValue32_v2(stream, addr, value, flags);
 #else
@@ -3432,6 +3580,7 @@ CUresult cuStreamWaitValue32_v2(CUstream  stream, CUdeviceptr  addr, cuuint32_t 
 CUresult cuStreamWaitValue64_v2(CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuStreamWaitValue64_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamWaitValue64_v2(stream, addr, value, flags);
 #else
@@ -3442,6 +3591,7 @@ CUresult cuStreamWaitValue64_v2(CUstream  stream, CUdeviceptr  addr, cuuint64_t 
 CUresult cuStreamWriteValue32_v2(CUstream  stream, CUdeviceptr  addr, cuuint32_t  value, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuStreamWriteValue32_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamWriteValue32_v2(stream, addr, value, flags);
 #else
@@ -3452,6 +3602,7 @@ CUresult cuStreamWriteValue32_v2(CUstream  stream, CUdeviceptr  addr, cuuint32_t
 CUresult cuStreamWriteValue64_v2(CUstream  stream, CUdeviceptr  addr, cuuint64_t  value, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuStreamWriteValue64_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamWriteValue64_v2(stream, addr, value, flags);
 #else
@@ -3462,6 +3613,7 @@ CUresult cuStreamWriteValue64_v2(CUstream  stream, CUdeviceptr  addr, cuuint64_t
 CUresult cuStreamBatchMemOp_v2(CUstream  stream, unsigned int  count, CUstreamBatchMemOpParams * paramArray, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuStreamBatchMemOp_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuStreamBatchMemOp_v2(stream, count, paramArray, flags);
 #else
@@ -3472,6 +3624,7 @@ CUresult cuStreamBatchMemOp_v2(CUstream  stream, unsigned int  count, CUstreamBa
 CUresult cuFuncSetSharedMemConfig(CUfunction  hfunc, CUsharedconfig  config)
 {
 	TALLY_SPD_LOG("cuFuncSetSharedMemConfig hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuFuncSetSharedMemConfig(hfunc, config);
 #else
@@ -3482,6 +3635,7 @@ CUresult cuFuncSetSharedMemConfig(CUfunction  hfunc, CUsharedconfig  config)
 CUresult cuFuncGetModule(CUmodule * hmod, CUfunction  hfunc)
 {
 	TALLY_SPD_LOG("cuFuncGetModule hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuFuncGetModule(hmod, hfunc);
 #else
@@ -3492,6 +3646,7 @@ CUresult cuFuncGetModule(CUmodule * hmod, CUfunction  hfunc)
 CUresult cuLaunchKernelEx(const CUlaunchConfig * config, CUfunction  f, void ** kernelParams, void ** extra)
 {
 	TALLY_SPD_LOG("cuLaunchKernelEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLaunchKernelEx(config, f, kernelParams, extra);
 #else
@@ -3502,6 +3657,7 @@ CUresult cuLaunchKernelEx(const CUlaunchConfig * config, CUfunction  f, void ** 
 CUresult cuLaunchCooperativeKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gridDimY, unsigned int  gridDimZ, unsigned int  blockDimX, unsigned int  blockDimY, unsigned int  blockDimZ, unsigned int  sharedMemBytes, CUstream  hStream, void ** kernelParams)
 {
 	TALLY_SPD_LOG("cuLaunchCooperativeKernel hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLaunchCooperativeKernel(f, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, sharedMemBytes, hStream, kernelParams);
 #else
@@ -3512,6 +3668,7 @@ CUresult cuLaunchCooperativeKernel(CUfunction  f, unsigned int  gridDimX, unsign
 CUresult cuLaunchCooperativeKernelMultiDevice(CUDA_LAUNCH_PARAMS * launchParamsList, unsigned int  numDevices, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuLaunchCooperativeKernelMultiDevice hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLaunchCooperativeKernelMultiDevice(launchParamsList, numDevices, flags);
 #else
@@ -3522,6 +3679,7 @@ CUresult cuLaunchCooperativeKernelMultiDevice(CUDA_LAUNCH_PARAMS * launchParamsL
 CUresult cuLaunchHostFunc(CUstream  hStream, CUhostFn  fn, void * userData)
 {
 	TALLY_SPD_LOG("cuLaunchHostFunc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLaunchHostFunc(hStream, fn, userData);
 #else
@@ -3532,6 +3690,7 @@ CUresult cuLaunchHostFunc(CUstream  hStream, CUhostFn  fn, void * userData)
 CUresult cuFuncSetBlockShape(CUfunction  hfunc, int  x, int  y, int  z)
 {
 	TALLY_SPD_LOG("cuFuncSetBlockShape hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuFuncSetBlockShape(hfunc, x, y, z);
 #else
@@ -3542,6 +3701,7 @@ CUresult cuFuncSetBlockShape(CUfunction  hfunc, int  x, int  y, int  z)
 CUresult cuFuncSetSharedSize(CUfunction  hfunc, unsigned int  bytes)
 {
 	TALLY_SPD_LOG("cuFuncSetSharedSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuFuncSetSharedSize(hfunc, bytes);
 #else
@@ -3552,6 +3712,7 @@ CUresult cuFuncSetSharedSize(CUfunction  hfunc, unsigned int  bytes)
 CUresult cuParamSetSize(CUfunction  hfunc, unsigned int  numbytes)
 {
 	TALLY_SPD_LOG("cuParamSetSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuParamSetSize(hfunc, numbytes);
 #else
@@ -3562,6 +3723,7 @@ CUresult cuParamSetSize(CUfunction  hfunc, unsigned int  numbytes)
 CUresult cuParamSeti(CUfunction  hfunc, int  offset, unsigned int  value)
 {
 	TALLY_SPD_LOG("cuParamSeti hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuParamSeti(hfunc, offset, value);
 #else
@@ -3572,6 +3734,7 @@ CUresult cuParamSeti(CUfunction  hfunc, int  offset, unsigned int  value)
 CUresult cuParamSetf(CUfunction  hfunc, int  offset, float  value)
 {
 	TALLY_SPD_LOG("cuParamSetf hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuParamSetf(hfunc, offset, value);
 #else
@@ -3582,6 +3745,7 @@ CUresult cuParamSetf(CUfunction  hfunc, int  offset, float  value)
 CUresult cuParamSetv(CUfunction  hfunc, int  offset, void * ptr, unsigned int  numbytes)
 {
 	TALLY_SPD_LOG("cuParamSetv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuParamSetv(hfunc, offset, ptr, numbytes);
 #else
@@ -3592,6 +3756,7 @@ CUresult cuParamSetv(CUfunction  hfunc, int  offset, void * ptr, unsigned int  n
 CUresult cuLaunch(CUfunction  f)
 {
 	TALLY_SPD_LOG("cuLaunch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLaunch(f);
 #else
@@ -3602,6 +3767,7 @@ CUresult cuLaunch(CUfunction  f)
 CUresult cuLaunchGrid(CUfunction  f, int  grid_width, int  grid_height)
 {
 	TALLY_SPD_LOG("cuLaunchGrid hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLaunchGrid(f, grid_width, grid_height);
 #else
@@ -3612,6 +3778,7 @@ CUresult cuLaunchGrid(CUfunction  f, int  grid_width, int  grid_height)
 CUresult cuLaunchGridAsync(CUfunction  f, int  grid_width, int  grid_height, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuLaunchGridAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuLaunchGridAsync(f, grid_width, grid_height, hStream);
 #else
@@ -3622,6 +3789,7 @@ CUresult cuLaunchGridAsync(CUfunction  f, int  grid_width, int  grid_height, CUs
 CUresult cuParamSetTexRef(CUfunction  hfunc, int  texunit, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuParamSetTexRef hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuParamSetTexRef(hfunc, texunit, hTexRef);
 #else
@@ -3632,6 +3800,7 @@ CUresult cuParamSetTexRef(CUfunction  hfunc, int  texunit, CUtexref  hTexRef)
 CUresult cuGraphCreate(CUgraph * phGraph, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuGraphCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphCreate(phGraph, flags);
 #else
@@ -3642,6 +3811,7 @@ CUresult cuGraphCreate(CUgraph * phGraph, unsigned int  flags)
 CUresult cuGraphAddKernelNode_v2(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphAddKernelNode_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddKernelNode_v2(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
 #else
@@ -3652,6 +3822,7 @@ CUresult cuGraphAddKernelNode_v2(CUgraphNode * phGraphNode, CUgraph  hGraph, con
 CUresult cuGraphKernelNodeGetParams_v2(CUgraphNode  hNode, CUDA_KERNEL_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphKernelNodeGetParams_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphKernelNodeGetParams_v2(hNode, nodeParams);
 #else
@@ -3662,6 +3833,7 @@ CUresult cuGraphKernelNodeGetParams_v2(CUgraphNode  hNode, CUDA_KERNEL_NODE_PARA
 CUresult cuGraphKernelNodeSetParams_v2(CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphKernelNodeSetParams_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphKernelNodeSetParams_v2(hNode, nodeParams);
 #else
@@ -3672,6 +3844,7 @@ CUresult cuGraphKernelNodeSetParams_v2(CUgraphNode  hNode, const CUDA_KERNEL_NOD
 CUresult cuGraphAddMemcpyNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_MEMCPY3D * copyParams, CUcontext  ctx)
 {
 	TALLY_SPD_LOG("cuGraphAddMemcpyNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddMemcpyNode(phGraphNode, hGraph, dependencies, numDependencies, copyParams, ctx);
 #else
@@ -3682,6 +3855,7 @@ CUresult cuGraphAddMemcpyNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const 
 CUresult cuGraphMemcpyNodeGetParams(CUgraphNode  hNode, CUDA_MEMCPY3D * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphMemcpyNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphMemcpyNodeGetParams(hNode, nodeParams);
 #else
@@ -3692,6 +3866,7 @@ CUresult cuGraphMemcpyNodeGetParams(CUgraphNode  hNode, CUDA_MEMCPY3D * nodePara
 CUresult cuGraphMemcpyNodeSetParams(CUgraphNode  hNode, const CUDA_MEMCPY3D * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphMemcpyNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphMemcpyNodeSetParams(hNode, nodeParams);
 #else
@@ -3702,6 +3877,7 @@ CUresult cuGraphMemcpyNodeSetParams(CUgraphNode  hNode, const CUDA_MEMCPY3D * no
 CUresult cuGraphAddMemsetNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_MEMSET_NODE_PARAMS * memsetParams, CUcontext  ctx)
 {
 	TALLY_SPD_LOG("cuGraphAddMemsetNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddMemsetNode(phGraphNode, hGraph, dependencies, numDependencies, memsetParams, ctx);
 #else
@@ -3712,6 +3888,7 @@ CUresult cuGraphAddMemsetNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const 
 CUresult cuGraphMemsetNodeGetParams(CUgraphNode  hNode, CUDA_MEMSET_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphMemsetNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphMemsetNodeGetParams(hNode, nodeParams);
 #else
@@ -3722,6 +3899,7 @@ CUresult cuGraphMemsetNodeGetParams(CUgraphNode  hNode, CUDA_MEMSET_NODE_PARAMS 
 CUresult cuGraphMemsetNodeSetParams(CUgraphNode  hNode, const CUDA_MEMSET_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphMemsetNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphMemsetNodeSetParams(hNode, nodeParams);
 #else
@@ -3732,6 +3910,7 @@ CUresult cuGraphMemsetNodeSetParams(CUgraphNode  hNode, const CUDA_MEMSET_NODE_P
 CUresult cuGraphAddHostNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_HOST_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphAddHostNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddHostNode(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
 #else
@@ -3742,6 +3921,7 @@ CUresult cuGraphAddHostNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CU
 CUresult cuGraphHostNodeGetParams(CUgraphNode  hNode, CUDA_HOST_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphHostNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphHostNodeGetParams(hNode, nodeParams);
 #else
@@ -3752,6 +3932,7 @@ CUresult cuGraphHostNodeGetParams(CUgraphNode  hNode, CUDA_HOST_NODE_PARAMS * no
 CUresult cuGraphHostNodeSetParams(CUgraphNode  hNode, const CUDA_HOST_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphHostNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphHostNodeSetParams(hNode, nodeParams);
 #else
@@ -3762,6 +3943,7 @@ CUresult cuGraphHostNodeSetParams(CUgraphNode  hNode, const CUDA_HOST_NODE_PARAM
 CUresult cuGraphAddChildGraphNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUgraph  childGraph)
 {
 	TALLY_SPD_LOG("cuGraphAddChildGraphNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddChildGraphNode(phGraphNode, hGraph, dependencies, numDependencies, childGraph);
 #else
@@ -3772,6 +3954,7 @@ CUresult cuGraphAddChildGraphNode(CUgraphNode * phGraphNode, CUgraph  hGraph, co
 CUresult cuGraphChildGraphNodeGetGraph(CUgraphNode  hNode, CUgraph * phGraph)
 {
 	TALLY_SPD_LOG("cuGraphChildGraphNodeGetGraph hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphChildGraphNodeGetGraph(hNode, phGraph);
 #else
@@ -3782,6 +3965,7 @@ CUresult cuGraphChildGraphNodeGetGraph(CUgraphNode  hNode, CUgraph * phGraph)
 CUresult cuGraphAddEmptyNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies)
 {
 	TALLY_SPD_LOG("cuGraphAddEmptyNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddEmptyNode(phGraphNode, hGraph, dependencies, numDependencies);
 #else
@@ -3792,6 +3976,7 @@ CUresult cuGraphAddEmptyNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const C
 CUresult cuGraphAddEventRecordNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUevent  event)
 {
 	TALLY_SPD_LOG("cuGraphAddEventRecordNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddEventRecordNode(phGraphNode, hGraph, dependencies, numDependencies, event);
 #else
@@ -3802,6 +3987,7 @@ CUresult cuGraphAddEventRecordNode(CUgraphNode * phGraphNode, CUgraph  hGraph, c
 CUresult cuGraphEventRecordNodeGetEvent(CUgraphNode  hNode, CUevent * event_out)
 {
 	TALLY_SPD_LOG("cuGraphEventRecordNodeGetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphEventRecordNodeGetEvent(hNode, event_out);
 #else
@@ -3812,6 +3998,7 @@ CUresult cuGraphEventRecordNodeGetEvent(CUgraphNode  hNode, CUevent * event_out)
 CUresult cuGraphEventRecordNodeSetEvent(CUgraphNode  hNode, CUevent  event)
 {
 	TALLY_SPD_LOG("cuGraphEventRecordNodeSetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphEventRecordNodeSetEvent(hNode, event);
 #else
@@ -3822,6 +4009,7 @@ CUresult cuGraphEventRecordNodeSetEvent(CUgraphNode  hNode, CUevent  event)
 CUresult cuGraphAddEventWaitNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUevent  event)
 {
 	TALLY_SPD_LOG("cuGraphAddEventWaitNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddEventWaitNode(phGraphNode, hGraph, dependencies, numDependencies, event);
 #else
@@ -3832,6 +4020,7 @@ CUresult cuGraphAddEventWaitNode(CUgraphNode * phGraphNode, CUgraph  hGraph, con
 CUresult cuGraphEventWaitNodeGetEvent(CUgraphNode  hNode, CUevent * event_out)
 {
 	TALLY_SPD_LOG("cuGraphEventWaitNodeGetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphEventWaitNodeGetEvent(hNode, event_out);
 #else
@@ -3842,6 +4031,7 @@ CUresult cuGraphEventWaitNodeGetEvent(CUgraphNode  hNode, CUevent * event_out)
 CUresult cuGraphEventWaitNodeSetEvent(CUgraphNode  hNode, CUevent  event)
 {
 	TALLY_SPD_LOG("cuGraphEventWaitNodeSetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphEventWaitNodeSetEvent(hNode, event);
 #else
@@ -3852,6 +4042,7 @@ CUresult cuGraphEventWaitNodeSetEvent(CUgraphNode  hNode, CUevent  event)
 CUresult cuGraphAddExternalSemaphoresSignalNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_EXT_SEM_SIGNAL_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphAddExternalSemaphoresSignalNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddExternalSemaphoresSignalNode(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
 #else
@@ -3862,6 +4053,7 @@ CUresult cuGraphAddExternalSemaphoresSignalNode(CUgraphNode * phGraphNode, CUgra
 CUresult cuGraphExternalSemaphoresSignalNodeGetParams(CUgraphNode  hNode, CUDA_EXT_SEM_SIGNAL_NODE_PARAMS * params_out)
 {
 	TALLY_SPD_LOG("cuGraphExternalSemaphoresSignalNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExternalSemaphoresSignalNodeGetParams(hNode, params_out);
 #else
@@ -3872,6 +4064,7 @@ CUresult cuGraphExternalSemaphoresSignalNodeGetParams(CUgraphNode  hNode, CUDA_E
 CUresult cuGraphExternalSemaphoresSignalNodeSetParams(CUgraphNode  hNode, const CUDA_EXT_SEM_SIGNAL_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphExternalSemaphoresSignalNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExternalSemaphoresSignalNodeSetParams(hNode, nodeParams);
 #else
@@ -3882,6 +4075,7 @@ CUresult cuGraphExternalSemaphoresSignalNodeSetParams(CUgraphNode  hNode, const 
 CUresult cuGraphAddExternalSemaphoresWaitNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_EXT_SEM_WAIT_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphAddExternalSemaphoresWaitNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddExternalSemaphoresWaitNode(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
 #else
@@ -3892,6 +4086,7 @@ CUresult cuGraphAddExternalSemaphoresWaitNode(CUgraphNode * phGraphNode, CUgraph
 CUresult cuGraphExternalSemaphoresWaitNodeGetParams(CUgraphNode  hNode, CUDA_EXT_SEM_WAIT_NODE_PARAMS * params_out)
 {
 	TALLY_SPD_LOG("cuGraphExternalSemaphoresWaitNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExternalSemaphoresWaitNodeGetParams(hNode, params_out);
 #else
@@ -3902,6 +4097,7 @@ CUresult cuGraphExternalSemaphoresWaitNodeGetParams(CUgraphNode  hNode, CUDA_EXT
 CUresult cuGraphExternalSemaphoresWaitNodeSetParams(CUgraphNode  hNode, const CUDA_EXT_SEM_WAIT_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphExternalSemaphoresWaitNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExternalSemaphoresWaitNodeSetParams(hNode, nodeParams);
 #else
@@ -3912,6 +4108,7 @@ CUresult cuGraphExternalSemaphoresWaitNodeSetParams(CUgraphNode  hNode, const CU
 CUresult cuGraphAddBatchMemOpNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphAddBatchMemOpNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddBatchMemOpNode(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
 #else
@@ -3922,6 +4119,7 @@ CUresult cuGraphAddBatchMemOpNode(CUgraphNode * phGraphNode, CUgraph  hGraph, co
 CUresult cuGraphBatchMemOpNodeGetParams(CUgraphNode  hNode, CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams_out)
 {
 	TALLY_SPD_LOG("cuGraphBatchMemOpNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphBatchMemOpNodeGetParams(hNode, nodeParams_out);
 #else
@@ -3932,6 +4130,7 @@ CUresult cuGraphBatchMemOpNodeGetParams(CUgraphNode  hNode, CUDA_BATCH_MEM_OP_NO
 CUresult cuGraphBatchMemOpNodeSetParams(CUgraphNode  hNode, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphBatchMemOpNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphBatchMemOpNodeSetParams(hNode, nodeParams);
 #else
@@ -3942,6 +4141,7 @@ CUresult cuGraphBatchMemOpNodeSetParams(CUgraphNode  hNode, const CUDA_BATCH_MEM
 CUresult cuGraphExecBatchMemOpNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_BATCH_MEM_OP_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphExecBatchMemOpNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecBatchMemOpNodeSetParams(hGraphExec, hNode, nodeParams);
 #else
@@ -3952,6 +4152,7 @@ CUresult cuGraphExecBatchMemOpNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode
 CUresult cuGraphAddMemAllocNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUDA_MEM_ALLOC_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphAddMemAllocNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddMemAllocNode(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
 #else
@@ -3962,6 +4163,7 @@ CUresult cuGraphAddMemAllocNode(CUgraphNode * phGraphNode, CUgraph  hGraph, cons
 CUresult cuGraphMemAllocNodeGetParams(CUgraphNode  hNode, CUDA_MEM_ALLOC_NODE_PARAMS * params_out)
 {
 	TALLY_SPD_LOG("cuGraphMemAllocNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphMemAllocNodeGetParams(hNode, params_out);
 #else
@@ -3972,6 +4174,7 @@ CUresult cuGraphMemAllocNodeGetParams(CUgraphNode  hNode, CUDA_MEM_ALLOC_NODE_PA
 CUresult cuGraphAddMemFreeNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUdeviceptr  dptr)
 {
 	TALLY_SPD_LOG("cuGraphAddMemFreeNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddMemFreeNode(phGraphNode, hGraph, dependencies, numDependencies, dptr);
 #else
@@ -3982,6 +4185,7 @@ CUresult cuGraphAddMemFreeNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const
 CUresult cuGraphMemFreeNodeGetParams(CUgraphNode  hNode, CUdeviceptr * dptr_out)
 {
 	TALLY_SPD_LOG("cuGraphMemFreeNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphMemFreeNodeGetParams(hNode, dptr_out);
 #else
@@ -3992,6 +4196,7 @@ CUresult cuGraphMemFreeNodeGetParams(CUgraphNode  hNode, CUdeviceptr * dptr_out)
 CUresult cuDeviceGraphMemTrim(CUdevice  device)
 {
 	TALLY_SPD_LOG("cuDeviceGraphMemTrim hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuDeviceGraphMemTrim(device);
 #else
@@ -4002,6 +4207,7 @@ CUresult cuDeviceGraphMemTrim(CUdevice  device)
 CUresult cuDeviceGetGraphMemAttribute(CUdevice  device, CUgraphMem_attribute  attr, void*  value)
 {
 	TALLY_SPD_LOG("cuDeviceGetGraphMemAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuDeviceGetGraphMemAttribute(device, attr, value);
 #else
@@ -4012,6 +4218,7 @@ CUresult cuDeviceGetGraphMemAttribute(CUdevice  device, CUgraphMem_attribute  at
 CUresult cuDeviceSetGraphMemAttribute(CUdevice  device, CUgraphMem_attribute  attr, void*  value)
 {
 	TALLY_SPD_LOG("cuDeviceSetGraphMemAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuDeviceSetGraphMemAttribute(device, attr, value);
 #else
@@ -4022,6 +4229,7 @@ CUresult cuDeviceSetGraphMemAttribute(CUdevice  device, CUgraphMem_attribute  at
 CUresult cuGraphClone(CUgraph * phGraphClone, CUgraph  originalGraph)
 {
 	TALLY_SPD_LOG("cuGraphClone hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphClone(phGraphClone, originalGraph);
 #else
@@ -4032,6 +4240,7 @@ CUresult cuGraphClone(CUgraph * phGraphClone, CUgraph  originalGraph)
 CUresult cuGraphNodeFindInClone(CUgraphNode * phNode, CUgraphNode  hOriginalNode, CUgraph  hClonedGraph)
 {
 	TALLY_SPD_LOG("cuGraphNodeFindInClone hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphNodeFindInClone(phNode, hOriginalNode, hClonedGraph);
 #else
@@ -4042,6 +4251,7 @@ CUresult cuGraphNodeFindInClone(CUgraphNode * phNode, CUgraphNode  hOriginalNode
 CUresult cuGraphNodeGetType(CUgraphNode  hNode, CUgraphNodeType * type)
 {
 	TALLY_SPD_LOG("cuGraphNodeGetType hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphNodeGetType(hNode, type);
 #else
@@ -4052,6 +4262,7 @@ CUresult cuGraphNodeGetType(CUgraphNode  hNode, CUgraphNodeType * type)
 CUresult cuGraphGetNodes(CUgraph  hGraph, CUgraphNode * nodes, size_t * numNodes)
 {
 	TALLY_SPD_LOG("cuGraphGetNodes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphGetNodes(hGraph, nodes, numNodes);
 #else
@@ -4062,6 +4273,7 @@ CUresult cuGraphGetNodes(CUgraph  hGraph, CUgraphNode * nodes, size_t * numNodes
 CUresult cuGraphGetRootNodes(CUgraph  hGraph, CUgraphNode * rootNodes, size_t * numRootNodes)
 {
 	TALLY_SPD_LOG("cuGraphGetRootNodes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphGetRootNodes(hGraph, rootNodes, numRootNodes);
 #else
@@ -4072,6 +4284,7 @@ CUresult cuGraphGetRootNodes(CUgraph  hGraph, CUgraphNode * rootNodes, size_t * 
 CUresult cuGraphGetEdges(CUgraph  hGraph, CUgraphNode * from, CUgraphNode * to, size_t * numEdges)
 {
 	TALLY_SPD_LOG("cuGraphGetEdges hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphGetEdges(hGraph, from, to, numEdges);
 #else
@@ -4082,6 +4295,7 @@ CUresult cuGraphGetEdges(CUgraph  hGraph, CUgraphNode * from, CUgraphNode * to, 
 CUresult cuGraphNodeGetDependencies(CUgraphNode  hNode, CUgraphNode * dependencies, size_t * numDependencies)
 {
 	TALLY_SPD_LOG("cuGraphNodeGetDependencies hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphNodeGetDependencies(hNode, dependencies, numDependencies);
 #else
@@ -4092,6 +4306,7 @@ CUresult cuGraphNodeGetDependencies(CUgraphNode  hNode, CUgraphNode * dependenci
 CUresult cuGraphNodeGetDependentNodes(CUgraphNode  hNode, CUgraphNode * dependentNodes, size_t * numDependentNodes)
 {
 	TALLY_SPD_LOG("cuGraphNodeGetDependentNodes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphNodeGetDependentNodes(hNode, dependentNodes, numDependentNodes);
 #else
@@ -4102,6 +4317,7 @@ CUresult cuGraphNodeGetDependentNodes(CUgraphNode  hNode, CUgraphNode * dependen
 CUresult cuGraphAddDependencies(CUgraph  hGraph, const CUgraphNode * from, const CUgraphNode * to, size_t  numDependencies)
 {
 	TALLY_SPD_LOG("cuGraphAddDependencies hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddDependencies(hGraph, from, to, numDependencies);
 #else
@@ -4112,6 +4328,7 @@ CUresult cuGraphAddDependencies(CUgraph  hGraph, const CUgraphNode * from, const
 CUresult cuGraphRemoveDependencies(CUgraph  hGraph, const CUgraphNode * from, const CUgraphNode * to, size_t  numDependencies)
 {
 	TALLY_SPD_LOG("cuGraphRemoveDependencies hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphRemoveDependencies(hGraph, from, to, numDependencies);
 #else
@@ -4122,6 +4339,7 @@ CUresult cuGraphRemoveDependencies(CUgraph  hGraph, const CUgraphNode * from, co
 CUresult cuGraphDestroyNode(CUgraphNode  hNode)
 {
 	TALLY_SPD_LOG("cuGraphDestroyNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphDestroyNode(hNode);
 #else
@@ -4132,6 +4350,7 @@ CUresult cuGraphDestroyNode(CUgraphNode  hNode)
 CUresult cuGraphInstantiateWithParams(CUgraphExec * phGraphExec, CUgraph  hGraph, CUDA_GRAPH_INSTANTIATE_PARAMS * instantiateParams)
 {
 	TALLY_SPD_LOG("cuGraphInstantiateWithParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphInstantiateWithParams(phGraphExec, hGraph, instantiateParams);
 #else
@@ -4142,6 +4361,7 @@ CUresult cuGraphInstantiateWithParams(CUgraphExec * phGraphExec, CUgraph  hGraph
 CUresult cuGraphExecGetFlags(CUgraphExec  hGraphExec, cuuint64_t * flags)
 {
 	TALLY_SPD_LOG("cuGraphExecGetFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecGetFlags(hGraphExec, flags);
 #else
@@ -4152,6 +4372,7 @@ CUresult cuGraphExecGetFlags(CUgraphExec  hGraphExec, cuuint64_t * flags)
 CUresult cuGraphExecKernelNodeSetParams_v2(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_KERNEL_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphExecKernelNodeSetParams_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecKernelNodeSetParams_v2(hGraphExec, hNode, nodeParams);
 #else
@@ -4162,6 +4383,7 @@ CUresult cuGraphExecKernelNodeSetParams_v2(CUgraphExec  hGraphExec, CUgraphNode 
 CUresult cuGraphExecMemcpyNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_MEMCPY3D * copyParams, CUcontext  ctx)
 {
 	TALLY_SPD_LOG("cuGraphExecMemcpyNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecMemcpyNodeSetParams(hGraphExec, hNode, copyParams, ctx);
 #else
@@ -4172,6 +4394,7 @@ CUresult cuGraphExecMemcpyNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hN
 CUresult cuGraphExecMemsetNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_MEMSET_NODE_PARAMS * memsetParams, CUcontext  ctx)
 {
 	TALLY_SPD_LOG("cuGraphExecMemsetNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecMemsetNodeSetParams(hGraphExec, hNode, memsetParams, ctx);
 #else
@@ -4182,6 +4405,7 @@ CUresult cuGraphExecMemsetNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hN
 CUresult cuGraphExecHostNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_HOST_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphExecHostNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecHostNodeSetParams(hGraphExec, hNode, nodeParams);
 #else
@@ -4192,6 +4416,7 @@ CUresult cuGraphExecHostNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNod
 CUresult cuGraphExecChildGraphNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, CUgraph  childGraph)
 {
 	TALLY_SPD_LOG("cuGraphExecChildGraphNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecChildGraphNodeSetParams(hGraphExec, hNode, childGraph);
 #else
@@ -4202,6 +4427,7 @@ CUresult cuGraphExecChildGraphNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode
 CUresult cuGraphExecEventRecordNodeSetEvent(CUgraphExec  hGraphExec, CUgraphNode  hNode, CUevent  event)
 {
 	TALLY_SPD_LOG("cuGraphExecEventRecordNodeSetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecEventRecordNodeSetEvent(hGraphExec, hNode, event);
 #else
@@ -4212,6 +4438,7 @@ CUresult cuGraphExecEventRecordNodeSetEvent(CUgraphExec  hGraphExec, CUgraphNode
 CUresult cuGraphExecEventWaitNodeSetEvent(CUgraphExec  hGraphExec, CUgraphNode  hNode, CUevent  event)
 {
 	TALLY_SPD_LOG("cuGraphExecEventWaitNodeSetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecEventWaitNodeSetEvent(hGraphExec, hNode, event);
 #else
@@ -4222,6 +4449,7 @@ CUresult cuGraphExecEventWaitNodeSetEvent(CUgraphExec  hGraphExec, CUgraphNode  
 CUresult cuGraphExecExternalSemaphoresSignalNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_EXT_SEM_SIGNAL_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphExecExternalSemaphoresSignalNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecExternalSemaphoresSignalNodeSetParams(hGraphExec, hNode, nodeParams);
 #else
@@ -4232,6 +4460,7 @@ CUresult cuGraphExecExternalSemaphoresSignalNodeSetParams(CUgraphExec  hGraphExe
 CUresult cuGraphExecExternalSemaphoresWaitNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, const CUDA_EXT_SEM_WAIT_NODE_PARAMS * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphExecExternalSemaphoresWaitNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecExternalSemaphoresWaitNodeSetParams(hGraphExec, hNode, nodeParams);
 #else
@@ -4242,6 +4471,7 @@ CUresult cuGraphExecExternalSemaphoresWaitNodeSetParams(CUgraphExec  hGraphExec,
 CUresult cuGraphNodeSetEnabled(CUgraphExec  hGraphExec, CUgraphNode  hNode, unsigned int  isEnabled)
 {
 	TALLY_SPD_LOG("cuGraphNodeSetEnabled hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphNodeSetEnabled(hGraphExec, hNode, isEnabled);
 #else
@@ -4252,6 +4482,7 @@ CUresult cuGraphNodeSetEnabled(CUgraphExec  hGraphExec, CUgraphNode  hNode, unsi
 CUresult cuGraphNodeGetEnabled(CUgraphExec  hGraphExec, CUgraphNode  hNode, unsigned int * isEnabled)
 {
 	TALLY_SPD_LOG("cuGraphNodeGetEnabled hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphNodeGetEnabled(hGraphExec, hNode, isEnabled);
 #else
@@ -4262,6 +4493,7 @@ CUresult cuGraphNodeGetEnabled(CUgraphExec  hGraphExec, CUgraphNode  hNode, unsi
 CUresult cuGraphUpload(CUgraphExec  hGraphExec, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuGraphUpload hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphUpload(hGraphExec, hStream);
 #else
@@ -4272,8 +4504,8 @@ CUresult cuGraphUpload(CUgraphExec  hGraphExec, CUstream  hStream)
 CUresult cuGraphExecDestroy(CUgraphExec  hGraphExec)
 {
 	TALLY_SPD_LOG("cuGraphExecDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuGraphExecDestroy(hGraphExec);
 #else
@@ -4312,8 +4544,8 @@ CUresult cuGraphExecDestroy(CUgraphExec  hGraphExec)
 CUresult cuGraphDestroy(CUgraph  hGraph)
 {
 	TALLY_SPD_LOG("cuGraphDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuGraphDestroy(hGraph);
 #else
@@ -4352,8 +4584,8 @@ CUresult cuGraphDestroy(CUgraph  hGraph)
 CUresult cuGraphExecUpdate_v2(CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphExecUpdateResultInfo * resultInfo)
 {
 	TALLY_SPD_LOG("cuGraphExecUpdate_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcuGraphExecUpdate_v2(hGraphExec, hGraph, resultInfo);
 #else
@@ -4395,6 +4627,7 @@ CUresult cuGraphExecUpdate_v2(CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphE
 CUresult cuGraphKernelNodeCopyAttributes(CUgraphNode  dst, CUgraphNode  src)
 {
 	TALLY_SPD_LOG("cuGraphKernelNodeCopyAttributes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphKernelNodeCopyAttributes(dst, src);
 #else
@@ -4405,6 +4638,7 @@ CUresult cuGraphKernelNodeCopyAttributes(CUgraphNode  dst, CUgraphNode  src)
 CUresult cuGraphKernelNodeGetAttribute(CUgraphNode  hNode, CUkernelNodeAttrID  attr, CUkernelNodeAttrValue * value_out)
 {
 	TALLY_SPD_LOG("cuGraphKernelNodeGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphKernelNodeGetAttribute(hNode, attr, value_out);
 #else
@@ -4415,6 +4649,7 @@ CUresult cuGraphKernelNodeGetAttribute(CUgraphNode  hNode, CUkernelNodeAttrID  a
 CUresult cuGraphKernelNodeSetAttribute(CUgraphNode  hNode, CUkernelNodeAttrID  attr, const CUkernelNodeAttrValue * value)
 {
 	TALLY_SPD_LOG("cuGraphKernelNodeSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphKernelNodeSetAttribute(hNode, attr, value);
 #else
@@ -4425,6 +4660,7 @@ CUresult cuGraphKernelNodeSetAttribute(CUgraphNode  hNode, CUkernelNodeAttrID  a
 CUresult cuGraphDebugDotPrint(CUgraph  hGraph, const char * path, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuGraphDebugDotPrint hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphDebugDotPrint(hGraph, path, flags);
 #else
@@ -4435,6 +4671,7 @@ CUresult cuGraphDebugDotPrint(CUgraph  hGraph, const char * path, unsigned int  
 CUresult cuUserObjectCreate(CUuserObject * object_out, void * ptr, CUhostFn  destroy, unsigned int  initialRefcount, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuUserObjectCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuUserObjectCreate(object_out, ptr, destroy, initialRefcount, flags);
 #else
@@ -4445,6 +4682,7 @@ CUresult cuUserObjectCreate(CUuserObject * object_out, void * ptr, CUhostFn  des
 CUresult cuUserObjectRetain(CUuserObject  object, unsigned int  count)
 {
 	TALLY_SPD_LOG("cuUserObjectRetain hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuUserObjectRetain(object, count);
 #else
@@ -4455,6 +4693,7 @@ CUresult cuUserObjectRetain(CUuserObject  object, unsigned int  count)
 CUresult cuUserObjectRelease(CUuserObject  object, unsigned int  count)
 {
 	TALLY_SPD_LOG("cuUserObjectRelease hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuUserObjectRelease(object, count);
 #else
@@ -4465,6 +4704,7 @@ CUresult cuUserObjectRelease(CUuserObject  object, unsigned int  count)
 CUresult cuGraphRetainUserObject(CUgraph  graph, CUuserObject  object, unsigned int  count, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuGraphRetainUserObject hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphRetainUserObject(graph, object, count, flags);
 #else
@@ -4475,6 +4715,7 @@ CUresult cuGraphRetainUserObject(CUgraph  graph, CUuserObject  object, unsigned 
 CUresult cuGraphReleaseUserObject(CUgraph  graph, CUuserObject  object, unsigned int  count)
 {
 	TALLY_SPD_LOG("cuGraphReleaseUserObject hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphReleaseUserObject(graph, object, count);
 #else
@@ -4485,6 +4726,7 @@ CUresult cuGraphReleaseUserObject(CUgraph  graph, CUuserObject  object, unsigned
 CUresult cuGraphAddNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgraphNode * dependencies, size_t  numDependencies, CUgraphNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphAddNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphAddNode(phGraphNode, hGraph, dependencies, numDependencies, nodeParams);
 #else
@@ -4495,6 +4737,7 @@ CUresult cuGraphAddNode(CUgraphNode * phGraphNode, CUgraph  hGraph, const CUgrap
 CUresult cuGraphNodeSetParams(CUgraphNode  hNode, CUgraphNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphNodeSetParams(hNode, nodeParams);
 #else
@@ -4505,6 +4748,7 @@ CUresult cuGraphNodeSetParams(CUgraphNode  hNode, CUgraphNodeParams * nodeParams
 CUresult cuGraphExecNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, CUgraphNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cuGraphExecNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphExecNodeSetParams(hGraphExec, hNode, nodeParams);
 #else
@@ -4515,6 +4759,7 @@ CUresult cuGraphExecNodeSetParams(CUgraphExec  hGraphExec, CUgraphNode  hNode, C
 CUresult cuOccupancyMaxActiveBlocksPerMultiprocessor(int * numBlocks, CUfunction  func, int  blockSize, size_t  dynamicSMemSize)
 {
 	TALLY_SPD_LOG("cuOccupancyMaxActiveBlocksPerMultiprocessor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuOccupancyMaxActiveBlocksPerMultiprocessor(numBlocks, func, blockSize, dynamicSMemSize);
 #else
@@ -4525,6 +4770,7 @@ CUresult cuOccupancyMaxActiveBlocksPerMultiprocessor(int * numBlocks, CUfunction
 CUresult cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBlocks, CUfunction  func, int  blockSize, size_t  dynamicSMemSize, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(numBlocks, func, blockSize, dynamicSMemSize, flags);
 #else
@@ -4535,6 +4781,7 @@ CUresult cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBlocks, C
 CUresult cuOccupancyMaxPotentialBlockSize(int * minGridSize, int * blockSize, CUfunction  func, CUoccupancyB2DSize  blockSizeToDynamicSMemSize, size_t  dynamicSMemSize, int  blockSizeLimit)
 {
 	TALLY_SPD_LOG("cuOccupancyMaxPotentialBlockSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuOccupancyMaxPotentialBlockSize(minGridSize, blockSize, func, blockSizeToDynamicSMemSize, dynamicSMemSize, blockSizeLimit);
 #else
@@ -4545,6 +4792,7 @@ CUresult cuOccupancyMaxPotentialBlockSize(int * minGridSize, int * blockSize, CU
 CUresult cuOccupancyMaxPotentialBlockSizeWithFlags(int * minGridSize, int * blockSize, CUfunction  func, CUoccupancyB2DSize  blockSizeToDynamicSMemSize, size_t  dynamicSMemSize, int  blockSizeLimit, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuOccupancyMaxPotentialBlockSizeWithFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuOccupancyMaxPotentialBlockSizeWithFlags(minGridSize, blockSize, func, blockSizeToDynamicSMemSize, dynamicSMemSize, blockSizeLimit, flags);
 #else
@@ -4555,6 +4803,7 @@ CUresult cuOccupancyMaxPotentialBlockSizeWithFlags(int * minGridSize, int * bloc
 CUresult cuOccupancyAvailableDynamicSMemPerBlock(size_t * dynamicSmemSize, CUfunction  func, int  numBlocks, int  blockSize)
 {
 	TALLY_SPD_LOG("cuOccupancyAvailableDynamicSMemPerBlock hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuOccupancyAvailableDynamicSMemPerBlock(dynamicSmemSize, func, numBlocks, blockSize);
 #else
@@ -4565,6 +4814,7 @@ CUresult cuOccupancyAvailableDynamicSMemPerBlock(size_t * dynamicSmemSize, CUfun
 CUresult cuOccupancyMaxPotentialClusterSize(int * clusterSize, CUfunction  func, const CUlaunchConfig * config)
 {
 	TALLY_SPD_LOG("cuOccupancyMaxPotentialClusterSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuOccupancyMaxPotentialClusterSize(clusterSize, func, config);
 #else
@@ -4575,6 +4825,7 @@ CUresult cuOccupancyMaxPotentialClusterSize(int * clusterSize, CUfunction  func,
 CUresult cuOccupancyMaxActiveClusters(int * numClusters, CUfunction  func, const CUlaunchConfig * config)
 {
 	TALLY_SPD_LOG("cuOccupancyMaxActiveClusters hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuOccupancyMaxActiveClusters(numClusters, func, config);
 #else
@@ -4585,6 +4836,7 @@ CUresult cuOccupancyMaxActiveClusters(int * numClusters, CUfunction  func, const
 CUresult cuTexRefSetArray(CUtexref  hTexRef, CUarray  hArray, unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuTexRefSetArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetArray(hTexRef, hArray, Flags);
 #else
@@ -4595,6 +4847,7 @@ CUresult cuTexRefSetArray(CUtexref  hTexRef, CUarray  hArray, unsigned int  Flag
 CUresult cuTexRefSetMipmappedArray(CUtexref  hTexRef, CUmipmappedArray  hMipmappedArray, unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuTexRefSetMipmappedArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetMipmappedArray(hTexRef, hMipmappedArray, Flags);
 #else
@@ -4605,6 +4858,7 @@ CUresult cuTexRefSetMipmappedArray(CUtexref  hTexRef, CUmipmappedArray  hMipmapp
 CUresult cuTexRefSetAddress_v2(size_t * ByteOffset, CUtexref  hTexRef, CUdeviceptr  dptr, size_t  bytes)
 {
 	TALLY_SPD_LOG("cuTexRefSetAddress_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetAddress_v2(ByteOffset, hTexRef, dptr, bytes);
 #else
@@ -4615,6 +4869,7 @@ CUresult cuTexRefSetAddress_v2(size_t * ByteOffset, CUtexref  hTexRef, CUdevicep
 CUresult cuTexRefSetAddress2D_v3(CUtexref  hTexRef, const CUDA_ARRAY_DESCRIPTOR * desc, CUdeviceptr  dptr, size_t  Pitch)
 {
 	TALLY_SPD_LOG("cuTexRefSetAddress2D_v3 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetAddress2D_v3(hTexRef, desc, dptr, Pitch);
 #else
@@ -4625,6 +4880,7 @@ CUresult cuTexRefSetAddress2D_v3(CUtexref  hTexRef, const CUDA_ARRAY_DESCRIPTOR 
 CUresult cuTexRefSetFormat(CUtexref  hTexRef, CUarray_format  fmt, int  NumPackedComponents)
 {
 	TALLY_SPD_LOG("cuTexRefSetFormat hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetFormat(hTexRef, fmt, NumPackedComponents);
 #else
@@ -4635,6 +4891,7 @@ CUresult cuTexRefSetFormat(CUtexref  hTexRef, CUarray_format  fmt, int  NumPacke
 CUresult cuTexRefSetAddressMode(CUtexref  hTexRef, int  dim, CUaddress_mode  am)
 {
 	TALLY_SPD_LOG("cuTexRefSetAddressMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetAddressMode(hTexRef, dim, am);
 #else
@@ -4645,6 +4902,7 @@ CUresult cuTexRefSetAddressMode(CUtexref  hTexRef, int  dim, CUaddress_mode  am)
 CUresult cuTexRefSetFilterMode(CUtexref  hTexRef, CUfilter_mode  fm)
 {
 	TALLY_SPD_LOG("cuTexRefSetFilterMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetFilterMode(hTexRef, fm);
 #else
@@ -4655,6 +4913,7 @@ CUresult cuTexRefSetFilterMode(CUtexref  hTexRef, CUfilter_mode  fm)
 CUresult cuTexRefSetMipmapFilterMode(CUtexref  hTexRef, CUfilter_mode  fm)
 {
 	TALLY_SPD_LOG("cuTexRefSetMipmapFilterMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetMipmapFilterMode(hTexRef, fm);
 #else
@@ -4665,6 +4924,7 @@ CUresult cuTexRefSetMipmapFilterMode(CUtexref  hTexRef, CUfilter_mode  fm)
 CUresult cuTexRefSetMipmapLevelBias(CUtexref  hTexRef, float  bias)
 {
 	TALLY_SPD_LOG("cuTexRefSetMipmapLevelBias hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetMipmapLevelBias(hTexRef, bias);
 #else
@@ -4675,6 +4935,7 @@ CUresult cuTexRefSetMipmapLevelBias(CUtexref  hTexRef, float  bias)
 CUresult cuTexRefSetMipmapLevelClamp(CUtexref  hTexRef, float  minMipmapLevelClamp, float  maxMipmapLevelClamp)
 {
 	TALLY_SPD_LOG("cuTexRefSetMipmapLevelClamp hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetMipmapLevelClamp(hTexRef, minMipmapLevelClamp, maxMipmapLevelClamp);
 #else
@@ -4685,6 +4946,7 @@ CUresult cuTexRefSetMipmapLevelClamp(CUtexref  hTexRef, float  minMipmapLevelCla
 CUresult cuTexRefSetMaxAnisotropy(CUtexref  hTexRef, unsigned int  maxAniso)
 {
 	TALLY_SPD_LOG("cuTexRefSetMaxAnisotropy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetMaxAnisotropy(hTexRef, maxAniso);
 #else
@@ -4695,6 +4957,7 @@ CUresult cuTexRefSetMaxAnisotropy(CUtexref  hTexRef, unsigned int  maxAniso)
 CUresult cuTexRefSetBorderColor(CUtexref  hTexRef, float * pBorderColor)
 {
 	TALLY_SPD_LOG("cuTexRefSetBorderColor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetBorderColor(hTexRef, pBorderColor);
 #else
@@ -4705,6 +4968,7 @@ CUresult cuTexRefSetBorderColor(CUtexref  hTexRef, float * pBorderColor)
 CUresult cuTexRefSetFlags(CUtexref  hTexRef, unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuTexRefSetFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefSetFlags(hTexRef, Flags);
 #else
@@ -4715,6 +4979,7 @@ CUresult cuTexRefSetFlags(CUtexref  hTexRef, unsigned int  Flags)
 CUresult cuTexRefGetAddress_v2(CUdeviceptr * pdptr, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetAddress_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetAddress_v2(pdptr, hTexRef);
 #else
@@ -4725,6 +4990,7 @@ CUresult cuTexRefGetAddress_v2(CUdeviceptr * pdptr, CUtexref  hTexRef)
 CUresult cuTexRefGetArray(CUarray * phArray, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetArray(phArray, hTexRef);
 #else
@@ -4735,6 +5001,7 @@ CUresult cuTexRefGetArray(CUarray * phArray, CUtexref  hTexRef)
 CUresult cuTexRefGetMipmappedArray(CUmipmappedArray * phMipmappedArray, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetMipmappedArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetMipmappedArray(phMipmappedArray, hTexRef);
 #else
@@ -4745,6 +5012,7 @@ CUresult cuTexRefGetMipmappedArray(CUmipmappedArray * phMipmappedArray, CUtexref
 CUresult cuTexRefGetAddressMode(CUaddress_mode * pam, CUtexref  hTexRef, int  dim)
 {
 	TALLY_SPD_LOG("cuTexRefGetAddressMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetAddressMode(pam, hTexRef, dim);
 #else
@@ -4755,6 +5023,7 @@ CUresult cuTexRefGetAddressMode(CUaddress_mode * pam, CUtexref  hTexRef, int  di
 CUresult cuTexRefGetFilterMode(CUfilter_mode * pfm, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetFilterMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetFilterMode(pfm, hTexRef);
 #else
@@ -4765,6 +5034,7 @@ CUresult cuTexRefGetFilterMode(CUfilter_mode * pfm, CUtexref  hTexRef)
 CUresult cuTexRefGetFormat(CUarray_format * pFormat, int * pNumChannels, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetFormat hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetFormat(pFormat, pNumChannels, hTexRef);
 #else
@@ -4775,6 +5045,7 @@ CUresult cuTexRefGetFormat(CUarray_format * pFormat, int * pNumChannels, CUtexre
 CUresult cuTexRefGetMipmapFilterMode(CUfilter_mode * pfm, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetMipmapFilterMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetMipmapFilterMode(pfm, hTexRef);
 #else
@@ -4785,6 +5056,7 @@ CUresult cuTexRefGetMipmapFilterMode(CUfilter_mode * pfm, CUtexref  hTexRef)
 CUresult cuTexRefGetMipmapLevelBias(float * pbias, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetMipmapLevelBias hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetMipmapLevelBias(pbias, hTexRef);
 #else
@@ -4795,6 +5067,7 @@ CUresult cuTexRefGetMipmapLevelBias(float * pbias, CUtexref  hTexRef)
 CUresult cuTexRefGetMipmapLevelClamp(float * pminMipmapLevelClamp, float * pmaxMipmapLevelClamp, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetMipmapLevelClamp hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetMipmapLevelClamp(pminMipmapLevelClamp, pmaxMipmapLevelClamp, hTexRef);
 #else
@@ -4805,6 +5078,7 @@ CUresult cuTexRefGetMipmapLevelClamp(float * pminMipmapLevelClamp, float * pmaxM
 CUresult cuTexRefGetMaxAnisotropy(int * pmaxAniso, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetMaxAnisotropy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetMaxAnisotropy(pmaxAniso, hTexRef);
 #else
@@ -4815,6 +5089,7 @@ CUresult cuTexRefGetMaxAnisotropy(int * pmaxAniso, CUtexref  hTexRef)
 CUresult cuTexRefGetBorderColor(float * pBorderColor, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetBorderColor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetBorderColor(pBorderColor, hTexRef);
 #else
@@ -4825,6 +5100,7 @@ CUresult cuTexRefGetBorderColor(float * pBorderColor, CUtexref  hTexRef)
 CUresult cuTexRefGetFlags(unsigned int * pFlags, CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefGetFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefGetFlags(pFlags, hTexRef);
 #else
@@ -4835,6 +5111,7 @@ CUresult cuTexRefGetFlags(unsigned int * pFlags, CUtexref  hTexRef)
 CUresult cuTexRefCreate(CUtexref * pTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefCreate(pTexRef);
 #else
@@ -4845,6 +5122,7 @@ CUresult cuTexRefCreate(CUtexref * pTexRef)
 CUresult cuTexRefDestroy(CUtexref  hTexRef)
 {
 	TALLY_SPD_LOG("cuTexRefDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexRefDestroy(hTexRef);
 #else
@@ -4855,6 +5133,7 @@ CUresult cuTexRefDestroy(CUtexref  hTexRef)
 CUresult cuSurfRefSetArray(CUsurfref  hSurfRef, CUarray  hArray, unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuSurfRefSetArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuSurfRefSetArray(hSurfRef, hArray, Flags);
 #else
@@ -4865,6 +5144,7 @@ CUresult cuSurfRefSetArray(CUsurfref  hSurfRef, CUarray  hArray, unsigned int  F
 CUresult cuSurfRefGetArray(CUarray * phArray, CUsurfref  hSurfRef)
 {
 	TALLY_SPD_LOG("cuSurfRefGetArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuSurfRefGetArray(phArray, hSurfRef);
 #else
@@ -4875,6 +5155,7 @@ CUresult cuSurfRefGetArray(CUarray * phArray, CUsurfref  hSurfRef)
 CUresult cuTexObjectCreate(CUtexObject * pTexObject, const CUDA_RESOURCE_DESC * pResDesc, const CUDA_TEXTURE_DESC * pTexDesc, const CUDA_RESOURCE_VIEW_DESC * pResViewDesc)
 {
 	TALLY_SPD_LOG("cuTexObjectCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexObjectCreate(pTexObject, pResDesc, pTexDesc, pResViewDesc);
 #else
@@ -4885,6 +5166,7 @@ CUresult cuTexObjectCreate(CUtexObject * pTexObject, const CUDA_RESOURCE_DESC * 
 CUresult cuTexObjectDestroy(CUtexObject  texObject)
 {
 	TALLY_SPD_LOG("cuTexObjectDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexObjectDestroy(texObject);
 #else
@@ -4895,6 +5177,7 @@ CUresult cuTexObjectDestroy(CUtexObject  texObject)
 CUresult cuTexObjectGetResourceDesc(CUDA_RESOURCE_DESC * pResDesc, CUtexObject  texObject)
 {
 	TALLY_SPD_LOG("cuTexObjectGetResourceDesc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexObjectGetResourceDesc(pResDesc, texObject);
 #else
@@ -4905,6 +5188,7 @@ CUresult cuTexObjectGetResourceDesc(CUDA_RESOURCE_DESC * pResDesc, CUtexObject  
 CUresult cuTexObjectGetTextureDesc(CUDA_TEXTURE_DESC * pTexDesc, CUtexObject  texObject)
 {
 	TALLY_SPD_LOG("cuTexObjectGetTextureDesc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexObjectGetTextureDesc(pTexDesc, texObject);
 #else
@@ -4915,6 +5199,7 @@ CUresult cuTexObjectGetTextureDesc(CUDA_TEXTURE_DESC * pTexDesc, CUtexObject  te
 CUresult cuTexObjectGetResourceViewDesc(CUDA_RESOURCE_VIEW_DESC * pResViewDesc, CUtexObject  texObject)
 {
 	TALLY_SPD_LOG("cuTexObjectGetResourceViewDesc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTexObjectGetResourceViewDesc(pResViewDesc, texObject);
 #else
@@ -4925,6 +5210,7 @@ CUresult cuTexObjectGetResourceViewDesc(CUDA_RESOURCE_VIEW_DESC * pResViewDesc, 
 CUresult cuSurfObjectCreate(CUsurfObject * pSurfObject, const CUDA_RESOURCE_DESC * pResDesc)
 {
 	TALLY_SPD_LOG("cuSurfObjectCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuSurfObjectCreate(pSurfObject, pResDesc);
 #else
@@ -4935,6 +5221,7 @@ CUresult cuSurfObjectCreate(CUsurfObject * pSurfObject, const CUDA_RESOURCE_DESC
 CUresult cuSurfObjectDestroy(CUsurfObject  surfObject)
 {
 	TALLY_SPD_LOG("cuSurfObjectDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuSurfObjectDestroy(surfObject);
 #else
@@ -4945,6 +5232,7 @@ CUresult cuSurfObjectDestroy(CUsurfObject  surfObject)
 CUresult cuSurfObjectGetResourceDesc(CUDA_RESOURCE_DESC * pResDesc, CUsurfObject  surfObject)
 {
 	TALLY_SPD_LOG("cuSurfObjectGetResourceDesc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuSurfObjectGetResourceDesc(pResDesc, surfObject);
 #else
@@ -4955,6 +5243,7 @@ CUresult cuSurfObjectGetResourceDesc(CUDA_RESOURCE_DESC * pResDesc, CUsurfObject
 CUresult cuTensorMapEncodeTiled(CUtensorMap * tensorMap, CUtensorMapDataType  tensorDataType, cuuint32_t  tensorRank, void * globalAddress, const cuuint64_t * globalDim, const cuuint64_t * globalStrides, const cuuint32_t * boxDim, const cuuint32_t * elementStrides, CUtensorMapInterleave  interleave, CUtensorMapSwizzle  swizzle, CUtensorMapL2promotion  l2Promotion, CUtensorMapFloatOOBfill  oobFill)
 {
 	TALLY_SPD_LOG("cuTensorMapEncodeTiled hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTensorMapEncodeTiled(tensorMap, tensorDataType, tensorRank, globalAddress, globalDim, globalStrides, boxDim, elementStrides, interleave, swizzle, l2Promotion, oobFill);
 #else
@@ -4965,6 +5254,7 @@ CUresult cuTensorMapEncodeTiled(CUtensorMap * tensorMap, CUtensorMapDataType  te
 CUresult cuTensorMapEncodeIm2col(CUtensorMap * tensorMap, CUtensorMapDataType  tensorDataType, cuuint32_t  tensorRank, void * globalAddress, const cuuint64_t * globalDim, const cuuint64_t * globalStrides, const int * pixelBoxLowerCorner, const int * pixelBoxUpperCorner, cuuint32_t  channelsPerPixel, cuuint32_t  pixelsPerColumn, const cuuint32_t * elementStrides, CUtensorMapInterleave  interleave, CUtensorMapSwizzle  swizzle, CUtensorMapL2promotion  l2Promotion, CUtensorMapFloatOOBfill  oobFill)
 {
 	TALLY_SPD_LOG("cuTensorMapEncodeIm2col hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTensorMapEncodeIm2col(tensorMap, tensorDataType, tensorRank, globalAddress, globalDim, globalStrides, pixelBoxLowerCorner, pixelBoxUpperCorner, channelsPerPixel, pixelsPerColumn, elementStrides, interleave, swizzle, l2Promotion, oobFill);
 #else
@@ -4975,6 +5265,7 @@ CUresult cuTensorMapEncodeIm2col(CUtensorMap * tensorMap, CUtensorMapDataType  t
 CUresult cuTensorMapReplaceAddress(CUtensorMap * tensorMap, void * globalAddress)
 {
 	TALLY_SPD_LOG("cuTensorMapReplaceAddress hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuTensorMapReplaceAddress(tensorMap, globalAddress);
 #else
@@ -4985,6 +5276,7 @@ CUresult cuTensorMapReplaceAddress(CUtensorMap * tensorMap, void * globalAddress
 CUresult cuDeviceCanAccessPeer(int * canAccessPeer, CUdevice  dev, CUdevice  peerDev)
 {
 	TALLY_SPD_LOG("cuDeviceCanAccessPeer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuDeviceCanAccessPeer(canAccessPeer, dev, peerDev);
 #else
@@ -4995,6 +5287,7 @@ CUresult cuDeviceCanAccessPeer(int * canAccessPeer, CUdevice  dev, CUdevice  pee
 CUresult cuCtxEnablePeerAccess(CUcontext  peerContext, unsigned int  Flags)
 {
 	TALLY_SPD_LOG("cuCtxEnablePeerAccess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCtxEnablePeerAccess(peerContext, Flags);
 #else
@@ -5005,6 +5298,7 @@ CUresult cuCtxEnablePeerAccess(CUcontext  peerContext, unsigned int  Flags)
 CUresult cuCtxDisablePeerAccess(CUcontext  peerContext)
 {
 	TALLY_SPD_LOG("cuCtxDisablePeerAccess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCtxDisablePeerAccess(peerContext);
 #else
@@ -5015,6 +5309,7 @@ CUresult cuCtxDisablePeerAccess(CUcontext  peerContext)
 CUresult cuDeviceGetP2PAttribute(int*  value, CUdevice_P2PAttribute  attrib, CUdevice  srcDevice, CUdevice  dstDevice)
 {
 	TALLY_SPD_LOG("cuDeviceGetP2PAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuDeviceGetP2PAttribute(value, attrib, srcDevice, dstDevice);
 #else
@@ -5025,6 +5320,7 @@ CUresult cuDeviceGetP2PAttribute(int*  value, CUdevice_P2PAttribute  attrib, CUd
 CUresult cuGraphicsUnregisterResource(CUgraphicsResource  resource)
 {
 	TALLY_SPD_LOG("cuGraphicsUnregisterResource hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphicsUnregisterResource(resource);
 #else
@@ -5035,6 +5331,7 @@ CUresult cuGraphicsUnregisterResource(CUgraphicsResource  resource)
 CUresult cuGraphicsSubResourceGetMappedArray(CUarray * pArray, CUgraphicsResource  resource, unsigned int  arrayIndex, unsigned int  mipLevel)
 {
 	TALLY_SPD_LOG("cuGraphicsSubResourceGetMappedArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphicsSubResourceGetMappedArray(pArray, resource, arrayIndex, mipLevel);
 #else
@@ -5045,6 +5342,7 @@ CUresult cuGraphicsSubResourceGetMappedArray(CUarray * pArray, CUgraphicsResourc
 CUresult cuGraphicsResourceGetMappedMipmappedArray(CUmipmappedArray * pMipmappedArray, CUgraphicsResource  resource)
 {
 	TALLY_SPD_LOG("cuGraphicsResourceGetMappedMipmappedArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphicsResourceGetMappedMipmappedArray(pMipmappedArray, resource);
 #else
@@ -5055,6 +5353,7 @@ CUresult cuGraphicsResourceGetMappedMipmappedArray(CUmipmappedArray * pMipmapped
 CUresult cuGraphicsResourceGetMappedPointer_v2(CUdeviceptr * pDevPtr, size_t * pSize, CUgraphicsResource  resource)
 {
 	TALLY_SPD_LOG("cuGraphicsResourceGetMappedPointer_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphicsResourceGetMappedPointer_v2(pDevPtr, pSize, resource);
 #else
@@ -5065,6 +5364,7 @@ CUresult cuGraphicsResourceGetMappedPointer_v2(CUdeviceptr * pDevPtr, size_t * p
 CUresult cuGraphicsResourceSetMapFlags_v2(CUgraphicsResource  resource, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cuGraphicsResourceSetMapFlags_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphicsResourceSetMapFlags_v2(resource, flags);
 #else
@@ -5075,6 +5375,7 @@ CUresult cuGraphicsResourceSetMapFlags_v2(CUgraphicsResource  resource, unsigned
 CUresult cuGraphicsMapResources(unsigned int  count, CUgraphicsResource * resources, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuGraphicsMapResources hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphicsMapResources(count, resources, hStream);
 #else
@@ -5085,6 +5386,7 @@ CUresult cuGraphicsMapResources(unsigned int  count, CUgraphicsResource * resour
 CUresult cuGraphicsUnmapResources(unsigned int  count, CUgraphicsResource * resources, CUstream  hStream)
 {
 	TALLY_SPD_LOG("cuGraphicsUnmapResources hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuGraphicsUnmapResources(count, resources, hStream);
 #else
@@ -5095,6 +5397,7 @@ CUresult cuGraphicsUnmapResources(unsigned int  count, CUgraphicsResource * reso
 CUresult cuCoredumpGetAttribute(CUcoredumpSettings  attrib, void*  value, size_t * size)
 {
 	TALLY_SPD_LOG("cuCoredumpGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCoredumpGetAttribute(attrib, value, size);
 #else
@@ -5105,6 +5408,7 @@ CUresult cuCoredumpGetAttribute(CUcoredumpSettings  attrib, void*  value, size_t
 CUresult cuCoredumpGetAttributeGlobal(CUcoredumpSettings  attrib, void * value, size_t * size)
 {
 	TALLY_SPD_LOG("cuCoredumpGetAttributeGlobal hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCoredumpGetAttributeGlobal(attrib, value, size);
 #else
@@ -5115,6 +5419,7 @@ CUresult cuCoredumpGetAttributeGlobal(CUcoredumpSettings  attrib, void * value, 
 CUresult cuCoredumpSetAttribute(CUcoredumpSettings  attrib, void*  value, size_t * size)
 {
 	TALLY_SPD_LOG("cuCoredumpSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCoredumpSetAttribute(attrib, value, size);
 #else
@@ -5125,6 +5430,7 @@ CUresult cuCoredumpSetAttribute(CUcoredumpSettings  attrib, void*  value, size_t
 CUresult cuCoredumpSetAttributeGlobal(CUcoredumpSettings  attrib, void * value, size_t * size)
 {
 	TALLY_SPD_LOG("cuCoredumpSetAttributeGlobal hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuCoredumpSetAttributeGlobal(attrib, value, size);
 #else
@@ -5135,8 +5441,8 @@ CUresult cuCoredumpSetAttributeGlobal(CUcoredumpSettings  attrib, void * value, 
 cudaError_t cudaDeviceReset()
 {
 	TALLY_SPD_LOG("cudaDeviceReset hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceReset();
 #else
@@ -5175,8 +5481,8 @@ cudaError_t cudaDeviceReset()
 cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 {
 	TALLY_SPD_LOG("cudaDeviceSetLimit hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetLimit(limit, value);
 #else
@@ -5217,8 +5523,8 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
 cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 {
 	TALLY_SPD_LOG("cudaDeviceGetLimit hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetLimit(pValue, limit);
 #else
@@ -5260,6 +5566,7 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
 cudaError_t cudaDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, const struct cudaChannelFormatDesc * fmtDesc, int  device)
 {
 	TALLY_SPD_LOG("cudaDeviceGetTexture1DLinearMaxWidth hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDeviceGetTexture1DLinearMaxWidth(maxWidthInElements, fmtDesc, device);
 #else
@@ -5270,8 +5577,8 @@ cudaError_t cudaDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, co
 cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 {
 	TALLY_SPD_LOG("cudaDeviceGetCacheConfig hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetCacheConfig(pCacheConfig);
 #else
@@ -5312,8 +5619,8 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatestPriority)
 {
 	TALLY_SPD_LOG("cudaDeviceGetStreamPriorityRange hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetStreamPriorityRange(leastPriority, greatestPriority);
 #else
@@ -5356,8 +5663,8 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
 cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
 {
 	TALLY_SPD_LOG("cudaDeviceSetCacheConfig hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetCacheConfig(cacheConfig);
 #else
@@ -5397,6 +5704,7 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
 cudaError_t cudaDeviceGetSharedMemConfig(enum cudaSharedMemConfig * pConfig)
 {
 	TALLY_SPD_LOG("cudaDeviceGetSharedMemConfig hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDeviceGetSharedMemConfig(pConfig);
 #else
@@ -5407,8 +5715,8 @@ cudaError_t cudaDeviceGetSharedMemConfig(enum cudaSharedMemConfig * pConfig)
 cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
 {
 	TALLY_SPD_LOG("cudaDeviceSetSharedMemConfig hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetSharedMemConfig(config);
 #else
@@ -5448,6 +5756,7 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
 cudaError_t cudaDeviceGetByPCIBusId(int * device, const char * pciBusId)
 {
 	TALLY_SPD_LOG("cudaDeviceGetByPCIBusId hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDeviceGetByPCIBusId(device, pciBusId);
 #else
@@ -5458,8 +5767,8 @@ cudaError_t cudaDeviceGetByPCIBusId(int * device, const char * pciBusId)
 cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
 {
 	TALLY_SPD_LOG("cudaDeviceGetPCIBusId hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetPCIBusId(pciBusId, len, device);
 #else
@@ -5502,8 +5811,8 @@ cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
 cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  event)
 {
 	TALLY_SPD_LOG("cudaIpcGetEventHandle hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaIpcGetEventHandle(handle, event);
 #else
@@ -5545,8 +5854,8 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
 cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  handle)
 {
 	TALLY_SPD_LOG("cudaIpcOpenEventHandle hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaIpcOpenEventHandle(event, handle);
 #else
@@ -5588,8 +5897,8 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
 cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
 {
 	TALLY_SPD_LOG("cudaIpcGetMemHandle hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaIpcGetMemHandle(handle, devPtr);
 #else
@@ -5631,8 +5940,8 @@ cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
 cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaIpcOpenMemHandle hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaIpcOpenMemHandle(devPtr, handle, flags);
 #else
@@ -5675,8 +5984,8 @@ cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, uns
 cudaError_t cudaIpcCloseMemHandle(void * devPtr)
 {
 	TALLY_SPD_LOG("cudaIpcCloseMemHandle hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaIpcCloseMemHandle(devPtr);
 #else
@@ -5716,8 +6025,8 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
 cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWritesTarget  target, enum cudaFlushGPUDirectRDMAWritesScope  scope)
 {
 	TALLY_SPD_LOG("cudaDeviceFlushGPUDirectRDMAWrites hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceFlushGPUDirectRDMAWrites(target, scope);
 #else
@@ -5758,8 +6067,8 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
 cudaError_t cudaThreadExit()
 {
 	TALLY_SPD_LOG("cudaThreadExit hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadExit();
 #else
@@ -5798,8 +6107,8 @@ cudaError_t cudaThreadExit()
 cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 {
 	TALLY_SPD_LOG("cudaThreadSetLimit hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadSetLimit(limit, value);
 #else
@@ -5840,8 +6149,8 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
 cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 {
 	TALLY_SPD_LOG("cudaThreadGetLimit hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadGetLimit(pValue, limit);
 #else
@@ -5883,8 +6192,8 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
 cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 {
 	TALLY_SPD_LOG("cudaThreadGetCacheConfig hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadGetCacheConfig(pCacheConfig);
 #else
@@ -5925,8 +6234,8 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
 cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
 {
 	TALLY_SPD_LOG("cudaThreadSetCacheConfig hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadSetCacheConfig(cacheConfig);
 #else
@@ -5966,6 +6275,7 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
 const char* cudaGetErrorName(cudaError_t  error)
 {
 	TALLY_SPD_LOG("cudaGetErrorName hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetErrorName(error);
 #else
@@ -5976,6 +6286,7 @@ const char* cudaGetErrorName(cudaError_t  error)
 const char* cudaGetErrorString(cudaError_t  error)
 {
 	TALLY_SPD_LOG("cudaGetErrorString hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetErrorString(error);
 #else
@@ -5986,8 +6297,8 @@ const char* cudaGetErrorString(cudaError_t  error)
 cudaError_t cudaGetDeviceCount(int * count)
 {
 	TALLY_SPD_LOG("cudaGetDeviceCount hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGetDeviceCount(count);
 #else
@@ -6028,8 +6339,8 @@ cudaError_t cudaGetDeviceCount(int * count)
 cudaError_t cudaGetDeviceProperties_v2(struct cudaDeviceProp * prop, int  device)
 {
 	TALLY_SPD_LOG("cudaGetDeviceProperties_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGetDeviceProperties_v2(prop, device);
 #else
@@ -6071,8 +6382,8 @@ cudaError_t cudaGetDeviceProperties_v2(struct cudaDeviceProp * prop, int  device
 cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 {
 	TALLY_SPD_LOG("cudaDeviceGetDefaultMemPool hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetDefaultMemPool(memPool, device);
 #else
@@ -6114,8 +6425,8 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
 cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 {
 	TALLY_SPD_LOG("cudaDeviceSetMemPool hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceSetMemPool(device, memPool);
 #else
@@ -6156,8 +6467,8 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
 cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 {
 	TALLY_SPD_LOG("cudaDeviceGetMemPool hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetMemPool(memPool, device);
 #else
@@ -6199,6 +6510,7 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
 cudaError_t cudaDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, int  device, int  flags)
 {
 	TALLY_SPD_LOG("cudaDeviceGetNvSciSyncAttributes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDeviceGetNvSciSyncAttributes(nvSciSyncAttrList, device, flags);
 #else
@@ -6209,8 +6521,8 @@ cudaError_t cudaDeviceGetNvSciSyncAttributes(void * nvSciSyncAttrList, int  devi
 cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr, int  srcDevice, int  dstDevice)
 {
 	TALLY_SPD_LOG("cudaDeviceGetP2PAttribute hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDeviceGetP2PAttribute(value, attr, srcDevice, dstDevice);
 #else
@@ -6254,6 +6566,7 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
 cudaError_t cudaInitDevice(int  device, unsigned int  deviceFlags, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaInitDevice hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaInitDevice(device, deviceFlags, flags);
 #else
@@ -6264,6 +6577,7 @@ cudaError_t cudaInitDevice(int  device, unsigned int  deviceFlags, unsigned int 
 cudaError_t cudaSetValidDevices(int * device_arr, int  len)
 {
 	TALLY_SPD_LOG("cudaSetValidDevices hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaSetValidDevices(device_arr, len);
 #else
@@ -6274,8 +6588,8 @@ cudaError_t cudaSetValidDevices(int * device_arr, int  len)
 cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaSetDeviceFlags hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaSetDeviceFlags(flags);
 #else
@@ -6315,8 +6629,8 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
 cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 {
 	TALLY_SPD_LOG("cudaGetDeviceFlags hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGetDeviceFlags(flags);
 #else
@@ -6357,8 +6671,8 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
 cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
 {
 	TALLY_SPD_LOG("cudaStreamGetPriority hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamGetPriority(hStream, priority);
 #else
@@ -6400,8 +6714,8 @@ cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
 cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 {
 	TALLY_SPD_LOG("cudaStreamGetFlags hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamGetFlags(hStream, flags);
 #else
@@ -6443,6 +6757,7 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
 cudaError_t cudaStreamGetId(cudaStream_t  hStream, unsigned long long * streamId)
 {
 	TALLY_SPD_LOG("cudaStreamGetId hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaStreamGetId(hStream, streamId);
 #else
@@ -6453,8 +6768,8 @@ cudaError_t cudaStreamGetId(cudaStream_t  hStream, unsigned long long * streamId
 cudaError_t cudaCtxResetPersistingL2Cache()
 {
 	TALLY_SPD_LOG("cudaCtxResetPersistingL2Cache hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaCtxResetPersistingL2Cache();
 #else
@@ -6493,8 +6808,8 @@ cudaError_t cudaCtxResetPersistingL2Cache()
 cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 {
 	TALLY_SPD_LOG("cudaStreamCopyAttributes hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamCopyAttributes(dst, src);
 #else
@@ -6535,6 +6850,7 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
 cudaError_t cudaStreamGetAttribute(cudaStream_t  hStream, cudaLaunchAttributeID  attr, cudaLaunchAttributeValue * value_out)
 {
 	TALLY_SPD_LOG("cudaStreamGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaStreamGetAttribute(hStream, attr, value_out);
 #else
@@ -6545,6 +6861,7 @@ cudaError_t cudaStreamGetAttribute(cudaStream_t  hStream, cudaLaunchAttributeID 
 cudaError_t cudaStreamSetAttribute(cudaStream_t  hStream, cudaLaunchAttributeID  attr, const cudaLaunchAttributeValue * value)
 {
 	TALLY_SPD_LOG("cudaStreamSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaStreamSetAttribute(hStream, attr, value);
 #else
@@ -6555,8 +6872,8 @@ cudaError_t cudaStreamSetAttribute(cudaStream_t  hStream, cudaLaunchAttributeID 
 cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaStreamDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamDestroy(stream);
 #else
@@ -6596,8 +6913,8 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
 cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaStreamWaitEvent hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamWaitEvent(stream, event, flags);
 #else
@@ -6639,6 +6956,7 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
 cudaError_t cudaStreamAddCallback(cudaStream_t  stream, cudaStreamCallback_t  callback, void * userData, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaStreamAddCallback hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaStreamAddCallback(stream, callback, userData, flags);
 #else
@@ -6649,8 +6967,8 @@ cudaError_t cudaStreamAddCallback(cudaStream_t  stream, cudaStreamCallback_t  ca
 cudaError_t cudaStreamQuery(cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaStreamQuery hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaStreamQuery(stream);
 #else
@@ -6690,6 +7008,7 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
 cudaError_t cudaStreamAttachMemAsync(cudaStream_t  stream, void * devPtr, size_t  length, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaStreamAttachMemAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaStreamAttachMemAsync(stream, devPtr, length, flags);
 #else
@@ -6700,8 +7019,8 @@ cudaError_t cudaStreamAttachMemAsync(cudaStream_t  stream, void * devPtr, size_t
 cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mode)
 {
 	TALLY_SPD_LOG("cudaThreadExchangeStreamCaptureMode hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaThreadExchangeStreamCaptureMode(mode);
 #else
@@ -6742,6 +7061,7 @@ cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mod
 cudaError_t cudaStreamUpdateCaptureDependencies(cudaStream_t  stream, cudaGraphNode_t * dependencies, size_t  numDependencies, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaStreamUpdateCaptureDependencies hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaStreamUpdateCaptureDependencies(stream, dependencies, numDependencies, flags);
 #else
@@ -6752,8 +7072,8 @@ cudaError_t cudaStreamUpdateCaptureDependencies(cudaStream_t  stream, cudaGraphN
 cudaError_t cudaEventCreate(cudaEvent_t * event)
 {
 	TALLY_SPD_LOG("cudaEventCreate hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventCreate(event);
 #else
@@ -6794,8 +7114,8 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
 cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaEventCreateWithFlags hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventCreateWithFlags(event, flags);
 #else
@@ -6837,8 +7157,8 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
 cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaEventRecordWithFlags hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventRecordWithFlags(event, stream, flags);
 #else
@@ -6880,8 +7200,8 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
 cudaError_t cudaEventQuery(cudaEvent_t  event)
 {
 	TALLY_SPD_LOG("cudaEventQuery hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventQuery(event);
 #else
@@ -6921,8 +7241,8 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
 cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 {
 	TALLY_SPD_LOG("cudaEventSynchronize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventSynchronize(event);
 #else
@@ -6962,8 +7282,8 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
 cudaError_t cudaEventDestroy(cudaEvent_t  event)
 {
 	TALLY_SPD_LOG("cudaEventDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventDestroy(event);
 #else
@@ -7003,8 +7323,8 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
 cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  end)
 {
 	TALLY_SPD_LOG("cudaEventElapsedTime hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaEventElapsedTime(ms, start, end);
 #else
@@ -7047,6 +7367,7 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
 cudaError_t cudaImportExternalMemory(cudaExternalMemory_t * extMem_out, const struct cudaExternalMemoryHandleDesc * memHandleDesc)
 {
 	TALLY_SPD_LOG("cudaImportExternalMemory hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaImportExternalMemory(extMem_out, memHandleDesc);
 #else
@@ -7057,6 +7378,7 @@ cudaError_t cudaImportExternalMemory(cudaExternalMemory_t * extMem_out, const st
 cudaError_t cudaExternalMemoryGetMappedBuffer(void ** devPtr, cudaExternalMemory_t  extMem, const struct cudaExternalMemoryBufferDesc * bufferDesc)
 {
 	TALLY_SPD_LOG("cudaExternalMemoryGetMappedBuffer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaExternalMemoryGetMappedBuffer(devPtr, extMem, bufferDesc);
 #else
@@ -7067,6 +7389,7 @@ cudaError_t cudaExternalMemoryGetMappedBuffer(void ** devPtr, cudaExternalMemory
 cudaError_t cudaExternalMemoryGetMappedMipmappedArray(cudaMipmappedArray_t * mipmap, cudaExternalMemory_t  extMem, const struct cudaExternalMemoryMipmappedArrayDesc * mipmapDesc)
 {
 	TALLY_SPD_LOG("cudaExternalMemoryGetMappedMipmappedArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaExternalMemoryGetMappedMipmappedArray(mipmap, extMem, mipmapDesc);
 #else
@@ -7077,6 +7400,7 @@ cudaError_t cudaExternalMemoryGetMappedMipmappedArray(cudaMipmappedArray_t * mip
 cudaError_t cudaDestroyExternalMemory(cudaExternalMemory_t  extMem)
 {
 	TALLY_SPD_LOG("cudaDestroyExternalMemory hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDestroyExternalMemory(extMem);
 #else
@@ -7087,6 +7411,7 @@ cudaError_t cudaDestroyExternalMemory(cudaExternalMemory_t  extMem)
 cudaError_t cudaImportExternalSemaphore(cudaExternalSemaphore_t * extSem_out, const struct cudaExternalSemaphoreHandleDesc * semHandleDesc)
 {
 	TALLY_SPD_LOG("cudaImportExternalSemaphore hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaImportExternalSemaphore(extSem_out, semHandleDesc);
 #else
@@ -7097,6 +7422,7 @@ cudaError_t cudaImportExternalSemaphore(cudaExternalSemaphore_t * extSem_out, co
 cudaError_t cudaSignalExternalSemaphoresAsync_v2(const cudaExternalSemaphore_t * extSemArray, const struct cudaExternalSemaphoreSignalParams * paramsArray, unsigned int  numExtSems, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaSignalExternalSemaphoresAsync_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaSignalExternalSemaphoresAsync_v2(extSemArray, paramsArray, numExtSems, stream);
 #else
@@ -7107,6 +7433,7 @@ cudaError_t cudaSignalExternalSemaphoresAsync_v2(const cudaExternalSemaphore_t *
 cudaError_t cudaWaitExternalSemaphoresAsync_v2(const cudaExternalSemaphore_t * extSemArray, const struct cudaExternalSemaphoreWaitParams * paramsArray, unsigned int  numExtSems, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaWaitExternalSemaphoresAsync_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaWaitExternalSemaphoresAsync_v2(extSemArray, paramsArray, numExtSems, stream);
 #else
@@ -7117,6 +7444,7 @@ cudaError_t cudaWaitExternalSemaphoresAsync_v2(const cudaExternalSemaphore_t * e
 cudaError_t cudaDestroyExternalSemaphore(cudaExternalSemaphore_t  extSem)
 {
 	TALLY_SPD_LOG("cudaDestroyExternalSemaphore hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDestroyExternalSemaphore(extSem);
 #else
@@ -7127,6 +7455,7 @@ cudaError_t cudaDestroyExternalSemaphore(cudaExternalSemaphore_t  extSem)
 cudaError_t cudaLaunchKernelExC(const cudaLaunchConfig_t * config, const void * func, void ** args)
 {
 	TALLY_SPD_LOG("cudaLaunchKernelExC hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaLaunchKernelExC(config, func, args);
 #else
@@ -7137,6 +7466,7 @@ cudaError_t cudaLaunchKernelExC(const cudaLaunchConfig_t * config, const void * 
 cudaError_t cudaLaunchCooperativeKernel(const void * func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaLaunchCooperativeKernel hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaLaunchCooperativeKernel(func, gridDim, blockDim, args, sharedMem, stream);
 #else
@@ -7147,6 +7477,7 @@ cudaError_t cudaLaunchCooperativeKernel(const void * func, dim3  gridDim, dim3  
 cudaError_t cudaLaunchCooperativeKernelMultiDevice(struct cudaLaunchParams * launchParamsList, unsigned int  numDevices, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaLaunchCooperativeKernelMultiDevice hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaLaunchCooperativeKernelMultiDevice(launchParamsList, numDevices, flags);
 #else
@@ -7157,6 +7488,7 @@ cudaError_t cudaLaunchCooperativeKernelMultiDevice(struct cudaLaunchParams * lau
 cudaError_t cudaFuncSetCacheConfig(const void * func, enum cudaFuncCache  cacheConfig)
 {
 	TALLY_SPD_LOG("cudaFuncSetCacheConfig hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaFuncSetCacheConfig(func, cacheConfig);
 #else
@@ -7167,6 +7499,7 @@ cudaError_t cudaFuncSetCacheConfig(const void * func, enum cudaFuncCache  cacheC
 cudaError_t cudaFuncSetSharedMemConfig(const void * func, enum cudaSharedMemConfig  config)
 {
 	TALLY_SPD_LOG("cudaFuncSetSharedMemConfig hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaFuncSetSharedMemConfig(func, config);
 #else
@@ -7177,6 +7510,7 @@ cudaError_t cudaFuncSetSharedMemConfig(const void * func, enum cudaSharedMemConf
 cudaError_t cudaSetDoubleForDevice(double * d)
 {
 	TALLY_SPD_LOG("cudaSetDoubleForDevice hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaSetDoubleForDevice(d);
 #else
@@ -7187,6 +7521,7 @@ cudaError_t cudaSetDoubleForDevice(double * d)
 cudaError_t cudaSetDoubleForHost(double * d)
 {
 	TALLY_SPD_LOG("cudaSetDoubleForHost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaSetDoubleForHost(d);
 #else
@@ -7197,6 +7532,7 @@ cudaError_t cudaSetDoubleForHost(double * d)
 cudaError_t cudaLaunchHostFunc(cudaStream_t  stream, cudaHostFn_t  fn, void * userData)
 {
 	TALLY_SPD_LOG("cudaLaunchHostFunc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaLaunchHostFunc(stream, fn, userData);
 #else
@@ -7207,6 +7543,7 @@ cudaError_t cudaLaunchHostFunc(cudaStream_t  stream, cudaHostFn_t  fn, void * us
 cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessor(int * numBlocks, const void * func, int  blockSize, size_t  dynamicSMemSize)
 {
 	TALLY_SPD_LOG("cudaOccupancyMaxActiveBlocksPerMultiprocessor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaOccupancyMaxActiveBlocksPerMultiprocessor(numBlocks, func, blockSize, dynamicSMemSize);
 #else
@@ -7217,6 +7554,7 @@ cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessor(int * numBlocks, const
 cudaError_t cudaOccupancyAvailableDynamicSMemPerBlock(size_t * dynamicSmemSize, const void * func, int  numBlocks, int  blockSize)
 {
 	TALLY_SPD_LOG("cudaOccupancyAvailableDynamicSMemPerBlock hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaOccupancyAvailableDynamicSMemPerBlock(dynamicSmemSize, func, numBlocks, blockSize);
 #else
@@ -7227,6 +7565,7 @@ cudaError_t cudaOccupancyAvailableDynamicSMemPerBlock(size_t * dynamicSmemSize, 
 cudaError_t cudaOccupancyMaxPotentialClusterSize(int * clusterSize, const void * func, const cudaLaunchConfig_t * launchConfig)
 {
 	TALLY_SPD_LOG("cudaOccupancyMaxPotentialClusterSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaOccupancyMaxPotentialClusterSize(clusterSize, func, launchConfig);
 #else
@@ -7237,6 +7576,7 @@ cudaError_t cudaOccupancyMaxPotentialClusterSize(int * clusterSize, const void *
 cudaError_t cudaOccupancyMaxActiveClusters(int * numClusters, const void * func, const cudaLaunchConfig_t * launchConfig)
 {
 	TALLY_SPD_LOG("cudaOccupancyMaxActiveClusters hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaOccupancyMaxActiveClusters(numClusters, func, launchConfig);
 #else
@@ -7247,6 +7587,7 @@ cudaError_t cudaOccupancyMaxActiveClusters(int * numClusters, const void * func,
 cudaError_t cudaMallocManaged(void ** devPtr, size_t  size, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaMallocManaged hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMallocManaged(devPtr, size, flags);
 #else
@@ -7257,6 +7598,7 @@ cudaError_t cudaMallocManaged(void ** devPtr, size_t  size, unsigned int  flags)
 cudaError_t cudaMallocPitch(void ** devPtr, size_t * pitch, size_t  width, size_t  height)
 {
 	TALLY_SPD_LOG("cudaMallocPitch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMallocPitch(devPtr, pitch, width, height);
 #else
@@ -7267,6 +7609,7 @@ cudaError_t cudaMallocPitch(void ** devPtr, size_t * pitch, size_t  width, size_
 cudaError_t cudaMallocArray(cudaArray_t * array, const struct cudaChannelFormatDesc * desc, size_t  width, size_t  height, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaMallocArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMallocArray(array, desc, width, height, flags);
 #else
@@ -7277,8 +7620,8 @@ cudaError_t cudaMallocArray(cudaArray_t * array, const struct cudaChannelFormatD
 cudaError_t cudaFreeArray(cudaArray_t  array)
 {
 	TALLY_SPD_LOG("cudaFreeArray hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaFreeArray(array);
 #else
@@ -7318,6 +7661,7 @@ cudaError_t cudaFreeArray(cudaArray_t  array)
 cudaError_t cudaFreeMipmappedArray(cudaMipmappedArray_t  mipmappedArray)
 {
 	TALLY_SPD_LOG("cudaFreeMipmappedArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaFreeMipmappedArray(mipmappedArray);
 #else
@@ -7328,6 +7672,7 @@ cudaError_t cudaFreeMipmappedArray(cudaMipmappedArray_t  mipmappedArray)
 cudaError_t cudaHostRegister(void * ptr, size_t  size, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaHostRegister hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaHostRegister(ptr, size, flags);
 #else
@@ -7338,6 +7683,7 @@ cudaError_t cudaHostRegister(void * ptr, size_t  size, unsigned int  flags)
 cudaError_t cudaHostUnregister(void * ptr)
 {
 	TALLY_SPD_LOG("cudaHostUnregister hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaHostUnregister(ptr);
 #else
@@ -7348,6 +7694,7 @@ cudaError_t cudaHostUnregister(void * ptr)
 cudaError_t cudaHostGetDevicePointer(void ** pDevice, void * pHost, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaHostGetDevicePointer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaHostGetDevicePointer(pDevice, pHost, flags);
 #else
@@ -7358,6 +7705,7 @@ cudaError_t cudaHostGetDevicePointer(void ** pDevice, void * pHost, unsigned int
 cudaError_t cudaHostGetFlags(unsigned int * pFlags, void * pHost)
 {
 	TALLY_SPD_LOG("cudaHostGetFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaHostGetFlags(pFlags, pHost);
 #else
@@ -7368,6 +7716,7 @@ cudaError_t cudaHostGetFlags(unsigned int * pFlags, void * pHost)
 cudaError_t cudaMalloc3D(struct cudaPitchedPtr*  pitchedDevPtr, struct cudaExtent  extent)
 {
 	TALLY_SPD_LOG("cudaMalloc3D hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMalloc3D(pitchedDevPtr, extent);
 #else
@@ -7378,6 +7727,7 @@ cudaError_t cudaMalloc3D(struct cudaPitchedPtr*  pitchedDevPtr, struct cudaExten
 cudaError_t cudaMalloc3DArray(cudaArray_t * array, const struct cudaChannelFormatDesc*  desc, struct cudaExtent  extent, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaMalloc3DArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMalloc3DArray(array, desc, extent, flags);
 #else
@@ -7388,6 +7738,7 @@ cudaError_t cudaMalloc3DArray(cudaArray_t * array, const struct cudaChannelForma
 cudaError_t cudaMallocMipmappedArray(cudaMipmappedArray_t * mipmappedArray, const struct cudaChannelFormatDesc*  desc, struct cudaExtent  extent, unsigned int  numLevels, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaMallocMipmappedArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMallocMipmappedArray(mipmappedArray, desc, extent, numLevels, flags);
 #else
@@ -7398,6 +7749,7 @@ cudaError_t cudaMallocMipmappedArray(cudaMipmappedArray_t * mipmappedArray, cons
 cudaError_t cudaGetMipmappedArrayLevel(cudaArray_t * levelArray, cudaMipmappedArray_const_t  mipmappedArray, unsigned int  level)
 {
 	TALLY_SPD_LOG("cudaGetMipmappedArrayLevel hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetMipmappedArrayLevel(levelArray, mipmappedArray, level);
 #else
@@ -7408,6 +7760,7 @@ cudaError_t cudaGetMipmappedArrayLevel(cudaArray_t * levelArray, cudaMipmappedAr
 cudaError_t cudaMemcpy3D(const struct cudaMemcpy3DParms * p)
 {
 	TALLY_SPD_LOG("cudaMemcpy3D hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy3D(p);
 #else
@@ -7418,6 +7771,7 @@ cudaError_t cudaMemcpy3D(const struct cudaMemcpy3DParms * p)
 cudaError_t cudaMemcpy3DPeer(const struct cudaMemcpy3DPeerParms * p)
 {
 	TALLY_SPD_LOG("cudaMemcpy3DPeer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy3DPeer(p);
 #else
@@ -7428,6 +7782,7 @@ cudaError_t cudaMemcpy3DPeer(const struct cudaMemcpy3DPeerParms * p)
 cudaError_t cudaMemcpy3DAsync(const struct cudaMemcpy3DParms * p, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemcpy3DAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy3DAsync(p, stream);
 #else
@@ -7438,6 +7793,7 @@ cudaError_t cudaMemcpy3DAsync(const struct cudaMemcpy3DParms * p, cudaStream_t  
 cudaError_t cudaMemcpy3DPeerAsync(const struct cudaMemcpy3DPeerParms * p, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemcpy3DPeerAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy3DPeerAsync(p, stream);
 #else
@@ -7448,8 +7804,8 @@ cudaError_t cudaMemcpy3DPeerAsync(const struct cudaMemcpy3DPeerParms * p, cudaSt
 cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
 {
 	TALLY_SPD_LOG("cudaMemGetInfo hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaMemGetInfo(free, total);
 #else
@@ -7492,6 +7848,7 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
 cudaError_t cudaArrayGetInfo(struct cudaChannelFormatDesc * desc, struct cudaExtent * extent, unsigned int * flags, cudaArray_t  array)
 {
 	TALLY_SPD_LOG("cudaArrayGetInfo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaArrayGetInfo(desc, extent, flags, array);
 #else
@@ -7502,6 +7859,7 @@ cudaError_t cudaArrayGetInfo(struct cudaChannelFormatDesc * desc, struct cudaExt
 cudaError_t cudaArrayGetPlane(cudaArray_t * pPlaneArray, cudaArray_t  hArray, unsigned int  planeIdx)
 {
 	TALLY_SPD_LOG("cudaArrayGetPlane hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaArrayGetPlane(pPlaneArray, hArray, planeIdx);
 #else
@@ -7512,6 +7870,7 @@ cudaError_t cudaArrayGetPlane(cudaArray_t * pPlaneArray, cudaArray_t  hArray, un
 cudaError_t cudaArrayGetMemoryRequirements(struct cudaArrayMemoryRequirements * memoryRequirements, cudaArray_t  array, int  device)
 {
 	TALLY_SPD_LOG("cudaArrayGetMemoryRequirements hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaArrayGetMemoryRequirements(memoryRequirements, array, device);
 #else
@@ -7522,6 +7881,7 @@ cudaError_t cudaArrayGetMemoryRequirements(struct cudaArrayMemoryRequirements * 
 cudaError_t cudaMipmappedArrayGetMemoryRequirements(struct cudaArrayMemoryRequirements * memoryRequirements, cudaMipmappedArray_t  mipmap, int  device)
 {
 	TALLY_SPD_LOG("cudaMipmappedArrayGetMemoryRequirements hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMipmappedArrayGetMemoryRequirements(memoryRequirements, mipmap, device);
 #else
@@ -7532,6 +7892,7 @@ cudaError_t cudaMipmappedArrayGetMemoryRequirements(struct cudaArrayMemoryRequir
 cudaError_t cudaArrayGetSparseProperties(struct cudaArraySparseProperties * sparseProperties, cudaArray_t  array)
 {
 	TALLY_SPD_LOG("cudaArrayGetSparseProperties hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaArrayGetSparseProperties(sparseProperties, array);
 #else
@@ -7542,6 +7903,7 @@ cudaError_t cudaArrayGetSparseProperties(struct cudaArraySparseProperties * spar
 cudaError_t cudaMipmappedArrayGetSparseProperties(struct cudaArraySparseProperties * sparseProperties, cudaMipmappedArray_t  mipmap)
 {
 	TALLY_SPD_LOG("cudaMipmappedArrayGetSparseProperties hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMipmappedArrayGetSparseProperties(sparseProperties, mipmap);
 #else
@@ -7552,6 +7914,7 @@ cudaError_t cudaMipmappedArrayGetSparseProperties(struct cudaArraySparseProperti
 cudaError_t cudaMemcpyPeer(void * dst, int  dstDevice, const void * src, int  srcDevice, size_t  count)
 {
 	TALLY_SPD_LOG("cudaMemcpyPeer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyPeer(dst, dstDevice, src, srcDevice, count);
 #else
@@ -7562,6 +7925,7 @@ cudaError_t cudaMemcpyPeer(void * dst, int  dstDevice, const void * src, int  sr
 cudaError_t cudaMemcpy2D(void * dst, size_t  dpitch, const void * src, size_t  spitch, size_t  width, size_t  height, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaMemcpy2D hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy2D(dst, dpitch, src, spitch, width, height, kind);
 #else
@@ -7572,6 +7936,7 @@ cudaError_t cudaMemcpy2D(void * dst, size_t  dpitch, const void * src, size_t  s
 cudaError_t cudaMemcpy2DToArray(cudaArray_t  dst, size_t  wOffset, size_t  hOffset, const void * src, size_t  spitch, size_t  width, size_t  height, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaMemcpy2DToArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy2DToArray(dst, wOffset, hOffset, src, spitch, width, height, kind);
 #else
@@ -7582,6 +7947,7 @@ cudaError_t cudaMemcpy2DToArray(cudaArray_t  dst, size_t  wOffset, size_t  hOffs
 cudaError_t cudaMemcpy2DFromArray(void * dst, size_t  dpitch, cudaArray_const_t  src, size_t  wOffset, size_t  hOffset, size_t  width, size_t  height, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaMemcpy2DFromArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy2DFromArray(dst, dpitch, src, wOffset, hOffset, width, height, kind);
 #else
@@ -7592,6 +7958,7 @@ cudaError_t cudaMemcpy2DFromArray(void * dst, size_t  dpitch, cudaArray_const_t 
 cudaError_t cudaMemcpy2DArrayToArray(cudaArray_t  dst, size_t  wOffsetDst, size_t  hOffsetDst, cudaArray_const_t  src, size_t  wOffsetSrc, size_t  hOffsetSrc, size_t  width, size_t  height, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaMemcpy2DArrayToArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy2DArrayToArray(dst, wOffsetDst, hOffsetDst, src, wOffsetSrc, hOffsetSrc, width, height, kind);
 #else
@@ -7602,6 +7969,7 @@ cudaError_t cudaMemcpy2DArrayToArray(cudaArray_t  dst, size_t  wOffsetDst, size_
 cudaError_t cudaMemcpyToSymbol(const void * symbol, const void * src, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaMemcpyToSymbol hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyToSymbol(symbol, src, count, offset, kind);
 #else
@@ -7612,6 +7980,7 @@ cudaError_t cudaMemcpyToSymbol(const void * symbol, const void * src, size_t  co
 cudaError_t cudaMemcpyFromSymbol(void * dst, const void * symbol, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaMemcpyFromSymbol hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyFromSymbol(dst, symbol, count, offset, kind);
 #else
@@ -7622,6 +7991,7 @@ cudaError_t cudaMemcpyFromSymbol(void * dst, const void * symbol, size_t  count,
 cudaError_t cudaMemcpyPeerAsync(void * dst, int  dstDevice, const void * src, int  srcDevice, size_t  count, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemcpyPeerAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyPeerAsync(dst, dstDevice, src, srcDevice, count, stream);
 #else
@@ -7632,6 +8002,7 @@ cudaError_t cudaMemcpyPeerAsync(void * dst, int  dstDevice, const void * src, in
 cudaError_t cudaMemcpy2DAsync(void * dst, size_t  dpitch, const void * src, size_t  spitch, size_t  width, size_t  height, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemcpy2DAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy2DAsync(dst, dpitch, src, spitch, width, height, kind, stream);
 #else
@@ -7642,6 +8013,7 @@ cudaError_t cudaMemcpy2DAsync(void * dst, size_t  dpitch, const void * src, size
 cudaError_t cudaMemcpy2DToArrayAsync(cudaArray_t  dst, size_t  wOffset, size_t  hOffset, const void * src, size_t  spitch, size_t  width, size_t  height, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemcpy2DToArrayAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy2DToArrayAsync(dst, wOffset, hOffset, src, spitch, width, height, kind, stream);
 #else
@@ -7652,6 +8024,7 @@ cudaError_t cudaMemcpy2DToArrayAsync(cudaArray_t  dst, size_t  wOffset, size_t  
 cudaError_t cudaMemcpy2DFromArrayAsync(void * dst, size_t  dpitch, cudaArray_const_t  src, size_t  wOffset, size_t  hOffset, size_t  width, size_t  height, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemcpy2DFromArrayAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpy2DFromArrayAsync(dst, dpitch, src, wOffset, hOffset, width, height, kind, stream);
 #else
@@ -7662,6 +8035,7 @@ cudaError_t cudaMemcpy2DFromArrayAsync(void * dst, size_t  dpitch, cudaArray_con
 cudaError_t cudaMemcpyToSymbolAsync(const void * symbol, const void * src, size_t  count, size_t  offset, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemcpyToSymbolAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyToSymbolAsync(symbol, src, count, offset, kind, stream);
 #else
@@ -7672,6 +8046,7 @@ cudaError_t cudaMemcpyToSymbolAsync(const void * symbol, const void * src, size_
 cudaError_t cudaMemcpyFromSymbolAsync(void * dst, const void * symbol, size_t  count, size_t  offset, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemcpyFromSymbolAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyFromSymbolAsync(dst, symbol, count, offset, kind, stream);
 #else
@@ -7682,6 +8057,7 @@ cudaError_t cudaMemcpyFromSymbolAsync(void * dst, const void * symbol, size_t  c
 cudaError_t cudaMemset2D(void * devPtr, size_t  pitch, int  value, size_t  width, size_t  height)
 {
 	TALLY_SPD_LOG("cudaMemset2D hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemset2D(devPtr, pitch, value, width, height);
 #else
@@ -7692,6 +8068,7 @@ cudaError_t cudaMemset2D(void * devPtr, size_t  pitch, int  value, size_t  width
 cudaError_t cudaMemset3D(struct cudaPitchedPtr  pitchedDevPtr, int  value, struct cudaExtent  extent)
 {
 	TALLY_SPD_LOG("cudaMemset3D hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemset3D(pitchedDevPtr, value, extent);
 #else
@@ -7702,6 +8079,7 @@ cudaError_t cudaMemset3D(struct cudaPitchedPtr  pitchedDevPtr, int  value, struc
 cudaError_t cudaMemset2DAsync(void * devPtr, size_t  pitch, int  value, size_t  width, size_t  height, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemset2DAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemset2DAsync(devPtr, pitch, value, width, height, stream);
 #else
@@ -7712,6 +8090,7 @@ cudaError_t cudaMemset2DAsync(void * devPtr, size_t  pitch, int  value, size_t  
 cudaError_t cudaMemset3DAsync(struct cudaPitchedPtr  pitchedDevPtr, int  value, struct cudaExtent  extent, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemset3DAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemset3DAsync(pitchedDevPtr, value, extent, stream);
 #else
@@ -7722,6 +8101,7 @@ cudaError_t cudaMemset3DAsync(struct cudaPitchedPtr  pitchedDevPtr, int  value, 
 cudaError_t cudaGetSymbolAddress(void ** devPtr, const void * symbol)
 {
 	TALLY_SPD_LOG("cudaGetSymbolAddress hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetSymbolAddress(devPtr, symbol);
 #else
@@ -7732,6 +8112,7 @@ cudaError_t cudaGetSymbolAddress(void ** devPtr, const void * symbol)
 cudaError_t cudaGetSymbolSize(size_t * size, const void * symbol)
 {
 	TALLY_SPD_LOG("cudaGetSymbolSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetSymbolSize(size, symbol);
 #else
@@ -7742,6 +8123,7 @@ cudaError_t cudaGetSymbolSize(size_t * size, const void * symbol)
 cudaError_t cudaMemPrefetchAsync(const void * devPtr, size_t  count, int  dstDevice, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemPrefetchAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPrefetchAsync(devPtr, count, dstDevice, stream);
 #else
@@ -7752,6 +8134,7 @@ cudaError_t cudaMemPrefetchAsync(const void * devPtr, size_t  count, int  dstDev
 cudaError_t cudaMemPrefetchAsync_v2(const void * devPtr, size_t  count, struct cudaMemLocation  location, unsigned int  flags, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemPrefetchAsync_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPrefetchAsync_v2(devPtr, count, location, flags, stream);
 #else
@@ -7762,6 +8145,7 @@ cudaError_t cudaMemPrefetchAsync_v2(const void * devPtr, size_t  count, struct c
 cudaError_t cudaMemAdvise(const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, int  device)
 {
 	TALLY_SPD_LOG("cudaMemAdvise hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemAdvise(devPtr, count, advice, device);
 #else
@@ -7772,6 +8156,7 @@ cudaError_t cudaMemAdvise(const void * devPtr, size_t  count, enum cudaMemoryAdv
 cudaError_t cudaMemAdvise_v2(const void * devPtr, size_t  count, enum cudaMemoryAdvise  advice, struct cudaMemLocation  location)
 {
 	TALLY_SPD_LOG("cudaMemAdvise_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemAdvise_v2(devPtr, count, advice, location);
 #else
@@ -7782,6 +8167,7 @@ cudaError_t cudaMemAdvise_v2(const void * devPtr, size_t  count, enum cudaMemory
 cudaError_t cudaMemRangeGetAttribute(void * data, size_t  dataSize, enum cudaMemRangeAttribute  attribute, const void * devPtr, size_t  count)
 {
 	TALLY_SPD_LOG("cudaMemRangeGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemRangeGetAttribute(data, dataSize, attribute, devPtr, count);
 #else
@@ -7792,6 +8178,7 @@ cudaError_t cudaMemRangeGetAttribute(void * data, size_t  dataSize, enum cudaMem
 cudaError_t cudaMemRangeGetAttributes(void ** data, size_t * dataSizes, enum cudaMemRangeAttribute * attributes, size_t  numAttributes, const void * devPtr, size_t  count)
 {
 	TALLY_SPD_LOG("cudaMemRangeGetAttributes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemRangeGetAttributes(data, dataSizes, attributes, numAttributes, devPtr, count);
 #else
@@ -7802,6 +8189,7 @@ cudaError_t cudaMemRangeGetAttributes(void ** data, size_t * dataSizes, enum cud
 cudaError_t cudaMemcpyToArray(cudaArray_t  dst, size_t  wOffset, size_t  hOffset, const void * src, size_t  count, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaMemcpyToArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyToArray(dst, wOffset, hOffset, src, count, kind);
 #else
@@ -7812,6 +8200,7 @@ cudaError_t cudaMemcpyToArray(cudaArray_t  dst, size_t  wOffset, size_t  hOffset
 cudaError_t cudaMemcpyFromArray(void * dst, cudaArray_const_t  src, size_t  wOffset, size_t  hOffset, size_t  count, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaMemcpyFromArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyFromArray(dst, src, wOffset, hOffset, count, kind);
 #else
@@ -7822,6 +8211,7 @@ cudaError_t cudaMemcpyFromArray(void * dst, cudaArray_const_t  src, size_t  wOff
 cudaError_t cudaMemcpyArrayToArray(cudaArray_t  dst, size_t  wOffsetDst, size_t  hOffsetDst, cudaArray_const_t  src, size_t  wOffsetSrc, size_t  hOffsetSrc, size_t  count, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaMemcpyArrayToArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyArrayToArray(dst, wOffsetDst, hOffsetDst, src, wOffsetSrc, hOffsetSrc, count, kind);
 #else
@@ -7832,6 +8222,7 @@ cudaError_t cudaMemcpyArrayToArray(cudaArray_t  dst, size_t  wOffsetDst, size_t 
 cudaError_t cudaMemcpyToArrayAsync(cudaArray_t  dst, size_t  wOffset, size_t  hOffset, const void * src, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemcpyToArrayAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyToArrayAsync(dst, wOffset, hOffset, src, count, kind, stream);
 #else
@@ -7842,6 +8233,7 @@ cudaError_t cudaMemcpyToArrayAsync(cudaArray_t  dst, size_t  wOffset, size_t  hO
 cudaError_t cudaMemcpyFromArrayAsync(void * dst, cudaArray_const_t  src, size_t  wOffset, size_t  hOffset, size_t  count, enum cudaMemcpyKind  kind, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMemcpyFromArrayAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemcpyFromArrayAsync(dst, src, wOffset, hOffset, count, kind, stream);
 #else
@@ -7852,6 +8244,7 @@ cudaError_t cudaMemcpyFromArrayAsync(void * dst, cudaArray_const_t  src, size_t 
 cudaError_t cudaMallocAsync(void ** devPtr, size_t  size, cudaStream_t  hStream)
 {
 	TALLY_SPD_LOG("cudaMallocAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMallocAsync(devPtr, size, hStream);
 #else
@@ -7862,6 +8255,7 @@ cudaError_t cudaMallocAsync(void ** devPtr, size_t  size, cudaStream_t  hStream)
 cudaError_t cudaFreeAsync(void * devPtr, cudaStream_t  hStream)
 {
 	TALLY_SPD_LOG("cudaFreeAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaFreeAsync(devPtr, hStream);
 #else
@@ -7872,8 +8266,8 @@ cudaError_t cudaFreeAsync(void * devPtr, cudaStream_t  hStream)
 cudaError_t cudaMemPoolTrimTo(cudaMemPool_t  memPool, size_t  minBytesToKeep)
 {
 	TALLY_SPD_LOG("cudaMemPoolTrimTo hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaMemPoolTrimTo(memPool, minBytesToKeep);
 #else
@@ -7914,6 +8308,7 @@ cudaError_t cudaMemPoolTrimTo(cudaMemPool_t  memPool, size_t  minBytesToKeep)
 cudaError_t cudaMemPoolSetAttribute(cudaMemPool_t  memPool, enum cudaMemPoolAttr  attr, void * value)
 {
 	TALLY_SPD_LOG("cudaMemPoolSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPoolSetAttribute(memPool, attr, value);
 #else
@@ -7924,6 +8319,7 @@ cudaError_t cudaMemPoolSetAttribute(cudaMemPool_t  memPool, enum cudaMemPoolAttr
 cudaError_t cudaMemPoolGetAttribute(cudaMemPool_t  memPool, enum cudaMemPoolAttr  attr, void * value)
 {
 	TALLY_SPD_LOG("cudaMemPoolGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPoolGetAttribute(memPool, attr, value);
 #else
@@ -7934,6 +8330,7 @@ cudaError_t cudaMemPoolGetAttribute(cudaMemPool_t  memPool, enum cudaMemPoolAttr
 cudaError_t cudaMemPoolSetAccess(cudaMemPool_t  memPool, const struct cudaMemAccessDesc * descList, size_t  count)
 {
 	TALLY_SPD_LOG("cudaMemPoolSetAccess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPoolSetAccess(memPool, descList, count);
 #else
@@ -7944,6 +8341,7 @@ cudaError_t cudaMemPoolSetAccess(cudaMemPool_t  memPool, const struct cudaMemAcc
 cudaError_t cudaMemPoolGetAccess(enum cudaMemAccessFlags * flags, cudaMemPool_t  memPool, struct cudaMemLocation * location)
 {
 	TALLY_SPD_LOG("cudaMemPoolGetAccess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPoolGetAccess(flags, memPool, location);
 #else
@@ -7954,6 +8352,7 @@ cudaError_t cudaMemPoolGetAccess(enum cudaMemAccessFlags * flags, cudaMemPool_t 
 cudaError_t cudaMemPoolCreate(cudaMemPool_t * memPool, const struct cudaMemPoolProps * poolProps)
 {
 	TALLY_SPD_LOG("cudaMemPoolCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPoolCreate(memPool, poolProps);
 #else
@@ -7964,6 +8363,7 @@ cudaError_t cudaMemPoolCreate(cudaMemPool_t * memPool, const struct cudaMemPoolP
 cudaError_t cudaMemPoolDestroy(cudaMemPool_t  memPool)
 {
 	TALLY_SPD_LOG("cudaMemPoolDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPoolDestroy(memPool);
 #else
@@ -7974,6 +8374,7 @@ cudaError_t cudaMemPoolDestroy(cudaMemPool_t  memPool)
 cudaError_t cudaMallocFromPoolAsync(void ** ptr, size_t  size, cudaMemPool_t  memPool, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaMallocFromPoolAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMallocFromPoolAsync(ptr, size, memPool, stream);
 #else
@@ -7984,6 +8385,7 @@ cudaError_t cudaMallocFromPoolAsync(void ** ptr, size_t  size, cudaMemPool_t  me
 cudaError_t cudaMemPoolExportToShareableHandle(void * shareableHandle, cudaMemPool_t  memPool, enum cudaMemAllocationHandleType  handleType, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaMemPoolExportToShareableHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPoolExportToShareableHandle(shareableHandle, memPool, handleType, flags);
 #else
@@ -7994,6 +8396,7 @@ cudaError_t cudaMemPoolExportToShareableHandle(void * shareableHandle, cudaMemPo
 cudaError_t cudaMemPoolImportFromShareableHandle(cudaMemPool_t * memPool, void * shareableHandle, enum cudaMemAllocationHandleType  handleType, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaMemPoolImportFromShareableHandle hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPoolImportFromShareableHandle(memPool, shareableHandle, handleType, flags);
 #else
@@ -8004,6 +8407,7 @@ cudaError_t cudaMemPoolImportFromShareableHandle(cudaMemPool_t * memPool, void *
 cudaError_t cudaMemPoolExportPointer(struct cudaMemPoolPtrExportData * exportData, void * ptr)
 {
 	TALLY_SPD_LOG("cudaMemPoolExportPointer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPoolExportPointer(exportData, ptr);
 #else
@@ -8014,6 +8418,7 @@ cudaError_t cudaMemPoolExportPointer(struct cudaMemPoolPtrExportData * exportDat
 cudaError_t cudaMemPoolImportPointer(void ** ptr, cudaMemPool_t  memPool, struct cudaMemPoolPtrExportData * exportData)
 {
 	TALLY_SPD_LOG("cudaMemPoolImportPointer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaMemPoolImportPointer(ptr, memPool, exportData);
 #else
@@ -8024,6 +8429,7 @@ cudaError_t cudaMemPoolImportPointer(void ** ptr, cudaMemPool_t  memPool, struct
 cudaError_t cudaDeviceCanAccessPeer(int * canAccessPeer, int  device, int  peerDevice)
 {
 	TALLY_SPD_LOG("cudaDeviceCanAccessPeer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDeviceCanAccessPeer(canAccessPeer, device, peerDevice);
 #else
@@ -8034,6 +8440,7 @@ cudaError_t cudaDeviceCanAccessPeer(int * canAccessPeer, int  device, int  peerD
 cudaError_t cudaDeviceEnablePeerAccess(int  peerDevice, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaDeviceEnablePeerAccess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDeviceEnablePeerAccess(peerDevice, flags);
 #else
@@ -8044,6 +8451,7 @@ cudaError_t cudaDeviceEnablePeerAccess(int  peerDevice, unsigned int  flags)
 cudaError_t cudaDeviceDisablePeerAccess(int  peerDevice)
 {
 	TALLY_SPD_LOG("cudaDeviceDisablePeerAccess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDeviceDisablePeerAccess(peerDevice);
 #else
@@ -8054,6 +8462,7 @@ cudaError_t cudaDeviceDisablePeerAccess(int  peerDevice)
 cudaError_t cudaGraphicsUnregisterResource(cudaGraphicsResource_t  resource)
 {
 	TALLY_SPD_LOG("cudaGraphicsUnregisterResource hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphicsUnregisterResource(resource);
 #else
@@ -8064,6 +8473,7 @@ cudaError_t cudaGraphicsUnregisterResource(cudaGraphicsResource_t  resource)
 cudaError_t cudaGraphicsResourceSetMapFlags(cudaGraphicsResource_t  resource, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaGraphicsResourceSetMapFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphicsResourceSetMapFlags(resource, flags);
 #else
@@ -8074,6 +8484,7 @@ cudaError_t cudaGraphicsResourceSetMapFlags(cudaGraphicsResource_t  resource, un
 cudaError_t cudaGraphicsMapResources(int  count, cudaGraphicsResource_t * resources, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaGraphicsMapResources hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphicsMapResources(count, resources, stream);
 #else
@@ -8084,6 +8495,7 @@ cudaError_t cudaGraphicsMapResources(int  count, cudaGraphicsResource_t * resour
 cudaError_t cudaGraphicsUnmapResources(int  count, cudaGraphicsResource_t * resources, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaGraphicsUnmapResources hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphicsUnmapResources(count, resources, stream);
 #else
@@ -8094,6 +8506,7 @@ cudaError_t cudaGraphicsUnmapResources(int  count, cudaGraphicsResource_t * reso
 cudaError_t cudaGraphicsResourceGetMappedPointer(void ** devPtr, size_t * size, cudaGraphicsResource_t  resource)
 {
 	TALLY_SPD_LOG("cudaGraphicsResourceGetMappedPointer hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphicsResourceGetMappedPointer(devPtr, size, resource);
 #else
@@ -8104,6 +8517,7 @@ cudaError_t cudaGraphicsResourceGetMappedPointer(void ** devPtr, size_t * size, 
 cudaError_t cudaGraphicsSubResourceGetMappedArray(cudaArray_t * array, cudaGraphicsResource_t  resource, unsigned int  arrayIndex, unsigned int  mipLevel)
 {
 	TALLY_SPD_LOG("cudaGraphicsSubResourceGetMappedArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphicsSubResourceGetMappedArray(array, resource, arrayIndex, mipLevel);
 #else
@@ -8114,6 +8528,7 @@ cudaError_t cudaGraphicsSubResourceGetMappedArray(cudaArray_t * array, cudaGraph
 cudaError_t cudaGraphicsResourceGetMappedMipmappedArray(cudaMipmappedArray_t * mipmappedArray, cudaGraphicsResource_t  resource)
 {
 	TALLY_SPD_LOG("cudaGraphicsResourceGetMappedMipmappedArray hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphicsResourceGetMappedMipmappedArray(mipmappedArray, resource);
 #else
@@ -8124,6 +8539,7 @@ cudaError_t cudaGraphicsResourceGetMappedMipmappedArray(cudaMipmappedArray_t * m
 cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc * desc, cudaArray_const_t  array)
 {
 	TALLY_SPD_LOG("cudaGetChannelDesc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetChannelDesc(desc, array);
 #else
@@ -8134,6 +8550,7 @@ cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc * desc, cudaArray_co
 struct cudaChannelFormatDesc cudaCreateChannelDesc(int  x, int  y, int  z, int  w, enum cudaChannelFormatKind  f)
 {
 	TALLY_SPD_LOG("cudaCreateChannelDesc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaCreateChannelDesc(x, y, z, w, f);
 #else
@@ -8144,6 +8561,7 @@ struct cudaChannelFormatDesc cudaCreateChannelDesc(int  x, int  y, int  z, int  
 cudaError_t cudaCreateTextureObject(cudaTextureObject_t * pTexObject, const struct cudaResourceDesc * pResDesc, const struct cudaTextureDesc * pTexDesc, const struct cudaResourceViewDesc * pResViewDesc)
 {
 	TALLY_SPD_LOG("cudaCreateTextureObject hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaCreateTextureObject(pTexObject, pResDesc, pTexDesc, pResViewDesc);
 #else
@@ -8154,6 +8572,7 @@ cudaError_t cudaCreateTextureObject(cudaTextureObject_t * pTexObject, const stru
 cudaError_t cudaDestroyTextureObject(cudaTextureObject_t  texObject)
 {
 	TALLY_SPD_LOG("cudaDestroyTextureObject hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDestroyTextureObject(texObject);
 #else
@@ -8164,6 +8583,7 @@ cudaError_t cudaDestroyTextureObject(cudaTextureObject_t  texObject)
 cudaError_t cudaGetTextureObjectResourceDesc(struct cudaResourceDesc * pResDesc, cudaTextureObject_t  texObject)
 {
 	TALLY_SPD_LOG("cudaGetTextureObjectResourceDesc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetTextureObjectResourceDesc(pResDesc, texObject);
 #else
@@ -8174,6 +8594,7 @@ cudaError_t cudaGetTextureObjectResourceDesc(struct cudaResourceDesc * pResDesc,
 cudaError_t cudaGetTextureObjectTextureDesc(struct cudaTextureDesc * pTexDesc, cudaTextureObject_t  texObject)
 {
 	TALLY_SPD_LOG("cudaGetTextureObjectTextureDesc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetTextureObjectTextureDesc(pTexDesc, texObject);
 #else
@@ -8184,6 +8605,7 @@ cudaError_t cudaGetTextureObjectTextureDesc(struct cudaTextureDesc * pTexDesc, c
 cudaError_t cudaGetTextureObjectResourceViewDesc(struct cudaResourceViewDesc * pResViewDesc, cudaTextureObject_t  texObject)
 {
 	TALLY_SPD_LOG("cudaGetTextureObjectResourceViewDesc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetTextureObjectResourceViewDesc(pResViewDesc, texObject);
 #else
@@ -8194,6 +8616,7 @@ cudaError_t cudaGetTextureObjectResourceViewDesc(struct cudaResourceViewDesc * p
 cudaError_t cudaCreateSurfaceObject(cudaSurfaceObject_t * pSurfObject, const struct cudaResourceDesc * pResDesc)
 {
 	TALLY_SPD_LOG("cudaCreateSurfaceObject hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaCreateSurfaceObject(pSurfObject, pResDesc);
 #else
@@ -8204,6 +8627,7 @@ cudaError_t cudaCreateSurfaceObject(cudaSurfaceObject_t * pSurfObject, const str
 cudaError_t cudaDestroySurfaceObject(cudaSurfaceObject_t  surfObject)
 {
 	TALLY_SPD_LOG("cudaDestroySurfaceObject hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDestroySurfaceObject(surfObject);
 #else
@@ -8214,6 +8638,7 @@ cudaError_t cudaDestroySurfaceObject(cudaSurfaceObject_t  surfObject)
 cudaError_t cudaGetSurfaceObjectResourceDesc(struct cudaResourceDesc * pResDesc, cudaSurfaceObject_t  surfObject)
 {
 	TALLY_SPD_LOG("cudaGetSurfaceObjectResourceDesc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetSurfaceObjectResourceDesc(pResDesc, surfObject);
 #else
@@ -8224,8 +8649,8 @@ cudaError_t cudaGetSurfaceObjectResourceDesc(struct cudaResourceDesc * pResDesc,
 cudaError_t cudaDriverGetVersion(int * driverVersion)
 {
 	TALLY_SPD_LOG("cudaDriverGetVersion hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaDriverGetVersion(driverVersion);
 #else
@@ -8266,8 +8691,8 @@ cudaError_t cudaDriverGetVersion(int * driverVersion)
 cudaError_t cudaRuntimeGetVersion(int * runtimeVersion)
 {
 	TALLY_SPD_LOG("cudaRuntimeGetVersion hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaRuntimeGetVersion(runtimeVersion);
 #else
@@ -8308,8 +8733,8 @@ cudaError_t cudaRuntimeGetVersion(int * runtimeVersion)
 cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaGraphCreate hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGraphCreate(pGraph, flags);
 #else
@@ -8351,6 +8776,7 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
 cudaError_t cudaGraphAddKernelNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaKernelNodeParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphAddKernelNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddKernelNode(pGraphNode, graph, pDependencies, numDependencies, pNodeParams);
 #else
@@ -8361,6 +8787,7 @@ cudaError_t cudaGraphAddKernelNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  gr
 cudaError_t cudaGraphKernelNodeGetParams(cudaGraphNode_t  node, struct cudaKernelNodeParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphKernelNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphKernelNodeGetParams(node, pNodeParams);
 #else
@@ -8371,6 +8798,7 @@ cudaError_t cudaGraphKernelNodeGetParams(cudaGraphNode_t  node, struct cudaKerne
 cudaError_t cudaGraphKernelNodeSetParams(cudaGraphNode_t  node, const struct cudaKernelNodeParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphKernelNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphKernelNodeSetParams(node, pNodeParams);
 #else
@@ -8381,6 +8809,7 @@ cudaError_t cudaGraphKernelNodeSetParams(cudaGraphNode_t  node, const struct cud
 cudaError_t cudaGraphKernelNodeCopyAttributes(cudaGraphNode_t  hSrc, cudaGraphNode_t  hDst)
 {
 	TALLY_SPD_LOG("cudaGraphKernelNodeCopyAttributes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphKernelNodeCopyAttributes(hSrc, hDst);
 #else
@@ -8391,6 +8820,7 @@ cudaError_t cudaGraphKernelNodeCopyAttributes(cudaGraphNode_t  hSrc, cudaGraphNo
 cudaError_t cudaGraphKernelNodeGetAttribute(cudaGraphNode_t  hNode, cudaLaunchAttributeID  attr, cudaLaunchAttributeValue * value_out)
 {
 	TALLY_SPD_LOG("cudaGraphKernelNodeGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphKernelNodeGetAttribute(hNode, attr, value_out);
 #else
@@ -8401,6 +8831,7 @@ cudaError_t cudaGraphKernelNodeGetAttribute(cudaGraphNode_t  hNode, cudaLaunchAt
 cudaError_t cudaGraphKernelNodeSetAttribute(cudaGraphNode_t  hNode, cudaLaunchAttributeID  attr, const cudaLaunchAttributeValue * value)
 {
 	TALLY_SPD_LOG("cudaGraphKernelNodeSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphKernelNodeSetAttribute(hNode, attr, value);
 #else
@@ -8411,6 +8842,7 @@ cudaError_t cudaGraphKernelNodeSetAttribute(cudaGraphNode_t  hNode, cudaLaunchAt
 cudaError_t cudaGraphAddMemcpyNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaMemcpy3DParms * pCopyParams)
 {
 	TALLY_SPD_LOG("cudaGraphAddMemcpyNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddMemcpyNode(pGraphNode, graph, pDependencies, numDependencies, pCopyParams);
 #else
@@ -8421,6 +8853,7 @@ cudaError_t cudaGraphAddMemcpyNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  gr
 cudaError_t cudaGraphAddMemcpyNodeToSymbol(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const void*  symbol, const void*  src, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaGraphAddMemcpyNodeToSymbol hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddMemcpyNodeToSymbol(pGraphNode, graph, pDependencies, numDependencies, symbol, src, count, offset, kind);
 #else
@@ -8431,6 +8864,7 @@ cudaError_t cudaGraphAddMemcpyNodeToSymbol(cudaGraphNode_t * pGraphNode, cudaGra
 cudaError_t cudaGraphAddMemcpyNodeFromSymbol(cudaGraphNode_t*  pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t*  pDependencies, size_t  numDependencies, void*  dst, const void*  symbol, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaGraphAddMemcpyNodeFromSymbol hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddMemcpyNodeFromSymbol(pGraphNode, graph, pDependencies, numDependencies, dst, symbol, count, offset, kind);
 #else
@@ -8441,6 +8875,7 @@ cudaError_t cudaGraphAddMemcpyNodeFromSymbol(cudaGraphNode_t*  pGraphNode, cudaG
 cudaError_t cudaGraphAddMemcpyNode1D(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, void*  dst, const void*  src, size_t  count, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaGraphAddMemcpyNode1D hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddMemcpyNode1D(pGraphNode, graph, pDependencies, numDependencies, dst, src, count, kind);
 #else
@@ -8451,6 +8886,7 @@ cudaError_t cudaGraphAddMemcpyNode1D(cudaGraphNode_t * pGraphNode, cudaGraph_t  
 cudaError_t cudaGraphMemcpyNodeGetParams(cudaGraphNode_t  node, struct cudaMemcpy3DParms * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphMemcpyNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphMemcpyNodeGetParams(node, pNodeParams);
 #else
@@ -8461,6 +8897,7 @@ cudaError_t cudaGraphMemcpyNodeGetParams(cudaGraphNode_t  node, struct cudaMemcp
 cudaError_t cudaGraphMemcpyNodeSetParams(cudaGraphNode_t  node, const struct cudaMemcpy3DParms * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphMemcpyNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphMemcpyNodeSetParams(node, pNodeParams);
 #else
@@ -8471,6 +8908,7 @@ cudaError_t cudaGraphMemcpyNodeSetParams(cudaGraphNode_t  node, const struct cud
 cudaError_t cudaGraphMemcpyNodeSetParamsToSymbol(cudaGraphNode_t  node, const void*  symbol, const void*  src, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaGraphMemcpyNodeSetParamsToSymbol hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphMemcpyNodeSetParamsToSymbol(node, symbol, src, count, offset, kind);
 #else
@@ -8481,6 +8919,7 @@ cudaError_t cudaGraphMemcpyNodeSetParamsToSymbol(cudaGraphNode_t  node, const vo
 cudaError_t cudaGraphMemcpyNodeSetParamsFromSymbol(cudaGraphNode_t  node, void*  dst, const void*  symbol, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaGraphMemcpyNodeSetParamsFromSymbol hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphMemcpyNodeSetParamsFromSymbol(node, dst, symbol, count, offset, kind);
 #else
@@ -8491,6 +8930,7 @@ cudaError_t cudaGraphMemcpyNodeSetParamsFromSymbol(cudaGraphNode_t  node, void* 
 cudaError_t cudaGraphMemcpyNodeSetParams1D(cudaGraphNode_t  node, void*  dst, const void*  src, size_t  count, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaGraphMemcpyNodeSetParams1D hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphMemcpyNodeSetParams1D(node, dst, src, count, kind);
 #else
@@ -8501,6 +8941,7 @@ cudaError_t cudaGraphMemcpyNodeSetParams1D(cudaGraphNode_t  node, void*  dst, co
 cudaError_t cudaGraphAddMemsetNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaMemsetParams * pMemsetParams)
 {
 	TALLY_SPD_LOG("cudaGraphAddMemsetNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddMemsetNode(pGraphNode, graph, pDependencies, numDependencies, pMemsetParams);
 #else
@@ -8511,6 +8952,7 @@ cudaError_t cudaGraphAddMemsetNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  gr
 cudaError_t cudaGraphMemsetNodeGetParams(cudaGraphNode_t  node, struct cudaMemsetParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphMemsetNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphMemsetNodeGetParams(node, pNodeParams);
 #else
@@ -8521,6 +8963,7 @@ cudaError_t cudaGraphMemsetNodeGetParams(cudaGraphNode_t  node, struct cudaMemse
 cudaError_t cudaGraphMemsetNodeSetParams(cudaGraphNode_t  node, const struct cudaMemsetParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphMemsetNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphMemsetNodeSetParams(node, pNodeParams);
 #else
@@ -8531,6 +8974,7 @@ cudaError_t cudaGraphMemsetNodeSetParams(cudaGraphNode_t  node, const struct cud
 cudaError_t cudaGraphAddHostNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaHostNodeParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphAddHostNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddHostNode(pGraphNode, graph, pDependencies, numDependencies, pNodeParams);
 #else
@@ -8541,6 +8985,7 @@ cudaError_t cudaGraphAddHostNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  grap
 cudaError_t cudaGraphHostNodeGetParams(cudaGraphNode_t  node, struct cudaHostNodeParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphHostNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphHostNodeGetParams(node, pNodeParams);
 #else
@@ -8551,6 +8996,7 @@ cudaError_t cudaGraphHostNodeGetParams(cudaGraphNode_t  node, struct cudaHostNod
 cudaError_t cudaGraphHostNodeSetParams(cudaGraphNode_t  node, const struct cudaHostNodeParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphHostNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphHostNodeSetParams(node, pNodeParams);
 #else
@@ -8561,6 +9007,7 @@ cudaError_t cudaGraphHostNodeSetParams(cudaGraphNode_t  node, const struct cudaH
 cudaError_t cudaGraphAddChildGraphNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, cudaGraph_t  childGraph)
 {
 	TALLY_SPD_LOG("cudaGraphAddChildGraphNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddChildGraphNode(pGraphNode, graph, pDependencies, numDependencies, childGraph);
 #else
@@ -8571,6 +9018,7 @@ cudaError_t cudaGraphAddChildGraphNode(cudaGraphNode_t * pGraphNode, cudaGraph_t
 cudaError_t cudaGraphChildGraphNodeGetGraph(cudaGraphNode_t  node, cudaGraph_t * pGraph)
 {
 	TALLY_SPD_LOG("cudaGraphChildGraphNodeGetGraph hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphChildGraphNodeGetGraph(node, pGraph);
 #else
@@ -8581,6 +9029,7 @@ cudaError_t cudaGraphChildGraphNodeGetGraph(cudaGraphNode_t  node, cudaGraph_t *
 cudaError_t cudaGraphAddEmptyNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies)
 {
 	TALLY_SPD_LOG("cudaGraphAddEmptyNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddEmptyNode(pGraphNode, graph, pDependencies, numDependencies);
 #else
@@ -8591,6 +9040,7 @@ cudaError_t cudaGraphAddEmptyNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  gra
 cudaError_t cudaGraphAddEventRecordNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, cudaEvent_t  event)
 {
 	TALLY_SPD_LOG("cudaGraphAddEventRecordNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddEventRecordNode(pGraphNode, graph, pDependencies, numDependencies, event);
 #else
@@ -8601,6 +9051,7 @@ cudaError_t cudaGraphAddEventRecordNode(cudaGraphNode_t * pGraphNode, cudaGraph_
 cudaError_t cudaGraphEventRecordNodeGetEvent(cudaGraphNode_t  node, cudaEvent_t * event_out)
 {
 	TALLY_SPD_LOG("cudaGraphEventRecordNodeGetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphEventRecordNodeGetEvent(node, event_out);
 #else
@@ -8611,6 +9062,7 @@ cudaError_t cudaGraphEventRecordNodeGetEvent(cudaGraphNode_t  node, cudaEvent_t 
 cudaError_t cudaGraphEventRecordNodeSetEvent(cudaGraphNode_t  node, cudaEvent_t  event)
 {
 	TALLY_SPD_LOG("cudaGraphEventRecordNodeSetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphEventRecordNodeSetEvent(node, event);
 #else
@@ -8621,6 +9073,7 @@ cudaError_t cudaGraphEventRecordNodeSetEvent(cudaGraphNode_t  node, cudaEvent_t 
 cudaError_t cudaGraphAddEventWaitNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, cudaEvent_t  event)
 {
 	TALLY_SPD_LOG("cudaGraphAddEventWaitNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddEventWaitNode(pGraphNode, graph, pDependencies, numDependencies, event);
 #else
@@ -8631,6 +9084,7 @@ cudaError_t cudaGraphAddEventWaitNode(cudaGraphNode_t * pGraphNode, cudaGraph_t 
 cudaError_t cudaGraphEventWaitNodeGetEvent(cudaGraphNode_t  node, cudaEvent_t * event_out)
 {
 	TALLY_SPD_LOG("cudaGraphEventWaitNodeGetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphEventWaitNodeGetEvent(node, event_out);
 #else
@@ -8641,6 +9095,7 @@ cudaError_t cudaGraphEventWaitNodeGetEvent(cudaGraphNode_t  node, cudaEvent_t * 
 cudaError_t cudaGraphEventWaitNodeSetEvent(cudaGraphNode_t  node, cudaEvent_t  event)
 {
 	TALLY_SPD_LOG("cudaGraphEventWaitNodeSetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphEventWaitNodeSetEvent(node, event);
 #else
@@ -8651,6 +9106,7 @@ cudaError_t cudaGraphEventWaitNodeSetEvent(cudaGraphNode_t  node, cudaEvent_t  e
 cudaError_t cudaGraphAddExternalSemaphoresSignalNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaExternalSemaphoreSignalNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphAddExternalSemaphoresSignalNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddExternalSemaphoresSignalNode(pGraphNode, graph, pDependencies, numDependencies, nodeParams);
 #else
@@ -8661,6 +9117,7 @@ cudaError_t cudaGraphAddExternalSemaphoresSignalNode(cudaGraphNode_t * pGraphNod
 cudaError_t cudaGraphExternalSemaphoresSignalNodeGetParams(cudaGraphNode_t  hNode, struct cudaExternalSemaphoreSignalNodeParams * params_out)
 {
 	TALLY_SPD_LOG("cudaGraphExternalSemaphoresSignalNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExternalSemaphoresSignalNodeGetParams(hNode, params_out);
 #else
@@ -8671,6 +9128,7 @@ cudaError_t cudaGraphExternalSemaphoresSignalNodeGetParams(cudaGraphNode_t  hNod
 cudaError_t cudaGraphExternalSemaphoresSignalNodeSetParams(cudaGraphNode_t  hNode, const struct cudaExternalSemaphoreSignalNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphExternalSemaphoresSignalNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExternalSemaphoresSignalNodeSetParams(hNode, nodeParams);
 #else
@@ -8681,6 +9139,7 @@ cudaError_t cudaGraphExternalSemaphoresSignalNodeSetParams(cudaGraphNode_t  hNod
 cudaError_t cudaGraphAddExternalSemaphoresWaitNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, const struct cudaExternalSemaphoreWaitNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphAddExternalSemaphoresWaitNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddExternalSemaphoresWaitNode(pGraphNode, graph, pDependencies, numDependencies, nodeParams);
 #else
@@ -8691,6 +9150,7 @@ cudaError_t cudaGraphAddExternalSemaphoresWaitNode(cudaGraphNode_t * pGraphNode,
 cudaError_t cudaGraphExternalSemaphoresWaitNodeGetParams(cudaGraphNode_t  hNode, struct cudaExternalSemaphoreWaitNodeParams * params_out)
 {
 	TALLY_SPD_LOG("cudaGraphExternalSemaphoresWaitNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExternalSemaphoresWaitNodeGetParams(hNode, params_out);
 #else
@@ -8701,6 +9161,7 @@ cudaError_t cudaGraphExternalSemaphoresWaitNodeGetParams(cudaGraphNode_t  hNode,
 cudaError_t cudaGraphExternalSemaphoresWaitNodeSetParams(cudaGraphNode_t  hNode, const struct cudaExternalSemaphoreWaitNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphExternalSemaphoresWaitNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExternalSemaphoresWaitNodeSetParams(hNode, nodeParams);
 #else
@@ -8711,6 +9172,7 @@ cudaError_t cudaGraphExternalSemaphoresWaitNodeSetParams(cudaGraphNode_t  hNode,
 cudaError_t cudaGraphAddMemAllocNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, struct cudaMemAllocNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphAddMemAllocNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddMemAllocNode(pGraphNode, graph, pDependencies, numDependencies, nodeParams);
 #else
@@ -8721,6 +9183,7 @@ cudaError_t cudaGraphAddMemAllocNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  
 cudaError_t cudaGraphMemAllocNodeGetParams(cudaGraphNode_t  node, struct cudaMemAllocNodeParams * params_out)
 {
 	TALLY_SPD_LOG("cudaGraphMemAllocNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphMemAllocNodeGetParams(node, params_out);
 #else
@@ -8731,6 +9194,7 @@ cudaError_t cudaGraphMemAllocNodeGetParams(cudaGraphNode_t  node, struct cudaMem
 cudaError_t cudaGraphAddMemFreeNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, void * dptr)
 {
 	TALLY_SPD_LOG("cudaGraphAddMemFreeNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddMemFreeNode(pGraphNode, graph, pDependencies, numDependencies, dptr);
 #else
@@ -8741,6 +9205,7 @@ cudaError_t cudaGraphAddMemFreeNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  g
 cudaError_t cudaGraphMemFreeNodeGetParams(cudaGraphNode_t  node, void * dptr_out)
 {
 	TALLY_SPD_LOG("cudaGraphMemFreeNodeGetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphMemFreeNodeGetParams(node, dptr_out);
 #else
@@ -8751,6 +9216,7 @@ cudaError_t cudaGraphMemFreeNodeGetParams(cudaGraphNode_t  node, void * dptr_out
 cudaError_t cudaDeviceGraphMemTrim(int  device)
 {
 	TALLY_SPD_LOG("cudaDeviceGraphMemTrim hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDeviceGraphMemTrim(device);
 #else
@@ -8761,6 +9227,7 @@ cudaError_t cudaDeviceGraphMemTrim(int  device)
 cudaError_t cudaDeviceGetGraphMemAttribute(int  device, enum cudaGraphMemAttributeType  attr, void*  value)
 {
 	TALLY_SPD_LOG("cudaDeviceGetGraphMemAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDeviceGetGraphMemAttribute(device, attr, value);
 #else
@@ -8771,6 +9238,7 @@ cudaError_t cudaDeviceGetGraphMemAttribute(int  device, enum cudaGraphMemAttribu
 cudaError_t cudaDeviceSetGraphMemAttribute(int  device, enum cudaGraphMemAttributeType  attr, void*  value)
 {
 	TALLY_SPD_LOG("cudaDeviceSetGraphMemAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaDeviceSetGraphMemAttribute(device, attr, value);
 #else
@@ -8781,6 +9249,7 @@ cudaError_t cudaDeviceSetGraphMemAttribute(int  device, enum cudaGraphMemAttribu
 cudaError_t cudaGraphClone(cudaGraph_t * pGraphClone, cudaGraph_t  originalGraph)
 {
 	TALLY_SPD_LOG("cudaGraphClone hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphClone(pGraphClone, originalGraph);
 #else
@@ -8791,6 +9260,7 @@ cudaError_t cudaGraphClone(cudaGraph_t * pGraphClone, cudaGraph_t  originalGraph
 cudaError_t cudaGraphNodeFindInClone(cudaGraphNode_t * pNode, cudaGraphNode_t  originalNode, cudaGraph_t  clonedGraph)
 {
 	TALLY_SPD_LOG("cudaGraphNodeFindInClone hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphNodeFindInClone(pNode, originalNode, clonedGraph);
 #else
@@ -8801,6 +9271,7 @@ cudaError_t cudaGraphNodeFindInClone(cudaGraphNode_t * pNode, cudaGraphNode_t  o
 cudaError_t cudaGraphNodeGetType(cudaGraphNode_t  node, enum cudaGraphNodeType * pType)
 {
 	TALLY_SPD_LOG("cudaGraphNodeGetType hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphNodeGetType(node, pType);
 #else
@@ -8811,6 +9282,7 @@ cudaError_t cudaGraphNodeGetType(cudaGraphNode_t  node, enum cudaGraphNodeType *
 cudaError_t cudaGraphGetRootNodes(cudaGraph_t  graph, cudaGraphNode_t * pRootNodes, size_t * pNumRootNodes)
 {
 	TALLY_SPD_LOG("cudaGraphGetRootNodes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphGetRootNodes(graph, pRootNodes, pNumRootNodes);
 #else
@@ -8821,6 +9293,7 @@ cudaError_t cudaGraphGetRootNodes(cudaGraph_t  graph, cudaGraphNode_t * pRootNod
 cudaError_t cudaGraphGetEdges(cudaGraph_t  graph, cudaGraphNode_t * from, cudaGraphNode_t * to, size_t * numEdges)
 {
 	TALLY_SPD_LOG("cudaGraphGetEdges hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphGetEdges(graph, from, to, numEdges);
 #else
@@ -8831,6 +9304,7 @@ cudaError_t cudaGraphGetEdges(cudaGraph_t  graph, cudaGraphNode_t * from, cudaGr
 cudaError_t cudaGraphNodeGetDependencies(cudaGraphNode_t  node, cudaGraphNode_t * pDependencies, size_t * pNumDependencies)
 {
 	TALLY_SPD_LOG("cudaGraphNodeGetDependencies hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphNodeGetDependencies(node, pDependencies, pNumDependencies);
 #else
@@ -8841,6 +9315,7 @@ cudaError_t cudaGraphNodeGetDependencies(cudaGraphNode_t  node, cudaGraphNode_t 
 cudaError_t cudaGraphNodeGetDependentNodes(cudaGraphNode_t  node, cudaGraphNode_t * pDependentNodes, size_t * pNumDependentNodes)
 {
 	TALLY_SPD_LOG("cudaGraphNodeGetDependentNodes hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphNodeGetDependentNodes(node, pDependentNodes, pNumDependentNodes);
 #else
@@ -8851,6 +9326,7 @@ cudaError_t cudaGraphNodeGetDependentNodes(cudaGraphNode_t  node, cudaGraphNode_
 cudaError_t cudaGraphAddDependencies(cudaGraph_t  graph, const cudaGraphNode_t * from, const cudaGraphNode_t * to, size_t  numDependencies)
 {
 	TALLY_SPD_LOG("cudaGraphAddDependencies hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddDependencies(graph, from, to, numDependencies);
 #else
@@ -8861,6 +9337,7 @@ cudaError_t cudaGraphAddDependencies(cudaGraph_t  graph, const cudaGraphNode_t *
 cudaError_t cudaGraphRemoveDependencies(cudaGraph_t  graph, const cudaGraphNode_t * from, const cudaGraphNode_t * to, size_t  numDependencies)
 {
 	TALLY_SPD_LOG("cudaGraphRemoveDependencies hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphRemoveDependencies(graph, from, to, numDependencies);
 #else
@@ -8871,6 +9348,7 @@ cudaError_t cudaGraphRemoveDependencies(cudaGraph_t  graph, const cudaGraphNode_
 cudaError_t cudaGraphDestroyNode(cudaGraphNode_t  node)
 {
 	TALLY_SPD_LOG("cudaGraphDestroyNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphDestroyNode(node);
 #else
@@ -8881,6 +9359,7 @@ cudaError_t cudaGraphDestroyNode(cudaGraphNode_t  node)
 cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cudaGraphInstantiate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphInstantiate(pGraphExec, graph, flags);
 #else
@@ -8891,8 +9370,8 @@ cudaError_t cudaGraphInstantiate(cudaGraphExec_t * pGraphExec, cudaGraph_t  grap
 cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, unsigned long long  flags)
 {
 	TALLY_SPD_LOG("cudaGraphInstantiateWithFlags hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGraphInstantiateWithFlags(pGraphExec, graph, flags);
 #else
@@ -8935,6 +9414,7 @@ cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t * pGraphExec, cudaGrap
 cudaError_t cudaGraphInstantiateWithParams(cudaGraphExec_t * pGraphExec, cudaGraph_t  graph, cudaGraphInstantiateParams * instantiateParams)
 {
 	TALLY_SPD_LOG("cudaGraphInstantiateWithParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphInstantiateWithParams(pGraphExec, graph, instantiateParams);
 #else
@@ -8945,6 +9425,7 @@ cudaError_t cudaGraphInstantiateWithParams(cudaGraphExec_t * pGraphExec, cudaGra
 cudaError_t cudaGraphExecGetFlags(cudaGraphExec_t  graphExec, unsigned long long * flags)
 {
 	TALLY_SPD_LOG("cudaGraphExecGetFlags hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecGetFlags(graphExec, flags);
 #else
@@ -8955,6 +9436,7 @@ cudaError_t cudaGraphExecGetFlags(cudaGraphExec_t  graphExec, unsigned long long
 cudaError_t cudaGraphExecKernelNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const struct cudaKernelNodeParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphExecKernelNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecKernelNodeSetParams(hGraphExec, node, pNodeParams);
 #else
@@ -8965,6 +9447,7 @@ cudaError_t cudaGraphExecKernelNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGr
 cudaError_t cudaGraphExecMemcpyNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const struct cudaMemcpy3DParms * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphExecMemcpyNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecMemcpyNodeSetParams(hGraphExec, node, pNodeParams);
 #else
@@ -8975,6 +9458,7 @@ cudaError_t cudaGraphExecMemcpyNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGr
 cudaError_t cudaGraphExecMemcpyNodeSetParamsToSymbol(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const void*  symbol, const void*  src, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaGraphExecMemcpyNodeSetParamsToSymbol hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecMemcpyNodeSetParamsToSymbol(hGraphExec, node, symbol, src, count, offset, kind);
 #else
@@ -8985,6 +9469,7 @@ cudaError_t cudaGraphExecMemcpyNodeSetParamsToSymbol(cudaGraphExec_t  hGraphExec
 cudaError_t cudaGraphExecMemcpyNodeSetParamsFromSymbol(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, void*  dst, const void*  symbol, size_t  count, size_t  offset, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaGraphExecMemcpyNodeSetParamsFromSymbol hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecMemcpyNodeSetParamsFromSymbol(hGraphExec, node, dst, symbol, count, offset, kind);
 #else
@@ -8995,6 +9480,7 @@ cudaError_t cudaGraphExecMemcpyNodeSetParamsFromSymbol(cudaGraphExec_t  hGraphEx
 cudaError_t cudaGraphExecMemcpyNodeSetParams1D(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, void*  dst, const void*  src, size_t  count, enum cudaMemcpyKind  kind)
 {
 	TALLY_SPD_LOG("cudaGraphExecMemcpyNodeSetParams1D hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecMemcpyNodeSetParams1D(hGraphExec, node, dst, src, count, kind);
 #else
@@ -9005,6 +9491,7 @@ cudaError_t cudaGraphExecMemcpyNodeSetParams1D(cudaGraphExec_t  hGraphExec, cuda
 cudaError_t cudaGraphExecMemsetNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const struct cudaMemsetParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphExecMemsetNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecMemsetNodeSetParams(hGraphExec, node, pNodeParams);
 #else
@@ -9015,6 +9502,7 @@ cudaError_t cudaGraphExecMemsetNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGr
 cudaError_t cudaGraphExecHostNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, const struct cudaHostNodeParams * pNodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphExecHostNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecHostNodeSetParams(hGraphExec, node, pNodeParams);
 #else
@@ -9025,6 +9513,7 @@ cudaError_t cudaGraphExecHostNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGrap
 cudaError_t cudaGraphExecChildGraphNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  node, cudaGraph_t  childGraph)
 {
 	TALLY_SPD_LOG("cudaGraphExecChildGraphNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecChildGraphNodeSetParams(hGraphExec, node, childGraph);
 #else
@@ -9035,6 +9524,7 @@ cudaError_t cudaGraphExecChildGraphNodeSetParams(cudaGraphExec_t  hGraphExec, cu
 cudaError_t cudaGraphExecEventRecordNodeSetEvent(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, cudaEvent_t  event)
 {
 	TALLY_SPD_LOG("cudaGraphExecEventRecordNodeSetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecEventRecordNodeSetEvent(hGraphExec, hNode, event);
 #else
@@ -9045,6 +9535,7 @@ cudaError_t cudaGraphExecEventRecordNodeSetEvent(cudaGraphExec_t  hGraphExec, cu
 cudaError_t cudaGraphExecEventWaitNodeSetEvent(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, cudaEvent_t  event)
 {
 	TALLY_SPD_LOG("cudaGraphExecEventWaitNodeSetEvent hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecEventWaitNodeSetEvent(hGraphExec, hNode, event);
 #else
@@ -9055,6 +9546,7 @@ cudaError_t cudaGraphExecEventWaitNodeSetEvent(cudaGraphExec_t  hGraphExec, cuda
 cudaError_t cudaGraphExecExternalSemaphoresSignalNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, const struct cudaExternalSemaphoreSignalNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphExecExternalSemaphoresSignalNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecExternalSemaphoresSignalNodeSetParams(hGraphExec, hNode, nodeParams);
 #else
@@ -9065,6 +9557,7 @@ cudaError_t cudaGraphExecExternalSemaphoresSignalNodeSetParams(cudaGraphExec_t  
 cudaError_t cudaGraphExecExternalSemaphoresWaitNodeSetParams(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, const struct cudaExternalSemaphoreWaitNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphExecExternalSemaphoresWaitNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecExternalSemaphoresWaitNodeSetParams(hGraphExec, hNode, nodeParams);
 #else
@@ -9075,6 +9568,7 @@ cudaError_t cudaGraphExecExternalSemaphoresWaitNodeSetParams(cudaGraphExec_t  hG
 cudaError_t cudaGraphNodeSetEnabled(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, unsigned int  isEnabled)
 {
 	TALLY_SPD_LOG("cudaGraphNodeSetEnabled hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphNodeSetEnabled(hGraphExec, hNode, isEnabled);
 #else
@@ -9085,6 +9579,7 @@ cudaError_t cudaGraphNodeSetEnabled(cudaGraphExec_t  hGraphExec, cudaGraphNode_t
 cudaError_t cudaGraphNodeGetEnabled(cudaGraphExec_t  hGraphExec, cudaGraphNode_t  hNode, unsigned int * isEnabled)
 {
 	TALLY_SPD_LOG("cudaGraphNodeGetEnabled hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphNodeGetEnabled(hGraphExec, hNode, isEnabled);
 #else
@@ -9095,6 +9590,7 @@ cudaError_t cudaGraphNodeGetEnabled(cudaGraphExec_t  hGraphExec, cudaGraphNode_t
 cudaError_t cudaGraphExecUpdate(cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph, cudaGraphExecUpdateResultInfo * resultInfo)
 {
 	TALLY_SPD_LOG("cudaGraphExecUpdate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecUpdate(hGraphExec, hGraph, resultInfo);
 #else
@@ -9105,8 +9601,8 @@ cudaError_t cudaGraphExecUpdate(cudaGraphExec_t  hGraphExec, cudaGraph_t  hGraph
 cudaError_t cudaGraphUpload(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaGraphUpload hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGraphUpload(graphExec, stream);
 #else
@@ -9147,6 +9643,7 @@ cudaError_t cudaGraphUpload(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 cudaError_t cudaGraphLaunch(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cudaGraphLaunch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphLaunch(graphExec, stream);
 #else
@@ -9157,8 +9654,8 @@ cudaError_t cudaGraphLaunch(cudaGraphExec_t  graphExec, cudaStream_t  stream)
 cudaError_t cudaGraphExecDestroy(cudaGraphExec_t  graphExec)
 {
 	TALLY_SPD_LOG("cudaGraphExecDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGraphExecDestroy(graphExec);
 #else
@@ -9198,8 +9695,8 @@ cudaError_t cudaGraphExecDestroy(cudaGraphExec_t  graphExec)
 cudaError_t cudaGraphDestroy(cudaGraph_t  graph)
 {
 	TALLY_SPD_LOG("cudaGraphDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGraphDestroy(graph);
 #else
@@ -9239,6 +9736,7 @@ cudaError_t cudaGraphDestroy(cudaGraph_t  graph)
 cudaError_t cudaGraphDebugDotPrint(cudaGraph_t  graph, const char * path, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaGraphDebugDotPrint hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphDebugDotPrint(graph, path, flags);
 #else
@@ -9249,6 +9747,7 @@ cudaError_t cudaGraphDebugDotPrint(cudaGraph_t  graph, const char * path, unsign
 cudaError_t cudaUserObjectCreate(cudaUserObject_t * object_out, void * ptr, cudaHostFn_t  destroy, unsigned int  initialRefcount, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaUserObjectCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaUserObjectCreate(object_out, ptr, destroy, initialRefcount, flags);
 #else
@@ -9259,6 +9758,7 @@ cudaError_t cudaUserObjectCreate(cudaUserObject_t * object_out, void * ptr, cuda
 cudaError_t cudaUserObjectRetain(cudaUserObject_t  object, unsigned int  count)
 {
 	TALLY_SPD_LOG("cudaUserObjectRetain hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaUserObjectRetain(object, count);
 #else
@@ -9269,6 +9769,7 @@ cudaError_t cudaUserObjectRetain(cudaUserObject_t  object, unsigned int  count)
 cudaError_t cudaUserObjectRelease(cudaUserObject_t  object, unsigned int  count)
 {
 	TALLY_SPD_LOG("cudaUserObjectRelease hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaUserObjectRelease(object, count);
 #else
@@ -9279,6 +9780,7 @@ cudaError_t cudaUserObjectRelease(cudaUserObject_t  object, unsigned int  count)
 cudaError_t cudaGraphRetainUserObject(cudaGraph_t  graph, cudaUserObject_t  object, unsigned int  count, unsigned int  flags)
 {
 	TALLY_SPD_LOG("cudaGraphRetainUserObject hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphRetainUserObject(graph, object, count, flags);
 #else
@@ -9289,6 +9791,7 @@ cudaError_t cudaGraphRetainUserObject(cudaGraph_t  graph, cudaUserObject_t  obje
 cudaError_t cudaGraphReleaseUserObject(cudaGraph_t  graph, cudaUserObject_t  object, unsigned int  count)
 {
 	TALLY_SPD_LOG("cudaGraphReleaseUserObject hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphReleaseUserObject(graph, object, count);
 #else
@@ -9299,6 +9802,7 @@ cudaError_t cudaGraphReleaseUserObject(cudaGraph_t  graph, cudaUserObject_t  obj
 cudaError_t cudaGraphAddNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, const cudaGraphNode_t * pDependencies, size_t  numDependencies, struct cudaGraphNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphAddNode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphAddNode(pGraphNode, graph, pDependencies, numDependencies, nodeParams);
 #else
@@ -9309,6 +9813,7 @@ cudaError_t cudaGraphAddNode(cudaGraphNode_t * pGraphNode, cudaGraph_t  graph, c
 cudaError_t cudaGraphNodeSetParams(cudaGraphNode_t  node, struct cudaGraphNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphNodeSetParams(node, nodeParams);
 #else
@@ -9319,6 +9824,7 @@ cudaError_t cudaGraphNodeSetParams(cudaGraphNode_t  node, struct cudaGraphNodePa
 cudaError_t cudaGraphExecNodeSetParams(cudaGraphExec_t  graphExec, cudaGraphNode_t  node, struct cudaGraphNodeParams * nodeParams)
 {
 	TALLY_SPD_LOG("cudaGraphExecNodeSetParams hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGraphExecNodeSetParams(graphExec, node, nodeParams);
 #else
@@ -9329,6 +9835,7 @@ cudaError_t cudaGraphExecNodeSetParams(cudaGraphExec_t  graphExec, cudaGraphNode
 cudaError_t cudaGetDriverEntryPoint(const char * symbol, void ** funcPtr, unsigned long long  flags, enum cudaDriverEntryPointQueryResult * driverStatus)
 {
 	TALLY_SPD_LOG("cudaGetDriverEntryPoint hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetDriverEntryPoint(symbol, funcPtr, flags, driverStatus);
 #else
@@ -9339,6 +9846,7 @@ cudaError_t cudaGetDriverEntryPoint(const char * symbol, void ** funcPtr, unsign
 cudaError_t cudaGetExportTable(const void ** ppExportTable, const cudaUUID_t * pExportTableId)
 {
 	TALLY_SPD_LOG("cudaGetExportTable hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetExportTable(ppExportTable, pExportTableId);
 #else
@@ -9349,6 +9857,7 @@ cudaError_t cudaGetExportTable(const void ** ppExportTable, const cudaUUID_t * p
 cudaError_t cudaGetFuncBySymbol(cudaFunction_t*  functionPtr, const void*  symbolPtr)
 {
 	TALLY_SPD_LOG("cudaGetFuncBySymbol hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetFuncBySymbol(functionPtr, symbolPtr);
 #else
@@ -9359,6 +9868,7 @@ cudaError_t cudaGetFuncBySymbol(cudaFunction_t*  functionPtr, const void*  symbo
 cudaError_t cudaGetKernel(cudaKernel_t * kernelPtr, const void * entryFuncAddr)
 {
 	TALLY_SPD_LOG("cudaGetKernel hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudaGetKernel(kernelPtr, entryFuncAddr);
 #else
@@ -9369,8 +9879,8 @@ cudaError_t cudaGetKernel(cudaKernel_t * kernelPtr, const void * entryFuncAddr)
 size_t cudnnGetVersion()
 {
 	TALLY_SPD_LOG("cudnnGetVersion hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetVersion();
 #else
@@ -9408,8 +9918,8 @@ size_t cudnnGetVersion()
 size_t cudnnGetMaxDeviceVersion()
 {
 	TALLY_SPD_LOG("cudnnGetMaxDeviceVersion hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetMaxDeviceVersion();
 #else
@@ -9447,8 +9957,8 @@ size_t cudnnGetMaxDeviceVersion()
 size_t cudnnGetCudartVersion()
 {
 	TALLY_SPD_LOG("cudnnGetCudartVersion hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetCudartVersion();
 #else
@@ -9486,6 +9996,7 @@ size_t cudnnGetCudartVersion()
 cudnnStatus_t cudnnQueryRuntimeError(cudnnHandle_t  handle, cudnnStatus_t * rstatus, cudnnErrQueryMode_t  mode, cudnnRuntimeTag_t * tag)
 {
 	TALLY_SPD_LOG("cudnnQueryRuntimeError hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnQueryRuntimeError(handle, rstatus, mode, tag);
 #else
@@ -9496,8 +10007,8 @@ cudnnStatus_t cudnnQueryRuntimeError(cudnnHandle_t  handle, cudnnStatus_t * rsta
 cudnnStatus_t cudnnGetProperty(libraryPropertyType  type, int * value)
 {
 	TALLY_SPD_LOG("cudnnGetProperty hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetProperty(type, value);
 #else
@@ -9538,8 +10049,8 @@ cudnnStatus_t cudnnGetProperty(libraryPropertyType  type, int * value)
 cudnnStatus_t cudnnDestroy(cudnnHandle_t  handle)
 {
 	TALLY_SPD_LOG("cudnnDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroy(handle);
 #else
@@ -9578,8 +10089,8 @@ cudnnStatus_t cudnnDestroy(cudnnHandle_t  handle)
 cudnnStatus_t cudnnSetStream(cudnnHandle_t  handle, cudaStream_t  streamId)
 {
 	TALLY_SPD_LOG("cudnnSetStream hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetStream(handle, streamId);
 #else
@@ -9619,8 +10130,8 @@ cudnnStatus_t cudnnSetStream(cudnnHandle_t  handle, cudaStream_t  streamId)
 cudnnStatus_t cudnnGetStream(cudnnHandle_t  handle, cudaStream_t * streamId)
 {
 	TALLY_SPD_LOG("cudnnGetStream hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetStream(handle, streamId);
 #else
@@ -9661,8 +10172,8 @@ cudnnStatus_t cudnnGetStream(cudnnHandle_t  handle, cudaStream_t * streamId)
 cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateTensorDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateTensorDescriptor(tensorDesc);
 #else
@@ -9702,8 +10213,8 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
 cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cudnnTensorFormat_t  format, cudnnDataType_t  dataType, int  n, int  c, int  h, int  w)
 {
 	TALLY_SPD_LOG("cudnnSetTensor4dDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetTensor4dDescriptor(tensorDesc, format, dataType, n, c, h, w);
 #else
@@ -9748,8 +10259,8 @@ cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, cudnnDataType_t  dataType, int  n, int  c, int  h, int  w, int  nStride, int  cStride, int  hStride, int  wStride)
 {
 	TALLY_SPD_LOG("cudnnSetTensor4dDescriptorEx hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetTensor4dDescriptorEx(tensorDesc, dataType, n, c, h, w, nStride, cStride, hStride, wStride);
 #else
@@ -9797,8 +10308,8 @@ cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
 cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t  tensorDesc, cudnnDataType_t * dataType, int * n, int * c, int * h, int * w, int * nStride, int * cStride, int * hStride, int * wStride)
 {
 	TALLY_SPD_LOG("cudnnGetTensor4dDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetTensor4dDescriptor(tensorDesc, dataType, n, c, h, w, nStride, cStride, hStride, wStride);
 #else
@@ -9855,6 +10366,7 @@ cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t  tensorDe
 cudnnStatus_t cudnnSetTensorNdDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, cudnnTensorFormat_t  format, cudnnDataType_t  dataType, int  nbDims, const int  dimA[])
 {
 	TALLY_SPD_LOG("cudnnSetTensorNdDescriptorEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetTensorNdDescriptorEx(tensorDesc, format, dataType, nbDims, dimA);
 #else
@@ -9865,8 +10377,8 @@ cudnnStatus_t cudnnSetTensorNdDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
 cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDesc, size_t * size)
 {
 	TALLY_SPD_LOG("cudnnGetTensorSizeInBytes hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetTensorSizeInBytes(tensorDesc, size);
 #else
@@ -9907,8 +10419,8 @@ cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDes
 cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyTensorDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyTensorDescriptor(tensorDesc);
 #else
@@ -9947,8 +10459,8 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
 cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  transformDesc, const cudnnTensorDescriptor_t  srcDesc, cudnnTensorDescriptor_t  destDesc, size_t * destSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnInitTransformDest hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnInitTransformDest(transformDesc, srcDesc, destDesc, destSizeInBytes);
 #else
@@ -9991,8 +10503,8 @@ cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  tra
 cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescriptor_t * transformDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateTensorTransformDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateTensorTransformDescriptor(transformDesc);
 #else
@@ -10032,6 +10544,7 @@ cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescripto
 cudnnStatus_t cudnnSetTensorTransformDescriptor(cudnnTensorTransformDescriptor_t  transformDesc, const uint32_t  nbDims, const cudnnTensorFormat_t  destFormat, const int32_t  padBeforeA[], const int32_t  padAfterA[], const uint32_t  foldA[], const cudnnFoldingDirection_t  direction)
 {
 	TALLY_SPD_LOG("cudnnSetTensorTransformDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetTensorTransformDescriptor(transformDesc, nbDims, destFormat, padBeforeA, padAfterA, foldA, direction);
 #else
@@ -10042,6 +10555,7 @@ cudnnStatus_t cudnnSetTensorTransformDescriptor(cudnnTensorTransformDescriptor_t
 cudnnStatus_t cudnnGetTensorTransformDescriptor(cudnnTensorTransformDescriptor_t  transformDesc, uint32_t  nbDimsRequested, cudnnTensorFormat_t * destFormat, int32_t  padBeforeA[], int32_t  padAfterA[], uint32_t  foldA[], cudnnFoldingDirection_t * direction)
 {
 	TALLY_SPD_LOG("cudnnGetTensorTransformDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetTensorTransformDescriptor(transformDesc, nbDimsRequested, destFormat, padBeforeA, padAfterA, foldA, direction);
 #else
@@ -10052,8 +10566,8 @@ cudnnStatus_t cudnnGetTensorTransformDescriptor(cudnnTensorTransformDescriptor_t
 cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescriptor_t  transformDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyTensorTransformDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyTensorTransformDescriptor(transformDesc);
 #else
@@ -10092,6 +10606,7 @@ cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescript
 cudnnStatus_t cudnnTransformTensorEx(cudnnHandle_t  handle, const cudnnTensorTransformDescriptor_t  transDesc, const void * alpha, const cudnnTensorDescriptor_t  srcDesc, const void * srcData, const void * beta, const cudnnTensorDescriptor_t  destDesc, void * destData)
 {
 	TALLY_SPD_LOG("cudnnTransformTensorEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnTransformTensorEx(handle, transDesc, alpha, srcDesc, srcData, beta, destDesc, destData);
 #else
@@ -10102,8 +10617,8 @@ cudnnStatus_t cudnnTransformTensorEx(cudnnHandle_t  handle, const cudnnTensorTra
 cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t * opTensorDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateOpTensorDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateOpTensorDescriptor(opTensorDesc);
 #else
@@ -10143,8 +10658,8 @@ cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t * opTensor
 cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc, cudnnOpTensorOp_t  opTensorOp, cudnnDataType_t  opTensorCompType, cudnnNanPropagation_t  opTensorNanOpt)
 {
 	TALLY_SPD_LOG("cudnnSetOpTensorDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetOpTensorDescriptor(opTensorDesc, opTensorOp, opTensorCompType, opTensorNanOpt);
 #else
@@ -10186,8 +10701,8 @@ cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc
 cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t  opTensorDesc, cudnnOpTensorOp_t * opTensorOp, cudnnDataType_t * opTensorCompType, cudnnNanPropagation_t * opTensorNanOpt)
 {
 	TALLY_SPD_LOG("cudnnGetOpTensorDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetOpTensorDescriptor(opTensorDesc, opTensorOp, opTensorCompType, opTensorNanOpt);
 #else
@@ -10232,6 +10747,7 @@ cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t  opTens
 cudnnStatus_t cudnnDestroyOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyOpTensorDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDestroyOpTensorDescriptor(opTensorDesc);
 #else
@@ -10242,6 +10758,7 @@ cudnnStatus_t cudnnDestroyOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensor
 cudnnStatus_t cudnnOpTensor(cudnnHandle_t  handle, const cudnnOpTensorDescriptor_t  opTensorDesc, const void * alpha1, const cudnnTensorDescriptor_t  aDesc, const void * A, const void * alpha2, const cudnnTensorDescriptor_t  bDesc, const void * B, const void * beta, const cudnnTensorDescriptor_t  cDesc, void * C)
 {
 	TALLY_SPD_LOG("cudnnOpTensor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnOpTensor(handle, opTensorDesc, alpha1, aDesc, A, alpha2, bDesc, B, beta, cDesc, C);
 #else
@@ -10252,8 +10769,8 @@ cudnnStatus_t cudnnOpTensor(cudnnHandle_t  handle, const cudnnOpTensorDescriptor
 cudnnStatus_t cudnnCreateReduceTensorDescriptor(cudnnReduceTensorDescriptor_t * reduceTensorDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateReduceTensorDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateReduceTensorDescriptor(reduceTensorDesc);
 #else
@@ -10293,8 +10810,8 @@ cudnnStatus_t cudnnCreateReduceTensorDescriptor(cudnnReduceTensorDescriptor_t * 
 cudnnStatus_t cudnnSetReduceTensorDescriptor(cudnnReduceTensorDescriptor_t  reduceTensorDesc, cudnnReduceTensorOp_t  reduceTensorOp, cudnnDataType_t  reduceTensorCompType, cudnnNanPropagation_t  reduceTensorNanOpt, cudnnReduceTensorIndices_t  reduceTensorIndices, cudnnIndicesType_t  reduceTensorIndicesType)
 {
 	TALLY_SPD_LOG("cudnnSetReduceTensorDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetReduceTensorDescriptor(reduceTensorDesc, reduceTensorOp, reduceTensorCompType, reduceTensorNanOpt, reduceTensorIndices, reduceTensorIndicesType);
 #else
@@ -10338,6 +10855,7 @@ cudnnStatus_t cudnnSetReduceTensorDescriptor(cudnnReduceTensorDescriptor_t  redu
 cudnnStatus_t cudnnGetReduceTensorDescriptor(const cudnnReduceTensorDescriptor_t  reduceTensorDesc, cudnnReduceTensorOp_t * reduceTensorOp, cudnnDataType_t * reduceTensorCompType, cudnnNanPropagation_t * reduceTensorNanOpt, cudnnReduceTensorIndices_t * reduceTensorIndices, cudnnIndicesType_t * reduceTensorIndicesType)
 {
 	TALLY_SPD_LOG("cudnnGetReduceTensorDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetReduceTensorDescriptor(reduceTensorDesc, reduceTensorOp, reduceTensorCompType, reduceTensorNanOpt, reduceTensorIndices, reduceTensorIndicesType);
 #else
@@ -10348,8 +10866,8 @@ cudnnStatus_t cudnnGetReduceTensorDescriptor(const cudnnReduceTensorDescriptor_t
 cudnnStatus_t cudnnDestroyReduceTensorDescriptor(cudnnReduceTensorDescriptor_t  reduceTensorDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyReduceTensorDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyReduceTensorDescriptor(reduceTensorDesc);
 #else
@@ -10388,8 +10906,8 @@ cudnnStatus_t cudnnDestroyReduceTensorDescriptor(cudnnReduceTensorDescriptor_t  
 cudnnStatus_t cudnnGetReductionIndicesSize(cudnnHandle_t  handle, const cudnnReduceTensorDescriptor_t  reduceTensorDesc, const cudnnTensorDescriptor_t  aDesc, const cudnnTensorDescriptor_t  cDesc, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetReductionIndicesSize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetReductionIndicesSize(handle, reduceTensorDesc, aDesc, cDesc, sizeInBytes);
 #else
@@ -10433,8 +10951,8 @@ cudnnStatus_t cudnnGetReductionIndicesSize(cudnnHandle_t  handle, const cudnnRed
 cudnnStatus_t cudnnGetReductionWorkspaceSize(cudnnHandle_t  handle, const cudnnReduceTensorDescriptor_t  reduceTensorDesc, const cudnnTensorDescriptor_t  aDesc, const cudnnTensorDescriptor_t  cDesc, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetReductionWorkspaceSize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetReductionWorkspaceSize(handle, reduceTensorDesc, aDesc, cDesc, sizeInBytes);
 #else
@@ -10478,6 +10996,7 @@ cudnnStatus_t cudnnGetReductionWorkspaceSize(cudnnHandle_t  handle, const cudnnR
 cudnnStatus_t cudnnSetTensor(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  yDesc, void * y, const void * valuePtr)
 {
 	TALLY_SPD_LOG("cudnnSetTensor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetTensor(handle, yDesc, y, valuePtr);
 #else
@@ -10488,6 +11007,7 @@ cudnnStatus_t cudnnSetTensor(cudnnHandle_t  handle, const cudnnTensorDescriptor_
 cudnnStatus_t cudnnScaleTensor(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  yDesc, void * y, const void * alpha)
 {
 	TALLY_SPD_LOG("cudnnScaleTensor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnScaleTensor(handle, yDesc, y, alpha);
 #else
@@ -10498,8 +11018,8 @@ cudnnStatus_t cudnnScaleTensor(cudnnHandle_t  handle, const cudnnTensorDescripto
 cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateFilterDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateFilterDescriptor(filterDesc);
 #else
@@ -10539,8 +11059,8 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
 cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t  dataType, cudnnTensorFormat_t  format, int  k, int  c, int  h, int  w)
 {
 	TALLY_SPD_LOG("cudnnSetFilter4dDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetFilter4dDescriptor(filterDesc, dataType, format, k, c, h, w);
 #else
@@ -10585,6 +11105,7 @@ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 cudnnStatus_t cudnnGetFilter4dDescriptor(const cudnnFilterDescriptor_t  filterDesc, cudnnDataType_t * dataType, cudnnTensorFormat_t * format, int * k, int * c, int * h, int * w)
 {
 	TALLY_SPD_LOG("cudnnGetFilter4dDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetFilter4dDescriptor(filterDesc, dataType, format, k, c, h, w);
 #else
@@ -10595,8 +11116,8 @@ cudnnStatus_t cudnnGetFilter4dDescriptor(const cudnnFilterDescriptor_t  filterDe
 cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDesc, size_t * size)
 {
 	TALLY_SPD_LOG("cudnnGetFilterSizeInBytes hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetFilterSizeInBytes(filterDesc, size);
 #else
@@ -10637,6 +11158,7 @@ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDes
 cudnnStatus_t cudnnTransformFilter(cudnnHandle_t  handle, const cudnnTensorTransformDescriptor_t  transDesc, const void * alpha, const cudnnFilterDescriptor_t  srcDesc, const void * srcData, const void * beta, const cudnnFilterDescriptor_t  destDesc, void * destData)
 {
 	TALLY_SPD_LOG("cudnnTransformFilter hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnTransformFilter(handle, transDesc, alpha, srcDesc, srcData, beta, destDesc, destData);
 #else
@@ -10647,8 +11169,8 @@ cudnnStatus_t cudnnTransformFilter(cudnnHandle_t  handle, const cudnnTensorTrans
 cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t  filterDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyFilterDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyFilterDescriptor(filterDesc);
 #else
@@ -10687,8 +11209,8 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t  filterDesc)
 cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t * poolingDesc)
 {
 	TALLY_SPD_LOG("cudnnCreatePoolingDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreatePoolingDescriptor(poolingDesc);
 #else
@@ -10728,6 +11250,7 @@ cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t * poolingDes
 cudnnStatus_t cudnnSetPooling2dDescriptor(cudnnPoolingDescriptor_t  poolingDesc, cudnnPoolingMode_t  mode, cudnnNanPropagation_t  maxpoolingNanOpt, int  windowHeight, int  windowWidth, int  verticalPadding, int  horizontalPadding, int  verticalStride, int  horizontalStride)
 {
 	TALLY_SPD_LOG("cudnnSetPooling2dDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetPooling2dDescriptor(poolingDesc, mode, maxpoolingNanOpt, windowHeight, windowWidth, verticalPadding, horizontalPadding, verticalStride, horizontalStride);
 #else
@@ -10738,6 +11261,7 @@ cudnnStatus_t cudnnSetPooling2dDescriptor(cudnnPoolingDescriptor_t  poolingDesc,
 cudnnStatus_t cudnnGetPooling2dDescriptor(const cudnnPoolingDescriptor_t  poolingDesc, cudnnPoolingMode_t * mode, cudnnNanPropagation_t * maxpoolingNanOpt, int * windowHeight, int * windowWidth, int * verticalPadding, int * horizontalPadding, int * verticalStride, int * horizontalStride)
 {
 	TALLY_SPD_LOG("cudnnGetPooling2dDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetPooling2dDescriptor(poolingDesc, mode, maxpoolingNanOpt, windowHeight, windowWidth, verticalPadding, horizontalPadding, verticalStride, horizontalStride);
 #else
@@ -10748,6 +11272,7 @@ cudnnStatus_t cudnnGetPooling2dDescriptor(const cudnnPoolingDescriptor_t  poolin
 cudnnStatus_t cudnnGetPooling2dForwardOutputDim(const cudnnPoolingDescriptor_t  poolingDesc, const cudnnTensorDescriptor_t  inputTensorDesc, int * n, int * c, int * h, int * w)
 {
 	TALLY_SPD_LOG("cudnnGetPooling2dForwardOutputDim hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetPooling2dForwardOutputDim(poolingDesc, inputTensorDesc, n, c, h, w);
 #else
@@ -10758,8 +11283,8 @@ cudnnStatus_t cudnnGetPooling2dForwardOutputDim(const cudnnPoolingDescriptor_t  
 cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t  poolingDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyPoolingDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyPoolingDescriptor(poolingDesc);
 #else
@@ -10798,8 +11323,8 @@ cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t  poolingDes
 cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t * activationDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateActivationDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateActivationDescriptor(activationDesc);
 #else
@@ -10839,8 +11364,8 @@ cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t * acti
 cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t  activationDesc, cudnnActivationMode_t  mode, cudnnNanPropagation_t  reluNanOpt, double  coef)
 {
 	TALLY_SPD_LOG("cudnnSetActivationDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetActivationDescriptor(activationDesc, mode, reluNanOpt, coef);
 #else
@@ -10882,6 +11407,7 @@ cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t  activati
 cudnnStatus_t cudnnGetActivationDescriptor(const cudnnActivationDescriptor_t  activationDesc, cudnnActivationMode_t * mode, cudnnNanPropagation_t * reluNanOpt, double * coef)
 {
 	TALLY_SPD_LOG("cudnnGetActivationDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetActivationDescriptor(activationDesc, mode, reluNanOpt, coef);
 #else
@@ -10892,6 +11418,7 @@ cudnnStatus_t cudnnGetActivationDescriptor(const cudnnActivationDescriptor_t  ac
 cudnnStatus_t cudnnSetActivationDescriptorSwishBeta(cudnnActivationDescriptor_t  activationDesc, double  swish_beta)
 {
 	TALLY_SPD_LOG("cudnnSetActivationDescriptorSwishBeta hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetActivationDescriptorSwishBeta(activationDesc, swish_beta);
 #else
@@ -10902,6 +11429,7 @@ cudnnStatus_t cudnnSetActivationDescriptorSwishBeta(cudnnActivationDescriptor_t 
 cudnnStatus_t cudnnGetActivationDescriptorSwishBeta(cudnnActivationDescriptor_t  activationDesc, double * swish_beta)
 {
 	TALLY_SPD_LOG("cudnnGetActivationDescriptorSwishBeta hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetActivationDescriptorSwishBeta(activationDesc, swish_beta);
 #else
@@ -10912,8 +11440,8 @@ cudnnStatus_t cudnnGetActivationDescriptorSwishBeta(cudnnActivationDescriptor_t 
 cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t  activationDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyActivationDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyActivationDescriptor(activationDesc);
 #else
@@ -10952,8 +11480,8 @@ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t  acti
 cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t * normDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateLRNDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateLRNDescriptor(normDesc);
 #else
@@ -10993,8 +11521,8 @@ cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t * normDesc)
 cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned  lrnN, double  lrnAlpha, double  lrnBeta, double  lrnK)
 {
 	TALLY_SPD_LOG("cudnnSetLRNDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetLRNDescriptor(normDesc, lrnN, lrnAlpha, lrnBeta, lrnK);
 #else
@@ -11037,6 +11565,7 @@ cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned  lr
 cudnnStatus_t cudnnGetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned * lrnN, double * lrnAlpha, double * lrnBeta, double * lrnK)
 {
 	TALLY_SPD_LOG("cudnnGetLRNDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetLRNDescriptor(normDesc, lrnN, lrnAlpha, lrnBeta, lrnK);
 #else
@@ -11047,8 +11576,8 @@ cudnnStatus_t cudnnGetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned * l
 cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t  lrnDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyLRNDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyLRNDescriptor(lrnDesc);
 #else
@@ -11087,6 +11616,7 @@ cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t  lrnDesc)
 cudnnStatus_t cudnnDivisiveNormalizationForward(cudnnHandle_t  handle, cudnnLRNDescriptor_t  normDesc, cudnnDivNormMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * means, void * temp, void * temp2, const void * beta, const cudnnTensorDescriptor_t  yDesc, void * y)
 {
 	TALLY_SPD_LOG("cudnnDivisiveNormalizationForward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDivisiveNormalizationForward(handle, normDesc, mode, alpha, xDesc, x, means, temp, temp2, beta, yDesc, y);
 #else
@@ -11097,6 +11627,7 @@ cudnnStatus_t cudnnDivisiveNormalizationForward(cudnnHandle_t  handle, cudnnLRND
 cudnnStatus_t cudnnDeriveBNTensorDescriptor(cudnnTensorDescriptor_t  derivedBnDesc, const cudnnTensorDescriptor_t  xDesc, cudnnBatchNormMode_t  mode)
 {
 	TALLY_SPD_LOG("cudnnDeriveBNTensorDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDeriveBNTensorDescriptor(derivedBnDesc, xDesc, mode);
 #else
@@ -11107,6 +11638,7 @@ cudnnStatus_t cudnnDeriveBNTensorDescriptor(cudnnTensorDescriptor_t  derivedBnDe
 cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t  handle, cudnnBatchNormMode_t  mode, const void * alpha, const void * beta, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  yDesc, void * y, const cudnnTensorDescriptor_t  bnScaleBiasMeanVarDesc, const void * bnScale, const void * bnBias, const void * estimatedMean, const void * estimatedVariance, double  epsilon)
 {
 	TALLY_SPD_LOG("cudnnBatchNormalizationForwardInference hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnBatchNormalizationForwardInference(handle, mode, alpha, beta, xDesc, x, yDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
 #else
@@ -11117,6 +11649,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t  handle, cud
 cudnnStatus_t cudnnDeriveNormTensorDescriptor(cudnnTensorDescriptor_t  derivedNormScaleBiasDesc, cudnnTensorDescriptor_t  derivedNormMeanVarDesc, const cudnnTensorDescriptor_t  xDesc, cudnnNormMode_t  mode, int  groupCnt)
 {
 	TALLY_SPD_LOG("cudnnDeriveNormTensorDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDeriveNormTensorDescriptor(derivedNormScaleBiasDesc, derivedNormMeanVarDesc, xDesc, mode, groupCnt);
 #else
@@ -11127,6 +11660,7 @@ cudnnStatus_t cudnnDeriveNormTensorDescriptor(cudnnTensorDescriptor_t  derivedNo
 cudnnStatus_t cudnnNormalizationForwardInference(cudnnHandle_t  handle, cudnnNormMode_t  mode, cudnnNormOps_t  normOps, cudnnNormAlgo_t  algo, const void * alpha, const void * beta, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  normScaleBiasDesc, const void * normScale, const void * normBias, const cudnnTensorDescriptor_t  normMeanVarDesc, const void * estimatedMean, const void * estimatedVariance, const cudnnTensorDescriptor_t  zDesc, const void * z, cudnnActivationDescriptor_t  activationDesc, const cudnnTensorDescriptor_t  yDesc, void * y, double  epsilon, int  groupCnt)
 {
 	TALLY_SPD_LOG("cudnnNormalizationForwardInference hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnNormalizationForwardInference(handle, mode, normOps, algo, alpha, beta, xDesc, x, normScaleBiasDesc, normScale, normBias, normMeanVarDesc, estimatedMean, estimatedVariance, zDesc, z, activationDesc, yDesc, y, epsilon, groupCnt);
 #else
@@ -11137,6 +11671,7 @@ cudnnStatus_t cudnnNormalizationForwardInference(cudnnHandle_t  handle, cudnnNor
 cudnnStatus_t cudnnCreateSpatialTransformerDescriptor(cudnnSpatialTransformerDescriptor_t * stDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateSpatialTransformerDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCreateSpatialTransformerDescriptor(stDesc);
 #else
@@ -11147,6 +11682,7 @@ cudnnStatus_t cudnnCreateSpatialTransformerDescriptor(cudnnSpatialTransformerDes
 cudnnStatus_t cudnnSetSpatialTransformerNdDescriptor(cudnnSpatialTransformerDescriptor_t  stDesc, cudnnSamplerType_t  samplerType, cudnnDataType_t  dataType, const int  nbDims, const int  dimA[])
 {
 	TALLY_SPD_LOG("cudnnSetSpatialTransformerNdDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetSpatialTransformerNdDescriptor(stDesc, samplerType, dataType, nbDims, dimA);
 #else
@@ -11157,6 +11693,7 @@ cudnnStatus_t cudnnSetSpatialTransformerNdDescriptor(cudnnSpatialTransformerDesc
 cudnnStatus_t cudnnDestroySpatialTransformerDescriptor(cudnnSpatialTransformerDescriptor_t  stDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroySpatialTransformerDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDestroySpatialTransformerDescriptor(stDesc);
 #else
@@ -11167,6 +11704,7 @@ cudnnStatus_t cudnnDestroySpatialTransformerDescriptor(cudnnSpatialTransformerDe
 cudnnStatus_t cudnnSpatialTfGridGeneratorForward(cudnnHandle_t  handle, const cudnnSpatialTransformerDescriptor_t  stDesc, const void * theta, void * grid)
 {
 	TALLY_SPD_LOG("cudnnSpatialTfGridGeneratorForward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSpatialTfGridGeneratorForward(handle, stDesc, theta, grid);
 #else
@@ -11177,6 +11715,7 @@ cudnnStatus_t cudnnSpatialTfGridGeneratorForward(cudnnHandle_t  handle, const cu
 cudnnStatus_t cudnnSpatialTfSamplerForward(cudnnHandle_t  handle, cudnnSpatialTransformerDescriptor_t  stDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * grid, const void * beta, cudnnTensorDescriptor_t  yDesc, void * y)
 {
 	TALLY_SPD_LOG("cudnnSpatialTfSamplerForward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSpatialTfSamplerForward(handle, stDesc, alpha, xDesc, x, grid, beta, yDesc, y);
 #else
@@ -11187,8 +11726,8 @@ cudnnStatus_t cudnnSpatialTfSamplerForward(cudnnHandle_t  handle, cudnnSpatialTr
 cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateDropoutDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateDropoutDescriptor(dropoutDesc);
 #else
@@ -11228,8 +11767,8 @@ cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDes
 cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyDropoutDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyDropoutDescriptor(dropoutDesc);
 #else
@@ -11268,8 +11807,8 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t  handle, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnDropoutGetStatesSize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDropoutGetStatesSize(handle, sizeInBytes);
 #else
@@ -11310,6 +11849,7 @@ cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t  handle, size_t * sizeInBy
 cudnnStatus_t cudnnDropoutGetReserveSpaceSize(cudnnTensorDescriptor_t  xdesc, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnDropoutGetReserveSpaceSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDropoutGetReserveSpaceSize(xdesc, sizeInBytes);
 #else
@@ -11320,8 +11860,8 @@ cudnnStatus_t cudnnDropoutGetReserveSpaceSize(cudnnTensorDescriptor_t  xdesc, si
 cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, cudnnHandle_t  handle, float  dropout, void * states, size_t  stateSizeInBytes, unsigned long long  seed)
 {
 	TALLY_SPD_LOG("cudnnSetDropoutDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetDropoutDescriptor(dropoutDesc, handle, dropout, states, stateSizeInBytes, seed);
 #else
@@ -11365,8 +11905,8 @@ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
 cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, cudnnHandle_t  handle, float  dropout, void * states, size_t  stateSizeInBytes, unsigned long long  seed)
 {
 	TALLY_SPD_LOG("cudnnRestoreDropoutDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnRestoreDropoutDescriptor(dropoutDesc, handle, dropout, states, stateSizeInBytes, seed);
 #else
@@ -11410,6 +11950,7 @@ cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
 cudnnStatus_t cudnnGetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, cudnnHandle_t  handle, float * dropout, void ** states, unsigned long long * seed)
 {
 	TALLY_SPD_LOG("cudnnGetDropoutDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetDropoutDescriptor(dropoutDesc, handle, dropout, states, seed);
 #else
@@ -11420,6 +11961,7 @@ cudnnStatus_t cudnnGetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
 cudnnStatus_t cudnnDropoutForward(cudnnHandle_t  handle, const cudnnDropoutDescriptor_t  dropoutDesc, const cudnnTensorDescriptor_t  xdesc, const void * x, const cudnnTensorDescriptor_t  ydesc, void * y, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnDropoutForward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDropoutForward(handle, dropoutDesc, xdesc, x, ydesc, y, reserveSpace, reserveSpaceSizeInBytes);
 #else
@@ -11430,6 +11972,7 @@ cudnnStatus_t cudnnDropoutForward(cudnnHandle_t  handle, const cudnnDropoutDescr
 cudnnStatus_t cudnnCreateAlgorithmDescriptor(cudnnAlgorithmDescriptor_t * algoDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateAlgorithmDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCreateAlgorithmDescriptor(algoDesc);
 #else
@@ -11440,6 +11983,7 @@ cudnnStatus_t cudnnCreateAlgorithmDescriptor(cudnnAlgorithmDescriptor_t * algoDe
 cudnnStatus_t cudnnSetAlgorithmDescriptor(cudnnAlgorithmDescriptor_t  algoDesc, cudnnAlgorithm_t  algorithm)
 {
 	TALLY_SPD_LOG("cudnnSetAlgorithmDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetAlgorithmDescriptor(algoDesc, algorithm);
 #else
@@ -11450,6 +11994,7 @@ cudnnStatus_t cudnnSetAlgorithmDescriptor(cudnnAlgorithmDescriptor_t  algoDesc, 
 cudnnStatus_t cudnnGetAlgorithmDescriptor(const cudnnAlgorithmDescriptor_t  algoDesc, cudnnAlgorithm_t * algorithm)
 {
 	TALLY_SPD_LOG("cudnnGetAlgorithmDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetAlgorithmDescriptor(algoDesc, algorithm);
 #else
@@ -11460,6 +12005,7 @@ cudnnStatus_t cudnnGetAlgorithmDescriptor(const cudnnAlgorithmDescriptor_t  algo
 cudnnStatus_t cudnnCopyAlgorithmDescriptor(const cudnnAlgorithmDescriptor_t  src, cudnnAlgorithmDescriptor_t  dest)
 {
 	TALLY_SPD_LOG("cudnnCopyAlgorithmDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCopyAlgorithmDescriptor(src, dest);
 #else
@@ -11470,6 +12016,7 @@ cudnnStatus_t cudnnCopyAlgorithmDescriptor(const cudnnAlgorithmDescriptor_t  src
 cudnnStatus_t cudnnDestroyAlgorithmDescriptor(cudnnAlgorithmDescriptor_t  algoDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyAlgorithmDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDestroyAlgorithmDescriptor(algoDesc);
 #else
@@ -11480,6 +12027,7 @@ cudnnStatus_t cudnnDestroyAlgorithmDescriptor(cudnnAlgorithmDescriptor_t  algoDe
 cudnnStatus_t cudnnCreateAlgorithmPerformance(cudnnAlgorithmPerformance_t * algoPerf, int  numberToCreate)
 {
 	TALLY_SPD_LOG("cudnnCreateAlgorithmPerformance hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCreateAlgorithmPerformance(algoPerf, numberToCreate);
 #else
@@ -11490,6 +12038,7 @@ cudnnStatus_t cudnnCreateAlgorithmPerformance(cudnnAlgorithmPerformance_t * algo
 cudnnStatus_t cudnnSetAlgorithmPerformance(cudnnAlgorithmPerformance_t  algoPerf, cudnnAlgorithmDescriptor_t  algoDesc, cudnnStatus_t  status, float  time, size_t  memory)
 {
 	TALLY_SPD_LOG("cudnnSetAlgorithmPerformance hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetAlgorithmPerformance(algoPerf, algoDesc, status, time, memory);
 #else
@@ -11500,6 +12049,7 @@ cudnnStatus_t cudnnSetAlgorithmPerformance(cudnnAlgorithmPerformance_t  algoPerf
 cudnnStatus_t cudnnGetAlgorithmPerformance(const cudnnAlgorithmPerformance_t  algoPerf, cudnnAlgorithmDescriptor_t * algoDesc, cudnnStatus_t * status, float * time, size_t * memory)
 {
 	TALLY_SPD_LOG("cudnnGetAlgorithmPerformance hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetAlgorithmPerformance(algoPerf, algoDesc, status, time, memory);
 #else
@@ -11510,6 +12060,7 @@ cudnnStatus_t cudnnGetAlgorithmPerformance(const cudnnAlgorithmPerformance_t  al
 cudnnStatus_t cudnnDestroyAlgorithmPerformance(cudnnAlgorithmPerformance_t * algoPerf, int  numberToDestroy)
 {
 	TALLY_SPD_LOG("cudnnDestroyAlgorithmPerformance hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDestroyAlgorithmPerformance(algoPerf, numberToDestroy);
 #else
@@ -11520,6 +12071,7 @@ cudnnStatus_t cudnnDestroyAlgorithmPerformance(cudnnAlgorithmPerformance_t * alg
 cudnnStatus_t cudnnGetAlgorithmSpaceSize(cudnnHandle_t  handle, cudnnAlgorithmDescriptor_t  algoDesc, size_t * algoSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetAlgorithmSpaceSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetAlgorithmSpaceSize(handle, algoDesc, algoSpaceSizeInBytes);
 #else
@@ -11530,6 +12082,7 @@ cudnnStatus_t cudnnGetAlgorithmSpaceSize(cudnnHandle_t  handle, cudnnAlgorithmDe
 cudnnStatus_t cudnnSaveAlgorithm(cudnnHandle_t  handle, cudnnAlgorithmDescriptor_t  algoDesc, void * algoSpace, size_t  algoSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnSaveAlgorithm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSaveAlgorithm(handle, algoDesc, algoSpace, algoSpaceSizeInBytes);
 #else
@@ -11540,6 +12093,7 @@ cudnnStatus_t cudnnSaveAlgorithm(cudnnHandle_t  handle, cudnnAlgorithmDescriptor
 cudnnStatus_t cudnnRestoreAlgorithm(cudnnHandle_t  handle, void * algoSpace, size_t  algoSpaceSizeInBytes, cudnnAlgorithmDescriptor_t  algoDesc)
 {
 	TALLY_SPD_LOG("cudnnRestoreAlgorithm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnRestoreAlgorithm(handle, algoSpace, algoSpaceSizeInBytes, algoDesc);
 #else
@@ -11550,6 +12104,7 @@ cudnnStatus_t cudnnRestoreAlgorithm(cudnnHandle_t  handle, void * algoSpace, siz
 cudnnStatus_t cudnnSetCallback(unsigned  mask, void * udata, cudnnCallback_t  fptr)
 {
 	TALLY_SPD_LOG("cudnnSetCallback hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetCallback(mask, udata, fptr);
 #else
@@ -11560,6 +12115,7 @@ cudnnStatus_t cudnnSetCallback(unsigned  mask, void * udata, cudnnCallback_t  fp
 cudnnStatus_t cudnnGetCallback(unsigned * mask, void ** udata, cudnnCallback_t * fptr)
 {
 	TALLY_SPD_LOG("cudnnGetCallback hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetCallback(mask, udata, fptr);
 #else
@@ -11570,8 +12126,8 @@ cudnnStatus_t cudnnGetCallback(unsigned * mask, void ** udata, cudnnCallback_t *
 cudnnStatus_t cudnnOpsInferVersionCheck()
 {
 	TALLY_SPD_LOG("cudnnOpsInferVersionCheck hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnOpsInferVersionCheck();
 #else
@@ -11609,6 +12165,7 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
 cudnnStatus_t cudnnSoftmaxBackward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t  algo, cudnnSoftmaxMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)
 {
 	TALLY_SPD_LOG("cudnnSoftmaxBackward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSoftmaxBackward(handle, algo, mode, alpha, yDesc, y, dyDesc, dy, beta, dxDesc, dx);
 #else
@@ -11619,6 +12176,7 @@ cudnnStatus_t cudnnSoftmaxBackward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_
 cudnnStatus_t cudnnPoolingBackward(cudnnHandle_t  handle, const cudnnPoolingDescriptor_t  poolingDesc, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)
 {
 	TALLY_SPD_LOG("cudnnPoolingBackward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnPoolingBackward(handle, poolingDesc, alpha, yDesc, y, dyDesc, dy, xDesc, x, beta, dxDesc, dx);
 #else
@@ -11629,6 +12187,7 @@ cudnnStatus_t cudnnPoolingBackward(cudnnHandle_t  handle, const cudnnPoolingDesc
 cudnnStatus_t cudnnActivationBackward(cudnnHandle_t  handle, cudnnActivationDescriptor_t  activationDesc, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)
 {
 	TALLY_SPD_LOG("cudnnActivationBackward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnActivationBackward(handle, activationDesc, alpha, yDesc, y, dyDesc, dy, xDesc, x, beta, dxDesc, dx);
 #else
@@ -11639,6 +12198,7 @@ cudnnStatus_t cudnnActivationBackward(cudnnHandle_t  handle, cudnnActivationDesc
 cudnnStatus_t cudnnLRNCrossChannelBackward(cudnnHandle_t  handle, cudnnLRNDescriptor_t  normDesc, cudnnLRNMode_t  lrnMode, const void * alpha, const cudnnTensorDescriptor_t  yDesc, const void * y, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)
 {
 	TALLY_SPD_LOG("cudnnLRNCrossChannelBackward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnLRNCrossChannelBackward(handle, normDesc, lrnMode, alpha, yDesc, y, dyDesc, dy, xDesc, x, beta, dxDesc, dx);
 #else
@@ -11649,6 +12209,7 @@ cudnnStatus_t cudnnLRNCrossChannelBackward(cudnnHandle_t  handle, cudnnLRNDescri
 cudnnStatus_t cudnnDivisiveNormalizationBackward(cudnnHandle_t  handle, cudnnLRNDescriptor_t  normDesc, cudnnDivNormMode_t  mode, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * means, const void * dy, void * temp, void * temp2, const void * beta, const cudnnTensorDescriptor_t  dXdMeansDesc, void * dx, void * dMeans)
 {
 	TALLY_SPD_LOG("cudnnDivisiveNormalizationBackward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDivisiveNormalizationBackward(handle, normDesc, mode, alpha, xDesc, x, means, dy, temp, temp2, beta, dXdMeansDesc, dx, dMeans);
 #else
@@ -11659,8 +12220,8 @@ cudnnStatus_t cudnnDivisiveNormalizationBackward(cudnnHandle_t  handle, cudnnLRN
 cudnnStatus_t cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(cudnnHandle_t  handle, cudnnBatchNormMode_t  mode, cudnnBatchNormOps_t  bnOps, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  zDesc, const cudnnTensorDescriptor_t  yDesc, const cudnnTensorDescriptor_t  bnScaleBiasMeanVarDesc, const cudnnActivationDescriptor_t  activationDesc, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(handle, mode, bnOps, xDesc, zDesc, yDesc, bnScaleBiasMeanVarDesc, activationDesc, sizeInBytes);
 #else
@@ -11708,8 +12269,8 @@ cudnnStatus_t cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(cudnnHand
 cudnnStatus_t cudnnGetBatchNormalizationBackwardExWorkspaceSize(cudnnHandle_t  handle, cudnnBatchNormMode_t  mode, cudnnBatchNormOps_t  bnOps, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  yDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnTensorDescriptor_t  dzDesc, const cudnnTensorDescriptor_t  dxDesc, const cudnnTensorDescriptor_t  dBnScaleBiasDesc, const cudnnActivationDescriptor_t  activationDesc, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetBatchNormalizationBackwardExWorkspaceSize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetBatchNormalizationBackwardExWorkspaceSize(handle, mode, bnOps, xDesc, yDesc, dyDesc, dzDesc, dxDesc, dBnScaleBiasDesc, activationDesc, sizeInBytes);
 #else
@@ -11759,8 +12320,8 @@ cudnnStatus_t cudnnGetBatchNormalizationBackwardExWorkspaceSize(cudnnHandle_t  h
 cudnnStatus_t cudnnGetBatchNormalizationTrainingExReserveSpaceSize(cudnnHandle_t  handle, cudnnBatchNormMode_t  mode, cudnnBatchNormOps_t  bnOps, const cudnnActivationDescriptor_t  activationDesc, const cudnnTensorDescriptor_t  xDesc, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetBatchNormalizationTrainingExReserveSpaceSize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetBatchNormalizationTrainingExReserveSpaceSize(handle, mode, bnOps, activationDesc, xDesc, sizeInBytes);
 #else
@@ -11805,6 +12366,7 @@ cudnnStatus_t cudnnGetBatchNormalizationTrainingExReserveSpaceSize(cudnnHandle_t
 cudnnStatus_t cudnnBatchNormalizationForwardTraining(cudnnHandle_t  handle, cudnnBatchNormMode_t  mode, const void * alpha, const void * beta, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  yDesc, void * y, const cudnnTensorDescriptor_t  bnScaleBiasMeanVarDesc, const void * bnScale, const void * bnBias, double  exponentialAverageFactor, void * resultRunningMean, void * resultRunningVariance, double  epsilon, void * resultSaveMean, void * resultSaveInvVariance)
 {
 	TALLY_SPD_LOG("cudnnBatchNormalizationForwardTraining hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnBatchNormalizationForwardTraining(handle, mode, alpha, beta, xDesc, x, yDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, exponentialAverageFactor, resultRunningMean, resultRunningVariance, epsilon, resultSaveMean, resultSaveInvVariance);
 #else
@@ -11815,6 +12377,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardTraining(cudnnHandle_t  handle, cudn
 cudnnStatus_t cudnnBatchNormalizationBackward(cudnnHandle_t  handle, cudnnBatchNormMode_t  mode, const void * alphaDataDiff, const void * betaDataDiff, const void * alphaParamDiff, const void * betaParamDiff, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnTensorDescriptor_t  dxDesc, void * dx, const cudnnTensorDescriptor_t  dBnScaleBiasDesc, const void * bnScale, void * dBnScaleResult, void * dBnBiasResult, double  epsilon, const void * savedMean, const void * savedInvVariance)
 {
 	TALLY_SPD_LOG("cudnnBatchNormalizationBackward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnBatchNormalizationBackward(handle, mode, alphaDataDiff, betaDataDiff, alphaParamDiff, betaParamDiff, xDesc, x, dyDesc, dy, dxDesc, dx, dBnScaleBiasDesc, bnScale, dBnScaleResult, dBnBiasResult, epsilon, savedMean, savedInvVariance);
 #else
@@ -11825,6 +12388,7 @@ cudnnStatus_t cudnnBatchNormalizationBackward(cudnnHandle_t  handle, cudnnBatchN
 cudnnStatus_t cudnnGetNormalizationForwardTrainingWorkspaceSize(cudnnHandle_t  handle, cudnnNormMode_t  mode, cudnnNormOps_t  normOps, cudnnNormAlgo_t  algo, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  zDesc, const cudnnTensorDescriptor_t  yDesc, const cudnnTensorDescriptor_t  normScaleBiasDesc, const cudnnActivationDescriptor_t  activationDesc, const cudnnTensorDescriptor_t  normMeanVarDesc, size_t * sizeInBytes, int  groupCnt)
 {
 	TALLY_SPD_LOG("cudnnGetNormalizationForwardTrainingWorkspaceSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetNormalizationForwardTrainingWorkspaceSize(handle, mode, normOps, algo, xDesc, zDesc, yDesc, normScaleBiasDesc, activationDesc, normMeanVarDesc, sizeInBytes, groupCnt);
 #else
@@ -11835,6 +12399,7 @@ cudnnStatus_t cudnnGetNormalizationForwardTrainingWorkspaceSize(cudnnHandle_t  h
 cudnnStatus_t cudnnGetNormalizationBackwardWorkspaceSize(cudnnHandle_t  handle, cudnnNormMode_t  mode, cudnnNormOps_t  normOps, cudnnNormAlgo_t  algo, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  yDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnTensorDescriptor_t  dzDesc, const cudnnTensorDescriptor_t  dxDesc, const cudnnTensorDescriptor_t  dNormScaleBiasDesc, const cudnnActivationDescriptor_t  activationDesc, const cudnnTensorDescriptor_t  normMeanVarDesc, size_t * sizeInBytes, int  groupCnt)
 {
 	TALLY_SPD_LOG("cudnnGetNormalizationBackwardWorkspaceSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetNormalizationBackwardWorkspaceSize(handle, mode, normOps, algo, xDesc, yDesc, dyDesc, dzDesc, dxDesc, dNormScaleBiasDesc, activationDesc, normMeanVarDesc, sizeInBytes, groupCnt);
 #else
@@ -11845,6 +12410,7 @@ cudnnStatus_t cudnnGetNormalizationBackwardWorkspaceSize(cudnnHandle_t  handle, 
 cudnnStatus_t cudnnGetNormalizationTrainingReserveSpaceSize(cudnnHandle_t  handle, cudnnNormMode_t  mode, cudnnNormOps_t  normOps, cudnnNormAlgo_t  algo, const cudnnActivationDescriptor_t  activationDesc, const cudnnTensorDescriptor_t  xDesc, size_t * sizeInBytes, int  groupCnt)
 {
 	TALLY_SPD_LOG("cudnnGetNormalizationTrainingReserveSpaceSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetNormalizationTrainingReserveSpaceSize(handle, mode, normOps, algo, activationDesc, xDesc, sizeInBytes, groupCnt);
 #else
@@ -11855,6 +12421,7 @@ cudnnStatus_t cudnnGetNormalizationTrainingReserveSpaceSize(cudnnHandle_t  handl
 cudnnStatus_t cudnnNormalizationForwardTraining(cudnnHandle_t  handle, cudnnNormMode_t  mode, cudnnNormOps_t  normOps, cudnnNormAlgo_t  algo, const void * alpha, const void * beta, const cudnnTensorDescriptor_t  xDesc, const void * xData, const cudnnTensorDescriptor_t  normScaleBiasDesc, const void * normScale, const void * normBias, double  exponentialAverageFactor, const cudnnTensorDescriptor_t  normMeanVarDesc, void * resultRunningMean, void * resultRunningVariance, double  epsilon, void * resultSaveMean, void * resultSaveInvVariance, cudnnActivationDescriptor_t  activationDesc, const cudnnTensorDescriptor_t  zDesc, const void * zData, const cudnnTensorDescriptor_t  yDesc, void * yData, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes, int  groupCnt)
 {
 	TALLY_SPD_LOG("cudnnNormalizationForwardTraining hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnNormalizationForwardTraining(handle, mode, normOps, algo, alpha, beta, xDesc, xData, normScaleBiasDesc, normScale, normBias, exponentialAverageFactor, normMeanVarDesc, resultRunningMean, resultRunningVariance, epsilon, resultSaveMean, resultSaveInvVariance, activationDesc, zDesc, zData, yDesc, yData, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes, groupCnt);
 #else
@@ -11865,6 +12432,7 @@ cudnnStatus_t cudnnNormalizationForwardTraining(cudnnHandle_t  handle, cudnnNorm
 cudnnStatus_t cudnnNormalizationBackward(cudnnHandle_t  handle, cudnnNormMode_t  mode, cudnnNormOps_t  normOps, cudnnNormAlgo_t  algo, const void * alphaDataDiff, const void * betaDataDiff, const void * alphaParamDiff, const void * betaParamDiff, const cudnnTensorDescriptor_t  xDesc, const void * xData, const cudnnTensorDescriptor_t  yDesc, const void * yData, const cudnnTensorDescriptor_t  dyDesc, const void * dyData, const cudnnTensorDescriptor_t  dzDesc, void * dzData, const cudnnTensorDescriptor_t  dxDesc, void * dxData, const cudnnTensorDescriptor_t  dNormScaleBiasDesc, const void * normScaleData, const void * normBiasData, void * dNormScaleData, void * dNormBiasData, double  epsilon, const cudnnTensorDescriptor_t  normMeanVarDesc, const void * savedMean, const void * savedInvVariance, cudnnActivationDescriptor_t  activationDesc, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes, int  groupCnt)
 {
 	TALLY_SPD_LOG("cudnnNormalizationBackward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnNormalizationBackward(handle, mode, normOps, algo, alphaDataDiff, betaDataDiff, alphaParamDiff, betaParamDiff, xDesc, xData, yDesc, yData, dyDesc, dyData, dzDesc, dzData, dxDesc, dxData, dNormScaleBiasDesc, normScaleData, normBiasData, dNormScaleData, dNormBiasData, epsilon, normMeanVarDesc, savedMean, savedInvVariance, activationDesc, workSpace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes, groupCnt);
 #else
@@ -11875,6 +12443,7 @@ cudnnStatus_t cudnnNormalizationBackward(cudnnHandle_t  handle, cudnnNormMode_t 
 cudnnStatus_t cudnnSpatialTfGridGeneratorBackward(cudnnHandle_t  handle, const cudnnSpatialTransformerDescriptor_t  stDesc, const void * dgrid, void * dtheta)
 {
 	TALLY_SPD_LOG("cudnnSpatialTfGridGeneratorBackward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSpatialTfGridGeneratorBackward(handle, stDesc, dgrid, dtheta);
 #else
@@ -11885,6 +12454,7 @@ cudnnStatus_t cudnnSpatialTfGridGeneratorBackward(cudnnHandle_t  handle, const c
 cudnnStatus_t cudnnSpatialTfSamplerBackward(cudnnHandle_t  handle, cudnnSpatialTransformerDescriptor_t  stDesc, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx, const void * alphaDgrid, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * grid, const void * betaDgrid, void * dgrid)
 {
 	TALLY_SPD_LOG("cudnnSpatialTfSamplerBackward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSpatialTfSamplerBackward(handle, stDesc, alpha, xDesc, x, beta, dxDesc, dx, alphaDgrid, dyDesc, dy, grid, betaDgrid, dgrid);
 #else
@@ -11895,6 +12465,7 @@ cudnnStatus_t cudnnSpatialTfSamplerBackward(cudnnHandle_t  handle, cudnnSpatialT
 cudnnStatus_t cudnnDropoutBackward(cudnnHandle_t  handle, const cudnnDropoutDescriptor_t  dropoutDesc, const cudnnTensorDescriptor_t  dydesc, const void * dy, const cudnnTensorDescriptor_t  dxdesc, void * dx, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnDropoutBackward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDropoutBackward(handle, dropoutDesc, dydesc, dy, dxdesc, dx, reserveSpace, reserveSpaceSizeInBytes);
 #else
@@ -11905,8 +12476,8 @@ cudnnStatus_t cudnnDropoutBackward(cudnnHandle_t  handle, const cudnnDropoutDesc
 cudnnStatus_t cudnnOpsTrainVersionCheck()
 {
 	TALLY_SPD_LOG("cudnnOpsTrainVersionCheck hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnOpsTrainVersionCheck();
 #else
@@ -11944,8 +12515,8 @@ cudnnStatus_t cudnnOpsTrainVersionCheck()
 cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t * rnnDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateRNNDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateRNNDescriptor(rnnDesc);
 #else
@@ -11985,8 +12556,8 @@ cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t * rnnDesc)
 cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyRNNDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyRNNDescriptor(rnnDesc);
 #else
@@ -12025,8 +12596,8 @@ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
 cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAlgo_t  algo, cudnnRNNMode_t  cellMode, cudnnRNNBiasMode_t  biasMode, cudnnDirectionMode_t  dirMode, cudnnRNNInputMode_t  inputMode, cudnnDataType_t  dataType, cudnnDataType_t  mathPrec, cudnnMathType_t  mathType, int32_t  inputSize, int32_t  hiddenSize, int32_t  projSize, int32_t  numLayers, cudnnDropoutDescriptor_t  dropoutDesc, uint32_t  auxFlags)
 {
 	TALLY_SPD_LOG("cudnnSetRNNDescriptor_v8 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNDescriptor_v8(rnnDesc, algo, cellMode, biasMode, dirMode, inputMode, dataType, mathPrec, mathType, inputSize, hiddenSize, projSize, numLayers, dropoutDesc, auxFlags);
 #else
@@ -12079,6 +12650,7 @@ cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAl
 cudnnStatus_t cudnnGetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAlgo_t * algo, cudnnRNNMode_t * cellMode, cudnnRNNBiasMode_t * biasMode, cudnnDirectionMode_t * dirMode, cudnnRNNInputMode_t * inputMode, cudnnDataType_t * dataType, cudnnDataType_t * mathPrec, cudnnMathType_t * mathType, int32_t * inputSize, int32_t * hiddenSize, int32_t * projSize, int32_t * numLayers, cudnnDropoutDescriptor_t * dropoutDesc, uint32_t * auxFlags)
 {
 	TALLY_SPD_LOG("cudnnGetRNNDescriptor_v8 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetRNNDescriptor_v8(rnnDesc, algo, cellMode, biasMode, dirMode, inputMode, dataType, mathPrec, mathType, inputSize, hiddenSize, projSize, numLayers, dropoutDesc, auxFlags);
 #else
@@ -12089,8 +12661,8 @@ cudnnStatus_t cudnnGetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAl
 cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, const int  hiddenSize, const int  numLayers, cudnnDropoutDescriptor_t  dropoutDesc, cudnnRNNInputMode_t  inputMode, cudnnDirectionMode_t  direction, cudnnRNNMode_t  cellMode, cudnnRNNAlgo_t  algo, cudnnDataType_t  mathPrec)
 {
 	TALLY_SPD_LOG("cudnnSetRNNDescriptor_v6 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNDescriptor_v6(handle, rnnDesc, hiddenSize, numLayers, dropoutDesc, inputMode, direction, cellMode, algo, mathPrec);
 #else
@@ -12138,6 +12710,7 @@ cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
 cudnnStatus_t cudnnGetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, int * hiddenSize, int * numLayers, cudnnDropoutDescriptor_t * dropoutDesc, cudnnRNNInputMode_t * inputMode, cudnnDirectionMode_t * direction, cudnnRNNMode_t * cellMode, cudnnRNNAlgo_t * algo, cudnnDataType_t * mathPrec)
 {
 	TALLY_SPD_LOG("cudnnGetRNNDescriptor_v6 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetRNNDescriptor_v6(handle, rnnDesc, hiddenSize, numLayers, dropoutDesc, inputMode, direction, cellMode, algo, mathPrec);
 #else
@@ -12148,8 +12721,8 @@ cudnnStatus_t cudnnGetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
 cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMathType_t  mType)
 {
 	TALLY_SPD_LOG("cudnnSetRNNMatrixMathType hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNMatrixMathType(rnnDesc, mType);
 #else
@@ -12189,8 +12762,8 @@ cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
 cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMathType_t * mType)
 {
 	TALLY_SPD_LOG("cudnnGetRNNMatrixMathType hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNMatrixMathType(rnnDesc, mType);
 #else
@@ -12231,8 +12804,8 @@ cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
 cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMode_t  biasMode)
 {
 	TALLY_SPD_LOG("cudnnSetRNNBiasMode hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNBiasMode(rnnDesc, biasMode);
 #else
@@ -12272,8 +12845,8 @@ cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
 cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMode_t * biasMode)
 {
 	TALLY_SPD_LOG("cudnnGetRNNBiasMode hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNBiasMode(rnnDesc, biasMode);
 #else
@@ -12314,8 +12887,8 @@ cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
 cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode_t  clipMode, cudnnNanPropagation_t  clipNanOpt, double  lclip, double  rclip)
 {
 	TALLY_SPD_LOG("cudnnRNNSetClip_v8 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNSetClip_v8(rnnDesc, clipMode, clipNanOpt, lclip, rclip);
 #else
@@ -12358,6 +12931,7 @@ cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode
 cudnnStatus_t cudnnRNNGetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode_t * clipMode, cudnnNanPropagation_t * clipNanOpt, double * lclip, double * rclip)
 {
 	TALLY_SPD_LOG("cudnnRNNGetClip_v8 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnRNNGetClip_v8(rnnDesc, clipMode, clipNanOpt, lclip, rclip);
 #else
@@ -12368,8 +12942,8 @@ cudnnStatus_t cudnnRNNGetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode
 cudnnStatus_t cudnnRNNSetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode_t  clipMode, cudnnNanPropagation_t  clipNanOpt, double  lclip, double  rclip)
 {
 	TALLY_SPD_LOG("cudnnRNNSetClip hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnRNNSetClip(handle, rnnDesc, clipMode, clipNanOpt, lclip, rclip);
 #else
@@ -12413,6 +12987,7 @@ cudnnStatus_t cudnnRNNSetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 cudnnStatus_t cudnnRNNGetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode_t * clipMode, cudnnNanPropagation_t * clipNanOpt, double * lclip, double * rclip)
 {
 	TALLY_SPD_LOG("cudnnRNNGetClip hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnRNNGetClip(handle, rnnDesc, clipMode, clipNanOpt, lclip, rclip);
 #else
@@ -12423,6 +12998,7 @@ cudnnStatus_t cudnnRNNGetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 cudnnStatus_t cudnnSetRNNProjectionLayers(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, const int  recProjSize, const int  outProjSize)
 {
 	TALLY_SPD_LOG("cudnnSetRNNProjectionLayers hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetRNNProjectionLayers(handle, rnnDesc, recProjSize, outProjSize);
 #else
@@ -12433,6 +13009,7 @@ cudnnStatus_t cudnnSetRNNProjectionLayers(cudnnHandle_t  handle, cudnnRNNDescrip
 cudnnStatus_t cudnnGetRNNProjectionLayers(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * recProjSize, int * outProjSize)
 {
 	TALLY_SPD_LOG("cudnnGetRNNProjectionLayers hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetRNNProjectionLayers(handle, rnnDesc, recProjSize, outProjSize);
 #else
@@ -12443,6 +13020,7 @@ cudnnStatus_t cudnnGetRNNProjectionLayers(cudnnHandle_t  handle, const cudnnRNND
 cudnnStatus_t cudnnCreatePersistentRNNPlan(cudnnRNNDescriptor_t  rnnDesc, const int  minibatch, const cudnnDataType_t  dataType, cudnnPersistentRNNPlan_t * plan)
 {
 	TALLY_SPD_LOG("cudnnCreatePersistentRNNPlan hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCreatePersistentRNNPlan(rnnDesc, minibatch, dataType, plan);
 #else
@@ -12453,6 +13031,7 @@ cudnnStatus_t cudnnCreatePersistentRNNPlan(cudnnRNNDescriptor_t  rnnDesc, const 
 cudnnStatus_t cudnnDestroyPersistentRNNPlan(cudnnPersistentRNNPlan_t  plan)
 {
 	TALLY_SPD_LOG("cudnnDestroyPersistentRNNPlan hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDestroyPersistentRNNPlan(plan);
 #else
@@ -12463,6 +13042,7 @@ cudnnStatus_t cudnnDestroyPersistentRNNPlan(cudnnPersistentRNNPlan_t  plan)
 cudnnStatus_t cudnnSetPersistentRNNPlan(cudnnRNNDescriptor_t  rnnDesc, cudnnPersistentRNNPlan_t  plan)
 {
 	TALLY_SPD_LOG("cudnnSetPersistentRNNPlan hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetPersistentRNNPlan(rnnDesc, plan);
 #else
@@ -12473,8 +13053,8 @@ cudnnStatus_t cudnnSetPersistentRNNPlan(cudnnRNNDescriptor_t  rnnDesc, cudnnPers
 cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, int  miniBatch)
 {
 	TALLY_SPD_LOG("cudnnBuildRNNDynamic hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBuildRNNDynamic(handle, rnnDesc, miniBatch);
 #else
@@ -12515,8 +13095,8 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
 cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnForwardMode_t  fwdMode, cudnnRNNDataDescriptor_t  xDesc, size_t * workSpaceSize, size_t * reserveSpaceSize)
 {
 	TALLY_SPD_LOG("cudnnGetRNNTempSpaceSizes hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNTempSpaceSizes(handle, rnnDesc, fwdMode, xDesc, workSpaceSize, reserveSpaceSize);
 #else
@@ -12562,8 +13142,8 @@ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescripto
 cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const cudnnTensorDescriptor_t  xDesc, size_t * sizeInBytes, cudnnDataType_t  dataType)
 {
 	TALLY_SPD_LOG("cudnnGetRNNParamsSize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNParamsSize(handle, rnnDesc, xDesc, sizeInBytes, dataType);
 #else
@@ -12607,8 +13187,8 @@ cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescrip
 cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, size_t * weightSpaceSize)
 {
 	TALLY_SPD_LOG("cudnnGetRNNWeightSpaceSize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNWeightSpaceSize(handle, rnnDesc, weightSpaceSize);
 #else
@@ -12650,8 +13230,8 @@ cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t  handle, cudnnRNNDescript
 cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  pseudoLayer, const cudnnTensorDescriptor_t  xDesc, const cudnnFilterDescriptor_t  wDesc, const void * w, const int  linLayerID, cudnnFilterDescriptor_t  linLayerMatDesc, void ** linLayerMat)
 {
 	TALLY_SPD_LOG("cudnnGetRNNLinLayerMatrixParams hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNLinLayerMatrixParams(handle, rnnDesc, pseudoLayer, xDesc, wDesc, w, linLayerID, linLayerMatDesc, linLayerMat);
 #else
@@ -12699,8 +13279,8 @@ cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnHandle_t  handle, const cudnn
 cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  pseudoLayer, const cudnnTensorDescriptor_t  xDesc, const cudnnFilterDescriptor_t  wDesc, const void * w, const int  linLayerID, cudnnFilterDescriptor_t  linLayerBiasDesc, void ** linLayerBias)
 {
 	TALLY_SPD_LOG("cudnnGetRNNLinLayerBiasParams hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNLinLayerBiasParams(handle, rnnDesc, pseudoLayer, xDesc, wDesc, w, linLayerID, linLayerBiasDesc, linLayerBias);
 #else
@@ -12748,8 +13328,8 @@ cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnHandle_t  handle, const cudnnRN
 cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, int32_t  pseudoLayer, size_t  weightSpaceSize, const void * weightSpace, int32_t  linLayerID, cudnnTensorDescriptor_t  mDesc, void ** mAddr, cudnnTensorDescriptor_t  bDesc, void ** bAddr)
 {
 	TALLY_SPD_LOG("cudnnGetRNNWeightParams hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNWeightParams(handle, rnnDesc, pseudoLayer, weightSpaceSize, weightSpace, linLayerID, mDesc, mAddr, bDesc, bAddr);
 #else
@@ -12799,6 +13379,7 @@ cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t  handle, cudnnRNNDescriptor_
 cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, void * workSpace, size_t  workSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnRNNForwardInference hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnRNNForwardInference(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workSpace, workSpaceSizeInBytes);
 #else
@@ -12809,6 +13390,7 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t  handle, const cudnnRNNDesc
 cudnnStatus_t cudnnSetRNNPaddingMode(cudnnRNNDescriptor_t  rnnDesc, unsigned  paddingMode)
 {
 	TALLY_SPD_LOG("cudnnSetRNNPaddingMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetRNNPaddingMode(rnnDesc, paddingMode);
 #else
@@ -12819,6 +13401,7 @@ cudnnStatus_t cudnnSetRNNPaddingMode(cudnnRNNDescriptor_t  rnnDesc, unsigned  pa
 cudnnStatus_t cudnnGetRNNPaddingMode(cudnnRNNDescriptor_t  rnnDesc, unsigned * paddingMode)
 {
 	TALLY_SPD_LOG("cudnnGetRNNPaddingMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetRNNPaddingMode(rnnDesc, paddingMode);
 #else
@@ -12829,8 +13412,8 @@ cudnnStatus_t cudnnGetRNNPaddingMode(cudnnRNNDescriptor_t  rnnDesc, unsigned * p
 cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t * rnnDataDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateRNNDataDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateRNNDataDescriptor(rnnDataDesc);
 #else
@@ -12870,8 +13453,8 @@ cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t * rnnDataDes
 cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyRNNDataDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyRNNDataDescriptor(rnnDataDesc);
 #else
@@ -12910,6 +13493,7 @@ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDes
 cudnnStatus_t cudnnGetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, cudnnDataType_t * dataType, cudnnRNNDataLayout_t * layout, int * maxSeqLength, int * batchSize, int * vectorSize, int  arrayLengthRequested, int  seqLengthArray[], void * paddingFill)
 {
 	TALLY_SPD_LOG("cudnnGetRNNDataDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetRNNDataDescriptor(rnnDataDesc, dataType, layout, maxSeqLength, batchSize, vectorSize, arrayLengthRequested, seqLengthArray, paddingFill);
 #else
@@ -12920,6 +13504,7 @@ cudnnStatus_t cudnnGetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, c
 cudnnStatus_t cudnnRNNForwardInferenceEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const cudnnRNNDataDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnRNNDataDescriptor_t  yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const cudnnRNNDataDescriptor_t  kDesc, const void * keys, const cudnnRNNDataDescriptor_t  cDesc, void * cAttn, const cudnnRNNDataDescriptor_t  iDesc, void * iAttn, const cudnnRNNDataDescriptor_t  qDesc, void * queries, void * workSpace, size_t  workSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnRNNForwardInferenceEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnRNNForwardInferenceEx(handle, rnnDesc, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, kDesc, keys, cDesc, cAttn, iDesc, iAttn, qDesc, queries, workSpace, workSpaceSizeInBytes);
 #else
@@ -12930,8 +13515,8 @@ cudnnStatus_t cudnnRNNForwardInferenceEx(cudnnHandle_t  handle, const cudnnRNNDe
 cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDesc, cudnnAlgorithmDescriptor_t  algoDesc)
 {
 	TALLY_SPD_LOG("cudnnSetRNNAlgorithmDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetRNNAlgorithmDescriptor(handle, rnnDesc, algoDesc);
 #else
@@ -12972,8 +13557,8 @@ cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDesc
 cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)
 {
 	TALLY_SPD_LOG("cudnnGetRNNForwardInferenceAlgorithmMaxCount hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetRNNForwardInferenceAlgorithmMaxCount(handle, rnnDesc, count);
 #else
@@ -13015,6 +13600,7 @@ cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle
 cudnnStatus_t cudnnFindRNNForwardInferenceAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnFindRNNForwardInferenceAlgorithmEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnFindRNNForwardInferenceAlgorithmEx(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes);
 #else
@@ -13025,8 +13611,8 @@ cudnnStatus_t cudnnFindRNNForwardInferenceAlgorithmEx(cudnnHandle_t  handle, con
 cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateSeqDataDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateSeqDataDescriptor(seqDataDesc);
 #else
@@ -13066,8 +13652,8 @@ cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDes
 cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroySeqDataDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroySeqDataDescriptor(seqDataDesc);
 #else
@@ -13106,8 +13692,8 @@ cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDes
 cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t * attnDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateAttnDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateAttnDescriptor(attnDesc);
 #else
@@ -13147,8 +13733,8 @@ cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t * attnDesc)
 cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyAttnDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyAttnDescriptor(attnDesc);
 #else
@@ -13187,8 +13773,8 @@ cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
 cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  attnMode, int  nHeads, double  smScaler, cudnnDataType_t  dataType, cudnnDataType_t  computePrec, cudnnMathType_t  mathType, cudnnDropoutDescriptor_t  attnDropoutDesc, cudnnDropoutDescriptor_t  postDropoutDesc, int  qSize, int  kSize, int  vSize, int  qProjSize, int  kProjSize, int  vProjSize, int  oProjSize, int  qoMaxSeqLength, int  kvMaxSeqLength, int  maxBatchSize, int  maxBeamSize)
 {
 	TALLY_SPD_LOG("cudnnSetAttnDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnSetAttnDescriptor(attnDesc, attnMode, nHeads, smScaler, dataType, computePrec, mathType, attnDropoutDesc, postDropoutDesc, qSize, kSize, vSize, qProjSize, kProjSize, vProjSize, oProjSize, qoMaxSeqLength, kvMaxSeqLength, maxBatchSize, maxBeamSize);
 #else
@@ -13246,6 +13832,7 @@ cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  
 cudnnStatus_t cudnnGetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned * attnMode, int * nHeads, double * smScaler, cudnnDataType_t * dataType, cudnnDataType_t * computePrec, cudnnMathType_t * mathType, cudnnDropoutDescriptor_t * attnDropoutDesc, cudnnDropoutDescriptor_t * postDropoutDesc, int * qSize, int * kSize, int * vSize, int * qProjSize, int * kProjSize, int * vProjSize, int * oProjSize, int * qoMaxSeqLength, int * kvMaxSeqLength, int * maxBatchSize, int * maxBeamSize)
 {
 	TALLY_SPD_LOG("cudnnGetAttnDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetAttnDescriptor(attnDesc, attnMode, nHeads, smScaler, dataType, computePrec, mathType, attnDropoutDesc, postDropoutDesc, qSize, kSize, vSize, qProjSize, kProjSize, vProjSize, oProjSize, qoMaxSeqLength, kvMaxSeqLength, maxBatchSize, maxBeamSize);
 #else
@@ -13256,8 +13843,8 @@ cudnnStatus_t cudnnGetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned *
 cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, size_t * weightSizeInBytes, size_t * workSpaceSizeInBytes, size_t * reserveSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetMultiHeadAttnBuffers hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetMultiHeadAttnBuffers(handle, attnDesc, weightSizeInBytes, workSpaceSizeInBytes, reserveSpaceSizeInBytes);
 #else
@@ -13303,6 +13890,7 @@ cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t  handle, const cudnnAtt
 cudnnStatus_t cudnnGetMultiHeadAttnWeights(cudnnHandle_t  handle, const cudnnAttnDescriptor_t  attnDesc, cudnnMultiHeadAttnWeightKind_t  wKind, size_t  weightSizeInBytes, const void * weights, cudnnTensorDescriptor_t  wDesc, void ** wAddr)
 {
 	TALLY_SPD_LOG("cudnnGetMultiHeadAttnWeights hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetMultiHeadAttnWeights(handle, attnDesc, wKind, weightSizeInBytes, weights, wDesc, wAddr);
 #else
@@ -13313,8 +13901,8 @@ cudnnStatus_t cudnnGetMultiHeadAttnWeights(cudnnHandle_t  handle, const cudnnAtt
 cudnnStatus_t cudnnAdvInferVersionCheck()
 {
 	TALLY_SPD_LOG("cudnnAdvInferVersionCheck hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnAdvInferVersionCheck();
 #else
@@ -13352,6 +13940,7 @@ cudnnStatus_t cudnnAdvInferVersionCheck()
 cudnnStatus_t cudnnRNNForwardTrainingEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const cudnnRNNDataDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnRNNDataDescriptor_t  yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const cudnnRNNDataDescriptor_t  kDesc, const void * keys, const cudnnRNNDataDescriptor_t  cDesc, void * cAttn, const cudnnRNNDataDescriptor_t  iDesc, void * iAttn, const cudnnRNNDataDescriptor_t  qDesc, void * queries, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnRNNForwardTrainingEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnRNNForwardTrainingEx(handle, rnnDesc, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, kDesc, keys, cDesc, cAttn, iDesc, iAttn, qDesc, queries, workSpace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
 #else
@@ -13362,6 +13951,7 @@ cudnnStatus_t cudnnRNNForwardTrainingEx(cudnnHandle_t  handle, const cudnnRNNDes
 cudnnStatus_t cudnnRNNBackwardDataEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const cudnnRNNDataDescriptor_t  yDesc, const void * y, const cudnnRNNDataDescriptor_t  dyDesc, const void * dy, const cudnnRNNDataDescriptor_t  dcDesc, const void * dcAttn, const cudnnTensorDescriptor_t  dhyDesc, const void * dhy, const cudnnTensorDescriptor_t  dcyDesc, const void * dcy, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnRNNDataDescriptor_t  dxDesc, void * dx, const cudnnTensorDescriptor_t  dhxDesc, void * dhx, const cudnnTensorDescriptor_t  dcxDesc, void * dcx, const cudnnRNNDataDescriptor_t  dkDesc, void * dkeys, void * workSpace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnRNNBackwardDataEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnRNNBackwardDataEx(handle, rnnDesc, yDesc, y, dyDesc, dy, dcDesc, dcAttn, dhyDesc, dhy, dcyDesc, dcy, wDesc, w, hxDesc, hx, cxDesc, cx, dxDesc, dx, dhxDesc, dhx, dcxDesc, dcx, dkDesc, dkeys, workSpace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
 #else
@@ -13372,6 +13962,7 @@ cudnnStatus_t cudnnRNNBackwardDataEx(cudnnHandle_t  handle, const cudnnRNNDescri
 cudnnStatus_t cudnnRNNBackwardWeightsEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const cudnnRNNDataDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnRNNDataDescriptor_t  yDesc, const void * y, void * workSpace, size_t  workSpaceSizeInBytes, const cudnnFilterDescriptor_t  dwDesc, void * dw, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnRNNBackwardWeightsEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnRNNBackwardWeightsEx(handle, rnnDesc, xDesc, x, hxDesc, hx, yDesc, y, workSpace, workSpaceSizeInBytes, dwDesc, dw, reserveSpace, reserveSpaceSizeInBytes);
 #else
@@ -13382,6 +13973,7 @@ cudnnStatus_t cudnnRNNBackwardWeightsEx(cudnnHandle_t  handle, const cudnnRNNDes
 cudnnStatus_t cudnnGetRNNForwardTrainingAlgorithmMaxCount(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)
 {
 	TALLY_SPD_LOG("cudnnGetRNNForwardTrainingAlgorithmMaxCount hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetRNNForwardTrainingAlgorithmMaxCount(handle, rnnDesc, count);
 #else
@@ -13392,6 +13984,7 @@ cudnnStatus_t cudnnGetRNNForwardTrainingAlgorithmMaxCount(cudnnHandle_t  handle,
 cudnnStatus_t cudnnFindRNNForwardTrainingAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t * yDesc, void * y, const cudnnTensorDescriptor_t  hyDesc, void * hy, const cudnnTensorDescriptor_t  cyDesc, void * cy, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnFindRNNForwardTrainingAlgorithmEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnFindRNNForwardTrainingAlgorithmEx(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
 #else
@@ -13402,6 +13995,7 @@ cudnnStatus_t cudnnFindRNNForwardTrainingAlgorithmEx(cudnnHandle_t  handle, cons
 cudnnStatus_t cudnnGetRNNBackwardDataAlgorithmMaxCount(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)
 {
 	TALLY_SPD_LOG("cudnnGetRNNBackwardDataAlgorithmMaxCount hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetRNNBackwardDataAlgorithmMaxCount(handle, rnnDesc, count);
 #else
@@ -13412,6 +14006,7 @@ cudnnStatus_t cudnnGetRNNBackwardDataAlgorithmMaxCount(cudnnHandle_t  handle, co
 cudnnStatus_t cudnnFindRNNBackwardDataAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * yDesc, const void * y, const cudnnTensorDescriptor_t * dyDesc, const void * dy, const cudnnTensorDescriptor_t  dhyDesc, const void * dhy, const cudnnTensorDescriptor_t  dcyDesc, const void * dcy, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t  cxDesc, const void * cx, const cudnnTensorDescriptor_t * dxDesc, void * dx, const cudnnTensorDescriptor_t  dhxDesc, void * dhx, const cudnnTensorDescriptor_t  dcxDesc, void * dcx, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, void * workspace, size_t  workSpaceSizeInBytes, void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnFindRNNBackwardDataAlgorithmEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnFindRNNBackwardDataAlgorithmEx(handle, rnnDesc, seqLength, yDesc, y, dyDesc, dy, dhyDesc, dhy, dcyDesc, dcy, wDesc, w, hxDesc, hx, cxDesc, cx, dxDesc, dx, dhxDesc, dhx, dcxDesc, dcx, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
 #else
@@ -13422,6 +14017,7 @@ cudnnStatus_t cudnnFindRNNBackwardDataAlgorithmEx(cudnnHandle_t  handle, const c
 cudnnStatus_t cudnnGetRNNBackwardWeightsAlgorithmMaxCount(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, int * count)
 {
 	TALLY_SPD_LOG("cudnnGetRNNBackwardWeightsAlgorithmMaxCount hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetRNNBackwardWeightsAlgorithmMaxCount(handle, rnnDesc, count);
 #else
@@ -13432,6 +14028,7 @@ cudnnStatus_t cudnnGetRNNBackwardWeightsAlgorithmMaxCount(cudnnHandle_t  handle,
 cudnnStatus_t cudnnFindRNNBackwardWeightsAlgorithmEx(cudnnHandle_t  handle, const cudnnRNNDescriptor_t  rnnDesc, const int  seqLength, const cudnnTensorDescriptor_t * xDesc, const void * x, const cudnnTensorDescriptor_t  hxDesc, const void * hx, const cudnnTensorDescriptor_t * yDesc, const void * y, const float  findIntensity, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnAlgorithmPerformance_t * perfResults, const void * workspace, size_t  workSpaceSizeInBytes, const cudnnFilterDescriptor_t  dwDesc, void * dw, const void * reserveSpace, size_t  reserveSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnFindRNNBackwardWeightsAlgorithmEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnFindRNNBackwardWeightsAlgorithmEx(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, yDesc, y, findIntensity, requestedAlgoCount, returnedAlgoCount, perfResults, workspace, workSpaceSizeInBytes, dwDesc, dw, reserveSpace, reserveSpaceSizeInBytes);
 #else
@@ -13442,6 +14039,7 @@ cudnnStatus_t cudnnFindRNNBackwardWeightsAlgorithmEx(cudnnHandle_t  handle, cons
 cudnnStatus_t cudnnCreateCTCLossDescriptor(cudnnCTCLossDescriptor_t * ctcLossDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateCTCLossDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCreateCTCLossDescriptor(ctcLossDesc);
 #else
@@ -13452,6 +14050,7 @@ cudnnStatus_t cudnnCreateCTCLossDescriptor(cudnnCTCLossDescriptor_t * ctcLossDes
 cudnnStatus_t cudnnSetCTCLossDescriptor(cudnnCTCLossDescriptor_t  ctcLossDesc, cudnnDataType_t  compType)
 {
 	TALLY_SPD_LOG("cudnnSetCTCLossDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetCTCLossDescriptor(ctcLossDesc, compType);
 #else
@@ -13462,6 +14061,7 @@ cudnnStatus_t cudnnSetCTCLossDescriptor(cudnnCTCLossDescriptor_t  ctcLossDesc, c
 cudnnStatus_t cudnnSetCTCLossDescriptorEx(cudnnCTCLossDescriptor_t  ctcLossDesc, cudnnDataType_t  compType, cudnnLossNormalizationMode_t  normMode, cudnnNanPropagation_t  gradMode)
 {
 	TALLY_SPD_LOG("cudnnSetCTCLossDescriptorEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetCTCLossDescriptorEx(ctcLossDesc, compType, normMode, gradMode);
 #else
@@ -13472,6 +14072,7 @@ cudnnStatus_t cudnnSetCTCLossDescriptorEx(cudnnCTCLossDescriptor_t  ctcLossDesc,
 cudnnStatus_t cudnnSetCTCLossDescriptor_v8(cudnnCTCLossDescriptor_t  ctcLossDesc, cudnnDataType_t  compType, cudnnLossNormalizationMode_t  normMode, cudnnNanPropagation_t  gradMode, int  maxLabelLength)
 {
 	TALLY_SPD_LOG("cudnnSetCTCLossDescriptor_v8 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetCTCLossDescriptor_v8(ctcLossDesc, compType, normMode, gradMode, maxLabelLength);
 #else
@@ -13482,6 +14083,7 @@ cudnnStatus_t cudnnSetCTCLossDescriptor_v8(cudnnCTCLossDescriptor_t  ctcLossDesc
 cudnnStatus_t cudnnGetCTCLossDescriptor(cudnnCTCLossDescriptor_t  ctcLossDesc, cudnnDataType_t * compType)
 {
 	TALLY_SPD_LOG("cudnnGetCTCLossDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetCTCLossDescriptor(ctcLossDesc, compType);
 #else
@@ -13492,6 +14094,7 @@ cudnnStatus_t cudnnGetCTCLossDescriptor(cudnnCTCLossDescriptor_t  ctcLossDesc, c
 cudnnStatus_t cudnnGetCTCLossDescriptorEx(cudnnCTCLossDescriptor_t  ctcLossDesc, cudnnDataType_t * compType, cudnnLossNormalizationMode_t * normMode, cudnnNanPropagation_t * gradMode)
 {
 	TALLY_SPD_LOG("cudnnGetCTCLossDescriptorEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetCTCLossDescriptorEx(ctcLossDesc, compType, normMode, gradMode);
 #else
@@ -13502,6 +14105,7 @@ cudnnStatus_t cudnnGetCTCLossDescriptorEx(cudnnCTCLossDescriptor_t  ctcLossDesc,
 cudnnStatus_t cudnnGetCTCLossDescriptor_v8(cudnnCTCLossDescriptor_t  ctcLossDesc, cudnnDataType_t * compType, cudnnLossNormalizationMode_t * normMode, cudnnNanPropagation_t * gradMode, int * maxLabelLength)
 {
 	TALLY_SPD_LOG("cudnnGetCTCLossDescriptor_v8 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetCTCLossDescriptor_v8(ctcLossDesc, compType, normMode, gradMode, maxLabelLength);
 #else
@@ -13512,6 +14116,7 @@ cudnnStatus_t cudnnGetCTCLossDescriptor_v8(cudnnCTCLossDescriptor_t  ctcLossDesc
 cudnnStatus_t cudnnDestroyCTCLossDescriptor(cudnnCTCLossDescriptor_t  ctcLossDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyCTCLossDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDestroyCTCLossDescriptor(ctcLossDesc);
 #else
@@ -13522,6 +14127,7 @@ cudnnStatus_t cudnnDestroyCTCLossDescriptor(cudnnCTCLossDescriptor_t  ctcLossDes
 cudnnStatus_t cudnnCTCLoss(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  probsDesc, const void * probs, const int  hostLabels[], const int  hostLabelLengths[], const int  hostInputLengths[], void * costs, const cudnnTensorDescriptor_t  gradientsDesc, void * gradients, cudnnCTCLossAlgo_t  algo, cudnnCTCLossDescriptor_t  ctcLossDesc, void * workspace, size_t  workSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnCTCLoss hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCTCLoss(handle, probsDesc, probs, hostLabels, hostLabelLengths, hostInputLengths, costs, gradientsDesc, gradients, algo, ctcLossDesc, workspace, workSpaceSizeInBytes);
 #else
@@ -13532,6 +14138,7 @@ cudnnStatus_t cudnnCTCLoss(cudnnHandle_t  handle, const cudnnTensorDescriptor_t 
 cudnnStatus_t cudnnCTCLoss_v8(cudnnHandle_t  handle, cudnnCTCLossAlgo_t  algo, cudnnCTCLossDescriptor_t  ctcLossDesc, const cudnnTensorDescriptor_t  probsDesc, const void * probs, const int  labels[], const int  labelLengths[], const int  inputLengths[], void * costs, const cudnnTensorDescriptor_t  gradientsDesc, void * gradients, size_t  workSpaceSizeInBytes, void * workspace)
 {
 	TALLY_SPD_LOG("cudnnCTCLoss_v8 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCTCLoss_v8(handle, algo, ctcLossDesc, probsDesc, probs, labels, labelLengths, inputLengths, costs, gradientsDesc, gradients, workSpaceSizeInBytes, workspace);
 #else
@@ -13542,6 +14149,7 @@ cudnnStatus_t cudnnCTCLoss_v8(cudnnHandle_t  handle, cudnnCTCLossAlgo_t  algo, c
 cudnnStatus_t cudnnGetCTCLossWorkspaceSize(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  probsDesc, const cudnnTensorDescriptor_t  gradientsDesc, const int * labels, const int * labelLengths, const int * inputLengths, cudnnCTCLossAlgo_t  algo, cudnnCTCLossDescriptor_t  ctcLossDesc, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetCTCLossWorkspaceSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetCTCLossWorkspaceSize(handle, probsDesc, gradientsDesc, labels, labelLengths, inputLengths, algo, ctcLossDesc, sizeInBytes);
 #else
@@ -13552,6 +14160,7 @@ cudnnStatus_t cudnnGetCTCLossWorkspaceSize(cudnnHandle_t  handle, const cudnnTen
 cudnnStatus_t cudnnGetCTCLossWorkspaceSize_v8(cudnnHandle_t  handle, cudnnCTCLossAlgo_t  algo, cudnnCTCLossDescriptor_t  ctcLossDesc, const cudnnTensorDescriptor_t  probsDesc, const cudnnTensorDescriptor_t  gradientsDesc, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetCTCLossWorkspaceSize_v8 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetCTCLossWorkspaceSize_v8(handle, algo, ctcLossDesc, probsDesc, gradientsDesc, sizeInBytes);
 #else
@@ -13562,8 +14171,8 @@ cudnnStatus_t cudnnGetCTCLossWorkspaceSize_v8(cudnnHandle_t  handle, cudnnCTCLos
 cudnnStatus_t cudnnAdvTrainVersionCheck()
 {
 	TALLY_SPD_LOG("cudnnAdvTrainVersionCheck hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnAdvTrainVersionCheck();
 #else
@@ -13601,8 +14210,8 @@ cudnnStatus_t cudnnAdvTrainVersionCheck()
 cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * convDesc)
 {
 	TALLY_SPD_LOG("cudnnCreateConvolutionDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCreateConvolutionDescriptor(convDesc);
 #else
@@ -13642,8 +14251,8 @@ cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * co
 cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t  convDesc)
 {
 	TALLY_SPD_LOG("cudnnDestroyConvolutionDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnDestroyConvolutionDescriptor(convDesc);
 #else
@@ -13682,6 +14291,7 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t  co
 cudnnStatus_t cudnnSetConvolutionMathType(cudnnConvolutionDescriptor_t  convDesc, cudnnMathType_t  mathType)
 {
 	TALLY_SPD_LOG("cudnnSetConvolutionMathType hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetConvolutionMathType(convDesc, mathType);
 #else
@@ -13692,6 +14302,7 @@ cudnnStatus_t cudnnSetConvolutionMathType(cudnnConvolutionDescriptor_t  convDesc
 cudnnStatus_t cudnnGetConvolutionMathType(cudnnConvolutionDescriptor_t  convDesc, cudnnMathType_t * mathType)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionMathType hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetConvolutionMathType(convDesc, mathType);
 #else
@@ -13702,6 +14313,7 @@ cudnnStatus_t cudnnGetConvolutionMathType(cudnnConvolutionDescriptor_t  convDesc
 cudnnStatus_t cudnnSetConvolutionGroupCount(cudnnConvolutionDescriptor_t  convDesc, int  groupCount)
 {
 	TALLY_SPD_LOG("cudnnSetConvolutionGroupCount hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetConvolutionGroupCount(convDesc, groupCount);
 #else
@@ -13712,6 +14324,7 @@ cudnnStatus_t cudnnSetConvolutionGroupCount(cudnnConvolutionDescriptor_t  convDe
 cudnnStatus_t cudnnGetConvolutionGroupCount(cudnnConvolutionDescriptor_t  convDesc, int * groupCount)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionGroupCount hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetConvolutionGroupCount(convDesc, groupCount);
 #else
@@ -13722,6 +14335,7 @@ cudnnStatus_t cudnnGetConvolutionGroupCount(cudnnConvolutionDescriptor_t  convDe
 cudnnStatus_t cudnnSetConvolutionReorderType(cudnnConvolutionDescriptor_t  convDesc, cudnnReorderType_t  reorderType)
 {
 	TALLY_SPD_LOG("cudnnSetConvolutionReorderType hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetConvolutionReorderType(convDesc, reorderType);
 #else
@@ -13732,6 +14346,7 @@ cudnnStatus_t cudnnSetConvolutionReorderType(cudnnConvolutionDescriptor_t  convD
 cudnnStatus_t cudnnGetConvolutionReorderType(cudnnConvolutionDescriptor_t  convDesc, cudnnReorderType_t * reorderType)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionReorderType hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetConvolutionReorderType(convDesc, reorderType);
 #else
@@ -13742,6 +14357,7 @@ cudnnStatus_t cudnnGetConvolutionReorderType(cudnnConvolutionDescriptor_t  convD
 cudnnStatus_t cudnnSetConvolution2dDescriptor(cudnnConvolutionDescriptor_t  convDesc, int  pad_h, int  pad_w, int  u, int  v, int  dilation_h, int  dilation_w, cudnnConvolutionMode_t  mode, cudnnDataType_t  computeType)
 {
 	TALLY_SPD_LOG("cudnnSetConvolution2dDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetConvolution2dDescriptor(convDesc, pad_h, pad_w, u, v, dilation_h, dilation_w, mode, computeType);
 #else
@@ -13752,6 +14368,7 @@ cudnnStatus_t cudnnSetConvolution2dDescriptor(cudnnConvolutionDescriptor_t  conv
 cudnnStatus_t cudnnGetConvolution2dDescriptor(const cudnnConvolutionDescriptor_t  convDesc, int * pad_h, int * pad_w, int * u, int * v, int * dilation_h, int * dilation_w, cudnnConvolutionMode_t * mode, cudnnDataType_t * computeType)
 {
 	TALLY_SPD_LOG("cudnnGetConvolution2dDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetConvolution2dDescriptor(convDesc, pad_h, pad_w, u, v, dilation_h, dilation_w, mode, computeType);
 #else
@@ -13762,6 +14379,7 @@ cudnnStatus_t cudnnGetConvolution2dDescriptor(const cudnnConvolutionDescriptor_t
 cudnnStatus_t cudnnGetConvolutionNdDescriptor(const cudnnConvolutionDescriptor_t  convDesc, int  arrayLengthRequested, int * arrayLength, int  padA[], int  strideA[], int  dilationA[], cudnnConvolutionMode_t * mode, cudnnDataType_t * computeType)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionNdDescriptor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetConvolutionNdDescriptor(convDesc, arrayLengthRequested, arrayLength, padA, strideA, dilationA, mode, computeType);
 #else
@@ -13772,6 +14390,7 @@ cudnnStatus_t cudnnGetConvolutionNdDescriptor(const cudnnConvolutionDescriptor_t
 cudnnStatus_t cudnnGetConvolution2dForwardOutputDim(const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  inputTensorDesc, const cudnnFilterDescriptor_t  filterDesc, int * n, int * c, int * h, int * w)
 {
 	TALLY_SPD_LOG("cudnnGetConvolution2dForwardOutputDim hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetConvolution2dForwardOutputDim(convDesc, inputTensorDesc, filterDesc, n, c, h, w);
 #else
@@ -13782,6 +14401,7 @@ cudnnStatus_t cudnnGetConvolution2dForwardOutputDim(const cudnnConvolutionDescri
 cudnnStatus_t cudnnGetConvolutionForwardAlgorithmMaxCount(cudnnHandle_t  handle, int * count)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionForwardAlgorithmMaxCount hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetConvolutionForwardAlgorithmMaxCount(handle, count);
 #else
@@ -13792,6 +14412,7 @@ cudnnStatus_t cudnnGetConvolutionForwardAlgorithmMaxCount(cudnnHandle_t  handle,
 cudnnStatus_t cudnnFindConvolutionForwardAlgorithmEx(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, void * y, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnFindConvolutionForwardAlgorithmEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnFindConvolutionForwardAlgorithmEx(handle, xDesc, x, wDesc, w, convDesc, yDesc, y, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
 #else
@@ -13802,6 +14423,7 @@ cudnnStatus_t cudnnFindConvolutionForwardAlgorithmEx(cudnnHandle_t  handle, cons
 cudnnStatus_t cudnnIm2Col(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, void * colBuffer)
 {
 	TALLY_SPD_LOG("cudnnIm2Col hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnIm2Col(handle, xDesc, x, wDesc, convDesc, colBuffer);
 #else
@@ -13812,8 +14434,8 @@ cudnnStatus_t cudnnIm2Col(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  
 cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnFilterDescriptor_t  wDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  yDesc, cudnnConvolutionFwdAlgo_t  algo, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionForwardWorkspaceSize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionForwardWorkspaceSize(handle, xDesc, wDesc, convDesc, yDesc, algo, sizeInBytes);
 #else
@@ -13859,6 +14481,7 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t  handle, con
 cudnnStatus_t cudnnConvolutionBiasActivationForward(cudnnHandle_t  handle, const void * alpha1, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnConvolutionDescriptor_t  convDesc, cudnnConvolutionFwdAlgo_t  algo, void * workSpace, size_t  workSpaceSizeInBytes, const void * alpha2, const cudnnTensorDescriptor_t  zDesc, const void * z, const cudnnTensorDescriptor_t  biasDesc, const void * bias, const cudnnActivationDescriptor_t  activationDesc, const cudnnTensorDescriptor_t  yDesc, void * y)
 {
 	TALLY_SPD_LOG("cudnnConvolutionBiasActivationForward hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnConvolutionBiasActivationForward(handle, alpha1, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, alpha2, zDesc, z, biasDesc, bias, activationDesc, yDesc, y);
 #else
@@ -13869,8 +14492,8 @@ cudnnStatus_t cudnnConvolutionBiasActivationForward(cudnnHandle_t  handle, const
 cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  handle, int * count)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionBackwardDataAlgorithmMaxCount hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionBackwardDataAlgorithmMaxCount(handle, count);
 #else
@@ -13911,6 +14534,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  ha
 cudnnStatus_t cudnnFindConvolutionBackwardDataAlgorithm(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults)
 {
 	TALLY_SPD_LOG("cudnnFindConvolutionBackwardDataAlgorithm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnFindConvolutionBackwardDataAlgorithm(handle, wDesc, dyDesc, convDesc, dxDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
 #else
@@ -13921,6 +14545,7 @@ cudnnStatus_t cudnnFindConvolutionBackwardDataAlgorithm(cudnnHandle_t  handle, c
 cudnnStatus_t cudnnFindConvolutionBackwardDataAlgorithmEx(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, void * dx, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnFindConvolutionBackwardDataAlgorithmEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnFindConvolutionBackwardDataAlgorithmEx(handle, wDesc, w, dyDesc, dy, convDesc, dxDesc, dx, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
 #else
@@ -13931,6 +14556,7 @@ cudnnStatus_t cudnnFindConvolutionBackwardDataAlgorithmEx(cudnnHandle_t  handle,
 cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithm_v7(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  gradDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t * perfResults)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionBackwardDataAlgorithm_v7 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetConvolutionBackwardDataAlgorithm_v7(handle, filterDesc, diffDesc, convDesc, gradDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
 #else
@@ -13941,8 +14567,8 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithm_v7(cudnnHandle_t  handle,
 cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle, const cudnnFilterDescriptor_t  wDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  dxDesc, cudnnConvolutionBwdDataAlgo_t  algo, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionBackwardDataWorkspaceSize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionBackwardDataWorkspaceSize(handle, wDesc, dyDesc, convDesc, dxDesc, algo, sizeInBytes);
 #else
@@ -13988,6 +14614,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle
 cudnnStatus_t cudnnConvolutionBackwardData(cudnnHandle_t  handle, const void * alpha, const cudnnFilterDescriptor_t  wDesc, const void * w, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnConvolutionDescriptor_t  convDesc, cudnnConvolutionBwdDataAlgo_t  algo, void * workSpace, size_t  workSpaceSizeInBytes, const void * beta, const cudnnTensorDescriptor_t  dxDesc, void * dx)
 {
 	TALLY_SPD_LOG("cudnnConvolutionBackwardData hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnConvolutionBackwardData(handle, alpha, wDesc, w, dyDesc, dy, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, dxDesc, dx);
 #else
@@ -13998,8 +14625,8 @@ cudnnStatus_t cudnnConvolutionBackwardData(cudnnHandle_t  handle, const void * a
 cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  handle, const cudnnFilterDescriptor_t  filterDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnTensorDescriptor_t  gradDesc, const cudnnTensorFormat_t  transformFormat, cudnnFilterDescriptor_t  foldedFilterDesc, cudnnTensorDescriptor_t  paddedDiffDesc, cudnnConvolutionDescriptor_t  foldedConvDesc, cudnnTensorDescriptor_t  foldedGradDesc, cudnnTensorTransformDescriptor_t  filterFoldTransDesc, cudnnTensorTransformDescriptor_t  diffPadTransDesc, cudnnTensorTransformDescriptor_t  gradFoldTransDesc, cudnnTensorTransformDescriptor_t  gradUnfoldTransDesc)
 {
 	TALLY_SPD_LOG("cudnnGetFoldedConvBackwardDataDescriptors hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetFoldedConvBackwardDataDescriptors(handle, filterDesc, diffDesc, convDesc, gradDesc, transformFormat, foldedFilterDesc, paddedDiffDesc, foldedConvDesc, foldedGradDesc, filterFoldTransDesc, diffPadTransDesc, gradFoldTransDesc, gradUnfoldTransDesc);
 #else
@@ -14051,8 +14678,8 @@ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  han
 cudnnStatus_t cudnnCnnInferVersionCheck()
 {
 	TALLY_SPD_LOG("cudnnCnnInferVersionCheck hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCnnInferVersionCheck();
 #else
@@ -14090,8 +14717,8 @@ cudnnStatus_t cudnnCnnInferVersionCheck()
 cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  handle, int * count)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionBackwardFilterAlgorithmMaxCount hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnGetConvolutionBackwardFilterAlgorithmMaxCount(handle, count);
 #else
@@ -14132,6 +14759,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  
 cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithm(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  dwDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults)
 {
 	TALLY_SPD_LOG("cudnnFindConvolutionBackwardFilterAlgorithm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnFindConvolutionBackwardFilterAlgorithm(handle, xDesc, dyDesc, convDesc, dwDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
 #else
@@ -14142,6 +14770,7 @@ cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithm(cudnnHandle_t  handle,
 cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithmEx(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  dyDesc, const void * y, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  dwDesc, void * dw, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults, void * workSpace, size_t  workSpaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnFindConvolutionBackwardFilterAlgorithmEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnFindConvolutionBackwardFilterAlgorithmEx(handle, xDesc, x, dyDesc, y, convDesc, dwDesc, dw, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
 #else
@@ -14152,6 +14781,7 @@ cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithmEx(cudnnHandle_t  handl
 cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm_v7(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  srcDesc, const cudnnTensorDescriptor_t  diffDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  gradDesc, const int  requestedAlgoCount, int * returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t * perfResults)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionBackwardFilterAlgorithm_v7 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetConvolutionBackwardFilterAlgorithm_v7(handle, srcDesc, diffDesc, convDesc, gradDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
 #else
@@ -14162,6 +14792,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm_v7(cudnnHandle_t  handl
 cudnnStatus_t cudnnGetConvolutionBackwardFilterWorkspaceSize(cudnnHandle_t  handle, const cudnnTensorDescriptor_t  xDesc, const cudnnTensorDescriptor_t  dyDesc, const cudnnConvolutionDescriptor_t  convDesc, const cudnnFilterDescriptor_t  gradDesc, cudnnConvolutionBwdFilterAlgo_t  algo, size_t * sizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnGetConvolutionBackwardFilterWorkspaceSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetConvolutionBackwardFilterWorkspaceSize(handle, xDesc, dyDesc, convDesc, gradDesc, algo, sizeInBytes);
 #else
@@ -14172,6 +14803,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterWorkspaceSize(cudnnHandle_t  hand
 cudnnStatus_t cudnnConvolutionBackwardFilter(cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  xDesc, const void * x, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const cudnnConvolutionDescriptor_t  convDesc, cudnnConvolutionBwdFilterAlgo_t  algo, void * workSpace, size_t  workSpaceSizeInBytes, const void * beta, const cudnnFilterDescriptor_t  dwDesc, void * dw)
 {
 	TALLY_SPD_LOG("cudnnConvolutionBackwardFilter hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnConvolutionBackwardFilter(handle, alpha, xDesc, x, dyDesc, dy, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, dwDesc, dw);
 #else
@@ -14182,6 +14814,7 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(cudnnHandle_t  handle, const void *
 cudnnStatus_t cudnnConvolutionBackwardBias(cudnnHandle_t  handle, const void * alpha, const cudnnTensorDescriptor_t  dyDesc, const void * dy, const void * beta, const cudnnTensorDescriptor_t  dbDesc, void * db)
 {
 	TALLY_SPD_LOG("cudnnConvolutionBackwardBias hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnConvolutionBackwardBias(handle, alpha, dyDesc, dy, beta, dbDesc, db);
 #else
@@ -14192,6 +14825,7 @@ cudnnStatus_t cudnnConvolutionBackwardBias(cudnnHandle_t  handle, const void * a
 cudnnStatus_t cudnnCreateFusedOpsConstParamPack(cudnnFusedOpsConstParamPack_t * constPack, cudnnFusedOps_t  ops)
 {
 	TALLY_SPD_LOG("cudnnCreateFusedOpsConstParamPack hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCreateFusedOpsConstParamPack(constPack, ops);
 #else
@@ -14202,6 +14836,7 @@ cudnnStatus_t cudnnCreateFusedOpsConstParamPack(cudnnFusedOpsConstParamPack_t * 
 cudnnStatus_t cudnnDestroyFusedOpsConstParamPack(cudnnFusedOpsConstParamPack_t  constPack)
 {
 	TALLY_SPD_LOG("cudnnDestroyFusedOpsConstParamPack hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDestroyFusedOpsConstParamPack(constPack);
 #else
@@ -14212,6 +14847,7 @@ cudnnStatus_t cudnnDestroyFusedOpsConstParamPack(cudnnFusedOpsConstParamPack_t  
 cudnnStatus_t cudnnSetFusedOpsConstParamPackAttribute(cudnnFusedOpsConstParamPack_t  constPack, cudnnFusedOpsConstParamLabel_t  paramLabel, const void * param)
 {
 	TALLY_SPD_LOG("cudnnSetFusedOpsConstParamPackAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetFusedOpsConstParamPackAttribute(constPack, paramLabel, param);
 #else
@@ -14222,6 +14858,7 @@ cudnnStatus_t cudnnSetFusedOpsConstParamPackAttribute(cudnnFusedOpsConstParamPac
 cudnnStatus_t cudnnGetFusedOpsConstParamPackAttribute(const cudnnFusedOpsConstParamPack_t  constPack, cudnnFusedOpsConstParamLabel_t  paramLabel, void * param, int * isNULL)
 {
 	TALLY_SPD_LOG("cudnnGetFusedOpsConstParamPackAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetFusedOpsConstParamPackAttribute(constPack, paramLabel, param, isNULL);
 #else
@@ -14232,6 +14869,7 @@ cudnnStatus_t cudnnGetFusedOpsConstParamPackAttribute(const cudnnFusedOpsConstPa
 cudnnStatus_t cudnnCreateFusedOpsVariantParamPack(cudnnFusedOpsVariantParamPack_t * varPack, cudnnFusedOps_t  ops)
 {
 	TALLY_SPD_LOG("cudnnCreateFusedOpsVariantParamPack hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCreateFusedOpsVariantParamPack(varPack, ops);
 #else
@@ -14242,6 +14880,7 @@ cudnnStatus_t cudnnCreateFusedOpsVariantParamPack(cudnnFusedOpsVariantParamPack_
 cudnnStatus_t cudnnDestroyFusedOpsVariantParamPack(cudnnFusedOpsVariantParamPack_t  varPack)
 {
 	TALLY_SPD_LOG("cudnnDestroyFusedOpsVariantParamPack hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDestroyFusedOpsVariantParamPack(varPack);
 #else
@@ -14252,6 +14891,7 @@ cudnnStatus_t cudnnDestroyFusedOpsVariantParamPack(cudnnFusedOpsVariantParamPack
 cudnnStatus_t cudnnSetFusedOpsVariantParamPackAttribute(cudnnFusedOpsVariantParamPack_t  varPack, cudnnFusedOpsVariantParamLabel_t  paramLabel, void * ptr)
 {
 	TALLY_SPD_LOG("cudnnSetFusedOpsVariantParamPackAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnSetFusedOpsVariantParamPackAttribute(varPack, paramLabel, ptr);
 #else
@@ -14262,6 +14902,7 @@ cudnnStatus_t cudnnSetFusedOpsVariantParamPackAttribute(cudnnFusedOpsVariantPara
 cudnnStatus_t cudnnGetFusedOpsVariantParamPackAttribute(const cudnnFusedOpsVariantParamPack_t  varPack, cudnnFusedOpsVariantParamLabel_t  paramLabel, void * ptr)
 {
 	TALLY_SPD_LOG("cudnnGetFusedOpsVariantParamPackAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnGetFusedOpsVariantParamPackAttribute(varPack, paramLabel, ptr);
 #else
@@ -14272,6 +14913,7 @@ cudnnStatus_t cudnnGetFusedOpsVariantParamPackAttribute(const cudnnFusedOpsVaria
 cudnnStatus_t cudnnCreateFusedOpsPlan(cudnnFusedOpsPlan_t * plan, cudnnFusedOps_t  ops)
 {
 	TALLY_SPD_LOG("cudnnCreateFusedOpsPlan hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnCreateFusedOpsPlan(plan, ops);
 #else
@@ -14282,6 +14924,7 @@ cudnnStatus_t cudnnCreateFusedOpsPlan(cudnnFusedOpsPlan_t * plan, cudnnFusedOps_
 cudnnStatus_t cudnnDestroyFusedOpsPlan(cudnnFusedOpsPlan_t  plan)
 {
 	TALLY_SPD_LOG("cudnnDestroyFusedOpsPlan hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnDestroyFusedOpsPlan(plan);
 #else
@@ -14292,6 +14935,7 @@ cudnnStatus_t cudnnDestroyFusedOpsPlan(cudnnFusedOpsPlan_t  plan)
 cudnnStatus_t cudnnMakeFusedOpsPlan(cudnnHandle_t  handle, cudnnFusedOpsPlan_t  plan, const cudnnFusedOpsConstParamPack_t  constPack, size_t * workspaceSizeInBytes)
 {
 	TALLY_SPD_LOG("cudnnMakeFusedOpsPlan hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnMakeFusedOpsPlan(handle, plan, constPack, workspaceSizeInBytes);
 #else
@@ -14302,6 +14946,7 @@ cudnnStatus_t cudnnMakeFusedOpsPlan(cudnnHandle_t  handle, cudnnFusedOpsPlan_t  
 cudnnStatus_t cudnnFusedOpsExecute(cudnnHandle_t  handle, const cudnnFusedOpsPlan_t  plan, cudnnFusedOpsVariantParamPack_t  varPack)
 {
 	TALLY_SPD_LOG("cudnnFusedOpsExecute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcudnnFusedOpsExecute(handle, plan, varPack);
 #else
@@ -14312,8 +14957,8 @@ cudnnStatus_t cudnnFusedOpsExecute(cudnnHandle_t  handle, const cudnnFusedOpsPla
 cudnnStatus_t cudnnCnnTrainVersionCheck()
 {
 	TALLY_SPD_LOG("cudnnCnnTrainVersionCheck hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnCnnTrainVersionCheck();
 #else
@@ -14351,8 +14996,8 @@ cudnnStatus_t cudnnCnnTrainVersionCheck()
 cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t  descriptorType, cudnnBackendDescriptor_t * descriptor)
 {
 	TALLY_SPD_LOG("cudnnBackendCreateDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendCreateDescriptor(descriptorType, descriptor);
 #else
@@ -14393,8 +15038,8 @@ cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t  descrip
 cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t  descriptor)
 {
 	TALLY_SPD_LOG("cudnnBackendDestroyDescriptor hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendDestroyDescriptor(descriptor);
 #else
@@ -14433,8 +15078,8 @@ cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t  descriptor
 cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t  descriptor)
 {
 	TALLY_SPD_LOG("cudnnBackendInitialize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendInitialize(descriptor);
 #else
@@ -14473,8 +15118,8 @@ cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t  descriptor)
 cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t  descriptor)
 {
 	TALLY_SPD_LOG("cudnnBackendFinalize hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudnnBackendFinalize(descriptor);
 #else
@@ -14513,8 +15158,8 @@ cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t  descriptor)
 cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 {
 	TALLY_SPD_LOG("cublasGetVersion_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetVersion_v2(handle, version);
 #else
@@ -14558,8 +15203,8 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 {
 	TALLY_SPD_LOG("cublasGetProperty hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetProperty(type, value);
 #else
@@ -14603,8 +15248,8 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 size_t cublasGetCudartVersion()
 {
 	TALLY_SPD_LOG("cublasGetCudartVersion hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetCudartVersion();
 #else
@@ -14642,8 +15287,8 @@ size_t cublasGetCudartVersion()
 cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamId)
 {
 	TALLY_SPD_LOG("cublasGetStream_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetStream_v2(handle, streamId);
 #else
@@ -14687,8 +15332,8 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode_t*  mode)
 {
 	TALLY_SPD_LOG("cublasGetPointerMode_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetPointerMode_v2(handle, mode);
 #else
@@ -14732,8 +15377,8 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode_t  mode)
 {
 	TALLY_SPD_LOG("cublasSetPointerMode_v2 hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetPointerMode_v2(handle, mode);
 #else
@@ -14775,6 +15420,7 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 cublasStatus_t cublasGetAtomicsMode(cublasHandle_t  handle, cublasAtomicsMode_t*  mode)
 {
 	TALLY_SPD_LOG("cublasGetAtomicsMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetAtomicsMode(handle, mode);
 #else
@@ -14785,6 +15431,7 @@ cublasStatus_t cublasGetAtomicsMode(cublasHandle_t  handle, cublasAtomicsMode_t*
 cublasStatus_t cublasSetAtomicsMode(cublasHandle_t  handle, cublasAtomicsMode_t  mode)
 {
 	TALLY_SPD_LOG("cublasSetAtomicsMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSetAtomicsMode(handle, mode);
 #else
@@ -14795,8 +15442,8 @@ cublasStatus_t cublasSetAtomicsMode(cublasHandle_t  handle, cublasAtomicsMode_t 
 cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarget)
 {
 	TALLY_SPD_LOG("cublasGetSmCountTarget hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetSmCountTarget(handle, smCountTarget);
 #else
@@ -14840,8 +15487,8 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
 cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget)
 {
 	TALLY_SPD_LOG("cublasSetSmCountTarget hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetSmCountTarget(handle, smCountTarget);
 #else
@@ -14883,6 +15530,7 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 const char* cublasGetStatusName(cublasStatus_t  status)
 {
 	TALLY_SPD_LOG("cublasGetStatusName hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetStatusName(status);
 #else
@@ -14893,6 +15541,7 @@ const char* cublasGetStatusName(cublasStatus_t  status)
 const char* cublasGetStatusString(cublasStatus_t  status)
 {
 	TALLY_SPD_LOG("cublasGetStatusString hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetStatusString(status);
 #else
@@ -14903,6 +15552,7 @@ const char* cublasGetStatusString(cublasStatus_t  status)
 cublasStatus_t cublasLoggerConfigure(int  logIsOn, int  logToStdOut, int  logToStdErr, const char*  logFileName)
 {
 	TALLY_SPD_LOG("cublasLoggerConfigure hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLoggerConfigure(logIsOn, logToStdOut, logToStdErr, logFileName);
 #else
@@ -14913,8 +15563,8 @@ cublasStatus_t cublasLoggerConfigure(int  logIsOn, int  logToStdOut, int  logToS
 cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 {
 	TALLY_SPD_LOG("cublasSetLoggerCallback hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetLoggerCallback(userCallback);
 #else
@@ -14955,8 +15605,8 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 {
 	TALLY_SPD_LOG("cublasGetLoggerCallback hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetLoggerCallback(userCallback);
 #else
@@ -14999,8 +15649,8 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx, void*  devicePtr, int  incy)
 {
 	TALLY_SPD_LOG("cublasSetVector hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetVector(n, elemSize, x, incx, devicePtr, incy);
 #else
@@ -15046,6 +15696,7 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 cublasStatus_t cublasSetVector_64(int64_t  n, int64_t  elemSize, const void*  x, int64_t  incx, void*  devicePtr, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasSetVector_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSetVector_64(n, elemSize, x, incx, devicePtr, incy);
 #else
@@ -15056,6 +15707,7 @@ cublasStatus_t cublasSetVector_64(int64_t  n, int64_t  elemSize, const void*  x,
 cublasStatus_t cublasGetVector(int  n, int  elemSize, const void*  x, int  incx, void*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasGetVector hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetVector(n, elemSize, x, incx, y, incy);
 #else
@@ -15066,6 +15718,7 @@ cublasStatus_t cublasGetVector(int  n, int  elemSize, const void*  x, int  incx,
 cublasStatus_t cublasGetVector_64(int64_t  n, int64_t  elemSize, const void*  x, int64_t  incx, void*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasGetVector_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetVector_64(n, elemSize, x, incx, y, incy);
 #else
@@ -15076,6 +15729,7 @@ cublasStatus_t cublasGetVector_64(int64_t  n, int64_t  elemSize, const void*  x,
 cublasStatus_t cublasSetMatrix(int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb)
 {
 	TALLY_SPD_LOG("cublasSetMatrix hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSetMatrix(rows, cols, elemSize, A, lda, B, ldb);
 #else
@@ -15086,6 +15740,7 @@ cublasStatus_t cublasSetMatrix(int  rows, int  cols, int  elemSize, const void* 
 cublasStatus_t cublasSetMatrix_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb)
 {
 	TALLY_SPD_LOG("cublasSetMatrix_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSetMatrix_64(rows, cols, elemSize, A, lda, B, ldb);
 #else
@@ -15096,6 +15751,7 @@ cublasStatus_t cublasSetMatrix_64(int64_t  rows, int64_t  cols, int64_t  elemSiz
 cublasStatus_t cublasGetMatrix(int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb)
 {
 	TALLY_SPD_LOG("cublasGetMatrix hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetMatrix(rows, cols, elemSize, A, lda, B, ldb);
 #else
@@ -15106,6 +15762,7 @@ cublasStatus_t cublasGetMatrix(int  rows, int  cols, int  elemSize, const void* 
 cublasStatus_t cublasGetMatrix_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb)
 {
 	TALLY_SPD_LOG("cublasGetMatrix_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetMatrix_64(rows, cols, elemSize, A, lda, B, ldb);
 #else
@@ -15116,6 +15773,7 @@ cublasStatus_t cublasGetMatrix_64(int64_t  rows, int64_t  cols, int64_t  elemSiz
 cublasStatus_t cublasSetVectorAsync(int  n, int  elemSize, const void*  hostPtr, int  incx, void*  devicePtr, int  incy, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cublasSetVectorAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSetVectorAsync(n, elemSize, hostPtr, incx, devicePtr, incy, stream);
 #else
@@ -15126,6 +15784,7 @@ cublasStatus_t cublasSetVectorAsync(int  n, int  elemSize, const void*  hostPtr,
 cublasStatus_t cublasSetVectorAsync_64(int64_t  n, int64_t  elemSize, const void*  hostPtr, int64_t  incx, void*  devicePtr, int64_t  incy, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cublasSetVectorAsync_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSetVectorAsync_64(n, elemSize, hostPtr, incx, devicePtr, incy, stream);
 #else
@@ -15136,6 +15795,7 @@ cublasStatus_t cublasSetVectorAsync_64(int64_t  n, int64_t  elemSize, const void
 cublasStatus_t cublasGetVectorAsync(int  n, int  elemSize, const void*  devicePtr, int  incx, void*  hostPtr, int  incy, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cublasGetVectorAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetVectorAsync(n, elemSize, devicePtr, incx, hostPtr, incy, stream);
 #else
@@ -15146,6 +15806,7 @@ cublasStatus_t cublasGetVectorAsync(int  n, int  elemSize, const void*  devicePt
 cublasStatus_t cublasGetVectorAsync_64(int64_t  n, int64_t  elemSize, const void*  devicePtr, int64_t  incx, void*  hostPtr, int64_t  incy, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cublasGetVectorAsync_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetVectorAsync_64(n, elemSize, devicePtr, incx, hostPtr, incy, stream);
 #else
@@ -15156,6 +15817,7 @@ cublasStatus_t cublasGetVectorAsync_64(int64_t  n, int64_t  elemSize, const void
 cublasStatus_t cublasSetMatrixAsync(int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cublasSetMatrixAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSetMatrixAsync(rows, cols, elemSize, A, lda, B, ldb, stream);
 #else
@@ -15166,6 +15828,7 @@ cublasStatus_t cublasSetMatrixAsync(int  rows, int  cols, int  elemSize, const v
 cublasStatus_t cublasSetMatrixAsync_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cublasSetMatrixAsync_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSetMatrixAsync_64(rows, cols, elemSize, A, lda, B, ldb, stream);
 #else
@@ -15176,6 +15839,7 @@ cublasStatus_t cublasSetMatrixAsync_64(int64_t  rows, int64_t  cols, int64_t  el
 cublasStatus_t cublasGetMatrixAsync(int  rows, int  cols, int  elemSize, const void*  A, int  lda, void*  B, int  ldb, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cublasGetMatrixAsync hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetMatrixAsync(rows, cols, elemSize, A, lda, B, ldb, stream);
 #else
@@ -15186,6 +15850,7 @@ cublasStatus_t cublasGetMatrixAsync(int  rows, int  cols, int  elemSize, const v
 cublasStatus_t cublasGetMatrixAsync_64(int64_t  rows, int64_t  cols, int64_t  elemSize, const void*  A, int64_t  lda, void*  B, int64_t  ldb, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cublasGetMatrixAsync_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGetMatrixAsync_64(rows, cols, elemSize, A, lda, B, ldb, stream);
 #else
@@ -15196,6 +15861,7 @@ cublasStatus_t cublasGetMatrixAsync_64(int64_t  rows, int64_t  cols, int64_t  el
 void cublasXerbla(const char*  srName, int  info)
 {
 	TALLY_SPD_LOG("cublasXerbla hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasXerbla(srName, info);
 #else
@@ -15206,6 +15872,7 @@ void cublasXerbla(const char*  srName, int  info)
 cublasStatus_t cublasNrm2Ex(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  result, cudaDataType  resultType, cudaDataType  executionType)
 {
 	TALLY_SPD_LOG("cublasNrm2Ex hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasNrm2Ex(handle, n, x, xType, incx, result, resultType, executionType);
 #else
@@ -15216,6 +15883,7 @@ cublasStatus_t cublasNrm2Ex(cublasHandle_t  handle, int  n, const void*  x, cuda
 cublasStatus_t cublasNrm2Ex_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  result, cudaDataType  resultType, cudaDataType  executionType)
 {
 	TALLY_SPD_LOG("cublasNrm2Ex_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasNrm2Ex_64(handle, n, x, xType, incx, result, resultType, executionType);
 #else
@@ -15226,6 +15894,7 @@ cublasStatus_t cublasNrm2Ex_64(cublasHandle_t  handle, int64_t  n, const void*  
 cublasStatus_t cublasSnrm2_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  result)
 {
 	TALLY_SPD_LOG("cublasSnrm2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSnrm2_v2(handle, n, x, incx, result);
 #else
@@ -15236,6 +15905,7 @@ cublasStatus_t cublasSnrm2_v2(cublasHandle_t  handle, int  n, const float*  x, i
 cublasStatus_t cublasSnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  result)
 {
 	TALLY_SPD_LOG("cublasSnrm2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSnrm2_v2_64(handle, n, x, incx, result);
 #else
@@ -15246,6 +15916,7 @@ cublasStatus_t cublasSnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const float
 cublasStatus_t cublasDnrm2_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  result)
 {
 	TALLY_SPD_LOG("cublasDnrm2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDnrm2_v2(handle, n, x, incx, result);
 #else
@@ -15256,6 +15927,7 @@ cublasStatus_t cublasDnrm2_v2(cublasHandle_t  handle, int  n, const double*  x, 
 cublasStatus_t cublasDnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  result)
 {
 	TALLY_SPD_LOG("cublasDnrm2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDnrm2_v2_64(handle, n, x, incx, result);
 #else
@@ -15266,6 +15938,7 @@ cublasStatus_t cublasDnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const doubl
 cublasStatus_t cublasScnrm2_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, float*  result)
 {
 	TALLY_SPD_LOG("cublasScnrm2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasScnrm2_v2(handle, n, x, incx, result);
 #else
@@ -15276,6 +15949,7 @@ cublasStatus_t cublasScnrm2_v2(cublasHandle_t  handle, int  n, const cuComplex* 
 cublasStatus_t cublasScnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, float*  result)
 {
 	TALLY_SPD_LOG("cublasScnrm2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasScnrm2_v2_64(handle, n, x, incx, result);
 #else
@@ -15286,6 +15960,7 @@ cublasStatus_t cublasScnrm2_v2_64(cublasHandle_t  handle, int64_t  n, const cuCo
 cublasStatus_t cublasDznrm2_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, double*  result)
 {
 	TALLY_SPD_LOG("cublasDznrm2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDznrm2_v2(handle, n, x, incx, result);
 #else
@@ -15296,6 +15971,7 @@ cublasStatus_t cublasDznrm2_v2(cublasHandle_t  handle, int  n, const cuDoubleCom
 cublasStatus_t cublasDznrm2_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, double*  result)
 {
 	TALLY_SPD_LOG("cublasDznrm2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDznrm2_v2_64(handle, n, x, incx, result);
 #else
@@ -15306,6 +15982,7 @@ cublasStatus_t cublasDznrm2_v2_64(cublasHandle_t  handle, int64_t  n, const cuDo
 cublasStatus_t cublasDotEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, const void*  y, cudaDataType  yType, int  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)
 {
 	TALLY_SPD_LOG("cublasDotEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDotEx(handle, n, x, xType, incx, y, yType, incy, result, resultType, executionType);
 #else
@@ -15316,6 +15993,7 @@ cublasStatus_t cublasDotEx(cublasHandle_t  handle, int  n, const void*  x, cudaD
 cublasStatus_t cublasDotEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, const void*  y, cudaDataType  yType, int64_t  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)
 {
 	TALLY_SPD_LOG("cublasDotEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDotEx_64(handle, n, x, xType, incx, y, yType, incy, result, resultType, executionType);
 #else
@@ -15326,6 +16004,7 @@ cublasStatus_t cublasDotEx_64(cublasHandle_t  handle, int64_t  n, const void*  x
 cublasStatus_t cublasDotcEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, const void*  y, cudaDataType  yType, int  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)
 {
 	TALLY_SPD_LOG("cublasDotcEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDotcEx(handle, n, x, xType, incx, y, yType, incy, result, resultType, executionType);
 #else
@@ -15336,6 +16015,7 @@ cublasStatus_t cublasDotcEx(cublasHandle_t  handle, int  n, const void*  x, cuda
 cublasStatus_t cublasDotcEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, const void*  y, cudaDataType  yType, int64_t  incy, void*  result, cudaDataType  resultType, cudaDataType  executionType)
 {
 	TALLY_SPD_LOG("cublasDotcEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDotcEx_64(handle, n, x, xType, incx, y, yType, incy, result, resultType, executionType);
 #else
@@ -15346,6 +16026,7 @@ cublasStatus_t cublasDotcEx_64(cublasHandle_t  handle, int64_t  n, const void*  
 cublasStatus_t cublasSdot_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, const float*  y, int  incy, float*  result)
 {
 	TALLY_SPD_LOG("cublasSdot_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSdot_v2(handle, n, x, incx, y, incy, result);
 #else
@@ -15356,6 +16037,7 @@ cublasStatus_t cublasSdot_v2(cublasHandle_t  handle, int  n, const float*  x, in
 cublasStatus_t cublasSdot_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  result)
 {
 	TALLY_SPD_LOG("cublasSdot_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSdot_v2_64(handle, n, x, incx, y, incy, result);
 #else
@@ -15366,6 +16048,7 @@ cublasStatus_t cublasSdot_v2_64(cublasHandle_t  handle, int64_t  n, const float*
 cublasStatus_t cublasDdot_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, const double*  y, int  incy, double*  result)
 {
 	TALLY_SPD_LOG("cublasDdot_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDdot_v2(handle, n, x, incx, y, incy, result);
 #else
@@ -15376,6 +16059,7 @@ cublasStatus_t cublasDdot_v2(cublasHandle_t  handle, int  n, const double*  x, i
 cublasStatus_t cublasDdot_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  result)
 {
 	TALLY_SPD_LOG("cublasDdot_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDdot_v2_64(handle, n, x, incx, y, incy, result);
 #else
@@ -15386,6 +16070,7 @@ cublasStatus_t cublasDdot_v2_64(cublasHandle_t  handle, int64_t  n, const double
 cublasStatus_t cublasCdotu_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  result)
 {
 	TALLY_SPD_LOG("cublasCdotu_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCdotu_v2(handle, n, x, incx, y, incy, result);
 #else
@@ -15396,6 +16081,7 @@ cublasStatus_t cublasCdotu_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 cublasStatus_t cublasCdotu_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  result)
 {
 	TALLY_SPD_LOG("cublasCdotu_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCdotu_v2_64(handle, n, x, incx, y, incy, result);
 #else
@@ -15406,6 +16092,7 @@ cublasStatus_t cublasCdotu_v2_64(cublasHandle_t  handle, int64_t  n, const cuCom
 cublasStatus_t cublasCdotc_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  result)
 {
 	TALLY_SPD_LOG("cublasCdotc_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCdotc_v2(handle, n, x, incx, y, incy, result);
 #else
@@ -15416,6 +16103,7 @@ cublasStatus_t cublasCdotc_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 cublasStatus_t cublasCdotc_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  result)
 {
 	TALLY_SPD_LOG("cublasCdotc_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCdotc_v2_64(handle, n, x, incx, y, incy, result);
 #else
@@ -15426,6 +16114,7 @@ cublasStatus_t cublasCdotc_v2_64(cublasHandle_t  handle, int64_t  n, const cuCom
 cublasStatus_t cublasZdotu_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  result)
 {
 	TALLY_SPD_LOG("cublasZdotu_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZdotu_v2(handle, n, x, incx, y, incy, result);
 #else
@@ -15436,6 +16125,7 @@ cublasStatus_t cublasZdotu_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 cublasStatus_t cublasZdotu_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  result)
 {
 	TALLY_SPD_LOG("cublasZdotu_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZdotu_v2_64(handle, n, x, incx, y, incy, result);
 #else
@@ -15446,6 +16136,7 @@ cublasStatus_t cublasZdotu_v2_64(cublasHandle_t  handle, int64_t  n, const cuDou
 cublasStatus_t cublasZdotc_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  result)
 {
 	TALLY_SPD_LOG("cublasZdotc_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZdotc_v2(handle, n, x, incx, y, incy, result);
 #else
@@ -15456,6 +16147,7 @@ cublasStatus_t cublasZdotc_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 cublasStatus_t cublasZdotc_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  result)
 {
 	TALLY_SPD_LOG("cublasZdotc_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZdotc_v2_64(handle, n, x, incx, y, incy, result);
 #else
@@ -15466,6 +16158,7 @@ cublasStatus_t cublasZdotc_v2_64(cublasHandle_t  handle, int64_t  n, const cuDou
 cublasStatus_t cublasScalEx(cublasHandle_t  handle, int  n, const void*  alpha, cudaDataType  alphaType, void*  x, cudaDataType  xType, int  incx, cudaDataType  executionType)
 {
 	TALLY_SPD_LOG("cublasScalEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasScalEx(handle, n, alpha, alphaType, x, xType, incx, executionType);
 #else
@@ -15476,6 +16169,7 @@ cublasStatus_t cublasScalEx(cublasHandle_t  handle, int  n, const void*  alpha, 
 cublasStatus_t cublasScalEx_64(cublasHandle_t  handle, int64_t  n, const void*  alpha, cudaDataType  alphaType, void*  x, cudaDataType  xType, int64_t  incx, cudaDataType  executionType)
 {
 	TALLY_SPD_LOG("cublasScalEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasScalEx_64(handle, n, alpha, alphaType, x, xType, incx, executionType);
 #else
@@ -15486,6 +16180,7 @@ cublasStatus_t cublasScalEx_64(cublasHandle_t  handle, int64_t  n, const void*  
 cublasStatus_t cublasSscal_v2(cublasHandle_t  handle, int  n, const float*  alpha, float*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasSscal_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSscal_v2(handle, n, alpha, x, incx);
 #else
@@ -15496,6 +16191,7 @@ cublasStatus_t cublasSscal_v2(cublasHandle_t  handle, int  n, const float*  alph
 cublasStatus_t cublasSscal_v2_64(cublasHandle_t  handle, int64_t  n, const float*  alpha, float*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasSscal_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSscal_v2_64(handle, n, alpha, x, incx);
 #else
@@ -15506,6 +16202,7 @@ cublasStatus_t cublasSscal_v2_64(cublasHandle_t  handle, int64_t  n, const float
 cublasStatus_t cublasDscal_v2(cublasHandle_t  handle, int  n, const double*  alpha, double*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasDscal_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDscal_v2(handle, n, alpha, x, incx);
 #else
@@ -15516,6 +16213,7 @@ cublasStatus_t cublasDscal_v2(cublasHandle_t  handle, int  n, const double*  alp
 cublasStatus_t cublasDscal_v2_64(cublasHandle_t  handle, int64_t  n, const double*  alpha, double*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasDscal_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDscal_v2_64(handle, n, alpha, x, incx);
 #else
@@ -15526,6 +16224,7 @@ cublasStatus_t cublasDscal_v2_64(cublasHandle_t  handle, int64_t  n, const doubl
 cublasStatus_t cublasCscal_v2(cublasHandle_t  handle, int  n, const cuComplex*  alpha, cuComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasCscal_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCscal_v2(handle, n, alpha, x, incx);
 #else
@@ -15536,6 +16235,7 @@ cublasStatus_t cublasCscal_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 cublasStatus_t cublasCscal_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  alpha, cuComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasCscal_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCscal_v2_64(handle, n, alpha, x, incx);
 #else
@@ -15546,6 +16246,7 @@ cublasStatus_t cublasCscal_v2_64(cublasHandle_t  handle, int64_t  n, const cuCom
 cublasStatus_t cublasCsscal_v2(cublasHandle_t  handle, int  n, const float*  alpha, cuComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasCsscal_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsscal_v2(handle, n, alpha, x, incx);
 #else
@@ -15556,6 +16257,7 @@ cublasStatus_t cublasCsscal_v2(cublasHandle_t  handle, int  n, const float*  alp
 cublasStatus_t cublasCsscal_v2_64(cublasHandle_t  handle, int64_t  n, const float*  alpha, cuComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasCsscal_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsscal_v2_64(handle, n, alpha, x, incx);
 #else
@@ -15566,6 +16268,7 @@ cublasStatus_t cublasCsscal_v2_64(cublasHandle_t  handle, int64_t  n, const floa
 cublasStatus_t cublasZscal_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  alpha, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasZscal_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZscal_v2(handle, n, alpha, x, incx);
 #else
@@ -15576,6 +16279,7 @@ cublasStatus_t cublasZscal_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 cublasStatus_t cublasZscal_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  alpha, cuDoubleComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasZscal_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZscal_v2_64(handle, n, alpha, x, incx);
 #else
@@ -15586,6 +16290,7 @@ cublasStatus_t cublasZscal_v2_64(cublasHandle_t  handle, int64_t  n, const cuDou
 cublasStatus_t cublasZdscal_v2(cublasHandle_t  handle, int  n, const double*  alpha, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasZdscal_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZdscal_v2(handle, n, alpha, x, incx);
 #else
@@ -15596,6 +16301,7 @@ cublasStatus_t cublasZdscal_v2(cublasHandle_t  handle, int  n, const double*  al
 cublasStatus_t cublasZdscal_v2_64(cublasHandle_t  handle, int64_t  n, const double*  alpha, cuDoubleComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasZdscal_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZdscal_v2_64(handle, n, alpha, x, incx);
 #else
@@ -15606,6 +16312,7 @@ cublasStatus_t cublasZdscal_v2_64(cublasHandle_t  handle, int64_t  n, const doub
 cublasStatus_t cublasAxpyEx(cublasHandle_t  handle, int  n, const void*  alpha, cudaDataType  alphaType, const void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, cudaDataType  executiontype)
 {
 	TALLY_SPD_LOG("cublasAxpyEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasAxpyEx(handle, n, alpha, alphaType, x, xType, incx, y, yType, incy, executiontype);
 #else
@@ -15616,6 +16323,7 @@ cublasStatus_t cublasAxpyEx(cublasHandle_t  handle, int  n, const void*  alpha, 
 cublasStatus_t cublasAxpyEx_64(cublasHandle_t  handle, int64_t  n, const void*  alpha, cudaDataType  alphaType, const void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, cudaDataType  executiontype)
 {
 	TALLY_SPD_LOG("cublasAxpyEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasAxpyEx_64(handle, n, alpha, alphaType, x, xType, incx, y, yType, incy, executiontype);
 #else
@@ -15626,6 +16334,7 @@ cublasStatus_t cublasAxpyEx_64(cublasHandle_t  handle, int64_t  n, const void*  
 cublasStatus_t cublasSaxpy_v2(cublasHandle_t  handle, int  n, const float*  alpha, const float*  x, int  incx, float*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasSaxpy_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSaxpy_v2(handle, n, alpha, x, incx, y, incy);
 #else
@@ -15636,6 +16345,7 @@ cublasStatus_t cublasSaxpy_v2(cublasHandle_t  handle, int  n, const float*  alph
 cublasStatus_t cublasSaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasSaxpy_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSaxpy_v2_64(handle, n, alpha, x, incx, y, incy);
 #else
@@ -15646,6 +16356,7 @@ cublasStatus_t cublasSaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const float
 cublasStatus_t cublasDaxpy_v2(cublasHandle_t  handle, int  n, const double*  alpha, const double*  x, int  incx, double*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasDaxpy_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDaxpy_v2(handle, n, alpha, x, incx, y, incy);
 #else
@@ -15656,6 +16367,7 @@ cublasStatus_t cublasDaxpy_v2(cublasHandle_t  handle, int  n, const double*  alp
 cublasStatus_t cublasDaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasDaxpy_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDaxpy_v2_64(handle, n, alpha, x, incx, y, incy);
 #else
@@ -15666,6 +16378,7 @@ cublasStatus_t cublasDaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const doubl
 cublasStatus_t cublasCaxpy_v2(cublasHandle_t  handle, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, cuComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasCaxpy_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCaxpy_v2(handle, n, alpha, x, incx, y, incy);
 #else
@@ -15676,6 +16389,7 @@ cublasStatus_t cublasCaxpy_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 cublasStatus_t cublasCaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasCaxpy_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCaxpy_v2_64(handle, n, alpha, x, incx, y, incy);
 #else
@@ -15686,6 +16400,7 @@ cublasStatus_t cublasCaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const cuCom
 cublasStatus_t cublasZaxpy_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasZaxpy_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZaxpy_v2(handle, n, alpha, x, incx, y, incy);
 #else
@@ -15696,6 +16411,7 @@ cublasStatus_t cublasZaxpy_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 cublasStatus_t cublasZaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasZaxpy_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZaxpy_v2_64(handle, n, alpha, x, incx, y, incy);
 #else
@@ -15706,6 +16422,7 @@ cublasStatus_t cublasZaxpy_v2_64(cublasHandle_t  handle, int64_t  n, const cuDou
 cublasStatus_t cublasCopyEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy)
 {
 	TALLY_SPD_LOG("cublasCopyEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCopyEx(handle, n, x, xType, incx, y, yType, incy);
 #else
@@ -15716,6 +16433,7 @@ cublasStatus_t cublasCopyEx(cublasHandle_t  handle, int  n, const void*  x, cuda
 cublasStatus_t cublasCopyEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasCopyEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCopyEx_64(handle, n, x, xType, incx, y, yType, incy);
 #else
@@ -15726,6 +16444,7 @@ cublasStatus_t cublasCopyEx_64(cublasHandle_t  handle, int64_t  n, const void*  
 cublasStatus_t cublasScopy_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasScopy_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasScopy_v2(handle, n, x, incx, y, incy);
 #else
@@ -15736,6 +16455,7 @@ cublasStatus_t cublasScopy_v2(cublasHandle_t  handle, int  n, const float*  x, i
 cublasStatus_t cublasScopy_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasScopy_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasScopy_v2_64(handle, n, x, incx, y, incy);
 #else
@@ -15746,6 +16466,7 @@ cublasStatus_t cublasScopy_v2_64(cublasHandle_t  handle, int64_t  n, const float
 cublasStatus_t cublasDcopy_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasDcopy_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDcopy_v2(handle, n, x, incx, y, incy);
 #else
@@ -15756,6 +16477,7 @@ cublasStatus_t cublasDcopy_v2(cublasHandle_t  handle, int  n, const double*  x, 
 cublasStatus_t cublasDcopy_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasDcopy_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDcopy_v2_64(handle, n, x, incx, y, incy);
 #else
@@ -15766,6 +16488,7 @@ cublasStatus_t cublasDcopy_v2_64(cublasHandle_t  handle, int64_t  n, const doubl
 cublasStatus_t cublasCcopy_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, cuComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasCcopy_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCcopy_v2(handle, n, x, incx, y, incy);
 #else
@@ -15776,6 +16499,7 @@ cublasStatus_t cublasCcopy_v2(cublasHandle_t  handle, int  n, const cuComplex*  
 cublasStatus_t cublasCcopy_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasCcopy_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCcopy_v2_64(handle, n, x, incx, y, incy);
 #else
@@ -15786,6 +16510,7 @@ cublasStatus_t cublasCcopy_v2_64(cublasHandle_t  handle, int64_t  n, const cuCom
 cublasStatus_t cublasZcopy_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasZcopy_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZcopy_v2(handle, n, x, incx, y, incy);
 #else
@@ -15796,6 +16521,7 @@ cublasStatus_t cublasZcopy_v2(cublasHandle_t  handle, int  n, const cuDoubleComp
 cublasStatus_t cublasZcopy_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasZcopy_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZcopy_v2_64(handle, n, x, incx, y, incy);
 #else
@@ -15806,6 +16532,7 @@ cublasStatus_t cublasZcopy_v2_64(cublasHandle_t  handle, int64_t  n, const cuDou
 cublasStatus_t cublasSswap_v2(cublasHandle_t  handle, int  n, float*  x, int  incx, float*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasSswap_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSswap_v2(handle, n, x, incx, y, incy);
 #else
@@ -15816,6 +16543,7 @@ cublasStatus_t cublasSswap_v2(cublasHandle_t  handle, int  n, float*  x, int  in
 cublasStatus_t cublasSswap_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasSswap_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSswap_v2_64(handle, n, x, incx, y, incy);
 #else
@@ -15826,6 +16554,7 @@ cublasStatus_t cublasSswap_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, 
 cublasStatus_t cublasDswap_v2(cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasDswap_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDswap_v2(handle, n, x, incx, y, incy);
 #else
@@ -15836,6 +16565,7 @@ cublasStatus_t cublasDswap_v2(cublasHandle_t  handle, int  n, double*  x, int  i
 cublasStatus_t cublasDswap_v2_64(cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasDswap_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDswap_v2_64(handle, n, x, incx, y, incy);
 #else
@@ -15846,6 +16576,7 @@ cublasStatus_t cublasDswap_v2_64(cublasHandle_t  handle, int64_t  n, double*  x,
 cublasStatus_t cublasCswap_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasCswap_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCswap_v2(handle, n, x, incx, y, incy);
 #else
@@ -15856,6 +16587,7 @@ cublasStatus_t cublasCswap_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int
 cublasStatus_t cublasCswap_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasCswap_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCswap_v2_64(handle, n, x, incx, y, incy);
 #else
@@ -15866,6 +16598,7 @@ cublasStatus_t cublasCswap_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex* 
 cublasStatus_t cublasZswap_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasZswap_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZswap_v2(handle, n, x, incx, y, incy);
 #else
@@ -15876,6 +16609,7 @@ cublasStatus_t cublasZswap_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  
 cublasStatus_t cublasZswap_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasZswap_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZswap_v2_64(handle, n, x, incx, y, incy);
 #else
@@ -15886,6 +16620,7 @@ cublasStatus_t cublasZswap_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleCom
 cublasStatus_t cublasSwapEx(cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy)
 {
 	TALLY_SPD_LOG("cublasSwapEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSwapEx(handle, n, x, xType, incx, y, yType, incy);
 #else
@@ -15896,6 +16631,7 @@ cublasStatus_t cublasSwapEx(cublasHandle_t  handle, int  n, void*  x, cudaDataTy
 cublasStatus_t cublasSwapEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasSwapEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSwapEx_64(handle, n, x, xType, incx, y, yType, incy);
 #else
@@ -15906,6 +16642,7 @@ cublasStatus_t cublasSwapEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cud
 cublasStatus_t cublasIsamax_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, int*  result)
 {
 	TALLY_SPD_LOG("cublasIsamax_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIsamax_v2(handle, n, x, incx, result);
 #else
@@ -15916,6 +16653,7 @@ cublasStatus_t cublasIsamax_v2(cublasHandle_t  handle, int  n, const float*  x, 
 cublasStatus_t cublasIsamax_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, int64_t*  result)
 {
 	TALLY_SPD_LOG("cublasIsamax_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIsamax_v2_64(handle, n, x, incx, result);
 #else
@@ -15926,6 +16664,7 @@ cublasStatus_t cublasIsamax_v2_64(cublasHandle_t  handle, int64_t  n, const floa
 cublasStatus_t cublasIdamax_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, int*  result)
 {
 	TALLY_SPD_LOG("cublasIdamax_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIdamax_v2(handle, n, x, incx, result);
 #else
@@ -15936,6 +16675,7 @@ cublasStatus_t cublasIdamax_v2(cublasHandle_t  handle, int  n, const double*  x,
 cublasStatus_t cublasIdamax_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, int64_t*  result)
 {
 	TALLY_SPD_LOG("cublasIdamax_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIdamax_v2_64(handle, n, x, incx, result);
 #else
@@ -15946,6 +16686,7 @@ cublasStatus_t cublasIdamax_v2_64(cublasHandle_t  handle, int64_t  n, const doub
 cublasStatus_t cublasIcamax_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, int*  result)
 {
 	TALLY_SPD_LOG("cublasIcamax_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIcamax_v2(handle, n, x, incx, result);
 #else
@@ -15956,6 +16697,7 @@ cublasStatus_t cublasIcamax_v2(cublasHandle_t  handle, int  n, const cuComplex* 
 cublasStatus_t cublasIcamax_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, int64_t*  result)
 {
 	TALLY_SPD_LOG("cublasIcamax_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIcamax_v2_64(handle, n, x, incx, result);
 #else
@@ -15966,6 +16708,7 @@ cublasStatus_t cublasIcamax_v2_64(cublasHandle_t  handle, int64_t  n, const cuCo
 cublasStatus_t cublasIzamax_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, int*  result)
 {
 	TALLY_SPD_LOG("cublasIzamax_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIzamax_v2(handle, n, x, incx, result);
 #else
@@ -15976,6 +16719,7 @@ cublasStatus_t cublasIzamax_v2(cublasHandle_t  handle, int  n, const cuDoubleCom
 cublasStatus_t cublasIzamax_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, int64_t*  result)
 {
 	TALLY_SPD_LOG("cublasIzamax_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIzamax_v2_64(handle, n, x, incx, result);
 #else
@@ -15986,6 +16730,7 @@ cublasStatus_t cublasIzamax_v2_64(cublasHandle_t  handle, int64_t  n, const cuDo
 cublasStatus_t cublasIamaxEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, int*  result)
 {
 	TALLY_SPD_LOG("cublasIamaxEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIamaxEx(handle, n, x, xType, incx, result);
 #else
@@ -15996,6 +16741,7 @@ cublasStatus_t cublasIamaxEx(cublasHandle_t  handle, int  n, const void*  x, cud
 cublasStatus_t cublasIamaxEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, int64_t*  result)
 {
 	TALLY_SPD_LOG("cublasIamaxEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIamaxEx_64(handle, n, x, xType, incx, result);
 #else
@@ -16006,6 +16752,7 @@ cublasStatus_t cublasIamaxEx_64(cublasHandle_t  handle, int64_t  n, const void* 
 cublasStatus_t cublasIsamin_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, int*  result)
 {
 	TALLY_SPD_LOG("cublasIsamin_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIsamin_v2(handle, n, x, incx, result);
 #else
@@ -16016,6 +16763,7 @@ cublasStatus_t cublasIsamin_v2(cublasHandle_t  handle, int  n, const float*  x, 
 cublasStatus_t cublasIsamin_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, int64_t*  result)
 {
 	TALLY_SPD_LOG("cublasIsamin_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIsamin_v2_64(handle, n, x, incx, result);
 #else
@@ -16026,6 +16774,7 @@ cublasStatus_t cublasIsamin_v2_64(cublasHandle_t  handle, int64_t  n, const floa
 cublasStatus_t cublasIdamin_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, int*  result)
 {
 	TALLY_SPD_LOG("cublasIdamin_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIdamin_v2(handle, n, x, incx, result);
 #else
@@ -16036,6 +16785,7 @@ cublasStatus_t cublasIdamin_v2(cublasHandle_t  handle, int  n, const double*  x,
 cublasStatus_t cublasIdamin_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, int64_t*  result)
 {
 	TALLY_SPD_LOG("cublasIdamin_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIdamin_v2_64(handle, n, x, incx, result);
 #else
@@ -16046,6 +16796,7 @@ cublasStatus_t cublasIdamin_v2_64(cublasHandle_t  handle, int64_t  n, const doub
 cublasStatus_t cublasIcamin_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, int*  result)
 {
 	TALLY_SPD_LOG("cublasIcamin_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIcamin_v2(handle, n, x, incx, result);
 #else
@@ -16056,6 +16807,7 @@ cublasStatus_t cublasIcamin_v2(cublasHandle_t  handle, int  n, const cuComplex* 
 cublasStatus_t cublasIcamin_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, int64_t*  result)
 {
 	TALLY_SPD_LOG("cublasIcamin_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIcamin_v2_64(handle, n, x, incx, result);
 #else
@@ -16066,6 +16818,7 @@ cublasStatus_t cublasIcamin_v2_64(cublasHandle_t  handle, int64_t  n, const cuCo
 cublasStatus_t cublasIzamin_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, int*  result)
 {
 	TALLY_SPD_LOG("cublasIzamin_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIzamin_v2(handle, n, x, incx, result);
 #else
@@ -16076,6 +16829,7 @@ cublasStatus_t cublasIzamin_v2(cublasHandle_t  handle, int  n, const cuDoubleCom
 cublasStatus_t cublasIzamin_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, int64_t*  result)
 {
 	TALLY_SPD_LOG("cublasIzamin_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIzamin_v2_64(handle, n, x, incx, result);
 #else
@@ -16086,6 +16840,7 @@ cublasStatus_t cublasIzamin_v2_64(cublasHandle_t  handle, int64_t  n, const cuDo
 cublasStatus_t cublasIaminEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, int*  result)
 {
 	TALLY_SPD_LOG("cublasIaminEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIaminEx(handle, n, x, xType, incx, result);
 #else
@@ -16096,6 +16851,7 @@ cublasStatus_t cublasIaminEx(cublasHandle_t  handle, int  n, const void*  x, cud
 cublasStatus_t cublasIaminEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, int64_t*  result)
 {
 	TALLY_SPD_LOG("cublasIaminEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasIaminEx_64(handle, n, x, xType, incx, result);
 #else
@@ -16106,6 +16862,7 @@ cublasStatus_t cublasIaminEx_64(cublasHandle_t  handle, int64_t  n, const void* 
 cublasStatus_t cublasAsumEx(cublasHandle_t  handle, int  n, const void*  x, cudaDataType  xType, int  incx, void*  result, cudaDataType  resultType, cudaDataType  executiontype)
 {
 	TALLY_SPD_LOG("cublasAsumEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasAsumEx(handle, n, x, xType, incx, result, resultType, executiontype);
 #else
@@ -16116,6 +16873,7 @@ cublasStatus_t cublasAsumEx(cublasHandle_t  handle, int  n, const void*  x, cuda
 cublasStatus_t cublasAsumEx_64(cublasHandle_t  handle, int64_t  n, const void*  x, cudaDataType  xType, int64_t  incx, void*  result, cudaDataType  resultType, cudaDataType  executiontype)
 {
 	TALLY_SPD_LOG("cublasAsumEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasAsumEx_64(handle, n, x, xType, incx, result, resultType, executiontype);
 #else
@@ -16126,6 +16884,7 @@ cublasStatus_t cublasAsumEx_64(cublasHandle_t  handle, int64_t  n, const void*  
 cublasStatus_t cublasSasum_v2(cublasHandle_t  handle, int  n, const float*  x, int  incx, float*  result)
 {
 	TALLY_SPD_LOG("cublasSasum_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSasum_v2(handle, n, x, incx, result);
 #else
@@ -16136,6 +16895,7 @@ cublasStatus_t cublasSasum_v2(cublasHandle_t  handle, int  n, const float*  x, i
 cublasStatus_t cublasSasum_v2_64(cublasHandle_t  handle, int64_t  n, const float*  x, int64_t  incx, float*  result)
 {
 	TALLY_SPD_LOG("cublasSasum_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSasum_v2_64(handle, n, x, incx, result);
 #else
@@ -16146,6 +16906,7 @@ cublasStatus_t cublasSasum_v2_64(cublasHandle_t  handle, int64_t  n, const float
 cublasStatus_t cublasDasum_v2(cublasHandle_t  handle, int  n, const double*  x, int  incx, double*  result)
 {
 	TALLY_SPD_LOG("cublasDasum_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDasum_v2(handle, n, x, incx, result);
 #else
@@ -16156,6 +16917,7 @@ cublasStatus_t cublasDasum_v2(cublasHandle_t  handle, int  n, const double*  x, 
 cublasStatus_t cublasDasum_v2_64(cublasHandle_t  handle, int64_t  n, const double*  x, int64_t  incx, double*  result)
 {
 	TALLY_SPD_LOG("cublasDasum_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDasum_v2_64(handle, n, x, incx, result);
 #else
@@ -16166,6 +16928,7 @@ cublasStatus_t cublasDasum_v2_64(cublasHandle_t  handle, int64_t  n, const doubl
 cublasStatus_t cublasScasum_v2(cublasHandle_t  handle, int  n, const cuComplex*  x, int  incx, float*  result)
 {
 	TALLY_SPD_LOG("cublasScasum_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasScasum_v2(handle, n, x, incx, result);
 #else
@@ -16176,6 +16939,7 @@ cublasStatus_t cublasScasum_v2(cublasHandle_t  handle, int  n, const cuComplex* 
 cublasStatus_t cublasScasum_v2_64(cublasHandle_t  handle, int64_t  n, const cuComplex*  x, int64_t  incx, float*  result)
 {
 	TALLY_SPD_LOG("cublasScasum_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasScasum_v2_64(handle, n, x, incx, result);
 #else
@@ -16186,6 +16950,7 @@ cublasStatus_t cublasScasum_v2_64(cublasHandle_t  handle, int64_t  n, const cuCo
 cublasStatus_t cublasDzasum_v2(cublasHandle_t  handle, int  n, const cuDoubleComplex*  x, int  incx, double*  result)
 {
 	TALLY_SPD_LOG("cublasDzasum_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDzasum_v2(handle, n, x, incx, result);
 #else
@@ -16196,6 +16961,7 @@ cublasStatus_t cublasDzasum_v2(cublasHandle_t  handle, int  n, const cuDoubleCom
 cublasStatus_t cublasDzasum_v2_64(cublasHandle_t  handle, int64_t  n, const cuDoubleComplex*  x, int64_t  incx, double*  result)
 {
 	TALLY_SPD_LOG("cublasDzasum_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDzasum_v2_64(handle, n, x, incx, result);
 #else
@@ -16206,6 +16972,7 @@ cublasStatus_t cublasDzasum_v2_64(cublasHandle_t  handle, int64_t  n, const cuDo
 cublasStatus_t cublasSrot_v2(cublasHandle_t  handle, int  n, float*  x, int  incx, float*  y, int  incy, const float*  c, const float*  s)
 {
 	TALLY_SPD_LOG("cublasSrot_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSrot_v2(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16216,6 +16983,7 @@ cublasStatus_t cublasSrot_v2(cublasHandle_t  handle, int  n, float*  x, int  inc
 cublasStatus_t cublasSrot_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy, const float*  c, const float*  s)
 {
 	TALLY_SPD_LOG("cublasSrot_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSrot_v2_64(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16226,6 +16994,7 @@ cublasStatus_t cublasSrot_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, i
 cublasStatus_t cublasDrot_v2(cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy, const double*  c, const double*  s)
 {
 	TALLY_SPD_LOG("cublasDrot_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDrot_v2(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16236,6 +17005,7 @@ cublasStatus_t cublasDrot_v2(cublasHandle_t  handle, int  n, double*  x, int  in
 cublasStatus_t cublasDrot_v2_64(cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy, const double*  c, const double*  s)
 {
 	TALLY_SPD_LOG("cublasDrot_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDrot_v2_64(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16246,6 +17016,7 @@ cublasStatus_t cublasDrot_v2_64(cublasHandle_t  handle, int64_t  n, double*  x, 
 cublasStatus_t cublasCrot_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy, const float*  c, const cuComplex*  s)
 {
 	TALLY_SPD_LOG("cublasCrot_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCrot_v2(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16256,6 +17027,7 @@ cublasStatus_t cublasCrot_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int 
 cublasStatus_t cublasCrot_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy, const float*  c, const cuComplex*  s)
 {
 	TALLY_SPD_LOG("cublasCrot_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCrot_v2_64(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16266,6 +17038,7 @@ cublasStatus_t cublasCrot_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex*  
 cublasStatus_t cublasCsrot_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int  incx, cuComplex*  y, int  incy, const float*  c, const float*  s)
 {
 	TALLY_SPD_LOG("cublasCsrot_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsrot_v2(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16276,6 +17049,7 @@ cublasStatus_t cublasCsrot_v2(cublasHandle_t  handle, int  n, cuComplex*  x, int
 cublasStatus_t cublasCsrot_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex*  x, int64_t  incx, cuComplex*  y, int64_t  incy, const float*  c, const float*  s)
 {
 	TALLY_SPD_LOG("cublasCsrot_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsrot_v2_64(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16286,6 +17060,7 @@ cublasStatus_t cublasCsrot_v2_64(cublasHandle_t  handle, int64_t  n, cuComplex* 
 cublasStatus_t cublasZrot_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy, const double*  c, const cuDoubleComplex*  s)
 {
 	TALLY_SPD_LOG("cublasZrot_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZrot_v2(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16296,6 +17071,7 @@ cublasStatus_t cublasZrot_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  x
 cublasStatus_t cublasZrot_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy, const double*  c, const cuDoubleComplex*  s)
 {
 	TALLY_SPD_LOG("cublasZrot_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZrot_v2_64(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16306,6 +17082,7 @@ cublasStatus_t cublasZrot_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleComp
 cublasStatus_t cublasZdrot_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  x, int  incx, cuDoubleComplex*  y, int  incy, const double*  c, const double*  s)
 {
 	TALLY_SPD_LOG("cublasZdrot_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZdrot_v2(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16316,6 +17093,7 @@ cublasStatus_t cublasZdrot_v2(cublasHandle_t  handle, int  n, cuDoubleComplex*  
 cublasStatus_t cublasZdrot_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  y, int64_t  incy, const double*  c, const double*  s)
 {
 	TALLY_SPD_LOG("cublasZdrot_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZdrot_v2_64(handle, n, x, incx, y, incy, c, s);
 #else
@@ -16326,6 +17104,7 @@ cublasStatus_t cublasZdrot_v2_64(cublasHandle_t  handle, int64_t  n, cuDoubleCom
 cublasStatus_t cublasRotEx(cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, const void*  c, const void*  s, cudaDataType  csType, cudaDataType  executiontype)
 {
 	TALLY_SPD_LOG("cublasRotEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasRotEx(handle, n, x, xType, incx, y, yType, incy, c, s, csType, executiontype);
 #else
@@ -16336,6 +17115,7 @@ cublasStatus_t cublasRotEx(cublasHandle_t  handle, int  n, void*  x, cudaDataTyp
 cublasStatus_t cublasRotEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, const void*  c, const void*  s, cudaDataType  csType, cudaDataType  executiontype)
 {
 	TALLY_SPD_LOG("cublasRotEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasRotEx_64(handle, n, x, xType, incx, y, yType, incy, c, s, csType, executiontype);
 #else
@@ -16346,6 +17126,7 @@ cublasStatus_t cublasRotEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cuda
 cublasStatus_t cublasSrotg_v2(cublasHandle_t  handle, float*  a, float*  b, float*  c, float*  s)
 {
 	TALLY_SPD_LOG("cublasSrotg_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSrotg_v2(handle, a, b, c, s);
 #else
@@ -16356,6 +17137,7 @@ cublasStatus_t cublasSrotg_v2(cublasHandle_t  handle, float*  a, float*  b, floa
 cublasStatus_t cublasDrotg_v2(cublasHandle_t  handle, double*  a, double*  b, double*  c, double*  s)
 {
 	TALLY_SPD_LOG("cublasDrotg_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDrotg_v2(handle, a, b, c, s);
 #else
@@ -16366,6 +17148,7 @@ cublasStatus_t cublasDrotg_v2(cublasHandle_t  handle, double*  a, double*  b, do
 cublasStatus_t cublasCrotg_v2(cublasHandle_t  handle, cuComplex*  a, cuComplex*  b, float*  c, cuComplex*  s)
 {
 	TALLY_SPD_LOG("cublasCrotg_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCrotg_v2(handle, a, b, c, s);
 #else
@@ -16376,6 +17159,7 @@ cublasStatus_t cublasCrotg_v2(cublasHandle_t  handle, cuComplex*  a, cuComplex* 
 cublasStatus_t cublasZrotg_v2(cublasHandle_t  handle, cuDoubleComplex*  a, cuDoubleComplex*  b, double*  c, cuDoubleComplex*  s)
 {
 	TALLY_SPD_LOG("cublasZrotg_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZrotg_v2(handle, a, b, c, s);
 #else
@@ -16386,6 +17170,7 @@ cublasStatus_t cublasZrotg_v2(cublasHandle_t  handle, cuDoubleComplex*  a, cuDou
 cublasStatus_t cublasRotgEx(cublasHandle_t  handle, void*  a, void*  b, cudaDataType  abType, void*  c, void*  s, cudaDataType  csType, cudaDataType  executiontype)
 {
 	TALLY_SPD_LOG("cublasRotgEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasRotgEx(handle, a, b, abType, c, s, csType, executiontype);
 #else
@@ -16396,6 +17181,7 @@ cublasStatus_t cublasRotgEx(cublasHandle_t  handle, void*  a, void*  b, cudaData
 cublasStatus_t cublasSrotm_v2(cublasHandle_t  handle, int  n, float*  x, int  incx, float*  y, int  incy, const float*  param)
 {
 	TALLY_SPD_LOG("cublasSrotm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSrotm_v2(handle, n, x, incx, y, incy, param);
 #else
@@ -16406,6 +17192,7 @@ cublasStatus_t cublasSrotm_v2(cublasHandle_t  handle, int  n, float*  x, int  in
 cublasStatus_t cublasSrotm_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, int64_t  incx, float*  y, int64_t  incy, const float*  param)
 {
 	TALLY_SPD_LOG("cublasSrotm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSrotm_v2_64(handle, n, x, incx, y, incy, param);
 #else
@@ -16416,6 +17203,7 @@ cublasStatus_t cublasSrotm_v2_64(cublasHandle_t  handle, int64_t  n, float*  x, 
 cublasStatus_t cublasDrotm_v2(cublasHandle_t  handle, int  n, double*  x, int  incx, double*  y, int  incy, const double*  param)
 {
 	TALLY_SPD_LOG("cublasDrotm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDrotm_v2(handle, n, x, incx, y, incy, param);
 #else
@@ -16426,6 +17214,7 @@ cublasStatus_t cublasDrotm_v2(cublasHandle_t  handle, int  n, double*  x, int  i
 cublasStatus_t cublasDrotm_v2_64(cublasHandle_t  handle, int64_t  n, double*  x, int64_t  incx, double*  y, int64_t  incy, const double*  param)
 {
 	TALLY_SPD_LOG("cublasDrotm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDrotm_v2_64(handle, n, x, incx, y, incy, param);
 #else
@@ -16436,6 +17225,7 @@ cublasStatus_t cublasDrotm_v2_64(cublasHandle_t  handle, int64_t  n, double*  x,
 cublasStatus_t cublasRotmEx(cublasHandle_t  handle, int  n, void*  x, cudaDataType  xType, int  incx, void*  y, cudaDataType  yType, int  incy, const void*  param, cudaDataType  paramType, cudaDataType  executiontype)
 {
 	TALLY_SPD_LOG("cublasRotmEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasRotmEx(handle, n, x, xType, incx, y, yType, incy, param, paramType, executiontype);
 #else
@@ -16446,6 +17236,7 @@ cublasStatus_t cublasRotmEx(cublasHandle_t  handle, int  n, void*  x, cudaDataTy
 cublasStatus_t cublasRotmEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cudaDataType  xType, int64_t  incx, void*  y, cudaDataType  yType, int64_t  incy, const void*  param, cudaDataType  paramType, cudaDataType  executiontype)
 {
 	TALLY_SPD_LOG("cublasRotmEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasRotmEx_64(handle, n, x, xType, incx, y, yType, incy, param, paramType, executiontype);
 #else
@@ -16456,6 +17247,7 @@ cublasStatus_t cublasRotmEx_64(cublasHandle_t  handle, int64_t  n, void*  x, cud
 cublasStatus_t cublasSrotmg_v2(cublasHandle_t  handle, float*  d1, float*  d2, float*  x1, const float*  y1, float*  param)
 {
 	TALLY_SPD_LOG("cublasSrotmg_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSrotmg_v2(handle, d1, d2, x1, y1, param);
 #else
@@ -16466,6 +17258,7 @@ cublasStatus_t cublasSrotmg_v2(cublasHandle_t  handle, float*  d1, float*  d2, f
 cublasStatus_t cublasDrotmg_v2(cublasHandle_t  handle, double*  d1, double*  d2, double*  x1, const double*  y1, double*  param)
 {
 	TALLY_SPD_LOG("cublasDrotmg_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDrotmg_v2(handle, d1, d2, x1, y1, param);
 #else
@@ -16476,6 +17269,7 @@ cublasStatus_t cublasDrotmg_v2(cublasHandle_t  handle, double*  d1, double*  d2,
 cublasStatus_t cublasRotmgEx(cublasHandle_t  handle, void*  d1, cudaDataType  d1Type, void*  d2, cudaDataType  d2Type, void*  x1, cudaDataType  x1Type, const void*  y1, cudaDataType  y1Type, void*  param, cudaDataType  paramType, cudaDataType  executiontype)
 {
 	TALLY_SPD_LOG("cublasRotmgEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasRotmgEx(handle, d1, d1Type, d2, d2Type, x1, x1Type, y1, y1Type, param, paramType, executiontype);
 #else
@@ -16486,6 +17280,7 @@ cublasStatus_t cublasRotmgEx(cublasHandle_t  handle, void*  d1, cudaDataType  d1
 cublasStatus_t cublasSgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasSgemv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgemv_v2_64(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16496,6 +17291,7 @@ cublasStatus_t cublasSgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasDgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasDgemv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemv_v2(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16506,6 +17302,7 @@ cublasStatus_t cublasDgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 cublasStatus_t cublasDgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasDgemv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemv_v2_64(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16516,6 +17313,7 @@ cublasStatus_t cublasDgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasCgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasCgemv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemv_v2(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16526,6 +17324,7 @@ cublasStatus_t cublasCgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 cublasStatus_t cublasCgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasCgemv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemv_v2_64(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16536,6 +17335,7 @@ cublasStatus_t cublasCgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasZgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasZgemv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemv_v2(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16546,6 +17346,7 @@ cublasStatus_t cublasZgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 cublasStatus_t cublasZgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasZgemv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemv_v2_64(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16556,6 +17357,7 @@ cublasStatus_t cublasZgemv_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasSgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasSgbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgbmv_v2(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16566,6 +17368,7 @@ cublasStatus_t cublasSgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 cublasStatus_t cublasSgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasSgbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgbmv_v2_64(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16576,6 +17379,7 @@ cublasStatus_t cublasSgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasDgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasDgbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgbmv_v2(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16586,6 +17390,7 @@ cublasStatus_t cublasDgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 cublasStatus_t cublasDgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasDgbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgbmv_v2_64(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16596,6 +17401,7 @@ cublasStatus_t cublasDgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasCgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasCgbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgbmv_v2(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16606,6 +17412,7 @@ cublasStatus_t cublasCgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 cublasStatus_t cublasCgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasCgbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgbmv_v2_64(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16616,6 +17423,7 @@ cublasStatus_t cublasCgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasZgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  kl, int  ku, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasZgbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgbmv_v2(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16626,6 +17434,7 @@ cublasStatus_t cublasZgbmv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 cublasStatus_t cublasZgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, int64_t  kl, int64_t  ku, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasZgbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgbmv_v2_64(handle, trans, m, n, kl, ku, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -16636,6 +17445,7 @@ cublasStatus_t cublasZgbmv_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasStrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  A, int  lda, float*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasStrmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrmv_v2(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16646,6 +17456,7 @@ cublasStatus_t cublasStrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasStrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  A, int64_t  lda, float*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasStrmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrmv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16656,6 +17467,7 @@ cublasStatus_t cublasStrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  A, int  lda, double*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasDtrmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrmv_v2(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16666,6 +17478,7 @@ cublasStatus_t cublasDtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasDtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  A, int64_t  lda, double*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasDtrmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrmv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16676,6 +17489,7 @@ cublasStatus_t cublasDtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  A, int  lda, cuComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasCtrmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrmv_v2(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16686,6 +17500,7 @@ cublasStatus_t cublasCtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasCtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasCtrmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrmv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16696,6 +17511,7 @@ cublasStatus_t cublasCtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasZtrmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrmv_v2(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16706,6 +17522,7 @@ cublasStatus_t cublasZtrmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasZtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasZtrmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrmv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16716,6 +17533,7 @@ cublasStatus_t cublasZtrmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasStbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const float*  A, int  lda, float*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasStbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStbmv_v2(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -16726,6 +17544,7 @@ cublasStatus_t cublasStbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasStbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const float*  A, int64_t  lda, float*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasStbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStbmv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -16736,6 +17555,7 @@ cublasStatus_t cublasStbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const double*  A, int  lda, double*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasDtbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtbmv_v2(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -16746,6 +17566,7 @@ cublasStatus_t cublasDtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasDtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const double*  A, int64_t  lda, double*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasDtbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtbmv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -16756,6 +17577,7 @@ cublasStatus_t cublasDtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuComplex*  A, int  lda, cuComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasCtbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtbmv_v2(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -16766,6 +17588,7 @@ cublasStatus_t cublasCtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasCtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasCtbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtbmv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -16776,6 +17599,7 @@ cublasStatus_t cublasCtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasZtbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtbmv_v2(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -16786,6 +17610,7 @@ cublasStatus_t cublasZtbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasZtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasZtbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtbmv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -16796,6 +17621,7 @@ cublasStatus_t cublasZtbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasStpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  AP, float*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasStpmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStpmv_v2(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16806,6 +17632,7 @@ cublasStatus_t cublasStpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasStpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  AP, float*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasStpmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStpmv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16816,6 +17643,7 @@ cublasStatus_t cublasStpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  AP, double*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasDtpmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtpmv_v2(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16826,6 +17654,7 @@ cublasStatus_t cublasDtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasDtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  AP, double*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasDtpmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtpmv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16836,6 +17665,7 @@ cublasStatus_t cublasDtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  AP, cuComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasCtpmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtpmv_v2(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16846,6 +17676,7 @@ cublasStatus_t cublasCtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasCtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  AP, cuComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasCtpmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtpmv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16856,6 +17687,7 @@ cublasStatus_t cublasCtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasZtpmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtpmv_v2(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16866,6 +17698,7 @@ cublasStatus_t cublasZtpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasZtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasZtpmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtpmv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16876,6 +17709,7 @@ cublasStatus_t cublasZtpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasStrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  A, int  lda, float*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasStrsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrsv_v2(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16886,6 +17720,7 @@ cublasStatus_t cublasStrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasStrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  A, int64_t  lda, float*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasStrsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrsv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16896,6 +17731,7 @@ cublasStatus_t cublasStrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  A, int  lda, double*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasDtrsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrsv_v2(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16906,6 +17742,7 @@ cublasStatus_t cublasDtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasDtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  A, int64_t  lda, double*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasDtrsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrsv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16916,6 +17753,7 @@ cublasStatus_t cublasDtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  A, int  lda, cuComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasCtrsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrsv_v2(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16926,6 +17764,7 @@ cublasStatus_t cublasCtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasCtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasCtrsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrsv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16936,6 +17775,7 @@ cublasStatus_t cublasCtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasZtrsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrsv_v2(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16946,6 +17786,7 @@ cublasStatus_t cublasZtrsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasZtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasZtrsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrsv_v2_64(handle, uplo, trans, diag, n, A, lda, x, incx);
 #else
@@ -16956,6 +17797,7 @@ cublasStatus_t cublasZtrsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasStpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const float*  AP, float*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasStpsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStpsv_v2(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16966,6 +17808,7 @@ cublasStatus_t cublasStpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasStpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const float*  AP, float*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasStpsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStpsv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16976,6 +17819,7 @@ cublasStatus_t cublasStpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const double*  AP, double*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasDtpsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtpsv_v2(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16986,6 +17830,7 @@ cublasStatus_t cublasDtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasDtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const double*  AP, double*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasDtpsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtpsv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -16996,6 +17841,7 @@ cublasStatus_t cublasDtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuComplex*  AP, cuComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasCtpsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtpsv_v2(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -17006,6 +17852,7 @@ cublasStatus_t cublasCtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasCtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuComplex*  AP, cuComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasCtpsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtpsv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -17016,6 +17863,7 @@ cublasStatus_t cublasCtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasZtpsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtpsv_v2(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -17026,6 +17874,7 @@ cublasStatus_t cublasZtpsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasZtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, const cuDoubleComplex*  AP, cuDoubleComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasZtpsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtpsv_v2_64(handle, uplo, trans, diag, n, AP, x, incx);
 #else
@@ -17036,6 +17885,7 @@ cublasStatus_t cublasZtpsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasStbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const float*  A, int  lda, float*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasStbsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStbsv_v2(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -17046,6 +17896,7 @@ cublasStatus_t cublasStbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasStbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const float*  A, int64_t  lda, float*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasStbsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStbsv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -17056,6 +17907,7 @@ cublasStatus_t cublasStbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const double*  A, int  lda, double*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasDtbsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtbsv_v2(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -17066,6 +17918,7 @@ cublasStatus_t cublasDtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasDtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const double*  A, int64_t  lda, double*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasDtbsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtbsv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -17076,6 +17929,7 @@ cublasStatus_t cublasDtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuComplex*  A, int  lda, cuComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasCtbsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtbsv_v2(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -17086,6 +17940,7 @@ cublasStatus_t cublasCtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasCtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuComplex*  A, int64_t  lda, cuComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasCtbsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtbsv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -17096,6 +17951,7 @@ cublasStatus_t cublasCtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  n, int  k, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  x, int  incx)
 {
 	TALLY_SPD_LOG("cublasZtbsv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtbsv_v2(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -17106,6 +17962,7 @@ cublasStatus_t cublasZtbsv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasZtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  n, int64_t  k, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  x, int64_t  incx)
 {
 	TALLY_SPD_LOG("cublasZtbsv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtbsv_v2_64(handle, uplo, trans, diag, n, k, A, lda, x, incx);
 #else
@@ -17116,6 +17973,7 @@ cublasStatus_t cublasZtbsv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasSsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasSsymv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsymv_v2(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17126,6 +17984,7 @@ cublasStatus_t cublasSsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasSsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasSsymv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsymv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17136,6 +17995,7 @@ cublasStatus_t cublasSsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasDsymv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsymv_v2(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17146,6 +18006,7 @@ cublasStatus_t cublasDsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasDsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasDsymv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsymv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17156,6 +18017,7 @@ cublasStatus_t cublasDsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasCsymv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsymv_v2(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17166,6 +18028,7 @@ cublasStatus_t cublasCsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasCsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasCsymv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsymv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17176,6 +18039,7 @@ cublasStatus_t cublasCsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasZsymv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsymv_v2(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17186,6 +18050,7 @@ cublasStatus_t cublasZsymv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasZsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasZsymv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsymv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17196,6 +18061,7 @@ cublasStatus_t cublasZsymv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasChemv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasChemv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChemv_v2(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17206,6 +18072,7 @@ cublasStatus_t cublasChemv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasChemv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasChemv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChemv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17216,6 +18083,7 @@ cublasStatus_t cublasChemv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZhemv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasZhemv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhemv_v2(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17226,6 +18094,7 @@ cublasStatus_t cublasZhemv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasZhemv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasZhemv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhemv_v2_64(handle, uplo, n, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17236,6 +18105,7 @@ cublasStatus_t cublasZhemv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasSsbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  x, int  incx, const float*  beta, float*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasSsbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsbmv_v2(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17246,6 +18116,7 @@ cublasStatus_t cublasSsbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasSsbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasSsbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsbmv_v2_64(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17256,6 +18127,7 @@ cublasStatus_t cublasSsbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDsbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasDsbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsbmv_v2(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17266,6 +18138,7 @@ cublasStatus_t cublasDsbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasDsbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasDsbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsbmv_v2_64(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17276,6 +18149,7 @@ cublasStatus_t cublasDsbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasChbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasChbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChbmv_v2(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17286,6 +18160,7 @@ cublasStatus_t cublasChbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasChbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasChbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChbmv_v2_64(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17296,6 +18171,7 @@ cublasStatus_t cublasChbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZhbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasZhbmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhbmv_v2(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17306,6 +18182,7 @@ cublasStatus_t cublasZhbmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasZhbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasZhbmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhbmv_v2_64(handle, uplo, n, k, alpha, A, lda, x, incx, beta, y, incy);
 #else
@@ -17316,6 +18193,7 @@ cublasStatus_t cublasZhbmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasSspmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  AP, const float*  x, int  incx, const float*  beta, float*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasSspmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSspmv_v2(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
 #else
@@ -17326,6 +18204,7 @@ cublasStatus_t cublasSspmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasSspmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  AP, const float*  x, int64_t  incx, const float*  beta, float*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasSspmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSspmv_v2_64(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
 #else
@@ -17336,6 +18215,7 @@ cublasStatus_t cublasSspmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDspmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  AP, const double*  x, int  incx, const double*  beta, double*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasDspmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDspmv_v2(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
 #else
@@ -17346,6 +18226,7 @@ cublasStatus_t cublasDspmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasDspmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  AP, const double*  x, int64_t  incx, const double*  beta, double*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasDspmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDspmv_v2_64(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
 #else
@@ -17356,6 +18237,7 @@ cublasStatus_t cublasDspmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasChpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  AP, const cuComplex*  x, int  incx, const cuComplex*  beta, cuComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasChpmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChpmv_v2(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
 #else
@@ -17366,6 +18248,7 @@ cublasStatus_t cublasChpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasChpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  AP, const cuComplex*  x, int64_t  incx, const cuComplex*  beta, cuComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasChpmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChpmv_v2_64(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
 #else
@@ -17376,6 +18259,7 @@ cublasStatus_t cublasChpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZhpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  AP, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy)
 {
 	TALLY_SPD_LOG("cublasZhpmv_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhpmv_v2(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
 #else
@@ -17386,6 +18270,7 @@ cublasStatus_t cublasZhpmv_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasZhpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  AP, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy)
 {
 	TALLY_SPD_LOG("cublasZhpmv_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhpmv_v2_64(handle, uplo, n, alpha, AP, x, incx, beta, y, incy);
 #else
@@ -17396,6 +18281,7 @@ cublasStatus_t cublasZhpmv_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasSger_v2(cublasHandle_t  handle, int  m, int  n, const float*  alpha, const float*  x, int  incx, const float*  y, int  incy, float*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasSger_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSger_v2(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17406,6 +18292,7 @@ cublasStatus_t cublasSger_v2(cublasHandle_t  handle, int  m, int  n, const float
 cublasStatus_t cublasSger_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasSger_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSger_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17416,6 +18303,7 @@ cublasStatus_t cublasSger_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, 
 cublasStatus_t cublasDger_v2(cublasHandle_t  handle, int  m, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasDger_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDger_v2(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17426,6 +18314,7 @@ cublasStatus_t cublasDger_v2(cublasHandle_t  handle, int  m, int  n, const doubl
 cublasStatus_t cublasDger_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasDger_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDger_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17436,6 +18325,7 @@ cublasStatus_t cublasDger_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, 
 cublasStatus_t cublasCgeru_v2(cublasHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasCgeru_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgeru_v2(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17446,6 +18336,7 @@ cublasStatus_t cublasCgeru_v2(cublasHandle_t  handle, int  m, int  n, const cuCo
 cublasStatus_t cublasCgeru_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasCgeru_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgeru_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17456,6 +18347,7 @@ cublasStatus_t cublasCgeru_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n,
 cublasStatus_t cublasCgerc_v2(cublasHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasCgerc_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgerc_v2(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17466,6 +18358,7 @@ cublasStatus_t cublasCgerc_v2(cublasHandle_t  handle, int  m, int  n, const cuCo
 cublasStatus_t cublasCgerc_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasCgerc_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgerc_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17476,6 +18369,7 @@ cublasStatus_t cublasCgerc_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n,
 cublasStatus_t cublasZgeru_v2(cublasHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasZgeru_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgeru_v2(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17486,6 +18380,7 @@ cublasStatus_t cublasZgeru_v2(cublasHandle_t  handle, int  m, int  n, const cuDo
 cublasStatus_t cublasZgeru_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasZgeru_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgeru_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17496,6 +18391,7 @@ cublasStatus_t cublasZgeru_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n,
 cublasStatus_t cublasZgerc_v2(cublasHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasZgerc_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgerc_v2(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17506,6 +18402,7 @@ cublasStatus_t cublasZgerc_v2(cublasHandle_t  handle, int  m, int  n, const cuDo
 cublasStatus_t cublasZgerc_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasZgerc_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgerc_v2_64(handle, m, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17516,6 +18413,7 @@ cublasStatus_t cublasZgerc_v2_64(cublasHandle_t  handle, int64_t  m, int64_t  n,
 cublasStatus_t cublasSsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, float*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasSsyr_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsyr_v2(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17526,6 +18424,7 @@ cublasStatus_t cublasSsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 cublasStatus_t cublasSsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasSsyr_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsyr_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17536,6 +18435,7 @@ cublasStatus_t cublasSsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasDsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, double*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasDsyr_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsyr_v2(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17546,6 +18446,7 @@ cublasStatus_t cublasDsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 cublasStatus_t cublasDsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasDsyr_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsyr_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17556,6 +18457,7 @@ cublasStatus_t cublasDsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasCsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, cuComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasCsyr_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyr_v2(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17566,6 +18468,7 @@ cublasStatus_t cublasCsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 cublasStatus_t cublasCsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasCsyr_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyr_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17576,6 +18479,7 @@ cublasStatus_t cublasCsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasZsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasZsyr_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsyr_v2(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17586,6 +18490,7 @@ cublasStatus_t cublasZsyr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 cublasStatus_t cublasZsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasZsyr_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsyr_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17596,6 +18501,7 @@ cublasStatus_t cublasZsyr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasCher_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const cuComplex*  x, int  incx, cuComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasCher_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCher_v2(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17606,6 +18512,7 @@ cublasStatus_t cublasCher_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 cublasStatus_t cublasCher_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasCher_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCher_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17616,6 +18523,7 @@ cublasStatus_t cublasCher_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasZher_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasZher_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZher_v2(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17626,6 +18534,7 @@ cublasStatus_t cublasZher_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 cublasStatus_t cublasZher_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasZher_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZher_v2_64(handle, uplo, n, alpha, x, incx, A, lda);
 #else
@@ -17636,6 +18545,7 @@ cublasStatus_t cublasZher_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasSspr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, float*  AP)
 {
 	TALLY_SPD_LOG("cublasSspr_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSspr_v2(handle, uplo, n, alpha, x, incx, AP);
 #else
@@ -17646,6 +18556,7 @@ cublasStatus_t cublasSspr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 cublasStatus_t cublasSspr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, float*  AP)
 {
 	TALLY_SPD_LOG("cublasSspr_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSspr_v2_64(handle, uplo, n, alpha, x, incx, AP);
 #else
@@ -17656,6 +18567,7 @@ cublasStatus_t cublasSspr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasDspr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, double*  AP)
 {
 	TALLY_SPD_LOG("cublasDspr_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDspr_v2(handle, uplo, n, alpha, x, incx, AP);
 #else
@@ -17666,6 +18578,7 @@ cublasStatus_t cublasDspr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 cublasStatus_t cublasDspr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, double*  AP)
 {
 	TALLY_SPD_LOG("cublasDspr_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDspr_v2_64(handle, uplo, n, alpha, x, incx, AP);
 #else
@@ -17676,6 +18589,7 @@ cublasStatus_t cublasDspr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasChpr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const cuComplex*  x, int  incx, cuComplex*  AP)
 {
 	TALLY_SPD_LOG("cublasChpr_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChpr_v2(handle, uplo, n, alpha, x, incx, AP);
 #else
@@ -17686,6 +18600,7 @@ cublasStatus_t cublasChpr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 cublasStatus_t cublasChpr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const cuComplex*  x, int64_t  incx, cuComplex*  AP)
 {
 	TALLY_SPD_LOG("cublasChpr_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChpr_v2_64(handle, uplo, n, alpha, x, incx, AP);
 #else
@@ -17696,6 +18611,7 @@ cublasStatus_t cublasChpr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasZhpr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  AP)
 {
 	TALLY_SPD_LOG("cublasZhpr_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhpr_v2(handle, uplo, n, alpha, x, incx, AP);
 #else
@@ -17706,6 +18622,7 @@ cublasStatus_t cublasZhpr_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int
 cublasStatus_t cublasZhpr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  AP)
 {
 	TALLY_SPD_LOG("cublasZhpr_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhpr_v2_64(handle, uplo, n, alpha, x, incx, AP);
 #else
@@ -17716,6 +18633,7 @@ cublasStatus_t cublasZhpr_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasSsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, const float*  y, int  incy, float*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasSsyr2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsyr2_v2(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17726,6 +18644,7 @@ cublasStatus_t cublasSsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasSsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasSsyr2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsyr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17736,6 +18655,7 @@ cublasStatus_t cublasSsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasDsyr2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsyr2_v2(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17746,6 +18666,7 @@ cublasStatus_t cublasDsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasDsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasDsyr2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsyr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17756,6 +18677,7 @@ cublasStatus_t cublasDsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasCsyr2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyr2_v2(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17766,6 +18688,7 @@ cublasStatus_t cublasCsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasCsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasCsyr2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17776,6 +18699,7 @@ cublasStatus_t cublasCsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasZsyr2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsyr2_v2(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17786,6 +18710,7 @@ cublasStatus_t cublasZsyr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasZsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasZsyr2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsyr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17796,6 +18721,7 @@ cublasStatus_t cublasZsyr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCher2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasCher2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCher2_v2(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17806,6 +18732,7 @@ cublasStatus_t cublasCher2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasCher2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasCher2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCher2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17816,6 +18743,7 @@ cublasStatus_t cublasCher2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZher2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasZher2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZher2_v2(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17826,6 +18754,7 @@ cublasStatus_t cublasZher2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasZher2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  A, int64_t  lda)
 {
 	TALLY_SPD_LOG("cublasZher2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZher2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, A, lda);
 #else
@@ -17836,6 +18765,7 @@ cublasStatus_t cublasZher2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasSspr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  alpha, const float*  x, int  incx, const float*  y, int  incy, float*  AP)
 {
 	TALLY_SPD_LOG("cublasSspr2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSspr2_v2(handle, uplo, n, alpha, x, incx, y, incy, AP);
 #else
@@ -17846,6 +18776,7 @@ cublasStatus_t cublasSspr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasSspr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const float*  alpha, const float*  x, int64_t  incx, const float*  y, int64_t  incy, float*  AP)
 {
 	TALLY_SPD_LOG("cublasSspr2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSspr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, AP);
 #else
@@ -17856,6 +18787,7 @@ cublasStatus_t cublasSspr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDspr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  alpha, const double*  x, int  incx, const double*  y, int  incy, double*  AP)
 {
 	TALLY_SPD_LOG("cublasDspr2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDspr2_v2(handle, uplo, n, alpha, x, incx, y, incy, AP);
 #else
@@ -17866,6 +18798,7 @@ cublasStatus_t cublasDspr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasDspr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const double*  alpha, const double*  x, int64_t  incx, const double*  y, int64_t  incy, double*  AP)
 {
 	TALLY_SPD_LOG("cublasDspr2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDspr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, AP);
 #else
@@ -17876,6 +18809,7 @@ cublasStatus_t cublasDspr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasChpr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  alpha, const cuComplex*  x, int  incx, const cuComplex*  y, int  incy, cuComplex*  AP)
 {
 	TALLY_SPD_LOG("cublasChpr2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChpr2_v2(handle, uplo, n, alpha, x, incx, y, incy, AP);
 #else
@@ -17886,6 +18820,7 @@ cublasStatus_t cublasChpr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasChpr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuComplex*  alpha, const cuComplex*  x, int64_t  incx, const cuComplex*  y, int64_t  incy, cuComplex*  AP)
 {
 	TALLY_SPD_LOG("cublasChpr2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChpr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, AP);
 #else
@@ -17896,6 +18831,7 @@ cublasStatus_t cublasChpr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZhpr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int  incx, const cuDoubleComplex*  y, int  incy, cuDoubleComplex*  AP)
 {
 	TALLY_SPD_LOG("cublasZhpr2_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhpr2_v2(handle, uplo, n, alpha, x, incx, y, incy, AP);
 #else
@@ -17906,6 +18842,7 @@ cublasStatus_t cublasZhpr2_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, in
 cublasStatus_t cublasZhpr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  x, int64_t  incx, const cuDoubleComplex*  y, int64_t  incy, cuDoubleComplex*  AP)
 {
 	TALLY_SPD_LOG("cublasZhpr2_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhpr2_v2_64(handle, uplo, n, alpha, x, incx, y, incy, AP);
 #else
@@ -17916,6 +18853,7 @@ cublasStatus_t cublasZhpr2_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasSgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float* const  Aarray[], int  lda, const float* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasSgemvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -17926,6 +18864,7 @@ cublasStatus_t cublasSgemvBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float* const  Aarray[], int64_t  lda, const float* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasSgemvBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -17936,6 +18875,7 @@ cublasStatus_t cublasSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  
 cublasStatus_t cublasDgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double* const  Aarray[], int  lda, const double* const  xarray[], int  incx, const double*  beta, double* const  yarray[], int  incy, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasDgemvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -17946,6 +18886,7 @@ cublasStatus_t cublasDgemvBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasDgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double* const  Aarray[], int64_t  lda, const double* const  xarray[], int64_t  incx, const double*  beta, double* const  yarray[], int64_t  incy, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasDgemvBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -17956,6 +18897,7 @@ cublasStatus_t cublasDgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  
 cublasStatus_t cublasCgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  xarray[], int  incx, const cuComplex*  beta, cuComplex* const  yarray[], int  incy, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -17966,6 +18908,7 @@ cublasStatus_t cublasCgemvBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasCgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  xarray[], int64_t  incx, const cuComplex*  beta, cuComplex* const  yarray[], int64_t  incy, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemvBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -17976,6 +18919,7 @@ cublasStatus_t cublasCgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  
 cublasStatus_t cublasZgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int  lda, const cuDoubleComplex* const  xarray[], int  incx, const cuDoubleComplex*  beta, cuDoubleComplex* const  yarray[], int  incy, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasZgemvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -17986,6 +18930,7 @@ cublasStatus_t cublasZgemvBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasZgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int64_t  lda, const cuDoubleComplex* const  xarray[], int64_t  incx, const cuDoubleComplex*  beta, cuDoubleComplex* const  yarray[], int64_t  incy, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasZgemvBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -17996,6 +18941,7 @@ cublasStatus_t cublasZgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  
 cublasStatus_t cublasHSHgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half* const  Aarray[], int  lda, const __half* const  xarray[], int  incx, const float*  beta, __half* const  yarray[], int  incy, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasHSHgemvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHSHgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -18006,6 +18952,7 @@ cublasStatus_t cublasHSHgemvBatched(cublasHandle_t  handle, cublasOperation_t  t
 cublasStatus_t cublasHSHgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  xarray[], int64_t  incx, const float*  beta, __half* const  yarray[], int64_t  incy, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasHSHgemvBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHSHgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -18016,6 +18963,7 @@ cublasStatus_t cublasHSHgemvBatched_64(cublasHandle_t  handle, cublasOperation_t
 cublasStatus_t cublasHSSgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half* const  Aarray[], int  lda, const __half* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasHSSgemvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHSSgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -18026,6 +18974,7 @@ cublasStatus_t cublasHSSgemvBatched(cublasHandle_t  handle, cublasOperation_t  t
 cublasStatus_t cublasHSSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasHSSgemvBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHSSgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -18036,6 +18985,7 @@ cublasStatus_t cublasHSSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t
 cublasStatus_t cublasTSTgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int  lda, const __nv_bfloat16* const  xarray[], int  incx, const float*  beta, __nv_bfloat16* const  yarray[], int  incy, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasTSTgemvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasTSTgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -18046,6 +18996,7 @@ cublasStatus_t cublasTSTgemvBatched(cublasHandle_t  handle, cublasOperation_t  t
 cublasStatus_t cublasTSTgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int64_t  lda, const __nv_bfloat16* const  xarray[], int64_t  incx, const float*  beta, __nv_bfloat16* const  yarray[], int64_t  incy, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasTSTgemvBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasTSTgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -18056,6 +19007,7 @@ cublasStatus_t cublasTSTgemvBatched_64(cublasHandle_t  handle, cublasOperation_t
 cublasStatus_t cublasTSSgemvBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int  lda, const __nv_bfloat16* const  xarray[], int  incx, const float*  beta, float* const  yarray[], int  incy, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasTSSgemvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasTSSgemvBatched(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -18066,6 +19018,7 @@ cublasStatus_t cublasTSSgemvBatched(cublasHandle_t  handle, cublasOperation_t  t
 cublasStatus_t cublasTSSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16* const  Aarray[], int64_t  lda, const __nv_bfloat16* const  xarray[], int64_t  incx, const float*  beta, float* const  yarray[], int64_t  incy, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasTSSgemvBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasTSSgemvBatched_64(handle, trans, m, n, alpha, Aarray, lda, xarray, incx, beta, yarray, incy, batchCount);
 #else
@@ -18076,6 +19029,7 @@ cublasStatus_t cublasTSSgemvBatched_64(cublasHandle_t  handle, cublasOperation_t
 cublasStatus_t cublasSgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const float*  A, int  lda, long long int  strideA, const float*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasSgemvStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18086,6 +19040,7 @@ cublasStatus_t cublasSgemvStridedBatched(cublasHandle_t  handle, cublasOperation
 cublasStatus_t cublasSgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, long long int  strideA, const float*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasSgemvStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18096,6 +19051,7 @@ cublasStatus_t cublasSgemvStridedBatched_64(cublasHandle_t  handle, cublasOperat
 cublasStatus_t cublasDgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  x, int  incx, long long int  stridex, const double*  beta, double*  y, int  incy, long long int  stridey, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasDgemvStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18106,6 +19062,7 @@ cublasStatus_t cublasDgemvStridedBatched(cublasHandle_t  handle, cublasOperation
 cublasStatus_t cublasDgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, long long int  strideA, const double*  x, int64_t  incx, long long int  stridex, const double*  beta, double*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasDgemvStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18116,6 +19073,7 @@ cublasStatus_t cublasDgemvStridedBatched_64(cublasHandle_t  handle, cublasOperat
 cublasStatus_t cublasCgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  x, int  incx, long long int  stridex, const cuComplex*  beta, cuComplex*  y, int  incy, long long int  stridey, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemvStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18126,6 +19084,7 @@ cublasStatus_t cublasCgemvStridedBatched(cublasHandle_t  handle, cublasOperation
 cublasStatus_t cublasCgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  x, int64_t  incx, long long int  stridex, const cuComplex*  beta, cuComplex*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemvStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18136,6 +19095,7 @@ cublasStatus_t cublasCgemvStridedBatched_64(cublasHandle_t  handle, cublasOperat
 cublasStatus_t cublasZgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  x, int  incx, long long int  stridex, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int  incy, long long int  stridey, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasZgemvStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18146,6 +19106,7 @@ cublasStatus_t cublasZgemvStridedBatched(cublasHandle_t  handle, cublasOperation
 cublasStatus_t cublasZgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, long long int  strideA, const cuDoubleComplex*  x, int64_t  incx, long long int  stridex, const cuDoubleComplex*  beta, cuDoubleComplex*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasZgemvStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18156,6 +19117,7 @@ cublasStatus_t cublasZgemvStridedBatched_64(cublasHandle_t  handle, cublasOperat
 cublasStatus_t cublasHSHgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  x, int  incx, long long int  stridex, const float*  beta, __half*  y, int  incy, long long int  stridey, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasHSHgemvStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHSHgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18166,6 +19128,7 @@ cublasStatus_t cublasHSHgemvStridedBatched(cublasHandle_t  handle, cublasOperati
 cublasStatus_t cublasHSHgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  x, int64_t  incx, long long int  stridex, const float*  beta, __half*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasHSHgemvStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHSHgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18176,6 +19139,7 @@ cublasStatus_t cublasHSHgemvStridedBatched_64(cublasHandle_t  handle, cublasOper
 cublasStatus_t cublasHSSgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasHSSgemvStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHSSgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18186,6 +19150,7 @@ cublasStatus_t cublasHSSgemvStridedBatched(cublasHandle_t  handle, cublasOperati
 cublasStatus_t cublasHSSgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasHSSgemvStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHSSgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18196,6 +19161,7 @@ cublasStatus_t cublasHSSgemvStridedBatched_64(cublasHandle_t  handle, cublasOper
 cublasStatus_t cublasTSTgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16*  A, int  lda, long long int  strideA, const __nv_bfloat16*  x, int  incx, long long int  stridex, const float*  beta, __nv_bfloat16*  y, int  incy, long long int  stridey, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasTSTgemvStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasTSTgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18206,6 +19172,7 @@ cublasStatus_t cublasTSTgemvStridedBatched(cublasHandle_t  handle, cublasOperati
 cublasStatus_t cublasTSTgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16*  A, int64_t  lda, long long int  strideA, const __nv_bfloat16*  x, int64_t  incx, long long int  stridex, const float*  beta, __nv_bfloat16*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasTSTgemvStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasTSTgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18216,6 +19183,7 @@ cublasStatus_t cublasTSTgemvStridedBatched_64(cublasHandle_t  handle, cublasOper
 cublasStatus_t cublasTSSgemvStridedBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, const float*  alpha, const __nv_bfloat16*  A, int  lda, long long int  strideA, const __nv_bfloat16*  x, int  incx, long long int  stridex, const float*  beta, float*  y, int  incy, long long int  stridey, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasTSSgemvStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasTSSgemvStridedBatched(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18226,6 +19194,7 @@ cublasStatus_t cublasTSSgemvStridedBatched(cublasHandle_t  handle, cublasOperati
 cublasStatus_t cublasTSSgemvStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  trans, int64_t  m, int64_t  n, const float*  alpha, const __nv_bfloat16*  A, int64_t  lda, long long int  strideA, const __nv_bfloat16*  x, int64_t  incx, long long int  stridex, const float*  beta, float*  y, int64_t  incy, long long int  stridey, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasTSSgemvStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasTSSgemvStridedBatched_64(handle, trans, m, n, alpha, A, lda, strideA, x, incx, stridex, beta, y, incy, stridey, batchCount);
 #else
@@ -18236,6 +19205,7 @@ cublasStatus_t cublasTSSgemvStridedBatched_64(cublasHandle_t  handle, cublasOper
 cublasStatus_t cublasSgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasSgemm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgemm_v2_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18246,6 +19216,7 @@ cublasStatus_t cublasSgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasDgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasDgemm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18256,6 +19227,7 @@ cublasStatus_t cublasDgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 cublasStatus_t cublasDgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasDgemm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemm_v2_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18266,6 +19238,7 @@ cublasStatus_t cublasDgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasCgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCgemm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18276,6 +19249,7 @@ cublasStatus_t cublasCgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 cublasStatus_t cublasCgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCgemm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemm_v2_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18286,6 +19260,7 @@ cublasStatus_t cublasCgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasCgemm3m(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCgemm3m hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemm3m(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18296,6 +19271,7 @@ cublasStatus_t cublasCgemm3m(cublasHandle_t  handle, cublasOperation_t  transa, 
 cublasStatus_t cublasCgemm3m_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCgemm3m_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemm3m_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18306,6 +19282,7 @@ cublasStatus_t cublasCgemm3m_64(cublasHandle_t  handle, cublasOperation_t  trans
 cublasStatus_t cublasCgemm3mEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCgemm3mEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemm3mEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
 #else
@@ -18316,6 +19293,7 @@ cublasStatus_t cublasCgemm3mEx(cublasHandle_t  handle, cublasOperation_t  transa
 cublasStatus_t cublasCgemm3mEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCgemm3mEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemm3mEx_64(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
 #else
@@ -18326,6 +19304,7 @@ cublasStatus_t cublasCgemm3mEx_64(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasZgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZgemm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemm_v2(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18336,6 +19315,7 @@ cublasStatus_t cublasZgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
 cublasStatus_t cublasZgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZgemm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemm_v2_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18346,6 +19326,7 @@ cublasStatus_t cublasZgemm_v2_64(cublasHandle_t  handle, cublasOperation_t  tran
 cublasStatus_t cublasZgemm3m(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZgemm3m hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemm3m(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18356,6 +19337,7 @@ cublasStatus_t cublasZgemm3m(cublasHandle_t  handle, cublasOperation_t  transa, 
 cublasStatus_t cublasZgemm3m_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZgemm3m_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemm3m_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18366,6 +19348,7 @@ cublasStatus_t cublasZgemm3m_64(cublasHandle_t  handle, cublasOperation_t  trans
 cublasStatus_t cublasHgemm(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const __half*  alpha, const __half*  A, int  lda, const __half*  B, int  ldb, const __half*  beta, __half*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasHgemm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18376,6 +19359,7 @@ cublasStatus_t cublasHgemm(cublasHandle_t  handle, cublasOperation_t  transa, cu
 cublasStatus_t cublasHgemm_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half*  A, int64_t  lda, const __half*  B, int64_t  ldb, const __half*  beta, __half*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasHgemm_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHgemm_64(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18386,6 +19370,7 @@ cublasStatus_t cublasHgemm_64(cublasHandle_t  handle, cublasOperation_t  transa,
 cublasStatus_t cublasSgemmEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasSgemmEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgemmEx_64(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
 #else
@@ -18396,6 +19381,7 @@ cublasStatus_t cublasSgemmEx_64(cublasHandle_t  handle, cublasOperation_t  trans
 cublasStatus_t cublasGemmEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const void*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
 {
 	TALLY_SPD_LOG("cublasGemmEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGemmEx_64(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc, computeType, algo);
 #else
@@ -18406,6 +19392,7 @@ cublasStatus_t cublasGemmEx_64(cublasHandle_t  handle, cublasOperation_t  transa
 cublasStatus_t cublasCgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const void*  B, cudaDataType  Btype, int  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCgemmEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemmEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
 #else
@@ -18416,6 +19403,7 @@ cublasStatus_t cublasCgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 cublasStatus_t cublasCgemmEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const void*  B, cudaDataType  Btype, int64_t  ldb, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCgemmEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemmEx_64(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
 #else
@@ -18426,6 +19414,7 @@ cublasStatus_t cublasCgemmEx_64(cublasHandle_t  handle, cublasOperation_t  trans
 cublasStatus_t cublasSsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  beta, float*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasSsyrk_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsyrk_v2(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18436,6 +19425,7 @@ cublasStatus_t cublasSsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasSsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  beta, float*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasSsyrk_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsyrk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18446,6 +19436,7 @@ cublasStatus_t cublasSsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasDsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  beta, double*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasDsyrk_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsyrk_v2(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18456,6 +19447,7 @@ cublasStatus_t cublasDsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasDsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  beta, double*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasDsyrk_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsyrk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18466,6 +19458,7 @@ cublasStatus_t cublasDsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCsyrk_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyrk_v2(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18476,6 +19469,7 @@ cublasStatus_t cublasCsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasCsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCsyrk_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyrk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18486,6 +19480,7 @@ cublasStatus_t cublasCsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZsyrk_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsyrk_v2(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18496,6 +19491,7 @@ cublasStatus_t cublasZsyrk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasZsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZsyrk_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsyrk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18506,6 +19502,7 @@ cublasStatus_t cublasZsyrk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCsyrkEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCsyrkEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyrkEx(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
 #else
@@ -18516,6 +19513,7 @@ cublasStatus_t cublasCsyrkEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cub
 cublasStatus_t cublasCsyrkEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCsyrkEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyrkEx_64(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
 #else
@@ -18526,6 +19524,7 @@ cublasStatus_t cublasCsyrkEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasCsyrk3mEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCsyrk3mEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyrk3mEx(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
 #else
@@ -18536,6 +19535,7 @@ cublasStatus_t cublasCsyrk3mEx(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasCsyrk3mEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const cuComplex*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCsyrk3mEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyrk3mEx_64(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
 #else
@@ -18546,6 +19546,7 @@ cublasStatus_t cublasCsyrk3mEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo
 cublasStatus_t cublasCherk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const cuComplex*  A, int  lda, const float*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCherk_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCherk_v2(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18556,6 +19557,7 @@ cublasStatus_t cublasCherk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasCherk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const cuComplex*  A, int64_t  lda, const float*  beta, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCherk_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCherk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18566,6 +19568,7 @@ cublasStatus_t cublasCherk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasZherk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const cuDoubleComplex*  A, int  lda, const double*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZherk_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZherk_v2(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18576,6 +19579,7 @@ cublasStatus_t cublasZherk_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cu
 cublasStatus_t cublasZherk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const cuDoubleComplex*  A, int64_t  lda, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZherk_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZherk_v2_64(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 #else
@@ -18586,6 +19590,7 @@ cublasStatus_t cublasZherk_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo,
 cublasStatus_t cublasCherkEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCherkEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCherkEx(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
 #else
@@ -18596,6 +19601,7 @@ cublasStatus_t cublasCherkEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cub
 cublasStatus_t cublasCherkEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCherkEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCherkEx_64(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
 #else
@@ -18606,6 +19612,7 @@ cublasStatus_t cublasCherkEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, 
 cublasStatus_t cublasCherk3mEx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const void*  A, cudaDataType  Atype, int  lda, const float*  beta, void*  C, cudaDataType  Ctype, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCherk3mEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCherk3mEx(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
 #else
@@ -18616,6 +19623,7 @@ cublasStatus_t cublasCherk3mEx(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasCherk3mEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, const float*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCherk3mEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCherk3mEx_64(handle, uplo, trans, n, k, alpha, A, Atype, lda, beta, C, Ctype, ldc);
 #else
@@ -18626,6 +19634,7 @@ cublasStatus_t cublasCherk3mEx_64(cublasHandle_t  handle, cublasFillMode_t  uplo
 cublasStatus_t cublasSsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasSsyr2k_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsyr2k_v2(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18636,6 +19645,7 @@ cublasStatus_t cublasSsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasSsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasSsyr2k_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsyr2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18646,6 +19656,7 @@ cublasStatus_t cublasSsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo
 cublasStatus_t cublasDsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasDsyr2k_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsyr2k_v2(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18656,6 +19667,7 @@ cublasStatus_t cublasDsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasDsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasDsyr2k_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsyr2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18666,6 +19678,7 @@ cublasStatus_t cublasDsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo
 cublasStatus_t cublasCsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCsyr2k_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyr2k_v2(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18676,6 +19689,7 @@ cublasStatus_t cublasCsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasCsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCsyr2k_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyr2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18686,6 +19700,7 @@ cublasStatus_t cublasCsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo
 cublasStatus_t cublasZsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZsyr2k_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsyr2k_v2(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18696,6 +19711,7 @@ cublasStatus_t cublasZsyr2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasZsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZsyr2k_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsyr2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18706,6 +19722,7 @@ cublasStatus_t cublasZsyr2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo
 cublasStatus_t cublasCher2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const float*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCher2k_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCher2k_v2(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18716,6 +19733,7 @@ cublasStatus_t cublasCher2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasCher2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const float*  beta, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCher2k_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCher2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18726,6 +19744,7 @@ cublasStatus_t cublasCher2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo
 cublasStatus_t cublasZher2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const double*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZher2k_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZher2k_v2(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18736,6 +19755,7 @@ cublasStatus_t cublasZher2k_v2(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasZher2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZher2k_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZher2k_v2_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18746,6 +19766,7 @@ cublasStatus_t cublasZher2k_v2_64(cublasHandle_t  handle, cublasFillMode_t  uplo
 cublasStatus_t cublasSsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasSsyrkx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsyrkx(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18756,6 +19777,7 @@ cublasStatus_t cublasSsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 cublasStatus_t cublasSsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasSsyrkx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsyrkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18766,6 +19788,7 @@ cublasStatus_t cublasSsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasDsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasDsyrkx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsyrkx(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18776,6 +19799,7 @@ cublasStatus_t cublasDsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 cublasStatus_t cublasDsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasDsyrkx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsyrkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18786,6 +19810,7 @@ cublasStatus_t cublasDsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasCsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCsyrkx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyrkx(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18796,6 +19821,7 @@ cublasStatus_t cublasCsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 cublasStatus_t cublasCsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCsyrkx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsyrkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18806,6 +19832,7 @@ cublasStatus_t cublasCsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasZsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZsyrkx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsyrkx(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18816,6 +19843,7 @@ cublasStatus_t cublasZsyrkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 cublasStatus_t cublasZsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZsyrkx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsyrkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18826,6 +19854,7 @@ cublasStatus_t cublasZsyrkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasCherkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const float*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCherkx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCherkx(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18836,6 +19865,7 @@ cublasStatus_t cublasCherkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 cublasStatus_t cublasCherkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const float*  beta, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCherkx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCherkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18846,6 +19876,7 @@ cublasStatus_t cublasCherkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasZherkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const double*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZherkx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZherkx(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18856,6 +19887,7 @@ cublasStatus_t cublasZherkx(cublasHandle_t  handle, cublasFillMode_t  uplo, cubl
 cublasStatus_t cublasZherkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, cublasOperation_t  trans, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const double*  beta, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZherkx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZherkx_64(handle, uplo, trans, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18866,6 +19898,7 @@ cublasStatus_t cublasZherkx_64(cublasHandle_t  handle, cublasFillMode_t  uplo, c
 cublasStatus_t cublasSsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, const float*  beta, float*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasSsymm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsymm_v2(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18876,6 +19909,7 @@ cublasStatus_t cublasSsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasSsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, const float*  beta, float*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasSsymm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSsymm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18886,6 +19920,7 @@ cublasStatus_t cublasSsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasDsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasDsymm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsymm_v2(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18896,6 +19931,7 @@ cublasStatus_t cublasDsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasDsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, const double*  beta, double*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasDsymm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDsymm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18906,6 +19942,7 @@ cublasStatus_t cublasDsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasCsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCsymm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsymm_v2(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18916,6 +19953,7 @@ cublasStatus_t cublasCsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasCsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCsymm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCsymm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18926,6 +19964,7 @@ cublasStatus_t cublasCsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasZsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZsymm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsymm_v2(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18936,6 +19975,7 @@ cublasStatus_t cublasZsymm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasZsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZsymm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZsymm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18946,6 +19986,7 @@ cublasStatus_t cublasZsymm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasChemm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasChemm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChemm_v2(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18956,6 +19997,7 @@ cublasStatus_t cublasChemm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasChemm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, const cuComplex*  beta, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasChemm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasChemm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18966,6 +20008,7 @@ cublasStatus_t cublasChemm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasZhemm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZhemm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhemm_v2(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18976,6 +20019,7 @@ cublasStatus_t cublasZhemm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasZhemm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZhemm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZhemm_v2_64(handle, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc);
 #else
@@ -18986,6 +20030,7 @@ cublasStatus_t cublasZhemm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasStrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const float*  alpha, const float*  A, int  lda, float*  B, int  ldb)
 {
 	TALLY_SPD_LOG("cublasStrsm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrsm_v2(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
 #else
@@ -18996,6 +20041,7 @@ cublasStatus_t cublasStrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasStrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, float*  B, int64_t  ldb)
 {
 	TALLY_SPD_LOG("cublasStrsm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrsm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
 #else
@@ -19006,6 +20052,7 @@ cublasStatus_t cublasStrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasDtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double*  A, int  lda, double*  B, int  ldb)
 {
 	TALLY_SPD_LOG("cublasDtrsm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrsm_v2(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
 #else
@@ -19016,6 +20063,7 @@ cublasStatus_t cublasDtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasDtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, double*  B, int64_t  ldb)
 {
 	TALLY_SPD_LOG("cublasDtrsm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrsm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
 #else
@@ -19026,6 +20074,7 @@ cublasStatus_t cublasDtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasCtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, cuComplex*  B, int  ldb)
 {
 	TALLY_SPD_LOG("cublasCtrsm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrsm_v2(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
 #else
@@ -19036,6 +20085,7 @@ cublasStatus_t cublasCtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasCtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, cuComplex*  B, int64_t  ldb)
 {
 	TALLY_SPD_LOG("cublasCtrsm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrsm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
 #else
@@ -19046,6 +20096,7 @@ cublasStatus_t cublasCtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasZtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  B, int  ldb)
 {
 	TALLY_SPD_LOG("cublasZtrsm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrsm_v2(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
 #else
@@ -19056,6 +20107,7 @@ cublasStatus_t cublasZtrsm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasZtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, cuDoubleComplex*  B, int64_t  ldb)
 {
 	TALLY_SPD_LOG("cublasZtrsm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrsm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
 #else
@@ -19066,6 +20118,7 @@ cublasStatus_t cublasZtrsm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasStrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  B, int  ldb, float*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasStrmm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrmm_v2(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
 #else
@@ -19076,6 +20129,7 @@ cublasStatus_t cublasStrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasStrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  B, int64_t  ldb, float*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasStrmm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrmm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
 #else
@@ -19086,6 +20140,7 @@ cublasStatus_t cublasStrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasDtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  B, int  ldb, double*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasDtrmm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrmm_v2(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
 #else
@@ -19096,6 +20151,7 @@ cublasStatus_t cublasDtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasDtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  B, int64_t  ldb, double*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasDtrmm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrmm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
 #else
@@ -19106,6 +20162,7 @@ cublasStatus_t cublasDtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasCtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  B, int  ldb, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCtrmm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrmm_v2(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
 #else
@@ -19116,6 +20173,7 @@ cublasStatus_t cublasCtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasCtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  B, int64_t  ldb, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCtrmm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrmm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
 #else
@@ -19126,6 +20184,7 @@ cublasStatus_t cublasCtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasZtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZtrmm_v2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrmm_v2(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
 #else
@@ -19136,6 +20195,7 @@ cublasStatus_t cublasZtrmm_v2(cublasHandle_t  handle, cublasSideMode_t  side, cu
 cublasStatus_t cublasZtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  B, int64_t  ldb, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZtrmm_v2_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrmm_v2_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, C, ldc);
 #else
@@ -19146,6 +20206,7 @@ cublasStatus_t cublasZtrmm_v2_64(cublasHandle_t  handle, cublasSideMode_t  side,
 cublasStatus_t cublasHgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const __half*  alpha, const __half* const  Aarray[], int  lda, const __half* const  Barray[], int  ldb, const __half*  beta, __half* const  Carray[], int  ldc, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasHgemmBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHgemmBatched(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19156,6 +20217,7 @@ cublasStatus_t cublasHgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasHgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half* const  Aarray[], int64_t  lda, const __half* const  Barray[], int64_t  ldb, const __half*  beta, __half* const  Carray[], int64_t  ldc, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasHgemmBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHgemmBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19166,6 +20228,7 @@ cublasStatus_t cublasHgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  
 cublasStatus_t cublasSgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const float*  alpha, const float* const  Aarray[], int  lda, const float* const  Barray[], int  ldb, const float*  beta, float* const  Carray[], int  ldc, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasSgemmBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgemmBatched(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19176,6 +20239,7 @@ cublasStatus_t cublasSgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasSgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float* const  Aarray[], int64_t  lda, const float* const  Barray[], int64_t  ldb, const float*  beta, float* const  Carray[], int64_t  ldc, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasSgemmBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgemmBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19186,6 +20250,7 @@ cublasStatus_t cublasSgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  
 cublasStatus_t cublasDgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double* const  Aarray[], int  lda, const double* const  Barray[], int  ldb, const double*  beta, double* const  Carray[], int  ldc, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasDgemmBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemmBatched(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19196,6 +20261,7 @@ cublasStatus_t cublasDgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasDgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double* const  Aarray[], int64_t  lda, const double* const  Barray[], int64_t  ldb, const double*  beta, double* const  Carray[], int64_t  ldc, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasDgemmBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemmBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19206,6 +20272,7 @@ cublasStatus_t cublasDgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  
 cublasStatus_t cublasCgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  Barray[], int  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int  ldc, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemmBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemmBatched(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19216,6 +20283,7 @@ cublasStatus_t cublasCgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasCgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  Barray[], int64_t  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemmBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemmBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19226,6 +20294,7 @@ cublasStatus_t cublasCgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  
 cublasStatus_t cublasCgemm3mBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int  lda, const cuComplex* const  Barray[], int  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int  ldc, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemm3mBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemm3mBatched(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19236,6 +20305,7 @@ cublasStatus_t cublasCgemm3mBatched(cublasHandle_t  handle, cublasOperation_t  t
 cublasStatus_t cublasCgemm3mBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex* const  Aarray[], int64_t  lda, const cuComplex* const  Barray[], int64_t  ldb, const cuComplex*  beta, cuComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemm3mBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemm3mBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19246,6 +20316,7 @@ cublasStatus_t cublasCgemm3mBatched_64(cublasHandle_t  handle, cublasOperation_t
 cublasStatus_t cublasZgemmBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int  lda, const cuDoubleComplex* const  Barray[], int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex* const  Carray[], int  ldc, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasZgemmBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemmBatched(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19256,6 +20327,7 @@ cublasStatus_t cublasZgemmBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasZgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  Aarray[], int64_t  lda, const cuDoubleComplex* const  Barray[], int64_t  ldb, const cuDoubleComplex*  beta, cuDoubleComplex* const  Carray[], int64_t  ldc, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasZgemmBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemmBatched_64(handle, transa, transb, m, n, k, alpha, Aarray, lda, Barray, ldb, beta, Carray, ldc, batchCount);
 #else
@@ -19266,6 +20338,7 @@ cublasStatus_t cublasZgemmBatched_64(cublasHandle_t  handle, cublasOperation_t  
 cublasStatus_t cublasHgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const __half*  alpha, const __half*  A, int  lda, long long int  strideA, const __half*  B, int  ldb, long long int  strideB, const __half*  beta, __half*  C, int  ldc, long long int  strideC, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasHgemmStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19276,6 +20349,7 @@ cublasStatus_t cublasHgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 cublasStatus_t cublasHgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const __half*  alpha, const __half*  A, int64_t  lda, long long int  strideA, const __half*  B, int64_t  ldb, long long int  strideB, const __half*  beta, __half*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasHgemmStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasHgemmStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19286,6 +20360,7 @@ cublasStatus_t cublasHgemmStridedBatched_64(cublasHandle_t  handle, cublasOperat
 cublasStatus_t cublasSgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const float*  alpha, const float*  A, int64_t  lda, long long int  strideA, const float*  B, int64_t  ldb, long long int  strideB, const float*  beta, float*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasSgemmStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgemmStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19296,6 +20371,7 @@ cublasStatus_t cublasSgemmStridedBatched_64(cublasHandle_t  handle, cublasOperat
 cublasStatus_t cublasDgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const double*  alpha, const double*  A, int  lda, long long int  strideA, const double*  B, int  ldb, long long int  strideB, const double*  beta, double*  C, int  ldc, long long int  strideC, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasDgemmStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19306,6 +20382,7 @@ cublasStatus_t cublasDgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 cublasStatus_t cublasDgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const double*  alpha, const double*  A, int64_t  lda, long long int  strideA, const double*  B, int64_t  ldb, long long int  strideB, const double*  beta, double*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasDgemmStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgemmStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19316,6 +20393,7 @@ cublasStatus_t cublasDgemmStridedBatched_64(cublasHandle_t  handle, cublasOperat
 cublasStatus_t cublasCgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemmStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19326,6 +20404,7 @@ cublasStatus_t cublasCgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 cublasStatus_t cublasCgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  B, int64_t  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemmStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemmStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19336,6 +20415,7 @@ cublasStatus_t cublasCgemmStridedBatched_64(cublasHandle_t  handle, cublasOperat
 cublasStatus_t cublasCgemm3mStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuComplex*  alpha, const cuComplex*  A, int  lda, long long int  strideA, const cuComplex*  B, int  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int  ldc, long long int  strideC, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemm3mStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemm3mStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19346,6 +20426,7 @@ cublasStatus_t cublasCgemm3mStridedBatched(cublasHandle_t  handle, cublasOperati
 cublasStatus_t cublasCgemm3mStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, long long int  strideA, const cuComplex*  B, int64_t  ldb, long long int  strideB, const cuComplex*  beta, cuComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasCgemm3mStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgemm3mStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19356,6 +20437,7 @@ cublasStatus_t cublasCgemm3mStridedBatched_64(cublasHandle_t  handle, cublasOper
 cublasStatus_t cublasZgemmStridedBatched(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, long long int  strideA, const cuDoubleComplex*  B, int  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc, long long int  strideC, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasZgemmStridedBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemmStridedBatched(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19366,6 +20448,7 @@ cublasStatus_t cublasZgemmStridedBatched(cublasHandle_t  handle, cublasOperation
 cublasStatus_t cublasZgemmStridedBatched_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, long long int  strideA, const cuDoubleComplex*  B, int64_t  ldb, long long int  strideB, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int64_t  ldc, long long int  strideC, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasZgemmStridedBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgemmStridedBatched_64(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 #else
@@ -19376,6 +20459,7 @@ cublasStatus_t cublasZgemmStridedBatched_64(cublasHandle_t  handle, cublasOperat
 cublasStatus_t cublasGemmBatchedEx(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, int  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int  lda, const void* const  Barray[], cudaDataType  Btype, int  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int  ldc, int  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
 {
 	TALLY_SPD_LOG("cublasGemmBatchedEx hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGemmBatchedEx(handle, transa, transb, m, n, k, alpha, Aarray, Atype, lda, Barray, Btype, ldb, beta, Carray, Ctype, ldc, batchCount, computeType, algo);
 #else
@@ -19386,6 +20470,7 @@ cublasStatus_t cublasGemmBatchedEx(cublasHandle_t  handle, cublasOperation_t  tr
 cublasStatus_t cublasGemmBatchedEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void* const  Aarray[], cudaDataType  Atype, int64_t  lda, const void* const  Barray[], cudaDataType  Btype, int64_t  ldb, const void*  beta, void* const  Carray[], cudaDataType  Ctype, int64_t  ldc, int64_t  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
 {
 	TALLY_SPD_LOG("cublasGemmBatchedEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGemmBatchedEx_64(handle, transa, transb, m, n, k, alpha, Aarray, Atype, lda, Barray, Btype, ldb, beta, Carray, Ctype, ldc, batchCount, computeType, algo);
 #else
@@ -19396,6 +20481,7 @@ cublasStatus_t cublasGemmBatchedEx_64(cublasHandle_t  handle, cublasOperation_t 
 cublasStatus_t cublasGemmStridedBatchedEx_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, int64_t  k, const void*  alpha, const void*  A, cudaDataType  Atype, int64_t  lda, long long int  strideA, const void*  B, cudaDataType  Btype, int64_t  ldb, long long int  strideB, const void*  beta, void*  C, cudaDataType  Ctype, int64_t  ldc, long long int  strideC, int64_t  batchCount, cublasComputeType_t  computeType, cublasGemmAlgo_t  algo)
 {
 	TALLY_SPD_LOG("cublasGemmStridedBatchedEx_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasGemmStridedBatchedEx_64(handle, transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C, Ctype, ldc, strideC, batchCount, computeType, algo);
 #else
@@ -19406,6 +20492,7 @@ cublasStatus_t cublasGemmStridedBatchedEx_64(cublasHandle_t  handle, cublasOpera
 cublasStatus_t cublasSgeam(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const float*  alpha, const float*  A, int  lda, const float*  beta, const float*  B, int  ldb, float*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasSgeam hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgeam(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
 #else
@@ -19416,6 +20503,7 @@ cublasStatus_t cublasSgeam(cublasHandle_t  handle, cublasOperation_t  transa, cu
 cublasStatus_t cublasSgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const float*  alpha, const float*  A, int64_t  lda, const float*  beta, const float*  B, int64_t  ldb, float*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasSgeam_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgeam_64(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
 #else
@@ -19426,6 +20514,7 @@ cublasStatus_t cublasSgeam_64(cublasHandle_t  handle, cublasOperation_t  transa,
 cublasStatus_t cublasDgeam(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const double*  alpha, const double*  A, int  lda, const double*  beta, const double*  B, int  ldb, double*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasDgeam hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgeam(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
 #else
@@ -19436,6 +20525,7 @@ cublasStatus_t cublasDgeam(cublasHandle_t  handle, cublasOperation_t  transa, cu
 cublasStatus_t cublasDgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const double*  alpha, const double*  A, int64_t  lda, const double*  beta, const double*  B, int64_t  ldb, double*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasDgeam_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgeam_64(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
 #else
@@ -19446,6 +20536,7 @@ cublasStatus_t cublasDgeam_64(cublasHandle_t  handle, cublasOperation_t  transa,
 cublasStatus_t cublasCgeam(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, const cuComplex*  beta, const cuComplex*  B, int  ldb, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCgeam hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgeam(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
 #else
@@ -19456,6 +20547,7 @@ cublasStatus_t cublasCgeam(cublasHandle_t  handle, cublasOperation_t  transa, cu
 cublasStatus_t cublasCgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex*  A, int64_t  lda, const cuComplex*  beta, const cuComplex*  B, int64_t  ldb, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCgeam_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgeam_64(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
 #else
@@ -19466,6 +20558,7 @@ cublasStatus_t cublasCgeam_64(cublasHandle_t  handle, cublasOperation_t  transa,
 cublasStatus_t cublasZgeam(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  beta, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZgeam hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgeam(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
 #else
@@ -19476,6 +20569,7 @@ cublasStatus_t cublasZgeam(cublasHandle_t  handle, cublasOperation_t  transa, cu
 cublasStatus_t cublasZgeam_64(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  beta, const cuDoubleComplex*  B, int64_t  ldb, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZgeam_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgeam_64(handle, transa, transb, m, n, alpha, A, lda, beta, B, ldb, C, ldc);
 #else
@@ -19486,6 +20580,7 @@ cublasStatus_t cublasZgeam_64(cublasHandle_t  handle, cublasOperation_t  transa,
 cublasStatus_t cublasStrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const float*  alpha, const float* const  A[], int  lda, float* const  B[], int  ldb, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasStrsmBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrsmBatched(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
 #else
@@ -19496,6 +20591,7 @@ cublasStatus_t cublasStrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side
 cublasStatus_t cublasStrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const float*  alpha, const float* const  A[], int64_t  lda, float* const  B[], int64_t  ldb, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasStrsmBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrsmBatched_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
 #else
@@ -19506,6 +20602,7 @@ cublasStatus_t cublasStrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  s
 cublasStatus_t cublasDtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const double*  alpha, const double* const  A[], int  lda, double* const  B[], int  ldb, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasDtrsmBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrsmBatched(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
 #else
@@ -19516,6 +20613,7 @@ cublasStatus_t cublasDtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side
 cublasStatus_t cublasDtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const double*  alpha, const double* const  A[], int64_t  lda, double* const  B[], int64_t  ldb, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasDtrsmBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrsmBatched_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
 #else
@@ -19526,6 +20624,7 @@ cublasStatus_t cublasDtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  s
 cublasStatus_t cublasCtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuComplex*  alpha, const cuComplex* const  A[], int  lda, cuComplex* const  B[], int  ldb, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasCtrsmBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrsmBatched(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
 #else
@@ -19536,6 +20635,7 @@ cublasStatus_t cublasCtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side
 cublasStatus_t cublasCtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuComplex*  alpha, const cuComplex* const  A[], int64_t  lda, cuComplex* const  B[], int64_t  ldb, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasCtrsmBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrsmBatched_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
 #else
@@ -19546,6 +20646,7 @@ cublasStatus_t cublasCtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  s
 cublasStatus_t cublasZtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  A[], int  lda, cuDoubleComplex* const  B[], int  ldb, int  batchCount)
 {
 	TALLY_SPD_LOG("cublasZtrsmBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrsmBatched(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
 #else
@@ -19556,6 +20657,7 @@ cublasStatus_t cublasZtrsmBatched(cublasHandle_t  handle, cublasSideMode_t  side
 cublasStatus_t cublasZtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  side, cublasFillMode_t  uplo, cublasOperation_t  trans, cublasDiagType_t  diag, int64_t  m, int64_t  n, const cuDoubleComplex*  alpha, const cuDoubleComplex* const  A[], int64_t  lda, cuDoubleComplex* const  B[], int64_t  ldb, int64_t  batchCount)
 {
 	TALLY_SPD_LOG("cublasZtrsmBatched_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrsmBatched_64(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb, batchCount);
 #else
@@ -19566,6 +20668,7 @@ cublasStatus_t cublasZtrsmBatched_64(cublasHandle_t  handle, cublasSideMode_t  s
 cublasStatus_t cublasSdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const float*  A, int  lda, const float*  x, int  incx, float*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasSdgmm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
 #else
@@ -19576,6 +20679,7 @@ cublasStatus_t cublasSdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  
 cublasStatus_t cublasSdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const float*  A, int64_t  lda, const float*  x, int64_t  incx, float*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasSdgmm_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSdgmm_64(handle, mode, m, n, A, lda, x, incx, C, ldc);
 #else
@@ -19586,6 +20690,7 @@ cublasStatus_t cublasSdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, in
 cublasStatus_t cublasDdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const double*  A, int  lda, const double*  x, int  incx, double*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasDdgmm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
 #else
@@ -19596,6 +20701,7 @@ cublasStatus_t cublasDdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  
 cublasStatus_t cublasDdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const double*  A, int64_t  lda, const double*  x, int64_t  incx, double*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasDdgmm_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDdgmm_64(handle, mode, m, n, A, lda, x, incx, C, ldc);
 #else
@@ -19606,6 +20712,7 @@ cublasStatus_t cublasDdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, in
 cublasStatus_t cublasCdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuComplex*  A, int  lda, const cuComplex*  x, int  incx, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasCdgmm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
 #else
@@ -19616,6 +20723,7 @@ cublasStatus_t cublasCdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  
 cublasStatus_t cublasCdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const cuComplex*  A, int64_t  lda, const cuComplex*  x, int64_t  incx, cuComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasCdgmm_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCdgmm_64(handle, mode, m, n, A, lda, x, incx, C, ldc);
 #else
@@ -19626,6 +20734,7 @@ cublasStatus_t cublasCdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, in
 cublasStatus_t cublasZdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  m, int  n, const cuDoubleComplex*  A, int  lda, const cuDoubleComplex*  x, int  incx, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cublasZdgmm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZdgmm(handle, mode, m, n, A, lda, x, incx, C, ldc);
 #else
@@ -19636,6 +20745,7 @@ cublasStatus_t cublasZdgmm(cublasHandle_t  handle, cublasSideMode_t  mode, int  
 cublasStatus_t cublasZdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, int64_t  m, int64_t  n, const cuDoubleComplex*  A, int64_t  lda, const cuDoubleComplex*  x, int64_t  incx, cuDoubleComplex*  C, int64_t  ldc)
 {
 	TALLY_SPD_LOG("cublasZdgmm_64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZdgmm_64(handle, mode, m, n, A, lda, x, incx, C, ldc);
 #else
@@ -19646,6 +20756,7 @@ cublasStatus_t cublasZdgmm_64(cublasHandle_t  handle, cublasSideMode_t  mode, in
 cublasStatus_t cublasSmatinvBatched(cublasHandle_t  handle, int  n, const float* const  A[], int  lda, float* const  Ainv[], int  lda_inv, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasSmatinvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSmatinvBatched(handle, n, A, lda, Ainv, lda_inv, info, batchSize);
 #else
@@ -19656,6 +20767,7 @@ cublasStatus_t cublasSmatinvBatched(cublasHandle_t  handle, int  n, const float*
 cublasStatus_t cublasDmatinvBatched(cublasHandle_t  handle, int  n, const double* const  A[], int  lda, double* const  Ainv[], int  lda_inv, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasDmatinvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDmatinvBatched(handle, n, A, lda, Ainv, lda_inv, info, batchSize);
 #else
@@ -19666,6 +20778,7 @@ cublasStatus_t cublasDmatinvBatched(cublasHandle_t  handle, int  n, const double
 cublasStatus_t cublasCmatinvBatched(cublasHandle_t  handle, int  n, const cuComplex* const  A[], int  lda, cuComplex* const  Ainv[], int  lda_inv, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasCmatinvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCmatinvBatched(handle, n, A, lda, Ainv, lda_inv, info, batchSize);
 #else
@@ -19676,6 +20789,7 @@ cublasStatus_t cublasCmatinvBatched(cublasHandle_t  handle, int  n, const cuComp
 cublasStatus_t cublasZmatinvBatched(cublasHandle_t  handle, int  n, const cuDoubleComplex* const  A[], int  lda, cuDoubleComplex* const  Ainv[], int  lda_inv, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasZmatinvBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZmatinvBatched(handle, n, A, lda, Ainv, lda_inv, info, batchSize);
 #else
@@ -19686,6 +20800,7 @@ cublasStatus_t cublasZmatinvBatched(cublasHandle_t  handle, int  n, const cuDoub
 cublasStatus_t cublasSgeqrfBatched(cublasHandle_t  handle, int  m, int  n, float* const  Aarray[], int  lda, float* const  TauArray[], int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasSgeqrfBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgeqrfBatched(handle, m, n, Aarray, lda, TauArray, info, batchSize);
 #else
@@ -19696,6 +20811,7 @@ cublasStatus_t cublasSgeqrfBatched(cublasHandle_t  handle, int  m, int  n, float
 cublasStatus_t cublasDgeqrfBatched(cublasHandle_t  handle, int  m, int  n, double* const  Aarray[], int  lda, double* const  TauArray[], int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasDgeqrfBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgeqrfBatched(handle, m, n, Aarray, lda, TauArray, info, batchSize);
 #else
@@ -19706,6 +20822,7 @@ cublasStatus_t cublasDgeqrfBatched(cublasHandle_t  handle, int  m, int  n, doubl
 cublasStatus_t cublasCgeqrfBatched(cublasHandle_t  handle, int  m, int  n, cuComplex* const  Aarray[], int  lda, cuComplex* const  TauArray[], int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasCgeqrfBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgeqrfBatched(handle, m, n, Aarray, lda, TauArray, info, batchSize);
 #else
@@ -19716,6 +20833,7 @@ cublasStatus_t cublasCgeqrfBatched(cublasHandle_t  handle, int  m, int  n, cuCom
 cublasStatus_t cublasZgeqrfBatched(cublasHandle_t  handle, int  m, int  n, cuDoubleComplex* const  Aarray[], int  lda, cuDoubleComplex* const  TauArray[], int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasZgeqrfBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgeqrfBatched(handle, m, n, Aarray, lda, TauArray, info, batchSize);
 #else
@@ -19726,6 +20844,7 @@ cublasStatus_t cublasZgeqrfBatched(cublasHandle_t  handle, int  m, int  n, cuDou
 cublasStatus_t cublasSgelsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  nrhs, float* const  Aarray[], int  lda, float* const  Carray[], int  ldc, int*  info, int*  devInfoArray, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasSgelsBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgelsBatched(handle, trans, m, n, nrhs, Aarray, lda, Carray, ldc, info, devInfoArray, batchSize);
 #else
@@ -19736,6 +20855,7 @@ cublasStatus_t cublasSgelsBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasDgelsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  nrhs, double* const  Aarray[], int  lda, double* const  Carray[], int  ldc, int*  info, int*  devInfoArray, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasDgelsBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgelsBatched(handle, trans, m, n, nrhs, Aarray, lda, Carray, ldc, info, devInfoArray, batchSize);
 #else
@@ -19746,6 +20866,7 @@ cublasStatus_t cublasDgelsBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasCgelsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  nrhs, cuComplex* const  Aarray[], int  lda, cuComplex* const  Carray[], int  ldc, int*  info, int*  devInfoArray, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasCgelsBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgelsBatched(handle, trans, m, n, nrhs, Aarray, lda, Carray, ldc, info, devInfoArray, batchSize);
 #else
@@ -19756,6 +20877,7 @@ cublasStatus_t cublasCgelsBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasZgelsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  m, int  n, int  nrhs, cuDoubleComplex* const  Aarray[], int  lda, cuDoubleComplex* const  Carray[], int  ldc, int*  info, int*  devInfoArray, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasZgelsBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgelsBatched(handle, trans, m, n, nrhs, Aarray, lda, Carray, ldc, info, devInfoArray, batchSize);
 #else
@@ -19766,6 +20888,7 @@ cublasStatus_t cublasZgelsBatched(cublasHandle_t  handle, cublasOperation_t  tra
 cublasStatus_t cublasStpttr(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  AP, float*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasStpttr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStpttr(handle, uplo, n, AP, A, lda);
 #else
@@ -19776,6 +20899,7 @@ cublasStatus_t cublasStpttr(cublasHandle_t  handle, cublasFillMode_t  uplo, int 
 cublasStatus_t cublasDtpttr(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  AP, double*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasDtpttr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtpttr(handle, uplo, n, AP, A, lda);
 #else
@@ -19786,6 +20910,7 @@ cublasStatus_t cublasDtpttr(cublasHandle_t  handle, cublasFillMode_t  uplo, int 
 cublasStatus_t cublasCtpttr(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  AP, cuComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasCtpttr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtpttr(handle, uplo, n, AP, A, lda);
 #else
@@ -19796,6 +20921,7 @@ cublasStatus_t cublasCtpttr(cublasHandle_t  handle, cublasFillMode_t  uplo, int 
 cublasStatus_t cublasZtpttr(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  AP, cuDoubleComplex*  A, int  lda)
 {
 	TALLY_SPD_LOG("cublasZtpttr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtpttr(handle, uplo, n, AP, A, lda);
 #else
@@ -19806,6 +20932,7 @@ cublasStatus_t cublasZtpttr(cublasHandle_t  handle, cublasFillMode_t  uplo, int 
 cublasStatus_t cublasStrttp(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const float*  A, int  lda, float*  AP)
 {
 	TALLY_SPD_LOG("cublasStrttp hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasStrttp(handle, uplo, n, A, lda, AP);
 #else
@@ -19816,6 +20943,7 @@ cublasStatus_t cublasStrttp(cublasHandle_t  handle, cublasFillMode_t  uplo, int 
 cublasStatus_t cublasDtrttp(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const double*  A, int  lda, double*  AP)
 {
 	TALLY_SPD_LOG("cublasDtrttp hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDtrttp(handle, uplo, n, A, lda, AP);
 #else
@@ -19826,6 +20954,7 @@ cublasStatus_t cublasDtrttp(cublasHandle_t  handle, cublasFillMode_t  uplo, int 
 cublasStatus_t cublasCtrttp(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuComplex*  A, int  lda, cuComplex*  AP)
 {
 	TALLY_SPD_LOG("cublasCtrttp hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCtrttp(handle, uplo, n, A, lda, AP);
 #else
@@ -19836,6 +20965,7 @@ cublasStatus_t cublasCtrttp(cublasHandle_t  handle, cublasFillMode_t  uplo, int 
 cublasStatus_t cublasZtrttp(cublasHandle_t  handle, cublasFillMode_t  uplo, int  n, const cuDoubleComplex*  A, int  lda, cuDoubleComplex*  AP)
 {
 	TALLY_SPD_LOG("cublasZtrttp hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZtrttp(handle, uplo, n, A, lda, AP);
 #else
@@ -19846,6 +20976,7 @@ cublasStatus_t cublasZtrttp(cublasHandle_t  handle, cublasFillMode_t  uplo, int 
 cublasStatus_t cublasSgetrfBatched(cublasHandle_t  handle, int  n, float* const  A[], int  lda, int*  P, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasSgetrfBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgetrfBatched(handle, n, A, lda, P, info, batchSize);
 #else
@@ -19856,6 +20987,7 @@ cublasStatus_t cublasSgetrfBatched(cublasHandle_t  handle, int  n, float* const 
 cublasStatus_t cublasDgetrfBatched(cublasHandle_t  handle, int  n, double* const  A[], int  lda, int*  P, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasDgetrfBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgetrfBatched(handle, n, A, lda, P, info, batchSize);
 #else
@@ -19866,6 +20998,7 @@ cublasStatus_t cublasDgetrfBatched(cublasHandle_t  handle, int  n, double* const
 cublasStatus_t cublasCgetrfBatched(cublasHandle_t  handle, int  n, cuComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasCgetrfBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgetrfBatched(handle, n, A, lda, P, info, batchSize);
 #else
@@ -19876,6 +21009,7 @@ cublasStatus_t cublasCgetrfBatched(cublasHandle_t  handle, int  n, cuComplex* co
 cublasStatus_t cublasZgetrfBatched(cublasHandle_t  handle, int  n, cuDoubleComplex* const  A[], int  lda, int*  P, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasZgetrfBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgetrfBatched(handle, n, A, lda, P, info, batchSize);
 #else
@@ -19886,6 +21020,7 @@ cublasStatus_t cublasZgetrfBatched(cublasHandle_t  handle, int  n, cuDoubleCompl
 cublasStatus_t cublasSgetriBatched(cublasHandle_t  handle, int  n, const float* const  A[], int  lda, const int*  P, float* const  C[], int  ldc, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasSgetriBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
 #else
@@ -19896,6 +21031,7 @@ cublasStatus_t cublasSgetriBatched(cublasHandle_t  handle, int  n, const float* 
 cublasStatus_t cublasDgetriBatched(cublasHandle_t  handle, int  n, const double* const  A[], int  lda, const int*  P, double* const  C[], int  ldc, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasDgetriBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
 #else
@@ -19906,6 +21042,7 @@ cublasStatus_t cublasDgetriBatched(cublasHandle_t  handle, int  n, const double*
 cublasStatus_t cublasCgetriBatched(cublasHandle_t  handle, int  n, const cuComplex* const  A[], int  lda, const int*  P, cuComplex* const  C[], int  ldc, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasCgetriBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
 #else
@@ -19916,6 +21053,7 @@ cublasStatus_t cublasCgetriBatched(cublasHandle_t  handle, int  n, const cuCompl
 cublasStatus_t cublasZgetriBatched(cublasHandle_t  handle, int  n, const cuDoubleComplex* const  A[], int  lda, const int*  P, cuDoubleComplex* const  C[], int  ldc, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasZgetriBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgetriBatched(handle, n, A, lda, P, C, ldc, info, batchSize);
 #else
@@ -19926,6 +21064,7 @@ cublasStatus_t cublasZgetriBatched(cublasHandle_t  handle, int  n, const cuDoubl
 cublasStatus_t cublasSgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const float* const  Aarray[], int  lda, const int*  devIpiv, float* const  Barray[], int  ldb, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasSgetrsBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasSgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
 #else
@@ -19936,6 +21075,7 @@ cublasStatus_t cublasSgetrsBatched(cublasHandle_t  handle, cublasOperation_t  tr
 cublasStatus_t cublasDgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const double* const  Aarray[], int  lda, const int*  devIpiv, double* const  Barray[], int  ldb, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasDgetrsBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasDgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
 #else
@@ -19946,6 +21086,7 @@ cublasStatus_t cublasDgetrsBatched(cublasHandle_t  handle, cublasOperation_t  tr
 cublasStatus_t cublasCgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuComplex* const  Aarray[], int  lda, const int*  devIpiv, cuComplex* const  Barray[], int  ldb, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasCgetrsBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasCgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
 #else
@@ -19956,6 +21097,7 @@ cublasStatus_t cublasCgetrsBatched(cublasHandle_t  handle, cublasOperation_t  tr
 cublasStatus_t cublasZgetrsBatched(cublasHandle_t  handle, cublasOperation_t  trans, int  n, int  nrhs, const cuDoubleComplex* const  Aarray[], int  lda, const int*  devIpiv, cuDoubleComplex* const  Barray[], int  ldb, int*  info, int  batchSize)
 {
 	TALLY_SPD_LOG("cublasZgetrsBatched hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasZgetrsBatched(handle, trans, n, nrhs, Aarray, lda, devIpiv, Barray, ldb, info, batchSize);
 #else
@@ -19966,6 +21108,7 @@ cublasStatus_t cublasZgetrsBatched(cublasHandle_t  handle, cublasOperation_t  tr
 cublasStatus_t cublasUint8gemmBias(cublasHandle_t  handle, cublasOperation_t  transa, cublasOperation_t  transb, cublasOperation_t  transc, int  m, int  n, int  k, const unsigned char*  A, int  A_bias, int  lda, const unsigned char*  B, int  B_bias, int  ldb, unsigned char*  C, int  C_bias, int  ldc, int  C_mult, int  C_shift)
 {
 	TALLY_SPD_LOG("cublasUint8gemmBias hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasUint8gemmBias(handle, transa, transb, transc, m, n, k, A, A_bias, lda, B, B_bias, ldb, C, C_bias, ldc, C_mult, C_shift);
 #else
@@ -19976,8 +21119,8 @@ cublasStatus_t cublasUint8gemmBias(cublasHandle_t  handle, cublasOperation_t  tr
 cudaError_t cudaProfilerStart()
 {
 	TALLY_SPD_LOG("cudaProfilerStart hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaProfilerStart();
 #else
@@ -20016,8 +21159,8 @@ cudaError_t cudaProfilerStart()
 cudaError_t cudaProfilerStop()
 {
 	TALLY_SPD_LOG("cudaProfilerStop hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcudaProfilerStop();
 #else
@@ -20056,6 +21199,7 @@ cudaError_t cudaProfilerStop()
 CUresult cuProfilerInitialize(const char * configFile, const char * outputFile, CUoutput_mode  outputMode)
 {
 	TALLY_SPD_LOG("cuProfilerInitialize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuProfilerInitialize(configFile, outputFile, outputMode);
 #else
@@ -20066,6 +21210,7 @@ CUresult cuProfilerInitialize(const char * configFile, const char * outputFile, 
 CUresult cuProfilerStart()
 {
 	TALLY_SPD_LOG("cuProfilerStart hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuProfilerStart();
 #else
@@ -20076,6 +21221,7 @@ CUresult cuProfilerStart()
 CUresult cuProfilerStop()
 {
 	TALLY_SPD_LOG("cuProfilerStop hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuProfilerStop();
 #else
@@ -20086,6 +21232,7 @@ CUresult cuProfilerStop()
 const char * nvrtcGetErrorString(nvrtcResult  result)
 {
 	TALLY_SPD_LOG("nvrtcGetErrorString hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetErrorString(result);
 #else
@@ -20096,6 +21243,7 @@ const char * nvrtcGetErrorString(nvrtcResult  result)
 nvrtcResult nvrtcVersion(int * major, int * minor)
 {
 	TALLY_SPD_LOG("nvrtcVersion hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcVersion(major, minor);
 #else
@@ -20106,6 +21254,7 @@ nvrtcResult nvrtcVersion(int * major, int * minor)
 nvrtcResult nvrtcGetNumSupportedArchs(int*  numArchs)
 {
 	TALLY_SPD_LOG("nvrtcGetNumSupportedArchs hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetNumSupportedArchs(numArchs);
 #else
@@ -20116,6 +21265,7 @@ nvrtcResult nvrtcGetNumSupportedArchs(int*  numArchs)
 nvrtcResult nvrtcGetSupportedArchs(int*  supportedArchs)
 {
 	TALLY_SPD_LOG("nvrtcGetSupportedArchs hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetSupportedArchs(supportedArchs);
 #else
@@ -20126,6 +21276,7 @@ nvrtcResult nvrtcGetSupportedArchs(int*  supportedArchs)
 nvrtcResult nvrtcCreateProgram(nvrtcProgram * prog, const char * src, const char * name, int  numHeaders, const char * const * headers, const char * const * includeNames)
 {
 	TALLY_SPD_LOG("nvrtcCreateProgram hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcCreateProgram(prog, src, name, numHeaders, headers, includeNames);
 #else
@@ -20136,6 +21287,7 @@ nvrtcResult nvrtcCreateProgram(nvrtcProgram * prog, const char * src, const char
 nvrtcResult nvrtcDestroyProgram(nvrtcProgram * prog)
 {
 	TALLY_SPD_LOG("nvrtcDestroyProgram hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcDestroyProgram(prog);
 #else
@@ -20146,6 +21298,7 @@ nvrtcResult nvrtcDestroyProgram(nvrtcProgram * prog)
 nvrtcResult nvrtcCompileProgram(nvrtcProgram  prog, int  numOptions, const char * const * options)
 {
 	TALLY_SPD_LOG("nvrtcCompileProgram hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcCompileProgram(prog, numOptions, options);
 #else
@@ -20156,6 +21309,7 @@ nvrtcResult nvrtcCompileProgram(nvrtcProgram  prog, int  numOptions, const char 
 nvrtcResult nvrtcGetPTXSize(nvrtcProgram  prog, size_t * ptxSizeRet)
 {
 	TALLY_SPD_LOG("nvrtcGetPTXSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetPTXSize(prog, ptxSizeRet);
 #else
@@ -20166,6 +21320,7 @@ nvrtcResult nvrtcGetPTXSize(nvrtcProgram  prog, size_t * ptxSizeRet)
 nvrtcResult nvrtcGetPTX(nvrtcProgram  prog, char * ptx)
 {
 	TALLY_SPD_LOG("nvrtcGetPTX hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetPTX(prog, ptx);
 #else
@@ -20176,6 +21331,7 @@ nvrtcResult nvrtcGetPTX(nvrtcProgram  prog, char * ptx)
 nvrtcResult nvrtcGetCUBINSize(nvrtcProgram  prog, size_t * cubinSizeRet)
 {
 	TALLY_SPD_LOG("nvrtcGetCUBINSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetCUBINSize(prog, cubinSizeRet);
 #else
@@ -20186,6 +21342,7 @@ nvrtcResult nvrtcGetCUBINSize(nvrtcProgram  prog, size_t * cubinSizeRet)
 nvrtcResult nvrtcGetCUBIN(nvrtcProgram  prog, char * cubin)
 {
 	TALLY_SPD_LOG("nvrtcGetCUBIN hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetCUBIN(prog, cubin);
 #else
@@ -20196,6 +21353,7 @@ nvrtcResult nvrtcGetCUBIN(nvrtcProgram  prog, char * cubin)
 nvrtcResult nvrtcGetLTOIRSize(nvrtcProgram  prog, size_t * LTOIRSizeRet)
 {
 	TALLY_SPD_LOG("nvrtcGetLTOIRSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetLTOIRSize(prog, LTOIRSizeRet);
 #else
@@ -20206,6 +21364,7 @@ nvrtcResult nvrtcGetLTOIRSize(nvrtcProgram  prog, size_t * LTOIRSizeRet)
 nvrtcResult nvrtcGetLTOIR(nvrtcProgram  prog, char * LTOIR)
 {
 	TALLY_SPD_LOG("nvrtcGetLTOIR hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetLTOIR(prog, LTOIR);
 #else
@@ -20216,6 +21375,7 @@ nvrtcResult nvrtcGetLTOIR(nvrtcProgram  prog, char * LTOIR)
 nvrtcResult nvrtcGetOptiXIRSize(nvrtcProgram  prog, size_t * optixirSizeRet)
 {
 	TALLY_SPD_LOG("nvrtcGetOptiXIRSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetOptiXIRSize(prog, optixirSizeRet);
 #else
@@ -20226,6 +21386,7 @@ nvrtcResult nvrtcGetOptiXIRSize(nvrtcProgram  prog, size_t * optixirSizeRet)
 nvrtcResult nvrtcGetOptiXIR(nvrtcProgram  prog, char * optixir)
 {
 	TALLY_SPD_LOG("nvrtcGetOptiXIR hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetOptiXIR(prog, optixir);
 #else
@@ -20236,6 +21397,7 @@ nvrtcResult nvrtcGetOptiXIR(nvrtcProgram  prog, char * optixir)
 nvrtcResult nvrtcGetProgramLogSize(nvrtcProgram  prog, size_t * logSizeRet)
 {
 	TALLY_SPD_LOG("nvrtcGetProgramLogSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetProgramLogSize(prog, logSizeRet);
 #else
@@ -20246,6 +21408,7 @@ nvrtcResult nvrtcGetProgramLogSize(nvrtcProgram  prog, size_t * logSizeRet)
 nvrtcResult nvrtcGetProgramLog(nvrtcProgram  prog, char * log)
 {
 	TALLY_SPD_LOG("nvrtcGetProgramLog hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetProgramLog(prog, log);
 #else
@@ -20256,6 +21419,7 @@ nvrtcResult nvrtcGetProgramLog(nvrtcProgram  prog, char * log)
 nvrtcResult nvrtcAddNameExpression(nvrtcProgram  prog, const char * const  name_expression)
 {
 	TALLY_SPD_LOG("nvrtcAddNameExpression hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcAddNameExpression(prog, name_expression);
 #else
@@ -20266,6 +21430,7 @@ nvrtcResult nvrtcAddNameExpression(nvrtcProgram  prog, const char * const  name_
 nvrtcResult nvrtcGetLoweredName(nvrtcProgram  prog, const char *const  name_expression, const char**  lowered_name)
 {
 	TALLY_SPD_LOG("nvrtcGetLoweredName hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lnvrtcGetLoweredName(prog, name_expression, lowered_name);
 #else
@@ -20276,6 +21441,7 @@ nvrtcResult nvrtcGetLoweredName(nvrtcProgram  prog, const char *const  name_expr
 char * cuserid(char * __s)
 {
 	TALLY_SPD_LOG("cuserid hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcuserid(__s);
 #else
@@ -20286,6 +21452,7 @@ char * cuserid(char * __s)
 const char* cublasLtGetStatusName(cublasStatus_t  status)
 {
 	TALLY_SPD_LOG("cublasLtGetStatusName hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtGetStatusName(status);
 #else
@@ -20296,6 +21463,7 @@ const char* cublasLtGetStatusName(cublasStatus_t  status)
 const char* cublasLtGetStatusString(cublasStatus_t  status)
 {
 	TALLY_SPD_LOG("cublasLtGetStatusString hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtGetStatusString(status);
 #else
@@ -20306,8 +21474,8 @@ const char* cublasLtGetStatusString(cublasStatus_t  status)
 size_t cublasLtGetVersion()
 {
 	TALLY_SPD_LOG("cublasLtGetVersion hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtGetVersion();
 #else
@@ -20345,8 +21513,8 @@ size_t cublasLtGetVersion()
 size_t cublasLtGetCudartVersion()
 {
 	TALLY_SPD_LOG("cublasLtGetCudartVersion hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtGetCudartVersion();
 #else
@@ -20384,6 +21552,7 @@ size_t cublasLtGetCudartVersion()
 cublasStatus_t cublasLtGetProperty(libraryPropertyType  type, int*  value)
 {
 	TALLY_SPD_LOG("cublasLtGetProperty hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtGetProperty(type, value);
 #else
@@ -20394,6 +21563,7 @@ cublasStatus_t cublasLtGetProperty(libraryPropertyType  type, int*  value)
 cublasStatus_t cublasLtHeuristicsCacheGetCapacity(size_t*  capacity)
 {
 	TALLY_SPD_LOG("cublasLtHeuristicsCacheGetCapacity hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtHeuristicsCacheGetCapacity(capacity);
 #else
@@ -20404,6 +21574,7 @@ cublasStatus_t cublasLtHeuristicsCacheGetCapacity(size_t*  capacity)
 cublasStatus_t cublasLtHeuristicsCacheSetCapacity(size_t  capacity)
 {
 	TALLY_SPD_LOG("cublasLtHeuristicsCacheSetCapacity hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtHeuristicsCacheSetCapacity(capacity);
 #else
@@ -20414,6 +21585,7 @@ cublasStatus_t cublasLtHeuristicsCacheSetCapacity(size_t  capacity)
 unsigned cublasLtDisableCpuInstructionsSetMask(unsigned  mask)
 {
 	TALLY_SPD_LOG("cublasLtDisableCpuInstructionsSetMask hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtDisableCpuInstructionsSetMask(mask);
 #else
@@ -20424,6 +21596,7 @@ unsigned cublasLtDisableCpuInstructionsSetMask(unsigned  mask)
 cublasStatus_t cublasLtMatrixTransform(cublasLtHandle_t  lightHandle, cublasLtMatrixTransformDesc_t  transformDesc, const void*  alpha, const void*  A, cublasLtMatrixLayout_t  Adesc, const void*  beta, const void*  B, cublasLtMatrixLayout_t  Bdesc, void*  C, cublasLtMatrixLayout_t  Cdesc, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("cublasLtMatrixTransform hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatrixTransform(lightHandle, transformDesc, alpha, A, Adesc, beta, B, Bdesc, C, Cdesc, stream);
 #else
@@ -20434,6 +21607,7 @@ cublasStatus_t cublasLtMatrixTransform(cublasLtHandle_t  lightHandle, cublasLtMa
 cublasStatus_t cublasLtMatrixLayoutInit_internal(cublasLtMatrixLayout_t  matLayout, size_t  size, cudaDataType  type, uint64_t  rows, uint64_t  cols, int64_t  ld)
 {
 	TALLY_SPD_LOG("cublasLtMatrixLayoutInit_internal hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatrixLayoutInit_internal(matLayout, size, type, rows, cols, ld);
 #else
@@ -20444,6 +21618,7 @@ cublasStatus_t cublasLtMatrixLayoutInit_internal(cublasLtMatrixLayout_t  matLayo
 cublasStatus_t cublasLtMatrixLayoutGetAttribute(cublasLtMatrixLayout_t  matLayout, cublasLtMatrixLayoutAttribute_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
 {
 	TALLY_SPD_LOG("cublasLtMatrixLayoutGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatrixLayoutGetAttribute(matLayout, attr, buf, sizeInBytes, sizeWritten);
 #else
@@ -20454,6 +21629,7 @@ cublasStatus_t cublasLtMatrixLayoutGetAttribute(cublasLtMatrixLayout_t  matLayou
 cublasStatus_t cublasLtMatmulDescInit_internal(cublasLtMatmulDesc_t  matmulDesc, size_t  size, cublasComputeType_t  computeType, cudaDataType_t  scaleType)
 {
 	TALLY_SPD_LOG("cublasLtMatmulDescInit_internal hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatmulDescInit_internal(matmulDesc, size, computeType, scaleType);
 #else
@@ -20464,6 +21640,7 @@ cublasStatus_t cublasLtMatmulDescInit_internal(cublasLtMatmulDesc_t  matmulDesc,
 cublasStatus_t cublasLtMatmulDescGetAttribute(cublasLtMatmulDesc_t  matmulDesc, cublasLtMatmulDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
 {
 	TALLY_SPD_LOG("cublasLtMatmulDescGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatmulDescGetAttribute(matmulDesc, attr, buf, sizeInBytes, sizeWritten);
 #else
@@ -20474,6 +21651,7 @@ cublasStatus_t cublasLtMatmulDescGetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 cublasStatus_t cublasLtMatrixTransformDescInit_internal(cublasLtMatrixTransformDesc_t  transformDesc, size_t  size, cudaDataType  scaleType)
 {
 	TALLY_SPD_LOG("cublasLtMatrixTransformDescInit_internal hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatrixTransformDescInit_internal(transformDesc, size, scaleType);
 #else
@@ -20484,8 +21662,8 @@ cublasStatus_t cublasLtMatrixTransformDescInit_internal(cublasLtMatrixTransformD
 cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t*  transformDesc, cudaDataType  scaleType)
 {
 	TALLY_SPD_LOG("cublasLtMatrixTransformDescCreate hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixTransformDescCreate(transformDesc, scaleType);
 #else
@@ -20529,8 +21707,8 @@ cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t* 
 cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t  transformDesc)
 {
 	TALLY_SPD_LOG("cublasLtMatrixTransformDescDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixTransformDescDestroy(transformDesc);
 #else
@@ -20571,6 +21749,7 @@ cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t 
 cublasStatus_t cublasLtMatrixTransformDescSetAttribute(cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
 {
 	TALLY_SPD_LOG("cublasLtMatrixTransformDescSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatrixTransformDescSetAttribute(transformDesc, attr, buf, sizeInBytes);
 #else
@@ -20581,6 +21760,7 @@ cublasStatus_t cublasLtMatrixTransformDescSetAttribute(cublasLtMatrixTransformDe
 cublasStatus_t cublasLtMatrixTransformDescGetAttribute(cublasLtMatrixTransformDesc_t  transformDesc, cublasLtMatrixTransformDescAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
 {
 	TALLY_SPD_LOG("cublasLtMatrixTransformDescGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatrixTransformDescGetAttribute(transformDesc, attr, buf, sizeInBytes, sizeWritten);
 #else
@@ -20591,6 +21771,7 @@ cublasStatus_t cublasLtMatrixTransformDescGetAttribute(cublasLtMatrixTransformDe
 cublasStatus_t cublasLtMatmulPreferenceInit_internal(cublasLtMatmulPreference_t  pref, size_t  size)
 {
 	TALLY_SPD_LOG("cublasLtMatmulPreferenceInit_internal hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatmulPreferenceInit_internal(pref, size);
 #else
@@ -20601,6 +21782,7 @@ cublasStatus_t cublasLtMatmulPreferenceInit_internal(cublasLtMatmulPreference_t 
 cublasStatus_t cublasLtMatmulPreferenceGetAttribute(cublasLtMatmulPreference_t  pref, cublasLtMatmulPreferenceAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
 {
 	TALLY_SPD_LOG("cublasLtMatmulPreferenceGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatmulPreferenceGetAttribute(pref, attr, buf, sizeInBytes, sizeWritten);
 #else
@@ -20611,6 +21793,7 @@ cublasStatus_t cublasLtMatmulPreferenceGetAttribute(cublasLtMatmulPreference_t  
 cublasStatus_t cublasLtMatmulAlgoGetIds(cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  requestedAlgoCount, int  algoIdsArray[], int*  returnAlgoCount)
 {
 	TALLY_SPD_LOG("cublasLtMatmulAlgoGetIds hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatmulAlgoGetIds(lightHandle, computeType, scaleType, Atype, Btype, Ctype, Dtype, requestedAlgoCount, algoIdsArray, returnAlgoCount);
 #else
@@ -20621,6 +21804,7 @@ cublasStatus_t cublasLtMatmulAlgoGetIds(cublasLtHandle_t  lightHandle, cublasCom
 cublasStatus_t cublasLtMatmulAlgoInit(cublasLtHandle_t  lightHandle, cublasComputeType_t  computeType, cudaDataType_t  scaleType, cudaDataType_t  Atype, cudaDataType_t  Btype, cudaDataType_t  Ctype, cudaDataType_t  Dtype, int  algoId, cublasLtMatmulAlgo_t*  algo)
 {
 	TALLY_SPD_LOG("cublasLtMatmulAlgoInit hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatmulAlgoInit(lightHandle, computeType, scaleType, Atype, Btype, Ctype, Dtype, algoId, algo);
 #else
@@ -20631,6 +21815,7 @@ cublasStatus_t cublasLtMatmulAlgoInit(cublasLtHandle_t  lightHandle, cublasCompu
 cublasStatus_t cublasLtMatmulAlgoCheck(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_t  operationDesc, cublasLtMatrixLayout_t  Adesc, cublasLtMatrixLayout_t  Bdesc, cublasLtMatrixLayout_t  Cdesc, cublasLtMatrixLayout_t  Ddesc, const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulHeuristicResult_t*  result)
 {
 	TALLY_SPD_LOG("cublasLtMatmulAlgoCheck hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatmulAlgoCheck(lightHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, algo, result);
 #else
@@ -20641,6 +21826,7 @@ cublasStatus_t cublasLtMatmulAlgoCheck(cublasLtHandle_t  lightHandle, cublasLtMa
 cublasStatus_t cublasLtMatmulAlgoCapGetAttribute(const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoCapAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
 {
 	TALLY_SPD_LOG("cublasLtMatmulAlgoCapGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatmulAlgoCapGetAttribute(algo, attr, buf, sizeInBytes, sizeWritten);
 #else
@@ -20651,6 +21837,7 @@ cublasStatus_t cublasLtMatmulAlgoCapGetAttribute(const cublasLtMatmulAlgo_t*  al
 cublasStatus_t cublasLtMatmulAlgoConfigSetAttribute(cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, const void*  buf, size_t  sizeInBytes)
 {
 	TALLY_SPD_LOG("cublasLtMatmulAlgoConfigSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatmulAlgoConfigSetAttribute(algo, attr, buf, sizeInBytes);
 #else
@@ -20661,6 +21848,7 @@ cublasStatus_t cublasLtMatmulAlgoConfigSetAttribute(cublasLtMatmulAlgo_t*  algo,
 cublasStatus_t cublasLtMatmulAlgoConfigGetAttribute(const cublasLtMatmulAlgo_t*  algo, cublasLtMatmulAlgoConfigAttributes_t  attr, void*  buf, size_t  sizeInBytes, size_t*  sizeWritten)
 {
 	TALLY_SPD_LOG("cublasLtMatmulAlgoConfigGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtMatmulAlgoConfigGetAttribute(algo, attr, buf, sizeInBytes, sizeWritten);
 #else
@@ -20671,6 +21859,7 @@ cublasStatus_t cublasLtMatmulAlgoConfigGetAttribute(const cublasLtMatmulAlgo_t* 
 cublasStatus_t cublasLtLoggerSetCallback(cublasLtLoggerCallback_t  callback)
 {
 	TALLY_SPD_LOG("cublasLtLoggerSetCallback hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtLoggerSetCallback(callback);
 #else
@@ -20681,6 +21870,7 @@ cublasStatus_t cublasLtLoggerSetCallback(cublasLtLoggerCallback_t  callback)
 cublasStatus_t cublasLtLoggerSetFile(FILE*  file)
 {
 	TALLY_SPD_LOG("cublasLtLoggerSetFile hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtLoggerSetFile(file);
 #else
@@ -20691,6 +21881,7 @@ cublasStatus_t cublasLtLoggerSetFile(FILE*  file)
 cublasStatus_t cublasLtLoggerOpenFile(const char*  logFile)
 {
 	TALLY_SPD_LOG("cublasLtLoggerOpenFile hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtLoggerOpenFile(logFile);
 #else
@@ -20701,6 +21892,7 @@ cublasStatus_t cublasLtLoggerOpenFile(const char*  logFile)
 cublasStatus_t cublasLtLoggerSetLevel(int  level)
 {
 	TALLY_SPD_LOG("cublasLtLoggerSetLevel hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtLoggerSetLevel(level);
 #else
@@ -20711,6 +21903,7 @@ cublasStatus_t cublasLtLoggerSetLevel(int  level)
 cublasStatus_t cublasLtLoggerSetMask(int  mask)
 {
 	TALLY_SPD_LOG("cublasLtLoggerSetMask hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcublasLtLoggerSetMask(mask);
 #else
@@ -20721,8 +21914,8 @@ cublasStatus_t cublasLtLoggerSetMask(int  mask)
 cublasStatus_t cublasLtLoggerForceDisable()
 {
 	TALLY_SPD_LOG("cublasLtLoggerForceDisable hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtLoggerForceDisable();
 #else
@@ -20762,8 +21955,8 @@ cublasStatus_t cublasLtLoggerForceDisable()
 curandStatus_t curandCreateGenerator(curandGenerator_t * generator, curandRngType_t  rng_type)
 {
 	TALLY_SPD_LOG("curandCreateGenerator hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcurandCreateGenerator(generator, rng_type);
 #else
@@ -20804,6 +21997,7 @@ curandStatus_t curandCreateGenerator(curandGenerator_t * generator, curandRngTyp
 curandStatus_t curandCreateGeneratorHost(curandGenerator_t * generator, curandRngType_t  rng_type)
 {
 	TALLY_SPD_LOG("curandCreateGeneratorHost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandCreateGeneratorHost(generator, rng_type);
 #else
@@ -20814,6 +22008,7 @@ curandStatus_t curandCreateGeneratorHost(curandGenerator_t * generator, curandRn
 curandStatus_t curandDestroyGenerator(curandGenerator_t  generator)
 {
 	TALLY_SPD_LOG("curandDestroyGenerator hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandDestroyGenerator(generator);
 #else
@@ -20824,6 +22019,7 @@ curandStatus_t curandDestroyGenerator(curandGenerator_t  generator)
 curandStatus_t curandGetVersion(int * version)
 {
 	TALLY_SPD_LOG("curandGetVersion hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGetVersion(version);
 #else
@@ -20834,6 +22030,7 @@ curandStatus_t curandGetVersion(int * version)
 curandStatus_t curandGetProperty(libraryPropertyType  type, int * value)
 {
 	TALLY_SPD_LOG("curandGetProperty hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGetProperty(type, value);
 #else
@@ -20844,6 +22041,7 @@ curandStatus_t curandGetProperty(libraryPropertyType  type, int * value)
 curandStatus_t curandSetStream(curandGenerator_t  generator, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("curandSetStream hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandSetStream(generator, stream);
 #else
@@ -20854,8 +22052,8 @@ curandStatus_t curandSetStream(curandGenerator_t  generator, cudaStream_t  strea
 curandStatus_t curandSetPseudoRandomGeneratorSeed(curandGenerator_t  generator, unsigned long long  seed)
 {
 	TALLY_SPD_LOG("curandSetPseudoRandomGeneratorSeed hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lcurandSetPseudoRandomGeneratorSeed(generator, seed);
 #else
@@ -20895,6 +22093,7 @@ curandStatus_t curandSetPseudoRandomGeneratorSeed(curandGenerator_t  generator, 
 curandStatus_t curandSetGeneratorOffset(curandGenerator_t  generator, unsigned long long  offset)
 {
 	TALLY_SPD_LOG("curandSetGeneratorOffset hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandSetGeneratorOffset(generator, offset);
 #else
@@ -20905,6 +22104,7 @@ curandStatus_t curandSetGeneratorOffset(curandGenerator_t  generator, unsigned l
 curandStatus_t curandSetGeneratorOrdering(curandGenerator_t  generator, curandOrdering_t  order)
 {
 	TALLY_SPD_LOG("curandSetGeneratorOrdering hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandSetGeneratorOrdering(generator, order);
 #else
@@ -20915,6 +22115,7 @@ curandStatus_t curandSetGeneratorOrdering(curandGenerator_t  generator, curandOr
 curandStatus_t curandSetQuasiRandomGeneratorDimensions(curandGenerator_t  generator, unsigned int  num_dimensions)
 {
 	TALLY_SPD_LOG("curandSetQuasiRandomGeneratorDimensions hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandSetQuasiRandomGeneratorDimensions(generator, num_dimensions);
 #else
@@ -20925,6 +22126,7 @@ curandStatus_t curandSetQuasiRandomGeneratorDimensions(curandGenerator_t  genera
 curandStatus_t curandGenerate(curandGenerator_t  generator, unsigned int * outputPtr, size_t  num)
 {
 	TALLY_SPD_LOG("curandGenerate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerate(generator, outputPtr, num);
 #else
@@ -20935,6 +22137,7 @@ curandStatus_t curandGenerate(curandGenerator_t  generator, unsigned int * outpu
 curandStatus_t curandGenerateLongLong(curandGenerator_t  generator, unsigned long long * outputPtr, size_t  num)
 {
 	TALLY_SPD_LOG("curandGenerateLongLong hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerateLongLong(generator, outputPtr, num);
 #else
@@ -20945,6 +22148,7 @@ curandStatus_t curandGenerateLongLong(curandGenerator_t  generator, unsigned lon
 curandStatus_t curandGenerateUniform(curandGenerator_t  generator, float * outputPtr, size_t  num)
 {
 	TALLY_SPD_LOG("curandGenerateUniform hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerateUniform(generator, outputPtr, num);
 #else
@@ -20955,6 +22159,7 @@ curandStatus_t curandGenerateUniform(curandGenerator_t  generator, float * outpu
 curandStatus_t curandGenerateUniformDouble(curandGenerator_t  generator, double * outputPtr, size_t  num)
 {
 	TALLY_SPD_LOG("curandGenerateUniformDouble hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerateUniformDouble(generator, outputPtr, num);
 #else
@@ -20965,6 +22170,7 @@ curandStatus_t curandGenerateUniformDouble(curandGenerator_t  generator, double 
 curandStatus_t curandGenerateNormal(curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev)
 {
 	TALLY_SPD_LOG("curandGenerateNormal hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerateNormal(generator, outputPtr, n, mean, stddev);
 #else
@@ -20975,6 +22181,7 @@ curandStatus_t curandGenerateNormal(curandGenerator_t  generator, float * output
 curandStatus_t curandGenerateNormalDouble(curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev)
 {
 	TALLY_SPD_LOG("curandGenerateNormalDouble hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerateNormalDouble(generator, outputPtr, n, mean, stddev);
 #else
@@ -20985,6 +22192,7 @@ curandStatus_t curandGenerateNormalDouble(curandGenerator_t  generator, double *
 curandStatus_t curandGenerateLogNormal(curandGenerator_t  generator, float * outputPtr, size_t  n, float  mean, float  stddev)
 {
 	TALLY_SPD_LOG("curandGenerateLogNormal hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerateLogNormal(generator, outputPtr, n, mean, stddev);
 #else
@@ -20995,6 +22203,7 @@ curandStatus_t curandGenerateLogNormal(curandGenerator_t  generator, float * out
 curandStatus_t curandGenerateLogNormalDouble(curandGenerator_t  generator, double * outputPtr, size_t  n, double  mean, double  stddev)
 {
 	TALLY_SPD_LOG("curandGenerateLogNormalDouble hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerateLogNormalDouble(generator, outputPtr, n, mean, stddev);
 #else
@@ -21005,6 +22214,7 @@ curandStatus_t curandGenerateLogNormalDouble(curandGenerator_t  generator, doubl
 curandStatus_t curandCreatePoissonDistribution(double  lambda, curandDiscreteDistribution_t * discrete_distribution)
 {
 	TALLY_SPD_LOG("curandCreatePoissonDistribution hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandCreatePoissonDistribution(lambda, discrete_distribution);
 #else
@@ -21015,6 +22225,7 @@ curandStatus_t curandCreatePoissonDistribution(double  lambda, curandDiscreteDis
 curandStatus_t curandDestroyDistribution(curandDiscreteDistribution_t  discrete_distribution)
 {
 	TALLY_SPD_LOG("curandDestroyDistribution hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandDestroyDistribution(discrete_distribution);
 #else
@@ -21025,6 +22236,7 @@ curandStatus_t curandDestroyDistribution(curandDiscreteDistribution_t  discrete_
 curandStatus_t curandGeneratePoisson(curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda)
 {
 	TALLY_SPD_LOG("curandGeneratePoisson hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGeneratePoisson(generator, outputPtr, n, lambda);
 #else
@@ -21035,6 +22247,7 @@ curandStatus_t curandGeneratePoisson(curandGenerator_t  generator, unsigned int 
 curandStatus_t curandGeneratePoissonMethod(curandGenerator_t  generator, unsigned int * outputPtr, size_t  n, double  lambda, curandMethod_t  method)
 {
 	TALLY_SPD_LOG("curandGeneratePoissonMethod hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGeneratePoissonMethod(generator, outputPtr, n, lambda, method);
 #else
@@ -21045,6 +22258,7 @@ curandStatus_t curandGeneratePoissonMethod(curandGenerator_t  generator, unsigne
 curandStatus_t curandGenerateBinomial(curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p)
 {
 	TALLY_SPD_LOG("curandGenerateBinomial hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerateBinomial(generator, outputPtr, num, n, p);
 #else
@@ -21055,6 +22269,7 @@ curandStatus_t curandGenerateBinomial(curandGenerator_t  generator, unsigned int
 curandStatus_t curandGenerateBinomialMethod(curandGenerator_t  generator, unsigned int * outputPtr, size_t  num, unsigned int  n, double  p, curandMethod_t  method)
 {
 	TALLY_SPD_LOG("curandGenerateBinomialMethod hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerateBinomialMethod(generator, outputPtr, num, n, p, method);
 #else
@@ -21065,6 +22280,7 @@ curandStatus_t curandGenerateBinomialMethod(curandGenerator_t  generator, unsign
 curandStatus_t curandGenerateSeeds(curandGenerator_t  generator)
 {
 	TALLY_SPD_LOG("curandGenerateSeeds hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGenerateSeeds(generator);
 #else
@@ -21075,6 +22291,7 @@ curandStatus_t curandGenerateSeeds(curandGenerator_t  generator)
 curandStatus_t curandGetDirectionVectors32(curandDirectionVectors32_t * vectors[], curandDirectionVectorSet_t  set)
 {
 	TALLY_SPD_LOG("curandGetDirectionVectors32 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGetDirectionVectors32(vectors, set);
 #else
@@ -21085,6 +22302,7 @@ curandStatus_t curandGetDirectionVectors32(curandDirectionVectors32_t * vectors[
 curandStatus_t curandGetScrambleConstants32(unsigned int * *  constants)
 {
 	TALLY_SPD_LOG("curandGetScrambleConstants32 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGetScrambleConstants32(constants);
 #else
@@ -21095,6 +22313,7 @@ curandStatus_t curandGetScrambleConstants32(unsigned int * *  constants)
 curandStatus_t curandGetDirectionVectors64(curandDirectionVectors64_t * vectors[], curandDirectionVectorSet_t  set)
 {
 	TALLY_SPD_LOG("curandGetDirectionVectors64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGetDirectionVectors64(vectors, set);
 #else
@@ -21105,6 +22324,7 @@ curandStatus_t curandGetDirectionVectors64(curandDirectionVectors64_t * vectors[
 curandStatus_t curandGetScrambleConstants64(unsigned long long * *  constants)
 {
 	TALLY_SPD_LOG("curandGetScrambleConstants64 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcurandGetScrambleConstants64(constants);
 #else
@@ -21115,6 +22335,7 @@ curandStatus_t curandGetScrambleConstants64(unsigned long long * *  constants)
 cusparseStatus_t cusparseCreate(cusparseHandle_t*  handle)
 {
 	TALLY_SPD_LOG("cusparseCreate hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreate(handle);
 #else
@@ -21125,6 +22346,7 @@ cusparseStatus_t cusparseCreate(cusparseHandle_t*  handle)
 cusparseStatus_t cusparseDestroy(cusparseHandle_t  handle)
 {
 	TALLY_SPD_LOG("cusparseDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroy(handle);
 #else
@@ -21135,6 +22357,7 @@ cusparseStatus_t cusparseDestroy(cusparseHandle_t  handle)
 cusparseStatus_t cusparseGetVersion(cusparseHandle_t  handle, int*  version)
 {
 	TALLY_SPD_LOG("cusparseGetVersion hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGetVersion(handle, version);
 #else
@@ -21145,6 +22368,7 @@ cusparseStatus_t cusparseGetVersion(cusparseHandle_t  handle, int*  version)
 cusparseStatus_t cusparseGetProperty(libraryPropertyType  type, int*  value)
 {
 	TALLY_SPD_LOG("cusparseGetProperty hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGetProperty(type, value);
 #else
@@ -21155,6 +22379,7 @@ cusparseStatus_t cusparseGetProperty(libraryPropertyType  type, int*  value)
 const char* cusparseGetErrorName(cusparseStatus_t  status)
 {
 	TALLY_SPD_LOG("cusparseGetErrorName hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGetErrorName(status);
 #else
@@ -21165,6 +22390,7 @@ const char* cusparseGetErrorName(cusparseStatus_t  status)
 const char* cusparseGetErrorString(cusparseStatus_t  status)
 {
 	TALLY_SPD_LOG("cusparseGetErrorString hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGetErrorString(status);
 #else
@@ -21175,6 +22401,7 @@ const char* cusparseGetErrorString(cusparseStatus_t  status)
 cusparseStatus_t cusparseSetStream(cusparseHandle_t  handle, cudaStream_t  streamId)
 {
 	TALLY_SPD_LOG("cusparseSetStream hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSetStream(handle, streamId);
 #else
@@ -21185,6 +22412,7 @@ cusparseStatus_t cusparseSetStream(cusparseHandle_t  handle, cudaStream_t  strea
 cusparseStatus_t cusparseGetStream(cusparseHandle_t  handle, cudaStream_t*  streamId)
 {
 	TALLY_SPD_LOG("cusparseGetStream hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGetStream(handle, streamId);
 #else
@@ -21195,6 +22423,7 @@ cusparseStatus_t cusparseGetStream(cusparseHandle_t  handle, cudaStream_t*  stre
 cusparseStatus_t cusparseGetPointerMode(cusparseHandle_t  handle, cusparsePointerMode_t*  mode)
 {
 	TALLY_SPD_LOG("cusparseGetPointerMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGetPointerMode(handle, mode);
 #else
@@ -21205,6 +22434,7 @@ cusparseStatus_t cusparseGetPointerMode(cusparseHandle_t  handle, cusparsePointe
 cusparseStatus_t cusparseSetPointerMode(cusparseHandle_t  handle, cusparsePointerMode_t  mode)
 {
 	TALLY_SPD_LOG("cusparseSetPointerMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSetPointerMode(handle, mode);
 #else
@@ -21215,6 +22445,7 @@ cusparseStatus_t cusparseSetPointerMode(cusparseHandle_t  handle, cusparsePointe
 cusparseStatus_t cusparseLoggerSetCallback(cusparseLoggerCallback_t  callback)
 {
 	TALLY_SPD_LOG("cusparseLoggerSetCallback hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseLoggerSetCallback(callback);
 #else
@@ -21225,6 +22456,7 @@ cusparseStatus_t cusparseLoggerSetCallback(cusparseLoggerCallback_t  callback)
 cusparseStatus_t cusparseLoggerSetFile(FILE*  file)
 {
 	TALLY_SPD_LOG("cusparseLoggerSetFile hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseLoggerSetFile(file);
 #else
@@ -21235,6 +22467,7 @@ cusparseStatus_t cusparseLoggerSetFile(FILE*  file)
 cusparseStatus_t cusparseLoggerOpenFile(const char*  logFile)
 {
 	TALLY_SPD_LOG("cusparseLoggerOpenFile hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseLoggerOpenFile(logFile);
 #else
@@ -21245,6 +22478,7 @@ cusparseStatus_t cusparseLoggerOpenFile(const char*  logFile)
 cusparseStatus_t cusparseLoggerSetLevel(int  level)
 {
 	TALLY_SPD_LOG("cusparseLoggerSetLevel hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseLoggerSetLevel(level);
 #else
@@ -21255,6 +22489,7 @@ cusparseStatus_t cusparseLoggerSetLevel(int  level)
 cusparseStatus_t cusparseLoggerSetMask(int  mask)
 {
 	TALLY_SPD_LOG("cusparseLoggerSetMask hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseLoggerSetMask(mask);
 #else
@@ -21265,6 +22500,7 @@ cusparseStatus_t cusparseLoggerSetMask(int  mask)
 cusparseStatus_t cusparseLoggerForceDisable()
 {
 	TALLY_SPD_LOG("cusparseLoggerForceDisable hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseLoggerForceDisable();
 #else
@@ -21275,6 +22511,7 @@ cusparseStatus_t cusparseLoggerForceDisable()
 cusparseStatus_t cusparseCreateMatDescr(cusparseMatDescr_t*  descrA)
 {
 	TALLY_SPD_LOG("cusparseCreateMatDescr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateMatDescr(descrA);
 #else
@@ -21285,6 +22522,7 @@ cusparseStatus_t cusparseCreateMatDescr(cusparseMatDescr_t*  descrA)
 cusparseStatus_t cusparseDestroyMatDescr(cusparseMatDescr_t  descrA)
 {
 	TALLY_SPD_LOG("cusparseDestroyMatDescr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyMatDescr(descrA);
 #else
@@ -21295,6 +22533,7 @@ cusparseStatus_t cusparseDestroyMatDescr(cusparseMatDescr_t  descrA)
 cusparseStatus_t cusparseSetMatType(cusparseMatDescr_t  descrA, cusparseMatrixType_t  type)
 {
 	TALLY_SPD_LOG("cusparseSetMatType hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSetMatType(descrA, type);
 #else
@@ -21305,6 +22544,7 @@ cusparseStatus_t cusparseSetMatType(cusparseMatDescr_t  descrA, cusparseMatrixTy
 cusparseMatrixType_t cusparseGetMatType(const cusparseMatDescr_t  descrA)
 {
 	TALLY_SPD_LOG("cusparseGetMatType hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGetMatType(descrA);
 #else
@@ -21315,6 +22555,7 @@ cusparseMatrixType_t cusparseGetMatType(const cusparseMatDescr_t  descrA)
 cusparseStatus_t cusparseSetMatFillMode(cusparseMatDescr_t  descrA, cusparseFillMode_t  fillMode)
 {
 	TALLY_SPD_LOG("cusparseSetMatFillMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSetMatFillMode(descrA, fillMode);
 #else
@@ -21325,6 +22566,7 @@ cusparseStatus_t cusparseSetMatFillMode(cusparseMatDescr_t  descrA, cusparseFill
 cusparseFillMode_t cusparseGetMatFillMode(const cusparseMatDescr_t  descrA)
 {
 	TALLY_SPD_LOG("cusparseGetMatFillMode hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGetMatFillMode(descrA);
 #else
@@ -21335,6 +22577,7 @@ cusparseFillMode_t cusparseGetMatFillMode(const cusparseMatDescr_t  descrA)
 cusparseStatus_t cusparseSetMatDiagType(cusparseMatDescr_t  descrA, cusparseDiagType_t  diagType)
 {
 	TALLY_SPD_LOG("cusparseSetMatDiagType hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSetMatDiagType(descrA, diagType);
 #else
@@ -21345,6 +22588,7 @@ cusparseStatus_t cusparseSetMatDiagType(cusparseMatDescr_t  descrA, cusparseDiag
 cusparseDiagType_t cusparseGetMatDiagType(const cusparseMatDescr_t  descrA)
 {
 	TALLY_SPD_LOG("cusparseGetMatDiagType hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGetMatDiagType(descrA);
 #else
@@ -21355,6 +22599,7 @@ cusparseDiagType_t cusparseGetMatDiagType(const cusparseMatDescr_t  descrA)
 cusparseStatus_t cusparseSetMatIndexBase(cusparseMatDescr_t  descrA, cusparseIndexBase_t  base)
 {
 	TALLY_SPD_LOG("cusparseSetMatIndexBase hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSetMatIndexBase(descrA, base);
 #else
@@ -21365,6 +22610,7 @@ cusparseStatus_t cusparseSetMatIndexBase(cusparseMatDescr_t  descrA, cusparseInd
 cusparseIndexBase_t cusparseGetMatIndexBase(const cusparseMatDescr_t  descrA)
 {
 	TALLY_SPD_LOG("cusparseGetMatIndexBase hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGetMatIndexBase(descrA);
 #else
@@ -21375,6 +22621,7 @@ cusparseIndexBase_t cusparseGetMatIndexBase(const cusparseMatDescr_t  descrA)
 cusparseStatus_t cusparseCreateCsric02Info(csric02Info_t*  info)
 {
 	TALLY_SPD_LOG("cusparseCreateCsric02Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateCsric02Info(info);
 #else
@@ -21385,6 +22632,7 @@ cusparseStatus_t cusparseCreateCsric02Info(csric02Info_t*  info)
 cusparseStatus_t cusparseDestroyCsric02Info(csric02Info_t  info)
 {
 	TALLY_SPD_LOG("cusparseDestroyCsric02Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyCsric02Info(info);
 #else
@@ -21395,6 +22643,7 @@ cusparseStatus_t cusparseDestroyCsric02Info(csric02Info_t  info)
 cusparseStatus_t cusparseCreateBsric02Info(bsric02Info_t*  info)
 {
 	TALLY_SPD_LOG("cusparseCreateBsric02Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateBsric02Info(info);
 #else
@@ -21405,6 +22654,7 @@ cusparseStatus_t cusparseCreateBsric02Info(bsric02Info_t*  info)
 cusparseStatus_t cusparseDestroyBsric02Info(bsric02Info_t  info)
 {
 	TALLY_SPD_LOG("cusparseDestroyBsric02Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyBsric02Info(info);
 #else
@@ -21415,6 +22665,7 @@ cusparseStatus_t cusparseDestroyBsric02Info(bsric02Info_t  info)
 cusparseStatus_t cusparseCreateCsrilu02Info(csrilu02Info_t*  info)
 {
 	TALLY_SPD_LOG("cusparseCreateCsrilu02Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateCsrilu02Info(info);
 #else
@@ -21425,6 +22676,7 @@ cusparseStatus_t cusparseCreateCsrilu02Info(csrilu02Info_t*  info)
 cusparseStatus_t cusparseDestroyCsrilu02Info(csrilu02Info_t  info)
 {
 	TALLY_SPD_LOG("cusparseDestroyCsrilu02Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyCsrilu02Info(info);
 #else
@@ -21435,6 +22687,7 @@ cusparseStatus_t cusparseDestroyCsrilu02Info(csrilu02Info_t  info)
 cusparseStatus_t cusparseCreateBsrilu02Info(bsrilu02Info_t*  info)
 {
 	TALLY_SPD_LOG("cusparseCreateBsrilu02Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateBsrilu02Info(info);
 #else
@@ -21445,6 +22698,7 @@ cusparseStatus_t cusparseCreateBsrilu02Info(bsrilu02Info_t*  info)
 cusparseStatus_t cusparseDestroyBsrilu02Info(bsrilu02Info_t  info)
 {
 	TALLY_SPD_LOG("cusparseDestroyBsrilu02Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyBsrilu02Info(info);
 #else
@@ -21455,6 +22709,7 @@ cusparseStatus_t cusparseDestroyBsrilu02Info(bsrilu02Info_t  info)
 cusparseStatus_t cusparseCreateBsrsv2Info(bsrsv2Info_t*  info)
 {
 	TALLY_SPD_LOG("cusparseCreateBsrsv2Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateBsrsv2Info(info);
 #else
@@ -21465,6 +22720,7 @@ cusparseStatus_t cusparseCreateBsrsv2Info(bsrsv2Info_t*  info)
 cusparseStatus_t cusparseDestroyBsrsv2Info(bsrsv2Info_t  info)
 {
 	TALLY_SPD_LOG("cusparseDestroyBsrsv2Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyBsrsv2Info(info);
 #else
@@ -21475,6 +22731,7 @@ cusparseStatus_t cusparseDestroyBsrsv2Info(bsrsv2Info_t  info)
 cusparseStatus_t cusparseCreateBsrsm2Info(bsrsm2Info_t*  info)
 {
 	TALLY_SPD_LOG("cusparseCreateBsrsm2Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateBsrsm2Info(info);
 #else
@@ -21485,6 +22742,7 @@ cusparseStatus_t cusparseCreateBsrsm2Info(bsrsm2Info_t*  info)
 cusparseStatus_t cusparseDestroyBsrsm2Info(bsrsm2Info_t  info)
 {
 	TALLY_SPD_LOG("cusparseDestroyBsrsm2Info hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyBsrsm2Info(info);
 #else
@@ -21495,6 +22753,7 @@ cusparseStatus_t cusparseDestroyBsrsm2Info(bsrsm2Info_t  info)
 cusparseStatus_t cusparseCreateCsru2csrInfo(csru2csrInfo_t*  info)
 {
 	TALLY_SPD_LOG("cusparseCreateCsru2csrInfo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateCsru2csrInfo(info);
 #else
@@ -21505,6 +22764,7 @@ cusparseStatus_t cusparseCreateCsru2csrInfo(csru2csrInfo_t*  info)
 cusparseStatus_t cusparseDestroyCsru2csrInfo(csru2csrInfo_t  info)
 {
 	TALLY_SPD_LOG("cusparseDestroyCsru2csrInfo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyCsru2csrInfo(info);
 #else
@@ -21515,6 +22775,7 @@ cusparseStatus_t cusparseDestroyCsru2csrInfo(csru2csrInfo_t  info)
 cusparseStatus_t cusparseCreateColorInfo(cusparseColorInfo_t*  info)
 {
 	TALLY_SPD_LOG("cusparseCreateColorInfo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateColorInfo(info);
 #else
@@ -21525,6 +22786,7 @@ cusparseStatus_t cusparseCreateColorInfo(cusparseColorInfo_t*  info)
 cusparseStatus_t cusparseDestroyColorInfo(cusparseColorInfo_t  info)
 {
 	TALLY_SPD_LOG("cusparseDestroyColorInfo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyColorInfo(info);
 #else
@@ -21535,6 +22797,7 @@ cusparseStatus_t cusparseDestroyColorInfo(cusparseColorInfo_t  info)
 cusparseStatus_t cusparseCreatePruneInfo(pruneInfo_t*  info)
 {
 	TALLY_SPD_LOG("cusparseCreatePruneInfo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreatePruneInfo(info);
 #else
@@ -21545,6 +22808,7 @@ cusparseStatus_t cusparseCreatePruneInfo(pruneInfo_t*  info)
 cusparseStatus_t cusparseDestroyPruneInfo(pruneInfo_t  info)
 {
 	TALLY_SPD_LOG("cusparseDestroyPruneInfo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyPruneInfo(info);
 #else
@@ -21555,6 +22819,7 @@ cusparseStatus_t cusparseDestroyPruneInfo(pruneInfo_t  info)
 cusparseStatus_t cusparseSgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const float*  alpha, const float*  A, int  lda, int  nnz, const float*  xVal, const int*  xInd, const float*  beta, float*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSgemvi hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
 #else
@@ -21565,6 +22830,7 @@ cusparseStatus_t cusparseSgemvi(cusparseHandle_t  handle, cusparseOperation_t  t
 cusparseStatus_t cusparseSgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseSgemvi_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
 #else
@@ -21575,6 +22841,7 @@ cusparseStatus_t cusparseSgemvi_bufferSize(cusparseHandle_t  handle, cusparseOpe
 cusparseStatus_t cusparseDgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const double*  alpha, const double*  A, int  lda, int  nnz, const double*  xVal, const int*  xInd, const double*  beta, double*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDgemvi hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
 #else
@@ -21585,6 +22852,7 @@ cusparseStatus_t cusparseDgemvi(cusparseHandle_t  handle, cusparseOperation_t  t
 cusparseStatus_t cusparseDgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseDgemvi_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
 #else
@@ -21595,6 +22863,7 @@ cusparseStatus_t cusparseDgemvi_bufferSize(cusparseHandle_t  handle, cusparseOpe
 cusparseStatus_t cusparseCgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const cuComplex*  alpha, const cuComplex*  A, int  lda, int  nnz, const cuComplex*  xVal, const int*  xInd, const cuComplex*  beta, cuComplex*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCgemvi hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
 #else
@@ -21605,6 +22874,7 @@ cusparseStatus_t cusparseCgemvi(cusparseHandle_t  handle, cusparseOperation_t  t
 cusparseStatus_t cusparseCgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseCgemvi_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
 #else
@@ -21615,6 +22885,7 @@ cusparseStatus_t cusparseCgemvi_bufferSize(cusparseHandle_t  handle, cusparseOpe
 cusparseStatus_t cusparseZgemvi(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, const cuDoubleComplex*  alpha, const cuDoubleComplex*  A, int  lda, int  nnz, const cuDoubleComplex*  xVal, const int*  xInd, const cuDoubleComplex*  beta, cuDoubleComplex*  y, cusparseIndexBase_t  idxBase, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZgemvi hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgemvi(handle, transA, m, n, alpha, A, lda, nnz, xVal, xInd, beta, y, idxBase, pBuffer);
 #else
@@ -21625,6 +22896,7 @@ cusparseStatus_t cusparseZgemvi(cusparseHandle_t  handle, cusparseOperation_t  t
 cusparseStatus_t cusparseZgemvi_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  transA, int  m, int  n, int  nnz, int*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseZgemvi_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgemvi_bufferSize(handle, transA, m, n, nnz, pBufferSize);
 #else
@@ -21635,6 +22907,7 @@ cusparseStatus_t cusparseZgemvi_bufferSize(cusparseHandle_t  handle, cusparseOpe
 cusparseStatus_t cusparseSbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const float*  x, const float*  beta, float*  y)
 {
 	TALLY_SPD_LOG("cusparseSbsrmv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
 #else
@@ -21645,6 +22918,7 @@ cusparseStatus_t cusparseSbsrmv(cusparseHandle_t  handle, cusparseDirection_t  d
 cusparseStatus_t cusparseDbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const double*  x, const double*  beta, double*  y)
 {
 	TALLY_SPD_LOG("cusparseDbsrmv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
 #else
@@ -21655,6 +22929,7 @@ cusparseStatus_t cusparseDbsrmv(cusparseHandle_t  handle, cusparseDirection_t  d
 cusparseStatus_t cusparseCbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuComplex*  x, const cuComplex*  beta, cuComplex*  y)
 {
 	TALLY_SPD_LOG("cusparseCbsrmv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
 #else
@@ -21665,6 +22940,7 @@ cusparseStatus_t cusparseCbsrmv(cusparseHandle_t  handle, cusparseDirection_t  d
 cusparseStatus_t cusparseZbsrmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuDoubleComplex*  x, const cuDoubleComplex*  beta, cuDoubleComplex*  y)
 {
 	TALLY_SPD_LOG("cusparseZbsrmv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrmv(handle, dirA, transA, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, x, beta, y);
 #else
@@ -21675,6 +22951,7 @@ cusparseStatus_t cusparseZbsrmv(cusparseHandle_t  handle, cusparseDirection_t  d
 cusparseStatus_t cusparseSbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const float*  x, const float*  beta, float*  y)
 {
 	TALLY_SPD_LOG("cusparseSbsrxmv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
 #else
@@ -21685,6 +22962,7 @@ cusparseStatus_t cusparseSbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  
 cusparseStatus_t cusparseDbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const double*  x, const double*  beta, double*  y)
 {
 	TALLY_SPD_LOG("cusparseDbsrxmv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
 #else
@@ -21695,6 +22973,7 @@ cusparseStatus_t cusparseDbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  
 cusparseStatus_t cusparseCbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuComplex*  x, const cuComplex*  beta, cuComplex*  y)
 {
 	TALLY_SPD_LOG("cusparseCbsrxmv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
 #else
@@ -21705,6 +22984,7 @@ cusparseStatus_t cusparseCbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  
 cusparseStatus_t cusparseZbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  sizeOfMask, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedMaskPtrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedEndPtrA, const int*  bsrSortedColIndA, int  blockDim, const cuDoubleComplex*  x, const cuDoubleComplex*  beta, cuDoubleComplex*  y)
 {
 	TALLY_SPD_LOG("cusparseZbsrxmv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrxmv(handle, dirA, transA, sizeOfMask, mb, nb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedMaskPtrA, bsrSortedRowPtrA, bsrSortedEndPtrA, bsrSortedColIndA, blockDim, x, beta, y);
 #else
@@ -21715,6 +22995,7 @@ cusparseStatus_t cusparseZbsrxmv(cusparseHandle_t  handle, cusparseDirection_t  
 cusparseStatus_t cusparseXbsrsv2_zeroPivot(cusparseHandle_t  handle, bsrsv2Info_t  info, int*  position)
 {
 	TALLY_SPD_LOG("cusparseXbsrsv2_zeroPivot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXbsrsv2_zeroPivot(handle, info, position);
 #else
@@ -21725,6 +23006,7 @@ cusparseStatus_t cusparseXbsrsv2_zeroPivot(cusparseHandle_t  handle, bsrsv2Info_
 cusparseStatus_t cusparseSbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSbsrsv2_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
 #else
@@ -21735,6 +23017,7 @@ cusparseStatus_t cusparseSbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseDbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDbsrsv2_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
 #else
@@ -21745,6 +23028,7 @@ cusparseStatus_t cusparseDbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseCbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCbsrsv2_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
 #else
@@ -21755,6 +23039,7 @@ cusparseStatus_t cusparseCbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseZbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZbsrsv2_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrsv2_bufferSize(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, pBufferSizeInBytes);
 #else
@@ -21765,6 +23050,7 @@ cusparseStatus_t cusparseZbsrsv2_bufferSize(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseSbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseSbsrsv2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
 #else
@@ -21775,6 +23061,7 @@ cusparseStatus_t cusparseSbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseDbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseDbsrsv2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
 #else
@@ -21785,6 +23072,7 @@ cusparseStatus_t cusparseDbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseCbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseCbsrsv2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
 #else
@@ -21795,6 +23083,7 @@ cusparseStatus_t cusparseCbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseZbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockSize, bsrsv2Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseZbsrsv2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrsv2_bufferSizeExt(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, info, pBufferSize);
 #else
@@ -21805,6 +23094,7 @@ cusparseStatus_t cusparseZbsrsv2_bufferSizeExt(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseSbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSbsrsv2_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
 #else
@@ -21815,6 +23105,7 @@ cusparseStatus_t cusparseSbsrsv2_analysis(cusparseHandle_t  handle, cusparseDire
 cusparseStatus_t cusparseDbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDbsrsv2_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
 #else
@@ -21825,6 +23116,7 @@ cusparseStatus_t cusparseDbsrsv2_analysis(cusparseHandle_t  handle, cusparseDire
 cusparseStatus_t cusparseCbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCbsrsv2_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
 #else
@@ -21835,6 +23127,7 @@ cusparseStatus_t cusparseCbsrsv2_analysis(cusparseHandle_t  handle, cusparseDire
 cusparseStatus_t cusparseZbsrsv2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZbsrsv2_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrsv2_analysis(handle, dirA, transA, mb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, policy, pBuffer);
 #else
@@ -21845,6 +23138,7 @@ cusparseStatus_t cusparseZbsrsv2_analysis(cusparseHandle_t  handle, cusparseDire
 cusparseStatus_t cusparseSbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const float*  f, float*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSbsrsv2_solve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
 #else
@@ -21855,6 +23149,7 @@ cusparseStatus_t cusparseSbsrsv2_solve(cusparseHandle_t  handle, cusparseDirecti
 cusparseStatus_t cusparseDbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const double*  f, double*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDbsrsv2_solve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
 #else
@@ -21865,6 +23160,7 @@ cusparseStatus_t cusparseDbsrsv2_solve(cusparseHandle_t  handle, cusparseDirecti
 cusparseStatus_t cusparseCbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const cuComplex*  f, cuComplex*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCbsrsv2_solve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
 #else
@@ -21875,6 +23171,7 @@ cusparseStatus_t cusparseCbsrsv2_solve(cusparseHandle_t  handle, cusparseDirecti
 cusparseStatus_t cusparseZbsrsv2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, int  mb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, bsrsv2Info_t  info, const cuDoubleComplex*  f, cuDoubleComplex*  x, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZbsrsv2_solve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrsv2_solve(handle, dirA, transA, mb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, info, f, x, policy, pBuffer);
 #else
@@ -21885,6 +23182,7 @@ cusparseStatus_t cusparseZbsrsv2_solve(cusparseHandle_t  handle, cusparseDirecti
 cusparseStatus_t cusparseSbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const float*  B, const int  ldb, const float*  beta, float*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cusparseSbsrmm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
 #else
@@ -21895,6 +23193,7 @@ cusparseStatus_t cusparseSbsrmm(cusparseHandle_t  handle, cusparseDirection_t  d
 cusparseStatus_t cusparseDbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const double*  B, const int  ldb, const double*  beta, double*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cusparseDbsrmm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
 #else
@@ -21905,6 +23204,7 @@ cusparseStatus_t cusparseDbsrmm(cusparseHandle_t  handle, cusparseDirection_t  d
 cusparseStatus_t cusparseCbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const cuComplex*  B, const int  ldb, const cuComplex*  beta, cuComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cusparseCbsrmm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
 #else
@@ -21915,6 +23215,7 @@ cusparseStatus_t cusparseCbsrmm(cusparseHandle_t  handle, cusparseDirection_t  d
 cusparseStatus_t cusparseZbsrmm(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  kb, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, const int  blockSize, const cuDoubleComplex*  B, const int  ldb, const cuDoubleComplex*  beta, cuDoubleComplex*  C, int  ldc)
 {
 	TALLY_SPD_LOG("cusparseZbsrmm hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrmm(handle, dirA, transA, transB, mb, n, kb, nnzb, alpha, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockSize, B, ldb, beta, C, ldc);
 #else
@@ -21925,6 +23226,7 @@ cusparseStatus_t cusparseZbsrmm(cusparseHandle_t  handle, cusparseDirection_t  d
 cusparseStatus_t cusparseXbsrsm2_zeroPivot(cusparseHandle_t  handle, bsrsm2Info_t  info, int*  position)
 {
 	TALLY_SPD_LOG("cusparseXbsrsm2_zeroPivot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXbsrsm2_zeroPivot(handle, info, position);
 #else
@@ -21935,6 +23237,7 @@ cusparseStatus_t cusparseXbsrsm2_zeroPivot(cusparseHandle_t  handle, bsrsm2Info_
 cusparseStatus_t cusparseSbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSbsrsm2_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
 #else
@@ -21945,6 +23248,7 @@ cusparseStatus_t cusparseSbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseDbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDbsrsm2_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
 #else
@@ -21955,6 +23259,7 @@ cusparseStatus_t cusparseDbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseCbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCbsrsm2_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
 #else
@@ -21965,6 +23270,7 @@ cusparseStatus_t cusparseCbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseZbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZbsrsm2_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrsm2_bufferSize(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSizeInBytes);
 #else
@@ -21975,6 +23281,7 @@ cusparseStatus_t cusparseZbsrsm2_bufferSize(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseSbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseSbsrsm2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -21985,6 +23292,7 @@ cusparseStatus_t cusparseSbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseDbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseDbsrsm2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -21995,6 +23303,7 @@ cusparseStatus_t cusparseDbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseCbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseCbsrsm2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -22005,6 +23314,7 @@ cusparseStatus_t cusparseCbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseZbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transB, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseZbsrsm2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrsm2_bufferSizeExt(handle, dirA, transA, transB, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -22015,6 +23325,7 @@ cusparseStatus_t cusparseZbsrsm2_bufferSizeExt(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseSbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSbsrsm2_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
 #else
@@ -22025,6 +23336,7 @@ cusparseStatus_t cusparseSbsrsm2_analysis(cusparseHandle_t  handle, cusparseDire
 cusparseStatus_t cusparseDbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDbsrsm2_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
 #else
@@ -22035,6 +23347,7 @@ cusparseStatus_t cusparseDbsrsm2_analysis(cusparseHandle_t  handle, cusparseDire
 cusparseStatus_t cusparseCbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCbsrsm2_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
 #else
@@ -22045,6 +23358,7 @@ cusparseStatus_t cusparseCbsrsm2_analysis(cusparseHandle_t  handle, cusparseDire
 cusparseStatus_t cusparseZbsrsm2_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZbsrsm2_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrsm2_analysis(handle, dirA, transA, transXY, mb, n, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, policy, pBuffer);
 #else
@@ -22055,6 +23369,7 @@ cusparseStatus_t cusparseZbsrsm2_analysis(cusparseHandle_t  handle, cusparseDire
 cusparseStatus_t cusparseSbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const float*  alpha, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const float*  B, int  ldb, float*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSbsrsm2_solve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
 #else
@@ -22065,6 +23380,7 @@ cusparseStatus_t cusparseSbsrsm2_solve(cusparseHandle_t  handle, cusparseDirecti
 cusparseStatus_t cusparseDbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const double*  alpha, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const double*  B, int  ldb, double*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDbsrsm2_solve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
 #else
@@ -22075,6 +23391,7 @@ cusparseStatus_t cusparseDbsrsm2_solve(cusparseHandle_t  handle, cusparseDirecti
 cusparseStatus_t cusparseCbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const cuComplex*  B, int  ldb, cuComplex*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCbsrsm2_solve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
 #else
@@ -22085,6 +23402,7 @@ cusparseStatus_t cusparseCbsrsm2_solve(cusparseHandle_t  handle, cusparseDirecti
 cusparseStatus_t cusparseZbsrsm2_solve(cusparseHandle_t  handle, cusparseDirection_t  dirA, cusparseOperation_t  transA, cusparseOperation_t  transXY, int  mb, int  n, int  nnzb, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrsm2Info_t  info, const cuDoubleComplex*  B, int  ldb, cuDoubleComplex*  X, int  ldx, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZbsrsm2_solve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrsm2_solve(handle, dirA, transA, transXY, mb, n, nnzb, alpha, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, B, ldb, X, ldx, policy, pBuffer);
 #else
@@ -22095,6 +23413,7 @@ cusparseStatus_t cusparseZbsrsm2_solve(cusparseHandle_t  handle, cusparseDirecti
 cusparseStatus_t cusparseScsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, float*  boost_val)
 {
 	TALLY_SPD_LOG("cusparseScsrilu02_numericBoost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
 #else
@@ -22105,6 +23424,7 @@ cusparseStatus_t cusparseScsrilu02_numericBoost(cusparseHandle_t  handle, csrilu
 cusparseStatus_t cusparseDcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, double*  boost_val)
 {
 	TALLY_SPD_LOG("cusparseDcsrilu02_numericBoost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
 #else
@@ -22115,6 +23435,7 @@ cusparseStatus_t cusparseDcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu
 cusparseStatus_t cusparseCcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, cuComplex*  boost_val)
 {
 	TALLY_SPD_LOG("cusparseCcsrilu02_numericBoost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
 #else
@@ -22125,6 +23446,7 @@ cusparseStatus_t cusparseCcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu
 cusparseStatus_t cusparseZcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu02Info_t  info, int  enable_boost, double*  tol, cuDoubleComplex*  boost_val)
 {
 	TALLY_SPD_LOG("cusparseZcsrilu02_numericBoost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
 #else
@@ -22135,6 +23457,7 @@ cusparseStatus_t cusparseZcsrilu02_numericBoost(cusparseHandle_t  handle, csrilu
 cusparseStatus_t cusparseXcsrilu02_zeroPivot(cusparseHandle_t  handle, csrilu02Info_t  info, int*  position)
 {
 	TALLY_SPD_LOG("cusparseXcsrilu02_zeroPivot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcsrilu02_zeroPivot(handle, info, position);
 #else
@@ -22145,6 +23468,7 @@ cusparseStatus_t cusparseXcsrilu02_zeroPivot(cusparseHandle_t  handle, csrilu02I
 cusparseStatus_t cusparseScsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseScsrilu02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
 #else
@@ -22155,6 +23479,7 @@ cusparseStatus_t cusparseScsrilu02_bufferSize(cusparseHandle_t  handle, int  m, 
 cusparseStatus_t cusparseDcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDcsrilu02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
 #else
@@ -22165,6 +23490,7 @@ cusparseStatus_t cusparseDcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, 
 cusparseStatus_t cusparseCcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCcsrilu02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
 #else
@@ -22175,6 +23501,7 @@ cusparseStatus_t cusparseCcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, 
 cusparseStatus_t cusparseZcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZcsrilu02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsrilu02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
 #else
@@ -22185,6 +23512,7 @@ cusparseStatus_t cusparseZcsrilu02_bufferSize(cusparseHandle_t  handle, int  m, 
 cusparseStatus_t cusparseScsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseScsrilu02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
 #else
@@ -22195,6 +23523,7 @@ cusparseStatus_t cusparseScsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseDcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseDcsrilu02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
 #else
@@ -22205,6 +23534,7 @@ cusparseStatus_t cusparseDcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseCcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseCcsrilu02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
 #else
@@ -22215,6 +23545,7 @@ cusparseStatus_t cusparseCcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseZcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csrilu02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseZcsrilu02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsrilu02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
 #else
@@ -22225,6 +23556,7 @@ cusparseStatus_t cusparseZcsrilu02_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseScsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseScsrilu02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22235,6 +23567,7 @@ cusparseStatus_t cusparseScsrilu02_analysis(cusparseHandle_t  handle, int  m, in
 cusparseStatus_t cusparseDcsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDcsrilu02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22245,6 +23578,7 @@ cusparseStatus_t cusparseDcsrilu02_analysis(cusparseHandle_t  handle, int  m, in
 cusparseStatus_t cusparseCcsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCcsrilu02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22255,6 +23589,7 @@ cusparseStatus_t cusparseCcsrilu02_analysis(cusparseHandle_t  handle, int  m, in
 cusparseStatus_t cusparseZcsrilu02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZcsrilu02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsrilu02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22265,6 +23600,7 @@ cusparseStatus_t cusparseZcsrilu02_analysis(cusparseHandle_t  handle, int  m, in
 cusparseStatus_t cusparseScsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseScsrilu02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22275,6 +23611,7 @@ cusparseStatus_t cusparseScsrilu02(cusparseHandle_t  handle, int  m, int  nnz, c
 cusparseStatus_t cusparseDcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDcsrilu02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22285,6 +23622,7 @@ cusparseStatus_t cusparseDcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, c
 cusparseStatus_t cusparseCcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCcsrilu02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22295,6 +23633,7 @@ cusparseStatus_t cusparseCcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, c
 cusparseStatus_t cusparseZcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZcsrilu02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsrilu02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22305,6 +23644,7 @@ cusparseStatus_t cusparseZcsrilu02(cusparseHandle_t  handle, int  m, int  nnz, c
 cusparseStatus_t cusparseSbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, float*  boost_val)
 {
 	TALLY_SPD_LOG("cusparseSbsrilu02_numericBoost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
 #else
@@ -22315,6 +23655,7 @@ cusparseStatus_t cusparseSbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu
 cusparseStatus_t cusparseDbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, double*  boost_val)
 {
 	TALLY_SPD_LOG("cusparseDbsrilu02_numericBoost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
 #else
@@ -22325,6 +23666,7 @@ cusparseStatus_t cusparseDbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu
 cusparseStatus_t cusparseCbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, cuComplex*  boost_val)
 {
 	TALLY_SPD_LOG("cusparseCbsrilu02_numericBoost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
 #else
@@ -22335,6 +23677,7 @@ cusparseStatus_t cusparseCbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu
 cusparseStatus_t cusparseZbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu02Info_t  info, int  enable_boost, double*  tol, cuDoubleComplex*  boost_val)
 {
 	TALLY_SPD_LOG("cusparseZbsrilu02_numericBoost hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrilu02_numericBoost(handle, info, enable_boost, tol, boost_val);
 #else
@@ -22345,6 +23688,7 @@ cusparseStatus_t cusparseZbsrilu02_numericBoost(cusparseHandle_t  handle, bsrilu
 cusparseStatus_t cusparseXbsrilu02_zeroPivot(cusparseHandle_t  handle, bsrilu02Info_t  info, int*  position)
 {
 	TALLY_SPD_LOG("cusparseXbsrilu02_zeroPivot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXbsrilu02_zeroPivot(handle, info, position);
 #else
@@ -22355,6 +23699,7 @@ cusparseStatus_t cusparseXbsrilu02_zeroPivot(cusparseHandle_t  handle, bsrilu02I
 cusparseStatus_t cusparseSbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSbsrilu02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
 #else
@@ -22365,6 +23710,7 @@ cusparseStatus_t cusparseSbsrilu02_bufferSize(cusparseHandle_t  handle, cusparse
 cusparseStatus_t cusparseDbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDbsrilu02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
 #else
@@ -22375,6 +23721,7 @@ cusparseStatus_t cusparseDbsrilu02_bufferSize(cusparseHandle_t  handle, cusparse
 cusparseStatus_t cusparseCbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCbsrilu02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
 #else
@@ -22385,6 +23732,7 @@ cusparseStatus_t cusparseCbsrilu02_bufferSize(cusparseHandle_t  handle, cusparse
 cusparseStatus_t cusparseZbsrilu02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZbsrilu02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrilu02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
 #else
@@ -22395,6 +23743,7 @@ cusparseStatus_t cusparseZbsrilu02_bufferSize(cusparseHandle_t  handle, cusparse
 cusparseStatus_t cusparseSbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseSbsrilu02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -22405,6 +23754,7 @@ cusparseStatus_t cusparseSbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cuspa
 cusparseStatus_t cusparseDbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseDbsrilu02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -22415,6 +23765,7 @@ cusparseStatus_t cusparseDbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cuspa
 cusparseStatus_t cusparseCbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseCbsrilu02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -22425,6 +23776,7 @@ cusparseStatus_t cusparseCbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cuspa
 cusparseStatus_t cusparseZbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsrilu02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseZbsrilu02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrilu02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -22435,6 +23787,7 @@ cusparseStatus_t cusparseZbsrilu02_bufferSizeExt(cusparseHandle_t  handle, cuspa
 cusparseStatus_t cusparseSbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSbsrilu02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22445,6 +23798,7 @@ cusparseStatus_t cusparseSbsrilu02_analysis(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseDbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDbsrilu02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22455,6 +23809,7 @@ cusparseStatus_t cusparseDbsrilu02_analysis(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseCbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCbsrilu02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22465,6 +23820,7 @@ cusparseStatus_t cusparseCbsrilu02_analysis(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseZbsrilu02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZbsrilu02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrilu02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22475,6 +23831,7 @@ cusparseStatus_t cusparseZbsrilu02_analysis(cusparseHandle_t  handle, cusparseDi
 cusparseStatus_t cusparseSbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSbsrilu02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22485,6 +23842,7 @@ cusparseStatus_t cusparseSbsrilu02(cusparseHandle_t  handle, cusparseDirection_t
 cusparseStatus_t cusparseDbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDbsrilu02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22495,6 +23853,7 @@ cusparseStatus_t cusparseDbsrilu02(cusparseHandle_t  handle, cusparseDirection_t
 cusparseStatus_t cusparseCbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCbsrilu02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22505,6 +23864,7 @@ cusparseStatus_t cusparseCbsrilu02(cusparseHandle_t  handle, cusparseDirection_t
 cusparseStatus_t cusparseZbsrilu02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsrilu02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZbsrilu02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsrilu02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22515,6 +23875,7 @@ cusparseStatus_t cusparseZbsrilu02(cusparseHandle_t  handle, cusparseDirection_t
 cusparseStatus_t cusparseXcsric02_zeroPivot(cusparseHandle_t  handle, csric02Info_t  info, int*  position)
 {
 	TALLY_SPD_LOG("cusparseXcsric02_zeroPivot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcsric02_zeroPivot(handle, info, position);
 #else
@@ -22525,6 +23886,7 @@ cusparseStatus_t cusparseXcsric02_zeroPivot(cusparseHandle_t  handle, csric02Inf
 cusparseStatus_t cusparseScsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseScsric02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
 #else
@@ -22535,6 +23897,7 @@ cusparseStatus_t cusparseScsric02_bufferSize(cusparseHandle_t  handle, int  m, i
 cusparseStatus_t cusparseDcsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDcsric02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
 #else
@@ -22545,6 +23908,7 @@ cusparseStatus_t cusparseDcsric02_bufferSize(cusparseHandle_t  handle, int  m, i
 cusparseStatus_t cusparseCcsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCcsric02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
 #else
@@ -22555,6 +23919,7 @@ cusparseStatus_t cusparseCcsric02_bufferSize(cusparseHandle_t  handle, int  m, i
 cusparseStatus_t cusparseZcsric02_bufferSize(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZcsric02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsric02_bufferSize(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, pBufferSizeInBytes);
 #else
@@ -22565,6 +23930,7 @@ cusparseStatus_t cusparseZcsric02_bufferSize(cusparseHandle_t  handle, int  m, i
 cusparseStatus_t cusparseScsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseScsric02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
 #else
@@ -22575,6 +23941,7 @@ cusparseStatus_t cusparseScsric02_bufferSizeExt(cusparseHandle_t  handle, int  m
 cusparseStatus_t cusparseDcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseDcsric02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
 #else
@@ -22585,6 +23952,7 @@ cusparseStatus_t cusparseDcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m
 cusparseStatus_t cusparseCcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseCcsric02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
 #else
@@ -22595,6 +23963,7 @@ cusparseStatus_t cusparseCcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m
 cusparseStatus_t cusparseZcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedVal, const int*  csrSortedRowPtr, const int*  csrSortedColInd, csric02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseZcsric02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsric02_bufferSizeExt(handle, m, nnz, descrA, csrSortedVal, csrSortedRowPtr, csrSortedColInd, info, pBufferSize);
 #else
@@ -22605,6 +23974,7 @@ cusparseStatus_t cusparseZcsric02_bufferSizeExt(cusparseHandle_t  handle, int  m
 cusparseStatus_t cusparseScsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseScsric02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22615,6 +23985,7 @@ cusparseStatus_t cusparseScsric02_analysis(cusparseHandle_t  handle, int  m, int
 cusparseStatus_t cusparseDcsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDcsric02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22625,6 +23996,7 @@ cusparseStatus_t cusparseDcsric02_analysis(cusparseHandle_t  handle, int  m, int
 cusparseStatus_t cusparseCcsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCcsric02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22635,6 +24007,7 @@ cusparseStatus_t cusparseCcsric02_analysis(cusparseHandle_t  handle, int  m, int
 cusparseStatus_t cusparseZcsric02_analysis(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZcsric02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsric02_analysis(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22645,6 +24018,7 @@ cusparseStatus_t cusparseZcsric02_analysis(cusparseHandle_t  handle, int  m, int
 cusparseStatus_t cusparseScsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, float*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseScsric02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22655,6 +24029,7 @@ cusparseStatus_t cusparseScsric02(cusparseHandle_t  handle, int  m, int  nnz, co
 cusparseStatus_t cusparseDcsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, double*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDcsric02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22665,6 +24040,7 @@ cusparseStatus_t cusparseDcsric02(cusparseHandle_t  handle, int  m, int  nnz, co
 cusparseStatus_t cusparseCcsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCcsric02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22675,6 +24051,7 @@ cusparseStatus_t cusparseCcsric02(cusparseHandle_t  handle, int  m, int  nnz, co
 cusparseStatus_t cusparseZcsric02(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrSortedValA_valM, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, csric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZcsric02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsric02(handle, m, nnz, descrA, csrSortedValA_valM, csrSortedRowPtrA, csrSortedColIndA, info, policy, pBuffer);
 #else
@@ -22685,6 +24062,7 @@ cusparseStatus_t cusparseZcsric02(cusparseHandle_t  handle, int  m, int  nnz, co
 cusparseStatus_t cusparseXbsric02_zeroPivot(cusparseHandle_t  handle, bsric02Info_t  info, int*  position)
 {
 	TALLY_SPD_LOG("cusparseXbsric02_zeroPivot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXbsric02_zeroPivot(handle, info, position);
 #else
@@ -22695,6 +24073,7 @@ cusparseStatus_t cusparseXbsric02_zeroPivot(cusparseHandle_t  handle, bsric02Inf
 cusparseStatus_t cusparseSbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSbsric02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
 #else
@@ -22705,6 +24084,7 @@ cusparseStatus_t cusparseSbsric02_bufferSize(cusparseHandle_t  handle, cusparseD
 cusparseStatus_t cusparseDbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDbsric02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
 #else
@@ -22715,6 +24095,7 @@ cusparseStatus_t cusparseDbsric02_bufferSize(cusparseHandle_t  handle, cusparseD
 cusparseStatus_t cusparseCbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCbsric02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
 #else
@@ -22725,6 +24106,7 @@ cusparseStatus_t cusparseCbsric02_bufferSize(cusparseHandle_t  handle, cusparseD
 cusparseStatus_t cusparseZbsric02_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZbsric02_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsric02_bufferSize(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, pBufferSizeInBytes);
 #else
@@ -22735,6 +24117,7 @@ cusparseStatus_t cusparseZbsric02_bufferSize(cusparseHandle_t  handle, cusparseD
 cusparseStatus_t cusparseSbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseSbsric02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -22745,6 +24128,7 @@ cusparseStatus_t cusparseSbsric02_bufferSizeExt(cusparseHandle_t  handle, cuspar
 cusparseStatus_t cusparseDbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseDbsric02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -22755,6 +24139,7 @@ cusparseStatus_t cusparseDbsric02_bufferSizeExt(cusparseHandle_t  handle, cuspar
 cusparseStatus_t cusparseCbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseCbsric02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -22765,6 +24150,7 @@ cusparseStatus_t cusparseCbsric02_bufferSizeExt(cusparseHandle_t  handle, cuspar
 cusparseStatus_t cusparseZbsric02_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockSize, bsric02Info_t  info, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseZbsric02_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsric02_bufferSizeExt(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockSize, info, pBufferSize);
 #else
@@ -22775,6 +24161,7 @@ cusparseStatus_t cusparseZbsric02_bufferSizeExt(cusparseHandle_t  handle, cuspar
 cusparseStatus_t cusparseSbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
 {
 	TALLY_SPD_LOG("cusparseSbsric02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
 #else
@@ -22785,6 +24172,7 @@ cusparseStatus_t cusparseSbsric02_analysis(cusparseHandle_t  handle, cusparseDir
 cusparseStatus_t cusparseDbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
 {
 	TALLY_SPD_LOG("cusparseDbsric02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
 #else
@@ -22795,6 +24183,7 @@ cusparseStatus_t cusparseDbsric02_analysis(cusparseHandle_t  handle, cusparseDir
 cusparseStatus_t cusparseCbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
 {
 	TALLY_SPD_LOG("cusparseCbsric02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
 #else
@@ -22805,6 +24194,7 @@ cusparseStatus_t cusparseCbsric02_analysis(cusparseHandle_t  handle, cusparseDir
 cusparseStatus_t cusparseZbsric02_analysis(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pInputBuffer)
 {
 	TALLY_SPD_LOG("cusparseZbsric02_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsric02_analysis(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pInputBuffer);
 #else
@@ -22815,6 +24205,7 @@ cusparseStatus_t cusparseZbsric02_analysis(cusparseHandle_t  handle, cusparseDir
 cusparseStatus_t cusparseSbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSbsric02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22825,6 +24216,7 @@ cusparseStatus_t cusparseSbsric02(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseDbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDbsric02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22835,6 +24227,7 @@ cusparseStatus_t cusparseDbsric02(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseCbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCbsric02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22845,6 +24238,7 @@ cusparseStatus_t cusparseCbsric02(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseZbsric02(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nnzb, const cusparseMatDescr_t  descrA, cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  blockDim, bsric02Info_t  info, cusparseSolvePolicy_t  policy, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZbsric02 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsric02(handle, dirA, mb, nnzb, descrA, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, blockDim, info, policy, pBuffer);
 #else
@@ -22855,6 +24249,7 @@ cusparseStatus_t cusparseZbsric02(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseSgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, const float*  B, int  ldb, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSgtsv2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
 #else
@@ -22865,6 +24260,7 @@ cusparseStatus_t cusparseSgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, 
 cusparseStatus_t cusparseDgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, const double*  B, int  ldb, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDgtsv2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
 #else
@@ -22875,6 +24271,7 @@ cusparseStatus_t cusparseDgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, 
 cusparseStatus_t cusparseCgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCgtsv2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
 #else
@@ -22885,6 +24282,7 @@ cusparseStatus_t cusparseCgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, 
 cusparseStatus_t cusparseZgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZgtsv2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgtsv2_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
 #else
@@ -22895,6 +24293,7 @@ cusparseStatus_t cusparseZgtsv2_bufferSizeExt(cusparseHandle_t  handle, int  m, 
 cusparseStatus_t cusparseSgtsv2(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, float*  B, int  ldb, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSgtsv2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
 #else
@@ -22905,6 +24304,7 @@ cusparseStatus_t cusparseSgtsv2(cusparseHandle_t  handle, int  m, int  n, const 
 cusparseStatus_t cusparseDgtsv2(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, double*  B, int  ldb, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDgtsv2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
 #else
@@ -22915,6 +24315,7 @@ cusparseStatus_t cusparseDgtsv2(cusparseHandle_t  handle, int  m, int  n, const 
 cusparseStatus_t cusparseCgtsv2(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  B, int  ldb, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCgtsv2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
 #else
@@ -22925,6 +24326,7 @@ cusparseStatus_t cusparseCgtsv2(cusparseHandle_t  handle, int  m, int  n, const 
 cusparseStatus_t cusparseZgtsv2(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  B, int  ldb, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZgtsv2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgtsv2(handle, m, n, dl, d, du, B, ldb, pBuffer);
 #else
@@ -22935,6 +24337,7 @@ cusparseStatus_t cusparseZgtsv2(cusparseHandle_t  handle, int  m, int  n, const 
 cusparseStatus_t cusparseSgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, const float*  B, int  ldb, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSgtsv2_nopivot_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
 #else
@@ -22945,6 +24348,7 @@ cusparseStatus_t cusparseSgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, 
 cusparseStatus_t cusparseDgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, const double*  B, int  ldb, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDgtsv2_nopivot_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
 #else
@@ -22955,6 +24359,7 @@ cusparseStatus_t cusparseDgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, 
 cusparseStatus_t cusparseCgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCgtsv2_nopivot_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
 #else
@@ -22965,6 +24370,7 @@ cusparseStatus_t cusparseCgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, 
 cusparseStatus_t cusparseZgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  B, int  ldb, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZgtsv2_nopivot_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgtsv2_nopivot_bufferSizeExt(handle, m, n, dl, d, du, B, ldb, bufferSizeInBytes);
 #else
@@ -22975,6 +24381,7 @@ cusparseStatus_t cusparseZgtsv2_nopivot_bufferSizeExt(cusparseHandle_t  handle, 
 cusparseStatus_t cusparseSgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const float*  dl, const float*  d, const float*  du, float*  B, int  ldb, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSgtsv2_nopivot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
 #else
@@ -22985,6 +24392,7 @@ cusparseStatus_t cusparseSgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n
 cusparseStatus_t cusparseDgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const double*  dl, const double*  d, const double*  du, double*  B, int  ldb, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDgtsv2_nopivot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
 #else
@@ -22995,6 +24403,7 @@ cusparseStatus_t cusparseDgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n
 cusparseStatus_t cusparseCgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  B, int  ldb, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCgtsv2_nopivot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
 #else
@@ -23005,6 +24414,7 @@ cusparseStatus_t cusparseCgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n
 cusparseStatus_t cusparseZgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  B, int  ldb, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZgtsv2_nopivot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgtsv2_nopivot(handle, m, n, dl, d, du, B, ldb, pBuffer);
 #else
@@ -23015,6 +24425,7 @@ cusparseStatus_t cusparseZgtsv2_nopivot(cusparseHandle_t  handle, int  m, int  n
 cusparseStatus_t cusparseSgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const float*  dl, const float*  d, const float*  du, const float*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSgtsv2StridedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
 #else
@@ -23025,6 +24436,7 @@ cusparseStatus_t cusparseSgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  hand
 cusparseStatus_t cusparseDgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const double*  dl, const double*  d, const double*  du, const double*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDgtsv2StridedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
 #else
@@ -23035,6 +24447,7 @@ cusparseStatus_t cusparseDgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  hand
 cusparseStatus_t cusparseCgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCgtsv2StridedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
 #else
@@ -23045,6 +24458,7 @@ cusparseStatus_t cusparseCgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  hand
 cusparseStatus_t cusparseZgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  handle, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  x, int  batchCount, int  batchStride, size_t*  bufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZgtsv2StridedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgtsv2StridedBatch_bufferSizeExt(handle, m, dl, d, du, x, batchCount, batchStride, bufferSizeInBytes);
 #else
@@ -23055,6 +24469,7 @@ cusparseStatus_t cusparseZgtsv2StridedBatch_bufferSizeExt(cusparseHandle_t  hand
 cusparseStatus_t cusparseSgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const float*  dl, const float*  d, const float*  du, float*  x, int  batchCount, int  batchStride, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSgtsv2StridedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
 #else
@@ -23065,6 +24480,7 @@ cusparseStatus_t cusparseSgtsv2StridedBatch(cusparseHandle_t  handle, int  m, co
 cusparseStatus_t cusparseDgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const double*  dl, const double*  d, const double*  du, double*  x, int  batchCount, int  batchStride, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDgtsv2StridedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
 #else
@@ -23075,6 +24491,7 @@ cusparseStatus_t cusparseDgtsv2StridedBatch(cusparseHandle_t  handle, int  m, co
 cusparseStatus_t cusparseCgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, cuComplex*  x, int  batchCount, int  batchStride, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCgtsv2StridedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
 #else
@@ -23085,6 +24502,7 @@ cusparseStatus_t cusparseCgtsv2StridedBatch(cusparseHandle_t  handle, int  m, co
 cusparseStatus_t cusparseZgtsv2StridedBatch(cusparseHandle_t  handle, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, cuDoubleComplex*  x, int  batchCount, int  batchStride, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZgtsv2StridedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgtsv2StridedBatch(handle, m, dl, d, du, x, batchCount, batchStride, pBuffer);
 #else
@@ -23095,6 +24513,7 @@ cusparseStatus_t cusparseZgtsv2StridedBatch(cusparseHandle_t  handle, int  m, co
 cusparseStatus_t cusparseSgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const float*  dl, const float*  d, const float*  du, const float*  x, int  batchCount, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSgtsvInterleavedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
 #else
@@ -23105,6 +24524,7 @@ cusparseStatus_t cusparseSgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  h
 cusparseStatus_t cusparseDgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const double*  dl, const double*  d, const double*  du, const double*  x, int  batchCount, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDgtsvInterleavedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
 #else
@@ -23115,6 +24535,7 @@ cusparseStatus_t cusparseDgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  h
 cusparseStatus_t cusparseCgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCgtsvInterleavedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
 #else
@@ -23125,6 +24546,7 @@ cusparseStatus_t cusparseCgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  h
 cusparseStatus_t cusparseZgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZgtsvInterleavedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgtsvInterleavedBatch_bufferSizeExt(handle, algo, m, dl, d, du, x, batchCount, pBufferSizeInBytes);
 #else
@@ -23135,6 +24557,7 @@ cusparseStatus_t cusparseZgtsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  h
 cusparseStatus_t cusparseSgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, float*  dl, float*  d, float*  du, float*  x, int  batchCount, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSgtsvInterleavedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
 #else
@@ -23145,6 +24568,7 @@ cusparseStatus_t cusparseSgtsvInterleavedBatch(cusparseHandle_t  handle, int  al
 cusparseStatus_t cusparseDgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, double*  dl, double*  d, double*  du, double*  x, int  batchCount, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDgtsvInterleavedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
 #else
@@ -23155,6 +24579,7 @@ cusparseStatus_t cusparseDgtsvInterleavedBatch(cusparseHandle_t  handle, int  al
 cusparseStatus_t cusparseCgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuComplex*  dl, cuComplex*  d, cuComplex*  du, cuComplex*  x, int  batchCount, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCgtsvInterleavedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
 #else
@@ -23165,6 +24590,7 @@ cusparseStatus_t cusparseCgtsvInterleavedBatch(cusparseHandle_t  handle, int  al
 cusparseStatus_t cusparseZgtsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuDoubleComplex*  dl, cuDoubleComplex*  d, cuDoubleComplex*  du, cuDoubleComplex*  x, int  batchCount, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZgtsvInterleavedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgtsvInterleavedBatch(handle, algo, m, dl, d, du, x, batchCount, pBuffer);
 #else
@@ -23175,6 +24601,7 @@ cusparseStatus_t cusparseZgtsvInterleavedBatch(cusparseHandle_t  handle, int  al
 cusparseStatus_t cusparseSgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const float*  ds, const float*  dl, const float*  d, const float*  du, const float*  dw, const float*  x, int  batchCount, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSgpsvInterleavedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
 #else
@@ -23185,6 +24612,7 @@ cusparseStatus_t cusparseSgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  h
 cusparseStatus_t cusparseDgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const double*  ds, const double*  dl, const double*  d, const double*  du, const double*  dw, const double*  x, int  batchCount, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDgpsvInterleavedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
 #else
@@ -23195,6 +24623,7 @@ cusparseStatus_t cusparseDgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  h
 cusparseStatus_t cusparseCgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuComplex*  ds, const cuComplex*  dl, const cuComplex*  d, const cuComplex*  du, const cuComplex*  dw, const cuComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCgpsvInterleavedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
 #else
@@ -23205,6 +24634,7 @@ cusparseStatus_t cusparseCgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  h
 cusparseStatus_t cusparseZgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  handle, int  algo, int  m, const cuDoubleComplex*  ds, const cuDoubleComplex*  dl, const cuDoubleComplex*  d, const cuDoubleComplex*  du, const cuDoubleComplex*  dw, const cuDoubleComplex*  x, int  batchCount, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZgpsvInterleavedBatch_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgpsvInterleavedBatch_bufferSizeExt(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBufferSizeInBytes);
 #else
@@ -23215,6 +24645,7 @@ cusparseStatus_t cusparseZgpsvInterleavedBatch_bufferSizeExt(cusparseHandle_t  h
 cusparseStatus_t cusparseSgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, float*  ds, float*  dl, float*  d, float*  du, float*  dw, float*  x, int  batchCount, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSgpsvInterleavedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
 #else
@@ -23225,6 +24656,7 @@ cusparseStatus_t cusparseSgpsvInterleavedBatch(cusparseHandle_t  handle, int  al
 cusparseStatus_t cusparseDgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, double*  ds, double*  dl, double*  d, double*  du, double*  dw, double*  x, int  batchCount, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDgpsvInterleavedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
 #else
@@ -23235,6 +24667,7 @@ cusparseStatus_t cusparseDgpsvInterleavedBatch(cusparseHandle_t  handle, int  al
 cusparseStatus_t cusparseCgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuComplex*  ds, cuComplex*  dl, cuComplex*  d, cuComplex*  du, cuComplex*  dw, cuComplex*  x, int  batchCount, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCgpsvInterleavedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
 #else
@@ -23245,6 +24678,7 @@ cusparseStatus_t cusparseCgpsvInterleavedBatch(cusparseHandle_t  handle, int  al
 cusparseStatus_t cusparseZgpsvInterleavedBatch(cusparseHandle_t  handle, int  algo, int  m, cuDoubleComplex*  ds, cuDoubleComplex*  dl, cuDoubleComplex*  d, cuDoubleComplex*  du, cuDoubleComplex*  dw, cuDoubleComplex*  x, int  batchCount, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZgpsvInterleavedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgpsvInterleavedBatch(handle, algo, m, ds, dl, d, du, dw, x, batchCount, pBuffer);
 #else
@@ -23255,6 +24689,7 @@ cusparseStatus_t cusparseZgpsvInterleavedBatch(cusparseHandle_t  handle, int  al
 cusparseStatus_t cusparseScsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const float*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseScsrgeam2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
 #else
@@ -23265,6 +24700,7 @@ cusparseStatus_t cusparseScsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseDcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const double*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDcsrgeam2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
 #else
@@ -23275,6 +24711,7 @@ cusparseStatus_t cusparseDcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseCcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const cuComplex*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCcsrgeam2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
 #else
@@ -23285,6 +24722,7 @@ cusparseStatus_t cusparseCcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseZcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuDoubleComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuDoubleComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, const cuDoubleComplex*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZcsrgeam2_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsrgeam2_bufferSizeExt(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
 #else
@@ -23295,6 +24733,7 @@ cusparseStatus_t cusparseZcsrgeam2_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseXcsrgeam2Nnz(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, int  nnzA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrB, int  nnzB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  workspace)
 {
 	TALLY_SPD_LOG("cusparseXcsrgeam2Nnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcsrgeam2Nnz(handle, m, n, descrA, nnzA, csrSortedRowPtrA, csrSortedColIndA, descrB, nnzB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, workspace);
 #else
@@ -23305,6 +24744,7 @@ cusparseStatus_t cusparseXcsrgeam2Nnz(cusparseHandle_t  handle, int  m, int  n, 
 cusparseStatus_t cusparseScsrgeam2(cusparseHandle_t  handle, int  m, int  n, const float*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const float*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseScsrgeam2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
 #else
@@ -23315,6 +24755,7 @@ cusparseStatus_t cusparseScsrgeam2(cusparseHandle_t  handle, int  m, int  n, con
 cusparseStatus_t cusparseDcsrgeam2(cusparseHandle_t  handle, int  m, int  n, const double*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const double*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDcsrgeam2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
 #else
@@ -23325,6 +24766,7 @@ cusparseStatus_t cusparseDcsrgeam2(cusparseHandle_t  handle, int  m, int  n, con
 cusparseStatus_t cusparseCcsrgeam2(cusparseHandle_t  handle, int  m, int  n, const cuComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCcsrgeam2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
 #else
@@ -23335,6 +24777,7 @@ cusparseStatus_t cusparseCcsrgeam2(cusparseHandle_t  handle, int  m, int  n, con
 cusparseStatus_t cusparseZcsrgeam2(cusparseHandle_t  handle, int  m, int  n, const cuDoubleComplex*  alpha, const cusparseMatDescr_t  descrA, int  nnzA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cuDoubleComplex*  beta, const cusparseMatDescr_t  descrB, int  nnzB, const cuDoubleComplex*  csrSortedValB, const int*  csrSortedRowPtrB, const int*  csrSortedColIndB, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZcsrgeam2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsrgeam2(handle, m, n, alpha, descrA, nnzA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, beta, descrB, nnzB, csrSortedValB, csrSortedRowPtrB, csrSortedColIndB, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
 #else
@@ -23345,6 +24788,7 @@ cusparseStatus_t cusparseZcsrgeam2(cusparseHandle_t  handle, int  m, int  n, con
 cusparseStatus_t cusparseScsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
 {
 	TALLY_SPD_LOG("cusparseScsrcolor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
 #else
@@ -23355,6 +24799,7 @@ cusparseStatus_t cusparseScsrcolor(cusparseHandle_t  handle, int  m, int  nnz, c
 cusparseStatus_t cusparseDcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
 {
 	TALLY_SPD_LOG("cusparseDcsrcolor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
 #else
@@ -23365,6 +24810,7 @@ cusparseStatus_t cusparseDcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, c
 cusparseStatus_t cusparseCcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
 {
 	TALLY_SPD_LOG("cusparseCcsrcolor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
 #else
@@ -23375,6 +24821,7 @@ cusparseStatus_t cusparseCcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, c
 cusparseStatus_t cusparseZcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  fractionToColor, int*  ncolors, int*  coloring, int*  reordering, const cusparseColorInfo_t  info)
 {
 	TALLY_SPD_LOG("cusparseZcsrcolor hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsrcolor(handle, m, nnz, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, fractionToColor, ncolors, coloring, reordering, info);
 #else
@@ -23385,6 +24832,7 @@ cusparseStatus_t cusparseZcsrcolor(cusparseHandle_t  handle, int  m, int  nnz, c
 cusparseStatus_t cusparseSnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
 {
 	TALLY_SPD_LOG("cusparseSnnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
 #else
@@ -23395,6 +24843,7 @@ cusparseStatus_t cusparseSnnz(cusparseHandle_t  handle, cusparseDirection_t  dir
 cusparseStatus_t cusparseDnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
 {
 	TALLY_SPD_LOG("cusparseDnnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
 #else
@@ -23405,6 +24854,7 @@ cusparseStatus_t cusparseDnnz(cusparseHandle_t  handle, cusparseDirection_t  dir
 cusparseStatus_t cusparseCnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
 {
 	TALLY_SPD_LOG("cusparseCnnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
 #else
@@ -23415,6 +24865,7 @@ cusparseStatus_t cusparseCnnz(cusparseHandle_t  handle, cusparseDirection_t  dir
 cusparseStatus_t cusparseZnnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  A, int  lda, int*  nnzPerRowCol, int*  nnzTotalDevHostPtr)
 {
 	TALLY_SPD_LOG("cusparseZnnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowCol, nnzTotalDevHostPtr);
 #else
@@ -23425,6 +24876,7 @@ cusparseStatus_t cusparseZnnz(cusparseHandle_t  handle, cusparseDirection_t  dir
 cusparseStatus_t cusparseSnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const float*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, float  tol)
 {
 	TALLY_SPD_LOG("cusparseSnnz_compress hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
 #else
@@ -23435,6 +24887,7 @@ cusparseStatus_t cusparseSnnz_compress(cusparseHandle_t  handle, int  m, const c
 cusparseStatus_t cusparseDnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const double*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, double  tol)
 {
 	TALLY_SPD_LOG("cusparseDnnz_compress hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
 #else
@@ -23445,6 +24898,7 @@ cusparseStatus_t cusparseDnnz_compress(cusparseHandle_t  handle, int  m, const c
 cusparseStatus_t cusparseCnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, cuComplex  tol)
 {
 	TALLY_SPD_LOG("cusparseCnnz_compress hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
 #else
@@ -23455,6 +24909,7 @@ cusparseStatus_t cusparseCnnz_compress(cusparseHandle_t  handle, int  m, const c
 cusparseStatus_t cusparseZnnz_compress(cusparseHandle_t  handle, int  m, const cusparseMatDescr_t  descr, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, int*  nnzPerRow, int*  nnzC, cuDoubleComplex  tol)
 {
 	TALLY_SPD_LOG("cusparseZnnz_compress hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZnnz_compress(handle, m, descr, csrSortedValA, csrSortedRowPtrA, nnzPerRow, nnzC, tol);
 #else
@@ -23465,6 +24920,7 @@ cusparseStatus_t cusparseZnnz_compress(cusparseHandle_t  handle, int  m, const c
 cusparseStatus_t cusparseScsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, float*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, float  tol)
 {
 	TALLY_SPD_LOG("cusparseScsr2csr_compress hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
 #else
@@ -23475,6 +24931,7 @@ cusparseStatus_t cusparseScsr2csr_compress(cusparseHandle_t  handle, int  m, int
 cusparseStatus_t cusparseDcsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, double*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, double  tol)
 {
 	TALLY_SPD_LOG("cusparseDcsr2csr_compress hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
 #else
@@ -23485,6 +24942,7 @@ cusparseStatus_t cusparseDcsr2csr_compress(cusparseHandle_t  handle, int  m, int
 cusparseStatus_t cusparseCcsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, cuComplex*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, cuComplex  tol)
 {
 	TALLY_SPD_LOG("cusparseCcsr2csr_compress hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
 #else
@@ -23495,6 +24953,7 @@ cusparseStatus_t cusparseCcsr2csr_compress(cusparseHandle_t  handle, int  m, int
 cusparseStatus_t cusparseZcsr2csr_compress(cusparseHandle_t  handle, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedColIndA, const int*  csrSortedRowPtrA, int  nnzA, const int*  nnzPerRow, cuDoubleComplex*  csrSortedValC, int*  csrSortedColIndC, int*  csrSortedRowPtrC, cuDoubleComplex  tol)
 {
 	TALLY_SPD_LOG("cusparseZcsr2csr_compress hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsr2csr_compress(handle, m, n, descrA, csrSortedValA, csrSortedColIndA, csrSortedRowPtrA, nnzA, nnzPerRow, csrSortedValC, csrSortedColIndC, csrSortedRowPtrC, tol);
 #else
@@ -23505,6 +24964,7 @@ cusparseStatus_t cusparseZcsr2csr_compress(cusparseHandle_t  handle, int  m, int
 cusparseStatus_t cusparseXcoo2csr(cusparseHandle_t  handle, const int*  cooRowInd, int  nnz, int  m, int*  csrSortedRowPtr, cusparseIndexBase_t  idxBase)
 {
 	TALLY_SPD_LOG("cusparseXcoo2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcoo2csr(handle, cooRowInd, nnz, m, csrSortedRowPtr, idxBase);
 #else
@@ -23515,6 +24975,7 @@ cusparseStatus_t cusparseXcoo2csr(cusparseHandle_t  handle, const int*  cooRowIn
 cusparseStatus_t cusparseXcsr2coo(cusparseHandle_t  handle, const int*  csrSortedRowPtr, int  nnz, int  m, int*  cooRowInd, cusparseIndexBase_t  idxBase)
 {
 	TALLY_SPD_LOG("cusparseXcsr2coo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcsr2coo(handle, csrSortedRowPtr, nnz, m, cooRowInd, idxBase);
 #else
@@ -23525,6 +24986,7 @@ cusparseStatus_t cusparseXcsr2coo(cusparseHandle_t  handle, const int*  csrSorte
 cusparseStatus_t cusparseXcsr2bsrNnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int*  nnzTotalDevHostPtr)
 {
 	TALLY_SPD_LOG("cusparseXcsr2bsrNnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcsr2bsrNnz(handle, dirA, m, n, descrA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedRowPtrC, nnzTotalDevHostPtr);
 #else
@@ -23535,6 +24997,7 @@ cusparseStatus_t cusparseXcsr2bsrNnz(cusparseHandle_t  handle, cusparseDirection
 cusparseStatus_t cusparseScsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseScsr2bsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
 #else
@@ -23545,6 +25008,7 @@ cusparseStatus_t cusparseScsr2bsr(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseDcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseDcsr2bsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
 #else
@@ -23555,6 +25019,7 @@ cusparseStatus_t cusparseDcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseCcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseCcsr2bsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
 #else
@@ -23565,6 +25030,7 @@ cusparseStatus_t cusparseCcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseZcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseZcsr2bsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsr2bsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, blockDim, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC);
 #else
@@ -23575,6 +25041,7 @@ cusparseStatus_t cusparseZcsr2bsr(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseSbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseSbsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
 #else
@@ -23585,6 +25052,7 @@ cusparseStatus_t cusparseSbsr2csr(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseDbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseDbsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
 #else
@@ -23595,6 +25063,7 @@ cusparseStatus_t cusparseDbsr2csr(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseCbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseCbsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
 #else
@@ -23605,6 +25074,7 @@ cusparseStatus_t cusparseCbsr2csr(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseZbsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  blockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseZbsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZbsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, blockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
 #else
@@ -23615,6 +25085,7 @@ cusparseStatus_t cusparseZbsr2csr(cusparseHandle_t  handle, cusparseDirection_t 
 cusparseStatus_t cusparseSgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSgebsr2gebsc_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
 #else
@@ -23625,6 +25096,7 @@ cusparseStatus_t cusparseSgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseDgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDgebsr2gebsc_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
 #else
@@ -23635,6 +25107,7 @@ cusparseStatus_t cusparseDgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseCgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCgebsr2gebsc_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
 #else
@@ -23645,6 +25118,7 @@ cusparseStatus_t cusparseCgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseZgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZgebsr2gebsc_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgebsr2gebsc_bufferSize(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSizeInBytes);
 #else
@@ -23655,6 +25129,7 @@ cusparseStatus_t cusparseZgebsr2gebsc_bufferSize(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseSgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseSgebsr2gebsc_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
 #else
@@ -23665,6 +25140,7 @@ cusparseStatus_t cusparseSgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, in
 cusparseStatus_t cusparseDgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseDgebsr2gebsc_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
 #else
@@ -23675,6 +25151,7 @@ cusparseStatus_t cusparseDgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, in
 cusparseStatus_t cusparseCgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseCgebsr2gebsc_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
 #else
@@ -23685,6 +25162,7 @@ cusparseStatus_t cusparseCgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, in
 cusparseStatus_t cusparseZgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseZgebsr2gebsc_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgebsr2gebsc_bufferSizeExt(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, pBufferSize);
 #else
@@ -23695,6 +25173,7 @@ cusparseStatus_t cusparseZgebsr2gebsc_bufferSizeExt(cusparseHandle_t  handle, in
 cusparseStatus_t cusparseSgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const float*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, float*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSgebsr2gebsc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
 #else
@@ -23705,6 +25184,7 @@ cusparseStatus_t cusparseSgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb
 cusparseStatus_t cusparseDgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const double*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, double*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDgebsr2gebsc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
 #else
@@ -23715,6 +25195,7 @@ cusparseStatus_t cusparseDgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb
 cusparseStatus_t cusparseCgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, cuComplex*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCgebsr2gebsc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
 #else
@@ -23725,6 +25206,7 @@ cusparseStatus_t cusparseCgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb
 cusparseStatus_t cusparseZgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb, int  nnzb, const cuDoubleComplex*  bsrSortedVal, const int*  bsrSortedRowPtr, const int*  bsrSortedColInd, int  rowBlockDim, int  colBlockDim, cuDoubleComplex*  bscVal, int*  bscRowInd, int*  bscColPtr, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZgebsr2gebsc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgebsr2gebsc(handle, mb, nb, nnzb, bsrSortedVal, bsrSortedRowPtr, bsrSortedColInd, rowBlockDim, colBlockDim, bscVal, bscRowInd, bscColPtr, copyValues, idxBase, pBuffer);
 #else
@@ -23735,6 +25217,7 @@ cusparseStatus_t cusparseZgebsr2gebsc(cusparseHandle_t  handle, int  mb, int  nb
 cusparseStatus_t cusparseXgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseXgebsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedRowPtrC, csrSortedColIndC);
 #else
@@ -23745,6 +25228,7 @@ cusparseStatus_t cusparseXgebsr2csr(cusparseHandle_t  handle, cusparseDirection_
 cusparseStatus_t cusparseSgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, float*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseSgebsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
 #else
@@ -23755,6 +25239,7 @@ cusparseStatus_t cusparseSgebsr2csr(cusparseHandle_t  handle, cusparseDirection_
 cusparseStatus_t cusparseDgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, double*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseDgebsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
 #else
@@ -23765,6 +25250,7 @@ cusparseStatus_t cusparseDgebsr2csr(cusparseHandle_t  handle, cusparseDirection_
 cusparseStatus_t cusparseCgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, cuComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseCgebsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
 #else
@@ -23775,6 +25261,7 @@ cusparseStatus_t cusparseCgebsr2csr(cusparseHandle_t  handle, cusparseDirection_
 cusparseStatus_t cusparseZgebsr2csr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDim, int  colBlockDim, const cusparseMatDescr_t  descrC, cuDoubleComplex*  csrSortedValC, int*  csrSortedRowPtrC, int*  csrSortedColIndC)
 {
 	TALLY_SPD_LOG("cusparseZgebsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgebsr2csr(handle, dirA, mb, nb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDim, colBlockDim, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC);
 #else
@@ -23785,6 +25272,7 @@ cusparseStatus_t cusparseZgebsr2csr(cusparseHandle_t  handle, cusparseDirection_
 cusparseStatus_t cusparseScsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseScsr2gebsr_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
 #else
@@ -23795,6 +25283,7 @@ cusparseStatus_t cusparseScsr2gebsr_bufferSize(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseDcsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDcsr2gebsr_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
 #else
@@ -23805,6 +25294,7 @@ cusparseStatus_t cusparseDcsr2gebsr_bufferSize(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseCcsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCcsr2gebsr_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
 #else
@@ -23815,6 +25305,7 @@ cusparseStatus_t cusparseCcsr2gebsr_bufferSize(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseZcsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZcsr2gebsr_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsr2gebsr_bufferSize(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSizeInBytes);
 #else
@@ -23825,6 +25316,7 @@ cusparseStatus_t cusparseZcsr2gebsr_bufferSize(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseScsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseScsr2gebsr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
 #else
@@ -23835,6 +25327,7 @@ cusparseStatus_t cusparseScsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusp
 cusparseStatus_t cusparseDcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseDcsr2gebsr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
 #else
@@ -23845,6 +25338,7 @@ cusparseStatus_t cusparseDcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusp
 cusparseStatus_t cusparseCcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseCcsr2gebsr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
 #else
@@ -23855,6 +25349,7 @@ cusparseStatus_t cusparseCcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusp
 cusparseStatus_t cusparseZcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, int  rowBlockDim, int  colBlockDim, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseZcsr2gebsr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsr2gebsr_bufferSizeExt(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, rowBlockDim, colBlockDim, pBufferSize);
 #else
@@ -23865,6 +25360,7 @@ cusparseStatus_t cusparseZcsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusp
 cusparseStatus_t cusparseXcsr2gebsrNnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int  rowBlockDim, int  colBlockDim, int*  nnzTotalDevHostPtr, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseXcsr2gebsrNnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcsr2gebsrNnz(handle, dirA, m, n, descrA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedRowPtrC, rowBlockDim, colBlockDim, nnzTotalDevHostPtr, pBuffer);
 #else
@@ -23875,6 +25371,7 @@ cusparseStatus_t cusparseXcsr2gebsrNnz(cusparseHandle_t  handle, cusparseDirecti
 cusparseStatus_t cusparseScsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseScsr2gebsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
 #else
@@ -23885,6 +25382,7 @@ cusparseStatus_t cusparseScsr2gebsr(cusparseHandle_t  handle, cusparseDirection_
 cusparseStatus_t cusparseDcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDcsr2gebsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
 #else
@@ -23895,6 +25393,7 @@ cusparseStatus_t cusparseDcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_
 cusparseStatus_t cusparseCcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCcsr2gebsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
 #else
@@ -23905,6 +25404,7 @@ cusparseStatus_t cusparseCcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_
 cusparseStatus_t cusparseZcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  m, int  n, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDim, int  colBlockDim, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZcsr2gebsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsr2gebsr(handle, dirA, m, n, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDim, colBlockDim, pBuffer);
 #else
@@ -23915,6 +25415,7 @@ cusparseStatus_t cusparseZcsr2gebsr(cusparseHandle_t  handle, cusparseDirection_
 cusparseStatus_t cusparseSgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSgebsr2gebsr_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
 #else
@@ -23925,6 +25426,7 @@ cusparseStatus_t cusparseSgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cuspa
 cusparseStatus_t cusparseDgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDgebsr2gebsr_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
 #else
@@ -23935,6 +25437,7 @@ cusparseStatus_t cusparseDgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cuspa
 cusparseStatus_t cusparseCgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCgebsr2gebsr_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
 #else
@@ -23945,6 +25448,7 @@ cusparseStatus_t cusparseCgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cuspa
 cusparseStatus_t cusparseZgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, int*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZgebsr2gebsr_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgebsr2gebsr_bufferSize(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSizeInBytes);
 #else
@@ -23955,6 +25459,7 @@ cusparseStatus_t cusparseZgebsr2gebsr_bufferSize(cusparseHandle_t  handle, cuspa
 cusparseStatus_t cusparseSgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseSgebsr2gebsr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
 #else
@@ -23965,6 +25470,7 @@ cusparseStatus_t cusparseSgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cu
 cusparseStatus_t cusparseDgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseDgebsr2gebsr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
 #else
@@ -23975,6 +25481,7 @@ cusparseStatus_t cusparseDgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cu
 cusparseStatus_t cusparseCgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseCgebsr2gebsr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
 #else
@@ -23985,6 +25492,7 @@ cusparseStatus_t cusparseCgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cu
 cusparseStatus_t cusparseZgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, int  rowBlockDimC, int  colBlockDimC, size_t*  pBufferSize)
 {
 	TALLY_SPD_LOG("cusparseZgebsr2gebsr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgebsr2gebsr_bufferSizeExt(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, rowBlockDimC, colBlockDimC, pBufferSize);
 #else
@@ -23995,6 +25503,7 @@ cusparseStatus_t cusparseZgebsr2gebsr_bufferSizeExt(cusparseHandle_t  handle, cu
 cusparseStatus_t cusparseXgebsr2gebsrNnz(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, int*  bsrSortedRowPtrC, int  rowBlockDimC, int  colBlockDimC, int*  nnzTotalDevHostPtr, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseXgebsr2gebsrNnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXgebsr2gebsrNnz(handle, dirA, mb, nb, nnzb, descrA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedRowPtrC, rowBlockDimC, colBlockDimC, nnzTotalDevHostPtr, pBuffer);
 #else
@@ -24005,6 +25514,7 @@ cusparseStatus_t cusparseXgebsr2gebsrNnz(cusparseHandle_t  handle, cusparseDirec
 cusparseStatus_t cusparseSgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const float*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, float*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSgebsr2gebsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
 #else
@@ -24015,6 +25525,7 @@ cusparseStatus_t cusparseSgebsr2gebsr(cusparseHandle_t  handle, cusparseDirectio
 cusparseStatus_t cusparseDgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const double*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, double*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDgebsr2gebsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
 #else
@@ -24025,6 +25536,7 @@ cusparseStatus_t cusparseDgebsr2gebsr(cusparseHandle_t  handle, cusparseDirectio
 cusparseStatus_t cusparseCgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, cuComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCgebsr2gebsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
 #else
@@ -24035,6 +25547,7 @@ cusparseStatus_t cusparseCgebsr2gebsr(cusparseHandle_t  handle, cusparseDirectio
 cusparseStatus_t cusparseZgebsr2gebsr(cusparseHandle_t  handle, cusparseDirection_t  dirA, int  mb, int  nb, int  nnzb, const cusparseMatDescr_t  descrA, const cuDoubleComplex*  bsrSortedValA, const int*  bsrSortedRowPtrA, const int*  bsrSortedColIndA, int  rowBlockDimA, int  colBlockDimA, const cusparseMatDescr_t  descrC, cuDoubleComplex*  bsrSortedValC, int*  bsrSortedRowPtrC, int*  bsrSortedColIndC, int  rowBlockDimC, int  colBlockDimC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZgebsr2gebsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZgebsr2gebsr(handle, dirA, mb, nb, nnzb, descrA, bsrSortedValA, bsrSortedRowPtrA, bsrSortedColIndA, rowBlockDimA, colBlockDimA, descrC, bsrSortedValC, bsrSortedRowPtrC, bsrSortedColIndC, rowBlockDimC, colBlockDimC, pBuffer);
 #else
@@ -24045,6 +25558,7 @@ cusparseStatus_t cusparseZgebsr2gebsr(cusparseHandle_t  handle, cusparseDirectio
 cusparseStatus_t cusparseCreateIdentityPermutation(cusparseHandle_t  handle, int  n, int*  p)
 {
 	TALLY_SPD_LOG("cusparseCreateIdentityPermutation hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateIdentityPermutation(handle, n, p);
 #else
@@ -24055,6 +25569,7 @@ cusparseStatus_t cusparseCreateIdentityPermutation(cusparseHandle_t  handle, int
 cusparseStatus_t cusparseXcoosort_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  cooRowsA, const int*  cooColsA, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseXcoosort_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcoosort_bufferSizeExt(handle, m, n, nnz, cooRowsA, cooColsA, pBufferSizeInBytes);
 #else
@@ -24065,6 +25580,7 @@ cusparseStatus_t cusparseXcoosort_bufferSizeExt(cusparseHandle_t  handle, int  m
 cusparseStatus_t cusparseXcoosortByRow(cusparseHandle_t  handle, int  m, int  n, int  nnz, int*  cooRowsA, int*  cooColsA, int*  P, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseXcoosortByRow hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcoosortByRow(handle, m, n, nnz, cooRowsA, cooColsA, P, pBuffer);
 #else
@@ -24075,6 +25591,7 @@ cusparseStatus_t cusparseXcoosortByRow(cusparseHandle_t  handle, int  m, int  n,
 cusparseStatus_t cusparseXcoosortByColumn(cusparseHandle_t  handle, int  m, int  n, int  nnz, int*  cooRowsA, int*  cooColsA, int*  P, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseXcoosortByColumn hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcoosortByColumn(handle, m, n, nnz, cooRowsA, cooColsA, P, pBuffer);
 #else
@@ -24085,6 +25602,7 @@ cusparseStatus_t cusparseXcoosortByColumn(cusparseHandle_t  handle, int  m, int 
 cusparseStatus_t cusparseXcsrsort_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  csrRowPtrA, const int*  csrColIndA, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseXcsrsort_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcsrsort_bufferSizeExt(handle, m, n, nnz, csrRowPtrA, csrColIndA, pBufferSizeInBytes);
 #else
@@ -24095,6 +25613,7 @@ cusparseStatus_t cusparseXcsrsort_bufferSizeExt(cusparseHandle_t  handle, int  m
 cusparseStatus_t cusparseXcsrsort(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, const int*  csrRowPtrA, int*  csrColIndA, int*  P, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseXcsrsort hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcsrsort(handle, m, n, nnz, descrA, csrRowPtrA, csrColIndA, P, pBuffer);
 #else
@@ -24105,6 +25624,7 @@ cusparseStatus_t cusparseXcsrsort(cusparseHandle_t  handle, int  m, int  n, int 
 cusparseStatus_t cusparseXcscsort_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, const int*  cscColPtrA, const int*  cscRowIndA, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseXcscsort_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcscsort_bufferSizeExt(handle, m, n, nnz, cscColPtrA, cscRowIndA, pBufferSizeInBytes);
 #else
@@ -24115,6 +25635,7 @@ cusparseStatus_t cusparseXcscsort_bufferSizeExt(cusparseHandle_t  handle, int  m
 cusparseStatus_t cusparseXcscsort(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, const int*  cscColPtrA, int*  cscRowIndA, int*  P, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseXcscsort hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseXcscsort(handle, m, n, nnz, descrA, cscColPtrA, cscRowIndA, P, pBuffer);
 #else
@@ -24125,6 +25646,7 @@ cusparseStatus_t cusparseXcscsort(cusparseHandle_t  handle, int  m, int  n, int 
 cusparseStatus_t cusparseScsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseScsru2csr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
 #else
@@ -24135,6 +25657,7 @@ cusparseStatus_t cusparseScsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseDcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDcsru2csr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
 #else
@@ -24145,6 +25668,7 @@ cusparseStatus_t cusparseDcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseCcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseCcsru2csr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
 #else
@@ -24155,6 +25679,7 @@ cusparseStatus_t cusparseCcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseZcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnz, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseZcsru2csr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsru2csr_bufferSizeExt(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, info, pBufferSizeInBytes);
 #else
@@ -24165,6 +25690,7 @@ cusparseStatus_t cusparseZcsru2csr_bufferSizeExt(cusparseHandle_t  handle, int  
 cusparseStatus_t cusparseScsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseScsru2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
 #else
@@ -24175,6 +25701,7 @@ cusparseStatus_t cusparseScsru2csr(cusparseHandle_t  handle, int  m, int  n, int
 cusparseStatus_t cusparseDcsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDcsru2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
 #else
@@ -24185,6 +25712,7 @@ cusparseStatus_t cusparseDcsru2csr(cusparseHandle_t  handle, int  m, int  n, int
 cusparseStatus_t cusparseCcsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCcsru2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
 #else
@@ -24195,6 +25723,7 @@ cusparseStatus_t cusparseCcsru2csr(cusparseHandle_t  handle, int  m, int  n, int
 cusparseStatus_t cusparseZcsru2csr(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZcsru2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsru2csr(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
 #else
@@ -24205,6 +25734,7 @@ cusparseStatus_t cusparseZcsru2csr(cusparseHandle_t  handle, int  m, int  n, int
 cusparseStatus_t cusparseScsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, float*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseScsr2csru hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
 #else
@@ -24215,6 +25745,7 @@ cusparseStatus_t cusparseScsr2csru(cusparseHandle_t  handle, int  m, int  n, int
 cusparseStatus_t cusparseDcsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, double*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDcsr2csru hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDcsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
 #else
@@ -24225,6 +25756,7 @@ cusparseStatus_t cusparseDcsr2csru(cusparseHandle_t  handle, int  m, int  n, int
 cusparseStatus_t cusparseCcsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseCcsr2csru hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCcsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
 #else
@@ -24235,6 +25767,7 @@ cusparseStatus_t cusparseCcsr2csru(cusparseHandle_t  handle, int  m, int  n, int
 cusparseStatus_t cusparseZcsr2csru(cusparseHandle_t  handle, int  m, int  n, int  nnz, const cusparseMatDescr_t  descrA, cuDoubleComplex*  csrVal, const int*  csrRowPtr, int*  csrColInd, csru2csrInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseZcsr2csru hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseZcsr2csru(handle, m, n, nnz, descrA, csrVal, csrRowPtr, csrColInd, info, pBuffer);
 #else
@@ -24245,6 +25778,7 @@ cusparseStatus_t cusparseZcsr2csru(cusparseHandle_t  handle, int  m, int  n, int
 cusparseStatus_t cusparseHpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseHpruneDense2csr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneDense2csr_bufferSizeExt(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
 #else
@@ -24255,6 +25789,7 @@ cusparseStatus_t cusparseHpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle,
 cusparseStatus_t cusparseSpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSpruneDense2csr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneDense2csr_bufferSizeExt(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
 #else
@@ -24265,6 +25800,7 @@ cusparseStatus_t cusparseSpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle,
 cusparseStatus_t cusparseDpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDpruneDense2csr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneDense2csr_bufferSizeExt(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
 #else
@@ -24275,6 +25811,7 @@ cusparseStatus_t cusparseDpruneDense2csr_bufferSizeExt(cusparseHandle_t  handle,
 cusparseStatus_t cusparseHpruneDense2csrNnz(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseHpruneDense2csrNnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneDense2csrNnz(handle, m, n, A, lda, threshold, descrC, csrRowPtrC, nnzTotalDevHostPtr, pBuffer);
 #else
@@ -24285,6 +25822,7 @@ cusparseStatus_t cusparseHpruneDense2csrNnz(cusparseHandle_t  handle, int  m, in
 cusparseStatus_t cusparseSpruneDense2csrNnz(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpruneDense2csrNnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneDense2csrNnz(handle, m, n, A, lda, threshold, descrC, csrRowPtrC, nnzTotalDevHostPtr, pBuffer);
 #else
@@ -24295,6 +25833,7 @@ cusparseStatus_t cusparseSpruneDense2csrNnz(cusparseHandle_t  handle, int  m, in
 cusparseStatus_t cusparseDpruneDense2csrNnz(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDpruneDense2csrNnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneDense2csrNnz(handle, m, n, A, lda, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
 #else
@@ -24305,6 +25844,7 @@ cusparseStatus_t cusparseDpruneDense2csrNnz(cusparseHandle_t  handle, int  m, in
 cusparseStatus_t cusparseHpruneDense2csr(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, const __half*  threshold, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseHpruneDense2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneDense2csr(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
 #else
@@ -24315,6 +25855,7 @@ cusparseStatus_t cusparseHpruneDense2csr(cusparseHandle_t  handle, int  m, int  
 cusparseStatus_t cusparseSpruneDense2csr(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, const float*  threshold, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpruneDense2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneDense2csr(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
 #else
@@ -24325,6 +25866,7 @@ cusparseStatus_t cusparseSpruneDense2csr(cusparseHandle_t  handle, int  m, int  
 cusparseStatus_t cusparseDpruneDense2csr(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, const double*  threshold, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDpruneDense2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneDense2csr(handle, m, n, A, lda, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
 #else
@@ -24335,6 +25877,7 @@ cusparseStatus_t cusparseDpruneDense2csr(cusparseHandle_t  handle, int  m, int  
 cusparseStatus_t cusparseHpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseHpruneCsr2csr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneCsr2csr_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
 #else
@@ -24345,6 +25888,7 @@ cusparseStatus_t cusparseHpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, i
 cusparseStatus_t cusparseSpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSpruneCsr2csr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneCsr2csr_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
 #else
@@ -24355,6 +25899,7 @@ cusparseStatus_t cusparseSpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, i
 cusparseStatus_t cusparseDpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDpruneCsr2csr_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneCsr2csr_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBufferSizeInBytes);
 #else
@@ -24365,6 +25910,7 @@ cusparseStatus_t cusparseDpruneCsr2csr_bufferSizeExt(cusparseHandle_t  handle, i
 cusparseStatus_t cusparseHpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseHpruneCsr2csrNnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneCsr2csrNnz(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
 #else
@@ -24375,6 +25921,7 @@ cusparseStatus_t cusparseHpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int 
 cusparseStatus_t cusparseSpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpruneCsr2csrNnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneCsr2csrNnz(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
 #else
@@ -24385,6 +25932,7 @@ cusparseStatus_t cusparseSpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int 
 cusparseStatus_t cusparseDpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDpruneCsr2csrNnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneCsr2csrNnz(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, pBuffer);
 #else
@@ -24395,6 +25943,7 @@ cusparseStatus_t cusparseDpruneCsr2csrNnz(cusparseHandle_t  handle, int  m, int 
 cusparseStatus_t cusparseHpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const __half*  threshold, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseHpruneCsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneCsr2csr(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
 #else
@@ -24405,6 +25954,7 @@ cusparseStatus_t cusparseHpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n,
 cusparseStatus_t cusparseSpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const float*  threshold, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpruneCsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneCsr2csr(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
 #else
@@ -24415,6 +25965,7 @@ cusparseStatus_t cusparseSpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n,
 cusparseStatus_t cusparseDpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, const double*  threshold, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDpruneCsr2csr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneCsr2csr(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, threshold, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, pBuffer);
 #else
@@ -24425,6 +25976,7 @@ cusparseStatus_t cusparseDpruneCsr2csr(cusparseHandle_t  handle, int  m, int  n,
 cusparseStatus_t cusparseHpruneDense2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseHpruneDense2csrByPercentage_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneDense2csrByPercentage_bufferSizeExt(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
 #else
@@ -24435,6 +25987,7 @@ cusparseStatus_t cusparseHpruneDense2csrByPercentage_bufferSizeExt(cusparseHandl
 cusparseStatus_t cusparseSpruneDense2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSpruneDense2csrByPercentage_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneDense2csrByPercentage_bufferSizeExt(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
 #else
@@ -24445,6 +25998,7 @@ cusparseStatus_t cusparseSpruneDense2csrByPercentage_bufferSizeExt(cusparseHandl
 cusparseStatus_t cusparseDpruneDense2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDpruneDense2csrByPercentage_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneDense2csrByPercentage_bufferSizeExt(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
 #else
@@ -24455,6 +26009,7 @@ cusparseStatus_t cusparseDpruneDense2csrByPercentage_bufferSizeExt(cusparseHandl
 cusparseStatus_t cusparseHpruneDense2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseHpruneDense2csrNnzByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneDense2csrNnzByPercentage(handle, m, n, A, lda, percentage, descrC, csrRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
 #else
@@ -24465,6 +26020,7 @@ cusparseStatus_t cusparseHpruneDense2csrNnzByPercentage(cusparseHandle_t  handle
 cusparseStatus_t cusparseSpruneDense2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpruneDense2csrNnzByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneDense2csrNnzByPercentage(handle, m, n, A, lda, percentage, descrC, csrRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
 #else
@@ -24475,6 +26031,7 @@ cusparseStatus_t cusparseSpruneDense2csrNnzByPercentage(cusparseHandle_t  handle
 cusparseStatus_t cusparseDpruneDense2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, int*  csrRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDpruneDense2csrNnzByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneDense2csrNnzByPercentage(handle, m, n, A, lda, percentage, descrC, csrRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
 #else
@@ -24485,6 +26042,7 @@ cusparseStatus_t cusparseDpruneDense2csrNnzByPercentage(cusparseHandle_t  handle
 cusparseStatus_t cusparseHpruneDense2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, const __half*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseHpruneDense2csrByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneDense2csrByPercentage(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
 #else
@@ -24495,6 +26053,7 @@ cusparseStatus_t cusparseHpruneDense2csrByPercentage(cusparseHandle_t  handle, i
 cusparseStatus_t cusparseSpruneDense2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, const float*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpruneDense2csrByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneDense2csrByPercentage(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
 #else
@@ -24505,6 +26064,7 @@ cusparseStatus_t cusparseSpruneDense2csrByPercentage(cusparseHandle_t  handle, i
 cusparseStatus_t cusparseDpruneDense2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, const double*  A, int  lda, float  percentage, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDpruneDense2csrByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneDense2csrByPercentage(handle, m, n, A, lda, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
 #else
@@ -24515,6 +26075,7 @@ cusparseStatus_t cusparseDpruneDense2csrByPercentage(cusparseHandle_t  handle, i
 cusparseStatus_t cusparseHpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const __half*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseHpruneCsr2csrByPercentage_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneCsr2csrByPercentage_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
 #else
@@ -24525,6 +26086,7 @@ cusparseStatus_t cusparseHpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_
 cusparseStatus_t cusparseSpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const float*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseSpruneCsr2csrByPercentage_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneCsr2csrByPercentage_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
 #else
@@ -24535,6 +26097,7 @@ cusparseStatus_t cusparseSpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_
 cusparseStatus_t cusparseDpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, const double*  csrSortedValC, const int*  csrSortedRowPtrC, const int*  csrSortedColIndC, pruneInfo_t  info, size_t*  pBufferSizeInBytes)
 {
 	TALLY_SPD_LOG("cusparseDpruneCsr2csrByPercentage_bufferSizeExt hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneCsr2csrByPercentage_bufferSizeExt(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBufferSizeInBytes);
 #else
@@ -24545,6 +26108,7 @@ cusparseStatus_t cusparseDpruneCsr2csrByPercentage_bufferSizeExt(cusparseHandle_
 cusparseStatus_t cusparseHpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseHpruneCsr2csrNnzByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneCsr2csrNnzByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
 #else
@@ -24555,6 +26119,7 @@ cusparseStatus_t cusparseHpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, 
 cusparseStatus_t cusparseSpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpruneCsr2csrNnzByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneCsr2csrNnzByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
 #else
@@ -24565,6 +26130,7 @@ cusparseStatus_t cusparseSpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, 
 cusparseStatus_t cusparseDpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, int*  csrSortedRowPtrC, int*  nnzTotalDevHostPtr, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDpruneCsr2csrNnzByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneCsr2csrNnzByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedRowPtrC, nnzTotalDevHostPtr, info, pBuffer);
 #else
@@ -24575,6 +26141,7 @@ cusparseStatus_t cusparseDpruneCsr2csrNnzByPercentage(cusparseHandle_t  handle, 
 cusparseStatus_t cusparseHpruneCsr2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const __half*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, __half*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseHpruneCsr2csrByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseHpruneCsr2csrByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
 #else
@@ -24585,6 +26152,7 @@ cusparseStatus_t cusparseHpruneCsr2csrByPercentage(cusparseHandle_t  handle, int
 cusparseStatus_t cusparseSpruneCsr2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const float*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, float*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpruneCsr2csrByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpruneCsr2csrByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
 #else
@@ -24595,6 +26163,7 @@ cusparseStatus_t cusparseSpruneCsr2csrByPercentage(cusparseHandle_t  handle, int
 cusparseStatus_t cusparseDpruneCsr2csrByPercentage(cusparseHandle_t  handle, int  m, int  n, int  nnzA, const cusparseMatDescr_t  descrA, const double*  csrSortedValA, const int*  csrSortedRowPtrA, const int*  csrSortedColIndA, float  percentage, const cusparseMatDescr_t  descrC, double*  csrSortedValC, const int*  csrSortedRowPtrC, int*  csrSortedColIndC, pruneInfo_t  info, void*  pBuffer)
 {
 	TALLY_SPD_LOG("cusparseDpruneCsr2csrByPercentage hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDpruneCsr2csrByPercentage(handle, m, n, nnzA, descrA, csrSortedValA, csrSortedRowPtrA, csrSortedColIndA, percentage, descrC, csrSortedValC, csrSortedRowPtrC, csrSortedColIndC, info, pBuffer);
 #else
@@ -24605,6 +26174,7 @@ cusparseStatus_t cusparseDpruneCsr2csrByPercentage(cusparseHandle_t  handle, int
 cusparseStatus_t cusparseCsr2cscEx2(cusparseHandle_t  handle, int  m, int  n, int  nnz, const void*  csrVal, const int*  csrRowPtr, const int*  csrColInd, void*  cscVal, int*  cscColPtr, int*  cscRowInd, cudaDataType  valType, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, cusparseCsr2CscAlg_t  alg, void*  buffer)
 {
 	TALLY_SPD_LOG("cusparseCsr2cscEx2 hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCsr2cscEx2(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, cscVal, cscColPtr, cscRowInd, valType, copyValues, idxBase, alg, buffer);
 #else
@@ -24615,6 +26185,7 @@ cusparseStatus_t cusparseCsr2cscEx2(cusparseHandle_t  handle, int  m, int  n, in
 cusparseStatus_t cusparseCsr2cscEx2_bufferSize(cusparseHandle_t  handle, int  m, int  n, int  nnz, const void*  csrVal, const int*  csrRowPtr, const int*  csrColInd, void*  cscVal, int*  cscColPtr, int*  cscRowInd, cudaDataType  valType, cusparseAction_t  copyValues, cusparseIndexBase_t  idxBase, cusparseCsr2CscAlg_t  alg, size_t*  bufferSize)
 {
 	TALLY_SPD_LOG("cusparseCsr2cscEx2_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCsr2cscEx2_bufferSize(handle, m, n, nnz, csrVal, csrRowPtr, csrColInd, cscVal, cscColPtr, cscRowInd, valType, copyValues, idxBase, alg, bufferSize);
 #else
@@ -24625,6 +26196,7 @@ cusparseStatus_t cusparseCsr2cscEx2_bufferSize(cusparseHandle_t  handle, int  m,
 cusparseStatus_t cusparseCreateSpVec(cusparseSpVecDescr_t*  spVecDescr, int64_t  size, int64_t  nnz, void*  indices, void*  values, cusparseIndexType_t  idxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateSpVec hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateSpVec(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
 #else
@@ -24635,6 +26207,7 @@ cusparseStatus_t cusparseCreateSpVec(cusparseSpVecDescr_t*  spVecDescr, int64_t 
 cusparseStatus_t cusparseCreateConstSpVec(cusparseConstSpVecDescr_t*  spVecDescr, int64_t  size, int64_t  nnz, const void*  indices, const void*  values, cusparseIndexType_t  idxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateConstSpVec hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateConstSpVec(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
 #else
@@ -24645,6 +26218,7 @@ cusparseStatus_t cusparseCreateConstSpVec(cusparseConstSpVecDescr_t*  spVecDescr
 cusparseStatus_t cusparseDestroySpVec(cusparseConstSpVecDescr_t  spVecDescr)
 {
 	TALLY_SPD_LOG("cusparseDestroySpVec hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroySpVec(spVecDescr);
 #else
@@ -24655,6 +26229,7 @@ cusparseStatus_t cusparseDestroySpVec(cusparseConstSpVecDescr_t  spVecDescr)
 cusparseStatus_t cusparseSpVecGet(cusparseSpVecDescr_t  spVecDescr, int64_t*  size, int64_t*  nnz, void**  indices, void**  values, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseSpVecGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpVecGet(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
 #else
@@ -24665,6 +26240,7 @@ cusparseStatus_t cusparseSpVecGet(cusparseSpVecDescr_t  spVecDescr, int64_t*  si
 cusparseStatus_t cusparseConstSpVecGet(cusparseConstSpVecDescr_t  spVecDescr, int64_t*  size, int64_t*  nnz, const void**  indices, const void**  values, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseConstSpVecGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstSpVecGet(spVecDescr, size, nnz, indices, values, idxType, idxBase, valueType);
 #else
@@ -24675,6 +26251,7 @@ cusparseStatus_t cusparseConstSpVecGet(cusparseConstSpVecDescr_t  spVecDescr, in
 cusparseStatus_t cusparseSpVecGetIndexBase(cusparseConstSpVecDescr_t  spVecDescr, cusparseIndexBase_t*  idxBase)
 {
 	TALLY_SPD_LOG("cusparseSpVecGetIndexBase hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpVecGetIndexBase(spVecDescr, idxBase);
 #else
@@ -24685,6 +26262,7 @@ cusparseStatus_t cusparseSpVecGetIndexBase(cusparseConstSpVecDescr_t  spVecDescr
 cusparseStatus_t cusparseSpVecGetValues(cusparseSpVecDescr_t  spVecDescr, void**  values)
 {
 	TALLY_SPD_LOG("cusparseSpVecGetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpVecGetValues(spVecDescr, values);
 #else
@@ -24695,6 +26273,7 @@ cusparseStatus_t cusparseSpVecGetValues(cusparseSpVecDescr_t  spVecDescr, void**
 cusparseStatus_t cusparseConstSpVecGetValues(cusparseConstSpVecDescr_t  spVecDescr, const void**  values)
 {
 	TALLY_SPD_LOG("cusparseConstSpVecGetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstSpVecGetValues(spVecDescr, values);
 #else
@@ -24705,6 +26284,7 @@ cusparseStatus_t cusparseConstSpVecGetValues(cusparseConstSpVecDescr_t  spVecDes
 cusparseStatus_t cusparseSpVecSetValues(cusparseSpVecDescr_t  spVecDescr, void*  values)
 {
 	TALLY_SPD_LOG("cusparseSpVecSetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpVecSetValues(spVecDescr, values);
 #else
@@ -24715,6 +26295,7 @@ cusparseStatus_t cusparseSpVecSetValues(cusparseSpVecDescr_t  spVecDescr, void* 
 cusparseStatus_t cusparseCreateDnVec(cusparseDnVecDescr_t*  dnVecDescr, int64_t  size, void*  values, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateDnVec hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateDnVec(dnVecDescr, size, values, valueType);
 #else
@@ -24725,6 +26306,7 @@ cusparseStatus_t cusparseCreateDnVec(cusparseDnVecDescr_t*  dnVecDescr, int64_t 
 cusparseStatus_t cusparseCreateConstDnVec(cusparseConstDnVecDescr_t*  dnVecDescr, int64_t  size, const void*  values, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateConstDnVec hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateConstDnVec(dnVecDescr, size, values, valueType);
 #else
@@ -24735,6 +26317,7 @@ cusparseStatus_t cusparseCreateConstDnVec(cusparseConstDnVecDescr_t*  dnVecDescr
 cusparseStatus_t cusparseDestroyDnVec(cusparseConstDnVecDescr_t  dnVecDescr)
 {
 	TALLY_SPD_LOG("cusparseDestroyDnVec hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyDnVec(dnVecDescr);
 #else
@@ -24745,6 +26328,7 @@ cusparseStatus_t cusparseDestroyDnVec(cusparseConstDnVecDescr_t  dnVecDescr)
 cusparseStatus_t cusparseDnVecGet(cusparseDnVecDescr_t  dnVecDescr, int64_t*  size, void**  values, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseDnVecGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDnVecGet(dnVecDescr, size, values, valueType);
 #else
@@ -24755,6 +26339,7 @@ cusparseStatus_t cusparseDnVecGet(cusparseDnVecDescr_t  dnVecDescr, int64_t*  si
 cusparseStatus_t cusparseConstDnVecGet(cusparseConstDnVecDescr_t  dnVecDescr, int64_t*  size, const void**  values, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseConstDnVecGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstDnVecGet(dnVecDescr, size, values, valueType);
 #else
@@ -24765,6 +26350,7 @@ cusparseStatus_t cusparseConstDnVecGet(cusparseConstDnVecDescr_t  dnVecDescr, in
 cusparseStatus_t cusparseDnVecGetValues(cusparseDnVecDescr_t  dnVecDescr, void**  values)
 {
 	TALLY_SPD_LOG("cusparseDnVecGetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDnVecGetValues(dnVecDescr, values);
 #else
@@ -24775,6 +26361,7 @@ cusparseStatus_t cusparseDnVecGetValues(cusparseDnVecDescr_t  dnVecDescr, void**
 cusparseStatus_t cusparseConstDnVecGetValues(cusparseConstDnVecDescr_t  dnVecDescr, const void**  values)
 {
 	TALLY_SPD_LOG("cusparseConstDnVecGetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstDnVecGetValues(dnVecDescr, values);
 #else
@@ -24785,6 +26372,7 @@ cusparseStatus_t cusparseConstDnVecGetValues(cusparseConstDnVecDescr_t  dnVecDes
 cusparseStatus_t cusparseDnVecSetValues(cusparseDnVecDescr_t  dnVecDescr, void*  values)
 {
 	TALLY_SPD_LOG("cusparseDnVecSetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDnVecSetValues(dnVecDescr, values);
 #else
@@ -24795,6 +26383,7 @@ cusparseStatus_t cusparseDnVecSetValues(cusparseDnVecDescr_t  dnVecDescr, void* 
 cusparseStatus_t cusparseDestroySpMat(cusparseConstSpMatDescr_t  spMatDescr)
 {
 	TALLY_SPD_LOG("cusparseDestroySpMat hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroySpMat(spMatDescr);
 #else
@@ -24805,6 +26394,7 @@ cusparseStatus_t cusparseDestroySpMat(cusparseConstSpMatDescr_t  spMatDescr)
 cusparseStatus_t cusparseSpMatGetFormat(cusparseConstSpMatDescr_t  spMatDescr, cusparseFormat_t*  format)
 {
 	TALLY_SPD_LOG("cusparseSpMatGetFormat hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMatGetFormat(spMatDescr, format);
 #else
@@ -24815,6 +26405,7 @@ cusparseStatus_t cusparseSpMatGetFormat(cusparseConstSpMatDescr_t  spMatDescr, c
 cusparseStatus_t cusparseSpMatGetIndexBase(cusparseConstSpMatDescr_t  spMatDescr, cusparseIndexBase_t*  idxBase)
 {
 	TALLY_SPD_LOG("cusparseSpMatGetIndexBase hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMatGetIndexBase(spMatDescr, idxBase);
 #else
@@ -24825,6 +26416,7 @@ cusparseStatus_t cusparseSpMatGetIndexBase(cusparseConstSpMatDescr_t  spMatDescr
 cusparseStatus_t cusparseSpMatGetValues(cusparseSpMatDescr_t  spMatDescr, void**  values)
 {
 	TALLY_SPD_LOG("cusparseSpMatGetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMatGetValues(spMatDescr, values);
 #else
@@ -24835,6 +26427,7 @@ cusparseStatus_t cusparseSpMatGetValues(cusparseSpMatDescr_t  spMatDescr, void**
 cusparseStatus_t cusparseConstSpMatGetValues(cusparseConstSpMatDescr_t  spMatDescr, const void**  values)
 {
 	TALLY_SPD_LOG("cusparseConstSpMatGetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstSpMatGetValues(spMatDescr, values);
 #else
@@ -24845,6 +26438,7 @@ cusparseStatus_t cusparseConstSpMatGetValues(cusparseConstSpMatDescr_t  spMatDes
 cusparseStatus_t cusparseSpMatSetValues(cusparseSpMatDescr_t  spMatDescr, void*  values)
 {
 	TALLY_SPD_LOG("cusparseSpMatSetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMatSetValues(spMatDescr, values);
 #else
@@ -24855,6 +26449,7 @@ cusparseStatus_t cusparseSpMatSetValues(cusparseSpMatDescr_t  spMatDescr, void* 
 cusparseStatus_t cusparseSpMatGetSize(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz)
 {
 	TALLY_SPD_LOG("cusparseSpMatGetSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMatGetSize(spMatDescr, rows, cols, nnz);
 #else
@@ -24865,6 +26460,7 @@ cusparseStatus_t cusparseSpMatGetSize(cusparseConstSpMatDescr_t  spMatDescr, int
 cusparseStatus_t cusparseSpMatGetStridedBatch(cusparseConstSpMatDescr_t  spMatDescr, int*  batchCount)
 {
 	TALLY_SPD_LOG("cusparseSpMatGetStridedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMatGetStridedBatch(spMatDescr, batchCount);
 #else
@@ -24875,6 +26471,7 @@ cusparseStatus_t cusparseSpMatGetStridedBatch(cusparseConstSpMatDescr_t  spMatDe
 cusparseStatus_t cusparseCooSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  batchStride)
 {
 	TALLY_SPD_LOG("cusparseCooSetStridedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCooSetStridedBatch(spMatDescr, batchCount, batchStride);
 #else
@@ -24885,6 +26482,7 @@ cusparseStatus_t cusparseCooSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, in
 cusparseStatus_t cusparseCsrSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  offsetsBatchStride, int64_t  columnsValuesBatchStride)
 {
 	TALLY_SPD_LOG("cusparseCsrSetStridedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCsrSetStridedBatch(spMatDescr, batchCount, offsetsBatchStride, columnsValuesBatchStride);
 #else
@@ -24895,6 +26493,7 @@ cusparseStatus_t cusparseCsrSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, in
 cusparseStatus_t cusparseBsrSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, int  batchCount, int64_t  offsetsBatchStride, int64_t  columnsBatchStride, int64_t  ValuesBatchStride)
 {
 	TALLY_SPD_LOG("cusparseBsrSetStridedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseBsrSetStridedBatch(spMatDescr, batchCount, offsetsBatchStride, columnsBatchStride, ValuesBatchStride);
 #else
@@ -24905,6 +26504,7 @@ cusparseStatus_t cusparseBsrSetStridedBatch(cusparseSpMatDescr_t  spMatDescr, in
 cusparseStatus_t cusparseSpMatGetAttribute(cusparseConstSpMatDescr_t  spMatDescr, cusparseSpMatAttribute_t  attribute, void*  data, size_t  dataSize)
 {
 	TALLY_SPD_LOG("cusparseSpMatGetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMatGetAttribute(spMatDescr, attribute, data, dataSize);
 #else
@@ -24915,6 +26515,7 @@ cusparseStatus_t cusparseSpMatGetAttribute(cusparseConstSpMatDescr_t  spMatDescr
 cusparseStatus_t cusparseSpMatSetAttribute(cusparseSpMatDescr_t  spMatDescr, cusparseSpMatAttribute_t  attribute, void*  data, size_t  dataSize)
 {
 	TALLY_SPD_LOG("cusparseSpMatSetAttribute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMatSetAttribute(spMatDescr, attribute, data, dataSize);
 #else
@@ -24925,6 +26526,7 @@ cusparseStatus_t cusparseSpMatSetAttribute(cusparseSpMatDescr_t  spMatDescr, cus
 cusparseStatus_t cusparseCreateCsr(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  csrRowOffsets, void*  csrColInd, void*  csrValues, cusparseIndexType_t  csrRowOffsetsType, cusparseIndexType_t  csrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateCsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateCsr(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
 #else
@@ -24935,6 +26537,7 @@ cusparseStatus_t cusparseCreateCsr(cusparseSpMatDescr_t*  spMatDescr, int64_t  r
 cusparseStatus_t cusparseCreateConstCsr(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  csrRowOffsets, const void*  csrColInd, const void*  csrValues, cusparseIndexType_t  csrRowOffsetsType, cusparseIndexType_t  csrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateConstCsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateConstCsr(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
 #else
@@ -24945,6 +26548,7 @@ cusparseStatus_t cusparseCreateConstCsr(cusparseConstSpMatDescr_t*  spMatDescr, 
 cusparseStatus_t cusparseCreateCsc(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  cscColOffsets, void*  cscRowInd, void*  cscValues, cusparseIndexType_t  cscColOffsetsType, cusparseIndexType_t  cscRowIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateCsc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateCsc(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
 #else
@@ -24955,6 +26559,7 @@ cusparseStatus_t cusparseCreateCsc(cusparseSpMatDescr_t*  spMatDescr, int64_t  r
 cusparseStatus_t cusparseCreateConstCsc(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  cscColOffsets, const void*  cscRowInd, const void*  cscValues, cusparseIndexType_t  cscColOffsetsType, cusparseIndexType_t  cscRowIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateConstCsc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateConstCsc(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
 #else
@@ -24965,6 +26570,7 @@ cusparseStatus_t cusparseCreateConstCsc(cusparseConstSpMatDescr_t*  spMatDescr, 
 cusparseStatus_t cusparseCsrGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  csrRowOffsets, void**  csrColInd, void**  csrValues, cusparseIndexType_t*  csrRowOffsetsType, cusparseIndexType_t*  csrColIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseCsrGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCsrGet(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
 #else
@@ -24975,6 +26581,7 @@ cusparseStatus_t cusparseCsrGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows
 cusparseStatus_t cusparseConstCsrGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  csrRowOffsets, const void**  csrColInd, const void**  csrValues, cusparseIndexType_t*  csrRowOffsetsType, cusparseIndexType_t*  csrColIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseConstCsrGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstCsrGet(spMatDescr, rows, cols, nnz, csrRowOffsets, csrColInd, csrValues, csrRowOffsetsType, csrColIndType, idxBase, valueType);
 #else
@@ -24985,6 +26592,7 @@ cusparseStatus_t cusparseConstCsrGet(cusparseConstSpMatDescr_t  spMatDescr, int6
 cusparseStatus_t cusparseCscGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  cscColOffsets, void**  cscRowInd, void**  cscValues, cusparseIndexType_t*  cscColOffsetsType, cusparseIndexType_t*  cscRowIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseCscGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCscGet(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
 #else
@@ -24995,6 +26603,7 @@ cusparseStatus_t cusparseCscGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows
 cusparseStatus_t cusparseConstCscGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  cscColOffsets, const void**  cscRowInd, const void**  cscValues, cusparseIndexType_t*  cscColOffsetsType, cusparseIndexType_t*  cscRowIndType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseConstCscGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstCscGet(spMatDescr, rows, cols, nnz, cscColOffsets, cscRowInd, cscValues, cscColOffsetsType, cscRowIndType, idxBase, valueType);
 #else
@@ -25005,6 +26614,7 @@ cusparseStatus_t cusparseConstCscGet(cusparseConstSpMatDescr_t  spMatDescr, int6
 cusparseStatus_t cusparseCsrSetPointers(cusparseSpMatDescr_t  spMatDescr, void*  csrRowOffsets, void*  csrColInd, void*  csrValues)
 {
 	TALLY_SPD_LOG("cusparseCsrSetPointers hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCsrSetPointers(spMatDescr, csrRowOffsets, csrColInd, csrValues);
 #else
@@ -25015,6 +26625,7 @@ cusparseStatus_t cusparseCsrSetPointers(cusparseSpMatDescr_t  spMatDescr, void* 
 cusparseStatus_t cusparseCscSetPointers(cusparseSpMatDescr_t  spMatDescr, void*  cscColOffsets, void*  cscRowInd, void*  cscValues)
 {
 	TALLY_SPD_LOG("cusparseCscSetPointers hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCscSetPointers(spMatDescr, cscColOffsets, cscRowInd, cscValues);
 #else
@@ -25025,6 +26636,7 @@ cusparseStatus_t cusparseCscSetPointers(cusparseSpMatDescr_t  spMatDescr, void* 
 cusparseStatus_t cusparseCreateBsr(cusparseSpMatDescr_t*  spMatDescr, int64_t  brows, int64_t  bcols, int64_t  bnnz, int64_t  rowBlockSize, int64_t  colBlockSize, void*  bsrRowOffsets, void*  bsrColInd, void*  bsrValues, cusparseIndexType_t  bsrRowOffsetsType, cusparseIndexType_t  bsrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType, cusparseOrder_t  order)
 {
 	TALLY_SPD_LOG("cusparseCreateBsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateBsr(spMatDescr, brows, bcols, bnnz, rowBlockSize, colBlockSize, bsrRowOffsets, bsrColInd, bsrValues, bsrRowOffsetsType, bsrColIndType, idxBase, valueType, order);
 #else
@@ -25035,6 +26647,7 @@ cusparseStatus_t cusparseCreateBsr(cusparseSpMatDescr_t*  spMatDescr, int64_t  b
 cusparseStatus_t cusparseCreateConstBsr(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  brows, int64_t  bcols, int64_t  bnnz, int64_t  rowBlockDim, int64_t  colBlockDim, const void*  bsrRowOffsets, const void*  bsrColInd, const void*  bsrValues, cusparseIndexType_t  bsrRowOffsetsType, cusparseIndexType_t  bsrColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType, cusparseOrder_t  order)
 {
 	TALLY_SPD_LOG("cusparseCreateConstBsr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateConstBsr(spMatDescr, brows, bcols, bnnz, rowBlockDim, colBlockDim, bsrRowOffsets, bsrColInd, bsrValues, bsrRowOffsetsType, bsrColIndType, idxBase, valueType, order);
 #else
@@ -25045,6 +26658,7 @@ cusparseStatus_t cusparseCreateConstBsr(cusparseConstSpMatDescr_t*  spMatDescr, 
 cusparseStatus_t cusparseCreateCoo(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, void*  cooRowInd, void*  cooColInd, void*  cooValues, cusparseIndexType_t  cooIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateCoo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateCoo(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, cooIdxType, idxBase, valueType);
 #else
@@ -25055,6 +26669,7 @@ cusparseStatus_t cusparseCreateCoo(cusparseSpMatDescr_t*  spMatDescr, int64_t  r
 cusparseStatus_t cusparseCreateConstCoo(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, const void*  cooRowInd, const void*  cooColInd, const void*  cooValues, cusparseIndexType_t  cooIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateConstCoo hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateConstCoo(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, cooIdxType, idxBase, valueType);
 #else
@@ -25065,6 +26680,7 @@ cusparseStatus_t cusparseCreateConstCoo(cusparseConstSpMatDescr_t*  spMatDescr, 
 cusparseStatus_t cusparseCooGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, void**  cooRowInd, void**  cooColInd, void**  cooValues, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseCooGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCooGet(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, idxType, idxBase, valueType);
 #else
@@ -25075,6 +26691,7 @@ cusparseStatus_t cusparseCooGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows
 cusparseStatus_t cusparseConstCooGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  nnz, const void**  cooRowInd, const void**  cooColInd, const void**  cooValues, cusparseIndexType_t*  idxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseConstCooGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstCooGet(spMatDescr, rows, cols, nnz, cooRowInd, cooColInd, cooValues, idxType, idxBase, valueType);
 #else
@@ -25085,6 +26702,7 @@ cusparseStatus_t cusparseConstCooGet(cusparseConstSpMatDescr_t  spMatDescr, int6
 cusparseStatus_t cusparseCooSetPointers(cusparseSpMatDescr_t  spMatDescr, void*  cooRows, void*  cooColumns, void*  cooValues)
 {
 	TALLY_SPD_LOG("cusparseCooSetPointers hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCooSetPointers(spMatDescr, cooRows, cooColumns, cooValues);
 #else
@@ -25095,6 +26713,7 @@ cusparseStatus_t cusparseCooSetPointers(cusparseSpMatDescr_t  spMatDescr, void* 
 cusparseStatus_t cusparseCreateBlockedEll(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  ellBlockSize, int64_t  ellCols, void*  ellColInd, void*  ellValue, cusparseIndexType_t  ellIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateBlockedEll hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateBlockedEll(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
 #else
@@ -25105,6 +26724,7 @@ cusparseStatus_t cusparseCreateBlockedEll(cusparseSpMatDescr_t*  spMatDescr, int
 cusparseStatus_t cusparseCreateConstBlockedEll(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  ellBlockSize, int64_t  ellCols, const void*  ellColInd, const void*  ellValue, cusparseIndexType_t  ellIdxType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateConstBlockedEll hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateConstBlockedEll(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
 #else
@@ -25115,6 +26735,7 @@ cusparseStatus_t cusparseCreateConstBlockedEll(cusparseConstSpMatDescr_t*  spMat
 cusparseStatus_t cusparseBlockedEllGet(cusparseSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ellBlockSize, int64_t*  ellCols, void**  ellColInd, void**  ellValue, cusparseIndexType_t*  ellIdxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseBlockedEllGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseBlockedEllGet(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
 #else
@@ -25125,6 +26746,7 @@ cusparseStatus_t cusparseBlockedEllGet(cusparseSpMatDescr_t  spMatDescr, int64_t
 cusparseStatus_t cusparseConstBlockedEllGet(cusparseConstSpMatDescr_t  spMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ellBlockSize, int64_t*  ellCols, const void**  ellColInd, const void**  ellValue, cusparseIndexType_t*  ellIdxType, cusparseIndexBase_t*  idxBase, cudaDataType*  valueType)
 {
 	TALLY_SPD_LOG("cusparseConstBlockedEllGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstBlockedEllGet(spMatDescr, rows, cols, ellBlockSize, ellCols, ellColInd, ellValue, ellIdxType, idxBase, valueType);
 #else
@@ -25135,6 +26757,7 @@ cusparseStatus_t cusparseConstBlockedEllGet(cusparseConstSpMatDescr_t  spMatDesc
 cusparseStatus_t cusparseCreateSlicedEll(cusparseSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, int64_t  sellValuesSize, int64_t  sliceSize, void*  sellSliceOffsets, void*  sellColInd, void*  sellValues, cusparseIndexType_t  sellSliceOffsetsType, cusparseIndexType_t  sellColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateSlicedEll hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateSlicedEll(spMatDescr, rows, cols, nnz, sellValuesSize, sliceSize, sellSliceOffsets, sellColInd, sellValues, sellSliceOffsetsType, sellColIndType, idxBase, valueType);
 #else
@@ -25145,6 +26768,7 @@ cusparseStatus_t cusparseCreateSlicedEll(cusparseSpMatDescr_t*  spMatDescr, int6
 cusparseStatus_t cusparseCreateConstSlicedEll(cusparseConstSpMatDescr_t*  spMatDescr, int64_t  rows, int64_t  cols, int64_t  nnz, int64_t  sellValuesSize, int64_t  sliceSize, const void*  sellSliceOffsets, const void*  sellColInd, const void*  sellValues, cusparseIndexType_t  sellSliceOffsetsType, cusparseIndexType_t  sellColIndType, cusparseIndexBase_t  idxBase, cudaDataType  valueType)
 {
 	TALLY_SPD_LOG("cusparseCreateConstSlicedEll hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateConstSlicedEll(spMatDescr, rows, cols, nnz, sellValuesSize, sliceSize, sellSliceOffsets, sellColInd, sellValues, sellSliceOffsetsType, sellColIndType, idxBase, valueType);
 #else
@@ -25155,6 +26779,7 @@ cusparseStatus_t cusparseCreateConstSlicedEll(cusparseConstSpMatDescr_t*  spMatD
 cusparseStatus_t cusparseCreateDnMat(cusparseDnMatDescr_t*  dnMatDescr, int64_t  rows, int64_t  cols, int64_t  ld, void*  values, cudaDataType  valueType, cusparseOrder_t  order)
 {
 	TALLY_SPD_LOG("cusparseCreateDnMat hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateDnMat(dnMatDescr, rows, cols, ld, values, valueType, order);
 #else
@@ -25165,6 +26790,7 @@ cusparseStatus_t cusparseCreateDnMat(cusparseDnMatDescr_t*  dnMatDescr, int64_t 
 cusparseStatus_t cusparseCreateConstDnMat(cusparseConstDnMatDescr_t*  dnMatDescr, int64_t  rows, int64_t  cols, int64_t  ld, const void*  values, cudaDataType  valueType, cusparseOrder_t  order)
 {
 	TALLY_SPD_LOG("cusparseCreateConstDnMat hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseCreateConstDnMat(dnMatDescr, rows, cols, ld, values, valueType, order);
 #else
@@ -25175,6 +26801,7 @@ cusparseStatus_t cusparseCreateConstDnMat(cusparseConstDnMatDescr_t*  dnMatDescr
 cusparseStatus_t cusparseDestroyDnMat(cusparseConstDnMatDescr_t  dnMatDescr)
 {
 	TALLY_SPD_LOG("cusparseDestroyDnMat hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDestroyDnMat(dnMatDescr);
 #else
@@ -25185,6 +26812,7 @@ cusparseStatus_t cusparseDestroyDnMat(cusparseConstDnMatDescr_t  dnMatDescr)
 cusparseStatus_t cusparseDnMatGet(cusparseDnMatDescr_t  dnMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ld, void**  values, cudaDataType*  type, cusparseOrder_t*  order)
 {
 	TALLY_SPD_LOG("cusparseDnMatGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDnMatGet(dnMatDescr, rows, cols, ld, values, type, order);
 #else
@@ -25195,6 +26823,7 @@ cusparseStatus_t cusparseDnMatGet(cusparseDnMatDescr_t  dnMatDescr, int64_t*  ro
 cusparseStatus_t cusparseConstDnMatGet(cusparseConstDnMatDescr_t  dnMatDescr, int64_t*  rows, int64_t*  cols, int64_t*  ld, const void**  values, cudaDataType*  type, cusparseOrder_t*  order)
 {
 	TALLY_SPD_LOG("cusparseConstDnMatGet hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstDnMatGet(dnMatDescr, rows, cols, ld, values, type, order);
 #else
@@ -25205,6 +26834,7 @@ cusparseStatus_t cusparseConstDnMatGet(cusparseConstDnMatDescr_t  dnMatDescr, in
 cusparseStatus_t cusparseDnMatGetValues(cusparseDnMatDescr_t  dnMatDescr, void**  values)
 {
 	TALLY_SPD_LOG("cusparseDnMatGetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDnMatGetValues(dnMatDescr, values);
 #else
@@ -25215,6 +26845,7 @@ cusparseStatus_t cusparseDnMatGetValues(cusparseDnMatDescr_t  dnMatDescr, void**
 cusparseStatus_t cusparseConstDnMatGetValues(cusparseConstDnMatDescr_t  dnMatDescr, const void**  values)
 {
 	TALLY_SPD_LOG("cusparseConstDnMatGetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseConstDnMatGetValues(dnMatDescr, values);
 #else
@@ -25225,6 +26856,7 @@ cusparseStatus_t cusparseConstDnMatGetValues(cusparseConstDnMatDescr_t  dnMatDes
 cusparseStatus_t cusparseDnMatSetValues(cusparseDnMatDescr_t  dnMatDescr, void*  values)
 {
 	TALLY_SPD_LOG("cusparseDnMatSetValues hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDnMatSetValues(dnMatDescr, values);
 #else
@@ -25235,6 +26867,7 @@ cusparseStatus_t cusparseDnMatSetValues(cusparseDnMatDescr_t  dnMatDescr, void* 
 cusparseStatus_t cusparseDnMatSetStridedBatch(cusparseDnMatDescr_t  dnMatDescr, int  batchCount, int64_t  batchStride)
 {
 	TALLY_SPD_LOG("cusparseDnMatSetStridedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDnMatSetStridedBatch(dnMatDescr, batchCount, batchStride);
 #else
@@ -25245,6 +26878,7 @@ cusparseStatus_t cusparseDnMatSetStridedBatch(cusparseDnMatDescr_t  dnMatDescr, 
 cusparseStatus_t cusparseDnMatGetStridedBatch(cusparseConstDnMatDescr_t  dnMatDescr, int*  batchCount, int64_t*  batchStride)
 {
 	TALLY_SPD_LOG("cusparseDnMatGetStridedBatch hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDnMatGetStridedBatch(dnMatDescr, batchCount, batchStride);
 #else
@@ -25255,6 +26889,7 @@ cusparseStatus_t cusparseDnMatGetStridedBatch(cusparseConstDnMatDescr_t  dnMatDe
 cusparseStatus_t cusparseAxpby(cusparseHandle_t  handle, const void*  alpha, cusparseConstSpVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY)
 {
 	TALLY_SPD_LOG("cusparseAxpby hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseAxpby(handle, alpha, vecX, beta, vecY);
 #else
@@ -25265,6 +26900,7 @@ cusparseStatus_t cusparseAxpby(cusparseHandle_t  handle, const void*  alpha, cus
 cusparseStatus_t cusparseGather(cusparseHandle_t  handle, cusparseConstDnVecDescr_t  vecY, cusparseSpVecDescr_t  vecX)
 {
 	TALLY_SPD_LOG("cusparseGather hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseGather(handle, vecY, vecX);
 #else
@@ -25275,6 +26911,7 @@ cusparseStatus_t cusparseGather(cusparseHandle_t  handle, cusparseConstDnVecDesc
 cusparseStatus_t cusparseScatter(cusparseHandle_t  handle, cusparseConstSpVecDescr_t  vecX, cusparseDnVecDescr_t  vecY)
 {
 	TALLY_SPD_LOG("cusparseScatter hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseScatter(handle, vecX, vecY);
 #else
@@ -25285,6 +26922,7 @@ cusparseStatus_t cusparseScatter(cusparseHandle_t  handle, cusparseConstSpVecDes
 cusparseStatus_t cusparseRot(cusparseHandle_t  handle, const void*  c_coeff, const void*  s_coeff, cusparseSpVecDescr_t  vecX, cusparseDnVecDescr_t  vecY)
 {
 	TALLY_SPD_LOG("cusparseRot hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseRot(handle, c_coeff, s_coeff, vecX, vecY);
 #else
@@ -25295,6 +26933,7 @@ cusparseStatus_t cusparseRot(cusparseHandle_t  handle, const void*  c_coeff, con
 cusparseStatus_t cusparseSpVV_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opX, cusparseConstSpVecDescr_t  vecX, cusparseConstDnVecDescr_t  vecY, const void*  result, cudaDataType  computeType, size_t*  bufferSize)
 {
 	TALLY_SPD_LOG("cusparseSpVV_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpVV_bufferSize(handle, opX, vecX, vecY, result, computeType, bufferSize);
 #else
@@ -25305,6 +26944,7 @@ cusparseStatus_t cusparseSpVV_bufferSize(cusparseHandle_t  handle, cusparseOpera
 cusparseStatus_t cusparseSpVV(cusparseHandle_t  handle, cusparseOperation_t  opX, cusparseConstSpVecDescr_t  vecX, cusparseConstDnVecDescr_t  vecY, void*  result, cudaDataType  computeType, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpVV hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpVV(handle, opX, vecX, vecY, result, computeType, externalBuffer);
 #else
@@ -25315,6 +26955,7 @@ cusparseStatus_t cusparseSpVV(cusparseHandle_t  handle, cusparseOperation_t  opX
 cusparseStatus_t cusparseSparseToDense_bufferSize(cusparseHandle_t  handle, cusparseConstSpMatDescr_t  matA, cusparseDnMatDescr_t  matB, cusparseSparseToDenseAlg_t  alg, size_t*  bufferSize)
 {
 	TALLY_SPD_LOG("cusparseSparseToDense_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSparseToDense_bufferSize(handle, matA, matB, alg, bufferSize);
 #else
@@ -25325,6 +26966,7 @@ cusparseStatus_t cusparseSparseToDense_bufferSize(cusparseHandle_t  handle, cusp
 cusparseStatus_t cusparseSparseToDense(cusparseHandle_t  handle, cusparseConstSpMatDescr_t  matA, cusparseDnMatDescr_t  matB, cusparseSparseToDenseAlg_t  alg, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseSparseToDense hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSparseToDense(handle, matA, matB, alg, externalBuffer);
 #else
@@ -25335,6 +26977,7 @@ cusparseStatus_t cusparseSparseToDense(cusparseHandle_t  handle, cusparseConstSp
 cusparseStatus_t cusparseDenseToSparse_bufferSize(cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, size_t*  bufferSize)
 {
 	TALLY_SPD_LOG("cusparseDenseToSparse_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDenseToSparse_bufferSize(handle, matA, matB, alg, bufferSize);
 #else
@@ -25345,6 +26988,7 @@ cusparseStatus_t cusparseDenseToSparse_bufferSize(cusparseHandle_t  handle, cusp
 cusparseStatus_t cusparseDenseToSparse_analysis(cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseDenseToSparse_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDenseToSparse_analysis(handle, matA, matB, alg, externalBuffer);
 #else
@@ -25355,6 +26999,7 @@ cusparseStatus_t cusparseDenseToSparse_analysis(cusparseHandle_t  handle, cuspar
 cusparseStatus_t cusparseDenseToSparse_convert(cusparseHandle_t  handle, cusparseConstDnMatDescr_t  matA, cusparseSpMatDescr_t  matB, cusparseDenseToSparseAlg_t  alg, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseDenseToSparse_convert hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseDenseToSparse_convert(handle, matA, matB, alg, externalBuffer);
 #else
@@ -25365,6 +27010,7 @@ cusparseStatus_t cusparseDenseToSparse_convert(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseSpMV(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpMVAlg_t  alg, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpMV hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMV(handle, opA, alpha, matA, vecX, beta, vecY, computeType, alg, externalBuffer);
 #else
@@ -25375,6 +27021,7 @@ cusparseStatus_t cusparseSpMV(cusparseHandle_t  handle, cusparseOperation_t  opA
 cusparseStatus_t cusparseSpMV_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, const void*  beta, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpMVAlg_t  alg, size_t*  bufferSize)
 {
 	TALLY_SPD_LOG("cusparseSpMV_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMV_bufferSize(handle, opA, alpha, matA, vecX, beta, vecY, computeType, alg, bufferSize);
 #else
@@ -25385,6 +27032,7 @@ cusparseStatus_t cusparseSpMV_bufferSize(cusparseHandle_t  handle, cusparseOpera
 cusparseStatus_t cusparseSpSV_createDescr(cusparseSpSVDescr_t*  descr)
 {
 	TALLY_SPD_LOG("cusparseSpSV_createDescr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSV_createDescr(descr);
 #else
@@ -25395,6 +27043,7 @@ cusparseStatus_t cusparseSpSV_createDescr(cusparseSpSVDescr_t*  descr)
 cusparseStatus_t cusparseSpSV_destroyDescr(cusparseSpSVDescr_t  descr)
 {
 	TALLY_SPD_LOG("cusparseSpSV_destroyDescr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSV_destroyDescr(descr);
 #else
@@ -25405,6 +27054,7 @@ cusparseStatus_t cusparseSpSV_destroyDescr(cusparseSpSVDescr_t  descr)
 cusparseStatus_t cusparseSpSV_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr, size_t*  bufferSize)
 {
 	TALLY_SPD_LOG("cusparseSpSV_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSV_bufferSize(handle, opA, alpha, matA, vecX, vecY, computeType, alg, spsvDescr, bufferSize);
 #else
@@ -25415,6 +27065,7 @@ cusparseStatus_t cusparseSpSV_bufferSize(cusparseHandle_t  handle, cusparseOpera
 cusparseStatus_t cusparseSpSV_analysis(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpSV_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSV_analysis(handle, opA, alpha, matA, vecX, vecY, computeType, alg, spsvDescr, externalBuffer);
 #else
@@ -25425,6 +27076,7 @@ cusparseStatus_t cusparseSpSV_analysis(cusparseHandle_t  handle, cusparseOperati
 cusparseStatus_t cusparseSpSV_solve(cusparseHandle_t  handle, cusparseOperation_t  opA, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnVecDescr_t  vecX, cusparseDnVecDescr_t  vecY, cudaDataType  computeType, cusparseSpSVAlg_t  alg, cusparseSpSVDescr_t  spsvDescr)
 {
 	TALLY_SPD_LOG("cusparseSpSV_solve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSV_solve(handle, opA, alpha, matA, vecX, vecY, computeType, alg, spsvDescr);
 #else
@@ -25435,6 +27087,7 @@ cusparseStatus_t cusparseSpSV_solve(cusparseHandle_t  handle, cusparseOperation_
 cusparseStatus_t cusparseSpSV_updateMatrix(cusparseHandle_t  handle, cusparseSpSVDescr_t  spsvDescr, void*  newValues, cusparseSpSVUpdate_t  updatePart)
 {
 	TALLY_SPD_LOG("cusparseSpSV_updateMatrix hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSV_updateMatrix(handle, spsvDescr, newValues, updatePart);
 #else
@@ -25445,6 +27098,7 @@ cusparseStatus_t cusparseSpSV_updateMatrix(cusparseHandle_t  handle, cusparseSpS
 cusparseStatus_t cusparseSpSM_createDescr(cusparseSpSMDescr_t*  descr)
 {
 	TALLY_SPD_LOG("cusparseSpSM_createDescr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSM_createDescr(descr);
 #else
@@ -25455,6 +27109,7 @@ cusparseStatus_t cusparseSpSM_createDescr(cusparseSpSMDescr_t*  descr)
 cusparseStatus_t cusparseSpSM_destroyDescr(cusparseSpSMDescr_t  descr)
 {
 	TALLY_SPD_LOG("cusparseSpSM_destroyDescr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSM_destroyDescr(descr);
 #else
@@ -25465,6 +27120,7 @@ cusparseStatus_t cusparseSpSM_destroyDescr(cusparseSpSMDescr_t  descr)
 cusparseStatus_t cusparseSpSM_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr, size_t*  bufferSize)
 {
 	TALLY_SPD_LOG("cusparseSpSM_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSM_bufferSize(handle, opA, opB, alpha, matA, matB, matC, computeType, alg, spsmDescr, bufferSize);
 #else
@@ -25475,6 +27131,7 @@ cusparseStatus_t cusparseSpSM_bufferSize(cusparseHandle_t  handle, cusparseOpera
 cusparseStatus_t cusparseSpSM_analysis(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpSM_analysis hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSM_analysis(handle, opA, opB, alpha, matA, matB, matC, computeType, alg, spsmDescr, externalBuffer);
 #else
@@ -25485,6 +27142,7 @@ cusparseStatus_t cusparseSpSM_analysis(cusparseHandle_t  handle, cusparseOperati
 cusparseStatus_t cusparseSpSM_solve(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpSMAlg_t  alg, cusparseSpSMDescr_t  spsmDescr)
 {
 	TALLY_SPD_LOG("cusparseSpSM_solve hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpSM_solve(handle, opA, opB, alpha, matA, matB, matC, computeType, alg, spsmDescr);
 #else
@@ -25495,6 +27153,7 @@ cusparseStatus_t cusparseSpSM_solve(cusparseHandle_t  handle, cusparseOperation_
 cusparseStatus_t cusparseSpMM_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, size_t*  bufferSize)
 {
 	TALLY_SPD_LOG("cusparseSpMM_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMM_bufferSize(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, bufferSize);
 #else
@@ -25505,6 +27164,7 @@ cusparseStatus_t cusparseSpMM_bufferSize(cusparseHandle_t  handle, cusparseOpera
 cusparseStatus_t cusparseSpMM_preprocess(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpMM_preprocess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMM_preprocess(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
 #else
@@ -25515,6 +27175,7 @@ cusparseStatus_t cusparseSpMM_preprocess(cusparseHandle_t  handle, cusparseOpera
 cusparseStatus_t cusparseSpMM(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMAlg_t  alg, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpMM hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMM(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
 #else
@@ -25525,6 +27186,7 @@ cusparseStatus_t cusparseSpMM(cusparseHandle_t  handle, cusparseOperation_t  opA
 cusparseStatus_t cusparseSpGEMM_createDescr(cusparseSpGEMMDescr_t*  descr)
 {
 	TALLY_SPD_LOG("cusparseSpGEMM_createDescr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMM_createDescr(descr);
 #else
@@ -25535,6 +27197,7 @@ cusparseStatus_t cusparseSpGEMM_createDescr(cusparseSpGEMMDescr_t*  descr)
 cusparseStatus_t cusparseSpGEMM_destroyDescr(cusparseSpGEMMDescr_t  descr)
 {
 	TALLY_SPD_LOG("cusparseSpGEMM_destroyDescr hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMM_destroyDescr(descr);
 #else
@@ -25545,6 +27208,7 @@ cusparseStatus_t cusparseSpGEMM_destroyDescr(cusparseSpGEMMDescr_t  descr)
 cusparseStatus_t cusparseSpGEMM_workEstimation(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize1, void*  externalBuffer1)
 {
 	TALLY_SPD_LOG("cusparseSpGEMM_workEstimation hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMM_workEstimation(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr, bufferSize1, externalBuffer1);
 #else
@@ -25555,6 +27219,7 @@ cusparseStatus_t cusparseSpGEMM_workEstimation(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseSpGEMM_getNumProducts(cusparseSpGEMMDescr_t  spgemmDescr, int64_t*  num_prods)
 {
 	TALLY_SPD_LOG("cusparseSpGEMM_getNumProducts hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMM_getNumProducts(spgemmDescr, num_prods);
 #else
@@ -25565,6 +27230,7 @@ cusparseStatus_t cusparseSpGEMM_getNumProducts(cusparseSpGEMMDescr_t  spgemmDesc
 cusparseStatus_t cusparseSpGEMM_estimateMemory(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, float  chunk_fraction, size_t*  bufferSize3, void*  externalBuffer3, size_t*  bufferSize2)
 {
 	TALLY_SPD_LOG("cusparseSpGEMM_estimateMemory hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMM_estimateMemory(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr, chunk_fraction, bufferSize3, externalBuffer3, bufferSize2);
 #else
@@ -25575,6 +27241,7 @@ cusparseStatus_t cusparseSpGEMM_estimateMemory(cusparseHandle_t  handle, cuspars
 cusparseStatus_t cusparseSpGEMM_compute(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize2, void*  externalBuffer2)
 {
 	TALLY_SPD_LOG("cusparseSpGEMM_compute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMM_compute(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr, bufferSize2, externalBuffer2);
 #else
@@ -25585,6 +27252,7 @@ cusparseStatus_t cusparseSpGEMM_compute(cusparseHandle_t  handle, cusparseOperat
 cusparseStatus_t cusparseSpGEMM_copy(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr)
 {
 	TALLY_SPD_LOG("cusparseSpGEMM_copy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMM_copy(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr);
 #else
@@ -25595,6 +27263,7 @@ cusparseStatus_t cusparseSpGEMM_copy(cusparseHandle_t  handle, cusparseOperation
 cusparseStatus_t cusparseSpGEMMreuse_workEstimation(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize1, void*  externalBuffer1)
 {
 	TALLY_SPD_LOG("cusparseSpGEMMreuse_workEstimation hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMMreuse_workEstimation(handle, opA, opB, matA, matB, matC, alg, spgemmDescr, bufferSize1, externalBuffer1);
 #else
@@ -25605,6 +27274,7 @@ cusparseStatus_t cusparseSpGEMMreuse_workEstimation(cusparseHandle_t  handle, cu
 cusparseStatus_t cusparseSpGEMMreuse_nnz(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize2, void*  externalBuffer2, size_t*  bufferSize3, void*  externalBuffer3, size_t*  bufferSize4, void*  externalBuffer4)
 {
 	TALLY_SPD_LOG("cusparseSpGEMMreuse_nnz hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMMreuse_nnz(handle, opA, opB, matA, matB, matC, alg, spgemmDescr, bufferSize2, externalBuffer2, bufferSize3, externalBuffer3, bufferSize4, externalBuffer4);
 #else
@@ -25615,6 +27285,7 @@ cusparseStatus_t cusparseSpGEMMreuse_nnz(cusparseHandle_t  handle, cusparseOpera
 cusparseStatus_t cusparseSpGEMMreuse_copy(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, cusparseSpMatDescr_t  matC, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr, size_t*  bufferSize5, void*  externalBuffer5)
 {
 	TALLY_SPD_LOG("cusparseSpGEMMreuse_copy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMMreuse_copy(handle, opA, opB, matA, matB, matC, alg, spgemmDescr, bufferSize5, externalBuffer5);
 #else
@@ -25625,6 +27296,7 @@ cusparseStatus_t cusparseSpGEMMreuse_copy(cusparseHandle_t  handle, cusparseOper
 cusparseStatus_t cusparseSpGEMMreuse_compute(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstSpMatDescr_t  matA, cusparseConstSpMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSpGEMMAlg_t  alg, cusparseSpGEMMDescr_t  spgemmDescr)
 {
 	TALLY_SPD_LOG("cusparseSpGEMMreuse_compute hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpGEMMreuse_compute(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, spgemmDescr);
 #else
@@ -25635,6 +27307,7 @@ cusparseStatus_t cusparseSpGEMMreuse_compute(cusparseHandle_t  handle, cusparseO
 cusparseStatus_t cusparseSDDMM_bufferSize(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, size_t*  bufferSize)
 {
 	TALLY_SPD_LOG("cusparseSDDMM_bufferSize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSDDMM_bufferSize(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, bufferSize);
 #else
@@ -25645,6 +27318,7 @@ cusparseStatus_t cusparseSDDMM_bufferSize(cusparseHandle_t  handle, cusparseOper
 cusparseStatus_t cusparseSDDMM_preprocess(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseSDDMM_preprocess hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSDDMM_preprocess(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
 #else
@@ -25655,6 +27329,7 @@ cusparseStatus_t cusparseSDDMM_preprocess(cusparseHandle_t  handle, cusparseOper
 cusparseStatus_t cusparseSDDMM(cusparseHandle_t  handle, cusparseOperation_t  opA, cusparseOperation_t  opB, const void*  alpha, cusparseConstDnMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, const void*  beta, cusparseSpMatDescr_t  matC, cudaDataType  computeType, cusparseSDDMMAlg_t  alg, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseSDDMM hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSDDMM(handle, opA, opB, alpha, matA, matB, beta, matC, computeType, alg, externalBuffer);
 #else
@@ -25665,6 +27340,7 @@ cusparseStatus_t cusparseSDDMM(cusparseHandle_t  handle, cusparseOperation_t  op
 cusparseStatus_t cusparseSpMMOp_createPlan(cusparseHandle_t  handle, cusparseSpMMOpPlan_t*  plan, cusparseOperation_t  opA, cusparseOperation_t  opB, cusparseConstSpMatDescr_t  matA, cusparseConstDnMatDescr_t  matB, cusparseDnMatDescr_t  matC, cudaDataType  computeType, cusparseSpMMOpAlg_t  alg, const void*  addOperationNvvmBuffer, size_t  addOperationBufferSize, const void*  mulOperationNvvmBuffer, size_t  mulOperationBufferSize, const void*  epilogueNvvmBuffer, size_t  epilogueBufferSize, size_t*  SpMMWorkspaceSize)
 {
 	TALLY_SPD_LOG("cusparseSpMMOp_createPlan hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMMOp_createPlan(handle, plan, opA, opB, matA, matB, matC, computeType, alg, addOperationNvvmBuffer, addOperationBufferSize, mulOperationNvvmBuffer, mulOperationBufferSize, epilogueNvvmBuffer, epilogueBufferSize, SpMMWorkspaceSize);
 #else
@@ -25675,6 +27351,7 @@ cusparseStatus_t cusparseSpMMOp_createPlan(cusparseHandle_t  handle, cusparseSpM
 cusparseStatus_t cusparseSpMMOp(cusparseSpMMOpPlan_t  plan, void*  externalBuffer)
 {
 	TALLY_SPD_LOG("cusparseSpMMOp hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMMOp(plan, externalBuffer);
 #else
@@ -25685,6 +27362,7 @@ cusparseStatus_t cusparseSpMMOp(cusparseSpMMOpPlan_t  plan, void*  externalBuffe
 cusparseStatus_t cusparseSpMMOp_destroyPlan(cusparseSpMMOpPlan_t  plan)
 {
 	TALLY_SPD_LOG("cusparseSpMMOp_destroyPlan hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lcusparseSpMMOp_destroyPlan(plan);
 #else
@@ -25695,6 +27373,7 @@ cusparseStatus_t cusparseSpMMOp_destroyPlan(cusparseSpMMOpPlan_t  plan)
 ncclResult_t ncclMemAlloc(void**  ptr, size_t  size)
 {
 	TALLY_SPD_LOG("ncclMemAlloc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclMemAlloc(ptr, size);
 #else
@@ -25705,6 +27384,7 @@ ncclResult_t ncclMemAlloc(void**  ptr, size_t  size)
 ncclResult_t pncclMemAlloc(void**  ptr, size_t  size)
 {
 	TALLY_SPD_LOG("pncclMemAlloc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclMemAlloc(ptr, size);
 #else
@@ -25715,6 +27395,7 @@ ncclResult_t pncclMemAlloc(void**  ptr, size_t  size)
 ncclResult_t ncclMemFree(void * ptr)
 {
 	TALLY_SPD_LOG("ncclMemFree hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclMemFree(ptr);
 #else
@@ -25725,6 +27406,7 @@ ncclResult_t ncclMemFree(void * ptr)
 ncclResult_t pncclMemFree(void * ptr)
 {
 	TALLY_SPD_LOG("pncclMemFree hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclMemFree(ptr);
 #else
@@ -25735,6 +27417,7 @@ ncclResult_t pncclMemFree(void * ptr)
 ncclResult_t ncclGetVersion(int * version)
 {
 	TALLY_SPD_LOG("ncclGetVersion hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclGetVersion(version);
 #else
@@ -25745,6 +27428,7 @@ ncclResult_t ncclGetVersion(int * version)
 ncclResult_t pncclGetVersion(int * version)
 {
 	TALLY_SPD_LOG("pncclGetVersion hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclGetVersion(version);
 #else
@@ -25755,8 +27439,8 @@ ncclResult_t pncclGetVersion(int * version)
 ncclResult_t ncclGetUniqueId(ncclUniqueId*  uniqueId)
 {
 	TALLY_SPD_LOG("ncclGetUniqueId hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lncclGetUniqueId(uniqueId);
 #else
@@ -25796,6 +27480,7 @@ ncclResult_t ncclGetUniqueId(ncclUniqueId*  uniqueId)
 ncclResult_t pncclGetUniqueId(ncclUniqueId*  uniqueId)
 {
 	TALLY_SPD_LOG("pncclGetUniqueId hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclGetUniqueId(uniqueId);
 #else
@@ -25806,6 +27491,7 @@ ncclResult_t pncclGetUniqueId(ncclUniqueId*  uniqueId)
 ncclResult_t pncclCommInitRankConfig(ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank, ncclConfig_t*  config)
 {
 	TALLY_SPD_LOG("pncclCommInitRankConfig hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommInitRankConfig(comm, nranks, commId, rank, config);
 #else
@@ -25816,8 +27502,8 @@ ncclResult_t pncclCommInitRankConfig(ncclComm_t*  comm, int  nranks, ncclUniqueI
 ncclResult_t ncclCommInitRank(ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank)
 {
 	TALLY_SPD_LOG("ncclCommInitRank hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lncclCommInitRank(comm, nranks, commId, rank);
 #else
@@ -25860,6 +27546,7 @@ ncclResult_t ncclCommInitRank(ncclComm_t*  comm, int  nranks, ncclUniqueId  comm
 ncclResult_t pncclCommInitRank(ncclComm_t*  comm, int  nranks, ncclUniqueId  commId, int  rank)
 {
 	TALLY_SPD_LOG("pncclCommInitRank hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommInitRank(comm, nranks, commId, rank);
 #else
@@ -25870,6 +27557,7 @@ ncclResult_t pncclCommInitRank(ncclComm_t*  comm, int  nranks, ncclUniqueId  com
 ncclResult_t ncclCommInitAll(ncclComm_t*  comm, int  ndev, const int*  devlist)
 {
 	TALLY_SPD_LOG("ncclCommInitAll hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclCommInitAll(comm, ndev, devlist);
 #else
@@ -25880,6 +27568,7 @@ ncclResult_t ncclCommInitAll(ncclComm_t*  comm, int  ndev, const int*  devlist)
 ncclResult_t pncclCommInitAll(ncclComm_t*  comm, int  ndev, const int*  devlist)
 {
 	TALLY_SPD_LOG("pncclCommInitAll hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommInitAll(comm, ndev, devlist);
 #else
@@ -25890,6 +27579,7 @@ ncclResult_t pncclCommInitAll(ncclComm_t*  comm, int  ndev, const int*  devlist)
 ncclResult_t ncclCommFinalize(ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("ncclCommFinalize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclCommFinalize(comm);
 #else
@@ -25900,6 +27590,7 @@ ncclResult_t ncclCommFinalize(ncclComm_t  comm)
 ncclResult_t pncclCommFinalize(ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("pncclCommFinalize hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommFinalize(comm);
 #else
@@ -25910,8 +27601,8 @@ ncclResult_t pncclCommFinalize(ncclComm_t  comm)
 ncclResult_t ncclCommDestroy(ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("ncclCommDestroy hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lncclCommDestroy(comm);
 #else
@@ -25950,6 +27641,7 @@ ncclResult_t ncclCommDestroy(ncclComm_t  comm)
 ncclResult_t pncclCommDestroy(ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("pncclCommDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommDestroy(comm);
 #else
@@ -25960,8 +27652,8 @@ ncclResult_t pncclCommDestroy(ncclComm_t  comm)
 ncclResult_t ncclCommAbort(ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("ncclCommAbort hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lncclCommAbort(comm);
 #else
@@ -26000,6 +27692,7 @@ ncclResult_t ncclCommAbort(ncclComm_t  comm)
 ncclResult_t pncclCommAbort(ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("pncclCommAbort hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommAbort(comm);
 #else
@@ -26010,6 +27703,7 @@ ncclResult_t pncclCommAbort(ncclComm_t  comm)
 ncclResult_t ncclCommSplit(ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config)
 {
 	TALLY_SPD_LOG("ncclCommSplit hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclCommSplit(comm, color, key, newcomm, config);
 #else
@@ -26020,6 +27714,7 @@ ncclResult_t ncclCommSplit(ncclComm_t  comm, int  color, int  key, ncclComm_t * 
 ncclResult_t pncclCommSplit(ncclComm_t  comm, int  color, int  key, ncclComm_t * newcomm, ncclConfig_t*  config)
 {
 	TALLY_SPD_LOG("pncclCommSplit hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommSplit(comm, color, key, newcomm, config);
 #else
@@ -26030,6 +27725,7 @@ ncclResult_t pncclCommSplit(ncclComm_t  comm, int  color, int  key, ncclComm_t *
 const char* ncclGetErrorString(ncclResult_t  result)
 {
 	TALLY_SPD_LOG("ncclGetErrorString hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclGetErrorString(result);
 #else
@@ -26040,6 +27736,7 @@ const char* ncclGetErrorString(ncclResult_t  result)
 const char* pncclGetErrorString(ncclResult_t  result)
 {
 	TALLY_SPD_LOG("pncclGetErrorString hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclGetErrorString(result);
 #else
@@ -26050,6 +27747,7 @@ const char* pncclGetErrorString(ncclResult_t  result)
 const char* ncclGetLastError(ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("ncclGetLastError hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclGetLastError(comm);
 #else
@@ -26060,6 +27758,7 @@ const char* ncclGetLastError(ncclComm_t  comm)
 const char* pncclGetLastError(ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("pncclGetLastError hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclGetLastError(comm);
 #else
@@ -26070,8 +27769,8 @@ const char* pncclGetLastError(ncclComm_t  comm)
 ncclResult_t ncclCommGetAsyncError(ncclComm_t  comm, ncclResult_t * asyncError)
 {
 	TALLY_SPD_LOG("ncclCommGetAsyncError hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lncclCommGetAsyncError(comm, asyncError);
 #else
@@ -26112,6 +27811,7 @@ ncclResult_t ncclCommGetAsyncError(ncclComm_t  comm, ncclResult_t * asyncError)
 ncclResult_t pncclCommGetAsyncError(ncclComm_t  comm, ncclResult_t * asyncError)
 {
 	TALLY_SPD_LOG("pncclCommGetAsyncError hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommGetAsyncError(comm, asyncError);
 #else
@@ -26122,6 +27822,7 @@ ncclResult_t pncclCommGetAsyncError(ncclComm_t  comm, ncclResult_t * asyncError)
 ncclResult_t ncclCommCount(const ncclComm_t  comm, int*  count)
 {
 	TALLY_SPD_LOG("ncclCommCount hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclCommCount(comm, count);
 #else
@@ -26132,6 +27833,7 @@ ncclResult_t ncclCommCount(const ncclComm_t  comm, int*  count)
 ncclResult_t pncclCommCount(const ncclComm_t  comm, int*  count)
 {
 	TALLY_SPD_LOG("pncclCommCount hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommCount(comm, count);
 #else
@@ -26142,6 +27844,7 @@ ncclResult_t pncclCommCount(const ncclComm_t  comm, int*  count)
 ncclResult_t ncclCommCuDevice(const ncclComm_t  comm, int*  device)
 {
 	TALLY_SPD_LOG("ncclCommCuDevice hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclCommCuDevice(comm, device);
 #else
@@ -26152,6 +27855,7 @@ ncclResult_t ncclCommCuDevice(const ncclComm_t  comm, int*  device)
 ncclResult_t pncclCommCuDevice(const ncclComm_t  comm, int*  device)
 {
 	TALLY_SPD_LOG("pncclCommCuDevice hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommCuDevice(comm, device);
 #else
@@ -26162,6 +27866,7 @@ ncclResult_t pncclCommCuDevice(const ncclComm_t  comm, int*  device)
 ncclResult_t ncclCommUserRank(const ncclComm_t  comm, int*  rank)
 {
 	TALLY_SPD_LOG("ncclCommUserRank hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclCommUserRank(comm, rank);
 #else
@@ -26172,6 +27877,7 @@ ncclResult_t ncclCommUserRank(const ncclComm_t  comm, int*  rank)
 ncclResult_t pncclCommUserRank(const ncclComm_t  comm, int*  rank)
 {
 	TALLY_SPD_LOG("pncclCommUserRank hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommUserRank(comm, rank);
 #else
@@ -26182,6 +27888,7 @@ ncclResult_t pncclCommUserRank(const ncclComm_t  comm, int*  rank)
 ncclResult_t ncclRedOpCreatePreMulSum(ncclRedOp_t * op, void * scalar, ncclDataType_t  datatype, ncclScalarResidence_t  residence, ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("ncclRedOpCreatePreMulSum hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclRedOpCreatePreMulSum(op, scalar, datatype, residence, comm);
 #else
@@ -26192,6 +27899,7 @@ ncclResult_t ncclRedOpCreatePreMulSum(ncclRedOp_t * op, void * scalar, ncclDataT
 ncclResult_t pncclRedOpCreatePreMulSum(ncclRedOp_t * op, void * scalar, ncclDataType_t  datatype, ncclScalarResidence_t  residence, ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("pncclRedOpCreatePreMulSum hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclRedOpCreatePreMulSum(op, scalar, datatype, residence, comm);
 #else
@@ -26202,6 +27910,7 @@ ncclResult_t pncclRedOpCreatePreMulSum(ncclRedOp_t * op, void * scalar, ncclData
 ncclResult_t ncclRedOpDestroy(ncclRedOp_t  op, ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("ncclRedOpDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclRedOpDestroy(op, comm);
 #else
@@ -26212,6 +27921,7 @@ ncclResult_t ncclRedOpDestroy(ncclRedOp_t  op, ncclComm_t  comm)
 ncclResult_t pncclRedOpDestroy(ncclRedOp_t  op, ncclComm_t  comm)
 {
 	TALLY_SPD_LOG("pncclRedOpDestroy hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclRedOpDestroy(op, comm);
 #else
@@ -26222,6 +27932,7 @@ ncclResult_t pncclRedOpDestroy(ncclRedOp_t  op, ncclComm_t  comm)
 ncclResult_t ncclReduce(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, int  root, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("ncclReduce hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclReduce(sendbuff, recvbuff, count, datatype, op, root, comm, stream);
 #else
@@ -26232,6 +27943,7 @@ ncclResult_t ncclReduce(const void*  sendbuff, void*  recvbuff, size_t  count, n
 ncclResult_t pncclReduce(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, int  root, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("pncclReduce hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclReduce(sendbuff, recvbuff, count, datatype, op, root, comm, stream);
 #else
@@ -26242,8 +27954,8 @@ ncclResult_t pncclReduce(const void*  sendbuff, void*  recvbuff, size_t  count, 
 ncclResult_t ncclBcast(void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("ncclBcast hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lncclBcast(buff, count, datatype, root, comm, stream);
 #else
@@ -26287,6 +27999,7 @@ ncclResult_t ncclBcast(void*  buff, size_t  count, ncclDataType_t  datatype, int
 ncclResult_t pncclBcast(void*  buff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("pncclBcast hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclBcast(buff, count, datatype, root, comm, stream);
 #else
@@ -26297,6 +28010,7 @@ ncclResult_t pncclBcast(void*  buff, size_t  count, ncclDataType_t  datatype, in
 ncclResult_t ncclBroadcast(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("ncclBroadcast hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclBroadcast(sendbuff, recvbuff, count, datatype, root, comm, stream);
 #else
@@ -26307,6 +28021,7 @@ ncclResult_t ncclBroadcast(const void*  sendbuff, void*  recvbuff, size_t  count
 ncclResult_t pncclBroadcast(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  root, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("pncclBroadcast hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclBroadcast(sendbuff, recvbuff, count, datatype, root, comm, stream);
 #else
@@ -26317,8 +28032,8 @@ ncclResult_t pncclBroadcast(const void*  sendbuff, void*  recvbuff, size_t  coun
 ncclResult_t ncclAllReduce(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("ncclAllReduce hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lncclAllReduce(sendbuff, recvbuff, count, datatype, op, comm, stream);
 #else
@@ -26363,6 +28078,7 @@ ncclResult_t ncclAllReduce(const void*  sendbuff, void*  recvbuff, size_t  count
 ncclResult_t pncclAllReduce(const void*  sendbuff, void*  recvbuff, size_t  count, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("pncclAllReduce hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclAllReduce(sendbuff, recvbuff, count, datatype, op, comm, stream);
 #else
@@ -26373,6 +28089,7 @@ ncclResult_t pncclAllReduce(const void*  sendbuff, void*  recvbuff, size_t  coun
 ncclResult_t ncclReduceScatter(const void*  sendbuff, void*  recvbuff, size_t  recvcount, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("ncclReduceScatter hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclReduceScatter(sendbuff, recvbuff, recvcount, datatype, op, comm, stream);
 #else
@@ -26383,6 +28100,7 @@ ncclResult_t ncclReduceScatter(const void*  sendbuff, void*  recvbuff, size_t  r
 ncclResult_t pncclReduceScatter(const void*  sendbuff, void*  recvbuff, size_t  recvcount, ncclDataType_t  datatype, ncclRedOp_t  op, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("pncclReduceScatter hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclReduceScatter(sendbuff, recvbuff, recvcount, datatype, op, comm, stream);
 #else
@@ -26393,8 +28111,8 @@ ncclResult_t pncclReduceScatter(const void*  sendbuff, void*  recvbuff, size_t  
 ncclResult_t ncclAllGather(const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("ncclAllGather hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lncclAllGather(sendbuff, recvbuff, sendcount, datatype, comm, stream);
 #else
@@ -26438,6 +28156,7 @@ ncclResult_t ncclAllGather(const void*  sendbuff, void*  recvbuff, size_t  sendc
 ncclResult_t pncclAllGather(const void*  sendbuff, void*  recvbuff, size_t  sendcount, ncclDataType_t  datatype, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("pncclAllGather hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclAllGather(sendbuff, recvbuff, sendcount, datatype, comm, stream);
 #else
@@ -26448,6 +28167,7 @@ ncclResult_t pncclAllGather(const void*  sendbuff, void*  recvbuff, size_t  send
 ncclResult_t ncclSend(const void*  sendbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("ncclSend hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclSend(sendbuff, count, datatype, peer, comm, stream);
 #else
@@ -26458,6 +28178,7 @@ ncclResult_t ncclSend(const void*  sendbuff, size_t  count, ncclDataType_t  data
 ncclResult_t pncclSend(const void*  sendbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("pncclSend hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclSend(sendbuff, count, datatype, peer, comm, stream);
 #else
@@ -26468,6 +28189,7 @@ ncclResult_t pncclSend(const void*  sendbuff, size_t  count, ncclDataType_t  dat
 ncclResult_t pncclRecv(void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("pncclRecv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclRecv(recvbuff, count, datatype, peer, comm, stream);
 #else
@@ -26478,6 +28200,7 @@ ncclResult_t pncclRecv(void*  recvbuff, size_t  count, ncclDataType_t  datatype,
 ncclResult_t ncclRecv(void*  recvbuff, size_t  count, ncclDataType_t  datatype, int  peer, ncclComm_t  comm, cudaStream_t  stream)
 {
 	TALLY_SPD_LOG("ncclRecv hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclRecv(recvbuff, count, datatype, peer, comm, stream);
 #else
@@ -26488,8 +28211,8 @@ ncclResult_t ncclRecv(void*  recvbuff, size_t  count, ncclDataType_t  datatype, 
 ncclResult_t ncclGroupStart()
 {
 	TALLY_SPD_LOG("ncclGroupStart hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lncclGroupStart();
 #else
@@ -26527,6 +28250,7 @@ ncclResult_t ncclGroupStart()
 ncclResult_t pncclGroupStart()
 {
 	TALLY_SPD_LOG("pncclGroupStart hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclGroupStart();
 #else
@@ -26537,8 +28261,8 @@ ncclResult_t pncclGroupStart()
 ncclResult_t ncclGroupEnd()
 {
 	TALLY_SPD_LOG("ncclGroupEnd hooked");
-	TALLY_CLIENT_PROFILE_START;
 	IOX_CLIENT_ACQUIRE_LOCK;
+	TALLY_CLIENT_PROFILE_START;
 #if defined(RUN_LOCALLY)
 	auto err = lncclGroupEnd();
 #else
@@ -26576,6 +28300,7 @@ ncclResult_t ncclGroupEnd()
 ncclResult_t pncclGroupEnd()
 {
 	TALLY_SPD_LOG("pncclGroupEnd hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclGroupEnd();
 #else
@@ -26586,6 +28311,7 @@ ncclResult_t pncclGroupEnd()
 ncclResult_t ncclCommRegister(const ncclComm_t  comm, void*  buff, size_t  size, void**  handle)
 {
 	TALLY_SPD_LOG("ncclCommRegister hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclCommRegister(comm, buff, size, handle);
 #else
@@ -26596,6 +28322,7 @@ ncclResult_t ncclCommRegister(const ncclComm_t  comm, void*  buff, size_t  size,
 ncclResult_t pncclCommRegister(const ncclComm_t  comm, void*  buff, size_t  size, void**  handle)
 {
 	TALLY_SPD_LOG("pncclCommRegister hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommRegister(comm, buff, size, handle);
 #else
@@ -26606,6 +28333,7 @@ ncclResult_t pncclCommRegister(const ncclComm_t  comm, void*  buff, size_t  size
 ncclResult_t ncclCommDeregister(const ncclComm_t  comm, void*  handle)
 {
 	TALLY_SPD_LOG("ncclCommDeregister hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lncclCommDeregister(comm, handle);
 #else
@@ -26616,6 +28344,7 @@ ncclResult_t ncclCommDeregister(const ncclComm_t  comm, void*  handle)
 ncclResult_t pncclCommDeregister(const ncclComm_t  comm, void*  handle)
 {
 	TALLY_SPD_LOG("pncclCommDeregister hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
 	return lpncclCommDeregister(comm, handle);
 #else

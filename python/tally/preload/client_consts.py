@@ -203,9 +203,6 @@ CLIENT_PRELOAD_TEMPLATE = """
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_TOP = """
-
-
-
 #ifndef TALLY_SERVER_H
 #define TALLY_SERVER_H
 
@@ -465,8 +462,9 @@ public:
 	std::pair<partial_t, void *> cudnnBackendExecute_Partial(cudnnBackendExecuteArg *, cudnnStatus_t *err);
 	std::pair<partial_t, void *> cublasGemmEx_Partial(cublasGemmExArg *);
 	std::pair<partial_t, void *> cublasGemmStridedBatchedEx_Partial(cublasGemmStridedBatchedExArg *);
-    std::pair<partial_t, void *> cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *__args);
-    
+    std::pair<partial_t, void *> cublasSgemmStridedBatched_Partial(cublasSgemmStridedBatchedArg *);
+	std::pair<partial_t, void *> cudnnReduceTensor_Partial(cudnnReduceTensorArg *, void *indices);
+
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """

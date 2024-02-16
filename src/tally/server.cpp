@@ -5265,5 +5265,46 @@ void TallyServer::handle_cuStreamIsCapturing(void *__args, iox::popo::UntypedSer
 void TallyServer::handle_cudnnReduceTensor(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
 {
 	TALLY_SPD_LOG("Received request: cudnnReduceTensor");
-	throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unimplemented.");
+	auto args = (cudnnReduceTensorArg *) __args;
+    auto msg_header = static_cast<const MessageHeader_t*>(requestPayload);
+    int32_t client_id = msg_header->client_id;
+
+    void *indices = nullptr;
+    if (args->indices) {
+        indices = malloc(args->indicesSizeInBytes);
+    }
+
+    auto partial_and_args = cudnnReduceTensor_Partial(args, indices);
+
+    client_data_all[client_id].queue_size++;
+    client_data_all[client_id].kernel_dispatch_queue.enqueue(
+        KernelLaunchWrapper(
+            partial_and_args.first,
+            partial_and_args.second,
+            true,
+            CudaLaunchCall(0, 0, 0),
+            NULL,
+            0
+        )
+    );
+
+    wait_until_launch_queue_empty(client_id);
+
+    size_t res_len = sizeof(cudnnStatus_t) + args->workspaceSizeInBytes;
+
+    auto requestHeader = iox::popo::RequestHeader::fromPayload(requestPayload);
+    iox_server->loan(requestHeader, res_len, alignof(cudnnReduceTensorResponse))
+        .and_then([&](auto& responsePayload) {
+            auto response = static_cast<cudnnReduceTensorResponse*>(responsePayload);
+            response->err = CUDNN_STATUS_SUCCESS;
+            if (indices) {
+                memcpy(response->indices, indices, args->indicesSizeInBytes);
+                free(indices);
+            }
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }

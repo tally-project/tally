@@ -446,7 +446,9 @@ public:
 
 	void free_args()
 	{
-		free(args);
+        if (args) {
+		    free(args);
+        }
 	}
 };
 

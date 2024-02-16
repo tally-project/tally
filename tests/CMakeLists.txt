@@ -291,3 +291,16 @@ set_target_properties(test_nccl PROPERTIES
     CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
     CUDA_RUNTIME_LIBRARY Shared
 )
+
+add_executable(cudnnReduceTensor cuda_samples_basic/cudnnReduceTensor.cu)
+
+target_link_libraries(cudnnReduceTensor
+    cuda
+    cudart
+    cudnn
+)
+
+set_target_properties(cudnnReduceTensor PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)

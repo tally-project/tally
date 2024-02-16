@@ -254,6 +254,7 @@ def gen_func_client_preload(func_sig):
     func_preload_builder += "{\n"
 
     func_preload_builder += f"\tTALLY_SPD_LOG(\"{func_name} hooked\");\n"
+    func_preload_builder += "\tIOX_CLIENT_ACQUIRE_LOCK;\n"
 
     if is_get_param_func(func_name):
         group = get_param_group(func_name)
@@ -261,7 +262,6 @@ def gen_func_client_preload(func_sig):
         res_struct = f"{func_name}Response"
 
         func_preload_builder += "\tTALLY_CLIENT_PROFILE_START;\n"
-        func_preload_builder += "\tIOX_CLIENT_ACQUIRE_LOCK;\n"
         func_preload_builder += "#if defined(RUN_LOCALLY)\n"
         func_preload_builder += f"\tauto err = l{func_name}({arg_names_str});\n"
 
@@ -300,7 +300,6 @@ def gen_func_client_preload(func_sig):
     
     elif func_name in FORWARD_API_CALLS:
         func_preload_builder += "\tTALLY_CLIENT_PROFILE_START;\n"
-        func_preload_builder += "\tIOX_CLIENT_ACQUIRE_LOCK;\n"
         func_preload_builder += "#if defined(RUN_LOCALLY)\n"
         func_preload_builder += f"\tauto err = l{func_name}({arg_names_str});\n"
 

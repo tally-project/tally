@@ -1505,4 +1505,24 @@ struct cuStreamIsCapturingResponse {
 	CUresult err;
 };
 
+struct cudnnReduceTensorArg {
+	cudnnHandle_t  handle;
+    cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+    void * indices;
+    size_t  indicesSizeInBytes;
+    void * workspace;
+    size_t  workspaceSizeInBytes;
+    uint64_t alpha;
+    cudnnTensorDescriptor_t  aDesc;
+    void * A;
+    uint64_t beta;
+    cudnnTensorDescriptor_t  cDesc;
+    void * C;
+};
+
+struct cudnnReduceTensorResponse {
+	cudnnStatus_t err;
+    char indices[];
+};
+
 #endif // TALLY_DEF_H
