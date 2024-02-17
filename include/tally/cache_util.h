@@ -28,7 +28,7 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
     for (auto &capability : candidate_cuda_compute_capabilities) {
         exec(
             "cuobjdump " + cubin_tmp_path + " -elf" + 
-                " -arch sm_" + std::string(CUDA_COMPUTE_CAPABILITY) +
+                " -arch sm_" + std::string(capability) +
                 " > " + tmp_elf_file_name
         );
 

@@ -115,6 +115,7 @@ std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path)
 {
     std::vector<std::string> ptx_file_names;
     auto candidate_cuda_compute_capabilities = get_candidate_cuda_compute_capabilities();
+    bool has_failed = false;
 
     for (auto &capability : candidate_cuda_compute_capabilities) {
 
@@ -134,11 +135,20 @@ std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path)
 
         if (ptx_file_names.empty()) {
             TALLY_SPD_WARN("Fail to find ptx code from " + cubin_path + " for compute capability " + capability);
+            has_failed = true;
             continue;
+        }
+
+        if (has_failed) {
+            TALLY_SPD_WARN("Fall back to use ptx code for compute capability " + capability);
         }
 
         exec("cuobjdump " + arch_str + " -xptx all " + cubin_path);
         break;
+    }
+
+    if (ptx_file_names.empty()) {
+        throw std::runtime_error("Fail to find ptx code from " + cubin_path);
     }
 
     return ptx_file_names;
