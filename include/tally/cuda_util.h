@@ -21,17 +21,17 @@
 #include <cudnn.h>
 #include <fatbinary_section.h>
 
-// These should be queried by CUDA API 
-// But just set them here for now
-extern std::string CUDA_COMPUTE_VERSION;
+// GPU Specs
+extern bool CUDA_SPECS_INITIALIZED;
+
+extern std::vector<std::string> CUDA_COMPUTE_CAPABILITIES;
+extern std::string CUDA_COMPUTE_CAPABILITY;
 extern int CUDA_NUM_SM;
 extern int CUDA_MAX_NUM_THREADS_PER_SM;
 extern int CUDA_MAX_NUM_REGISTERS_PER_SM;
 extern int CUDA_MAX_SHM_BYTES_PER_SM;
 
 extern uint32_t FATBIN_MAGIC_NUMBER;
-
-extern bool CUDA_SPECS_INITIALIZED;
 
 struct mem_region {
     void *addr;
@@ -106,6 +106,8 @@ void check(T err, const char* const func, const char* const file, const int line
 void implicit_init_cuda_ctx();
 void register_cuda_specs();
 CUDA_MODULE_TYPE get_cuda_module_type(const void * image);
+
+std::vector<std::string> get_candidate_cuda_compute_capabilities();
 
 inline cutlassOperation_t cublas_op_to_cutlass_op(cublasOperation_t op)
 {

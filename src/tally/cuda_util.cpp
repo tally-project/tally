@@ -4,6 +4,7 @@
 
 #include <boost/regex.hpp>
 
+#include <tally/log.h>
 #include <tally/env.h>
 #include <tally/util.h>
 #include <tally/cuda_util.h>
@@ -12,7 +13,8 @@
 
 bool CUDA_SPECS_INITIALIZED = false;
 
-std::string CUDA_COMPUTE_VERSION;
+std::vector<std::string> CUDA_COMPUTE_CAPABILITIES = {"86", "80"};
+std::string CUDA_COMPUTE_CAPABILITY;
 int CUDA_NUM_SM;
 int CUDA_MAX_NUM_THREADS_PER_SM;
 int CUDA_MAX_NUM_REGISTERS_PER_SM;
@@ -33,7 +35,8 @@ void register_cuda_specs()
         cudaDeviceProp deviceProp;
         cudaGetDeviceProperties(&deviceProp, 0);
 
-        CUDA_COMPUTE_VERSION = std::to_string(deviceProp.major) + std::to_string(deviceProp.minor);
+        // a list of candidate cuda compute capabilities 
+        CUDA_COMPUTE_CAPABILITY = std::to_string(deviceProp.major) + std::to_string(deviceProp.minor);
         CUDA_NUM_SM = deviceProp.multiProcessorCount;
         CUDA_MAX_NUM_THREADS_PER_SM = deviceProp.maxThreadsPerMultiProcessor;
         CUDA_MAX_NUM_REGISTERS_PER_SM = deviceProp.regsPerMultiprocessor;
@@ -41,6 +44,18 @@ void register_cuda_specs()
 
         CUDA_SPECS_INITIALIZED = true;
     }
+}
+
+std::vector<std::string> get_candidate_cuda_compute_capabilities()
+{
+    auto it = std::find(
+        CUDA_COMPUTE_CAPABILITIES.begin(),
+        CUDA_COMPUTE_CAPABILITIES.end(),
+        CUDA_COMPUTE_CAPABILITY
+    );
+
+    // return the capabilities <= target
+    return std::vector<std::string>(it, CUDA_COMPUTE_CAPABILITIES.end());
 }
 
 CUDA_MODULE_TYPE get_cuda_module_type(const void * image)
@@ -71,7 +86,7 @@ std::string get_fatbin_str_from_ptx_str(std::string &ptx_str)
 {
     write_str_to_file("/tmp/output.ptx", ptx_str);
 
-    std::string compute_cap = std::string(CUDA_COMPUTE_VERSION);
+    std::string compute_cap = std::string(CUDA_COMPUTE_CAPABILITY);
 
     std::string virtual_arch = "-gencode arch=compute_" + compute_cap + ",code=compute_" + compute_cap;
     std::string real_arch = "-gencode arch=compute_" + compute_cap + ",code=sm_" + compute_cap;
@@ -98,23 +113,35 @@ std::string get_fatbin_str_from_ptx_str(std::string &ptx_str)
    return a vector of the generated file names */
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path)
 {
-    auto arch_str = "-arch sm_" + std::string(CUDA_COMPUTE_VERSION);
-    exec("cuobjdump " + arch_str + " -xptx all " + cubin_path);
-    auto output = exec("cuobjdump " + cubin_path + " -lptx " + arch_str);
+    std::vector<std::string> ptx_file_names;
+    auto candidate_cuda_compute_capabilities = get_candidate_cuda_compute_capabilities();
 
-    std::stringstream ss(output.first);
-    std::vector<std::string> names;
-    std::string line;
+    for (auto &capability : candidate_cuda_compute_capabilities) {
 
-    while (std::getline(ss, line, '\n')) {
-        if (containsSubstring(line, ".ptx")) {
-            auto split_str = splitOnce(line, ":");
-            auto ptx_file_name = strip(split_str.second);
-            names.push_back(ptx_file_name);
+        auto arch_str = "-arch sm_" + std::string(capability);
+        auto output = exec("cuobjdump " + cubin_path + " -lptx " + arch_str);
+
+        std::stringstream ss(output.first);
+        std::string line;
+
+        while (std::getline(ss, line, '\n')) {
+            if (containsSubstring(line, ".ptx")) {
+                auto split_str = splitOnce(line, ":");
+                auto ptx_file_name = strip(split_str.second);
+                ptx_file_names.push_back(ptx_file_name);
+            }
         }
+
+        if (ptx_file_names.empty()) {
+            TALLY_SPD_WARN("Fail to find ptx code from " + cubin_path + " for compute capability " + capability);
+            continue;
+        }
+
+        exec("cuobjdump " + arch_str + " -xptx all " + cubin_path);
+        break;
     }
 
-    return names;
+    return ptx_file_names;
 }
 
 std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str)

@@ -28,6 +28,7 @@ std::string get_tmp_file_path(std::string suffix, int file_name=-1);
 bool numerically_close(float a, float b, float tolerance=0.005);
 std::filesystem::path get_client_preload_dir();
 std::filesystem::path get_tally_home_dir();
+bool is_file_empty(const std::string&);
 std::string get_process_name(int pid);
 std::string replace_substring(std::string& input, const std::string& oldStr, const std::string& newStr);
 

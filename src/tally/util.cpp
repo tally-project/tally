@@ -74,6 +74,14 @@ std::pair<std::string, std::string> splitOnce(const std::string& str, const std:
     return {str, ""};
 }
 
+bool is_file_empty(const std::string& path) {
+    std::ifstream file(path, std::ifstream::ate | std::ifstream::binary); // Open file at the end
+    if (!file) {
+        return true;
+    }
+    return file.tellg() == 0; // Check if the file size is 0
+}
+
 int32_t countLeftBrace(const std::string& str) {
     int32_t count = 0;
     for (char c : str) {

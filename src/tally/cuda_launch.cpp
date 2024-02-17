@@ -290,10 +290,15 @@ CUresult CudaLaunchConfig::launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
     PTBKernelArgs *ptb_args, uint32_t *curr_idx_arr, SlicedKernelArgs *slice_args)
 {
+
     if (use_original) {
 
         auto cu_func = TallyServer::server->original_kernel_map[func].func;
         assert(cu_func);
+
+        if (!cu_func) {
+            throw std::runtime_error("Error: cu_func is NULL.");
+        }
 
         auto err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
                                 blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);

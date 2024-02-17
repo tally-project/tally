@@ -20,13 +20,22 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
     std::string cubin_tmp_path = get_tmp_file_path(".cubin");
     write_binary_to_file(cubin_tmp_path, cubin_data, cubin_size);
     
+    auto candidate_cuda_compute_capabilities = get_candidate_cuda_compute_capabilities();
+
     // Extract elf code from cubin file
     std::string tmp_elf_file_name = get_tmp_file_path(".elf", elf_filename);
-    exec(
-        "cuobjdump " + cubin_tmp_path + " -elf" + 
-            " -arch sm_" + std::string(CUDA_COMPUTE_VERSION) +
-            " > " + tmp_elf_file_name
-    );
+
+    for (auto &capability : candidate_cuda_compute_capabilities) {
+        exec(
+            "cuobjdump " + cubin_tmp_path + " -elf" + 
+                " -arch sm_" + std::string(CUDA_COMPUTE_CAPABILITY) +
+                " > " + tmp_elf_file_name
+        );
+
+        if (!is_file_empty(tmp_elf_file_name)) {
+            break;
+        }
+    }
 
     // If already exists, return early
     if (TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size)) {
@@ -38,6 +47,15 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
     }
 
     TALLY_SPD_LOG_ALWAYS("Caching fatbin data of size " + std::to_string(cubin_size) + " ...");
+
+    if (is_file_empty(tmp_elf_file_name)) {
+        std::string elf_empty_warn_msg = "Fail to extract elf file from " + cubin_tmp_path + ". Tried compute capabilities:";
+        for (auto &capability : candidate_cuda_compute_capabilities) {
+            elf_empty_warn_msg += " " + capability;
+        }
+
+        TALLY_SPD_WARN(elf_empty_warn_msg);
+    }
 
     // Delete cubin file
     std::remove(cubin_tmp_path.c_str());
