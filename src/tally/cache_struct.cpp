@@ -7,17 +7,14 @@ void CubinData::compile() {
         return;
     }
 
-    std::string cubin_tmp_path = get_tmp_file_path(".cubin");
-    write_binary_to_file(cubin_tmp_path, cubin_data.c_str(), cubin_size);
+    std::string fatbin_tmp_path = get_tmp_file_path(".fatbin");
+    write_binary_to_file(fatbin_tmp_path, cubin_data.c_str(), cubin_size);
     
     // Extract PTX code from cubin file
-    auto ptx_file_names = gen_ptx_from_cubin(cubin_tmp_path);
-
-    // Delete cubin file
-    std::remove(cubin_tmp_path.c_str());
+    auto ptx_file_names = gen_ptx_from_cubin(fatbin_tmp_path);
 
     if (ptx_file_names.size() > 1) {
-        throw std::runtime_error("Assuming one fatbin only contains one ptx file");
+        throw std::runtime_error("Currently assuming one fatbin only contains one ptx file");
     }
 
     if (ptx_file_names.size() > 0) {
@@ -35,9 +32,18 @@ void CubinData::compile() {
 
     } else {
 
-        TALLY_SPD_WARN("No PTX file found in fatbin data.");
+        TALLY_SPD_WARN("No PTX file found in fatbin data - kernel transformations will be disabled.");
+
+        // ptx code will be empty
+        ptx_str = "";
+
+        std::ifstream ifs(fatbin_tmp_path, std::ios::binary);
+        fatbin_str = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 
     }
+
+    // Delete cubin file
+    std::remove(fatbin_tmp_path.c_str());
 
     compiled = true;
     TallyCache::cache->transform_cache_changed = true;

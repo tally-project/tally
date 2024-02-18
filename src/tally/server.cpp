@@ -715,7 +715,10 @@ void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_si
     using KERNEL_MAP_TYPE = folly::ConcurrentHashMap<const void*, WrappedCUfunction>;
 
     auto &transform_ptx_str = TallyCache::cache->cubin_cache.get_transform_ptx_str(cubin_data, cubin_size);
-    auto &transform_fatbin_str = TallyCache::cache->cubin_cache.get_transform_fatbin_str(cubin_data, cubin_size);
+
+    // no transform is available if ptx is not available
+    bool has_transform = transform_ptx_str != "";
+    auto &kernel_params = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
 
     auto cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
     auto &kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_uid];
@@ -724,7 +727,7 @@ void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_si
         CUmodule tranform_module = cubin_to_cu_module[cubin_uid];
 
         register_kernels_from_ptx_fatbin<KERNEL_NAME_MAP_TYPE, KERNEL_MAP_TYPE>(
-            tranform_module, transform_ptx_str, transform_fatbin_str, kernel_name_to_host_func_map, original_kernel_map,
+            tranform_module, kernel_params, has_transform, kernel_name_to_host_func_map, original_kernel_map,
             ptb_kernel_map, dynamic_ptb_kernel_map, preemptive_ptb_kernel_map, sliced_kernel_map
         );
     }

@@ -481,13 +481,11 @@ std::string get_fatbin_str_from_ptx_str(std::string &ptx_str);
 
 std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path);
 
-std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str);
-
 template <class KERNEL_NAME_MAP_TYPE, class KERNEL_MAP_TYPE>
 void register_kernels_from_ptx_fatbin(
     CUmodule cudaModule,
-    std::string &ptx_str,
-    std::string &fatbin_str,
+    std::map<std::string, std::vector<uint32_t>> &kernel_params,
+    bool has_transform,
     KERNEL_NAME_MAP_TYPE &kernel_name_map,
     KERNEL_MAP_TYPE &original_kernel_map,
     KERNEL_MAP_TYPE &ptb_kernel_map,
@@ -504,11 +502,9 @@ void register_kernels_from_ptx_fatbin(
         &sliced_kernel_map,
     };
 
-    auto kernel_names_and_nparams = get_kernel_names_and_nparams_from_ptx(ptx_str);
-    
-    for (auto &name_and_nparams : kernel_names_and_nparams) {
+    for (auto &name_and_params : kernel_params) {
 
-        auto &kernel_name = name_and_nparams.first;
+        auto &kernel_name = name_and_params.first;
 
         if (kernel_name_map.find(kernel_name) == kernel_name_map.end()) {
             continue;
@@ -516,6 +512,7 @@ void register_kernels_from_ptx_fatbin(
 
         auto host_func = kernel_name_map[kernel_name];
 
+        // make sure not registered already
         if (original_kernel_map.find(host_func) == original_kernel_map.end()) {
 
             std::vector<std::string> transform_kernel_names {
@@ -528,13 +525,18 @@ void register_kernels_from_ptx_fatbin(
    
             for (int i = 0; i < transform_kernel_names.size(); i++) {
 
-                uint32_t num_params = name_and_nparams.second;
+                uint32_t num_params = name_and_params.second.size();
 
                 auto transform_kernel_name = transform_kernel_names[i];
                 auto kernel_map_ptr = kernel_map_ptrs[i];
 
                 // Ignore kernels without parameters
                 if (i > 0 && num_params == 0) {
+                    continue;
+                }
+
+                // skip if no transform is available
+                if (i > 0 && !has_transform) {
                     continue;
                 }
 

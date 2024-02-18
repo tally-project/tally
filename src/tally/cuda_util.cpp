@@ -134,57 +134,20 @@ std::vector<std::string> gen_ptx_from_cubin(std::string cubin_path)
         }
 
         if (ptx_file_names.empty()) {
-            TALLY_SPD_WARN("Fail to find ptx code from " + cubin_path + " for compute capability " + capability);
+            // TALLY_SPD_WARN("Fail to find ptx code from " + cubin_path + " for compute capability " + capability);
             has_failed = true;
             continue;
         }
 
         if (has_failed) {
-            TALLY_SPD_WARN("Fall back to use ptx code for compute capability " + capability);
+            TALLY_SPD_WARN("Fall back to use PTX code for compute capability " + capability);
         }
 
         exec("cuobjdump " + arch_str + " -xptx all " + cubin_path);
         break;
     }
 
-    if (ptx_file_names.empty()) {
-        throw std::runtime_error("Fail to find ptx code from " + cubin_path);
-    }
-
     return ptx_file_names;
-}
-
-std::vector<std::pair<std::string, uint32_t>> get_kernel_names_and_nparams_from_ptx(std::string &ptx_str)
-{
-    std::vector<std::pair<std::string, uint32_t>> kernel_names_and_nparams;
-
-    std::stringstream ss(ptx_str);
-    std::string line;
-
-    boost::regex kernel_name_pattern("(\\.visible\\s+)?\\.entry (\\w+)");
-    boost::regex kernel_param_pattern("^placeholder$");
-    uint32_t num_params = 0;
-    std::string kernel_name;
-
-    while (std::getline(ss, line, '\n')) {
-
-        boost::smatch matches;
-        if (boost::regex_search(line, matches, kernel_name_pattern)) {
-            kernel_name = matches[2];
-            kernel_param_pattern = boost::regex("\\.param (.+) " + kernel_name + "_param_(\\d+)");
-            num_params = 0;
-        }
-
-        if (boost::regex_search(line, matches, kernel_param_pattern)) {
-            num_params += 1;
-        }
-
-        if (strip(line) == "ret;") {
-            kernel_names_and_nparams.push_back(std::make_pair(kernel_name, num_params));
-        }
-    }
-
-    return kernel_names_and_nparams;
 }
 
 std::map<std::string, std::vector<uint32_t>> get_kernel_names_and_param_sizes_from_elf_str(std::string elf_code_str)

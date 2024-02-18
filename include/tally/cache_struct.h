@@ -351,7 +351,7 @@ public:
         return nullptr;
     }
 
-    std::map<std::string, std::vector<uint32_t>>
+    std::map<std::string, std::vector<uint32_t>>&
     get_kernel_args(const char* cubin_data, size_t cubin_size)
     {
         auto transform_data = find_transform_data(cubin_data, cubin_size);

@@ -291,14 +291,36 @@ CUresult CudaLaunchConfig::launch(
     PTBKernelArgs *ptb_args, uint32_t *curr_idx_arr, SlicedKernelArgs *slice_args)
 {
 
+    folly::ConcurrentHashMap<const void *, WrappedCUfunction> *kernel_map_ptr;
+
     if (use_original) {
+        kernel_map_ptr = &TallyServer::server->original_kernel_map;
+    } else if (use_ptb) {
+        kernel_map_ptr = &TallyServer::server->ptb_kernel_map;
+    } else if (use_dynamic_ptb) {
+        kernel_map_ptr = &TallyServer::server->dynamic_ptb_kernel_map;
+    } else if (use_preemptive_ptb) {
+        kernel_map_ptr = &TallyServer::server->preemptive_ptb_kernel_map;
+    } else if (use_sliced) {
+        kernel_map_ptr = &TallyServer::server->sliced_kernel_map;
+    }
 
-        auto cu_func = TallyServer::server->original_kernel_map[func].func;
-        assert(cu_func);
+    CUfunction cu_func = nullptr;
+    size_t num_args;
 
-        if (!cu_func) {
-            throw std::runtime_error("Error: cu_func is NULL.");
-        }
+    // Try to retrieve the transformed kernel
+    if (kernel_map_ptr->find(func) != kernel_map_ptr->end()) {
+        cu_func = (*kernel_map_ptr)[func].func;
+        num_args = (*kernel_map_ptr)[func].num_args;
+    }
+
+    // Throw error if kernel does not exist
+    if (!cu_func) {
+        auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[func];
+        throw std::runtime_error("Fail to find config: " + this->str() + " for kernel: " + kernel_name);
+    }
+
+    if (use_original) {
 
         auto err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
                                 blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
@@ -307,10 +329,6 @@ CUresult CudaLaunchConfig::launch(
         
     } else if (use_ptb) {
 
-        auto cu_func = TallyServer::server->ptb_kernel_map[func].func;
-        size_t num_args = TallyServer::server->ptb_kernel_map[func].num_args;
-        assert(cu_func);
-        
         uint32_t total_blocks = gridDim.x * gridDim.y * gridDim.z;
         uint32_t worker_blocks = std::min(total_blocks, CUDA_NUM_SM * blocks_per_sm);
         worker_blocks = std::min(max_worker_blocks, worker_blocks);
@@ -332,11 +350,6 @@ CUresult CudaLaunchConfig::launch(
 
         assert(ptb_args);
         auto global_idx = &(ptb_args->global_idx);
-
-        auto cu_func = TallyServer::server->dynamic_ptb_kernel_map[func].func;
-        size_t num_args = TallyServer::server->dynamic_ptb_kernel_map[func].num_args;
-        
-        assert(cu_func);
 
         uint32_t total_blocks = gridDim.x * gridDim.y * gridDim.z;
         uint32_t worker_blocks = std::min(total_blocks, CUDA_NUM_SM * blocks_per_sm);
@@ -364,11 +377,6 @@ CUresult CudaLaunchConfig::launch(
         auto global_idx = &(ptb_args->global_idx);
         auto retreat = &(ptb_args->retreat);
 
-        auto cu_func = TallyServer::server->preemptive_ptb_kernel_map[func].func;
-        size_t num_args = TallyServer::server->preemptive_ptb_kernel_map[func].num_args;
-
-        assert(cu_func);
-
         uint32_t total_blocks = gridDim.x * gridDim.y * gridDim.z;
         uint32_t worker_blocks = std::min(total_blocks, CUDA_NUM_SM * blocks_per_sm);
         worker_blocks = std::min(max_worker_blocks, worker_blocks);
@@ -390,8 +398,6 @@ CUresult CudaLaunchConfig::launch(
         return err;
 
     } else if (use_sliced) {
-        auto cu_func = TallyServer::server->sliced_kernel_map[func].func;
-        auto num_args = TallyServer::server->sliced_kernel_map[func].num_args;
 
         auto sliced_gridDim = slice_args->sliced_gridDim;
         auto blockOffset_vec = slice_args->block_offsets;
@@ -426,9 +432,7 @@ CUresult CudaLaunchConfig::launch(
 
         return err;
     } else {
-
         auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[func];
-        std::cout << kernel_name << std::endl;
-        throw std::runtime_error("Invalid launch config.");
+        throw std::runtime_error("Invalid launch config for kernel: " + kernel_name);
     }
 }

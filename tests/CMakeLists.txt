@@ -17,6 +17,18 @@ target_link_libraries(elementwise
     cudart
 )
 
+add_executable(elementwise_no_ptx cuda_samples_basic/elementwise_no_ptx.cu)
+
+set_target_properties(elementwise_no_ptx PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}-real
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_link_libraries(elementwise_no_ptx
+    cuda
+    cudart
+)
+
 add_executable(elementwise_with_cond cuda_samples_basic/elementwise_with_cond.cu)
 
 set_target_properties(elementwise_with_cond PROPERTIES
