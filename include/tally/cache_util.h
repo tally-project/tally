@@ -38,7 +38,8 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
     }
 
     // If already exists, return early
-    if (TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size)) {
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+    if (cubin_cache.contains(cubin_data, cubin_size)) {
         
         // Delete cubin file
         std::remove(cubin_tmp_path.c_str());
@@ -67,8 +68,7 @@ static void cache_cubin_data(const char* cubin_data, size_t cubin_size, int elf_
     // Parse arguments info from elf code
     kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file_name);
 
-    TallyCache::cache->cubin_cache.add_data(cubin_size, cubin_str, kernel_args);
-    TallyCache::cache->transform_cache_changed = true;
+    cubin_cache.add_data(cubin_size, cubin_str, kernel_args);
 }
 
 #endif // TALLY_CACHE_UTIL_H

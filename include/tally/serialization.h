@@ -111,13 +111,6 @@ void serialize(Archive & ar, CubinData & g, const unsigned int version)
 }
 
 template<class Archive>
-void serialize(Archive & ar, CubinCache & g, const unsigned int version)
-{
-    ar & g.uid_counter;
-    ar & g.cubin_map;
-}
-
-template<class Archive>
 void serialize(Archive & ar, PerformanceCache & g, const unsigned int version)
 {
     ar & g.single_kernel_perf_map;

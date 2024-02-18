@@ -25,6 +25,7 @@
 #include <curand.h>
 #include <cusparse_v2.h>
 
+#include <tally/consts.h>
 #include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
 #include "tally/client.h"
@@ -108,7 +109,6 @@ CUresult cuDriverGetVersion(int * driverVersion)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDriverGetVersion);
 	return err;
 }
 
@@ -150,7 +150,6 @@ CUresult cuDeviceGet(CUdevice * device, int  ordinal)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGet);
 	return err;
 }
 
@@ -191,7 +190,6 @@ CUresult cuDeviceGetCount(int * count)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetCount);
 	return err;
 }
 
@@ -233,7 +231,6 @@ CUresult cuDeviceGetUuid(CUuuid * uuid, CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetUuid);
 	return err;
 }
 
@@ -275,7 +272,6 @@ CUresult cuDeviceGetUuid_v2(CUuuid * uuid, CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetUuid_v2);
 	return err;
 }
 
@@ -319,7 +315,6 @@ CUresult cuDeviceGetLuid(char * luid, unsigned int * deviceNodeMask, CUdevice  d
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetLuid);
 	return err;
 }
 
@@ -361,7 +356,6 @@ CUresult cuDeviceTotalMem_v2(size_t * bytes, CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceTotalMem_v2);
 	return err;
 }
 
@@ -405,7 +399,6 @@ CUresult cuDeviceGetTexture1DLinearMaxWidth(size_t * maxWidthInElements, CUarray
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetTexture1DLinearMaxWidth);
 	return err;
 }
 
@@ -448,7 +441,6 @@ CUresult cuDeviceGetAttribute(int * pi, CUdevice_attribute  attrib, CUdevice  de
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetAttribute);
 	return err;
 }
 
@@ -500,7 +492,6 @@ CUresult cuDeviceSetMemPool(CUdevice  dev, CUmemoryPool  pool)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceSetMemPool);
 	return err;
 }
 
@@ -542,7 +533,6 @@ CUresult cuDeviceGetMemPool(CUmemoryPool * pool, CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetMemPool);
 	return err;
 }
 
@@ -584,7 +574,6 @@ CUresult cuDeviceGetDefaultMemPool(CUmemoryPool * pool_out, CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetDefaultMemPool);
 	return err;
 }
 
@@ -627,7 +616,6 @@ CUresult cuDeviceGetExecAffinitySupport(int * pi, CUexecAffinityType  type, CUde
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetExecAffinitySupport);
 	return err;
 }
 
@@ -668,7 +656,6 @@ CUresult cuFlushGPUDirectRDMAWrites(CUflushGPUDirectRDMAWritesTarget  target, CU
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuFlushGPUDirectRDMAWrites);
 	return err;
 }
 
@@ -710,7 +697,6 @@ CUresult cuDeviceGetProperties(CUdevprop * prop, CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetProperties);
 	return err;
 }
 
@@ -754,7 +740,6 @@ CUresult cuDeviceComputeCapability(int * major, int * minor, CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceComputeCapability);
 	return err;
 }
 
@@ -796,7 +781,6 @@ CUresult cuDevicePrimaryCtxRetain(CUcontext * pctx, CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxRetain);
 	return err;
 }
 
@@ -836,7 +820,6 @@ CUresult cuDevicePrimaryCtxRelease_v2(CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxRelease_v2);
 	return err;
 }
 
@@ -876,7 +859,6 @@ CUresult cuDevicePrimaryCtxReset_v2(CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxReset_v2);
 	return err;
 }
 
@@ -938,7 +920,6 @@ CUresult cuCtxPushCurrent_v2(CUcontext  ctx)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxPushCurrent_v2);
 	return err;
 }
 
@@ -979,7 +960,6 @@ CUresult cuCtxPopCurrent_v2(CUcontext * pctx)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxPopCurrent_v2);
 	return err;
 }
 
@@ -1031,7 +1011,6 @@ CUresult cuCtxGetFlags(unsigned int * flags)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetFlags);
 	return err;
 }
 
@@ -1094,7 +1073,6 @@ CUresult cuCtxSetLimit(CUlimit  limit, size_t  value)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetLimit);
 	return err;
 }
 
@@ -1136,7 +1114,6 @@ CUresult cuCtxGetLimit(size_t * pvalue, CUlimit  limit)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetLimit);
 	return err;
 }
 
@@ -1177,7 +1154,6 @@ CUresult cuCtxGetCacheConfig(CUfunc_cache * pconfig)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetCacheConfig);
 	return err;
 }
 
@@ -1217,7 +1193,6 @@ CUresult cuCtxSetCacheConfig(CUfunc_cache  config)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetCacheConfig);
 	return err;
 }
 
@@ -1258,7 +1233,6 @@ CUresult cuCtxGetSharedMemConfig(CUsharedconfig * pConfig)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetSharedMemConfig);
 	return err;
 }
 
@@ -1298,7 +1272,6 @@ CUresult cuCtxSetSharedMemConfig(CUsharedconfig  config)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxSetSharedMemConfig);
 	return err;
 }
 
@@ -1341,7 +1314,6 @@ CUresult cuCtxGetStreamPriorityRange(int * leastPriority, int * greatestPriority
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetStreamPriorityRange);
 	return err;
 }
 
@@ -1380,7 +1352,6 @@ CUresult cuCtxResetPersistingL2Cache()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxResetPersistingL2Cache);
 	return err;
 }
 
@@ -1422,7 +1393,6 @@ CUresult cuCtxGetExecAffinity(CUexecAffinityParam * pExecAffinity, CUexecAffinit
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetExecAffinity);
 	return err;
 }
 
@@ -1464,7 +1434,6 @@ CUresult cuCtxAttach(CUcontext * pctx, unsigned int  flags)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxAttach);
 	return err;
 }
 
@@ -1504,7 +1473,6 @@ CUresult cuCtxDetach(CUcontext  ctx)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxDetach);
 	return err;
 }
 
@@ -1556,7 +1524,6 @@ CUresult cuModuleGetLoadingMode(CUmoduleLoadingMode * mode)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuModuleGetLoadingMode);
 	return err;
 }
 
@@ -1808,7 +1775,6 @@ CUresult cuMemGetInfo_v2(size_t * free, size_t * total)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemGetInfo_v2);
 	return err;
 }
 
@@ -1939,7 +1905,6 @@ CUresult cuDeviceGetPCIBusId(char * pciBusId, int  len, CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetPCIBusId);
 	return err;
 }
 
@@ -2764,7 +2729,6 @@ CUresult cuMemAllocFromPoolAsync(CUdeviceptr * dptr, size_t  bytesize, CUmemoryP
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemAllocFromPoolAsync);
 	return err;
 }
 
@@ -3048,7 +3012,6 @@ CUresult cuStreamWaitEvent(CUstream  hStream, CUevent  hEvent, unsigned int  Fla
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamWaitEvent);
 	return err;
 }
 
@@ -3100,7 +3063,6 @@ CUresult cuThreadExchangeStreamCaptureMode(CUstreamCaptureMode * mode)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuThreadExchangeStreamCaptureMode);
 	return err;
 }
 
@@ -3230,7 +3192,6 @@ CUresult cuEventCreate(CUevent * phEvent, unsigned int  Flags)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuEventCreate);
 	return err;
 }
 
@@ -3271,7 +3232,6 @@ CUresult cuEventRecord(CUevent  hEvent, CUstream  hStream)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuEventRecord);
 	return err;
 }
 
@@ -3322,7 +3282,6 @@ CUresult cuEventQuery(CUevent  hEvent)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuEventQuery);
 	return err;
 }
 
@@ -3362,7 +3321,6 @@ CUresult cuEventSynchronize(CUevent  hEvent)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuEventSynchronize);
 	return err;
 }
 
@@ -3402,7 +3360,6 @@ CUresult cuEventDestroy_v2(CUevent  hEvent)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuEventDestroy_v2);
 	return err;
 }
 
@@ -3445,7 +3402,6 @@ CUresult cuEventElapsedTime(float * pMilliseconds, CUevent  hStart, CUevent  hEn
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuEventElapsedTime);
 	return err;
 }
 
@@ -3518,7 +3474,6 @@ CUresult cuDestroyExternalMemory(CUexternalMemory  extMem)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDestroyExternalMemory);
 	return err;
 }
 
@@ -4537,7 +4492,6 @@ CUresult cuGraphExecDestroy(CUgraphExec  hGraphExec)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuGraphExecDestroy);
 	return err;
 }
 
@@ -4577,7 +4531,6 @@ CUresult cuGraphDestroy(CUgraph  hGraph)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuGraphDestroy);
 	return err;
 }
 
@@ -4620,7 +4573,6 @@ CUresult cuGraphExecUpdate_v2(CUgraphExec  hGraphExec, CUgraph  hGraph, CUgraphE
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuGraphExecUpdate_v2);
 	return err;
 }
 
@@ -5472,9 +5424,8 @@ cudaError_t cudaDeviceReset()
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceReset);
 	return err;
 }
 
@@ -5514,9 +5465,8 @@ cudaError_t cudaDeviceSetLimit(enum cudaLimit  limit, size_t  value)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetLimit);
 	return err;
 }
 
@@ -5557,9 +5507,8 @@ cudaError_t cudaDeviceGetLimit(size_t * pValue, enum cudaLimit  limit)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetLimit);
 	return err;
 }
 
@@ -5610,9 +5559,8 @@ cudaError_t cudaDeviceGetCacheConfig(enum cudaFuncCache * pCacheConfig)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetCacheConfig);
 	return err;
 }
 
@@ -5654,9 +5602,8 @@ cudaError_t cudaDeviceGetStreamPriorityRange(int * leastPriority, int * greatest
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetStreamPriorityRange);
 	return err;
 }
 
@@ -5695,9 +5642,8 @@ cudaError_t cudaDeviceSetCacheConfig(enum cudaFuncCache  cacheConfig)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetCacheConfig);
 	return err;
 }
 
@@ -5747,9 +5693,8 @@ cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig  config)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetSharedMemConfig);
 	return err;
 }
 
@@ -5802,9 +5747,8 @@ cudaError_t cudaDeviceGetPCIBusId(char * pciBusId, int  len, int  device)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetPCIBusId);
 	return err;
 }
 
@@ -5845,9 +5789,8 @@ cudaError_t cudaIpcGetEventHandle(cudaIpcEventHandle_t * handle, cudaEvent_t  ev
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaIpcGetEventHandle);
 	return err;
 }
 
@@ -5888,9 +5831,8 @@ cudaError_t cudaIpcOpenEventHandle(cudaEvent_t * event, cudaIpcEventHandle_t  ha
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaIpcOpenEventHandle);
 	return err;
 }
 
@@ -5931,9 +5873,8 @@ cudaError_t cudaIpcGetMemHandle(cudaIpcMemHandle_t * handle, void * devPtr)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaIpcGetMemHandle);
 	return err;
 }
 
@@ -5975,9 +5916,8 @@ cudaError_t cudaIpcOpenMemHandle(void ** devPtr, cudaIpcMemHandle_t  handle, uns
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaIpcOpenMemHandle);
 	return err;
 }
 
@@ -6016,9 +5956,8 @@ cudaError_t cudaIpcCloseMemHandle(void * devPtr)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaIpcCloseMemHandle);
 	return err;
 }
 
@@ -6058,9 +5997,8 @@ cudaError_t cudaDeviceFlushGPUDirectRDMAWrites(enum cudaFlushGPUDirectRDMAWrites
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceFlushGPUDirectRDMAWrites);
 	return err;
 }
 
@@ -6098,9 +6036,8 @@ cudaError_t cudaThreadExit()
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaThreadExit);
 	return err;
 }
 
@@ -6140,9 +6077,8 @@ cudaError_t cudaThreadSetLimit(enum cudaLimit  limit, size_t  value)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSetLimit);
 	return err;
 }
 
@@ -6183,9 +6119,8 @@ cudaError_t cudaThreadGetLimit(size_t * pValue, enum cudaLimit  limit)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaThreadGetLimit);
 	return err;
 }
 
@@ -6225,9 +6160,8 @@ cudaError_t cudaThreadGetCacheConfig(enum cudaFuncCache * pCacheConfig)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaThreadGetCacheConfig);
 	return err;
 }
 
@@ -6266,9 +6200,8 @@ cudaError_t cudaThreadSetCacheConfig(enum cudaFuncCache  cacheConfig)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSetCacheConfig);
 	return err;
 }
 
@@ -6330,9 +6263,8 @@ cudaError_t cudaGetDeviceCount(int * count)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceCount);
 	return err;
 }
 
@@ -6373,9 +6305,8 @@ cudaError_t cudaGetDeviceProperties_v2(struct cudaDeviceProp * prop, int  device
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceProperties_v2);
 	return err;
 }
 
@@ -6416,9 +6347,8 @@ cudaError_t cudaDeviceGetDefaultMemPool(cudaMemPool_t * memPool, int  device)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetDefaultMemPool);
 	return err;
 }
 
@@ -6458,9 +6388,8 @@ cudaError_t cudaDeviceSetMemPool(int  device, cudaMemPool_t  memPool)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSetMemPool);
 	return err;
 }
 
@@ -6501,9 +6430,8 @@ cudaError_t cudaDeviceGetMemPool(cudaMemPool_t * memPool, int  device)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetMemPool);
 	return err;
 }
 
@@ -6557,9 +6485,8 @@ cudaError_t cudaDeviceGetP2PAttribute(int * value, enum cudaDeviceP2PAttr  attr,
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetP2PAttribute);
 	return err;
 }
 
@@ -6620,9 +6547,8 @@ cudaError_t cudaSetDeviceFlags(unsigned int  flags)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaSetDeviceFlags);
 	return err;
 }
 
@@ -6662,9 +6588,8 @@ cudaError_t cudaGetDeviceFlags(unsigned int * flags)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGetDeviceFlags);
 	return err;
 }
 
@@ -6705,9 +6630,8 @@ cudaError_t cudaStreamGetPriority(cudaStream_t  hStream, int * priority)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetPriority);
 	return err;
 }
 
@@ -6748,9 +6672,8 @@ cudaError_t cudaStreamGetFlags(cudaStream_t  hStream, unsigned int * flags)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetFlags);
 	return err;
 }
 
@@ -6799,9 +6722,8 @@ cudaError_t cudaCtxResetPersistingL2Cache()
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaCtxResetPersistingL2Cache);
 	return err;
 }
 
@@ -6841,9 +6763,8 @@ cudaError_t cudaStreamCopyAttributes(cudaStream_t  dst, cudaStream_t  src)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCopyAttributes);
 	return err;
 }
 
@@ -6904,9 +6825,8 @@ cudaError_t cudaStreamDestroy(cudaStream_t  stream)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamDestroy);
 	return err;
 }
 
@@ -6947,9 +6867,8 @@ cudaError_t cudaStreamWaitEvent(cudaStream_t  stream, cudaEvent_t  event, unsign
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamWaitEvent);
 	return err;
 }
 
@@ -6999,9 +6918,8 @@ cudaError_t cudaStreamQuery(cudaStream_t  stream)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamQuery);
 	return err;
 }
 
@@ -7052,9 +6970,8 @@ cudaError_t cudaThreadExchangeStreamCaptureMode(enum cudaStreamCaptureMode * mod
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaThreadExchangeStreamCaptureMode);
 	return err;
 }
 
@@ -7105,9 +7022,8 @@ cudaError_t cudaEventCreate(cudaEvent_t * event)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaEventCreate);
 	return err;
 }
 
@@ -7148,9 +7064,8 @@ cudaError_t cudaEventCreateWithFlags(cudaEvent_t * event, unsigned int  flags)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaEventCreateWithFlags);
 	return err;
 }
 
@@ -7191,9 +7106,8 @@ cudaError_t cudaEventRecordWithFlags(cudaEvent_t  event, cudaStream_t  stream, u
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaEventRecordWithFlags);
 	return err;
 }
 
@@ -7232,9 +7146,8 @@ cudaError_t cudaEventQuery(cudaEvent_t  event)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaEventQuery);
 	return err;
 }
 
@@ -7273,9 +7186,8 @@ cudaError_t cudaEventSynchronize(cudaEvent_t  event)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaEventSynchronize);
 	return err;
 }
 
@@ -7314,9 +7226,8 @@ cudaError_t cudaEventDestroy(cudaEvent_t  event)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaEventDestroy);
 	return err;
 }
 
@@ -7358,9 +7269,8 @@ cudaError_t cudaEventElapsedTime(float * ms, cudaEvent_t  start, cudaEvent_t  en
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaEventElapsedTime);
 	return err;
 }
 
@@ -7652,9 +7562,8 @@ cudaError_t cudaFreeArray(cudaArray_t  array)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaFreeArray);
 	return err;
 }
 
@@ -7839,9 +7748,8 @@ cudaError_t cudaMemGetInfo(size_t * free, size_t * total)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaMemGetInfo);
 	return err;
 }
 
@@ -8299,9 +8207,8 @@ cudaError_t cudaMemPoolTrimTo(cudaMemPool_t  memPool, size_t  minBytesToKeep)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaMemPoolTrimTo);
 	return err;
 }
 
@@ -8682,9 +8589,8 @@ cudaError_t cudaDriverGetVersion(int * driverVersion)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDriverGetVersion);
 	return err;
 }
 
@@ -8724,9 +8630,8 @@ cudaError_t cudaRuntimeGetVersion(int * runtimeVersion)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaRuntimeGetVersion);
 	return err;
 }
 
@@ -8767,9 +8672,8 @@ cudaError_t cudaGraphCreate(cudaGraph_t * pGraph, unsigned int  flags)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGraphCreate);
 	return err;
 }
 
@@ -9405,9 +9309,8 @@ cudaError_t cudaGraphInstantiateWithFlags(cudaGraphExec_t * pGraphExec, cudaGrap
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGraphInstantiateWithFlags);
 	return err;
 }
 
@@ -9634,9 +9537,8 @@ cudaError_t cudaGraphUpload(cudaGraphExec_t  graphExec, cudaStream_t  stream)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGraphUpload);
 	return err;
 }
 
@@ -9686,9 +9588,8 @@ cudaError_t cudaGraphExecDestroy(cudaGraphExec_t  graphExec)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGraphExecDestroy);
 	return err;
 }
 
@@ -9727,9 +9628,8 @@ cudaError_t cudaGraphDestroy(cudaGraph_t  graph)
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGraphDestroy);
 	return err;
 }
 
@@ -9911,7 +9811,6 @@ size_t cudnnGetVersion()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetVersion);
 	return err;
 }
 
@@ -9950,7 +9849,6 @@ size_t cudnnGetMaxDeviceVersion()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetMaxDeviceVersion);
 	return err;
 }
 
@@ -9989,7 +9887,6 @@ size_t cudnnGetCudartVersion()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetCudartVersion);
 	return err;
 }
 
@@ -10042,7 +9939,6 @@ cudnnStatus_t cudnnGetProperty(libraryPropertyType  type, int * value)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetProperty);
 	return err;
 }
 
@@ -10082,7 +9978,6 @@ cudnnStatus_t cudnnDestroy(cudnnHandle_t  handle)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroy);
 	return err;
 }
 
@@ -10123,7 +10018,6 @@ cudnnStatus_t cudnnSetStream(cudnnHandle_t  handle, cudaStream_t  streamId)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetStream);
 	return err;
 }
 
@@ -10165,7 +10059,6 @@ cudnnStatus_t cudnnGetStream(cudnnHandle_t  handle, cudaStream_t * streamId)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetStream);
 	return err;
 }
 
@@ -10206,7 +10099,6 @@ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t * tensorDesc)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateTensorDescriptor);
 	return err;
 }
 
@@ -10252,7 +10144,6 @@ cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetTensor4dDescriptor);
 	return err;
 }
 
@@ -10301,7 +10192,6 @@ cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t  tensorDesc, 
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetTensor4dDescriptorEx);
 	return err;
 }
 
@@ -10359,7 +10249,6 @@ cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t  tensorDe
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetTensor4dDescriptor);
 	return err;
 }
 
@@ -10412,7 +10301,6 @@ cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t  tensorDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetTensorSizeInBytes);
 	return err;
 }
 
@@ -10452,7 +10340,6 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t  tensorDesc)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyTensorDescriptor);
 	return err;
 }
 
@@ -10496,7 +10383,6 @@ cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t  tra
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnInitTransformDest);
 	return err;
 }
 
@@ -10537,7 +10423,6 @@ cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescripto
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateTensorTransformDescriptor);
 	return err;
 }
 
@@ -10599,7 +10484,6 @@ cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescript
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyTensorTransformDescriptor);
 	return err;
 }
 
@@ -10651,7 +10535,6 @@ cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t * opTensor
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateOpTensorDescriptor);
 	return err;
 }
 
@@ -10694,7 +10577,6 @@ cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t  opTensorDesc
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetOpTensorDescriptor);
 	return err;
 }
 
@@ -10740,7 +10622,6 @@ cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t  opTens
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetOpTensorDescriptor);
 	return err;
 }
 
@@ -10803,7 +10684,6 @@ cudnnStatus_t cudnnCreateReduceTensorDescriptor(cudnnReduceTensorDescriptor_t * 
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateReduceTensorDescriptor);
 	return err;
 }
 
@@ -10848,7 +10728,6 @@ cudnnStatus_t cudnnSetReduceTensorDescriptor(cudnnReduceTensorDescriptor_t  redu
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetReduceTensorDescriptor);
 	return err;
 }
 
@@ -10899,7 +10778,6 @@ cudnnStatus_t cudnnDestroyReduceTensorDescriptor(cudnnReduceTensorDescriptor_t  
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyReduceTensorDescriptor);
 	return err;
 }
 
@@ -10944,7 +10822,6 @@ cudnnStatus_t cudnnGetReductionIndicesSize(cudnnHandle_t  handle, const cudnnRed
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetReductionIndicesSize);
 	return err;
 }
 
@@ -10989,7 +10866,6 @@ cudnnStatus_t cudnnGetReductionWorkspaceSize(cudnnHandle_t  handle, const cudnnR
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetReductionWorkspaceSize);
 	return err;
 }
 
@@ -11052,7 +10928,6 @@ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t * filterDesc)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateFilterDescriptor);
 	return err;
 }
 
@@ -11098,7 +10973,6 @@ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetFilter4dDescriptor);
 	return err;
 }
 
@@ -11151,7 +11025,6 @@ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t  filterDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetFilterSizeInBytes);
 	return err;
 }
 
@@ -11202,7 +11075,6 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t  filterDesc)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyFilterDescriptor);
 	return err;
 }
 
@@ -11243,7 +11115,6 @@ cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t * poolingDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreatePoolingDescriptor);
 	return err;
 }
 
@@ -11316,7 +11187,6 @@ cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t  poolingDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyPoolingDescriptor);
 	return err;
 }
 
@@ -11357,7 +11227,6 @@ cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t * acti
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateActivationDescriptor);
 	return err;
 }
 
@@ -11400,7 +11269,6 @@ cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t  activati
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetActivationDescriptor);
 	return err;
 }
 
@@ -11473,7 +11341,6 @@ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t  acti
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyActivationDescriptor);
 	return err;
 }
 
@@ -11514,7 +11381,6 @@ cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t * normDesc)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateLRNDescriptor);
 	return err;
 }
 
@@ -11558,7 +11424,6 @@ cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t  normDesc, unsigned  lr
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetLRNDescriptor);
 	return err;
 }
 
@@ -11609,7 +11474,6 @@ cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t  lrnDesc)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyLRNDescriptor);
 	return err;
 }
 
@@ -11760,7 +11624,6 @@ cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t * dropoutDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateDropoutDescriptor);
 	return err;
 }
 
@@ -11800,7 +11663,6 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyDropoutDescriptor);
 	return err;
 }
 
@@ -11842,7 +11704,6 @@ cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t  handle, size_t * sizeInBy
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDropoutGetStatesSize);
 	return err;
 }
 
@@ -11898,7 +11759,6 @@ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDesc, c
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetDropoutDescriptor);
 	return err;
 }
 
@@ -11943,7 +11803,6 @@ cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t  dropoutDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnRestoreDropoutDescriptor);
 	return err;
 }
 
@@ -12158,7 +12017,6 @@ cudnnStatus_t cudnnOpsInferVersionCheck()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnOpsInferVersionCheck);
 	return err;
 }
 
@@ -12262,7 +12120,6 @@ cudnnStatus_t cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(cudnnHand
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize);
 	return err;
 }
 
@@ -12313,7 +12170,6 @@ cudnnStatus_t cudnnGetBatchNormalizationBackwardExWorkspaceSize(cudnnHandle_t  h
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetBatchNormalizationBackwardExWorkspaceSize);
 	return err;
 }
 
@@ -12359,7 +12215,6 @@ cudnnStatus_t cudnnGetBatchNormalizationTrainingExReserveSpaceSize(cudnnHandle_t
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetBatchNormalizationTrainingExReserveSpaceSize);
 	return err;
 }
 
@@ -12508,7 +12363,6 @@ cudnnStatus_t cudnnOpsTrainVersionCheck()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnOpsTrainVersionCheck);
 	return err;
 }
 
@@ -12549,7 +12403,6 @@ cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t * rnnDesc)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateRNNDescriptor);
 	return err;
 }
 
@@ -12589,7 +12442,6 @@ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t  rnnDesc)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyRNNDescriptor);
 	return err;
 }
 
@@ -12643,7 +12495,6 @@ cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNAl
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNDescriptor_v8);
 	return err;
 }
 
@@ -12703,7 +12554,6 @@ cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnHandle_t  handle, cudnnRNNDescriptor
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNDescriptor_v6);
 	return err;
 }
 
@@ -12755,7 +12605,6 @@ cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNMatrixMathType);
 	return err;
 }
 
@@ -12797,7 +12646,6 @@ cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNDescriptor_t  rnnDesc, cudnnMath
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNMatrixMathType);
 	return err;
 }
 
@@ -12838,7 +12686,6 @@ cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNBiasMode);
 	return err;
 }
 
@@ -12880,7 +12727,6 @@ cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNBiasMod
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNBiasMode);
 	return err;
 }
 
@@ -12924,7 +12770,6 @@ cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t  rnnDesc, cudnnRNNClipMode
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNSetClip_v8);
 	return err;
 }
 
@@ -12980,7 +12825,6 @@ cudnnStatus_t cudnnRNNSetClip(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNSetClip);
 	return err;
 }
 
@@ -13088,7 +12932,6 @@ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t  handle, cudnnRNNDescriptor_t  
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnBuildRNNDynamic);
 	return err;
 }
 
@@ -13135,7 +12978,6 @@ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t  handle, cudnnRNNDescripto
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNTempSpaceSizes);
 	return err;
 }
 
@@ -13180,7 +13022,6 @@ cudnnStatus_t cudnnGetRNNParamsSize(cudnnHandle_t  handle, const cudnnRNNDescrip
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNParamsSize);
 	return err;
 }
 
@@ -13223,7 +13064,6 @@ cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t  handle, cudnnRNNDescript
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNWeightSpaceSize);
 	return err;
 }
 
@@ -13272,7 +13112,6 @@ cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnHandle_t  handle, const cudnn
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNLinLayerMatrixParams);
 	return err;
 }
 
@@ -13321,7 +13160,6 @@ cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnHandle_t  handle, const cudnnRN
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNLinLayerBiasParams);
 	return err;
 }
 
@@ -13372,7 +13210,6 @@ cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t  handle, cudnnRNNDescriptor_
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNWeightParams);
 	return err;
 }
 
@@ -13446,7 +13283,6 @@ cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t * rnnDataDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateRNNDataDescriptor);
 	return err;
 }
 
@@ -13486,7 +13322,6 @@ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyRNNDataDescriptor);
 	return err;
 }
 
@@ -13550,7 +13385,6 @@ cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnHandle_t  handle, cudnnRNNDesc
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNAlgorithmDescriptor);
 	return err;
 }
 
@@ -13593,7 +13427,6 @@ cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnHandle_t  handle
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNForwardInferenceAlgorithmMaxCount);
 	return err;
 }
 
@@ -13645,7 +13478,6 @@ cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t * seqDataDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateSeqDataDescriptor);
 	return err;
 }
 
@@ -13685,7 +13517,6 @@ cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDes
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroySeqDataDescriptor);
 	return err;
 }
 
@@ -13726,7 +13557,6 @@ cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t * attnDesc)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateAttnDescriptor);
 	return err;
 }
 
@@ -13766,7 +13596,6 @@ cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t  attnDesc)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyAttnDescriptor);
 	return err;
 }
 
@@ -13825,7 +13654,6 @@ cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t  attnDesc, unsigned  
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnSetAttnDescriptor);
 	return err;
 }
 
@@ -13883,7 +13711,6 @@ cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t  handle, const cudnnAtt
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetMultiHeadAttnBuffers);
 	return err;
 }
 
@@ -13933,7 +13760,6 @@ cudnnStatus_t cudnnAdvInferVersionCheck()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnAdvInferVersionCheck);
 	return err;
 }
 
@@ -14203,7 +14029,6 @@ cudnnStatus_t cudnnAdvTrainVersionCheck()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnAdvTrainVersionCheck);
 	return err;
 }
 
@@ -14244,7 +14069,6 @@ cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t * co
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreateConvolutionDescriptor);
 	return err;
 }
 
@@ -14284,7 +14108,6 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t  co
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnDestroyConvolutionDescriptor);
 	return err;
 }
 
@@ -14474,7 +14297,6 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t  handle, con
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionForwardWorkspaceSize);
 	return err;
 }
 
@@ -14527,7 +14349,6 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t  ha
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionBackwardDataAlgorithmMaxCount);
 	return err;
 }
 
@@ -14607,7 +14428,6 @@ cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t  handle
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionBackwardDataWorkspaceSize);
 	return err;
 }
 
@@ -14671,7 +14491,6 @@ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t  han
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetFoldedConvBackwardDataDescriptors);
 	return err;
 }
 
@@ -14710,7 +14529,6 @@ cudnnStatus_t cudnnCnnInferVersionCheck()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCnnInferVersionCheck);
 	return err;
 }
 
@@ -14752,7 +14570,6 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t  
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionBackwardFilterAlgorithmMaxCount);
 	return err;
 }
 
@@ -14989,7 +14806,6 @@ cudnnStatus_t cudnnCnnTrainVersionCheck()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCnnTrainVersionCheck);
 	return err;
 }
 
@@ -15031,7 +14847,6 @@ cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t  descrip
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendCreateDescriptor);
 	return err;
 }
 
@@ -15071,7 +14886,6 @@ cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t  descriptor
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendDestroyDescriptor);
 	return err;
 }
 
@@ -15111,7 +14925,6 @@ cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t  descriptor)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendInitialize);
 	return err;
 }
 
@@ -15151,7 +14964,6 @@ cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t  descriptor)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendFinalize);
 	return err;
 }
 
@@ -15163,7 +14975,7 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetVersion_v2(handle, version);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -15196,7 +15008,6 @@ cublasStatus_t cublasGetVersion_v2(cublasHandle_t  handle, int*  version)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasGetVersion_v2);
 	return err;
 }
 
@@ -15208,7 +15019,7 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetProperty(type, value);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -15241,7 +15052,6 @@ cublasStatus_t cublasGetProperty(libraryPropertyType  type, int*  value)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasGetProperty);
 	return err;
 }
 
@@ -15280,7 +15090,6 @@ size_t cublasGetCudartVersion()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasGetCudartVersion);
 	return err;
 }
 
@@ -15292,7 +15101,7 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetStream_v2(handle, streamId);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -15325,7 +15134,6 @@ cublasStatus_t cublasGetStream_v2(cublasHandle_t  handle, cudaStream_t*  streamI
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasGetStream_v2);
 	return err;
 }
 
@@ -15337,7 +15145,7 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetPointerMode_v2(handle, mode);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -15370,7 +15178,6 @@ cublasStatus_t cublasGetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasGetPointerMode_v2);
 	return err;
 }
 
@@ -15382,7 +15189,7 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetPointerMode_v2(handle, mode);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -15413,7 +15220,6 @@ cublasStatus_t cublasSetPointerMode_v2(cublasHandle_t  handle, cublasPointerMode
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasSetPointerMode_v2);
 	return err;
 }
 
@@ -15447,7 +15253,7 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetSmCountTarget(handle, smCountTarget);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -15480,7 +15286,6 @@ cublasStatus_t cublasGetSmCountTarget(cublasHandle_t  handle, int*  smCountTarge
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasGetSmCountTarget);
 	return err;
 }
 
@@ -15492,7 +15297,7 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetSmCountTarget(handle, smCountTarget);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -15523,7 +15328,6 @@ cublasStatus_t cublasSetSmCountTarget(cublasHandle_t  handle, int  smCountTarget
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasSetSmCountTarget);
 	return err;
 }
 
@@ -15568,7 +15372,7 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetLoggerCallback(userCallback);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -15598,7 +15402,6 @@ cublasStatus_t cublasSetLoggerCallback(cublasLogCallback  userCallback)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasSetLoggerCallback);
 	return err;
 }
 
@@ -15610,7 +15413,7 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
 #if defined(RUN_LOCALLY)
 	auto err = lcublasGetLoggerCallback(userCallback);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -15642,7 +15445,6 @@ cublasStatus_t cublasGetLoggerCallback(cublasLogCallback*  userCallback)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasGetLoggerCallback);
 	return err;
 }
 
@@ -15654,7 +15456,7 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
 #if defined(RUN_LOCALLY)
 	auto err = lcublasSetVector(n, elemSize, x, incx, devicePtr, incy);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -15689,7 +15491,6 @@ cublasStatus_t cublasSetVector(int  n, int  elemSize, const void*  x, int  incx,
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasSetVector);
 	return err;
 }
 
@@ -21150,9 +20951,8 @@ cudaError_t cudaProfilerStart()
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaProfilerStart);
 	return err;
 }
 
@@ -21190,9 +20990,8 @@ cudaError_t cudaProfilerStop()
         }))
     {};
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaProfilerStop);
 	return err;
 }
 
@@ -21506,7 +21305,6 @@ size_t cublasLtGetVersion()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtGetVersion);
 	return err;
 }
 
@@ -21545,7 +21343,6 @@ size_t cublasLtGetCudartVersion()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtGetCudartVersion);
 	return err;
 }
 
@@ -21667,7 +21464,7 @@ cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t* 
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixTransformDescCreate(transformDesc, scaleType);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	}
 
@@ -21700,7 +21497,6 @@ cublasStatus_t cublasLtMatrixTransformDescCreate(cublasLtMatrixTransformDesc_t* 
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixTransformDescCreate);
 	return err;
 }
 
@@ -21712,7 +21508,7 @@ cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t 
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtMatrixTransformDescDestroy(transformDesc);
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -21742,7 +21538,6 @@ cublasStatus_t cublasLtMatrixTransformDescDestroy(cublasLtMatrixTransformDesc_t 
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixTransformDescDestroy);
 	return err;
 }
 
@@ -21919,7 +21714,7 @@ cublasStatus_t cublasLtLoggerForceDisable()
 #if defined(RUN_LOCALLY)
 	auto err = lcublasLtLoggerForceDisable();
 #else
-	if (replace_cublas) {
+	if (REPLACE_CUBLAS) {
 		throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": cublas function is not handled when REPLACE_CUBLAS is set.");
 	};
     cublasStatus_t err;
@@ -21948,7 +21743,6 @@ cublasStatus_t cublasLtLoggerForceDisable()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtLoggerForceDisable);
 	return err;
 }
 
@@ -21990,7 +21784,6 @@ curandStatus_t curandCreateGenerator(curandGenerator_t * generator, curandRngTyp
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(curandCreateGenerator);
 	return err;
 }
 
@@ -22086,7 +21879,6 @@ curandStatus_t curandSetPseudoRandomGeneratorSeed(curandGenerator_t  generator, 
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(curandSetPseudoRandomGeneratorSeed);
 	return err;
 }
 
@@ -27473,7 +27265,6 @@ ncclResult_t ncclGetUniqueId(ncclUniqueId*  uniqueId)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclGetUniqueId);
 	return err;
 }
 
@@ -27539,7 +27330,6 @@ ncclResult_t ncclCommInitRank(ncclComm_t*  comm, int  nranks, ncclUniqueId  comm
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclCommInitRank);
 	return err;
 }
 
@@ -27634,7 +27424,6 @@ ncclResult_t ncclCommDestroy(ncclComm_t  comm)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclCommDestroy);
 	return err;
 }
 
@@ -27685,7 +27474,6 @@ ncclResult_t ncclCommAbort(ncclComm_t  comm)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclCommAbort);
 	return err;
 }
 
@@ -27804,7 +27592,6 @@ ncclResult_t ncclCommGetAsyncError(ncclComm_t  comm, ncclResult_t * asyncError)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclCommGetAsyncError);
 	return err;
 }
 
@@ -27992,7 +27779,6 @@ ncclResult_t ncclBcast(void*  buff, size_t  count, ncclDataType_t  datatype, int
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclBcast);
 	return err;
 }
 
@@ -28071,7 +27857,6 @@ ncclResult_t ncclAllReduce(const void*  sendbuff, void*  recvbuff, size_t  count
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclAllReduce);
 	return err;
 }
 
@@ -28149,7 +27934,6 @@ ncclResult_t ncclAllGather(const void*  sendbuff, void*  recvbuff, size_t  sendc
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclAllGather);
 	return err;
 }
 
@@ -28243,7 +28027,6 @@ ncclResult_t ncclGroupStart()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclGroupStart);
 	return err;
 }
 
@@ -28293,7 +28076,6 @@ ncclResult_t ncclGroupEnd()
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclGroupEnd);
 	return err;
 }
 

@@ -11,13 +11,30 @@
 #include <tally/generated/server.h>
 
 // Load cache data into runtime data
-void TallyServer::register_measurements()
+void TallyServer::load_measurements(uint32_t cubin_uid)
 {
     // Register single-kernel perf cache
-    auto &cached_single_kernel_perf_map = TallyCache::cache->performance_cache.single_kernel_perf_map;;
+    auto &performance_cache = TallyCache::cache->get_performance_cache();
+    auto &cached_single_kernel_perf_map = performance_cache.single_kernel_perf_map;;
 
     for (auto &pair : cached_single_kernel_perf_map) {
         auto &result = pair.second;
+        auto &key = result.key;
+
+        auto res_kernel_name = key.kernel_name;
+        auto res_cubin_uid = key.cubin_uid;
+
+        if (res_cubin_uid != cubin_uid) {
+            continue;
+        }
+
+        auto kernel_name_cubin_uid_pair = std::make_pair(res_kernel_name, res_cubin_uid);
+        auto registered = kernel_cubin_uid_to_host_func_map.find(kernel_name_cubin_uid_pair) !=
+                          kernel_cubin_uid_to_host_func_map.end();
+
+        if (!registered) {
+            continue;
+        }
 
         CudaLaunchCall launch_call = convert_key_to_call(result.key);
         CudaLaunchCallConfig call_config(launch_call, result.config);
@@ -25,64 +42,6 @@ void TallyServer::register_measurements()
         CudaLaunchCallConfigResult new_result(launch_call, result.config, result.meta_data, result.metrics);
 
         single_kernel_perf_map[call_config] = new_result;
-    }
-
-    // Register single-kernel best config cache
-    // auto &cached_single_kernel_chosen_config_map = TallyCache::cache->performance_cache.single_kernel_chosen_config_map;;
-
-    // for (auto &pair : cached_single_kernel_chosen_config_map) {
-    //     auto &result = pair.second;
-
-    //     CudaLaunchCall launch_call = convert_key_to_call(result.key);
-    //     CudaLaunchCallConfigResult new_result(launch_call, result.config, result.meta_data, result.metrics);
-
-    //     single_kernel_chosen_config_map[launch_call] = new_result;
-    // }
-
-    // Register kernel-pair perf cache
-    auto &cached_kernel_pair_perf_map = TallyCache::cache->performance_cache.kernel_pair_perf_map;;
-
-    for (auto &pair : cached_kernel_pair_perf_map) {
-        auto &key_pair = pair.first;
-        auto &config_res_map = pair.second;
-
-        auto &key_1 = key_pair.launch_key_1;
-        auto &key_2 = key_pair.launch_key_2;
-
-        CudaLaunchCall launch_call_1 = convert_key_to_call(key_1);
-        CudaLaunchCall launch_call_2 = convert_key_to_call(key_2);
-
-        CudaLaunchCallPair call_pair(launch_call_1, launch_call_2);
-
-        for (auto &config_res_pair : config_res_map) {
-
-            auto &key_config_pair = config_res_pair.first;
-            auto &res = config_res_pair.second;
-
-            CudaLaunchCallConfigPair call_config_pair = convert_key_config_pair_to_call_config_pair(key_config_pair);
-            CudaLaunchCallConfigPairResult runtime_res = convert_pair_res_to_runtime_res(res);
-
-            kernel_pair_perf_map[call_pair][call_config_pair] = runtime_res;
-        }
-    }
-
-    // Register kernel-pair best config cache
-    auto &cached_kernel_pair_best_config_map = TallyCache::cache->performance_cache.kernel_pair_best_config_map;;
-
-    for (auto &pair : cached_kernel_pair_best_config_map) {
-        auto &key_pair = pair.first;
-        auto &res = pair.second;
-
-        auto &key_1 = key_pair.launch_key_1;
-        auto &key_2 = key_pair.launch_key_2;
-
-        CudaLaunchCall launch_call_1 = convert_key_to_call(key_1);
-        CudaLaunchCall launch_call_2 = convert_key_to_call(key_2);
-
-        CudaLaunchCallPair call_pair(launch_call_1, launch_call_2);
-        CudaLaunchCallConfigPairResult new_result = convert_pair_res_to_runtime_res(res);
-       
-        kernel_pair_best_config_map[call_pair] = new_result;
     }
 }
 
@@ -132,8 +91,8 @@ void TallyServer::set_single_kernel_perf(
         result.metrics
     );
 
-    TallyCache::cache->performance_cache.set_single_kernel_perf(launch_key, launch_config, cache_res);
-    TallyCache::cache->perf_cache_changed = true;
+    auto &performance_cache = TallyCache::cache->get_performance_cache();
+    performance_cache.set_single_kernel_perf(launch_key, launch_config, cache_res);
 }
 
 CudaLaunchCallConfigResult TallyServer::get_single_kernel_chosen_config(CudaLaunchCall &launch_call, bool *found)
@@ -159,100 +118,11 @@ void TallyServer::set_single_kernel_chosen_config(CudaLaunchCall &launch_call, C
         best_config.meta_data,
         best_config.metrics
     );
-
-    // TallyCache::cache->performance_cache.set_single_kernel_chosen_config(launch_key, cache_res);
-    // TallyCache::cache->perf_cache_changed = true;
 }
 
 void TallyServer::clear_single_kernel_chosen_configs()
 {
     single_kernel_chosen_config_map.clear();
-}
-
-CudaLaunchCallConfigPairResult
-TallyServer::get_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2, bool *found)
-{
-    CudaLaunchCallPair call_pair(launch_call_1, launch_call_2);
-
-    if (kernel_pair_perf_map.find(call_pair) != kernel_pair_perf_map.end()) {
-        auto &config_res_map = kernel_pair_perf_map[call_pair];
-
-        CudaLaunchCallConfig call_config_1(launch_call_1, launch_config_1);
-        CudaLaunchCallConfig call_config_2(launch_call_2, launch_config_2);
-
-        CudaLaunchCallConfigPair call_config_pair(call_config_1, call_config_2);
-
-         if (config_res_map.find(call_config_pair) != config_res_map.end()) {
-            *found = true;
-            return config_res_map[call_config_pair];
-        }
-    } 
-
-    *found = false;
-    return CudaLaunchCallConfigPairResult();
-}
-
-void TallyServer::set_kernel_pair_perf(
-    CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
-    CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
-    CudaLaunchMetadata meta_data_1, CudaLaunchMetadata meta_data_2,
-    float norm_speed_1, float norm_speed_2, float latency_1, float latency_2,
-    float fixed_workload_latency, float fixed_workload_speedup,
-    float unfair_workload_latency, float unfair_workload_speedup
-)
-{
-    CudaLaunchCallPair call_pair(launch_call_1, launch_call_2);
-
-    CudaLaunchCallConfig call_config_1(launch_call_1, launch_config_1);
-    CudaLaunchCallConfig call_config_2(launch_call_2, launch_config_2);
-    CudaLaunchCallConfigPair call_config_pair(call_config_1, call_config_2);
-
-    CudaLaunchCallConfigPairResult result(
-        std::make_pair(call_config_1, KernelProfileMetrics(latency_1, norm_speed_1)),
-        std::make_pair(call_config_2, KernelProfileMetrics(latency_2, norm_speed_2)),
-        std::make_pair(call_config_1, meta_data_1),
-        std::make_pair(call_config_2, meta_data_2),
-        WorkloadPerformance(fixed_workload_latency, fixed_workload_speedup),
-        WorkloadPerformance(unfair_workload_latency, unfair_workload_speedup)
-    );
-
-    kernel_pair_perf_map[call_pair][call_config_pair] = result;
-
-    CudaLaunchKey launch_key_1 = convert_call_to_key(launch_call_1);
-    CudaLaunchKey launch_key_2 = convert_call_to_key(launch_call_2);
-
-    CudaLaunchKeyConfigPairResult cache_res = convert_pair_res_to_cache_res(result);
-
-    TallyCache::cache->performance_cache.set_kernel_pair_perf(launch_key_1, launch_key_2, launch_config_1, launch_config_2, cache_res);
-    TallyCache::cache->perf_cache_changed = true;
-}
-
-CudaLaunchCallConfigPairResult TallyServer::get_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, bool *found)
-{
-    CudaLaunchCallPair call_pair(launch_call_1, launch_call_2);
-
-    if (kernel_pair_best_config_map.find(call_pair) != kernel_pair_best_config_map.end()) {
-        *found = true;
-        return kernel_pair_best_config_map[call_pair];
-    }
-
-    *found = false;
-    return CudaLaunchCallConfigPairResult();
-}
-
-void TallyServer::set_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchCallConfigPairResult best_config)
-{
-    CudaLaunchCallPair call_pair(launch_call_1, launch_call_2);
-
-    kernel_pair_best_config_map[call_pair] = best_config;
-
-    CudaLaunchKey launch_key_1 = convert_call_to_key(launch_call_1);
-    CudaLaunchKey launch_key_2 = convert_call_to_key(launch_call_2);
-
-    CudaLaunchKeyConfigPairResult cache_res = convert_pair_res_to_cache_res(best_config);
-
-    TallyCache::cache->performance_cache.set_kernel_pair_best_config(launch_key_1, launch_key_2, cache_res);
-    TallyCache::cache->perf_cache_changed = true;
 }
 
 void TallyServer::save_performance_cache()
@@ -265,8 +135,10 @@ void TallyServer::save_performance_cache()
 CudaLaunchCall TallyServer::convert_key_to_call(CudaLaunchKey key)
 {
 
-    auto host_func = demangled_kernel_name_and_cubin_uid_to_host_func_map[
-        std::make_pair(key.kernel_name, key.cubin_uid)
+    auto kernel_name_cubin_uid_pair = std::make_pair(key.kernel_name, key.cubin_uid);
+
+    auto host_func = kernel_cubin_uid_to_host_func_map[
+        kernel_name_cubin_uid_pair
     ];
 
     return CudaLaunchCall(
@@ -302,62 +174,6 @@ CudaLaunchKeyConfig TallyServer::convert_call_config_to_key_config(CudaLaunchCal
         launch_key,
         call_config.config
     );
-}
-
-CudaLaunchCallConfigPair TallyServer::convert_key_config_pair_to_call_config_pair(CudaLaunchKeyConfigPair key_config_pair)
-{
-    auto call_config_1 = convert_key_config_to_call_config(key_config_pair.key_config_1);
-    auto call_config_2 = convert_key_config_to_call_config(key_config_pair.key_config_2);
-
-    return CudaLaunchCallConfigPair(
-        call_config_1,
-        call_config_2
-    );
-}
-
-CudaLaunchKeyConfigPair TallyServer::convert_call_config_pair_to_key_config_pair(CudaLaunchCallConfigPair call_config_pair)
-{
-    auto key_config_1 = convert_call_config_to_key_config(call_config_pair.call_config_1);
-    auto key_config_2 = convert_call_config_to_key_config(call_config_pair.call_config_2);
-
-    return CudaLaunchKeyConfigPair(
-        key_config_1,
-        key_config_2
-    );
-}
-
-CudaLaunchCallConfigPairResult TallyServer::convert_pair_res_to_runtime_res(CudaLaunchKeyConfigPairResult res)
-{
-    CudaLaunchCallConfig call_config_1 = convert_key_config_to_call_config(res.config_key_norm_speed_1.first);
-    CudaLaunchCallConfig call_config_2 = convert_key_config_to_call_config(res.config_key_norm_speed_2.first);
-    
-    CudaLaunchCallConfigPairResult runtime_res(
-        std::make_pair(call_config_1, res.config_key_norm_speed_1.second),
-        std::make_pair(call_config_2, res.config_key_norm_speed_2.second),
-        std::make_pair(call_config_1, res.config_key_meta_data_1.second),
-        std::make_pair(call_config_2, res.config_key_meta_data_2.second),
-        res.fixed_workload_perf,
-        res.unfair_workload_perf
-    );
-
-    return runtime_res;
-}
-
-CudaLaunchKeyConfigPairResult TallyServer::convert_pair_res_to_cache_res(CudaLaunchCallConfigPairResult res)
-{
-    CudaLaunchKeyConfig key_config_1 = convert_call_config_to_key_config(res.call_config_norm_speed_1.first);
-    CudaLaunchKeyConfig key_config_2 = convert_call_config_to_key_config(res.call_config_norm_speed_2.first);
-    
-    CudaLaunchKeyConfigPairResult cache_res(
-        std::make_pair(key_config_1, res.call_config_norm_speed_1.second),
-        std::make_pair(key_config_2, res.call_config_norm_speed_2.second),
-        std::make_pair(key_config_1, res.call_config_meta_data_1.second),
-        std::make_pair(key_config_2, res.call_config_meta_data_2.second),
-        res.fixed_workload_perf,
-        res.unfair_workload_perf
-    );
-
-    return cache_res;
 }
 
 // ======= End Utility functions =======

@@ -28,6 +28,7 @@
 #include <fatbinary_section.h>
 #include <nccl.h>
 
+#include <tally/consts.h>
 #include "tally/log.h"
 #include "tally/util.h"
 #include "tally/cuda_util.h"
@@ -267,7 +268,7 @@ cudaError_t CUDARTAPI __cudaPopCallConfiguration(dim3 *gridDim, dim3 *blockDim, 
     auto err = l__cudaPopCallConfiguration(gridDim, blockDim, sharedMem, stream);
 #endif
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -285,6 +286,7 @@ unsigned __cudaPushCallConfiguration(dim3 gridDim, dim3 blockDim, size_t sharedM
 void** __cudaRegisterFatBinary( void *fatCubin ) {
 
     TALLY_SPD_LOG("__cudaRegisterFatBinary hooked");
+    IOX_CLIENT_ACQUIRE_LOCK;
 
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFatBinary(fatCubin);
@@ -295,7 +297,8 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
     const char *cubin_data = (const char *) wp->data;
     size_t cubin_size = fbh->headerSize + fbh->fatSize;
 
-    bool cached = TallyCache::cache->cubin_cache.contains(cubin_data, cubin_size);
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+    bool cached = cubin_cache.contains(cubin_data, cubin_size);
     uint32_t cubin_uid = 0;
 
     size_t msg_len;
@@ -303,9 +306,8 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
         msg_len = sizeof(MessageHeader_t) + sizeof(__cudaRegisterFatBinaryArg) + cubin_size;
     } else {
         msg_len = sizeof(MessageHeader_t) + sizeof(__cudaRegisterFatBinaryArg);
-        cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+        cubin_uid = cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
     }
-
     
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
@@ -317,6 +319,7 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
             auto request = (__cudaRegisterFatBinaryArg*) (static_cast<uint8_t*>(requestPayload) + sizeof(MessageHeader_t));
             request->cached = cached;
             request->cubin_uid = cubin_uid;
+            request->cubin_size = cubin_size;
 
             if (!cached) {
                 memcpy(request->data, wp->data, cubin_size);
@@ -328,24 +331,22 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
     std::map<std::string, std::vector<uint32_t>> kernel_args;
-    std::string tmp_elf_file;
+    std::string tmp_elf_file = "";
+
+    while(!TallyClient::client->iox_client->take()
+        .and_then([&](const auto& responsePayload) {
+            auto response = static_cast<const __cudaRegisterFatBinaryResponse*>(responsePayload);
+            
+            tmp_elf_file = std::string(response->tmp_elf_file, response->str_len);
+    
+            TallyClient::client->iox_client->releaseResponse(responsePayload);
+        }))
+    {}
 
     if (cached) {
-        kernel_args = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
+        kernel_args = cubin_cache.get_kernel_args(cubin_data, cubin_size);
     } else {
-
-        while(!TallyClient::client->iox_client->take()
-            .and_then([&](const auto& responsePayload) {
-                auto response = static_cast<const char*>(responsePayload);
-                
-                tmp_elf_file = std::string(response);
-        
-                TallyClient::client->iox_client->releaseResponse(responsePayload);
-            }))
-        {}
-
         kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
-
         std::remove(tmp_elf_file.c_str());
     }
 
@@ -363,6 +364,7 @@ void** __cudaRegisterFatBinary( void *fatCubin ) {
 void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char * deviceFun, const char * deviceName, int  thread_limit, uint3 * tid, uint3 * bid, dim3 * bDim, dim3 * gDim, int * wSize)
 {
     TALLY_SPD_LOG("__cudaRegisterFunction hooked");
+    IOX_CLIENT_ACQUIRE_LOCK;
 
     std::string deviceFunName (deviceFun);
     auto demangled_kernel_name = demangleFunc(deviceFunName);
@@ -377,7 +379,6 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 
     uint32_t kernel_func_len = deviceFunName.size();
     uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct __cudaRegisterFunctionArg) + kernel_func_len * sizeof(char);
-    
     
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
@@ -396,6 +397,9 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
         })
         .or_else([](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Request: ", error); });
 
+    cudaError_t err;
+    IOX_RECV_RETURN_STATUS(cudaError_t);
+
     TallyClient::client->_kernel_addr_to_args[hostFun] = TallyClient::client->_kernel_name_to_args[deviceFunName];
     return l__cudaRegisterFunction(fatCubinHandle, hostFun, deviceFun, deviceName, thread_limit, tid, bid, bDim, gDim, wSize);
 #endif
@@ -404,6 +408,7 @@ void __cudaRegisterFunction(void ** fatCubinHandle, const char * hostFun, char *
 void __cudaRegisterFatBinaryEnd(void ** fatCubinHandle)
 {
     TALLY_SPD_LOG("__cudaRegisterFatBinaryEnd hooked");
+    IOX_CLIENT_ACQUIRE_LOCK;
 
 #if defined(RUN_LOCALLY)
     return l__cudaRegisterFatBinaryEnd(fatCubinHandle);
@@ -473,9 +478,8 @@ cudaError_t cudaMalloc(void ** devPtr, size_t  size)
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudaMalloc);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -518,9 +522,8 @@ cudaError_t cudaFree(void * devPtr)
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudaFree);
     
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -582,9 +585,8 @@ cudaError_t cudaMemcpy(void * dst, const void * src, size_t  count, enum cudaMem
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudaMemcpy);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -648,9 +650,8 @@ cudaError_t cudaMemcpyAsync(void * dst, const void * src, size_t  count, enum cu
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudaMemcpyAsync);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -672,7 +673,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
     auto &params_info = TallyClient::client->_kernel_addr_to_args[func];
     uint32_t params_size =  std::accumulate(params_info.begin(), params_info.end(), 0);
     uint32_t msg_len = sizeof(MessageHeader_t) + sizeof(struct cudaLaunchKernelArg) + params_size;
-    
+
+
     cudaError_t err;
     
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
@@ -704,9 +706,8 @@ cudaError_t cudaLaunchKernel(const void * func, dim3  gridDim, dim3  blockDim, v
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_KERNEL_CALL(func);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -764,7 +765,6 @@ CUresult cuLaunchKernel(CUfunction  f, unsigned int  gridDimX, unsigned int  gri
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuLaunchKernel);
 	return err;
 }
 
@@ -818,12 +818,12 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
     bool launched = false;
     cublasStatus_t err;
 
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
 
         auto ctx = cublas_tracer.get_cublasCtx(handle);
 
         // let's use the same implementation for cuda core and tf32
-        // as replace_cublas is for experiment purpose only
+        // as REPLACE_CUBLAS is for experiment purpose only
         if (ctx.mode == CUBLAS_DEFAULT_MATH || ctx.mode == CUBLAS_TF32_TENSOR_OP_MATH) { 
 
             TALLY_SPD_LOG("cublasSgemm_v2 replaced with cutlassGemm_f32");
@@ -934,7 +934,6 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t  handle, cublasOperation_t  transa,
     }
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cublasSgemm_v2);
     
     return err;
 }
@@ -1000,7 +999,7 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
     bool launched = false;
     cublasStatus_t err;
 
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
 
         auto cublasLt_ctx = cublasLt_tracer.get_cublasLtCtx(lightHandle);
         auto matmul_desc = cublasLtMatmulDesc_tracer.get_cublasLtMatmulDescCtx(computeDesc);
@@ -1242,7 +1241,6 @@ cublasStatus_t cublasLtMatmul(cublasLtHandle_t  lightHandle, cublasLtMatmulDesc_
     }
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmul);
 
     return err;
 }
@@ -1263,7 +1261,7 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
     }
@@ -1296,7 +1294,6 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescSetAttribute);
 
     return err;
 }
@@ -1314,7 +1311,7 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
     }
@@ -1347,7 +1344,6 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutSetAttribute);
     
     return err;
 }
@@ -1365,7 +1361,7 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
 #if !defined(VERIFY_CORRECTNESS)
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
@@ -1399,7 +1395,6 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceSetAttribute);
     
     return err;
 }
@@ -1418,7 +1413,7 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
         *returnAlgoCount = 1;
@@ -1466,7 +1461,6 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulAlgoGetHeuristic);
     
     return err;
 }
@@ -1515,7 +1509,6 @@ cudnnStatus_t cudnnBackendSetAttribute(cudnnBackendDescriptor_t  descriptor, cud
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnBackendSetAttribute);
     
     return err;
 }
@@ -1577,7 +1570,6 @@ cudnnStatus_t cudnnBackendGetAttribute(cudnnBackendDescriptor_t const  descripto
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnBackendGetAttribute);
 
     return err;
 }
@@ -1622,7 +1614,6 @@ cudnnStatus_t cudnnActivationForward(cudnnHandle_t  handle, cudnnActivationDescr
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnActivationForward);
     
     return err;
 }
@@ -1664,7 +1655,6 @@ cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t  tensorDesc, cu
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnSetTensorNdDescriptor);
     
     return err;
 }
@@ -1708,7 +1698,6 @@ cudnnStatus_t cudnnSetConvolutionNdDescriptor(cudnnConvolutionDescriptor_t  conv
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnSetConvolutionNdDescriptor);
     
     return err;
 }
@@ -1750,7 +1739,6 @@ cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t  filterDesc, cu
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnSetFilterNdDescriptor);
     
     return err;
 }
@@ -1800,7 +1788,6 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t  handle, const void * alpha,
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnConvolutionForward);
     
     return err;
 }
@@ -1848,7 +1835,6 @@ cudnnStatus_t cudnnGetConvolutionNdForwardOutputDim(const cudnnConvolutionDescri
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionNdForwardOutputDim);
     
     return err;
 }
@@ -1899,7 +1885,6 @@ cudnnStatus_t cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle_t  handle, cons
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnGetConvolutionForwardAlgorithm_v7);
     
     return err;
 }
@@ -1950,7 +1935,6 @@ cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(cudnnHandle_t  handle, const 
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnFindConvolutionForwardAlgorithm);
     
     return err;
 }
@@ -1994,7 +1978,6 @@ cudnnStatus_t cudnnAddTensor(cudnnHandle_t  handle, const void * alpha, const cu
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnAddTensor);
     
     return err;	
 }
@@ -2039,7 +2022,6 @@ cudnnStatus_t cudnnSetPoolingNdDescriptor(cudnnPoolingDescriptor_t  poolingDesc,
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnSetPoolingNdDescriptor);
     
     return err;	
 }
@@ -2090,7 +2072,6 @@ cudnnStatus_t cudnnGetPoolingNdDescriptor(const cudnnPoolingDescriptor_t  poolin
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnGetPoolingNdDescriptor);
     
     return err;	
 }
@@ -2137,7 +2118,6 @@ cudnnStatus_t cudnnGetPoolingNdForwardOutputDim(const cudnnPoolingDescriptor_t  
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnGetPoolingNdForwardOutputDim);
     
     return err;	
 }
@@ -2182,7 +2162,6 @@ cudnnStatus_t cudnnPoolingForward(cudnnHandle_t  handle, const cudnnPoolingDescr
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnPoolingForward);
     
     return err;
 }
@@ -2199,7 +2178,7 @@ cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
     auto err = lcublasSgemv_v2(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 
 #else
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         throw std::runtime_error("Fail to replace cublasSgemv_v2 with cutlass implementation");
     }
 
@@ -2235,7 +2214,6 @@ cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cublasSgemv_v2);
     
     return err;
 }
@@ -2281,7 +2259,6 @@ cudnnStatus_t cudnnLRNCrossChannelForward(cudnnHandle_t  handle, cudnnLRNDescrip
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnLRNCrossChannelForward);
     
     return err;
 }
@@ -2327,7 +2304,6 @@ cudnnStatus_t cudnnSoftmaxForward(cudnnHandle_t  handle, cudnnSoftmaxAlgorithm_t
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnSoftmaxForward);
     
     return err;
 }
@@ -2371,7 +2347,6 @@ cudnnStatus_t cudnnTransformTensor(cudnnHandle_t  handle, const void * alpha, co
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnTransformTensor);
     
     return err;
 }
@@ -2388,7 +2363,7 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
     auto err = lcublasSgemmEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
 
 #else
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         throw std::runtime_error("Fail to replace cublasSgemmEx with cutlass implementation");
     }
 
@@ -2429,7 +2404,6 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cublasSgemmEx);
     
     return err;
 }
@@ -2481,7 +2455,6 @@ cudnnStatus_t cudnnSetSeqDataDescriptor(cudnnSeqDataDescriptor_t  seqDataDesc, c
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnSetSeqDataDescriptor);
     
     return err;
 }
@@ -2534,7 +2507,6 @@ cudnnStatus_t cudnnGetSeqDataDescriptor(const cudnnSeqDataDescriptor_t  seqDataD
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnGetSeqDataDescriptor);
     
     return err;
 }
@@ -2604,7 +2576,6 @@ cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t  handle, const cudnnAttnDe
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnMultiHeadAttnForward);
     
     return err;
 }
@@ -2669,7 +2640,6 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t  handle, const cudnnA
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnMultiHeadAttnBackwardData);
     
     return err;
 }
@@ -2724,7 +2694,6 @@ cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t  handle, const cud
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnMultiHeadAttnBackwardWeights);
     
     return err;
 }
@@ -2769,7 +2738,6 @@ cudnnStatus_t cudnnReorderFilterAndBias(cudnnHandle_t  handle, const cudnnFilter
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnReorderFilterAndBias);
     
     return err;
 }
@@ -2817,7 +2785,6 @@ cudnnStatus_t cudnnGetRNNWorkspaceSize(cudnnHandle_t  handle, const cudnnRNNDesc
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNWorkspaceSize);
     
     return err;
 }
@@ -2865,7 +2832,6 @@ cudnnStatus_t cudnnGetRNNTrainingReserveSize(cudnnHandle_t  handle, const cudnnR
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnGetRNNTrainingReserveSize);
     
     return err;
 }
@@ -2914,7 +2880,6 @@ cudnnStatus_t cudnnGetFilterNdDescriptor(const cudnnFilterDescriptor_t  filterDe
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnGetFilterNdDescriptor);
     
     return err;
 }
@@ -2973,7 +2938,6 @@ cudnnStatus_t cudnnRNNForwardTraining(cudnnHandle_t  handle, const cudnnRNNDescr
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnRNNForwardTraining);
 
     return err;
 }
@@ -3038,7 +3002,6 @@ cudnnStatus_t cudnnRNNBackwardData(cudnnHandle_t  handle, const cudnnRNNDescript
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnRNNBackwardData);
     
     return err;
 }
@@ -3091,7 +3054,6 @@ cudnnStatus_t cudnnRNNBackwardWeights(cudnnHandle_t  handle, const cudnnRNNDescr
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnRNNBackwardWeights);
     
     return err;
 }
@@ -3137,7 +3099,6 @@ cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t  rnnDataDesc, c
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnSetRNNDataDescriptor);
     
     return err;
 }
@@ -3186,7 +3147,6 @@ cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t  tensorDe
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnGetTensorNdDescriptor);
     
     return err;
 }
@@ -3248,7 +3208,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t  handle, cu
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnBatchNormalizationForwardTrainingEx);
     
     return err;
 }
@@ -3315,7 +3274,6 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx(cudnnHandle_t  handle, cudnnBatc
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cudnnBatchNormalizationBackwardEx);
     
     return err;
 }
@@ -3376,7 +3334,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
     bool launched = false;
     cublasStatus_t err;
 
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
 
         auto ctx = cublas_tracer.get_cublasCtx(handle);
 
@@ -3501,7 +3459,6 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t  handle, cublasOperation
     }
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasSgemmStridedBatched);
 	
     return err;
 }
@@ -3550,9 +3507,8 @@ cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(int * numBloc
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -3596,9 +3552,8 @@ cudaError_t cudaChooseDevice(int * device, const struct cudaDeviceProp * prop)
 #endif
 
     TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags);
     
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -3635,9 +3590,8 @@ cudaError_t cudaSetDevice(int  device)
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaSetDevice);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -3688,7 +3642,6 @@ cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t  handle, cudnnRNNDescript
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNBackwardWeights_v8);
 	return err;
 }
 
@@ -3745,7 +3698,6 @@ cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t  handle, cudnnRNNDescriptor_
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNBackwardData_v8);
 	return err;
 }
 
@@ -3800,7 +3752,6 @@ cudnnStatus_t cudnnRNNForward(cudnnHandle_t  handle, cudnnRNNDescriptor_t  rnnDe
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnRNNForward);
 	return err;
 }
 
@@ -3837,7 +3788,6 @@ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t  handle, cudnnBackendDescriptor_
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnBackendExecute);
 	return err;
 }
 
@@ -3869,9 +3819,8 @@ cudaError_t cudaThreadSynchronize()
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaThreadSynchronize);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -3906,9 +3855,8 @@ cudaError_t cudaEventRecord(cudaEvent_t  event, cudaStream_t  stream)
     IOX_RECV_RETURN_STATUS(cudaError_t);
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaEventRecord);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -3940,9 +3888,8 @@ cudaError_t cudaDeviceSynchronize()
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceSynchronize);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -3977,9 +3924,8 @@ cudaError_t cudaStreamSynchronize(cudaStream_t  stream)
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamSynchronize);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -4029,7 +3975,6 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasCreate_v2);
 	return err;
 }
 
@@ -4071,7 +4016,6 @@ cudnnStatus_t cudnnCreate(cudnnHandle_t * handle)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudnnCreate);
 	return err;
 }
 
@@ -4119,7 +4063,8 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
         fatbin_size = elf_size;
     }
 
-    bool cached = TallyCache::cache->cubin_cache.contains(fatbin_data, fatbin_size);
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+    bool cached = cubin_cache.contains(fatbin_data, fatbin_size);
     uint32_t cubin_uid = 0;
 
     size_t msg_len;
@@ -4128,10 +4073,9 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
         msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleLoadDataArg) + fatbin_size;
     } else {
         msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleLoadDataArg);
-        cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
+        cubin_uid = cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
     }
 
-    
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -4143,6 +4087,7 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
 			
             request->cached = cached;
             request->cubin_uid = cubin_uid;
+            request->cubin_size = fatbin_size;
 
             if (!cached) {
                 memcpy(request->image, fatbin_data, fatbin_size);
@@ -4171,7 +4116,7 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
     {};
 
     if (cached) {
-        kernel_args = TallyCache::cache->cubin_cache.get_kernel_args(fatbin_data, fatbin_size);
+        kernel_args = cubin_cache.get_kernel_args(fatbin_data, fatbin_size);
     } else {
         kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
 
@@ -4188,7 +4133,6 @@ CUresult cuModuleLoadData(CUmodule * module, const void * image)
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuModuleLoadData);
 	return err;
 }
 
@@ -4243,7 +4187,6 @@ CUresult cuModuleGetFunction(CUfunction * hfunc, CUmodule  hmod, const char * na
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuModuleGetFunction);
 	return err;
 }
 
@@ -4294,9 +4237,8 @@ cudaError_t cudaStreamGetCaptureInfo_v2(cudaStream_t  stream, enum cudaStreamCap
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamGetCaptureInfo_v2);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -4354,7 +4296,6 @@ CUresult cuPointerGetAttribute(void * data, CUpointer_attribute  attribute, CUde
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuPointerGetAttribute);
 	return err;
 }
 
@@ -4407,9 +4348,8 @@ cudaError_t cudaGraphGetNodes(cudaGraph_t  graph, cudaGraphNode_t * nodes, size_
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGraphGetNodes);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -4447,9 +4387,8 @@ cudaError_t cudaFuncSetAttribute(const void * func, enum cudaFuncAttribute  attr
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaFuncSetAttribute);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -4605,7 +4544,6 @@ CUresult cuMemcpy(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemcpy);
 	return err;
 }
 
@@ -4667,7 +4605,6 @@ CUresult cuMemcpyAsync(CUdeviceptr  dst, CUdeviceptr  src, size_t  ByteCount, CU
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemcpyAsync);
 	return err;
 }
 
@@ -4716,7 +4653,6 @@ CUresult cuMemAllocAsync(CUdeviceptr * dptr, size_t  bytesize, CUstream  hStream
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemAllocAsync);
 
 	return err;
 }
@@ -4762,7 +4698,6 @@ CUresult cuMemFree_v2(CUdeviceptr  dptr)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemFree_v2);
 	return err;
 }
 
@@ -4798,9 +4733,8 @@ cudaError_t cudaMemset(void * devPtr, int  value, size_t  count)
     IOX_RECV_RETURN_STATUS(cudaError_t);
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaMemset);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -4842,9 +4776,8 @@ cudaError_t cudaStreamCreate(cudaStream_t * pStream)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCreate);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -4887,9 +4820,8 @@ cudaError_t cudaStreamCreateWithFlags(cudaStream_t * pStream, unsigned int  flag
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCreateWithFlags);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -4933,9 +4865,8 @@ cudaError_t cudaStreamCreateWithPriority(cudaStream_t * pStream, unsigned int  f
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamCreateWithPriority);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -4973,9 +4904,8 @@ cudaError_t cudaStreamBeginCapture(cudaStream_t  stream, enum cudaStreamCaptureM
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamBeginCapture);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -5019,7 +4949,6 @@ CUresult cuStreamCreateWithPriority(CUstream * phStream, unsigned int  flags, in
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamCreateWithPriority);
 	return err;
 }
 
@@ -5080,7 +5009,7 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
     bool launched = false;
     cublasStatus_t err;
 
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
 
         auto cublasCtx = cublas_tracer.get_cublasCtx(handle);
         auto math_mode = cublasCtx.mode;
@@ -5218,7 +5147,6 @@ cublasStatus_t cublasGemmEx(cublasHandle_t  handle, cublasOperation_t  transa, c
     }
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cublasGemmEx);
     
     return err;
 }
@@ -5263,7 +5191,6 @@ CUresult cuFuncGetAttribute(int * pi, CUfunction_attribute  attrib, CUfunction  
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuFuncGetAttribute);
 	return err;
 }
 
@@ -5306,7 +5233,6 @@ CUresult cuFuncSetAttribute(CUfunction  hfunc, CUfunction_attribute  attrib, int
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuFuncSetAttribute);
 	return err;
 }
 
@@ -5348,7 +5274,6 @@ CUresult cuFuncSetCacheConfig(CUfunction  hfunc, CUfunc_cache  config)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuFuncSetCacheConfig);
 	return err;
 }
 
@@ -5414,7 +5339,7 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
     bool launched = false;
     cublasStatus_t err;
 
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
 
         auto cublasCtx = cublas_tracer.get_cublasCtx(handle);
         auto math_mode = cublasCtx.mode;
@@ -5555,7 +5480,6 @@ cublasStatus_t cublasGemmStridedBatchedEx(cublasHandle_t  handle, cublasOperatio
     }
 
     TALLY_CLIENT_PROFILE_END;
-    TALLY_CLIENT_TRACE_API_CALL(cublasGemmStridedBatchedEx);
     
     return err;
 }
@@ -5599,7 +5523,6 @@ CUresult cuMemsetD8_v2(CUdeviceptr  dstDevice, unsigned char  uc, size_t  N)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemsetD8_v2);
 	return err;
 }
 
@@ -5643,7 +5566,6 @@ CUresult cuStreamCreate(CUstream * phStream, unsigned int  Flags)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamCreate);
 	return err;
 }
 
@@ -5690,7 +5612,6 @@ CUresult cuMemAlloc_v2(CUdeviceptr * dptr, size_t  bytesize)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemAlloc_v2);
 	return err;
 }
 
@@ -5733,7 +5654,6 @@ CUresult cuMemsetD32_v2(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemsetD32_v2);
 	return err;
 }
 
@@ -5775,7 +5695,6 @@ CUresult cuMemcpyHtoDAsync_v2(CUdeviceptr  dstDevice, const void * srcHost, size
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemcpyHtoDAsync_v2);
 	return err;
 }
 
@@ -5827,7 +5746,6 @@ CUresult cuMemcpyDtoHAsync_v2(void * dstHost, CUdeviceptr  srcDevice, size_t  By
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemcpyDtoHAsync_v2);
 	return err;
 }
 
@@ -5864,7 +5782,6 @@ CUresult cuMemsetD32Async(CUdeviceptr  dstDevice, unsigned int  ui, size_t  N, C
     IOX_RECV_RETURN_STATUS(CUresult);
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemsetD32Async);
 	return err;
 }
 
@@ -5911,7 +5828,8 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
 
     CUresult err;
 
-    bool cached = TallyCache::cache->cubin_cache.contains(fatbin_data, fatbin_size);
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+    bool cached = cubin_cache.contains(fatbin_data, fatbin_size);
     uint32_t cubin_uid = 0;
 
     size_t msg_len;
@@ -5920,9 +5838,8 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
         msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleLoadFatBinaryArg) + fatbin_size;
     } else {
         msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleLoadFatBinaryArg);
-        cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
+        cubin_uid = cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
     }
-
     
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
@@ -5935,6 +5852,7 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
 			
             request->cached = cached;
             request->cubin_uid = cubin_uid;
+            request->cubin_size = fatbin_size;
 
             if (!cached) {
                 memcpy(request->image, fatbin_data, fatbin_size);
@@ -5963,7 +5881,7 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
     {};
 
     if (cached) {
-        kernel_args = TallyCache::cache->cubin_cache.get_kernel_args(fatbin_data, fatbin_size);
+        kernel_args = cubin_cache.get_kernel_args(fatbin_data, fatbin_size);
     } else {
         kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
 
@@ -5980,7 +5898,6 @@ CUresult cuModuleLoadFatBinary(CUmodule * module, const void * fatCubin)
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuModuleLoadFatBinary);
 	return err;
 }
 
@@ -6031,7 +5948,6 @@ CUresult cuModuleGetGlobal_v2(CUdeviceptr * dptr, size_t * bytes, CUmodule  hmod
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuModuleGetGlobal_v2);
 	return err;
 }
 
@@ -6077,7 +5993,8 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
         fatbin_size = elf_size;
     }
 
-    bool cached = TallyCache::cache->cubin_cache.contains(fatbin_data, fatbin_size);
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+    bool cached = cubin_cache.contains(fatbin_data, fatbin_size);
     uint32_t cubin_uid = 0;
 
     size_t msg_len = sizeof(MessageHeader_t) + sizeof(cuModuleLoadDataExArg);
@@ -6085,9 +6002,8 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
     if (!cached) {
         msg_len += fatbin_size;
     } else {
-        cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
+        cubin_uid = cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
     }
-
     
     TallyClient::client->iox_client->loan(msg_len, alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
@@ -6100,6 +6016,7 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
 			
             request->cached = cached;
             request->cubin_uid = cubin_uid;
+            request->cubin_size = fatbin_size;
 
             if (!cached) {
                 memcpy(request->image, fatbin_data, fatbin_size);
@@ -6128,7 +6045,7 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
     {};
 
     if (cached) {
-        kernel_args = TallyCache::cache->cubin_cache.get_kernel_args(fatbin_data, fatbin_size);
+        kernel_args = cubin_cache.get_kernel_args(fatbin_data, fatbin_size);
     } else {
         kernel_args = get_kernel_names_and_param_sizes_from_elf(tmp_elf_file);
 
@@ -6145,7 +6062,6 @@ CUresult cuModuleLoadDataEx(CUmodule * module, const void * image, unsigned int 
 #endif
 
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuModuleLoadData);
 
 	return err;
 }
@@ -6183,7 +6099,6 @@ CUresult cuMemcpyDtoDAsync_v2(CUdeviceptr  dstDevice, CUdeviceptr  srcDevice, si
     IOX_RECV_RETURN_STATUS(CUresult);
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuMemcpyDtoDAsync_v2);
 	return err;
 }
 
@@ -6217,7 +6132,6 @@ CUresult cuStreamSynchronize(CUstream  hStream)
     IOX_RECV_RETURN_STATUS(CUresult);
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamSynchronize);
 	return err;
 }
 
@@ -6250,7 +6164,6 @@ CUresult cuCtxSynchronize()
     IOX_RECV_RETURN_STATUS(CUresult);
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxSynchronize);
 	return err;
 }
 
@@ -6291,7 +6204,6 @@ CUresult cuModuleUnload(CUmodule  hmod)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuModuleUnload);
 	return err;
 }
 
@@ -6337,7 +6249,6 @@ CUresult cuStreamEndCapture(CUstream  hStream, CUgraph * phGraph)
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamEndCapture);
 	return err;
 }
 
@@ -6382,9 +6293,8 @@ cudaError_t cudaStreamEndCapture(cudaStream_t  stream, cudaGraph_t * pGraph)
     stream_capture_status_map[stream] = cudaStreamCaptureStatusNone;
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamEndCapture);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -6427,7 +6337,6 @@ CUresult cuGraphLaunch(CUgraphExec  hGraphExec, CUstream  hStream)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuGraphLaunch);
 	return err;
 }
 
@@ -6447,7 +6356,7 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
     }
@@ -6475,7 +6384,6 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasSetMathMode);
 	return err;
 }
 
@@ -6513,7 +6421,6 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
     IOX_RECV_RETURN_STATUS(cublasStatus_t);
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasDestroy_v2);
 	return err;
 }
 
@@ -6533,7 +6440,7 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
     }
@@ -6561,7 +6468,6 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasSetStream_v2);
 	return err;
 }
 
@@ -6581,7 +6487,7 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
     }
@@ -6611,7 +6517,6 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasSetWorkspace_v2);
 	return err;
 }
 
@@ -6629,7 +6534,7 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
         *lightHandle = (cublasLtHandle_t)malloc(8);
@@ -6670,7 +6575,6 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtCreate);
 	return err;
 }
 
@@ -6689,7 +6593,7 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
         // opaque pointer
@@ -6733,7 +6637,6 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescCreate);
 	return err;
 }
 
@@ -6752,7 +6655,7 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
         // opaque pointer
@@ -6797,7 +6700,6 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutCreate);
 	return err;
 }
 
@@ -6814,7 +6716,7 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
     }
@@ -6849,7 +6751,6 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceCreate);
 	return err;
 }
 
@@ -6891,7 +6792,7 @@ cudaError_t cudaPointerGetAttributes(struct cudaPointerAttributes * attributes, 
         }))
     {};
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 #endif
 }
@@ -6930,7 +6831,6 @@ CUresult cuDevicePrimaryCtxSetFlags_v2(CUdevice  dev, unsigned int  flags)
     IOX_RECV_RETURN_STATUS(CUresult);
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxSetFlags_v2);
 	return err;
 }
 
@@ -6975,7 +6875,6 @@ CUresult cuDeviceGetName(char * name, int  len, CUdevice  dev)
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDeviceGetName);
 	return err;
 }
 
@@ -7017,7 +6916,7 @@ cudaError_t cudaMallocHost(void ** ptr, size_t  size)
     }
 #endif
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -7041,7 +6940,7 @@ cudaError_t cudaHostAlloc(void ** pHost, size_t  size, unsigned int  flags)
 
 #endif
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -7055,7 +6954,7 @@ cudaError_t cudaFreeHost(void * ptr)
     free_mem_region(host_addr_map, ptr);
     auto err = cudaSuccess;
 #endif
-    last_err = err;
+    LAST_CUDA_ERR = err;
     return err;
 }
 
@@ -7098,9 +6997,8 @@ cudaError_t cudaFuncGetAttributes(struct cudaFuncAttributes * attr, const void *
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaFuncGetAttributes);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -7199,7 +7097,6 @@ ncclResult_t ncclCommInitRankConfig(ncclComm_t*  comm, int  nranks, ncclUniqueId
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(ncclCommInitRankConfig);
 	return err;
 }
 
@@ -7216,9 +7113,8 @@ cudaError_t cudaGetDevice(int * device)
     *device = cuda_device;
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGetDevice);
 
-    last_err = err;
+    LAST_CUDA_ERR = err;
 	return err;
 }
 
@@ -7238,7 +7134,6 @@ CUresult cuDevicePrimaryCtxGetState(CUdevice  dev, unsigned int * flags, int * a
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuDevicePrimaryCtxGetState);
 	return err;
 }
 
@@ -7258,7 +7153,7 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
     }
@@ -7286,7 +7181,6 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatrixLayoutDestroy);
 	return err;
 }
 
@@ -7306,7 +7200,7 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
     }
@@ -7334,7 +7228,6 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulDescDestroy);
 	return err;
 }
 
@@ -7346,11 +7239,10 @@ cudaError_t cudaGetLastError()
 #if defined(RUN_LOCALLY)
 	auto err = lcudaGetLastError();
 #else
-    auto err = last_err;
-    last_err = cudaSuccess;
+    auto err = LAST_CUDA_ERR;
+    LAST_CUDA_ERR = cudaSuccess;
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaGetLastError);
 	return err;
 }
 
@@ -7369,7 +7261,7 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
     }
@@ -7397,7 +7289,6 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtDestroy);
 	return err;
 }
 
@@ -7415,7 +7306,7 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
         cublas_tracer.handle_cublasGetMathMode(handle, mode);
@@ -7453,7 +7344,6 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasGetMathMode);
 	return err;
 }
 
@@ -7469,7 +7359,7 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
     cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
-    if (replace_cublas) {
+    if (REPLACE_CUBLAS) {
         // do nothing because we won't call cublas anyway
         err = CUBLAS_STATUS_SUCCESS;
     }
@@ -7497,7 +7387,6 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cublasLtMatmulPreferenceDestroy);
 	return err;
 }
 
@@ -7533,9 +7422,8 @@ cudaError_t cudaMemsetAsync(void * devPtr, int  value, size_t  count, cudaStream
 
     IOX_RECV_RETURN_STATUS(cudaError_t );
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaMemsetAsync);
 	return err;
 }
 
@@ -7547,10 +7435,9 @@ cudaError_t cudaPeekAtLastError()
 #if defined(RUN_LOCALLY)
 	auto err = lcudaPeekAtLastError();
 #else
-    auto err = last_err;
+    auto err = LAST_CUDA_ERR;
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaPeekAtLastError);
 	return err;
 }
 
@@ -7604,7 +7491,6 @@ CUresult cuCtxGetApiVersion(CUcontext  ctx, unsigned int * version)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetApiVersion);
 	return err;
 }
 
@@ -7620,7 +7506,6 @@ CUresult cuCtxGetDevice(CUdevice * device)
     auto err = CUDA_SUCCESS;
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetDevice);
 	return err;
 }
 
@@ -7671,7 +7556,6 @@ CUresult cuCtxGetCurrent(CUcontext * pctx)
     }
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuCtxGetCurrent);
 	return err;
 }
 
@@ -7743,9 +7627,8 @@ cudaError_t cudaDeviceGetAttribute(int * value, enum cudaDeviceAttr  attr, int  
         device_attributes[device][attr] = *value;
     }
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaDeviceGetAttribute);
 	return err;
 }
 
@@ -7790,7 +7673,6 @@ CUresult cuGraphInstantiateWithFlags(CUgraphExec * phGraphExec, CUgraph  hGraph,
     {};
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuGraphInstantiateWithFlags);
 	return err;
 }
 
@@ -7824,9 +7706,8 @@ cudaError_t cudaStreamIsCapturing(cudaStream_t  stream, enum cudaStreamCaptureSt
     *pCaptureStatus = stream_capture_status_map[stream];
 
 #endif
-	last_err = err;
+	LAST_CUDA_ERR = err;
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cudaStreamIsCapturing);
 	return err;
 }
 
@@ -7870,7 +7751,6 @@ CUresult cuStreamBeginCapture_v2(CUstream  hStream, CUstreamCaptureMode  mode)
     stream_capture_status_map[hStream] = cudaStreamCaptureStatusActive;
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamBeginCapture_v2);
 	return err;
 }
 
@@ -7899,7 +7779,6 @@ CUresult cuStreamIsCapturing(CUstream  hStream, CUstreamCaptureStatus * captureS
 
 #endif
 	TALLY_CLIENT_PROFILE_END;
-	TALLY_CLIENT_TRACE_API_CALL(cuStreamIsCapturing);
 	return err;
 }
 

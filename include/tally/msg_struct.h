@@ -23,7 +23,13 @@ struct __align__(8) fatBinaryHeader
 struct __cudaRegisterFatBinaryArg {
     bool cached;
     uint32_t cubin_uid;
+    size_t cubin_size;
     char data[];
+};
+
+struct __cudaRegisterFatBinaryResponse {
+    uint32_t str_len;
+    char tmp_elf_file[];
 };
 
 struct __cudaRegisterFunctionArg {
@@ -915,6 +921,7 @@ struct cudnnCreateResponse {
 struct cuModuleLoadDataArg {
     bool cached;
     uint32_t cubin_uid;
+    size_t cubin_size;
     char image[];
 };
 
@@ -1202,6 +1209,7 @@ struct cuMemcpyDtoDAsync_v2Arg {
 struct cuModuleLoadDataExArg {
     bool cached;
     uint32_t cubin_uid;
+    size_t cubin_size;
     char image[];
 };
 
@@ -1214,6 +1222,7 @@ struct cuModuleLoadDataExResponse {
 struct cuModuleLoadFatBinaryArg {
     bool cached;
     uint32_t cubin_uid;
+    size_t cubin_size;
     char image[];
 };
 

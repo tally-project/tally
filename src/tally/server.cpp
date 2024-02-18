@@ -32,8 +32,6 @@ void TallyServer::start_main_server() {
 
     implicit_init_cuda_ctx();
 
-    load_cache();
-
     TALLY_SPD_LOG_ALWAYS("Tally server is up ...");
 
     std::vector<std::thread> worker_threads;
@@ -490,158 +488,6 @@ void TallyServer::tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_
     TALLY_SPD_LOG_ALWAYS("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Launch config: " + best_config.str() + ". Norm speed: " + std::to_string(best_norm_speed) + "\n");
 }
 
-void TallyServer::tune_kernel_pair_launch(
-    KernelLaunchWrapper &first_kernel_wrapper, KernelLaunchWrapper &second_kernel_wrapper,
-    int32_t first_client_id, int32_t second_client_id
-)
-{
-    // KernelLaunchWrapper kernel_wrappers[2] { first_kernel_wrapper, second_kernel_wrapper };
-    // int32_t client_ids[2] { first_client_id, second_client_id };
-    // CudaLaunchCall launch_calls[2];
-    // float base_latency_ms[2];
-    // std::string kernel_names[2];
-
-    // float profile_duration = 0.;
-    // float time_elapsed;
-
-    // cudaDeviceSynchronize();
-
-    // for (int i = 0; i < 2; i++) {
-    //     // Run one time of kernel
-    //     kernel_wrappers[i].kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, true, 1000, &time_elapsed, nullptr, 1, true);
-    //     profile_duration = std::max(profile_duration, (30 * time_elapsed) / 1000.f);
-
-    //     launch_calls[i] = kernel_wrappers[i].launch_call;
-
-    //     bool found_in_cache = false;
-    //     auto res = get_single_kernel_perf(launch_calls[i], CudaLaunchConfig::default_config, &found_in_cache);
-    //     if (!found_in_cache) {
-    //         throw std::runtime_error("should have profiled single kernel performance");
-    //     }
-
-    //     auto metrics = res.metrics;
-    //     base_latency_ms[i] = metrics.latency_ms;
-
-    //     kernel_names[i] = host_func_to_demangled_kernel_name_map[launch_calls[i].func];
-    // }
-
-    // TALLY_SPD_LOG_ALWAYS("Launch config not found for: \n\t" +
-    //               kernel_names[0] + "_" + launch_calls[0].dim_str() + "\n\t" +
-    //               kernel_names[1] + "_" + launch_calls[1].dim_str());
-
-    // auto start = std::chrono::high_resolution_clock::now();
-
-    // // At least run for 0.5 sec
-    // profile_duration = std::max(profile_duration, 0.5f);
-
-    // // Maybe don't exceed 5 sec;
-    // profile_duration = std::min(profile_duration, 5.f);
-
-    // auto k1_blockDim = launch_calls[0].blockDim;
-    // auto k2_blockDim = launch_calls[1].blockDim;
-
-    // auto k1_gridDim = launch_calls[0].gridDim;
-    // auto k2_gridDim = launch_calls[1].gridDim;
-
-    // auto k1_block_size = k1_blockDim.x * k1_blockDim.y * k1_blockDim.z;
-    // auto k2_block_size = k2_blockDim.x * k2_blockDim.y * k2_blockDim.z;
-
-    // auto k1_configs = CudaLaunchConfig::get_preemptive_configs(launch_calls[0], k1_block_size, k1_gridDim.x * k1_gridDim.y * k1_gridDim.z);
-    // auto k2_configs = CudaLaunchConfig::get_preemptive_configs(launch_calls[1], k2_block_size, k2_gridDim.x * k2_gridDim.y * k2_gridDim.z);
-    
-    // auto k1_k2_configs = std::vector<std::vector<CudaLaunchConfig>> {k1_configs, k2_configs};
-
-    // auto launch_kernel_func = [this, kernel_wrappers, client_ids](int idx, CudaLaunchConfig config, float dur_seconds, float *time_elapsed, float *iters, int32_t total_iters) {
-    //     auto &client_data = client_data_all[client_ids[idx]];
-    //     auto ptb_args = client_data.stream_to_ptb_args[kernel_wrappers[idx].launch_stream];
-    //     (kernel_wrappers[idx].kernel_to_dispatch)(config, ptb_args, client_data.curr_idx_arr, nullptr, true, dur_seconds, time_elapsed, iters, total_iters, true);
-    // };
-
-    // CudaLaunchMetadata null_metadata;
-
-    // // Step 3: get the kernel pair performance for various configs
-    // float best_sum_norm_speed = -1.;
-    // CudaLaunchCallConfigPairResult best_pair_config;
-
-    // for (auto &k1_config : k1_configs) {
-    //     for (auto &k2_config : k2_configs) {
-
-    //         if (k1_config.use_preemptive_ptb && k2_config.use_preemptive_ptb) {
-    //             auto k1_threads_per_sm = k1_block_size * k1_config.blocks_per_sm;
-    //             auto k2_threads_per_sm = k2_block_size * k2_config.blocks_per_sm;
-                
-    //             // Prune config pairs that exceed the thread limit
-    //             if ((k1_threads_per_sm + k2_threads_per_sm) > CUDA_MAX_NUM_THREADS_PER_SM) {
-    //                 continue;
-    //             }
-    //         }
-
-    //         // First experiment - Get colocated latency and norm speed for each kernel
-    //         cudaDeviceSynchronize();
-
-    //         float iters[2];
-    //         float time_elapsed[2];
-
-    //         std::thread launch_t_1(launch_kernel_func, 0, k1_config, profile_duration, &(time_elapsed[0]), &(iters[0]), -1);
-    //         std::thread launch_t_2(launch_kernel_func, 1, k2_config, profile_duration, &(time_elapsed[1]), &(iters[1]), -1);
-
-    //         launch_t_1.join();
-    //         launch_t_2.join();
-
-    //         if (std::abs(time_elapsed[0] - time_elapsed[1]) > 0.03 * std::min(time_elapsed[0], time_elapsed[1])) {
-    //             std::cerr << "Warning: two jobs do not finish at around the same time" << "\n";
-    //             std::cerr << "time_elapsed_1: " << time_elapsed[0] << " time_elapsed_2: " << time_elapsed[1] << std::endl;
-    //         }
-
-    //         float k1_latency_ms = time_elapsed[0] / iters[0];
-    //         float k2_latency_ms = time_elapsed[1] / iters[1];
-
-    //         float k1_norm_speed = base_latency_ms[0] / k1_latency_ms;
-    //         float k2_norm_speed = base_latency_ms[1] / k2_latency_ms;
-
-    //         // Save the results
-    //         set_kernel_pair_perf(
-    //             launch_calls[0], launch_calls[1], k1_config, k2_config, null_metadata, null_metadata,
-    //             k1_norm_speed, k2_norm_speed, k1_latency_ms, k2_latency_ms, 0, 0, 0, 0
-    //         );
-
-    //         bool found_in_cache;
-    //         auto res = get_kernel_pair_perf(launch_calls[0], launch_calls[1], k1_config, k2_config, &found_in_cache);
-    //         assert(found_in_cache);
-
-    //         float sum_norm_speed = res.get_sum_norm_speed();
-    //         if (sum_norm_speed > best_sum_norm_speed) {
-    //             best_sum_norm_speed = sum_norm_speed;
-    //             best_pair_config = res;
-    //         }
-    //     }
-    // }
-
-    // set_kernel_pair_best_config(launch_calls[0], launch_calls[1], best_pair_config);
-
-    // auto end = std::chrono::high_resolution_clock::now();
-    // std::chrono::duration<double, std::milli> elapsed = end - start;
-
-    // bool found_in_cache;
-    // auto res = get_kernel_pair_best_config(launch_calls[0], launch_calls[1], &found_in_cache);
-    // auto launch_configs = res.get_configs(launch_calls[0], launch_calls[1]);
-
-    // bool time_share = std::get<2>(launch_configs);
-
-    // if (time_share) {
-    //     TALLY_SPD_LOG_ALWAYS("Tuning complete ("+ std::to_string(elapsed.count()) + " ms). Chosen config: time share");
-    // } else {
-
-    //     auto config_1 = std::get<0>(launch_configs);
-    //     auto config_2 = std::get<1>(launch_configs);
-
-    //     TALLY_SPD_LOG_ALWAYS("Tuning complete ("+ std::to_string(elapsed.count()) + " ms).\n" + 
-    //                  "\tChosen config_1: " + config_1.str() + " config_2: " + config_2.str() + "\n" + 
-    //                  "\tSum norm speed: " + std::to_string(best_sum_norm_speed)
-    //     );
-    // }
-}
-
 void TallyServer::wait_until_launch_queue_empty(int32_t client_id)
 {
     int attempt = 0;
@@ -701,26 +547,28 @@ const void *TallyServer::get_server_addr_from_cu_func(CUfunction cu_func)
 
 void TallyServer::register_kernel(const void *server_func_addr)
 {
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
     auto cubin_uid = host_func_to_cubin_uid_map[server_func_addr];
-    auto cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
-    auto cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
-
-    register_cu_modules(cubin_uid);
-    register_ptx_transform(cubin_data, cubin_size);
+    
+    register_cu_module(cubin_uid);
+    register_ptx_transform(cubin_uid);
+    load_measurements(cubin_uid);
 }
 
-void TallyServer::register_ptx_transform(const char* cubin_data, size_t cubin_size)
+void TallyServer::register_ptx_transform(uint32_t cubin_uid)
 {
     using KERNEL_NAME_MAP_TYPE = folly::ConcurrentHashMap<std::string, const void *>;
     using KERNEL_MAP_TYPE = folly::ConcurrentHashMap<const void*, WrappedCUfunction>;
 
-    auto &transform_ptx_str = TallyCache::cache->cubin_cache.get_transform_ptx_str(cubin_data, cubin_size);
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+    auto cubin_size = cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
+    auto cubin_data = cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+    auto &kernel_params = cubin_cache.get_kernel_args(cubin_data, cubin_size);
 
     // no transform is available if ptx is not available
+    auto &transform_ptx_str = cubin_cache.get_transform_ptx_str(cubin_data, cubin_size);
     bool has_transform = transform_ptx_str != "";
-    auto &kernel_params = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
-
-    auto cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+    
     auto &kernel_name_to_host_func_map = cubin_to_kernel_name_to_host_func_map[cubin_uid];
 
     if (cubin_to_cu_module.find(cubin_uid) != cubin_to_cu_module.end()) {
@@ -839,74 +687,20 @@ void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *
             [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
-void TallyServer::register_cu_modules(uint32_t cubin_uid)
-{
-    auto cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
-    auto cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
-
+void TallyServer::register_cu_module(uint32_t cubin_uid)
+{   
     if (cubin_to_cu_module.find(cubin_uid) == cubin_to_cu_module.end()) {
 
-        auto &transform_fatbin_str = TallyCache::cache->cubin_cache.get_transform_fatbin_str(cubin_data, cubin_size);
-
+        auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+        auto cubin_data = cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+        auto cubin_size = cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
+        auto &transform_fatbin_str = cubin_cache.get_transform_fatbin_str(cubin_data, cubin_size);
+        
         CUmodule transform_module;
-        auto err = cuModuleLoadData(&transform_module, transform_fatbin_str.c_str());
+        CHECK_CUDA_ERROR(cuModuleLoadData(&transform_module, transform_fatbin_str.c_str()));
 
-        if (!err) {
-            cubin_to_cu_module.insert(cubin_uid, transform_module);
-        } else {
-            TALLY_SPD_WARN("Fail to load module for cubin id: " + std::to_string(cubin_uid));
-        }
+        cubin_to_cu_module.insert(cubin_uid, transform_module);
     }
-}
-
-void TallyServer::load_cache()
-{
-    auto &cubin_map = TallyCache::cache->cubin_cache.cubin_map;
-
-    for (auto &pair : cubin_map) {
-        uint32_t cubin_size = pair.first;
-        auto &cubin_vec = pair.second;
-
-        for (auto &cubin_data : cubin_vec) {
-
-            auto &kernel_args = cubin_data.kernel_args;
-            auto cubin_uid = cubin_data.cubin_uid;
-
-            for (auto &kernel_args_pair : cubin_data.kernel_args) {
-
-                auto &kernel_name = kernel_args_pair.first;
-                auto &param_sizes = kernel_args_pair.second;
-                auto demangled_kernel_name = demangleFunc(kernel_name);
-
-                if (cubin_to_kernel_name_to_host_func_map[cubin_uid].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_uid].end()) {
-
-                    // allocate an address for the kernel
-                    const void *kernel_server_addr = (const void *) malloc(8);
-
-                    // Bookkeeping
-                    _kernel_addr_to_args.insert(kernel_server_addr, param_sizes);
-                    host_func_to_demangled_kernel_name_map.insert(kernel_server_addr, demangled_kernel_name);
-
-                    host_func_to_cubin_uid_map.insert(kernel_server_addr, cubin_uid);
-
-                    cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(kernel_name, kernel_server_addr);
-                    cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(demangled_kernel_name, kernel_server_addr);
-
-                    demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
-                        std::make_pair(demangled_kernel_name, cubin_uid),
-                        kernel_server_addr
-                    );
-                }
-            }
-
-            // register_cu_modules(cubin_uid);
-
-            // Load the original and transformed PTX and register them as callable functions
-            // register_ptx_transform(cubin_data.cubin_data.c_str(), cubin_size);
-        }
-    }
-
-    register_measurements();
 }
 
 void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -930,9 +724,15 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
 
     client_meta.register_queue.clear();
 
+    size_t cubin_size = args->cubin_size;
+
+    // load cubin cache
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+    cubin_cache.load_cubin_cache(cubin_size);
+
+    std::string tmp_elf_file = "";
+
     if (!client_meta.cubin_registered) {
-        auto header = (struct fatBinaryHeader *) args->data;
-        size_t cubin_size = header->headerSize + header->fatSize;
         auto cubin_data = (const char *) args->data;
 
         // Load necessary data into cache if not exists
@@ -942,20 +742,24 @@ void TallyServer::handle___cudaRegisterFatBinary(void *__args, iox::popo::Untype
         client_meta.fatbin_data = (unsigned long long *) malloc(cubin_size);
         memcpy(client_meta.fatbin_data, args->data, cubin_size);
 
-        std::string tmp_elf_file = get_tmp_file_path(".elf", client_id);
-        iox_server->loan(requestHeader, tmp_elf_file.size() + 1, alignof(char[]))
-            .and_then([&](auto& responsePayload) {
-
-                auto response = static_cast<char *>(responsePayload);
-                memcpy(response, tmp_elf_file.c_str(), tmp_elf_file.size());
-                response[tmp_elf_file.size()] = '\0';
-
-                iox_server->send(response).or_else(
-                    [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
-            })
-            .or_else(
-                [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
+        tmp_elf_file = get_tmp_file_path(".elf", client_id);
     }
+    
+    auto msg_len = sizeof(__cudaRegisterFatBinaryResponse) + tmp_elf_file.size();
+
+    iox_server->loan(requestHeader, msg_len, alignof(__cudaRegisterFatBinaryResponse))
+        .and_then([&](auto& responsePayload) {
+
+            auto response = static_cast<__cudaRegisterFatBinaryResponse *>(responsePayload);
+            
+            response->str_len = tmp_elf_file.size();
+            memcpy(response->tmp_elf_file, tmp_elf_file.c_str(), tmp_elf_file.size());
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::handle___cudaRegisterFunction(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -972,6 +776,19 @@ void TallyServer::handle___cudaRegisterFunction(void *__args, iox::popo::Untyped
 
     std::string kernel_name {args->data, args->kernel_func_len};
     client_meta.register_queue.push_back( std::make_pair(args->host_func, kernel_name) );
+
+    iox_server->loan(requestHeader, sizeof(cudaError_t), alignof(cudaError_t))
+        .and_then([&](auto& responsePayload) {
+
+            auto response = static_cast<cudaError_t *>(responsePayload);
+            
+            *response = cudaSuccess;
+
+            iox_server->send(response).or_else(
+                [&](auto& error) { LOG_ERR_AND_EXIT("Could not send Response: ", error); });
+        })
+        .or_else(
+            [&](auto& error) { LOG_ERR_AND_EXIT("Could not allocate Response: ", error); });
 }
 
 void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -983,19 +800,23 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
     int32_t client_id = msg_header->client_id;
 
     auto &client_meta = client_data_all[client_id];
-
-    void *kernel_server_addr;
-    std::map<std::string, std::vector<uint32_t>> kernel_names_and_param_sizes;
-    uint32_t cubin_uid;
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
     
+    const char* fatbin_data;
+    size_t fatbin_size;
+    uint32_t cubin_uid;
+
     if (!client_meta.cubin_registered) {
-        kernel_names_and_param_sizes = TallyCache::cache->cubin_cache.get_kernel_args((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
-        cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
+        fatbin_data = (const char*) client_meta.fatbin_data;
+        fatbin_size = client_meta.fatBinSize;
+        cubin_uid = cubin_cache.get_cubin_data_uid(fatbin_data, fatbin_size);
     } else {
         cubin_uid = client_meta.cubin_uid;
+        fatbin_data = cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+        fatbin_size = cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
     }
-    
-    // auto cubin_str = TallyCache::cache->cubin_cache.get_cubin_data_str_from_cubin_uid(cubin_uid);
+
+    auto kernel_names_and_param_sizes = cubin_cache.get_kernel_args(fatbin_data, fatbin_size);
 
     for (auto &kernel_pair : client_meta.register_queue) {
         auto &client_addr = kernel_pair.first;
@@ -1011,7 +832,7 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
                 // allocate an address for the kernel
                 // TODO: In fact we don't need malloc here
                 // Just need a unique address for this purpose
-                kernel_server_addr = malloc(8);
+                auto kernel_server_addr = malloc(8);
 
                 auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
 
@@ -1024,7 +845,7 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
                 cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(demangled_kernel_name, kernel_server_addr);
                 cubin_to_kernel_name_to_host_func_map[cubin_uid].insert(kernel_name, kernel_server_addr);
 
-                demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
+                kernel_cubin_uid_to_host_func_map.insert(
                     std::make_pair(demangled_kernel_name, cubin_uid),
                     kernel_server_addr
                 );
@@ -1033,13 +854,6 @@ void TallyServer::handle___cudaRegisterFatBinaryEnd(void *__args, iox::popo::Unt
             client_meta._kernel_client_addr_mapping[client_addr] = cubin_to_kernel_name_to_host_func_map[cubin_uid][kernel_name];
         }
     }
-
-    // register_cu_modules(cubin_uid);
-
-    // // Load the transformed PTX and register them as callable functions
-    // if (!client_meta.cubin_registered) {
-    //     register_ptx_transform((const char*) client_meta.fatbin_data, client_meta.fatBinSize);
-    // }
 }
 
 void TallyServer::handle_cudaMalloc(void *__args, iox::popo::UntypedServer *iox_server, const void* const requestPayload)
@@ -3116,14 +2930,15 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
     bool cached = args->cached;
     std::string tmp_elf_file;
     uint32_t cubin_uid = 0;
+    size_t cubin_size = args->cubin_size;
+    const char *cubin_data;
     size_t msg_len = sizeof(cuModuleLoadDataResponse);
 
-    size_t cubin_size = 0;
-    const char *cubin_data;
+    // load cubin cache
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+    cubin_cache.load_cubin_cache(cubin_size);
     
     if (!cached) {
-        auto header = (struct fatBinaryHeader *) args->image;
-        cubin_size = header->headerSize + header->fatSize;
         cubin_data = (const char *) args->image;
         cache_cubin_data(cubin_data, cubin_size, client_id);
         tmp_elf_file = get_tmp_file_path(".elf", client_id);
@@ -3136,19 +2951,20 @@ void TallyServer::handle_cuModuleLoadData(void *__args, iox::popo::UntypedServer
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuModuleLoadDataResponse*>(responsePayload);
 
+            auto &cubin_cache = TallyCache::cache->get_cubin_cache();
             if (!cached) {
                 memcpy(response->tmp_elf_file, tmp_elf_file.c_str(), tmp_elf_file.size());
                 response->tmp_elf_file[tmp_elf_file.size()] = '\0';
 
-                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
-                cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+                cubin_data = cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
+                cubin_uid = cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
             } else {
-                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
-                cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
+                cubin_data = cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+                cubin_size = cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
             }
 
             // Register cu module for this cubin
-            register_cu_modules(cubin_uid);
+            register_cu_module(cubin_uid);
 
             if (cubin_to_cu_module.find(cubin_uid) == cubin_to_cu_module.end()) {
                 throw std::runtime_error("Cannot find cu module");
@@ -3193,7 +3009,8 @@ void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedSer
         auto cubin_size = std::get<1>(cubin_data_size_id);
         cubin_uid = std::get<2>(cubin_data_size_id);
 
-        auto kernel_names_and_param_sizes = TallyCache::cache->cubin_cache.get_kernel_args(cubin_data, cubin_size);
+        auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+        auto kernel_names_and_param_sizes = cubin_cache.get_kernel_args(cubin_data, cubin_size);
         auto &param_sizes = kernel_names_and_param_sizes[kernel_name];
 
         if (cubin_to_kernel_name_to_host_func_map[cubin_uid].find(kernel_name) == cubin_to_kernel_name_to_host_func_map[cubin_uid].end()) {
@@ -3205,13 +3022,13 @@ void TallyServer::handle_cuModuleGetFunction(void *__args, iox::popo::UntypedSer
 
             host_func_to_cubin_uid_map.insert(kernel_server_addr, cubin_uid);
 
-            demangled_kernel_name_and_cubin_uid_to_host_func_map.insert(
+            kernel_cubin_uid_to_host_func_map.insert(
                 std::make_pair(kernel_name, cubin_uid),
                 kernel_server_addr
             );
         }
 
-        register_ptx_transform(cubin_data, cubin_size);
+        register_ptx_transform(cubin_uid);
     }
 
     iox_server->loan(requestHeader, sizeof(cuModuleGetFunctionResponse), alignof(cuModuleGetFunctionResponse))
@@ -4114,12 +3931,14 @@ void TallyServer::handle_cuModuleLoadFatBinary(void *__args, iox::popo::UntypedS
     uint32_t cubin_uid = 0;
     size_t msg_len = sizeof(cuModuleLoadFatBinaryResponse);
 
-    size_t cubin_size = 0;
+    size_t cubin_size = args->cubin_size;
     const char *cubin_data;
+
+    // load cubin cache
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+    cubin_cache.load_cubin_cache(cubin_size);
     
     if (!cached) {
-        auto header = (struct fatBinaryHeader *) args->image;
-        cubin_size = header->headerSize + header->fatSize;
         cubin_data = (const char *) args->image;
 
         cache_cubin_data(cubin_data, cubin_size, client_id);
@@ -4133,19 +3952,20 @@ void TallyServer::handle_cuModuleLoadFatBinary(void *__args, iox::popo::UntypedS
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuModuleLoadFatBinaryResponse*>(responsePayload);
 
+            auto &cubin_cache = TallyCache::cache->get_cubin_cache();
             if (!cached) {
                 memcpy(response->tmp_elf_file, tmp_elf_file.c_str(), tmp_elf_file.size());
                 response->tmp_elf_file[tmp_elf_file.size()] = '\0';
 
-                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
-                cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+                cubin_data = cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
+                cubin_uid = cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
             } else {
-                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
-                cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
+                cubin_data = cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+                cubin_size = cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
             }
 
             // Register cu module for this cubin
-            register_cu_modules(cubin_uid);
+            register_cu_module(cubin_uid);
 
             response->module = cubin_to_cu_module[cubin_uid];
             response->err = CUDA_SUCCESS;
@@ -4176,14 +3996,15 @@ void TallyServer::handle_cuModuleLoadDataEx(void *__args, iox::popo::UntypedServ
     uint32_t cubin_uid = 0;
     size_t msg_len = sizeof(cuModuleLoadDataExResponse);
 
-    size_t cubin_size = 0;
+    size_t cubin_size = args->cubin_size;
     const char *cubin_data;
 
-    if (!cached) {
-        auto header = (struct fatBinaryHeader *) args->image;
-        cubin_size = header->headerSize + header->fatSize;
-        cubin_data = (const char *) args->image;
+    // load cubin cache
+    auto &cubin_cache = TallyCache::cache->get_cubin_cache();
+    cubin_cache.load_cubin_cache(cubin_size);
 
+    if (!cached) {
+        cubin_data = (const char *) args->image;
         cache_cubin_data(cubin_data, cubin_size, client_id);
         tmp_elf_file = get_tmp_file_path(".elf", client_id);
         msg_len += tmp_elf_file.size() + 1;
@@ -4195,19 +4016,20 @@ void TallyServer::handle_cuModuleLoadDataEx(void *__args, iox::popo::UntypedServ
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuModuleLoadDataExResponse*>(responsePayload);
 
+            auto &cubin_cache = TallyCache::cache->get_cubin_cache();
             if (!cached) {
                 memcpy(response->tmp_elf_file, tmp_elf_file.c_str(), tmp_elf_file.size());
                 response->tmp_elf_file[tmp_elf_file.size()] = '\0';
 
-                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
-                cubin_uid = TallyCache::cache->cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
+                cubin_data = cubin_cache.get_cubin_data_ptr(cubin_data, cubin_size);
+                cubin_uid = cubin_cache.get_cubin_data_uid(cubin_data, cubin_size);
             } else {
-                cubin_data = TallyCache::cache->cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
-                cubin_size = TallyCache::cache->cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
+                cubin_data = cubin_cache.get_cubin_data_str_ptr_from_cubin_uid(cubin_uid);
+                cubin_size = cubin_cache.get_cubin_size_from_cubin_uid(cubin_uid);
             }
 
             // Register cu module for this cubin
-            register_cu_modules(cubin_uid);
+            register_cu_module(cubin_uid);
 
             if (cubin_to_cu_module.find(cubin_uid) == cubin_to_cu_module.end()) {
                 throw std::runtime_error("Cannot find cu module");

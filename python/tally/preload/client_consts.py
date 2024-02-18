@@ -191,6 +191,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 #include <curand.h>
 #include <cusparse_v2.h>
 
+#include <tally/consts.h>
 #include "tally/cuda_util.h"
 #include "tally/msg_struct.h"
 #include "tally/client.h"
@@ -330,7 +331,7 @@ public:
 	folly::ConcurrentHashMap<const void *, uint32_t> host_func_to_cubin_uid_map;
 
 	// Map kernel name and cubin hash to a host func
-	folly::ConcurrentHashMap<std::pair<std::string, uint32_t>, const void *> demangled_kernel_name_and_cubin_uid_to_host_func_map;
+	folly::ConcurrentHashMap<std::pair<std::string, uint32_t>, const void *> kernel_cubin_uid_to_host_func_map;
 
 	// Use cubin as unique id of a kernel
 	// { Cubin uid: { Kernel Name: host func addr } }
@@ -422,7 +423,7 @@ public:
 	const void *get_server_addr_from_cu_func(CUfunction cu_func);
 
 	void register_kernel(const void *server_func_addr);
-	void register_cu_modules(uint32_t cubin_uid);
+	void register_cu_module(uint32_t cubin_uid);
 	void register_kernels();
     void register_measurements();
     void register_ptx_transform(const char* cubin_data, size_t cubin_size);
@@ -471,43 +472,6 @@ TALLY_SERVER_HEADER_TEMPLATE_BUTTOM = """
 };
 
 #endif // TALLY_SERVER_H
-"""
-
-TALLY_CLIENT_SRC_TEMPLATE_TOP = """
-#include <cstring>
-#include <memory>
-#include <vector>
-
-#include <tally/util.h>
-#include <tally/client.h>
-#include <tally/consts.h>
-#include <tally/generated/cuda_api.h>
-
-TallyClient *TallyClient::client;
-
-cudaError_t last_err = cudaSuccess;
-bool replace_cublas = false;
-
-__attribute__((__constructor__)) void init_client()
-{
-    NO_INIT_PROCESS_KEYWORDS_VEC;
-
-    auto process_name = get_process_name(getpid());
-
-    for (auto &keyword : no_init_process_keywords) {
-
-        if (containsSubstring(process_name, keyword)) {
-            return;
-        }
-    }
-
-	if (std::getenv("REPLACE_CUBLAS")) {
-		replace_cublas = true;
-	}
-
-    TallyClient::client = new TallyClient;
-}
-
 """
 
 REGISTER_FUNCS = [

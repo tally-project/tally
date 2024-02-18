@@ -46,5 +46,4 @@ void CubinData::compile() {
     std::remove(fatbin_tmp_path.c_str());
 
     compiled = true;
-    TallyCache::cache->transform_cache_changed = true;
 }

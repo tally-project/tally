@@ -325,160 +325,12 @@ public:
     void compile();
 };
 
-class CubinCache
-{
-public:
-    uint32_t uid_counter = 0;
-
-    // Cubin size : Cubin data
-    std::map<size_t, std::vector<CubinData>> cubin_map;
-
-    bool contains(const char* cubin_data, size_t cubin_size)
-    {
-        return find_transform_data(cubin_data, cubin_size) != nullptr;
-    }
-
-    CubinData* find_transform_data(const char* cubin_data, size_t cubin_size)
-    {
-        std::shared_lock lock(mutex_);
-        if (cubin_map.find(cubin_size) != cubin_map.end()) {
-            for (auto &data : cubin_map[cubin_size]) {
-                if (memcmp(data.cubin_data.c_str(), cubin_data, cubin_size) == 0) {
-                    return &data;
-                }
-            }
-        }
-        return nullptr;
-    }
-
-    std::map<std::string, std::vector<uint32_t>>&
-    get_kernel_args(const char* cubin_data, size_t cubin_size)
-    {
-        auto transform_data = find_transform_data(cubin_data, cubin_size);
-        assert(transform_data);
-
-        if (!transform_data) {
-            throw std::runtime_error("cannot find transform_data");
-        }
-
-        return transform_data->kernel_args;
-    }
-
-    std::string &get_transform_ptx_str(const char* cubin_data, size_t cubin_size)
-    {
-        auto transform_data = find_transform_data(cubin_data, cubin_size);
-        assert(transform_data);
-
-        if (!transform_data) {
-            throw std::runtime_error("cannot find transform_data");
-        }
-
-        if (!transform_data->compiled) {
-            transform_data->compile();
-        }
-
-        return transform_data->ptx_str;
-    }
-
-    std::string &get_transform_fatbin_str(const char* cubin_data, size_t cubin_size)
-    {
-        auto transform_data = find_transform_data(cubin_data, cubin_size);
-        assert(transform_data);
-
-        if (!transform_data) {
-            throw std::runtime_error("cannot find transform_data");
-        }
-
-        if (!transform_data->compiled) {
-            transform_data->compile();
-        }
-
-        return transform_data->fatbin_str;
-    }
-
-    const char *get_cubin_data_ptr(const char* cubin_data, size_t cubin_size)
-    {
-        auto transform_data = find_transform_data(cubin_data, cubin_size);
-        assert(transform_data);
-        return transform_data->cubin_data.c_str();
-    }
-
-    std::string get_cubin_data_str_from_cubin_uid(uint32_t cubin_uid)
-    {
-        std::shared_lock lock(mutex_);
-
-        for (auto &pair : cubin_map) {
-            auto &cubin_data_vec = pair.second;
-
-            for (auto &data : cubin_data_vec) {
-                if (data.cubin_uid == cubin_uid) {
-                    return data.cubin_data;
-                }
-            }
-        }
-
-        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Fail to find cubin str from uid.");
-        return "";
-    }
-
-    const char *get_cubin_data_str_ptr_from_cubin_uid(uint32_t cubin_uid)
-    {
-        std::shared_lock lock(mutex_);
-
-        for (auto &pair : cubin_map) {
-            auto &cubin_data_vec = pair.second;
-
-            for (auto &data : cubin_data_vec) {
-                if (data.cubin_uid == cubin_uid) {
-                    return data.cubin_data.c_str();
-                }
-            }
-        }
-
-        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Fail to find cubin str ptr from uid.");
-        return nullptr;
-    }
-
-    size_t get_cubin_size_from_cubin_uid(uint32_t cubin_uid)
-    {
-        std::shared_lock lock(mutex_);
-
-        for (auto &pair : cubin_map) {
-            auto &cubin_data_vec = pair.second;
-
-            for (auto &data : cubin_data_vec) {
-                if (data.cubin_uid == cubin_uid) {
-                    return pair.first;
-                }
-            }
-        }
-
-        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Fail to find cubin size from uid.");
-        return -1;
-    }
-
-    uint32_t get_cubin_data_uid(const char* cubin_data, size_t cubin_size)
-    {
-        auto transform_data = find_transform_data(cubin_data, cubin_size);
-        assert(transform_data);
-        return transform_data->cubin_uid;
-    }
-
-    void add_data(
-        size_t cubin_size,
-        std::string &cubin_str,
-        std::map<std::string, std::vector<uint32_t>> &kernel_args
-    )
-    {
-        std::unique_lock lock(mutex_);
-        cubin_map[cubin_size].push_back( CubinData { uid_counter, cubin_str, cubin_size, kernel_args } );
-        uid_counter++;
-    }
-};
-
 class PerformanceCache
 {
 public:
+
+    bool changed = false;
+
     // Single-kernel performance
     std::unordered_map<CudaLaunchKeyConfig, CudaLaunchKeyConfigResult> single_kernel_perf_map;
     // std::unordered_map<CudaLaunchKey, CudaLaunchKeyConfigResult> single_kernel_chosen_config_map;
@@ -500,6 +352,8 @@ public:
         // std::cout << res.meta_data << std::endl;
         // std::cout << res << std::endl;
         // std::cout << "\n" << std::endl;
+
+        changed = true;
     }
 
     // void set_single_kernel_chosen_config(CudaLaunchKey &launch_key, CudaLaunchKeyConfigResult &res)
@@ -541,6 +395,8 @@ public:
         // std::cout << res.config_key_meta_data_2.second << std::endl;
         // std::cout << res << std::endl;
         // std::cout << "\n" << std::endl;
+
+        changed = true;
     }
 
     void set_kernel_pair_best_config(CudaLaunchKey &launch_key_1, CudaLaunchKey &launch_key_2, CudaLaunchKeyConfigPairResult &res)
@@ -563,6 +419,8 @@ public:
         // std::cout << res.config_key_meta_data_2.second << std::endl;
         // std::cout << res << std::endl;
         // std::cout << "\n" << std::endl;
+
+        changed = true;
     }
 
     void write_single_kernel_perf_to_file() const

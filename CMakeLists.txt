@@ -78,7 +78,7 @@ set(TALLY_SERVER_SRC_FILES
 )
 
 set(TALLY_CLIENT_SRC_FILES
-    ${PROJECT_SOURCE_DIR}/src/tally/generated/client.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/client.cpp
 )
 
 add_library(nccl_lib SHARED IMPORTED)
