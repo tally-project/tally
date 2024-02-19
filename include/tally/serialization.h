@@ -114,9 +114,6 @@ template<class Archive>
 void serialize(Archive & ar, PerformanceCache & g, const unsigned int version)
 {
     ar & g.single_kernel_perf_map;
-    // ar & g.single_kernel_chosen_config_map;
-    ar & g.kernel_pair_perf_map;
-    ar & g.kernel_pair_best_config_map;
 }
 
 } // namespace serialization

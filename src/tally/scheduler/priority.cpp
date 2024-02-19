@@ -658,6 +658,11 @@ void TallyServer::run_priority_scheduler()
                     auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
 
                     if (!found_in_cache) {
+
+                        if (client_priority_map.size() > 1) {
+                            TALLY_SPD_WARN("Launch config not found during job co-location. This will impact experiment accuracy!");
+                        }
+
                         priority_launch_and_measure_kernel(kernel_wrapper, client_id);
 
                         kernel_wrapper.free_args();
