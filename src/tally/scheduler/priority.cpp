@@ -93,6 +93,17 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
 
     auto &original_metrics = original_res.metrics;
     float has_executed = false;
+    auto priority_configs = CudaLaunchConfig::get_priority_configs(launch_call);
+
+    // maximum number of slices from priority_configs
+    uint32_t max_num_slices = 1;
+    for (auto &config : priority_configs) {
+        if (config.use_sliced) {
+            if (config.num_slices > max_num_slices) {
+                max_num_slices = config.num_slices;
+            }
+        }
+    }
 
     auto launch_kernel_with_config = [&](CudaLaunchConfig &config) {
         // prepare ptb args
@@ -151,7 +162,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
                 temp_perf_data.erase(original_call_config);
                 warmup_perf_data.erase(original_call_config);
 
-                TALLY_SPD_WARN("Detecting abnormal norm_speed of " + std::to_string(norm_speed) + " of kernel " + kernel_str);
+                TALLY_SPD_WARN("Detecting abnormal norm_speed of " + std::to_string(norm_speed) + " of kernel " + kernel_str + "\n");
             } else {
 
                 float preemption_latency_ms = 0.;
@@ -160,7 +171,6 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
                     if (config.max_worker_blocks < CUDA_NUM_SM) {
                         preemption_latency_ms = PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS;
                     } else {
-
                         auto latency_ms = metrics.avg_latency_ms;
                         auto batch_size = config.blocks_per_sm * std::min((uint32_t)CUDA_NUM_SM, launch_call.num_blocks);
                         auto num_batches = (launch_call.num_blocks + batch_size - 1) / batch_size;
@@ -168,7 +178,13 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
                     }
 
                 } else if (config.use_sliced) {
-                    preemption_latency_ms = metrics.avg_latency_ms / config.num_slices;
+
+                    if (config.num_slices > max_num_slices) {
+                        preemption_latency_ms = PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS;
+                    } else {
+                        preemption_latency_ms = metrics.avg_latency_ms / config.num_slices;
+                    }
+
                 }
                 
                 set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, metrics.avg_latency_ms, 0, preemption_latency_ms);
@@ -187,9 +203,16 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         if (has_executed) {
             TALLY_SPD_LOG_ALWAYS("Tuning complete for: " + kernel_str);
             if (config.use_preemptive_ptb && config.max_worker_blocks < CUDA_NUM_SM) {
-                TALLY_SPD_WARN("Setting max_worker_blocks to " + std::to_string(config.max_worker_blocks)); 
-            } else if (config.use_sliced) {
-                TALLY_SPD_WARN("Fall back to kernel slicing");
+                TALLY_SPD_WARN(
+                    "Setting max_worker_blocks to " + std::to_string(config.max_worker_blocks) +
+                    " to mitigate longer preemption latency than max allowed."
+                ); 
+            } else if (config.use_sliced && config.num_slices > max_num_slices) {
+                TALLY_SPD_WARN(
+                    "Setting num_slices to " + std::to_string(config.num_slices) +
+                    " as opposed to " + std::to_string(max_num_slices) +
+                    " to mitigate longer preemption latency than max allowed."
+                ); 
             } else if (config.use_original) {
                 TALLY_SPD_WARN("Fall back to original kernel");
             }
@@ -231,8 +254,6 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         }
         return;
     }
-
-    auto priority_configs = CudaLaunchConfig::get_priority_configs(launch_call);
 
     float best_preemptive_norm_speed = -1.;
     float best_sliced_norm_speed = -1.;
@@ -318,6 +339,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         else {
             // provision a 30% overhead
             uint32_t num_slices = std::ceil(original_metrics.latency_ms * 1.3 / PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS);
+            num_slices = std::max(num_slices, max_num_slices);
             num_slices = std::min(num_slices, launch_call.num_blocks);
             if (num_slices > 1) {
                 config = CudaLaunchConfig::get_sliced_config(num_slices);
