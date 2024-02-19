@@ -9,10 +9,10 @@ std::shared_ptr<TallyCache> TallyCache::cache = std::make_shared<TallyCache>();
 CubinCache::CubinCache()
 {
     auto home_path = std::filesystem::path(getenv("HOME"));
-    cache_dir = (home_path / ".cache/tally").string();
+    transform_cache_dir = (home_path / ".cache/tally/transform").string();
 
     // Try to load uid counter
-    uid_cache_file_name = cache_dir + "/uid_count.txt";
+    uid_cache_file_name = transform_cache_dir + "/uid_count.txt";
     std::ifstream uid_cache_file(uid_cache_file_name);
 
     if (uid_cache_file.is_open()) {
@@ -28,7 +28,7 @@ void CubinCache::load_cubin_cache(size_t cubin_size) {
     // if not exists, look up file system
     if (!has_cubin_size) {
         auto cache_file_name = std::to_string(cubin_size) + ".cache";
-        auto cache_path = cache_dir + "/" + cache_file_name;
+        auto cache_path = transform_cache_dir + "/" + cache_file_name;
 
         std::vector<CubinData> cubin_data_vec;
         load_cache_from_file<std::vector<CubinData>>(cache_path, cubin_data_vec);
@@ -39,7 +39,7 @@ void CubinCache::load_cubin_cache(size_t cubin_size) {
 
 void CubinCache::save_cubin_cache(size_t cubin_size) {
     auto cache_file_name = std::to_string(cubin_size) + ".cache";
-    auto cache_path = cache_dir + "/" + cache_file_name;
+    auto cache_path = transform_cache_dir + "/" + cache_file_name;
 
     save_cache_to_file<std::vector<CubinData>>(cache_path, cubin_map[cubin_size]);
 }
@@ -254,6 +254,11 @@ TallyCache::TallyCache()
     auto cache_path = home_path / ".cache/tally";
     if (!std::filesystem::is_directory(cache_path)) {
         std::filesystem::create_directory(cache_path);
+    }
+
+    auto transform_cache_path = cache_path / "transform";
+    if (!std::filesystem::is_directory(transform_cache_path)) {
+        std::filesystem::create_directory(transform_cache_path);
     }
 
     auto policy = SCHEDULER_POLICY;

@@ -62,7 +62,7 @@ public:
     void save_cubin_cache(size_t cubin_size);
 
 private:
-    std::string cache_dir;
+    std::string transform_cache_dir;
     std::string uid_cache_file_name;
 
     // id counter
