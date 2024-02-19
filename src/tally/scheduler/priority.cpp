@@ -643,7 +643,9 @@ void TallyServer::run_priority_scheduler()
                         break;
                     }
 
-                    config = res.config;
+                    if (!is_highest_priority) {
+                        config = res.config;
+                    }
                 }
 
                 if (!is_highest_priority) {
