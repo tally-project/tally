@@ -222,6 +222,16 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         set_single_kernel_chosen_config(launch_call, res);
     };
 
+    // Certain kernels do not have transformed kernel available
+    auto has_transform = preemptive_ptb_kernel_map.find(launch_call.func) != preemptive_ptb_kernel_map.end();
+    if (!has_transform) {
+        set_chosen_config(original_res);
+        if (!has_executed) {
+            launch_kernel_with_config(base_config);
+        }
+        return;
+    }
+
     auto priority_configs = CudaLaunchConfig::get_priority_configs(launch_call);
 
     float best_preemptive_norm_speed = -1.;
@@ -613,28 +623,30 @@ void TallyServer::run_priority_scheduler()
                 PTBKernelArgs *ptb_args = nullptr;
                 SlicedKernelArgs *sliced_args = nullptr;
 
-                if (!is_highest_priority) {
+                if (!is_highest_priority && kernel_wrapper.is_library_call) {
+                    TALLY_SPD_WARN("Found library call from low priority job");
+                }
 
-                    auto &launch_call = kernel_wrapper.launch_call;
+                auto &launch_call = kernel_wrapper.launch_call;
+                
+                if (!kernel_wrapper.is_library_call) {
 
-                    if (kernel_wrapper.is_library_call) {
-                        TALLY_SPD_WARN("Found library call from low priority job");
-                    } else {
+                     // Do some profiling of the preemptive kernels
+                    bool found_in_cache;
+                    auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
 
-                        // Do some profiling of the preemptive kernels
-                        bool found_in_cache;
-                        auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
+                    if (!found_in_cache) {
+                        priority_launch_and_measure_kernel(kernel_wrapper, client_id);
 
-                        if (!found_in_cache) {
-                            priority_launch_and_measure_kernel(kernel_wrapper, client_id);
-
-                            kernel_wrapper.free_args();
-                            client_data.queue_size--;
-                            break;
-                        }
-
-                        config = res.config;
+                        kernel_wrapper.free_args();
+                        client_data.queue_size--;
+                        break;
                     }
+
+                    config = res.config;
+                }
+
+                if (!is_highest_priority) {
 
                     // bookkeep kernel launch if it is not highest-priority 
                     in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
