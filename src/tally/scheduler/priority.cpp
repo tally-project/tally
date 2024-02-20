@@ -653,25 +653,34 @@ void TallyServer::run_priority_scheduler()
                 
                 if (!kernel_wrapper.is_library_call) {
 
-                     // Do some profiling of the preemptive kernels
-                    bool found_in_cache;
-                    auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
+                    auto is_colocate = client_priority_map.size() > 1;
 
-                    if (!found_in_cache) {
+                    // when not colocating, i.e. profiling, or the job is low-priority
+                    // we need to profile or launch preemptive configs
+                    if (!is_colocate || !is_highest_priority) {
 
-                        if (client_priority_map.size() > 1) {
-                            TALLY_SPD_WARN("Launch config not found during job co-location. This will impact experiment accuracy!");
+                        // Do some profiling of the preemptive kernels
+                        bool found_in_cache;
+                        auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
+
+                        if (!found_in_cache) {
+
+                            if (is_colocate) {
+                                TALLY_SPD_WARN("Launch config not found during job co-location. This will impact experiment accuracy!");
+                            }
+
+                            priority_launch_and_measure_kernel(kernel_wrapper, client_id);
+
+                            kernel_wrapper.free_args();
+                            client_data.queue_size--;
+                            break;
                         }
 
-                        priority_launch_and_measure_kernel(kernel_wrapper, client_id);
-
-                        kernel_wrapper.free_args();
-                        client_data.queue_size--;
-                        break;
-                    }
-
-                    if (!is_highest_priority) {
-                        config = res.config;
+                        // if profiling is done, only launch preemptive configs
+                        // when low priority
+                        if (!is_highest_priority) {
+                            config = res.config;
+                        }
                     }
                 }
 
