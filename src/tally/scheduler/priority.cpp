@@ -180,6 +180,11 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
                         auto batch_size = config.blocks_per_sm * std::min((uint32_t)CUDA_NUM_SM, launch_call.num_blocks);
                         auto num_batches = (launch_call.num_blocks + batch_size - 1) / batch_size;
                         preemption_latency_ms =  latency_ms / (float) num_batches;
+
+                        // NOTE: division by a factor is heuristical
+                        // default is 2 - let's suppose at any given time,
+                        // we will wait in average half of the execution time
+                        preemption_latency_ms = preemption_latency_ms / PRIORITY_PTB_PREEMPTION_LATENCY_CALCULATION_FACTOR;
                     }
 
                 } else if (config.use_sliced) {
@@ -334,7 +339,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
 
             auto max_worker_blocks = (PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS / preemptive_res.metrics.preemption_latency_ms) *
                                      (float) std::min((uint32_t)CUDA_NUM_SM, launch_call.num_blocks);
-            config.max_worker_blocks = std::max((uint32_t)std::floor(max_worker_blocks), 1u);
+            config.max_worker_blocks = std::max((uint32_t)std::floor(max_worker_blocks), PRIORITY_MIN_WORKER_BLOCKS);
 
             if (config.max_worker_blocks >= launch_call.num_blocks) {
                 config = base_config;
@@ -345,6 +350,11 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
             // provision a 30% overhead
             uint32_t num_slices = std::ceil(original_metrics.latency_ms * 1.3 / PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS);
             num_slices = std::max(num_slices, max_num_slices);
+
+            // let's at least allow PRIORITY_MIN_WORKER_BLOCKS blocks per slice
+            uint32_t num_slices_lower_bound = (launch_call.num_blocks + PRIORITY_MIN_WORKER_BLOCKS - 1) / PRIORITY_MIN_WORKER_BLOCKS;
+            num_slices = std::max(num_slices, num_slices_lower_bound);
+
             num_slices = std::min(num_slices, launch_call.num_blocks);
             if (num_slices > 1) {
                 config = CudaLaunchConfig::get_sliced_config(num_slices);
