@@ -6408,14 +6408,14 @@ cublasStatus_t cublasDestroy_v2(cublasHandle_t  handle)
     cublas_tracer.handle_cublasDestroy_v2(handle);
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasDestroy_v2(handle);
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    err = lcublasDestroy_v2(handle);
+    }
 #else
 
     // we will forward because we forwared cublasCreate
-
     cublasStatus_t err;
-
-    
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasDestroy_v2Arg), alignof(MessageHeader_t))
         .and_then([&](auto& requestPayload) {
 
@@ -7189,8 +7189,6 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutDestroyArg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
