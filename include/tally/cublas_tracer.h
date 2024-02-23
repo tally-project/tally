@@ -15,7 +15,7 @@
 struct cublasCtx {
 	cublasHandle_t handle;
 	cublasMath_t mode = CUBLAS_DEFAULT_MATH;
-	cudaStream_t stream;
+	cudaStream_t stream = nullptr;
 	void* workspace = nullptr;
 	size_t workspaceSizeInBytes = 0;
 };

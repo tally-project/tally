@@ -1254,11 +1254,14 @@ cublasStatus_t cublasLtMatmulDescSetAttribute(cublasLtMatmulDesc_t  matmulDesc, 
     cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
 
 #if defined(RUN_LOCALLY)
-    auto err = lcublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
+    cublasStatus_t err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+        err = lcublasLtMatmulDescSetAttribute(matmulDesc, attr, buf, sizeInBytes);
+    }
 
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -1305,10 +1308,12 @@ cublasStatus_t cublasLtMatrixLayoutSetAttribute(cublasLtMatrixLayout_t  matLayou
     IOX_CLIENT_ACQUIRE_LOCK;
 
 #if defined(RUN_LOCALLY)
-    auto err = lcublasLtMatrixLayoutSetAttribute(matLayout, attr, buf, sizeInBytes);
-
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+        err = lcublasLtMatrixLayoutSetAttribute(matLayout, attr, buf, sizeInBytes);
+    }
 #else
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -1355,11 +1360,13 @@ cublasStatus_t cublasLtMatmulPreferenceSetAttribute(cublasLtMatmulPreference_t  
     IOX_CLIENT_ACQUIRE_LOCK;
 
 #if defined(RUN_LOCALLY)
-    auto err = lcublasLtMatmulPreferenceSetAttribute(pref, attr, buf, sizeInBytes);
-
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+        err = lcublasLtMatmulPreferenceSetAttribute(pref, attr, buf, sizeInBytes);
+    }
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
     if (REPLACE_CUBLAS) {
 #if !defined(VERIFY_CORRECTNESS)
@@ -1406,11 +1413,16 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
     IOX_CLIENT_ACQUIRE_LOCK;
 
 #if defined(RUN_LOCALLY)
-    auto err = lcublasLtMatmulAlgoGetHeuristic(lightHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, preference, requestedAlgoCount, heuristicResultsArray, returnAlgoCount);
-
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+        err = lcublasLtMatmulAlgoGetHeuristic(lightHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, preference, requestedAlgoCount, heuristicResultsArray, returnAlgoCount);
+    } else {
+        *returnAlgoCount = 1;
+        heuristicResultsArray[0].state = CUBLAS_STATUS_SUCCESS;
+    }
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -1425,7 +1437,6 @@ cublasStatus_t cublasLtMatmulAlgoGetHeuristic(cublasLtHandle_t  lightHandle, cub
 
         uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasLtMatmulAlgoGetHeuristicArg);
 
-        
         TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
         .and_then([&](auto& requestPayload) {
             auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2172,19 +2183,18 @@ cublasStatus_t cublasSgemv_v2(cublasHandle_t  handle, cublasOperation_t  trans, 
     TALLY_CLIENT_PROFILE_START;
     IOX_CLIENT_ACQUIRE_LOCK;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemv_v2Arg);
+    if (REPLACE_CUBLAS) {
+        throw std::runtime_error("Fail to replace cublasSgemv_v2 with cutlass implementation");
+    }
 
 #if defined(RUN_LOCALLY)
     auto err = lcublasSgemv_v2(handle, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
 
 #else
-    if (REPLACE_CUBLAS) {
-        throw std::runtime_error("Fail to replace cublasSgemv_v2 with cutlass implementation");
-    }
 
     cublasStatus_t err;
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemv_v2Arg);
 
-    
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -2357,19 +2367,17 @@ cublasStatus_t cublasSgemmEx(cublasHandle_t  handle, cublasOperation_t  transa, 
     TALLY_CLIENT_PROFILE_START;
     IOX_CLIENT_ACQUIRE_LOCK;
 
-    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemmExArg);
-
-#if defined(RUN_LOCALLY)
-    auto err = lcublasSgemmEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
-
-#else
     if (REPLACE_CUBLAS) {
         throw std::runtime_error("Fail to replace cublasSgemmEx with cutlass implementation");
     }
 
-    cublasStatus_t err;
+#if defined(RUN_LOCALLY)
+    auto err = lcublasSgemmEx(handle, transa, transb, m, n, k, alpha, A, Atype, lda, B, Btype, ldb, beta, C, Ctype, ldc);
+#else
 
-    
+    cublasStatus_t err;
+    uint32_t msg_len =  sizeof(MessageHeader_t) + sizeof(struct cublasSgemmExArg);
+
     TallyClient::client->iox_client->loan(msg_len, alignof(CUDA_API_ENUM))
     .and_then([&](auto& requestPayload) {
         auto header = static_cast<MessageHeader_t*>(requestPayload);
@@ -3936,7 +3944,12 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
     IOX_CLIENT_ACQUIRE_LOCK;
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasCreate_v2(handle);
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    err = lcublasCreate_v2(handle);
+    } else {
+        *handle = (cublasHandle_t) malloc(8);
+    }
     cublas_tracer.handle_cublasCreate_v2(*handle);
 #else
 
@@ -3945,7 +3958,6 @@ cublasStatus_t cublasCreate_v2(cublasHandle_t*  handle)
 
     cublasStatus_t err;
 
-    
     TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasCreate_v2Arg), alignof(cublasCreate_v2Arg))
         .and_then([&](auto& requestPayload) {
 
@@ -6349,11 +6361,13 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
     cublas_tracer.handle_cublasSetMathMode(handle, mode);
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasSetMathMode(handle, mode);
-
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    auto err = lcublasSetMathMode(handle, mode);
+    }
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -6363,8 +6377,6 @@ cublasStatus_t cublasSetMathMode(cublasHandle_t  handle, cublasMath_t  mode)
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetMathModeArg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
@@ -6433,11 +6445,13 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
     cublas_tracer.handle_cublasSetStream_v2(handle, streamId);
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasSetStream_v2(handle, streamId);
-
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    err = lcublasSetStream_v2(handle, streamId);
+    }
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -6447,8 +6461,6 @@ cublasStatus_t cublasSetStream_v2(cublasHandle_t  handle, cudaStream_t  streamId
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetStream_v2Arg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
@@ -6480,11 +6492,13 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
     cublas_tracer.handle_cublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
-
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    err = lcublasSetWorkspace_v2(handle, workspace, workspaceSizeInBytes);
+    }
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -6494,8 +6508,6 @@ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t  handle, void*  workspace, s
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasSetWorkspace_v2Arg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
@@ -6525,13 +6537,19 @@ cublasStatus_t cublasLtCreate(cublasLtHandle_t*  lightHandle)
 	TALLY_SPD_LOG("cublasLtCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
     IOX_CLIENT_ACQUIRE_LOCK;
+
 #if defined(RUN_LOCALLY)
-	auto err = lcublasLtCreate(lightHandle);
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    auto err = lcublasLtCreate(lightHandle);
+    } else {
+        *lightHandle = (cublasLtHandle_t)malloc(8);
+    }
     cublasLt_tracer.handle_cublasLtCreate(*lightHandle);
 
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -6585,12 +6603,18 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
     IOX_CLIENT_ACQUIRE_LOCK;
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    err = lcublasLtMatmulDescCreate(matmulDesc, computeType, scaleType);
+    } else {
+        *matmulDesc = (cublasLtMatmulDesc_t) malloc(8);
+    }
+
     cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescCreate(*matmulDesc, computeType, scaleType);
 
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -6603,8 +6627,6 @@ cublasStatus_t cublasLtMatmulDescCreate(cublasLtMatmulDesc_t*  matmulDesc, cubla
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescCreateArg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
@@ -6647,12 +6669,18 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
     IOX_CLIENT_ACQUIRE_LOCK;
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+        err = lcublasLtMatrixLayoutCreate(matLayout, type, rows, cols, ld);
+    } else {
+        *matLayout = (cublasLtMatrixLayout_t) malloc(8);
+    }
+
     cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutCreate(*matLayout, type, rows, cols, ld);
 
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -6665,8 +6693,6 @@ cublasStatus_t cublasLtMatrixLayoutCreate(cublasLtMatrixLayout_t*  matLayout, cu
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatrixLayoutCreateArg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
@@ -6708,12 +6734,15 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 	TALLY_SPD_LOG("cublasLtMatmulPreferenceCreate hooked");
 	TALLY_CLIENT_PROFILE_START;
     IOX_CLIENT_ACQUIRE_LOCK;
-#if defined(RUN_LOCALLY)
-	auto err = lcublasLtMatmulPreferenceCreate(pref);
 
+#if defined(RUN_LOCALLY)
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    auto err = lcublasLtMatmulPreferenceCreate(pref);
+    }
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -6723,8 +6752,6 @@ cublasStatus_t cublasLtMatmulPreferenceCreate(cublasLtMatmulPreference_t*  pref)
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceCreateArg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
@@ -7146,11 +7173,13 @@ cublasStatus_t cublasLtMatrixLayoutDestroy(cublasLtMatrixLayout_t  matLayout)
     cublasLtMatrixLayout_tracer.handle_cublasLtMatrixLayoutDestroy(matLayout);
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasLtMatrixLayoutDestroy(matLayout);
-
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    err = lcublasLtMatrixLayoutDestroy(matLayout);
+    }
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -7193,11 +7222,13 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
     cublasLtMatmulDesc_tracer.handle_cublasLtMatmulDescDestroy(matmulDesc);
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasLtMatmulDescDestroy(matmulDesc);
-
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    err = lcublasLtMatmulDescDestroy(matmulDesc);
+    }
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -7207,8 +7238,6 @@ cublasStatus_t cublasLtMatmulDescDestroy(cublasLtMatmulDesc_t  matmulDesc)
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulDescDestroyArg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
@@ -7255,10 +7284,13 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
     cublasLt_tracer.handle_cublasLtDestroy(lightHandle);
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasLtDestroy(lightHandle);
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    err = lcublasLtDestroy(lightHandle);
+    }
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -7268,8 +7300,6 @@ cublasStatus_t cublasLtDestroy(cublasLtHandle_t  lightHandle)
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtDestroyArg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
@@ -7299,11 +7329,16 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
     IOX_CLIENT_ACQUIRE_LOCK;
 
 #if defined(RUN_LOCALLY)
-	auto err = lcublasGetMathMode(handle, mode);
 
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    err = lcublasGetMathMode(handle, mode);
+    } else {
+        cublas_tracer.handle_cublasGetMathMode(handle, mode);
+    }
 #else
 
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -7314,8 +7349,6 @@ cublasStatus_t cublasGetMathMode(cublasHandle_t  handle, cublasMath_t*  mode)
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasGetMathModeArg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
@@ -7353,10 +7386,12 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 	TALLY_CLIENT_PROFILE_START;
     IOX_CLIENT_ACQUIRE_LOCK;
 #if defined(RUN_LOCALLY)
-	auto err = lcublasLtMatmulPreferenceDestroy(pref);
-
+    auto err = CUBLAS_STATUS_SUCCESS;
+    if (!REPLACE_CUBLAS) {
+	    err = lcublasLtMatmulPreferenceDestroy(pref);
+    }
 #else
-    cublasStatus_t err = CUBLAS_STATUS_NOT_INITIALIZED;
+    auto err = CUBLAS_STATUS_NOT_INITIALIZED;
 
 #if !defined(VERIFY_CORRECTNESS)
     if (REPLACE_CUBLAS) {
@@ -7366,8 +7401,6 @@ cublasStatus_t cublasLtMatmulPreferenceDestroy(cublasLtMatmulPreference_t  pref)
 #endif
 
     if (err) {
-
-        
         TallyClient::client->iox_client->loan(sizeof(MessageHeader_t) + sizeof(cublasLtMatmulPreferenceDestroyArg), alignof(MessageHeader_t))
             .and_then([&](auto& requestPayload) {
 
