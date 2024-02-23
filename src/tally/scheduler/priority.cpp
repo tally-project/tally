@@ -353,7 +353,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
 
             // let's at least allow PRIORITY_MIN_WORKER_BLOCKS blocks per slice
             uint32_t num_slices_lower_bound = (launch_call.num_blocks + PRIORITY_MIN_WORKER_BLOCKS - 1) / PRIORITY_MIN_WORKER_BLOCKS;
-            num_slices = std::max(num_slices, num_slices_lower_bound);
+            num_slices = std::min(num_slices, num_slices_lower_bound);
 
             num_slices = std::min(num_slices, launch_call.num_blocks);
             if (num_slices > 1) {
