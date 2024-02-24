@@ -265,8 +265,8 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         return;
     }
 
-    float best_preemptive_norm_speed = -1.;
-    float best_sliced_norm_speed = -1.;
+    float preemptive_norm_speed = -1.;
+    float sliced_norm_speed = -1.;
 
     // gradually lower the required threshold 
     for (float perf_threshold = 1.0; perf_threshold >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD; perf_threshold-=0.1) {
@@ -295,9 +295,9 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
             if (config_metrics.norm_speed >= perf_threshold) {
                 
                 if (config.use_preemptive_ptb) {
-                    best_preemptive_norm_speed = std::max(best_preemptive_norm_speed, config_metrics.norm_speed);
+                    preemptive_norm_speed = config_metrics.norm_speed;
                 } else if (config.use_sliced) {
-                    best_sliced_norm_speed = std::max(best_sliced_norm_speed, config_metrics.norm_speed);
+                    sliced_norm_speed = config_metrics.norm_speed;
                 }
 
                 if (preemption_latency_ms <= PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS) {
@@ -327,13 +327,13 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
     }
 
     // Otherwise, we will launch (< CUDA_NUM_SM) thread blocks to further restrict the preemption latency
-    if (best_preemptive_norm_speed >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD ||
-        best_sliced_norm_speed >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD
+    if (preemptive_norm_speed >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD ||
+        sliced_norm_speed >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD
     ) {
 
         CudaLaunchConfig config;
 
-        if (best_preemptive_norm_speed >= best_sliced_norm_speed) {
+        if (preemptive_norm_speed >= sliced_norm_speed) {
             config = CudaLaunchConfig::get_preemptive_ptb_config(1);
             auto preemptive_res = get_single_kernel_perf(launch_call, config, &found);
 
@@ -408,6 +408,9 @@ void TallyServer::run_priority_scheduler()
 
     cudaStream_t retreat_stream;
     cudaStreamCreateWithFlags(&retreat_stream, cudaStreamNonBlocking);
+
+    auto highest_priority_idle_start_t = std::chrono::high_resolution_clock::now();
+    bool has_warned = false;
 
     while (!iox::posix::hasTerminationRequested()) {
 
@@ -507,12 +510,24 @@ void TallyServer::run_priority_scheduler()
                         // mark event as inactive as all kernels have finished
                         else {
                             client_event_wrapper.active = false;
+                            highest_priority_idle_start_t = std::chrono::high_resolution_clock::now();
                         }
 
                     }
                 }
 
             } else {
+
+                // If PRIORITY_MIN_WAIT_TIME_MS > 0, we need to check whether enough idle time is observed
+                if (PRIORITY_MIN_WAIT_TIME_MS > 0.) {
+                    auto curr_t = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double, std::milli> elapsed = curr_t - highest_priority_idle_start_t;
+                    float idle_time_elapsed = elapsed.count();
+                    if (idle_time_elapsed < PRIORITY_MIN_WAIT_TIME_MS) {
+                        break;
+                    }
+                }
+
                 // For non-highest-priority client, we only launch at most 1 kernel at any time
                 // therefore we will query whether the kernel has finished
 
@@ -696,8 +711,9 @@ void TallyServer::run_priority_scheduler()
 
                         if (!found_in_cache) {
 
-                            if (is_colocate) {
-                                TALLY_SPD_WARN("Launch config not found during job co-location. This will impact experiment accuracy!");
+                            if (!has_warned && is_colocate) {
+                                TALLY_SPD_WARN("Certain launch configs were not found during job co-location, which might impact experiment accuracy!");
+                                has_warned = true;
                             }
 
                             priority_launch_and_measure_kernel(kernel_wrapper, client_id);

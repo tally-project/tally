@@ -42,6 +42,18 @@ void register_cuda_specs()
         CUDA_MAX_NUM_REGISTERS_PER_SM = deviceProp.regsPerMultiprocessor;
         CUDA_MAX_SHM_BYTES_PER_SM = deviceProp.sharedMemPerMultiprocessor;
 
+        if (!std::getenv("PRIORITY_PTB_MAX_NUM_THREADS_PER_SM")) {
+
+            switch(CUDA_MAX_NUM_THREADS_PER_SM) {
+                case 2048:
+                    PRIORITY_PTB_MAX_NUM_THREADS_PER_SM = 1536;
+                    break;
+                case 1536:
+                    PRIORITY_PTB_MAX_NUM_THREADS_PER_SM = 1024;
+                    break;
+            }
+        }
+
         CUDA_SPECS_INITIALIZED = true;
     }
 }
