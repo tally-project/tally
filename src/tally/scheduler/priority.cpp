@@ -34,6 +34,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
     // Store temporary data here
     static std::unordered_map<CudaLaunchCallConfig, TempKernelProfileMetrics> temp_perf_data;
     static std::unordered_map<CudaLaunchCallConfig, uint32_t> warmup_perf_data;
+    static std::unordered_map<CudaLaunchCall, bool> abnormal_launch_calls;
 
     std::vector<CudaLaunchConfig> profiled_configs;
 
@@ -160,7 +161,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
             float norm_speed = original_metrics.latency_ms / metrics.avg_latency_ms;
 
             // Likely the base config is not profiled correctly, so we delete it and do it again.
-            if (norm_speed >= 1.8) {
+            if (norm_speed >= 1.8 && (abnormal_launch_calls.find(launch_call) == abnormal_launch_calls.end())) {
                 delete_single_kernel_perf(launch_call, base_config);
 
                 CudaLaunchCallConfig original_call_config(launch_call, base_config);
@@ -168,6 +169,9 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
                 warmup_perf_data.erase(original_call_config);
 
                 TALLY_SPD_WARN("Detecting abnormal norm_speed of " + std::to_string(norm_speed) + " of kernel " + kernel_str + "\n");
+                
+                // Book mark so if it is still the case again, will leave it as it is
+                abnormal_launch_calls[launch_call] = true;
             } else {
 
                 float preemption_latency_ms = 0.;
@@ -265,9 +269,6 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         return;
     }
 
-    float preemptive_norm_speed = -1.;
-    float sliced_norm_speed = -1.;
-
     // gradually lower the required threshold 
     for (float perf_threshold = 1.0; perf_threshold >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD; perf_threshold-=0.1) {
 
@@ -294,12 +295,6 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
             // set this config as the chosen config
             if (config_metrics.norm_speed >= perf_threshold) {
                 
-                if (config.use_preemptive_ptb) {
-                    preemptive_norm_speed = config_metrics.norm_speed;
-                } else if (config.use_sliced) {
-                    sliced_norm_speed = config_metrics.norm_speed;
-                }
-
                 if (preemption_latency_ms <= PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS) {
                     set_chosen_config(res);
                     if (!has_executed) {
@@ -325,6 +320,26 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         }
         return;
     }
+
+    auto get_last_norm_speed = [&](bool use_preemptive_ptb, bool use_sliced) {
+        float norm_speed = -1.;
+
+        for (int i = priority_configs.size() - 1; i >= 0; i--) {
+            auto &config = priority_configs[i];
+            if ((use_preemptive_ptb && config.use_preemptive_ptb) || (use_sliced && config.use_sliced)) {
+                auto res = get_single_kernel_perf(launch_call, config, &found);
+                if (found) {
+                    norm_speed = res.metrics.norm_speed;
+                    break;
+                }
+            }
+        }
+
+        return norm_speed;
+    };
+
+    float preemptive_norm_speed = get_last_norm_speed(true, false);
+    float sliced_norm_speed = get_last_norm_speed(false, true);
 
     // Otherwise, we will launch (< CUDA_NUM_SM) thread blocks to further restrict the preemption latency
     if (preemptive_norm_speed >= PRIORITY_FALL_BACK_TO_ORIGINAL_THRESHOLD ||
@@ -400,6 +415,8 @@ void TallyServer::run_priority_scheduler()
 {
     TALLY_SPD_LOG_ALWAYS("Running priority scheduler ...");
     TALLY_SPD_LOG_ALWAYS("PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS=" + std::to_string(PRIORITY_MAX_ALLOWED_PREEMPTION_LATENCY_MS));
+    TALLY_SPD_LOG_ALWAYS("PRIORITY_MIN_WAIT_TIME_MS=" + std::to_string(PRIORITY_MIN_WAIT_TIME_MS));
+    TALLY_SPD_LOG_ALWAYS("PRIORITY_USE_ORIGINAL_CONFIGS=" + std::to_string(PRIORITY_USE_ORIGINAL_CONFIGS));
 
     // Keep in track low-priority kernels that are in progress
     // The boolean indicates whether the kernel is running/stopped
@@ -697,7 +714,7 @@ void TallyServer::run_priority_scheduler()
 
                 auto &launch_call = kernel_wrapper.launch_call;
                 
-                if (!kernel_wrapper.is_library_call) {
+                if (!kernel_wrapper.is_library_call && !PRIORITY_USE_ORIGINAL_CONFIGS) {
 
                     auto is_colocate = client_priority_map.size() > 1;
 
