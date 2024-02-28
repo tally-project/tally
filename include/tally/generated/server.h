@@ -143,6 +143,9 @@ public:
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
 	std::unordered_map<CudaLaunchCall, CudaLaunchCallConfigResult> single_kernel_chosen_config_map;
 
+	int32_t get_client_priority(int32_t client_id);
+	int32_t get_client_stream_priority(int32_t client_id);
+
 	void tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> &configs);
 
 	void launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> configs,

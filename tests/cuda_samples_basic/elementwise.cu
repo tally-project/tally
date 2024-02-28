@@ -136,6 +136,11 @@ void checkCudaErrors(CUresult err) {
 
 __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, int size, bool ptb)
 {
+
+    int leastPriority, greatestPriority;
+    cudaDeviceGetStreamPriorityRange (&greatestPriority, &leastPriority);
+    std::cout << "leastPriority: " << leastPriority << " greatestPriority: " << greatestPriority << std::endl;
+
     // Allocate memory on the device (GPU)
     float* deviceA, * deviceB, * deviceC;
     cudaMalloc((void**)&deviceA, size * sizeof(float));

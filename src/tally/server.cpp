@@ -104,13 +104,55 @@ void TallyServer::start_main_server() {
     TallyCache::cache->save_transform_cache();
 }
 
+int32_t TallyServer::get_client_priority(int32_t client_id)
+{
+    for (auto &client_priority_data : client_priority_map) {
+        auto &client_priority = client_priority_data.first;
+        if (client_priority.client_id == client_id) {
+            return client_priority.priority;
+        }
+    }
+
+    return 0;
+}
+
+int32_t TallyServer::get_client_stream_priority(int32_t client_id)
+{
+    static int leastPriority, greatestPriority;
+    static bool inited = false;
+
+    if (!inited) {
+        cudaDeviceGetStreamPriorityRange (&leastPriority, &greatestPriority);
+        inited = true;
+    }
+
+    auto priority = get_client_priority(client_id);
+
+    // CUDA Stream priorities follow a convention where lower numbers imply greater priorities.
+    // 0 -> 0, 1 -> -1, 2 -> -2, ...
+    int stream_priority = - priority;
+    stream_priority = std::max(stream_priority, greatestPriority);
+    stream_priority = std::min(stream_priority, leastPriority);
+
+    return stream_priority;
+}
+
 void TallyServer::start_worker_server(int32_t client_id) {
 
     implicit_init_cuda_ctx();
 
     auto &client_meta = client_data_all[client_id];
 
-    CHECK_CUDA_ERROR(cudaStreamCreateWithFlags(&client_meta.default_stream, cudaStreamNonBlocking));
+    auto policy = SCHEDULER_POLICY;
+    if (policy == TALLY_SCHEDULER_POLICY::PRIORITY && PRIORITY_USE_SPACE_SHARE) {
+
+        int stream_priority = get_client_stream_priority(client_id);
+        CHECK_CUDA_ERROR(cudaStreamCreateWithPriority(&client_meta.default_stream, cudaStreamNonBlocking, stream_priority));
+    
+    } else {
+        CHECK_CUDA_ERROR(cudaStreamCreateWithFlags(&client_meta.default_stream, cudaStreamNonBlocking));
+    }
+
     CHECK_CUDA_ERROR(cudaMalloc((void **)&client_meta.curr_idx_arr, sizeof(uint32_t) * CUDA_NUM_SM * 20));
     client_add_stream(client_id, client_meta.default_stream);
 
@@ -119,14 +161,9 @@ void TallyServer::start_worker_server(int32_t client_id) {
     auto process_name = get_process_name(client_id);
     TALLY_SPD_LOG_ALWAYS("Client process: " + process_name);
 
-    auto policy = SCHEDULER_POLICY;
     if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
-        for (auto &client_priority_data : client_priority_map) {
-            auto &client_priority = client_priority_data.first;
-            if (client_priority.client_id == client_id) {
-                TALLY_SPD_LOG_ALWAYS("Client priority: " + std::to_string(client_priority.priority));
-            }
-        }
+        int priority = get_client_priority(client_id);
+        TALLY_SPD_LOG_ALWAYS("Client priority: " + std::to_string(priority));
     }
 
     auto worker_server = worker_servers[client_id];
@@ -3391,9 +3428,23 @@ void TallyServer::handle_cudaStreamCreate(void *__args, iox::popo::UntypedServer
     iox_server->loan(requestHeader, sizeof(cudaStreamCreateResponse), alignof(cudaStreamCreateResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaStreamCreateResponse*>(responsePayload);
-            response->err = cudaStreamCreate(
-				(args->pStream ? &(response->pStream) : NULL)
-			);
+
+            auto policy = SCHEDULER_POLICY;
+            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY && PRIORITY_USE_SPACE_SHARE) {
+
+                int stream_priority = get_client_stream_priority(client_uid);
+                response->err = cudaStreamCreateWithPriority(
+                    (args->pStream ? &(response->pStream) : NULL),
+                    cudaStreamNonBlocking,
+                    stream_priority
+                );
+            } else {
+                response->err = cudaStreamCreateWithFlags(
+                    (args->pStream ? &(response->pStream) : NULL),
+                    cudaStreamNonBlocking
+                );
+            }
+
             CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
@@ -3417,10 +3468,22 @@ void TallyServer::handle_cudaStreamCreateWithFlags(void *__args, iox::popo::Unty
     iox_server->loan(requestHeader, sizeof(cudaStreamCreateWithFlagsResponse), alignof(cudaStreamCreateWithFlagsResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaStreamCreateWithFlagsResponse*>(responsePayload);
-            response->err = cudaStreamCreateWithFlags(
-				(args->pStream ? &(response->pStream) : NULL),
-				args->flags
-			);
+            
+            auto policy = SCHEDULER_POLICY;
+            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY && PRIORITY_USE_SPACE_SHARE) {
+
+                int stream_priority = get_client_stream_priority(client_uid);
+                response->err = cudaStreamCreateWithPriority(
+                    (args->pStream ? &(response->pStream) : NULL),
+                    cudaStreamNonBlocking,
+                    stream_priority
+                );
+            } else {
+                response->err = cudaStreamCreateWithFlags(
+                    (args->pStream ? &(response->pStream) : NULL),
+                    cudaStreamNonBlocking
+                );
+            }
             CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
@@ -3444,11 +3507,23 @@ void TallyServer::handle_cudaStreamCreateWithPriority(void *__args, iox::popo::U
     iox_server->loan(requestHeader, sizeof(cudaStreamCreateWithPriorityResponse), alignof(cudaStreamCreateWithPriorityResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cudaStreamCreateWithPriorityResponse*>(responsePayload);
-            response->err = cudaStreamCreateWithPriority(
-				(args->pStream ? &(response->pStream) : NULL),
-				args->flags,
-				args->priority
-			);
+            
+            auto policy = SCHEDULER_POLICY;
+            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY && PRIORITY_USE_SPACE_SHARE) {
+
+                int stream_priority = get_client_stream_priority(client_uid);
+                response->err = cudaStreamCreateWithPriority(
+                    (args->pStream ? &(response->pStream) : NULL),
+                    cudaStreamNonBlocking,
+                    stream_priority
+                );
+                
+            } else {
+                response->err = cudaStreamCreateWithFlags(
+                    (args->pStream ? &(response->pStream) : NULL),
+                    cudaStreamNonBlocking
+                );
+            }
             CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
@@ -3507,11 +3582,22 @@ void TallyServer::handle_cuStreamCreateWithPriority(void *__args, iox::popo::Unt
     iox_server->loan(requestHeader, sizeof(cuStreamCreateWithPriorityResponse), alignof(cuStreamCreateWithPriorityResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuStreamCreateWithPriorityResponse*>(responsePayload);
-            response->err = cuStreamCreateWithPriority(
-				(args->phStream ? &(response->phStream) : NULL),
-				args->flags,
-				args->priority
-			);
+
+            auto policy = SCHEDULER_POLICY;
+            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY && PRIORITY_USE_SPACE_SHARE) {
+
+                int stream_priority = get_client_stream_priority(client_uid);
+                response->err = cuStreamCreateWithPriority(
+                    (args->phStream ? &(response->phStream) : NULL),
+                    CU_STREAM_NON_BLOCKING,
+                    stream_priority
+                );
+            } else {
+                response->err = cuStreamCreate(
+                    (args->phStream ? &(response->phStream) : NULL),
+                    CU_STREAM_NON_BLOCKING
+                );
+            }
             CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
@@ -3692,10 +3778,22 @@ void TallyServer::handle_cuStreamCreate(void *__args, iox::popo::UntypedServer *
     iox_server->loan(requestHeader, sizeof(cuStreamCreateResponse), alignof(cuStreamCreateResponse))
         .and_then([&](auto& responsePayload) {
             auto response = static_cast<cuStreamCreateResponse*>(responsePayload);
-            response->err = cuStreamCreate(
-				(args->phStream ? &(response->phStream) : NULL),
-				args->Flags
-			);
+
+            auto policy = SCHEDULER_POLICY;
+            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY && PRIORITY_USE_SPACE_SHARE) {
+
+                int stream_priority = get_client_stream_priority(client_uid);
+                response->err = cuStreamCreateWithPriority(
+                    (args->phStream ? &(response->phStream) : NULL),
+                    CU_STREAM_NON_BLOCKING,
+                    stream_priority
+                );
+            } else {
+                response->err = cuStreamCreate(
+                    (args->phStream ? &(response->phStream) : NULL),
+                    CU_STREAM_NON_BLOCKING
+                );
+            }
             CHECK_CUDA_ERROR(response->err);
 
             // Bookkeep the newly created stream
