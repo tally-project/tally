@@ -763,8 +763,22 @@ void TallyServer::run_priority_scheduler()
                     }
 
                     auto &launch_call = kernel_wrapper.launch_call;
-                    
-                    if (!kernel_wrapper.is_library_call && !PRIORITY_USE_ORIGINAL_CONFIGS) {
+
+                    bool use_original_configs = PRIORITY_USE_ORIGINAL_CONFIGS;
+
+                    // PRIORITY_WAIT_TIME_MS_TO_USE_ORIGINAL_CONFIGS let us use original configs for the
+                    // best-effort job when a long time has elapsed since the the high priority job is active
+                    // Consider a high-priority server which there may be long period of idle time
+                    if (PRIORITY_WAIT_TIME_MS_TO_USE_ORIGINAL_CONFIGS > 0.) {
+                        auto curr_t = std::chrono::high_resolution_clock::now();
+                        std::chrono::duration<double, std::milli> elapsed = curr_t - highest_priority_idle_start_t;
+                        float idle_time_elapsed = elapsed.count();
+                        if (idle_time_elapsed >= PRIORITY_WAIT_TIME_MS_TO_USE_ORIGINAL_CONFIGS) {
+                            use_original_configs = true;
+                        }
+                    }
+
+                    if (!kernel_wrapper.is_library_call && !use_original_configs) {
 
                         auto is_colocate = client_priority_map.size() > 1;
 
