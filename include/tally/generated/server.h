@@ -152,6 +152,7 @@ public:
 								   float fallback_threshold, std::vector<CudaLaunchConfig> alternative_configs={}, bool is_preemptive=false);
 
 	void priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id);
+	void priority_launch_and_measure_space_share_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id);
 
 	// Set and Get performance cache
 	CudaLaunchCallConfigResult get_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, bool *found);
@@ -199,6 +200,7 @@ public:
     void start_main_server();
     void start_worker_server(int32_t client_id);
 
+	void increment_client_queue_size(int32_t client_id);
 	void wait_until_launch_queue_empty(int32_t client_id);
 	void client_add_stream(int32_t client_id, cudaStream_t stream);
 

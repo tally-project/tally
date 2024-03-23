@@ -148,7 +148,10 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_configs(CudaLaunchC
     uint32_t num_blocks = launch_call.num_blocks;
 
     if (num_blocks <= CUDA_NUM_SM) {
-        return {};
+        return {
+            CudaLaunchConfig::get_preemptive_ptb_config(1),
+            CudaLaunchConfig::get_sliced_config(2)
+        };
     }
 
     std::vector<CudaLaunchConfig> configs;

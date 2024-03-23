@@ -29,6 +29,189 @@ struct cudaEventWrapper {
     bool active = false;
 };
 
+void TallyServer::priority_launch_and_measure_space_share_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id)
+{
+    // Store temporary data here
+    static std::unordered_map<CudaLaunchCallConfig, TempKernelProfileMetrics> temp_perf_data;
+    static std::unordered_map<CudaLaunchCallConfig, uint32_t> warmup_perf_data;
+    static std::unordered_map<CudaLaunchCall, bool> abnormal_launch_calls;
+
+    std::vector<CudaLaunchConfig> profiled_configs;
+
+    auto append_to_profiled_configs = [&](CudaLaunchConfig &config) {
+
+        auto it = std::find(profiled_configs.begin(), profiled_configs.end(), config);
+        if (it == profiled_configs.end()) {
+            profiled_configs.push_back(config);
+        }
+    };
+
+    auto &launch_call = kernel_wrapper.launch_call;
+    auto &client_data = client_data_all[client_id];
+    auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
+    auto cubin_uid = host_func_to_cubin_uid_map[launch_call.func];
+    auto kernel_str = kernel_name + "_" + launch_call.dim_str() + "_" + std::to_string(cubin_uid);
+
+    float time_elapsed;
+    float iters;
+
+    auto base_config = CudaLaunchConfig::default_config;
+    append_to_profiled_configs(base_config);
+
+    // First profile the original kernel
+    bool found;
+    auto original_res = get_single_kernel_perf(launch_call, base_config, &found);
+
+    if (!found) {
+        CudaLaunchCallConfig original_call_config(launch_call, base_config);
+        auto &metrics = temp_perf_data[original_call_config];
+
+        cudaDeviceSynchronize();
+        auto start = std::chrono::high_resolution_clock::now();
+
+        kernel_wrapper.kernel_to_dispatch(base_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, 0, true);
+
+        cudaDeviceSynchronize();
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+        time_elapsed = elapsed.count();
+
+        if (warmup_perf_data.find(original_call_config) == warmup_perf_data.end()) {
+            warmup_perf_data[original_call_config] = 0;
+        }
+
+        warmup_perf_data[original_call_config]++;
+
+        // first 10 is warm up
+        if (warmup_perf_data[original_call_config] < 10) {
+            return;
+        }
+
+        metrics.add_measurement(time_elapsed);
+
+        if (metrics.count >= KERNEL_PROFILE_ITERATIONS) {
+            set_single_kernel_perf(launch_call, base_config, original_kernel_map[launch_call.func].meta_data, 1., metrics.avg_latency_ms, 0, metrics.avg_latency_ms);
+        }
+
+        return;
+    }
+
+    auto &original_metrics = original_res.metrics;
+    float has_executed = false;
+
+    auto launch_kernel_with_config = [&](CudaLaunchConfig &config) {
+        // prepare ptb args
+        auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+        cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+        kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
+        has_executed = true;
+    };
+
+    auto profile_config = [&](CudaLaunchConfig &config) {
+
+        CudaLaunchCallConfig call_config(launch_call, config);
+        auto &metrics = temp_perf_data[call_config];
+
+        cudaDeviceSynchronize();
+        auto start = std::chrono::high_resolution_clock::now();
+
+        launch_kernel_with_config(config);
+
+        cudaDeviceSynchronize();
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+        time_elapsed = elapsed.count();
+
+        metrics.add_measurement(time_elapsed);
+
+        if (metrics.count >= KERNEL_PROFILE_ITERATIONS) {
+            float norm_speed = original_metrics.latency_ms / metrics.avg_latency_ms;
+
+            // Likely the base config is not profiled correctly, so we delete it and do it again.
+            if (norm_speed >= 1.8 && (abnormal_launch_calls.find(launch_call) == abnormal_launch_calls.end())) {
+                delete_single_kernel_perf(launch_call, base_config);
+
+                CudaLaunchCallConfig original_call_config(launch_call, base_config);
+                temp_perf_data.erase(original_call_config);
+                warmup_perf_data.erase(original_call_config);
+
+                TALLY_SPD_WARN("Detecting abnormal norm_speed of " + std::to_string(norm_speed) + " of kernel " + kernel_str + "\n");
+                
+                // Book mark so if it is still the case again, will leave it as it is
+                abnormal_launch_calls[launch_call] = true;
+            } else {
+                set_single_kernel_perf(launch_call, config, ptb_kernel_map[launch_call.func].meta_data, norm_speed, metrics.avg_latency_ms, 0, 0.);
+            }
+        }
+    };
+
+    auto set_chosen_config = [&](CudaLaunchCallConfigResult &res) {
+
+        auto config = res.config;
+        auto &config_metrics = res.metrics;
+        auto latency_ms = config_metrics.latency_ms;
+        auto norm_speed = config_metrics.norm_speed;
+
+        if (has_executed) {
+            TALLY_SPD_LOG_ALWAYS("Tuning complete for: " + kernel_str);
+            if (config.use_original) {
+                TALLY_SPD_WARN("Fall back to original kernel");
+            }
+
+            for (auto &config : profiled_configs) {
+                auto res = get_single_kernel_perf(launch_call, config, &found);
+                auto norm_speed = res.metrics.norm_speed;
+                auto latency_ms = res.metrics.latency_ms;
+                TALLY_SPD_LOG_ALWAYS(
+                    "    Launch config: " + config.str() + ". " +
+                    "Latency: " + std::to_string(latency_ms) + " ms " +
+                    "Norm speed: " + std::to_string(norm_speed)
+                );
+            }
+
+            TALLY_SPD_LOG_ALWAYS(
+                "Chosen config: " + config.str() + ". " +
+                "Latency: " + std::to_string(latency_ms) + " ms " +
+                "Norm speed: " + std::to_string(norm_speed) + "\n"
+            );
+        }
+        
+        set_single_kernel_chosen_config(launch_call, res);
+    };
+
+    auto config = CudaLaunchConfig::get_dynamic_ptb_config(1);
+    append_to_profiled_configs(config);
+
+    auto res = get_single_kernel_perf(launch_call, config, &found);
+    if (!found) {
+        profile_config(config);
+    }
+    res = get_single_kernel_perf(launch_call, config, &found);
+
+    // still collecting
+    if (!found) {
+        return;
+    }
+
+    auto &config_metrics = res.metrics;
+    if (config_metrics.norm_speed >= 0.5) {   
+        set_chosen_config(res);
+        if (!has_executed) {
+            launch_kernel_with_config(config);
+        }
+        return;
+    }
+
+    set_chosen_config(original_res);
+    if (!has_executed) {
+        launch_kernel_with_config(base_config);
+    }
+
+    return;
+}
+
 void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id)
 {
     // Store temporary data here
@@ -191,6 +374,10 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
                         preemption_latency_ms = preemption_latency_ms / PRIORITY_PTB_PREEMPTION_LATENCY_CALCULATION_FACTOR;
                     }
 
+                } else if (config.use_dynamic_ptb) {
+
+                    preemption_latency_ms = metrics.avg_latency_ms;
+
                 } else if (config.use_sliced) {
 
                     if (config.num_slices > max_num_slices) {
@@ -262,6 +449,31 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
     // Certain kernels do not have transformed kernel available
     auto has_transform = preemptive_ptb_kernel_map.find(launch_call.func) != preemptive_ptb_kernel_map.end();
     if (!has_transform) {
+        set_chosen_config(original_res);
+        if (!has_executed) {
+            launch_kernel_with_config(base_config);
+        }
+        return;
+    }
+
+    // Profile dynamic_ptb config, used to space-share
+    auto dynamic_ptb_config = CudaLaunchConfig::get_dynamic_ptb_config(1);
+    append_to_profiled_configs(dynamic_ptb_config);
+
+    auto res = get_single_kernel_perf(launch_call, dynamic_ptb_config, &found);
+    if (!found) {
+        profile_config(dynamic_ptb_config);
+    }
+    res = get_single_kernel_perf(launch_call, dynamic_ptb_config, &found);
+
+    // still collecting
+    if (!found) {
+        return;
+    }
+
+    // If original kernel latency is within PRIORITY_USE_ORIGINAL_KERNEL_LATENCY_MS_THRESHOLD
+    // Choose original config.
+    if (original_metrics.latency_ms <= PRIORITY_USE_ORIGINAL_KERNEL_LATENCY_MS_THRESHOLD) {
         set_chosen_config(original_res);
         if (!has_executed) {
             launch_kernel_with_config(base_config);
@@ -436,6 +648,7 @@ void TallyServer::run_priority_scheduler()
         while (!iox::posix::hasTerminationRequested()) {
 
             bool is_highest_priority = true;
+            bool highest_priority_active;
 
             for (auto &pair : client_priority_map) {
 
@@ -444,7 +657,18 @@ void TallyServer::run_priority_scheduler()
                 auto priority = client_priority.priority;
                 auto &client_data = client_data_all[client_id];
 
+                if (client_events.find(client_id) == client_events.end()) {
+                    auto &event = client_events[client_id].event;
+                    cudaEventCreateWithFlags(&event, cudaEventDisableTiming);
+                }
+
+                auto &client_event_wrapper = client_events[client_id];
+                auto client_event = client_event_wrapper.event;
+
                 if (client_data.has_exit) {
+                    cudaEventDestroy(client_event);
+                    
+                    client_events.erase(client_id);
                     client_data_all.erase(client_id);
                     client_priority_map.erase(client_priority);
                     break;
@@ -452,32 +676,98 @@ void TallyServer::run_priority_scheduler()
 
                 if (is_highest_priority) {
 
-                    while (true) {
+                    if (client_event_wrapper.active) {
+                        if (cudaEventQuery(client_event) == cudaSuccess) {
+                            client_event_wrapper.active = false;
+                            highest_priority_idle_start_t = std::chrono::high_resolution_clock::now();
+                        }
+                    }
 
-                        bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
+                    highest_priority_active = client_event_wrapper.active;
+                }
 
-                        if (!succeeded) {
+                while (true) {
+
+                    bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
+
+                    if (!succeeded) {
+                        break;
+                    }
+
+                    auto config = CudaLaunchConfig::default_config;
+
+                    if (!is_highest_priority && PRIORITY_SPACE_SHARE_MAX_SM_PERCENTAGE > 0) {
+
+                        auto &launch_call = kernel_wrapper.launch_call;
+
+                        // Do some profiling of the preemptive kernels
+                        bool found_in_cache;
+                        auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
+
+                        if (!found_in_cache) {
+
+                            auto is_colocate = client_priority_map.size() > 1;
+                            
+                            if (!has_warned && is_colocate) {
+                                TALLY_SPD_WARN("Certain launch configs were not found during job co-location, which might impact experiment accuracy!");
+                                has_warned = true;
+                            }
+
+                            priority_launch_and_measure_space_share_kernel(kernel_wrapper, client_id);
+
+                            kernel_wrapper.free_args();
+                            client_data.queue_size--;
                             break;
                         }
 
-                        kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
-                        kernel_wrapper.free_args();
-                        client_data.queue_size--;
-                    }
-                } else {
+                        config = res.config;
 
-                    bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
-                    if (succeeded) {
-                        kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
-                        kernel_wrapper.free_args();
-                        client_data.queue_size--;
+                        if (config.use_dynamic_ptb) {
+                            config.max_worker_blocks = (float) CUDA_NUM_SM * PRIORITY_SPACE_SHARE_MAX_SM_PERCENTAGE;
+                        }
+
+                        // Or if we detect long period of high-priority idle time
+                        // we will use original configs to maximize utilization
+                        if (PRIORITY_WAIT_TIME_MS_TO_USE_ORIGINAL_CONFIGS > 0 && !highest_priority_active) {
+
+                            auto curr_t = std::chrono::high_resolution_clock::now();
+                            std::chrono::duration<double, std::milli> elapsed = curr_t - highest_priority_idle_start_t;
+                            float idle_time_elapsed = elapsed.count();
+                            if (idle_time_elapsed >= PRIORITY_WAIT_TIME_MS_TO_USE_ORIGINAL_CONFIGS) {
+                                config = CudaLaunchConfig::default_config;
+                            }
+                        }
                     }
 
+                    if (config.use_original || kernel_wrapper.is_library_call)
+                    {
+                        kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                    }
+                    else if (config.use_dynamic_ptb || config.use_preemptive_ptb)
+                    {
+                        auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+                        cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+                        kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                    }
+
+                    kernel_wrapper.free_args();
+                    client_data.queue_size--;
+
+                    cudaEventRecord(client_event, kernel_wrapper.launch_stream);
+
+                    if (is_highest_priority) {
+                        client_event_wrapper.active = true;
+                    }
+
+                    if (!is_highest_priority) {
+                        break;
+                    }
                 }
 
                 is_highest_priority = false;
             }
         }
+
     } else {
 
         while (!iox::posix::hasTerminationRequested()) {

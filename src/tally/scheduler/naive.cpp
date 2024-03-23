@@ -17,6 +17,7 @@ void TallyServer::run_naive_scheduler()
     CudaLaunchConfig config = CudaLaunchConfig::default_config;
     // CudaLaunchConfig config = CudaLaunchConfig::get_ptb_config(4);
     // CudaLaunchConfig config = CudaLaunchConfig::get_sliced_config(8);
+    // CudaLaunchConfig config = CudaLaunchConfig::get_dynamic_ptb_config(4);
 
     KernelLaunchWrapper kernel_wrapper;
 

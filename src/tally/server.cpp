@@ -137,6 +137,11 @@ int32_t TallyServer::get_client_stream_priority(int32_t client_id)
     return stream_priority;
 }
 
+void TallyServer::increment_client_queue_size(int32_t client_id)
+{
+    client_data_all[client_id].queue_size++;
+}
+
 void TallyServer::start_worker_server(int32_t client_id) {
 
     implicit_init_cuda_ctx();
@@ -647,7 +652,7 @@ void TallyServer::handle_cudaLaunchKernel(void *__args, iox::popo::UntypedServer
     
     auto partial_and_args = cudaLaunchKernel_Partial(server_func_addr, args->gridDim, args->blockDim, args->sharedMem, stream, args->params);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -699,7 +704,7 @@ void TallyServer::handle_cuLaunchKernel(void *__args, iox::popo::UntypedServer *
 
     auto partial_and_args = cudaLaunchKernel_Partial(server_func_addr, gridDim, blockDim, args->sharedMemBytes, stream, args->kernelParams);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1065,7 +1070,7 @@ void TallyServer::handle_cublasSgemm_v2(void *__args, iox::popo::UntypedServer *
 
     auto partial_and_args = cublasSgemm_v2_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1106,7 +1111,7 @@ void TallyServer::handle_cublasLtMatmul(void *__args, iox::popo::UntypedServer *
 
     auto partial_and_args = cublasLtMatmul_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1365,7 +1370,7 @@ void TallyServer::handle_cudnnActivationForward(void *__args, iox::popo::Untyped
 
     auto partial_and_args = cudnnActivationForward_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1484,7 +1489,7 @@ void TallyServer::handle_cudnnConvolutionForward(void *__args, iox::popo::Untype
 
     auto partial_and_args = cudnnConvolutionForward_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1608,7 +1613,7 @@ void TallyServer::handle_cudnnAddTensor(void *__args, iox::popo::UntypedServer *
 
     auto partial_and_args = cudnnAddTensor_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1728,7 +1733,7 @@ void TallyServer::handle_cudnnPoolingForward(void *__args, iox::popo::UntypedSer
 
     auto partial_and_args = cudnnPoolingForward_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1765,7 +1770,7 @@ void TallyServer::handle_cublasSgemv_v2(void *__args, iox::popo::UntypedServer *
 
     auto partial_and_args = cublasSgemv_v2_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1802,7 +1807,7 @@ void TallyServer::handle_cudnnLRNCrossChannelForward(void *__args, iox::popo::Un
 
     auto partial_and_args = cudnnLRNCrossChannelForward_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1839,7 +1844,7 @@ void TallyServer::handle_cudnnSoftmaxForward(void *__args, iox::popo::UntypedSer
 
     auto partial_and_args = cudnnSoftmaxForward_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1876,7 +1881,7 @@ void TallyServer::handle_cudnnTransformTensor(void *__args, iox::popo::UntypedSe
 
     auto partial_and_args = cudnnTransformTensor_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1913,7 +1918,7 @@ void TallyServer::handle_cublasSgemmEx(void *__args, iox::popo::UntypedServer *i
 
     auto partial_and_args = cublasSgemmEx_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -1950,7 +1955,7 @@ void TallyServer::handle_cublasGemmEx(void *__args, iox::popo::UntypedServer *io
 
     auto partial_and_args = cublasGemmEx_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2046,7 +2051,7 @@ void TallyServer::handle_cudnnMultiHeadAttnForward(void *__args, iox::popo::Unty
 
     auto partial_and_args = cudnnMultiHeadAttnForward_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2083,7 +2088,7 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardData(void *__args, iox::popo:
 
     auto partial_and_args = cudnnMultiHeadAttnBackwardData_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2120,7 +2125,7 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardWeights(void *__args, iox::po
 
     auto partial_and_args = cudnnMultiHeadAttnBackwardWeights_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2157,7 +2162,7 @@ void TallyServer::handle_cudnnReorderFilterAndBias(void *__args, iox::popo::Unty
 
     auto partial_and_args = cudnnReorderFilterAndBias_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2273,7 +2278,7 @@ void TallyServer::handle_cudnnRNNForwardTraining(void *__args, iox::popo::Untype
 
     auto partial_and_args = cudnnRNNForwardTraining_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2310,7 +2315,7 @@ void TallyServer::handle_cudnnRNNBackwardData(void *__args, iox::popo::UntypedSe
 
     auto partial_and_args = cudnnRNNBackwardData_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2347,7 +2352,7 @@ void TallyServer::handle_cudnnRNNBackwardWeights(void *__args, iox::popo::Untype
 
     auto partial_and_args = cudnnRNNBackwardWeights_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2446,7 +2451,7 @@ void TallyServer::handle_cudnnBatchNormalizationForwardTrainingEx(void *__args, 
 
     auto partial_and_args = cudnnBatchNormalizationForwardTrainingEx_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2483,7 +2488,7 @@ void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args, iox::po
 
     auto partial_and_args = cudnnBatchNormalizationBackwardEx_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2521,7 +2526,7 @@ void TallyServer::handle_cublasSgemmStridedBatched(void *__args, iox::popo::Unty
 
     auto partial_and_args = cublasSgemmStridedBatched_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2640,7 +2645,7 @@ void TallyServer::handle_cudnnRNNBackwardWeights_v8(void *__args, iox::popo::Unt
 
     auto partial_and_args = cudnnRNNBackwardWeights_v8_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2676,7 +2681,7 @@ void TallyServer::handle_cudnnRNNBackwardData_v8(void *__args, iox::popo::Untype
 
     auto partial_and_args = cudnnRNNBackwardData_v8_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2713,7 +2718,7 @@ void TallyServer::handle_cudnnRNNForward(void *__args, iox::popo::UntypedServer 
 
     auto partial_and_args = cudnnRNNForward_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -2750,7 +2755,7 @@ void TallyServer::handle_cudnnBackendExecute(void *__args, iox::popo::UntypedSer
     cudnnStatus_t err;
     auto partial_and_args = cudnnBackendExecute_Partial(args, &err);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -3706,7 +3711,7 @@ void TallyServer::handle_cublasGemmStridedBatchedEx(void *__args, iox::popo::Unt
 
     auto partial_and_args = cublasGemmStridedBatchedEx_Partial(args);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,
@@ -5199,7 +5204,7 @@ void TallyServer::handle_cudnnReduceTensor(void *__args, iox::popo::UntypedServe
 
     auto partial_and_args = cudnnReduceTensor_Partial(args, indices);
 
-    client_data_all[client_id].queue_size++;
+    increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
             partial_and_args.first,

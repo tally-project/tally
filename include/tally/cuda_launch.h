@@ -176,14 +176,14 @@ public:
 
     static CudaLaunchConfig get_ptb_config(uint32_t blocks_per_sm) {
         CudaLaunchConfig config;
-        config.use_dynamic_ptb = true;
+        config.use_ptb = true;
         config.blocks_per_sm = blocks_per_sm;
         return config;
     }
 
     static CudaLaunchConfig get_dynamic_ptb_config(uint32_t blocks_per_sm) {
         CudaLaunchConfig config;
-        config.use_ptb = true;
+        config.use_dynamic_ptb = true;
         config.blocks_per_sm = blocks_per_sm;
         return config;
     }
