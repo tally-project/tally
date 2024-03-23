@@ -148,10 +148,7 @@ std::vector<CudaLaunchConfig> CudaLaunchConfig::get_priority_configs(CudaLaunchC
     uint32_t num_blocks = launch_call.num_blocks;
 
     if (num_blocks <= CUDA_NUM_SM) {
-        return {
-            CudaLaunchConfig::get_preemptive_ptb_config(1),
-            CudaLaunchConfig::get_sliced_config(2)
-        };
+        return {};
     }
 
     std::vector<CudaLaunchConfig> configs;
@@ -293,6 +290,7 @@ CUresult CudaLaunchConfig::launch(
     const void *func, dim3  gridDim, dim3  blockDim, void ** args, size_t  sharedMem, cudaStream_t stream,
     PTBKernelArgs *ptb_args, uint32_t *curr_idx_arr, SlicedKernelArgs *slice_args)
 {
+    CUresult err;
 
     folly::ConcurrentHashMap<const void *, WrappedCUfunction> *kernel_map_ptr;
 
@@ -325,10 +323,8 @@ CUresult CudaLaunchConfig::launch(
 
     if (use_original) {
 
-        auto err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
+        err = lcuLaunchKernel(cu_func, gridDim.x, gridDim.y, gridDim.z,
                                 blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, args, NULL);
-
-        return err;
         
     } else if (use_ptb) {
 
@@ -344,10 +340,8 @@ CUresult CudaLaunchConfig::launch(
         }
         KernelParams[num_args - 1] = &gridDim;
 
-        auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
+        err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
                               blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
-
-        return err;
         
     } else if (use_dynamic_ptb) {
 
@@ -368,10 +362,8 @@ CUresult CudaLaunchConfig::launch(
         KernelParams[num_args - 2] = &global_idx;
         KernelParams[num_args - 1] = &curr_idx_arr;
 
-        auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
+        err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
                               blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
-
-        return err;
 
     } else if (use_preemptive_ptb) { 
         assert(ptb_args);
@@ -395,10 +387,8 @@ CUresult CudaLaunchConfig::launch(
         KernelParams[num_args - 2] = &retreat;
         KernelParams[num_args - 1] = &curr_idx_arr;
 
-        auto err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
+        err = lcuLaunchKernel(cu_func, PTB_grid_dim.x, PTB_grid_dim.y, PTB_grid_dim.z,
                               blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
-
-        return err;
 
     } else if (use_sliced) {
 
@@ -412,7 +402,6 @@ CUresult CudaLaunchConfig::launch(
             blockOffset_vec = { block_offset };
         }
 
-        CUresult err;
         for (auto &blockOffset : blockOffset_vec) {        
 
             void *KernelParams[num_args];
@@ -433,9 +422,10 @@ CUresult CudaLaunchConfig::launch(
                                 blockDim.x, blockDim.y, blockDim.z, sharedMem, stream, KernelParams, NULL);
         }
 
-        return err;
     } else {
         auto kernel_name = TallyServer::server->host_func_to_demangled_kernel_name_map[func];
         throw std::runtime_error("Invalid launch config for kernel: " + kernel_name);
     }
+
+    return err;
 }

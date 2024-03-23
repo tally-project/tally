@@ -181,6 +181,14 @@ void TallyServer::priority_launch_and_measure_space_share_kernel(KernelLaunchWra
         set_single_kernel_chosen_config(launch_call, res);
     };
 
+    if (containsSubstring(kernel_name, "fmha_cutlassB")) {
+        set_chosen_config(original_res);
+        if (!has_executed) {
+            launch_kernel_with_config(base_config);
+        }
+        return;
+    }
+
     auto config = CudaLaunchConfig::get_dynamic_ptb_config(1);
     append_to_profiled_configs(config);
 
@@ -300,7 +308,7 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
 
         if (config.use_sliced) {
             
-             // prepare sliced args
+            // prepare sliced args
             auto slice_args = get_sliced_kernel_args(launch_call.gridDim, config.num_slices);
 
             // We want to provision the overhead to launch sliced kernel one by one
@@ -448,7 +456,8 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
 
     // Certain kernels do not have transformed kernel available
     auto has_transform = preemptive_ptb_kernel_map.find(launch_call.func) != preemptive_ptb_kernel_map.end();
-    if (!has_transform) {
+    if (!has_transform || containsSubstring(kernel_name, "fmha_cutlassB"))
+    {
         set_chosen_config(original_res);
         if (!has_executed) {
             launch_kernel_with_config(base_config);
@@ -456,19 +465,25 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
         return;
     }
 
-    // Profile dynamic_ptb config, used to space-share
-    auto dynamic_ptb_config = CudaLaunchConfig::get_dynamic_ptb_config(1);
-    append_to_profiled_configs(dynamic_ptb_config);
+    std::vector<CudaLaunchConfig> default_profile_configs = {
+        CudaLaunchConfig::get_dynamic_ptb_config(1),
+        CudaLaunchConfig::get_preemptive_ptb_config(1)
+    };
 
-    auto res = get_single_kernel_perf(launch_call, dynamic_ptb_config, &found);
-    if (!found) {
-        profile_config(dynamic_ptb_config);
-    }
-    res = get_single_kernel_perf(launch_call, dynamic_ptb_config, &found);
+    for (auto default_profile_config : default_profile_configs) {
 
-    // still collecting
-    if (!found) {
-        return;
+        append_to_profiled_configs(default_profile_config);
+
+        auto res = get_single_kernel_perf(launch_call, default_profile_config, &found);
+        if (!found) {
+            profile_config(default_profile_config);
+        }
+        res = get_single_kernel_perf(launch_call, default_profile_config, &found);
+
+        // still collecting
+        if (!found) {
+            return;
+        }
     }
 
     // If original kernel latency is within PRIORITY_USE_ORIGINAL_KERNEL_LATENCY_MS_THRESHOLD
@@ -531,6 +546,16 @@ void TallyServer::priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel
             launch_kernel_with_config(base_config);
         }
         return;
+    }
+
+    // Meaning num blocks <= NUM_SMs
+    // since the original kernel latency is beyond limit
+    // We will use these two as the basis to further limit resources
+    if (priority_configs.empty()) {
+        priority_configs = {
+            CudaLaunchConfig::get_preemptive_ptb_config(1),
+            CudaLaunchConfig::get_sliced_config(2)
+        };
     }
 
     auto get_last_norm_speed = [&](bool use_preemptive_ptb, bool use_sliced) {
