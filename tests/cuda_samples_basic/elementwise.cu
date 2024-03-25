@@ -141,6 +141,14 @@ __host__ void runElementwiseAddition(float* arr_a, float* arr_b, float* arr_c, i
     cudaDeviceGetStreamPriorityRange (&greatestPriority, &leastPriority);
     std::cout << "leastPriority: " << leastPriority << " greatestPriority: " << greatestPriority << std::endl;
 
+    int device;
+    cudaDeviceProp properties;
+
+    cudaGetDevice(&device); // Get device ID
+    cudaGetDeviceProperties(&properties, device); // Get device properties
+
+    std::cout << "Compute capability: " << properties.major << "." << properties.minor << std::endl;
+
     // Allocate memory on the device (GPU)
     float* deviceA, * deviceB, * deviceC;
     cudaMalloc((void**)&deviceA, size * sizeof(float));

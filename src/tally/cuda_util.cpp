@@ -13,7 +13,7 @@
 
 bool CUDA_SPECS_INITIALIZED = false;
 
-std::vector<std::string> CUDA_COMPUTE_CAPABILITIES = {"86", "80"};
+std::vector<std::string> CUDA_COMPUTE_CAPABILITIES = {"90", "86", "80"};
 std::string CUDA_COMPUTE_CAPABILITY;
 int CUDA_NUM_SM;
 int CUDA_MAX_NUM_THREADS_PER_SM;
@@ -60,6 +60,7 @@ void register_cuda_specs()
 
 std::vector<std::string> get_candidate_cuda_compute_capabilities()
 {
+
     auto it = std::find(
         CUDA_COMPUTE_CAPABILITIES.begin(),
         CUDA_COMPUTE_CAPABILITIES.end(),
@@ -96,9 +97,18 @@ CUDA_MODULE_TYPE get_cuda_module_type(const void * image)
 
 std::string get_fatbin_str_from_ptx_str(std::string &ptx_str)
 {
+
     write_str_to_file("/tmp/output.ptx", ptx_str);
 
     std::string compute_cap = std::string(CUDA_COMPUTE_CAPABILITY);
+
+    if (containsSubstring(ptx_str, ".target sm_90a")) {
+        if (compute_cap != "90") {
+            throw std::runtime_error("Unsupported");
+        }
+
+        compute_cap = "90a";
+    }
 
     std::string virtual_arch = "-gencode arch=compute_" + compute_cap + ",code=compute_" + compute_cap;
     std::string real_arch = "-gencode arch=compute_" + compute_cap + ",code=sm_" + compute_cap;

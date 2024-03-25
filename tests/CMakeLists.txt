@@ -1,5 +1,6 @@
 include(FindCUDA/select_compute_arch)
 CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
+message(INSTALLED_GPU_CCS_1="${INSTALLED_GPU_CCS_1}")
 string(REPLACE " " "" INSTALLED_GPU_CCS_1 ${INSTALLED_GPU_CCS_1})
 string(REPLACE "." "" INSTALLED_GPU_CCS_1 ${INSTALLED_GPU_CCS_1})
 string(SUBSTRING ${INSTALLED_GPU_CCS_1} 0 2 CUDA_ARCH_LIST)
@@ -293,10 +294,14 @@ set_target_properties(cuda-memcpy-test PROPERTIES
 
 add_executable(test_nccl cuda_samples_basic/test_nccl.cu)
 
+target_include_directories(test_nccl
+    PUBLIC ${PROJECT_SOURCE_DIR}/third_party/nccl/build/include
+)
+
 target_link_libraries(test_nccl
     cuda
     cudart
-    nccl
+    ${PROJECT_SOURCE_DIR}/third_party/nccl/build/lib/libnccl.so
 )
 
 set_target_properties(test_nccl PROPERTIES
