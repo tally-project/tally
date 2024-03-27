@@ -7869,4 +7869,19 @@ cudnnStatus_t cudnnReduceTensor(cudnnHandle_t  handle, const cudnnReduceTensorDe
     return err;
 }
 
+cudaError_t cudaLaunchHostFunc(cudaStream_t  stream, cudaHostFn_t  fn, void * userData)
+{
+	TALLY_SPD_LOG("cudaLaunchHostFunc hooked");
+	IOX_CLIENT_ACQUIRE_LOCK;
+#if defined(RUN_LOCALLY)
+	return lcudaLaunchHostFunc(stream, fn, userData);
+#else
+
+	cudaStreamSynchronize(stream);
+	fn(userData);
+	return cudaSuccess;
+
+#endif
+}
+
 }

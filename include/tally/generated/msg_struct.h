@@ -15,12 +15,120 @@
 #include <cusparse_v2.h>
 
 
-struct cuDriverGetVersionArg {
-	int * driverVersion;
+struct cuCtxAttachArg {
+	CUcontext * pctx;
+	unsigned int  flags;
 };
 
-struct cuDriverGetVersionResponse {
-	int  driverVersion;
+struct cuCtxAttachResponse {
+	CUcontext  pctx;
+	CUresult err;
+};
+
+struct cuCtxDetachArg {
+	CUcontext  ctx;
+};
+
+struct cuCtxGetCacheConfigArg {
+	CUfunc_cache * pconfig;
+};
+
+struct cuCtxGetCacheConfigResponse {
+	CUfunc_cache  pconfig;
+	CUresult err;
+};
+
+struct cuCtxGetExecAffinityArg {
+	CUexecAffinityParam * pExecAffinity;
+	CUexecAffinityType  type;
+};
+
+struct cuCtxGetExecAffinityResponse {
+	CUexecAffinityParam  pExecAffinity;
+	CUresult err;
+};
+
+struct cuCtxGetFlagsArg {
+	unsigned int * flags;
+};
+
+struct cuCtxGetFlagsResponse {
+	unsigned int  flags;
+	CUresult err;
+};
+
+struct cuCtxGetLimitArg {
+	size_t * pvalue;
+	CUlimit  limit;
+};
+
+struct cuCtxGetLimitResponse {
+	size_t  pvalue;
+	CUresult err;
+};
+
+struct cuCtxGetSharedMemConfigArg {
+	CUsharedconfig * pConfig;
+};
+
+struct cuCtxGetSharedMemConfigResponse {
+	CUsharedconfig  pConfig;
+	CUresult err;
+};
+
+struct cuCtxGetStreamPriorityRangeArg {
+	int * leastPriority;
+	int * greatestPriority;
+};
+
+struct cuCtxGetStreamPriorityRangeResponse {
+	int  leastPriority;
+	int  greatestPriority;
+	CUresult err;
+};
+
+struct cuCtxPopCurrent_v2Arg {
+	CUcontext * pctx;
+};
+
+struct cuCtxPopCurrent_v2Response {
+	CUcontext  pctx;
+	CUresult err;
+};
+
+struct cuCtxPushCurrent_v2Arg {
+	CUcontext  ctx;
+};
+
+struct cuCtxResetPersistingL2CacheArg {
+};
+
+struct cuCtxSetCacheConfigArg {
+	CUfunc_cache  config;
+};
+
+struct cuCtxSetLimitArg {
+	CUlimit  limit;
+	size_t  value;
+};
+
+struct cuCtxSetSharedMemConfigArg {
+	CUsharedconfig  config;
+};
+
+struct cuDestroyExternalMemoryArg {
+	CUexternalMemory  extMem;
+};
+
+struct cuDeviceComputeCapabilityArg {
+	int * major;
+	int * minor;
+	CUdevice  dev;
+};
+
+struct cuDeviceComputeCapabilityResponse {
+	int  major;
+	int  minor;
 	CUresult err;
 };
 
@@ -31,69 +139,6 @@ struct cuDeviceGetArg {
 
 struct cuDeviceGetResponse {
 	CUdevice  device;
-	CUresult err;
-};
-
-struct cuDeviceGetCountArg {
-	int * count;
-};
-
-struct cuDeviceGetCountResponse {
-	int  count;
-	CUresult err;
-};
-
-struct cuDeviceGetUuidArg {
-	CUuuid * uuid;
-	CUdevice  dev;
-};
-
-struct cuDeviceGetUuidResponse {
-	CUuuid  uuid;
-	CUresult err;
-};
-
-struct cuDeviceGetUuid_v2Arg {
-	CUuuid * uuid;
-	CUdevice  dev;
-};
-
-struct cuDeviceGetUuid_v2Response {
-	CUuuid  uuid;
-	CUresult err;
-};
-
-struct cuDeviceGetLuidArg {
-	char * luid;
-	unsigned int * deviceNodeMask;
-	CUdevice  dev;
-};
-
-struct cuDeviceGetLuidResponse {
-	char  luid;
-	unsigned int  deviceNodeMask;
-	CUresult err;
-};
-
-struct cuDeviceTotalMem_v2Arg {
-	size_t * bytes;
-	CUdevice  dev;
-};
-
-struct cuDeviceTotalMem_v2Response {
-	size_t  bytes;
-	CUresult err;
-};
-
-struct cuDeviceGetTexture1DLinearMaxWidthArg {
-	size_t * maxWidthInElements;
-	CUarray_format  format;
-	unsigned  numChannels;
-	CUdevice  dev;
-};
-
-struct cuDeviceGetTexture1DLinearMaxWidthResponse {
-	size_t  maxWidthInElements;
 	CUresult err;
 };
 
@@ -108,18 +153,12 @@ struct cuDeviceGetAttributeResponse {
 	CUresult err;
 };
 
-struct cuDeviceSetMemPoolArg {
-	CUdevice  dev;
-	CUmemoryPool  pool;
+struct cuDeviceGetCountArg {
+	int * count;
 };
 
-struct cuDeviceGetMemPoolArg {
-	CUmemoryPool * pool;
-	CUdevice  dev;
-};
-
-struct cuDeviceGetMemPoolResponse {
-	CUmemoryPool  pool;
+struct cuDeviceGetCountResponse {
+	int  count;
 	CUresult err;
 };
 
@@ -144,169 +183,25 @@ struct cuDeviceGetExecAffinitySupportResponse {
 	CUresult err;
 };
 
-struct cuFlushGPUDirectRDMAWritesArg {
-	CUflushGPUDirectRDMAWritesTarget  target;
-	CUflushGPUDirectRDMAWritesScope  scope;
-};
-
-struct cuDeviceGetPropertiesArg {
-	CUdevprop * prop;
+struct cuDeviceGetLuidArg {
+	char * luid;
+	unsigned int * deviceNodeMask;
 	CUdevice  dev;
 };
 
-struct cuDeviceGetPropertiesResponse {
-	CUdevprop  prop;
+struct cuDeviceGetLuidResponse {
+	char  luid;
+	unsigned int  deviceNodeMask;
 	CUresult err;
 };
 
-struct cuDeviceComputeCapabilityArg {
-	int * major;
-	int * minor;
+struct cuDeviceGetMemPoolArg {
+	CUmemoryPool * pool;
 	CUdevice  dev;
 };
 
-struct cuDeviceComputeCapabilityResponse {
-	int  major;
-	int  minor;
-	CUresult err;
-};
-
-struct cuDevicePrimaryCtxRetainArg {
-	CUcontext * pctx;
-	CUdevice  dev;
-};
-
-struct cuDevicePrimaryCtxRetainResponse {
-	CUcontext  pctx;
-	CUresult err;
-};
-
-struct cuDevicePrimaryCtxRelease_v2Arg {
-	CUdevice  dev;
-};
-
-struct cuDevicePrimaryCtxReset_v2Arg {
-	CUdevice  dev;
-};
-
-struct cuCtxPushCurrent_v2Arg {
-	CUcontext  ctx;
-};
-
-struct cuCtxPopCurrent_v2Arg {
-	CUcontext * pctx;
-};
-
-struct cuCtxPopCurrent_v2Response {
-	CUcontext  pctx;
-	CUresult err;
-};
-
-struct cuCtxGetFlagsArg {
-	unsigned int * flags;
-};
-
-struct cuCtxGetFlagsResponse {
-	unsigned int  flags;
-	CUresult err;
-};
-
-struct cuCtxSetLimitArg {
-	CUlimit  limit;
-	size_t  value;
-};
-
-struct cuCtxGetLimitArg {
-	size_t * pvalue;
-	CUlimit  limit;
-};
-
-struct cuCtxGetLimitResponse {
-	size_t  pvalue;
-	CUresult err;
-};
-
-struct cuCtxGetCacheConfigArg {
-	CUfunc_cache * pconfig;
-};
-
-struct cuCtxGetCacheConfigResponse {
-	CUfunc_cache  pconfig;
-	CUresult err;
-};
-
-struct cuCtxSetCacheConfigArg {
-	CUfunc_cache  config;
-};
-
-struct cuCtxGetSharedMemConfigArg {
-	CUsharedconfig * pConfig;
-};
-
-struct cuCtxGetSharedMemConfigResponse {
-	CUsharedconfig  pConfig;
-	CUresult err;
-};
-
-struct cuCtxSetSharedMemConfigArg {
-	CUsharedconfig  config;
-};
-
-struct cuCtxGetStreamPriorityRangeArg {
-	int * leastPriority;
-	int * greatestPriority;
-};
-
-struct cuCtxGetStreamPriorityRangeResponse {
-	int  leastPriority;
-	int  greatestPriority;
-	CUresult err;
-};
-
-struct cuCtxResetPersistingL2CacheArg {
-};
-
-struct cuCtxGetExecAffinityArg {
-	CUexecAffinityParam * pExecAffinity;
-	CUexecAffinityType  type;
-};
-
-struct cuCtxGetExecAffinityResponse {
-	CUexecAffinityParam  pExecAffinity;
-	CUresult err;
-};
-
-struct cuCtxAttachArg {
-	CUcontext * pctx;
-	unsigned int  flags;
-};
-
-struct cuCtxAttachResponse {
-	CUcontext  pctx;
-	CUresult err;
-};
-
-struct cuCtxDetachArg {
-	CUcontext  ctx;
-};
-
-struct cuModuleGetLoadingModeArg {
-	CUmoduleLoadingMode * mode;
-};
-
-struct cuModuleGetLoadingModeResponse {
-	CUmoduleLoadingMode  mode;
-	CUresult err;
-};
-
-struct cuMemGetInfo_v2Arg {
-	size_t * free;
-	size_t * total;
-};
-
-struct cuMemGetInfo_v2Response {
-	size_t  free;
-	size_t  total;
+struct cuDeviceGetMemPoolResponse {
+	CUmemoryPool  pool;
 	CUresult err;
 };
 
@@ -321,6 +216,152 @@ struct cuDeviceGetPCIBusIdResponse {
 	CUresult err;
 };
 
+struct cuDeviceGetPropertiesArg {
+	CUdevprop * prop;
+	CUdevice  dev;
+};
+
+struct cuDeviceGetPropertiesResponse {
+	CUdevprop  prop;
+	CUresult err;
+};
+
+struct cuDeviceGetTexture1DLinearMaxWidthArg {
+	size_t * maxWidthInElements;
+	CUarray_format  format;
+	unsigned  numChannels;
+	CUdevice  dev;
+};
+
+struct cuDeviceGetTexture1DLinearMaxWidthResponse {
+	size_t  maxWidthInElements;
+	CUresult err;
+};
+
+struct cuDeviceGetUuidArg {
+	CUuuid * uuid;
+	CUdevice  dev;
+};
+
+struct cuDeviceGetUuidResponse {
+	CUuuid  uuid;
+	CUresult err;
+};
+
+struct cuDeviceGetUuid_v2Arg {
+	CUuuid * uuid;
+	CUdevice  dev;
+};
+
+struct cuDeviceGetUuid_v2Response {
+	CUuuid  uuid;
+	CUresult err;
+};
+
+struct cuDevicePrimaryCtxRelease_v2Arg {
+	CUdevice  dev;
+};
+
+struct cuDevicePrimaryCtxReset_v2Arg {
+	CUdevice  dev;
+};
+
+struct cuDevicePrimaryCtxRetainArg {
+	CUcontext * pctx;
+	CUdevice  dev;
+};
+
+struct cuDevicePrimaryCtxRetainResponse {
+	CUcontext  pctx;
+	CUresult err;
+};
+
+struct cuDeviceSetMemPoolArg {
+	CUdevice  dev;
+	CUmemoryPool  pool;
+};
+
+struct cuDeviceTotalMem_v2Arg {
+	size_t * bytes;
+	CUdevice  dev;
+};
+
+struct cuDeviceTotalMem_v2Response {
+	size_t  bytes;
+	CUresult err;
+};
+
+struct cuDriverGetVersionArg {
+	int * driverVersion;
+};
+
+struct cuDriverGetVersionResponse {
+	int  driverVersion;
+	CUresult err;
+};
+
+struct cuEventCreateArg {
+	CUevent * phEvent;
+	unsigned int  Flags;
+};
+
+struct cuEventCreateResponse {
+	CUevent  phEvent;
+	CUresult err;
+};
+
+struct cuEventDestroy_v2Arg {
+	CUevent  hEvent;
+};
+
+struct cuEventElapsedTimeArg {
+	float * pMilliseconds;
+	CUevent  hStart;
+	CUevent  hEnd;
+};
+
+struct cuEventElapsedTimeResponse {
+	float  pMilliseconds;
+	CUresult err;
+};
+
+struct cuEventQueryArg {
+	CUevent  hEvent;
+};
+
+struct cuEventRecordArg {
+	CUevent  hEvent;
+	CUstream  hStream;
+};
+
+struct cuEventSynchronizeArg {
+	CUevent  hEvent;
+};
+
+struct cuFlushGPUDirectRDMAWritesArg {
+	CUflushGPUDirectRDMAWritesTarget  target;
+	CUflushGPUDirectRDMAWritesScope  scope;
+};
+
+struct cuGraphDestroyArg {
+	CUgraph  hGraph;
+};
+
+struct cuGraphExecDestroyArg {
+	CUgraphExec  hGraphExec;
+};
+
+struct cuGraphExecUpdate_v2Arg {
+	CUgraphExec  hGraphExec;
+	CUgraph  hGraph;
+	CUgraphExecUpdateResultInfo * resultInfo;
+};
+
+struct cuGraphExecUpdate_v2Response {
+	CUgraphExecUpdateResultInfo  resultInfo;
+	CUresult err;
+};
+
 struct cuMemAllocFromPoolAsyncArg {
 	CUdeviceptr * dptr;
 	size_t  bytesize;
@@ -330,6 +371,26 @@ struct cuMemAllocFromPoolAsyncArg {
 
 struct cuMemAllocFromPoolAsyncResponse {
 	CUdeviceptr  dptr;
+	CUresult err;
+};
+
+struct cuMemGetInfo_v2Arg {
+	size_t * free;
+	size_t * total;
+};
+
+struct cuMemGetInfo_v2Response {
+	size_t  free;
+	size_t  total;
+	CUresult err;
+};
+
+struct cuModuleGetLoadingModeArg {
+	CUmoduleLoadingMode * mode;
+};
+
+struct cuModuleGetLoadingModeResponse {
+	CUmoduleLoadingMode  mode;
 	CUresult err;
 };
 
@@ -348,83 +409,120 @@ struct cuThreadExchangeStreamCaptureModeResponse {
 	CUresult err;
 };
 
-struct cuEventCreateArg {
-	CUevent * phEvent;
-	unsigned int  Flags;
+struct cublasGetCudartVersionArg {
 };
 
-struct cuEventCreateResponse {
-	CUevent  phEvent;
-	CUresult err;
+struct cublasGetLoggerCallbackArg {
+	cublasLogCallback*  userCallback;
 };
 
-struct cuEventRecordArg {
-	CUevent  hEvent;
-	CUstream  hStream;
+struct cublasGetLoggerCallbackResponse {
+	cublasLogCallback userCallback;
+	cublasStatus_t err;
 };
 
-struct cuEventQueryArg {
-	CUevent  hEvent;
+struct cublasGetPointerMode_v2Arg {
+	cublasHandle_t  handle;
+	cublasPointerMode_t*  mode;
 };
 
-struct cuEventSynchronizeArg {
-	CUevent  hEvent;
+struct cublasGetPointerMode_v2Response {
+	cublasPointerMode_t mode;
+	cublasStatus_t err;
 };
 
-struct cuEventDestroy_v2Arg {
-	CUevent  hEvent;
+struct cublasGetPropertyArg {
+	libraryPropertyType  type;
+	int*  value;
 };
 
-struct cuEventElapsedTimeArg {
-	float * pMilliseconds;
-	CUevent  hStart;
-	CUevent  hEnd;
+struct cublasGetPropertyResponse {
+	int value;
+	cublasStatus_t err;
 };
 
-struct cuEventElapsedTimeResponse {
-	float  pMilliseconds;
-	CUresult err;
+struct cublasGetSmCountTargetArg {
+	cublasHandle_t  handle;
+	int*  smCountTarget;
 };
 
-struct cuDestroyExternalMemoryArg {
-	CUexternalMemory  extMem;
+struct cublasGetSmCountTargetResponse {
+	int smCountTarget;
+	cublasStatus_t err;
 };
 
-struct cuGraphExecDestroyArg {
-	CUgraphExec  hGraphExec;
+struct cublasGetStream_v2Arg {
+	cublasHandle_t  handle;
+	cudaStream_t*  streamId;
 };
 
-struct cuGraphDestroyArg {
-	CUgraph  hGraph;
+struct cublasGetStream_v2Response {
+	cudaStream_t streamId;
+	cublasStatus_t err;
 };
 
-struct cuGraphExecUpdate_v2Arg {
-	CUgraphExec  hGraphExec;
-	CUgraph  hGraph;
-	CUgraphExecUpdateResultInfo * resultInfo;
+struct cublasGetVersion_v2Arg {
+	cublasHandle_t  handle;
+	int*  version;
 };
 
-struct cuGraphExecUpdate_v2Response {
-	CUgraphExecUpdateResultInfo  resultInfo;
-	CUresult err;
+struct cublasGetVersion_v2Response {
+	int version;
+	cublasStatus_t err;
 };
 
-struct cudaDeviceResetArg {
+struct cublasLtGetCudartVersionArg {
 };
 
-struct cudaDeviceSetLimitArg {
-	enum cudaLimit  limit;
-	size_t  value;
+struct cublasLtGetVersionArg {
 };
 
-struct cudaDeviceGetLimitArg {
-	size_t * pValue;
-	enum cudaLimit  limit;
+struct cublasLtLoggerForceDisableArg {
 };
 
-struct cudaDeviceGetLimitResponse {
-	size_t  pValue;
-	cudaError_t err;
+struct cublasLtMatrixTransformDescCreateArg {
+	cublasLtMatrixTransformDesc_t*  transformDesc;
+	cudaDataType  scaleType;
+};
+
+struct cublasLtMatrixTransformDescCreateResponse {
+	cublasLtMatrixTransformDesc_t transformDesc;
+	cublasStatus_t err;
+};
+
+struct cublasLtMatrixTransformDescDestroyArg {
+	cublasLtMatrixTransformDesc_t  transformDesc;
+};
+
+struct cublasSetLoggerCallbackArg {
+	cublasLogCallback  userCallback;
+};
+
+struct cublasSetPointerMode_v2Arg {
+	cublasHandle_t  handle;
+	cublasPointerMode_t  mode;
+};
+
+struct cublasSetSmCountTargetArg {
+	cublasHandle_t  handle;
+	int  smCountTarget;
+};
+
+struct cublasSetVectorArg {
+	int  n;
+	int  elemSize;
+	void*  x;
+	int  incx;
+	void*  devicePtr;
+	int  incy;
+};
+
+struct cudaCtxResetPersistingL2CacheArg {
+};
+
+struct cudaDeviceFlushGPUDirectRDMAWritesArg {
+	enum cudaFlushGPUDirectRDMAWritesTarget  target;
+	enum cudaFlushGPUDirectRDMAWritesScope  scope;
 };
 
 struct cudaDeviceGetCacheConfigArg {
@@ -433,136 +531,6 @@ struct cudaDeviceGetCacheConfigArg {
 
 struct cudaDeviceGetCacheConfigResponse {
 	enum cudaFuncCache  pCacheConfig;
-	cudaError_t err;
-};
-
-struct cudaDeviceGetStreamPriorityRangeArg {
-	int * leastPriority;
-	int * greatestPriority;
-};
-
-struct cudaDeviceGetStreamPriorityRangeResponse {
-	int  leastPriority;
-	int  greatestPriority;
-	cudaError_t err;
-};
-
-struct cudaDeviceSetCacheConfigArg {
-	enum cudaFuncCache  cacheConfig;
-};
-
-struct cudaDeviceSetSharedMemConfigArg {
-	enum cudaSharedMemConfig  config;
-};
-
-struct cudaDeviceGetPCIBusIdArg {
-	char * pciBusId;
-	int  len;
-	int  device;
-};
-
-struct cudaDeviceGetPCIBusIdResponse {
-	char  pciBusId;
-	cudaError_t err;
-};
-
-struct cudaIpcGetEventHandleArg {
-	cudaIpcEventHandle_t * handle;
-	cudaEvent_t  event;
-};
-
-struct cudaIpcGetEventHandleResponse {
-	cudaIpcEventHandle_t  handle;
-	cudaError_t err;
-};
-
-struct cudaIpcOpenEventHandleArg {
-	cudaEvent_t * event;
-	cudaIpcEventHandle_t  handle;
-};
-
-struct cudaIpcOpenEventHandleResponse {
-	cudaEvent_t  event;
-	cudaError_t err;
-};
-
-struct cudaIpcGetMemHandleArg {
-	cudaIpcMemHandle_t * handle;
-	void * devPtr;
-};
-
-struct cudaIpcGetMemHandleResponse {
-	cudaIpcMemHandle_t  handle;
-	cudaError_t err;
-};
-
-struct cudaIpcOpenMemHandleArg {
-	void ** devPtr;
-	cudaIpcMemHandle_t  handle;
-	unsigned int  flags;
-};
-
-struct cudaIpcOpenMemHandleResponse {
-	void * devPtr;
-	cudaError_t err;
-};
-
-struct cudaIpcCloseMemHandleArg {
-	void * devPtr;
-};
-
-struct cudaDeviceFlushGPUDirectRDMAWritesArg {
-	enum cudaFlushGPUDirectRDMAWritesTarget  target;
-	enum cudaFlushGPUDirectRDMAWritesScope  scope;
-};
-
-struct cudaThreadExitArg {
-};
-
-struct cudaThreadSetLimitArg {
-	enum cudaLimit  limit;
-	size_t  value;
-};
-
-struct cudaThreadGetLimitArg {
-	size_t * pValue;
-	enum cudaLimit  limit;
-};
-
-struct cudaThreadGetLimitResponse {
-	size_t  pValue;
-	cudaError_t err;
-};
-
-struct cudaThreadGetCacheConfigArg {
-	enum cudaFuncCache * pCacheConfig;
-};
-
-struct cudaThreadGetCacheConfigResponse {
-	enum cudaFuncCache  pCacheConfig;
-	cudaError_t err;
-};
-
-struct cudaThreadSetCacheConfigArg {
-	enum cudaFuncCache  cacheConfig;
-};
-
-struct cudaGetDeviceCountArg {
-	int * count;
-};
-
-struct cudaGetDeviceCountResponse {
-	int  count;
-	cudaError_t err;
-};
-
-struct cudaGetDeviceProperties_v2Arg {
-	struct cudaDeviceProp * prop;
-	int  device;
-};
-
-struct cudaGetDeviceProperties_v2Response {
-	struct cudaDeviceProp  prop;
 	cudaError_t err;
 };
 
@@ -576,9 +544,14 @@ struct cudaDeviceGetDefaultMemPoolResponse {
 	cudaError_t err;
 };
 
-struct cudaDeviceSetMemPoolArg {
-	int  device;
-	cudaMemPool_t  memPool;
+struct cudaDeviceGetLimitArg {
+	size_t * pValue;
+	enum cudaLimit  limit;
+};
+
+struct cudaDeviceGetLimitResponse {
+	size_t  pValue;
+	cudaError_t err;
 };
 
 struct cudaDeviceGetMemPoolArg {
@@ -603,67 +576,55 @@ struct cudaDeviceGetP2PAttributeResponse {
 	cudaError_t err;
 };
 
-struct cudaSetDeviceFlagsArg {
-	unsigned int  flags;
+struct cudaDeviceGetPCIBusIdArg {
+	char * pciBusId;
+	int  len;
+	int  device;
 };
 
-struct cudaGetDeviceFlagsArg {
-	unsigned int * flags;
-};
-
-struct cudaGetDeviceFlagsResponse {
-	unsigned int  flags;
+struct cudaDeviceGetPCIBusIdResponse {
+	char  pciBusId;
 	cudaError_t err;
 };
 
-struct cudaStreamGetPriorityArg {
-	cudaStream_t  hStream;
-	int * priority;
+struct cudaDeviceGetStreamPriorityRangeArg {
+	int * leastPriority;
+	int * greatestPriority;
 };
 
-struct cudaStreamGetPriorityResponse {
-	int  priority;
+struct cudaDeviceGetStreamPriorityRangeResponse {
+	int  leastPriority;
+	int  greatestPriority;
 	cudaError_t err;
 };
 
-struct cudaStreamGetFlagsArg {
-	cudaStream_t  hStream;
-	unsigned int * flags;
+struct cudaDeviceResetArg {
 };
 
-struct cudaStreamGetFlagsResponse {
-	unsigned int  flags;
-	cudaError_t err;
+struct cudaDeviceSetCacheConfigArg {
+	enum cudaFuncCache  cacheConfig;
 };
 
-struct cudaCtxResetPersistingL2CacheArg {
+struct cudaDeviceSetLimitArg {
+	enum cudaLimit  limit;
+	size_t  value;
 };
 
-struct cudaStreamCopyAttributesArg {
-	cudaStream_t  dst;
-	cudaStream_t  src;
+struct cudaDeviceSetMemPoolArg {
+	int  device;
+	cudaMemPool_t  memPool;
 };
 
-struct cudaStreamDestroyArg {
-	cudaStream_t  stream;
+struct cudaDeviceSetSharedMemConfigArg {
+	enum cudaSharedMemConfig  config;
 };
 
-struct cudaStreamWaitEventArg {
-	cudaStream_t  stream;
-	cudaEvent_t  event;
-	unsigned int  flags;
+struct cudaDriverGetVersionArg {
+	int * driverVersion;
 };
 
-struct cudaStreamQueryArg {
-	cudaStream_t  stream;
-};
-
-struct cudaThreadExchangeStreamCaptureModeArg {
-	enum cudaStreamCaptureMode * mode;
-};
-
-struct cudaThreadExchangeStreamCaptureModeResponse {
-	enum cudaStreamCaptureMode  mode;
+struct cudaDriverGetVersionResponse {
+	int  driverVersion;
 	cudaError_t err;
 };
 
@@ -686,20 +647,6 @@ struct cudaEventCreateWithFlagsResponse {
 	cudaError_t err;
 };
 
-struct cudaEventRecordWithFlagsArg {
-	cudaEvent_t  event;
-	cudaStream_t  stream;
-	unsigned int  flags;
-};
-
-struct cudaEventQueryArg {
-	cudaEvent_t  event;
-};
-
-struct cudaEventSynchronizeArg {
-	cudaEvent_t  event;
-};
-
 struct cudaEventDestroyArg {
 	cudaEvent_t  event;
 };
@@ -715,41 +662,49 @@ struct cudaEventElapsedTimeResponse {
 	cudaError_t err;
 };
 
+struct cudaEventQueryArg {
+	cudaEvent_t  event;
+};
+
+struct cudaEventRecordWithFlagsArg {
+	cudaEvent_t  event;
+	cudaStream_t  stream;
+	unsigned int  flags;
+};
+
+struct cudaEventSynchronizeArg {
+	cudaEvent_t  event;
+};
+
 struct cudaFreeArrayArg {
 	cudaArray_t  array;
 };
 
-struct cudaMemGetInfoArg {
-	size_t * free;
-	size_t * total;
+struct cudaGetDeviceCountArg {
+	int * count;
 };
 
-struct cudaMemGetInfoResponse {
-	size_t  free;
-	size_t  total;
+struct cudaGetDeviceCountResponse {
+	int  count;
 	cudaError_t err;
 };
 
-struct cudaMemPoolTrimToArg {
-	cudaMemPool_t  memPool;
-	size_t  minBytesToKeep;
+struct cudaGetDeviceFlagsArg {
+	unsigned int * flags;
 };
 
-struct cudaDriverGetVersionArg {
-	int * driverVersion;
-};
-
-struct cudaDriverGetVersionResponse {
-	int  driverVersion;
+struct cudaGetDeviceFlagsResponse {
+	unsigned int  flags;
 	cudaError_t err;
 };
 
-struct cudaRuntimeGetVersionArg {
-	int * runtimeVersion;
+struct cudaGetDeviceProperties_v2Arg {
+	struct cudaDeviceProp * prop;
+	int  device;
 };
 
-struct cudaRuntimeGetVersionResponse {
-	int  runtimeVersion;
+struct cudaGetDeviceProperties_v2Response {
+	struct cudaDeviceProp  prop;
 	cudaError_t err;
 };
 
@@ -761,6 +716,14 @@ struct cudaGraphCreateArg {
 struct cudaGraphCreateResponse {
 	cudaGraph_t  pGraph;
 	cudaError_t err;
+};
+
+struct cudaGraphDestroyArg {
+	cudaGraph_t  graph;
+};
+
+struct cudaGraphExecDestroyArg {
+	cudaGraphExec_t  graphExec;
 };
 
 struct cudaGraphInstantiateWithFlagsArg {
@@ -779,49 +742,310 @@ struct cudaGraphUploadArg {
 	cudaStream_t  stream;
 };
 
-struct cudaGraphExecDestroyArg {
-	cudaGraphExec_t  graphExec;
+struct cudaIpcCloseMemHandleArg {
+	void * devPtr;
 };
 
-struct cudaGraphDestroyArg {
-	cudaGraph_t  graph;
+struct cudaIpcGetEventHandleArg {
+	cudaIpcEventHandle_t * handle;
+	cudaEvent_t  event;
 };
 
-struct cudnnGetVersionArg {
+struct cudaIpcGetEventHandleResponse {
+	cudaIpcEventHandle_t  handle;
+	cudaError_t err;
 };
 
-struct cudnnGetMaxDeviceVersionArg {
+struct cudaIpcGetMemHandleArg {
+	cudaIpcMemHandle_t * handle;
+	void * devPtr;
 };
 
-struct cudnnGetCudartVersionArg {
+struct cudaIpcGetMemHandleResponse {
+	cudaIpcMemHandle_t  handle;
+	cudaError_t err;
 };
 
-struct cudnnGetPropertyArg {
-	libraryPropertyType  type;
-	int * value;
+struct cudaIpcOpenEventHandleArg {
+	cudaEvent_t * event;
+	cudaIpcEventHandle_t  handle;
 };
 
-struct cudnnGetPropertyResponse {
-	int  value;
+struct cudaIpcOpenEventHandleResponse {
+	cudaEvent_t  event;
+	cudaError_t err;
+};
+
+struct cudaIpcOpenMemHandleArg {
+	void ** devPtr;
+	cudaIpcMemHandle_t  handle;
+	unsigned int  flags;
+};
+
+struct cudaIpcOpenMemHandleResponse {
+	void * devPtr;
+	cudaError_t err;
+};
+
+struct cudaMemGetInfoArg {
+	size_t * free;
+	size_t * total;
+};
+
+struct cudaMemGetInfoResponse {
+	size_t  free;
+	size_t  total;
+	cudaError_t err;
+};
+
+struct cudaMemPoolTrimToArg {
+	cudaMemPool_t  memPool;
+	size_t  minBytesToKeep;
+};
+
+struct cudaProfilerStartArg {
+};
+
+struct cudaProfilerStopArg {
+};
+
+struct cudaRuntimeGetVersionArg {
+	int * runtimeVersion;
+};
+
+struct cudaRuntimeGetVersionResponse {
+	int  runtimeVersion;
+	cudaError_t err;
+};
+
+struct cudaSetDeviceFlagsArg {
+	unsigned int  flags;
+};
+
+struct cudaStreamCopyAttributesArg {
+	cudaStream_t  dst;
+	cudaStream_t  src;
+};
+
+struct cudaStreamDestroyArg {
+	cudaStream_t  stream;
+};
+
+struct cudaStreamGetFlagsArg {
+	cudaStream_t  hStream;
+	unsigned int * flags;
+};
+
+struct cudaStreamGetFlagsResponse {
+	unsigned int  flags;
+	cudaError_t err;
+};
+
+struct cudaStreamGetPriorityArg {
+	cudaStream_t  hStream;
+	int * priority;
+};
+
+struct cudaStreamGetPriorityResponse {
+	int  priority;
+	cudaError_t err;
+};
+
+struct cudaStreamQueryArg {
+	cudaStream_t  stream;
+};
+
+struct cudaStreamWaitEventArg {
+	cudaStream_t  stream;
+	cudaEvent_t  event;
+	unsigned int  flags;
+};
+
+struct cudaThreadExchangeStreamCaptureModeArg {
+	enum cudaStreamCaptureMode * mode;
+};
+
+struct cudaThreadExchangeStreamCaptureModeResponse {
+	enum cudaStreamCaptureMode  mode;
+	cudaError_t err;
+};
+
+struct cudaThreadExitArg {
+};
+
+struct cudaThreadGetCacheConfigArg {
+	enum cudaFuncCache * pCacheConfig;
+};
+
+struct cudaThreadGetCacheConfigResponse {
+	enum cudaFuncCache  pCacheConfig;
+	cudaError_t err;
+};
+
+struct cudaThreadGetLimitArg {
+	size_t * pValue;
+	enum cudaLimit  limit;
+};
+
+struct cudaThreadGetLimitResponse {
+	size_t  pValue;
+	cudaError_t err;
+};
+
+struct cudaThreadSetCacheConfigArg {
+	enum cudaFuncCache  cacheConfig;
+};
+
+struct cudaThreadSetLimitArg {
+	enum cudaLimit  limit;
+	size_t  value;
+};
+
+struct cudnnAdvInferVersionCheckArg {
+};
+
+struct cudnnAdvTrainVersionCheckArg {
+};
+
+struct cudnnBackendCreateDescriptorArg {
+	cudnnBackendDescriptorType_t  descriptorType;
+	cudnnBackendDescriptor_t * descriptor;
+};
+
+struct cudnnBackendCreateDescriptorResponse {
+	cudnnBackendDescriptor_t  descriptor;
 	cudnnStatus_t err;
 };
 
-struct cudnnDestroyArg {
-	cudnnHandle_t  handle;
+struct cudnnBackendDestroyDescriptorArg {
+	cudnnBackendDescriptor_t  descriptor;
 };
 
-struct cudnnSetStreamArg {
-	cudnnHandle_t  handle;
-	cudaStream_t  streamId;
+struct cudnnBackendFinalizeArg {
+	cudnnBackendDescriptor_t  descriptor;
 };
 
-struct cudnnGetStreamArg {
-	cudnnHandle_t  handle;
-	cudaStream_t * streamId;
+struct cudnnBackendInitializeArg {
+	cudnnBackendDescriptor_t  descriptor;
 };
 
-struct cudnnGetStreamResponse {
-	cudaStream_t  streamId;
+struct cudnnBuildRNNDynamicArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int  miniBatch;
+};
+
+struct cudnnCnnInferVersionCheckArg {
+};
+
+struct cudnnCnnTrainVersionCheckArg {
+};
+
+struct cudnnCreateActivationDescriptorArg {
+	cudnnActivationDescriptor_t * activationDesc;
+};
+
+struct cudnnCreateActivationDescriptorResponse {
+	cudnnActivationDescriptor_t  activationDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateAttnDescriptorArg {
+	cudnnAttnDescriptor_t * attnDesc;
+};
+
+struct cudnnCreateAttnDescriptorResponse {
+	cudnnAttnDescriptor_t  attnDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateConvolutionDescriptorArg {
+	cudnnConvolutionDescriptor_t * convDesc;
+};
+
+struct cudnnCreateConvolutionDescriptorResponse {
+	cudnnConvolutionDescriptor_t  convDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateDropoutDescriptorArg {
+	cudnnDropoutDescriptor_t * dropoutDesc;
+};
+
+struct cudnnCreateDropoutDescriptorResponse {
+	cudnnDropoutDescriptor_t  dropoutDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateFilterDescriptorArg {
+	cudnnFilterDescriptor_t * filterDesc;
+};
+
+struct cudnnCreateFilterDescriptorResponse {
+	cudnnFilterDescriptor_t  filterDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateLRNDescriptorArg {
+	cudnnLRNDescriptor_t * normDesc;
+};
+
+struct cudnnCreateLRNDescriptorResponse {
+	cudnnLRNDescriptor_t  normDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateOpTensorDescriptorArg {
+	cudnnOpTensorDescriptor_t * opTensorDesc;
+};
+
+struct cudnnCreateOpTensorDescriptorResponse {
+	cudnnOpTensorDescriptor_t  opTensorDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreatePoolingDescriptorArg {
+	cudnnPoolingDescriptor_t * poolingDesc;
+};
+
+struct cudnnCreatePoolingDescriptorResponse {
+	cudnnPoolingDescriptor_t  poolingDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateRNNDataDescriptorArg {
+	cudnnRNNDataDescriptor_t * rnnDataDesc;
+};
+
+struct cudnnCreateRNNDataDescriptorResponse {
+	cudnnRNNDataDescriptor_t  rnnDataDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateRNNDescriptorArg {
+	cudnnRNNDescriptor_t * rnnDesc;
+};
+
+struct cudnnCreateRNNDescriptorResponse {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateReduceTensorDescriptorArg {
+	cudnnReduceTensorDescriptor_t * reduceTensorDesc;
+};
+
+struct cudnnCreateReduceTensorDescriptorResponse {
+	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnCreateSeqDataDescriptorArg {
+	cudnnSeqDataDescriptor_t * seqDataDesc;
+};
+
+struct cudnnCreateSeqDataDescriptorResponse {
+	cudnnSeqDataDescriptor_t  seqDataDesc;
 	cudnnStatus_t err;
 };
 
@@ -834,27 +1058,410 @@ struct cudnnCreateTensorDescriptorResponse {
 	cudnnStatus_t err;
 };
 
-struct cudnnSetTensor4dDescriptorArg {
-	cudnnTensorDescriptor_t  tensorDesc;
-	cudnnTensorFormat_t  format;
-	cudnnDataType_t  dataType;
-	int  n;
-	int  c;
-	int  h;
-	int  w;
+struct cudnnCreateTensorTransformDescriptorArg {
+	cudnnTensorTransformDescriptor_t * transformDesc;
 };
 
-struct cudnnSetTensor4dDescriptorExArg {
+struct cudnnCreateTensorTransformDescriptorResponse {
+	cudnnTensorTransformDescriptor_t  transformDesc;
+	cudnnStatus_t err;
+};
+
+struct cudnnDestroyArg {
+	cudnnHandle_t  handle;
+};
+
+struct cudnnDestroyActivationDescriptorArg {
+	cudnnActivationDescriptor_t  activationDesc;
+};
+
+struct cudnnDestroyAttnDescriptorArg {
+	cudnnAttnDescriptor_t  attnDesc;
+};
+
+struct cudnnDestroyConvolutionDescriptorArg {
+	cudnnConvolutionDescriptor_t  convDesc;
+};
+
+struct cudnnDestroyDropoutDescriptorArg {
+	cudnnDropoutDescriptor_t  dropoutDesc;
+};
+
+struct cudnnDestroyFilterDescriptorArg {
+	cudnnFilterDescriptor_t  filterDesc;
+};
+
+struct cudnnDestroyLRNDescriptorArg {
+	cudnnLRNDescriptor_t  lrnDesc;
+};
+
+struct cudnnDestroyPoolingDescriptorArg {
+	cudnnPoolingDescriptor_t  poolingDesc;
+};
+
+struct cudnnDestroyRNNDataDescriptorArg {
+	cudnnRNNDataDescriptor_t  rnnDataDesc;
+};
+
+struct cudnnDestroyRNNDescriptorArg {
+	cudnnRNNDescriptor_t  rnnDesc;
+};
+
+struct cudnnDestroyReduceTensorDescriptorArg {
+	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+};
+
+struct cudnnDestroySeqDataDescriptorArg {
+	cudnnSeqDataDescriptor_t  seqDataDesc;
+};
+
+struct cudnnDestroyTensorDescriptorArg {
 	cudnnTensorDescriptor_t  tensorDesc;
+};
+
+struct cudnnDestroyTensorTransformDescriptorArg {
+	cudnnTensorTransformDescriptor_t  transformDesc;
+};
+
+struct cudnnDropoutGetStatesSizeArg {
+	cudnnHandle_t  handle;
+	size_t * sizeInBytes;
+};
+
+struct cudnnDropoutGetStatesSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnBatchNormMode_t  mode;
+	cudnnBatchNormOps_t  bnOps;
+	cudnnTensorDescriptor_t  xDesc;
+	cudnnTensorDescriptor_t  yDesc;
+	cudnnTensorDescriptor_t  dyDesc;
+	cudnnTensorDescriptor_t  dzDesc;
+	cudnnTensorDescriptor_t  dxDesc;
+	cudnnTensorDescriptor_t  dBnScaleBiasDesc;
+	cudnnActivationDescriptor_t  activationDesc;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnBatchNormMode_t  mode;
+	cudnnBatchNormOps_t  bnOps;
+	cudnnTensorDescriptor_t  xDesc;
+	cudnnTensorDescriptor_t  zDesc;
+	cudnnTensorDescriptor_t  yDesc;
+	cudnnTensorDescriptor_t  bnScaleBiasMeanVarDesc;
+	cudnnActivationDescriptor_t  activationDesc;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnBatchNormMode_t  mode;
+	cudnnBatchNormOps_t  bnOps;
+	cudnnActivationDescriptor_t  activationDesc;
+	cudnnTensorDescriptor_t  xDesc;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg {
+	cudnnHandle_t  handle;
+	int * count;
+};
+
+struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountResponse {
+	int  count;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetConvolutionBackwardDataWorkspaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnFilterDescriptor_t  wDesc;
+	cudnnTensorDescriptor_t  dyDesc;
+	cudnnConvolutionDescriptor_t  convDesc;
+	cudnnTensorDescriptor_t  dxDesc;
+	cudnnConvolutionBwdDataAlgo_t  algo;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetConvolutionBackwardDataWorkspaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg {
+	cudnnHandle_t  handle;
+	int * count;
+};
+
+struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountResponse {
+	int  count;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetConvolutionForwardWorkspaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnTensorDescriptor_t  xDesc;
+	cudnnFilterDescriptor_t  wDesc;
+	cudnnConvolutionDescriptor_t  convDesc;
+	cudnnTensorDescriptor_t  yDesc;
+	cudnnConvolutionFwdAlgo_t  algo;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetConvolutionForwardWorkspaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetCudartVersionArg {
+};
+
+struct cudnnGetFilterSizeInBytesArg {
+	cudnnFilterDescriptor_t  filterDesc;
+	size_t * size;
+};
+
+struct cudnnGetFilterSizeInBytesResponse {
+	size_t  size;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetFoldedConvBackwardDataDescriptorsArg {
+	cudnnHandle_t  handle;
+	cudnnFilterDescriptor_t  filterDesc;
+	cudnnTensorDescriptor_t  diffDesc;
+	cudnnConvolutionDescriptor_t  convDesc;
+	cudnnTensorDescriptor_t  gradDesc;
+	cudnnTensorFormat_t  transformFormat;
+	cudnnFilterDescriptor_t  foldedFilterDesc;
+	cudnnTensorDescriptor_t  paddedDiffDesc;
+	cudnnConvolutionDescriptor_t  foldedConvDesc;
+	cudnnTensorDescriptor_t  foldedGradDesc;
+	cudnnTensorTransformDescriptor_t  filterFoldTransDesc;
+	cudnnTensorTransformDescriptor_t  diffPadTransDesc;
+	cudnnTensorTransformDescriptor_t  gradFoldTransDesc;
+	cudnnTensorTransformDescriptor_t  gradUnfoldTransDesc;
+};
+
+struct cudnnGetMaxDeviceVersionArg {
+};
+
+struct cudnnGetMultiHeadAttnBuffersArg {
+	cudnnHandle_t  handle;
+	cudnnAttnDescriptor_t  attnDesc;
+	size_t * weightSizeInBytes;
+	size_t * workSpaceSizeInBytes;
+	size_t * reserveSpaceSizeInBytes;
+};
+
+struct cudnnGetMultiHeadAttnBuffersResponse {
+	size_t  weightSizeInBytes;
+	size_t  workSpaceSizeInBytes;
+	size_t  reserveSpaceSizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetOpTensorDescriptorArg {
+	cudnnOpTensorDescriptor_t  opTensorDesc;
+	cudnnOpTensorOp_t * opTensorOp;
+	cudnnDataType_t * opTensorCompType;
+	cudnnNanPropagation_t * opTensorNanOpt;
+};
+
+struct cudnnGetOpTensorDescriptorResponse {
+	cudnnOpTensorOp_t  opTensorOp;
+	cudnnDataType_t  opTensorCompType;
+	cudnnNanPropagation_t  opTensorNanOpt;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetPropertyArg {
+	libraryPropertyType  type;
+	int * value;
+};
+
+struct cudnnGetPropertyResponse {
+	int  value;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNBiasModeArg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnRNNBiasMode_t * biasMode;
+};
+
+struct cudnnGetRNNBiasModeResponse {
+	cudnnRNNBiasMode_t  biasMode;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int * count;
+};
+
+struct cudnnGetRNNForwardInferenceAlgorithmMaxCountResponse {
+	int  count;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNLinLayerBiasParamsArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int  pseudoLayer;
+	cudnnTensorDescriptor_t  xDesc;
+	cudnnFilterDescriptor_t  wDesc;
+	void * w;
+	int  linLayerID;
+	cudnnFilterDescriptor_t  linLayerBiasDesc;
+	void ** linLayerBias;
+};
+
+struct cudnnGetRNNLinLayerBiasParamsResponse {
+	void * linLayerBias;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNLinLayerMatrixParamsArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int  pseudoLayer;
+	cudnnTensorDescriptor_t  xDesc;
+	cudnnFilterDescriptor_t  wDesc;
+	void * w;
+	int  linLayerID;
+	cudnnFilterDescriptor_t  linLayerMatDesc;
+	void ** linLayerMat;
+};
+
+struct cudnnGetRNNLinLayerMatrixParamsResponse {
+	void * linLayerMat;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNMatrixMathTypeArg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnMathType_t * mType;
+};
+
+struct cudnnGetRNNMatrixMathTypeResponse {
+	cudnnMathType_t  mType;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNParamsSizeArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnTensorDescriptor_t  xDesc;
+	size_t * sizeInBytes;
 	cudnnDataType_t  dataType;
-	int  n;
-	int  c;
-	int  h;
-	int  w;
-	int  nStride;
-	int  cStride;
-	int  hStride;
-	int  wStride;
+};
+
+struct cudnnGetRNNParamsSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNTempSpaceSizesArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnForwardMode_t  fwdMode;
+	cudnnRNNDataDescriptor_t  xDesc;
+	size_t * workSpaceSize;
+	size_t * reserveSpaceSize;
+};
+
+struct cudnnGetRNNTempSpaceSizesResponse {
+	size_t  workSpaceSize;
+	size_t  reserveSpaceSize;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNWeightParamsArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int32_t  pseudoLayer;
+	size_t  weightSpaceSize;
+	void * weightSpace;
+	int32_t  linLayerID;
+	cudnnTensorDescriptor_t  mDesc;
+	void ** mAddr;
+	cudnnTensorDescriptor_t  bDesc;
+	void ** bAddr;
+};
+
+struct cudnnGetRNNWeightParamsResponse {
+	void * mAddr;
+	void * bAddr;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetRNNWeightSpaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	size_t * weightSpaceSize;
+};
+
+struct cudnnGetRNNWeightSpaceSizeResponse {
+	size_t  weightSpaceSize;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetReductionIndicesSizeArg {
+	cudnnHandle_t  handle;
+	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+	cudnnTensorDescriptor_t  aDesc;
+	cudnnTensorDescriptor_t  cDesc;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetReductionIndicesSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetReductionWorkspaceSizeArg {
+	cudnnHandle_t  handle;
+	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+	cudnnTensorDescriptor_t  aDesc;
+	cudnnTensorDescriptor_t  cDesc;
+	size_t * sizeInBytes;
+};
+
+struct cudnnGetReductionWorkspaceSizeResponse {
+	size_t  sizeInBytes;
+	cudnnStatus_t err;
+};
+
+struct cudnnGetStreamArg {
+	cudnnHandle_t  handle;
+	cudaStream_t * streamId;
+};
+
+struct cudnnGetStreamResponse {
+	cudaStream_t  streamId;
+	cudnnStatus_t err;
 };
 
 struct cudnnGetTensor4dDescriptorArg {
@@ -893,8 +1500,7 @@ struct cudnnGetTensorSizeInBytesResponse {
 	cudnnStatus_t err;
 };
 
-struct cudnnDestroyTensorDescriptorArg {
-	cudnnTensorDescriptor_t  tensorDesc;
+struct cudnnGetVersionArg {
 };
 
 struct cudnnInitTransformDestArg {
@@ -909,361 +1515,10 @@ struct cudnnInitTransformDestResponse {
 	cudnnStatus_t err;
 };
 
-struct cudnnCreateTensorTransformDescriptorArg {
-	cudnnTensorTransformDescriptor_t * transformDesc;
-};
-
-struct cudnnCreateTensorTransformDescriptorResponse {
-	cudnnTensorTransformDescriptor_t  transformDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnDestroyTensorTransformDescriptorArg {
-	cudnnTensorTransformDescriptor_t  transformDesc;
-};
-
-struct cudnnCreateOpTensorDescriptorArg {
-	cudnnOpTensorDescriptor_t * opTensorDesc;
-};
-
-struct cudnnCreateOpTensorDescriptorResponse {
-	cudnnOpTensorDescriptor_t  opTensorDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnSetOpTensorDescriptorArg {
-	cudnnOpTensorDescriptor_t  opTensorDesc;
-	cudnnOpTensorOp_t  opTensorOp;
-	cudnnDataType_t  opTensorCompType;
-	cudnnNanPropagation_t  opTensorNanOpt;
-};
-
-struct cudnnGetOpTensorDescriptorArg {
-	cudnnOpTensorDescriptor_t  opTensorDesc;
-	cudnnOpTensorOp_t * opTensorOp;
-	cudnnDataType_t * opTensorCompType;
-	cudnnNanPropagation_t * opTensorNanOpt;
-};
-
-struct cudnnGetOpTensorDescriptorResponse {
-	cudnnOpTensorOp_t  opTensorOp;
-	cudnnDataType_t  opTensorCompType;
-	cudnnNanPropagation_t  opTensorNanOpt;
-	cudnnStatus_t err;
-};
-
-struct cudnnCreateReduceTensorDescriptorArg {
-	cudnnReduceTensorDescriptor_t * reduceTensorDesc;
-};
-
-struct cudnnCreateReduceTensorDescriptorResponse {
-	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnSetReduceTensorDescriptorArg {
-	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
-	cudnnReduceTensorOp_t  reduceTensorOp;
-	cudnnDataType_t  reduceTensorCompType;
-	cudnnNanPropagation_t  reduceTensorNanOpt;
-	cudnnReduceTensorIndices_t  reduceTensorIndices;
-	cudnnIndicesType_t  reduceTensorIndicesType;
-};
-
-struct cudnnDestroyReduceTensorDescriptorArg {
-	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
-};
-
-struct cudnnGetReductionIndicesSizeArg {
-	cudnnHandle_t  handle;
-	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
-	cudnnTensorDescriptor_t  aDesc;
-	cudnnTensorDescriptor_t  cDesc;
-	size_t * sizeInBytes;
-};
-
-struct cudnnGetReductionIndicesSizeResponse {
-	size_t  sizeInBytes;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetReductionWorkspaceSizeArg {
-	cudnnHandle_t  handle;
-	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
-	cudnnTensorDescriptor_t  aDesc;
-	cudnnTensorDescriptor_t  cDesc;
-	size_t * sizeInBytes;
-};
-
-struct cudnnGetReductionWorkspaceSizeResponse {
-	size_t  sizeInBytes;
-	cudnnStatus_t err;
-};
-
-struct cudnnCreateFilterDescriptorArg {
-	cudnnFilterDescriptor_t * filterDesc;
-};
-
-struct cudnnCreateFilterDescriptorResponse {
-	cudnnFilterDescriptor_t  filterDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnSetFilter4dDescriptorArg {
-	cudnnFilterDescriptor_t  filterDesc;
-	cudnnDataType_t  dataType;
-	cudnnTensorFormat_t  format;
-	int  k;
-	int  c;
-	int  h;
-	int  w;
-};
-
-struct cudnnGetFilterSizeInBytesArg {
-	cudnnFilterDescriptor_t  filterDesc;
-	size_t * size;
-};
-
-struct cudnnGetFilterSizeInBytesResponse {
-	size_t  size;
-	cudnnStatus_t err;
-};
-
-struct cudnnDestroyFilterDescriptorArg {
-	cudnnFilterDescriptor_t  filterDesc;
-};
-
-struct cudnnCreatePoolingDescriptorArg {
-	cudnnPoolingDescriptor_t * poolingDesc;
-};
-
-struct cudnnCreatePoolingDescriptorResponse {
-	cudnnPoolingDescriptor_t  poolingDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnDestroyPoolingDescriptorArg {
-	cudnnPoolingDescriptor_t  poolingDesc;
-};
-
-struct cudnnCreateActivationDescriptorArg {
-	cudnnActivationDescriptor_t * activationDesc;
-};
-
-struct cudnnCreateActivationDescriptorResponse {
-	cudnnActivationDescriptor_t  activationDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnSetActivationDescriptorArg {
-	cudnnActivationDescriptor_t  activationDesc;
-	cudnnActivationMode_t  mode;
-	cudnnNanPropagation_t  reluNanOpt;
-	double  coef;
-};
-
-struct cudnnDestroyActivationDescriptorArg {
-	cudnnActivationDescriptor_t  activationDesc;
-};
-
-struct cudnnCreateLRNDescriptorArg {
-	cudnnLRNDescriptor_t * normDesc;
-};
-
-struct cudnnCreateLRNDescriptorResponse {
-	cudnnLRNDescriptor_t  normDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnSetLRNDescriptorArg {
-	cudnnLRNDescriptor_t  normDesc;
-	unsigned  lrnN;
-	double  lrnAlpha;
-	double  lrnBeta;
-	double  lrnK;
-};
-
-struct cudnnDestroyLRNDescriptorArg {
-	cudnnLRNDescriptor_t  lrnDesc;
-};
-
-struct cudnnCreateDropoutDescriptorArg {
-	cudnnDropoutDescriptor_t * dropoutDesc;
-};
-
-struct cudnnCreateDropoutDescriptorResponse {
-	cudnnDropoutDescriptor_t  dropoutDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnDestroyDropoutDescriptorArg {
-	cudnnDropoutDescriptor_t  dropoutDesc;
-};
-
-struct cudnnDropoutGetStatesSizeArg {
-	cudnnHandle_t  handle;
-	size_t * sizeInBytes;
-};
-
-struct cudnnDropoutGetStatesSizeResponse {
-	size_t  sizeInBytes;
-	cudnnStatus_t err;
-};
-
-struct cudnnSetDropoutDescriptorArg {
-	cudnnDropoutDescriptor_t  dropoutDesc;
-	cudnnHandle_t  handle;
-	float  dropout;
-	void * states;
-	size_t  stateSizeInBytes;
-	unsigned long long  seed;
-};
-
-struct cudnnRestoreDropoutDescriptorArg {
-	cudnnDropoutDescriptor_t  dropoutDesc;
-	cudnnHandle_t  handle;
-	float  dropout;
-	void * states;
-	size_t  stateSizeInBytes;
-	unsigned long long  seed;
-};
-
 struct cudnnOpsInferVersionCheckArg {
 };
 
-struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeArg {
-	cudnnHandle_t  handle;
-	cudnnBatchNormMode_t  mode;
-	cudnnBatchNormOps_t  bnOps;
-	cudnnTensorDescriptor_t  xDesc;
-	cudnnTensorDescriptor_t  zDesc;
-	cudnnTensorDescriptor_t  yDesc;
-	cudnnTensorDescriptor_t  bnScaleBiasMeanVarDesc;
-	cudnnActivationDescriptor_t  activationDesc;
-	size_t * sizeInBytes;
-};
-
-struct cudnnGetBatchNormalizationForwardTrainingExWorkspaceSizeResponse {
-	size_t  sizeInBytes;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeArg {
-	cudnnHandle_t  handle;
-	cudnnBatchNormMode_t  mode;
-	cudnnBatchNormOps_t  bnOps;
-	cudnnTensorDescriptor_t  xDesc;
-	cudnnTensorDescriptor_t  yDesc;
-	cudnnTensorDescriptor_t  dyDesc;
-	cudnnTensorDescriptor_t  dzDesc;
-	cudnnTensorDescriptor_t  dxDesc;
-	cudnnTensorDescriptor_t  dBnScaleBiasDesc;
-	cudnnActivationDescriptor_t  activationDesc;
-	size_t * sizeInBytes;
-};
-
-struct cudnnGetBatchNormalizationBackwardExWorkspaceSizeResponse {
-	size_t  sizeInBytes;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeArg {
-	cudnnHandle_t  handle;
-	cudnnBatchNormMode_t  mode;
-	cudnnBatchNormOps_t  bnOps;
-	cudnnActivationDescriptor_t  activationDesc;
-	cudnnTensorDescriptor_t  xDesc;
-	size_t * sizeInBytes;
-};
-
-struct cudnnGetBatchNormalizationTrainingExReserveSpaceSizeResponse {
-	size_t  sizeInBytes;
-	cudnnStatus_t err;
-};
-
 struct cudnnOpsTrainVersionCheckArg {
-};
-
-struct cudnnCreateRNNDescriptorArg {
-	cudnnRNNDescriptor_t * rnnDesc;
-};
-
-struct cudnnCreateRNNDescriptorResponse {
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnDestroyRNNDescriptorArg {
-	cudnnRNNDescriptor_t  rnnDesc;
-};
-
-struct cudnnSetRNNDescriptor_v8Arg {
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnRNNAlgo_t  algo;
-	cudnnRNNMode_t  cellMode;
-	cudnnRNNBiasMode_t  biasMode;
-	cudnnDirectionMode_t  dirMode;
-	cudnnRNNInputMode_t  inputMode;
-	cudnnDataType_t  dataType;
-	cudnnDataType_t  mathPrec;
-	cudnnMathType_t  mathType;
-	int32_t  inputSize;
-	int32_t  hiddenSize;
-	int32_t  projSize;
-	int32_t  numLayers;
-	cudnnDropoutDescriptor_t  dropoutDesc;
-	uint32_t  auxFlags;
-};
-
-struct cudnnSetRNNDescriptor_v6Arg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	int  hiddenSize;
-	int  numLayers;
-	cudnnDropoutDescriptor_t  dropoutDesc;
-	cudnnRNNInputMode_t  inputMode;
-	cudnnDirectionMode_t  direction;
-	cudnnRNNMode_t  cellMode;
-	cudnnRNNAlgo_t  algo;
-	cudnnDataType_t  mathPrec;
-};
-
-struct cudnnSetRNNMatrixMathTypeArg {
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnMathType_t  mType;
-};
-
-struct cudnnGetRNNMatrixMathTypeArg {
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnMathType_t * mType;
-};
-
-struct cudnnGetRNNMatrixMathTypeResponse {
-	cudnnMathType_t  mType;
-	cudnnStatus_t err;
-};
-
-struct cudnnSetRNNBiasModeArg {
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnRNNBiasMode_t  biasMode;
-};
-
-struct cudnnGetRNNBiasModeArg {
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnRNNBiasMode_t * biasMode;
-};
-
-struct cudnnGetRNNBiasModeResponse {
-	cudnnRNNBiasMode_t  biasMode;
-	cudnnStatus_t err;
-};
-
-struct cudnnRNNSetClip_v8Arg {
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnRNNClipMode_t  clipMode;
-	cudnnNanPropagation_t  clipNanOpt;
-	double  lclip;
-	double  rclip;
 };
 
 struct cudnnRNNSetClipArg {
@@ -1275,158 +1530,28 @@ struct cudnnRNNSetClipArg {
 	double  rclip;
 };
 
-struct cudnnBuildRNNDynamicArg {
-	cudnnHandle_t  handle;
+struct cudnnRNNSetClip_v8Arg {
 	cudnnRNNDescriptor_t  rnnDesc;
-	int  miniBatch;
+	cudnnRNNClipMode_t  clipMode;
+	cudnnNanPropagation_t  clipNanOpt;
+	double  lclip;
+	double  rclip;
 };
 
-struct cudnnGetRNNTempSpaceSizesArg {
+struct cudnnRestoreDropoutDescriptorArg {
+	cudnnDropoutDescriptor_t  dropoutDesc;
 	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnForwardMode_t  fwdMode;
-	cudnnRNNDataDescriptor_t  xDesc;
-	size_t * workSpaceSize;
-	size_t * reserveSpaceSize;
+	float  dropout;
+	void * states;
+	size_t  stateSizeInBytes;
+	unsigned long long  seed;
 };
 
-struct cudnnGetRNNTempSpaceSizesResponse {
-	size_t  workSpaceSize;
-	size_t  reserveSpaceSize;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetRNNParamsSizeArg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnTensorDescriptor_t  xDesc;
-	size_t * sizeInBytes;
-	cudnnDataType_t  dataType;
-};
-
-struct cudnnGetRNNParamsSizeResponse {
-	size_t  sizeInBytes;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetRNNWeightSpaceSizeArg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	size_t * weightSpaceSize;
-};
-
-struct cudnnGetRNNWeightSpaceSizeResponse {
-	size_t  weightSpaceSize;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetRNNLinLayerMatrixParamsArg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	int  pseudoLayer;
-	cudnnTensorDescriptor_t  xDesc;
-	cudnnFilterDescriptor_t  wDesc;
-	void * w;
-	int  linLayerID;
-	cudnnFilterDescriptor_t  linLayerMatDesc;
-	void ** linLayerMat;
-};
-
-struct cudnnGetRNNLinLayerMatrixParamsResponse {
-	void * linLayerMat;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetRNNLinLayerBiasParamsArg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	int  pseudoLayer;
-	cudnnTensorDescriptor_t  xDesc;
-	cudnnFilterDescriptor_t  wDesc;
-	void * w;
-	int  linLayerID;
-	cudnnFilterDescriptor_t  linLayerBiasDesc;
-	void ** linLayerBias;
-};
-
-struct cudnnGetRNNLinLayerBiasParamsResponse {
-	void * linLayerBias;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetRNNWeightParamsArg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	int32_t  pseudoLayer;
-	size_t  weightSpaceSize;
-	void * weightSpace;
-	int32_t  linLayerID;
-	cudnnTensorDescriptor_t  mDesc;
-	void ** mAddr;
-	cudnnTensorDescriptor_t  bDesc;
-	void ** bAddr;
-};
-
-struct cudnnGetRNNWeightParamsResponse {
-	void * mAddr;
-	void * bAddr;
-	cudnnStatus_t err;
-};
-
-struct cudnnCreateRNNDataDescriptorArg {
-	cudnnRNNDataDescriptor_t * rnnDataDesc;
-};
-
-struct cudnnCreateRNNDataDescriptorResponse {
-	cudnnRNNDataDescriptor_t  rnnDataDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnDestroyRNNDataDescriptorArg {
-	cudnnRNNDataDescriptor_t  rnnDataDesc;
-};
-
-struct cudnnSetRNNAlgorithmDescriptorArg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	cudnnAlgorithmDescriptor_t  algoDesc;
-};
-
-struct cudnnGetRNNForwardInferenceAlgorithmMaxCountArg {
-	cudnnHandle_t  handle;
-	cudnnRNNDescriptor_t  rnnDesc;
-	int * count;
-};
-
-struct cudnnGetRNNForwardInferenceAlgorithmMaxCountResponse {
-	int  count;
-	cudnnStatus_t err;
-};
-
-struct cudnnCreateSeqDataDescriptorArg {
-	cudnnSeqDataDescriptor_t * seqDataDesc;
-};
-
-struct cudnnCreateSeqDataDescriptorResponse {
-	cudnnSeqDataDescriptor_t  seqDataDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnDestroySeqDataDescriptorArg {
-	cudnnSeqDataDescriptor_t  seqDataDesc;
-};
-
-struct cudnnCreateAttnDescriptorArg {
-	cudnnAttnDescriptor_t * attnDesc;
-};
-
-struct cudnnCreateAttnDescriptorResponse {
-	cudnnAttnDescriptor_t  attnDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnDestroyAttnDescriptorArg {
-	cudnnAttnDescriptor_t  attnDesc;
+struct cudnnSetActivationDescriptorArg {
+	cudnnActivationDescriptor_t  activationDesc;
+	cudnnActivationMode_t  mode;
+	cudnnNanPropagation_t  reluNanOpt;
+	double  coef;
 };
 
 struct cudnnSetAttnDescriptorArg {
@@ -1452,247 +1577,122 @@ struct cudnnSetAttnDescriptorArg {
 	int  maxBeamSize;
 };
 
-struct cudnnGetMultiHeadAttnBuffersArg {
+struct cudnnSetDropoutDescriptorArg {
+	cudnnDropoutDescriptor_t  dropoutDesc;
 	cudnnHandle_t  handle;
-	cudnnAttnDescriptor_t  attnDesc;
-	size_t * weightSizeInBytes;
-	size_t * workSpaceSizeInBytes;
-	size_t * reserveSpaceSizeInBytes;
+	float  dropout;
+	void * states;
+	size_t  stateSizeInBytes;
+	unsigned long long  seed;
 };
 
-struct cudnnGetMultiHeadAttnBuffersResponse {
-	size_t  weightSizeInBytes;
-	size_t  workSpaceSizeInBytes;
-	size_t  reserveSpaceSizeInBytes;
-	cudnnStatus_t err;
-};
-
-struct cudnnAdvInferVersionCheckArg {
-};
-
-struct cudnnAdvTrainVersionCheckArg {
-};
-
-struct cudnnCreateConvolutionDescriptorArg {
-	cudnnConvolutionDescriptor_t * convDesc;
-};
-
-struct cudnnCreateConvolutionDescriptorResponse {
-	cudnnConvolutionDescriptor_t  convDesc;
-	cudnnStatus_t err;
-};
-
-struct cudnnDestroyConvolutionDescriptorArg {
-	cudnnConvolutionDescriptor_t  convDesc;
-};
-
-struct cudnnGetConvolutionForwardWorkspaceSizeArg {
-	cudnnHandle_t  handle;
-	cudnnTensorDescriptor_t  xDesc;
-	cudnnFilterDescriptor_t  wDesc;
-	cudnnConvolutionDescriptor_t  convDesc;
-	cudnnTensorDescriptor_t  yDesc;
-	cudnnConvolutionFwdAlgo_t  algo;
-	size_t * sizeInBytes;
-};
-
-struct cudnnGetConvolutionForwardWorkspaceSizeResponse {
-	size_t  sizeInBytes;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountArg {
-	cudnnHandle_t  handle;
-	int * count;
-};
-
-struct cudnnGetConvolutionBackwardDataAlgorithmMaxCountResponse {
-	int  count;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetConvolutionBackwardDataWorkspaceSizeArg {
-	cudnnHandle_t  handle;
-	cudnnFilterDescriptor_t  wDesc;
-	cudnnTensorDescriptor_t  dyDesc;
-	cudnnConvolutionDescriptor_t  convDesc;
-	cudnnTensorDescriptor_t  dxDesc;
-	cudnnConvolutionBwdDataAlgo_t  algo;
-	size_t * sizeInBytes;
-};
-
-struct cudnnGetConvolutionBackwardDataWorkspaceSizeResponse {
-	size_t  sizeInBytes;
-	cudnnStatus_t err;
-};
-
-struct cudnnGetFoldedConvBackwardDataDescriptorsArg {
-	cudnnHandle_t  handle;
+struct cudnnSetFilter4dDescriptorArg {
 	cudnnFilterDescriptor_t  filterDesc;
-	cudnnTensorDescriptor_t  diffDesc;
-	cudnnConvolutionDescriptor_t  convDesc;
-	cudnnTensorDescriptor_t  gradDesc;
-	cudnnTensorFormat_t  transformFormat;
-	cudnnFilterDescriptor_t  foldedFilterDesc;
-	cudnnTensorDescriptor_t  paddedDiffDesc;
-	cudnnConvolutionDescriptor_t  foldedConvDesc;
-	cudnnTensorDescriptor_t  foldedGradDesc;
-	cudnnTensorTransformDescriptor_t  filterFoldTransDesc;
-	cudnnTensorTransformDescriptor_t  diffPadTransDesc;
-	cudnnTensorTransformDescriptor_t  gradFoldTransDesc;
-	cudnnTensorTransformDescriptor_t  gradUnfoldTransDesc;
+	cudnnDataType_t  dataType;
+	cudnnTensorFormat_t  format;
+	int  k;
+	int  c;
+	int  h;
+	int  w;
 };
 
-struct cudnnCnnInferVersionCheckArg {
+struct cudnnSetLRNDescriptorArg {
+	cudnnLRNDescriptor_t  normDesc;
+	unsigned  lrnN;
+	double  lrnAlpha;
+	double  lrnBeta;
+	double  lrnK;
 };
 
-struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountArg {
+struct cudnnSetOpTensorDescriptorArg {
+	cudnnOpTensorDescriptor_t  opTensorDesc;
+	cudnnOpTensorOp_t  opTensorOp;
+	cudnnDataType_t  opTensorCompType;
+	cudnnNanPropagation_t  opTensorNanOpt;
+};
+
+struct cudnnSetRNNAlgorithmDescriptorArg {
 	cudnnHandle_t  handle;
-	int * count;
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnAlgorithmDescriptor_t  algoDesc;
 };
 
-struct cudnnGetConvolutionBackwardFilterAlgorithmMaxCountResponse {
-	int  count;
-	cudnnStatus_t err;
+struct cudnnSetRNNBiasModeArg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnRNNBiasMode_t  biasMode;
 };
 
-struct cudnnCnnTrainVersionCheckArg {
+struct cudnnSetRNNDescriptor_v6Arg {
+	cudnnHandle_t  handle;
+	cudnnRNNDescriptor_t  rnnDesc;
+	int  hiddenSize;
+	int  numLayers;
+	cudnnDropoutDescriptor_t  dropoutDesc;
+	cudnnRNNInputMode_t  inputMode;
+	cudnnDirectionMode_t  direction;
+	cudnnRNNMode_t  cellMode;
+	cudnnRNNAlgo_t  algo;
+	cudnnDataType_t  mathPrec;
 };
 
-struct cudnnBackendCreateDescriptorArg {
-	cudnnBackendDescriptorType_t  descriptorType;
-	cudnnBackendDescriptor_t * descriptor;
+struct cudnnSetRNNDescriptor_v8Arg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnRNNAlgo_t  algo;
+	cudnnRNNMode_t  cellMode;
+	cudnnRNNBiasMode_t  biasMode;
+	cudnnDirectionMode_t  dirMode;
+	cudnnRNNInputMode_t  inputMode;
+	cudnnDataType_t  dataType;
+	cudnnDataType_t  mathPrec;
+	cudnnMathType_t  mathType;
+	int32_t  inputSize;
+	int32_t  hiddenSize;
+	int32_t  projSize;
+	int32_t  numLayers;
+	cudnnDropoutDescriptor_t  dropoutDesc;
+	uint32_t  auxFlags;
 };
 
-struct cudnnBackendCreateDescriptorResponse {
-	cudnnBackendDescriptor_t  descriptor;
-	cudnnStatus_t err;
+struct cudnnSetRNNMatrixMathTypeArg {
+	cudnnRNNDescriptor_t  rnnDesc;
+	cudnnMathType_t  mType;
 };
 
-struct cudnnBackendDestroyDescriptorArg {
-	cudnnBackendDescriptor_t  descriptor;
+struct cudnnSetReduceTensorDescriptorArg {
+	cudnnReduceTensorDescriptor_t  reduceTensorDesc;
+	cudnnReduceTensorOp_t  reduceTensorOp;
+	cudnnDataType_t  reduceTensorCompType;
+	cudnnNanPropagation_t  reduceTensorNanOpt;
+	cudnnReduceTensorIndices_t  reduceTensorIndices;
+	cudnnIndicesType_t  reduceTensorIndicesType;
 };
 
-struct cudnnBackendInitializeArg {
-	cudnnBackendDescriptor_t  descriptor;
+struct cudnnSetStreamArg {
+	cudnnHandle_t  handle;
+	cudaStream_t  streamId;
 };
 
-struct cudnnBackendFinalizeArg {
-	cudnnBackendDescriptor_t  descriptor;
-};
-
-struct cublasGetVersion_v2Arg {
-	cublasHandle_t  handle;
-	int*  version;
-};
-
-struct cublasGetVersion_v2Response {
-	int version;
-	cublasStatus_t err;
-};
-
-struct cublasGetPropertyArg {
-	libraryPropertyType  type;
-	int*  value;
-};
-
-struct cublasGetPropertyResponse {
-	int value;
-	cublasStatus_t err;
-};
-
-struct cublasGetCudartVersionArg {
-};
-
-struct cublasGetStream_v2Arg {
-	cublasHandle_t  handle;
-	cudaStream_t*  streamId;
-};
-
-struct cublasGetStream_v2Response {
-	cudaStream_t streamId;
-	cublasStatus_t err;
-};
-
-struct cublasGetPointerMode_v2Arg {
-	cublasHandle_t  handle;
-	cublasPointerMode_t*  mode;
-};
-
-struct cublasGetPointerMode_v2Response {
-	cublasPointerMode_t mode;
-	cublasStatus_t err;
-};
-
-struct cublasSetPointerMode_v2Arg {
-	cublasHandle_t  handle;
-	cublasPointerMode_t  mode;
-};
-
-struct cublasGetSmCountTargetArg {
-	cublasHandle_t  handle;
-	int*  smCountTarget;
-};
-
-struct cublasGetSmCountTargetResponse {
-	int smCountTarget;
-	cublasStatus_t err;
-};
-
-struct cublasSetSmCountTargetArg {
-	cublasHandle_t  handle;
-	int  smCountTarget;
-};
-
-struct cublasSetLoggerCallbackArg {
-	cublasLogCallback  userCallback;
-};
-
-struct cublasGetLoggerCallbackArg {
-	cublasLogCallback*  userCallback;
-};
-
-struct cublasGetLoggerCallbackResponse {
-	cublasLogCallback userCallback;
-	cublasStatus_t err;
-};
-
-struct cublasSetVectorArg {
+struct cudnnSetTensor4dDescriptorArg {
+	cudnnTensorDescriptor_t  tensorDesc;
+	cudnnTensorFormat_t  format;
+	cudnnDataType_t  dataType;
 	int  n;
-	int  elemSize;
-	void*  x;
-	int  incx;
-	void*  devicePtr;
-	int  incy;
+	int  c;
+	int  h;
+	int  w;
 };
 
-struct cudaProfilerStartArg {
-};
-
-struct cudaProfilerStopArg {
-};
-
-struct cublasLtGetVersionArg {
-};
-
-struct cublasLtGetCudartVersionArg {
-};
-
-struct cublasLtMatrixTransformDescCreateArg {
-	cublasLtMatrixTransformDesc_t*  transformDesc;
-	cudaDataType  scaleType;
-};
-
-struct cublasLtMatrixTransformDescCreateResponse {
-	cublasLtMatrixTransformDesc_t transformDesc;
-	cublasStatus_t err;
-};
-
-struct cublasLtMatrixTransformDescDestroyArg {
-	cublasLtMatrixTransformDesc_t  transformDesc;
-};
-
-struct cublasLtLoggerForceDisableArg {
+struct cudnnSetTensor4dDescriptorExArg {
+	cudnnTensorDescriptor_t  tensorDesc;
+	cudnnDataType_t  dataType;
+	int  n;
+	int  c;
+	int  h;
+	int  w;
+	int  nStride;
+	int  cStride;
+	int  hStride;
+	int  wStride;
 };
 
 struct curandCreateGeneratorArg {
@@ -1710,12 +1710,49 @@ struct curandSetPseudoRandomGeneratorSeedArg {
 	unsigned long long  seed;
 };
 
-struct ncclGetUniqueIdArg {
-	ncclUniqueId*  uniqueId;
+struct ncclAllGatherArg {
+	void*  sendbuff;
+	void*  recvbuff;
+	size_t  sendcount;
+	ncclDataType_t  datatype;
+	ncclComm_t  comm;
+	cudaStream_t  stream;
 };
 
-struct ncclGetUniqueIdResponse {
-	ncclUniqueId uniqueId;
+struct ncclAllReduceArg {
+	void*  sendbuff;
+	void*  recvbuff;
+	size_t  count;
+	ncclDataType_t  datatype;
+	ncclRedOp_t  op;
+	ncclComm_t  comm;
+	cudaStream_t  stream;
+};
+
+struct ncclBcastArg {
+	void*  buff;
+	size_t  count;
+	ncclDataType_t  datatype;
+	int  root;
+	ncclComm_t  comm;
+	cudaStream_t  stream;
+};
+
+struct ncclCommAbortArg {
+	ncclComm_t  comm;
+};
+
+struct ncclCommDestroyArg {
+	ncclComm_t  comm;
+};
+
+struct ncclCommGetAsyncErrorArg {
+	ncclComm_t  comm;
+	ncclResult_t * asyncError;
+};
+
+struct ncclCommGetAsyncErrorResponse {
+	ncclResult_t  asyncError;
 	ncclResult_t err;
 };
 
@@ -1731,56 +1768,19 @@ struct ncclCommInitRankResponse {
 	ncclResult_t err;
 };
 
-struct ncclCommDestroyArg {
-	ncclComm_t  comm;
+struct ncclGetUniqueIdArg {
+	ncclUniqueId*  uniqueId;
 };
 
-struct ncclCommAbortArg {
-	ncclComm_t  comm;
-};
-
-struct ncclCommGetAsyncErrorArg {
-	ncclComm_t  comm;
-	ncclResult_t * asyncError;
-};
-
-struct ncclCommGetAsyncErrorResponse {
-	ncclResult_t  asyncError;
+struct ncclGetUniqueIdResponse {
+	ncclUniqueId uniqueId;
 	ncclResult_t err;
 };
 
-struct ncclBcastArg {
-	void*  buff;
-	size_t  count;
-	ncclDataType_t  datatype;
-	int  root;
-	ncclComm_t  comm;
-	cudaStream_t  stream;
-};
-
-struct ncclAllReduceArg {
-	void*  sendbuff;
-	void*  recvbuff;
-	size_t  count;
-	ncclDataType_t  datatype;
-	ncclRedOp_t  op;
-	ncclComm_t  comm;
-	cudaStream_t  stream;
-};
-
-struct ncclAllGatherArg {
-	void*  sendbuff;
-	void*  recvbuff;
-	size_t  sendcount;
-	ncclDataType_t  datatype;
-	ncclComm_t  comm;
-	cudaStream_t  stream;
+struct ncclGroupEndArg {
 };
 
 struct ncclGroupStartArg {
-};
-
-struct ncclGroupEndArg {
 };
 
 

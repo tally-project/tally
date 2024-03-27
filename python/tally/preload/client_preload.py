@@ -385,11 +385,13 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
         preprocess_header_file(header_file, output_file="/tmp/gcc_output.txt")
         client_code_dict.update(gen_client_code_from_file("/tmp/gcc_output.txt"))
 
+    func_names = sorted(list(set(list(client_code_dict.keys()))))
+
     with open(client_preload_output_file, "w") as f:
 
         f.write(CLIENT_PRELOAD_TEMPLATE)
         f.write(EXTERN_C_BEGIN)
-        for func_name in client_code_dict:
+        for func_name in func_names:
             if func_name not in SPECIAL_CLIENT_PRELOAD_FUNCS and client_code_dict[func_name]["preload"]:
                 f.write(client_code_dict[func_name]["preload"])
                 f.write("\n\n")
@@ -398,7 +400,7 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
     with open(decl_output_file, "w") as f:
 
         f.write(API_DECL_TEMPLATE_TOP)
-        for func_name in client_code_dict:
+        for func_name in func_names:
             if client_code_dict[func_name]["decl"]:
                 f.write(client_code_dict[func_name]["decl"])
         f.write(API_DECL_TEMPLATE_BUTTOM)
@@ -406,7 +408,7 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
     with open(def_output_file, "w") as f:
 
         f.write(API_DEF_TEMPLATE_TOP)
-        for func_name in client_code_dict:
+        for func_name in func_names:
             if client_code_dict[func_name]["def"]:
                 f.write(client_code_dict[func_name]["def"])
         f.write(API_DEF_TEMPLATE_BUTTOM)
@@ -430,7 +432,7 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
     with open(msg_struct_output_file, 'w') as f:
         f.write(MSG_STRUCT_TEMPLATE_TOP)
     
-        for func_name in client_code_dict:
+        for func_name in func_names:
             if client_code_dict[func_name]['struct']:
                 f.write(f"{client_code_dict[func_name]['struct']}\n")
 
@@ -439,7 +441,7 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
     with open(server_header_output_file, 'w') as f:
         f.write(TALLY_SERVER_HEADER_TEMPLATE_TOP)
 
-        for func_name in set(list(client_code_dict.keys()) + REGISTER_FUNCS):
+        for func_name in func_names + REGISTER_FUNCS:
             f.write(f"\tvoid handle_{func_name}(void *args, iox::popo::UntypedServer *iox_server, const void* const requestPayload);\n")
 
         f.write(TALLY_SERVER_HEADER_TEMPLATE_BUTTOM)
@@ -461,12 +463,12 @@ def gen_client_code(header_files=CUDA_API_HEADER_FILES, client_preload_output_fi
 
         f.write("void TallyServer::register_api_handler() {\n")
 
-        for func_name in set(list(client_code_dict.keys()) + SPECIAL_CLIENT_PRELOAD_FUNCS):
+        for func_name in func_names + SPECIAL_CLIENT_PRELOAD_FUNCS:
             f.write(f"\tcuda_api_handler_map[CUDA_API_ENUM::{func_name.upper()}] = std::bind(&TallyServer::handle_{func_name}, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);\n")
 
         f.write("}\n")
 
-        for func_name in client_code_dict:
+        for func_name in func_names:
             if func_name not in SPECIAL_CLIENT_PRELOAD_FUNCS:
                 f.write(client_code_dict[func_name]["handler"])
         

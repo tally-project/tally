@@ -53,6 +53,17 @@ target_link_libraries(add_driver_api
     cuda
 )
 
+add_executable(launch_host_func cuda_samples_basic/launch_host_func.cu)
+
+set_target_properties(launch_host_func PROPERTIES
+    CUDA_ARCHITECTURES ${CUDA_ARCH_LIST}
+    CUDA_RUNTIME_LIBRARY Shared
+)
+
+target_link_libraries(launch_host_func
+    cuda
+)
+
 add_executable(matmul cuda_samples_basic/matmul.cu)
 
 set_target_properties(matmul PROPERTIES

@@ -204,6 +204,7 @@ CLIENT_PRELOAD_TEMPLATE = """
 """
 
 TALLY_SERVER_HEADER_TEMPLATE_TOP = """
+
 #ifndef TALLY_SERVER_H
 #define TALLY_SERVER_H
 
@@ -348,13 +349,16 @@ public:
 	std::unordered_map<CudaLaunchCallConfig, CudaLaunchCallConfigResult> single_kernel_perf_map;
 	std::unordered_map<CudaLaunchCall, CudaLaunchCallConfigResult> single_kernel_chosen_config_map;
 
-    std::unordered_map<CudaLaunchCallPair, std::unordered_map<CudaLaunchCallConfigPair, CudaLaunchCallConfigPairResult>> kernel_pair_perf_map;
-	std::unordered_map<CudaLaunchCallPair, CudaLaunchCallConfigPairResult> kernel_pair_best_config_map;
+	int32_t get_client_priority(int32_t client_id);
+	int32_t get_client_stream_priority(int32_t client_id);
+
+	void tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> &configs);
 
 	void launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> configs,
 								   float fallback_threshold, std::vector<CudaLaunchConfig> alternative_configs={}, bool is_preemptive=false);
 
 	void priority_launch_and_measure_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id);
+	void priority_launch_and_measure_space_share_kernel(KernelLaunchWrapper &kernel_wrapper, int32_t client_id);
 
 	// Set and Get performance cache
 	CudaLaunchCallConfigResult get_single_kernel_perf(CudaLaunchCall &launch_call, CudaLaunchConfig launch_config, bool *found);
@@ -367,22 +371,6 @@ public:
 	void set_single_kernel_chosen_config(CudaLaunchCall &launch_call, CudaLaunchCallConfigResult &best_config);
 	void clear_single_kernel_chosen_configs();
 
-    CudaLaunchCallConfigPairResult get_kernel_pair_perf(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
-														CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
-														bool *found);
-	
-	void set_kernel_pair_perf(
-		CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2,
-		CudaLaunchConfig &launch_config_1, CudaLaunchConfig &launch_config_2,
-		CudaLaunchMetadata meta_data_1, CudaLaunchMetadata meta_data_2,
-		float norm_speed_1, float norm_speed_2, float latency_1, float latency_2,
-		float fixed_workload_latency, float fixed_workload_speedup,
-		float unfair_workload_latency, float unfair_workload_speedup
-	);
-
-	CudaLaunchCallConfigPairResult get_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, bool *found);
-	void set_kernel_pair_best_config(CudaLaunchCall &launch_call_1, CudaLaunchCall &launch_call_2, CudaLaunchCallConfigPairResult best_config);
-
 	// Utility functions for measurement data
 	CudaLaunchCall convert_key_to_call(CudaLaunchKey key);
 	CudaLaunchKey convert_call_to_key(CudaLaunchCall call);
@@ -390,24 +378,12 @@ public:
 	CudaLaunchCallConfig convert_key_config_to_call_config(CudaLaunchKeyConfig key_config);
 	CudaLaunchKeyConfig convert_call_config_to_key_config(CudaLaunchCallConfig call_config);
 
-	CudaLaunchCallConfigPairResult convert_pair_res_to_runtime_res(CudaLaunchKeyConfigPairResult res);
-	CudaLaunchKeyConfigPairResult convert_pair_res_to_cache_res(CudaLaunchCallConfigPairResult res);
-
-	CudaLaunchCallConfigPair convert_key_config_pair_to_call_config_pair(CudaLaunchKeyConfigPair key_config_pair);
-	CudaLaunchKeyConfigPair convert_call_config_pair_to_key_config_pair(CudaLaunchCallConfigPair call_config_pair);
-
     void save_performance_cache();
 
     static constexpr char APP_NAME[] = "iox-cpp-request-response-server-untyped";
 
     TallyServer();
     ~TallyServer();
-
-	void tune_kernel_launch(KernelLaunchWrapper &kernel_wrapper, int32_t client_id, std::vector<CudaLaunchConfig> &configs);
-	void tune_kernel_pair_launch(
-		KernelLaunchWrapper &first_kernel_wrapper, KernelLaunchWrapper &second_kernel_wrapper,
-		int32_t first_client_id, int32_t second_client_id
-	);
 
 	// Scheduler options
 	void run_naive_scheduler();
@@ -417,21 +393,20 @@ public:
 	void run_workload_aware_sharing_scheduler();
 
     void register_api_handler();
-    void load_cache();
 
 	const void *get_server_addr_from_client_addr(uint32_t client_id, const void *client_addr);
 	const void *get_server_addr_from_cu_func(CUfunction cu_func);
 
-	void register_kernel(const void *server_func_addr);
+	void register_kernel(const void *addr);
 	void register_cu_module(uint32_t cubin_uid);
-	void register_kernels();
-    void register_measurements();
-    void register_ptx_transform(const char* cubin_data, size_t cubin_size);
+    void load_measurements(uint32_t cubin_uid);
+    void register_ptx_transform(uint32_t cubin_uid);
 
     void start_scheduler();
     void start_main_server();
     void start_worker_server(int32_t client_id);
 
+	void increment_client_queue_size(int32_t client_id);
 	void wait_until_launch_queue_empty(int32_t client_id);
 	void client_add_stream(int32_t client_id, cudaStream_t stream);
 
@@ -489,6 +464,7 @@ IGNORE_CALLS = [
 
 # implement manually
 SPECIAL_CLIENT_PRELOAD_FUNCS = [
+    "cudaLaunchHostFunc",
     "cudnnReduceTensor",
     "cuStreamIsCapturing",
     "cuStreamBeginCapture_v2",
