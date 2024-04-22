@@ -506,6 +506,182 @@ void TallyServer::run_priority_scheduler()
             }
         }
 
+    } else if (PRIORITY_DISABLE_TRANSFORMATION) {
+
+        while (!iox::posix::hasTerminationRequested()) {
+
+            bool is_highest_priority = true;
+
+            for (auto &pair : client_priority_map) {
+
+                auto &client_priority = pair.first;
+                auto client_id = client_priority.client_id;
+                auto &client_data = client_data_all[client_id];
+
+                if (client_events.find(client_id) == client_events.end()) {
+                    auto &event = client_events[client_id].event;
+                    cudaEventCreateWithFlags(&event, cudaEventDisableTiming);
+                }
+
+                auto &client_event_wrapper = client_events[client_id];
+                auto client_event = client_event_wrapper.event;
+
+                if (client_data.has_exit) {
+                    cudaEventDestroy(client_event);
+                    
+                    client_data_all.erase(client_id);
+                    client_events.erase(client_id);
+                    client_priority_map.erase(client_priority);
+                    break;
+                }
+
+                bool succeeded;
+            
+                if (is_highest_priority) {
+
+                    // this job may have been promoted from low to high so it has a kernel in in_progress_kernels
+                    if (in_progress_kernels.find(client_priority) != in_progress_kernels.end()) {
+                        auto &dispatched_kernel = in_progress_kernels[client_priority];
+                        auto &dispatched_kernel_wrapper = dispatched_kernel.kernel_wrapper;
+                        auto running = dispatched_kernel.running;
+
+                        // wait for it to complete
+                        cudaStreamSynchronize(dispatched_kernel_wrapper.launch_stream);
+
+                        // Erase it from in-progress
+                        in_progress_kernels.erase(client_priority);
+
+                        // mark as launched
+                        dispatched_kernel_wrapper.free_args();
+                        client_data.queue_size--;
+                    }
+
+                    // Always try to fetch and launch kernel
+                    succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
+
+                    // all kernels have been launched
+                    if (!succeeded) {
+
+                        // query if there is active kernel
+                        if (client_event_wrapper.active) {
+
+                            // then we wait until all kernels have completed execution to
+                            // potentially consider launching low-priority kernels
+                            if (cudaEventQuery(client_event) != cudaSuccess) {
+                                break;
+                            }
+                            
+                            // mark event as inactive as all kernels have finished
+                            else {
+                                client_event_wrapper.active = false;
+                            }
+
+                        }
+                    }
+
+                } else {
+
+                    // For non-highest-priority client, we only launch at most 1 kernel at any time
+                    // therefore we will query whether the kernel has finished
+
+                    // First check whether this client already has a kernel running
+                    if (in_progress_kernels.find(client_priority) != in_progress_kernels.end()) {
+
+                        auto &dispatched_kernel = in_progress_kernels[client_priority];
+                        auto &dispatched_kernel_wrapper = dispatched_kernel.kernel_wrapper;
+                        auto running = dispatched_kernel.running;
+                        auto &config = dispatched_kernel.config;
+
+                        // First check if the kernel is still running
+                        // note that the running flag only tells us whether the kernel has been signaled to stop
+                        // it is possible that it has not yet terminated
+                        if (cudaEventQuery(client_event) != cudaSuccess) {
+                            break;
+                        }
+
+                        // Erase from in-progress
+                        client_event_wrapper.active = false;
+                        dispatched_kernel_wrapper.free_args();
+                        in_progress_kernels.erase(client_priority);
+                        client_data.queue_size--;
+                    }
+
+                    // Try to fetch kernel from low-priority queue
+                    succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
+                }
+
+                // Successfully fetched a kernel from the launch queue
+                if (succeeded) {
+
+                    // Stop any running kernel
+                    for (auto &in_progress_kernel : in_progress_kernels) {
+
+                        auto &dispatched_kernel = in_progress_kernel.second;
+                        auto running = dispatched_kernel.running;
+
+                        if (!running) {
+                            continue;
+                        }
+
+                        auto in_progress_client_id = in_progress_kernel.first.client_id;
+                        auto &in_progress_kernel_wrapper = dispatched_kernel.kernel_wrapper;
+                        auto &in_progress_client_data = client_data_all[in_progress_client_id];
+                        auto &in_progress_kernel_event_wrapper = client_events[in_progress_client_id];
+                        auto &in_progress_kernel_event = in_progress_kernel_event_wrapper.event;
+
+                        // First check whether this kernel has already finished
+                        if (cudaEventQuery(in_progress_kernel_event) == cudaSuccess) {
+
+                            // Erase if finished
+                            in_progress_kernel_event_wrapper.active = false;
+                            in_progress_kernel_wrapper.free_args();
+                            in_progress_kernels.erase(in_progress_kernel.first);
+                            in_progress_client_data.queue_size--;
+                            break;
+                        }
+
+                        // Mark that this kernel has been signaled to stop
+                        dispatched_kernel.running = false;
+
+                        // We know there are at most one kernel running, so break
+                        break;
+                    }
+
+                    // Now launch the high priority kernel
+                    auto config = CudaLaunchConfig::default_config;
+
+                    if (!is_highest_priority) {
+
+                        // bookkeep kernel launch if it is not highest-priority 
+                        in_progress_kernels[client_priority] = DispatchedKernel(kernel_wrapper, true, config);
+                    }
+
+                    // Launch the kernel
+                    kernel_wrapper.kernel_to_dispatch(config, NULL, NULL, NULL, false, 0, nullptr, nullptr, -1, true);
+                    
+                    // record event
+                    cudaEventRecord(client_event, kernel_wrapper.launch_stream);
+                    client_event_wrapper.active = true;
+
+                    // For highest priority, we can directly mark the kernel as launched as we won't ever preempt it
+                    if (is_highest_priority) {
+
+                        // Mark as launched
+                        kernel_wrapper.free_args();
+                        client_data.queue_size--;
+
+                    }
+
+                    break;
+                }
+
+                // Did not fetch a kernel
+                // Proceed to check the next-priority client
+
+                is_highest_priority = false;
+            }
+        }
+
     } else {
 
         while (!iox::posix::hasTerminationRequested()) {

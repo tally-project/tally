@@ -18,6 +18,9 @@ void TallyServer::run_profile_scheduler()
     cudaStream_t retreat_stream;
     cudaStreamCreate(&retreat_stream);
 
+    std::vector<float> kernel_durations;
+    int count = 0;
+
     while (!iox::posix::hasTerminationRequested()) {
 
         for (auto &pair : client_data_all) {
@@ -33,55 +36,111 @@ void TallyServer::run_profile_scheduler()
             bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
 
             if (succeeded) {
-                CudaLaunchConfig config = CudaLaunchConfig::default_config;
+                cudaDeviceSynchronize();
+                auto start = std::chrono::high_resolution_clock::now();
 
-                if (!kernel_wrapper.is_library_call) {
-                    
-                    auto launch_call = kernel_wrapper.launch_call;
-                    auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
-
-                    // Some kernels will fail if launched many times
-                    if (containsSubstring(kernel_name, "DeviceRadixSortOnesweepKernel") ||
-                        containsSubstring(kernel_name, "krn_partial_segment_offset") ||
-                        containsSubstring(kernel_name, "compute_grad_weight") ||
-                        containsSubstring(kernel_name, "sum_and_scatter")
-                    ) {
-
-                    } else {
-
-                        // Look up cache for best-performance config
-                        bool found_in_cache;
-                        auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
-
-                        if (!found_in_cache) {
-
-                            auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
-                            auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
-                            auto configs = CudaLaunchConfig::get_profile_configs(launch_call);
-
-                            tune_kernel_launch(kernel_wrapper, client_id, configs);
-                            res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
-                        }
-
-                        config = res.config;
-                    }
-                }
-
-                if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
-                    auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
-                    cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
-                    kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
-                } else {
-                    kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
-                }
-
+                kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
                 client_data.queue_size--;
+
+                cudaDeviceSynchronize();
+                auto end = std::chrono::high_resolution_clock::now();
+
+                std::chrono::duration<double, std::milli> elapsed = end - start;
+                float time_elapsed = elapsed.count();
+
+                // skip the first 10000 kernels for warmup
+                if (count > 10000) {
+                    kernel_durations.push_back(time_elapsed);
+                } else {
+                    count++;
+                }
             }
         }
     }
+
+    std::ofstream result_file("kernel_durations.txt");
+
+    if (result_file.is_open()) {
+        for (float value : kernel_durations) {
+            result_file << value << "\n";
+        }
+        result_file.close();
+    } else {
+        std::cerr << "Unable to open file." << std::endl;
+    }
 }
 
+// void TallyServer::run_profile_scheduler()
+// {
+//     TALLY_SPD_LOG_ALWAYS("Running profile scheduler ...");
 
+//     KernelLaunchWrapper kernel_wrapper;
+
+//     cudaStream_t retreat_stream;
+//     cudaStreamCreate(&retreat_stream);
+
+//     while (!iox::posix::hasTerminationRequested()) {
+
+//         for (auto &pair : client_data_all) {
+
+//             auto &client_data = pair.second;
+//             auto client_id = pair.first;
+
+//             if (client_data.has_exit) {
+//                 client_data_all.erase(client_id);
+//                 break;
+//             }
+
+//             bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
+
+//             if (succeeded) {
+//                 CudaLaunchConfig config = CudaLaunchConfig::default_config;
+
+//                 if (!kernel_wrapper.is_library_call) {
+                    
+//                     auto launch_call = kernel_wrapper.launch_call;
+//                     auto kernel_name = host_func_to_demangled_kernel_name_map[launch_call.func];
+
+//                     // Some kernels will fail if launched many times
+//                     if (containsSubstring(kernel_name, "DeviceRadixSortOnesweepKernel") ||
+//                         containsSubstring(kernel_name, "krn_partial_segment_offset") ||
+//                         containsSubstring(kernel_name, "compute_grad_weight") ||
+//                         containsSubstring(kernel_name, "sum_and_scatter")
+//                     ) {
+
+//                     } else {
+
+//                         // Look up cache for best-performance config
+//                         bool found_in_cache;
+//                         auto res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
+
+//                         if (!found_in_cache) {
+
+//                             auto threads_per_block = launch_call.blockDim.x * launch_call.blockDim.y * launch_call.blockDim.z;
+//                             auto num_blocks = launch_call.gridDim.x * launch_call.gridDim.y * launch_call.gridDim.z;
+//                             auto configs = CudaLaunchConfig::get_profile_configs(launch_call);
+
+//                             tune_kernel_launch(kernel_wrapper, client_id, configs);
+//                             res = get_single_kernel_chosen_config(launch_call, &found_in_cache);
+//                         }
+
+//                         config = res.config;
+//                     }
+//                 }
+
+//                 if (config.use_dynamic_ptb || config.use_preemptive_ptb) {
+//                     auto ptb_args = client_data.stream_to_ptb_args[kernel_wrapper.launch_stream];
+//                     cudaMemsetAsync(ptb_args, 0, sizeof(PTBKernelArgs), kernel_wrapper.launch_stream);
+//                     kernel_wrapper.kernel_to_dispatch(config, ptb_args, client_data.curr_idx_arr, nullptr, false, 0, nullptr, nullptr, -1, true);
+//                 } else {
+//                     kernel_wrapper.kernel_to_dispatch(config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+//                 }
+
+//                 client_data.queue_size--;
+//             }
+//         }
+//     }
+// }
 
 // void TallyServer::run_profile_scheduler()
 // {
