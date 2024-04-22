@@ -1070,6 +1070,9 @@ void TallyServer::handle_cublasSgemm_v2(void *__args, iox::popo::UntypedServer *
 
     auto partial_and_args = cublasSgemm_v2_Partial(args);
 
+    cudaStream_t stream;
+    cublasGetStream(args->handle, &stream);
+
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
@@ -1077,7 +1080,7 @@ void TallyServer::handle_cublasSgemm_v2(void *__args, iox::popo::UntypedServer *
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -1118,7 +1121,7 @@ void TallyServer::handle_cublasLtMatmul(void *__args, iox::popo::UntypedServer *
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            args->stream,
             0
         )
     );
@@ -1369,6 +1372,8 @@ void TallyServer::handle_cudnnActivationForward(void *__args, iox::popo::Untyped
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnActivationForward_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -1377,7 +1382,7 @@ void TallyServer::handle_cudnnActivationForward(void *__args, iox::popo::Untyped
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -1488,6 +1493,8 @@ void TallyServer::handle_cudnnConvolutionForward(void *__args, iox::popo::Untype
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnConvolutionForward_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -1496,7 +1503,7 @@ void TallyServer::handle_cudnnConvolutionForward(void *__args, iox::popo::Untype
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -1612,6 +1619,8 @@ void TallyServer::handle_cudnnAddTensor(void *__args, iox::popo::UntypedServer *
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnAddTensor_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -1620,7 +1629,7 @@ void TallyServer::handle_cudnnAddTensor(void *__args, iox::popo::UntypedServer *
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -1732,6 +1741,8 @@ void TallyServer::handle_cudnnPoolingForward(void *__args, iox::popo::UntypedSer
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnPoolingForward_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -1740,7 +1751,7 @@ void TallyServer::handle_cudnnPoolingForward(void *__args, iox::popo::UntypedSer
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -1770,6 +1781,9 @@ void TallyServer::handle_cublasSgemv_v2(void *__args, iox::popo::UntypedServer *
 
     auto partial_and_args = cublasSgemv_v2_Partial(args);
 
+    cudaStream_t stream;
+    cublasGetStream(args->handle, &stream);
+
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
@@ -1777,7 +1791,7 @@ void TallyServer::handle_cublasSgemv_v2(void *__args, iox::popo::UntypedServer *
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -1806,6 +1820,8 @@ void TallyServer::handle_cudnnLRNCrossChannelForward(void *__args, iox::popo::Un
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnLRNCrossChannelForward_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -1814,7 +1830,7 @@ void TallyServer::handle_cudnnLRNCrossChannelForward(void *__args, iox::popo::Un
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -1843,6 +1859,8 @@ void TallyServer::handle_cudnnSoftmaxForward(void *__args, iox::popo::UntypedSer
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnSoftmaxForward_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -1851,7 +1869,7 @@ void TallyServer::handle_cudnnSoftmaxForward(void *__args, iox::popo::UntypedSer
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -1880,6 +1898,8 @@ void TallyServer::handle_cudnnTransformTensor(void *__args, iox::popo::UntypedSe
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnTransformTensor_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -1888,7 +1908,7 @@ void TallyServer::handle_cudnnTransformTensor(void *__args, iox::popo::UntypedSe
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -1918,6 +1938,9 @@ void TallyServer::handle_cublasSgemmEx(void *__args, iox::popo::UntypedServer *i
 
     auto partial_and_args = cublasSgemmEx_Partial(args);
 
+    cudaStream_t stream;
+    cublasGetStream(args->handle, &stream);
+
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
@@ -1925,7 +1948,7 @@ void TallyServer::handle_cublasSgemmEx(void *__args, iox::popo::UntypedServer *i
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -1955,6 +1978,9 @@ void TallyServer::handle_cublasGemmEx(void *__args, iox::popo::UntypedServer *io
 
     auto partial_and_args = cublasGemmEx_Partial(args);
 
+    cudaStream_t stream;
+    cublasGetStream(args->handle, &stream);
+
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
@@ -1962,7 +1988,7 @@ void TallyServer::handle_cublasGemmEx(void *__args, iox::popo::UntypedServer *io
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2051,6 +2077,9 @@ void TallyServer::handle_cudnnMultiHeadAttnForward(void *__args, iox::popo::Unty
 
     auto partial_and_args = cudnnMultiHeadAttnForward_Partial(args);
 
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
+
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
@@ -2058,7 +2087,7 @@ void TallyServer::handle_cudnnMultiHeadAttnForward(void *__args, iox::popo::Unty
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2087,6 +2116,8 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardData(void *__args, iox::popo:
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnMultiHeadAttnBackwardData_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2095,7 +2126,7 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardData(void *__args, iox::popo:
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2124,6 +2155,8 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardWeights(void *__args, iox::po
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnMultiHeadAttnBackwardWeights_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2132,7 +2165,7 @@ void TallyServer::handle_cudnnMultiHeadAttnBackwardWeights(void *__args, iox::po
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2161,6 +2194,8 @@ void TallyServer::handle_cudnnReorderFilterAndBias(void *__args, iox::popo::Unty
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnReorderFilterAndBias_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2169,7 +2204,7 @@ void TallyServer::handle_cudnnReorderFilterAndBias(void *__args, iox::popo::Unty
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2277,6 +2312,8 @@ void TallyServer::handle_cudnnRNNForwardTraining(void *__args, iox::popo::Untype
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnRNNForwardTraining_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2285,7 +2322,7 @@ void TallyServer::handle_cudnnRNNForwardTraining(void *__args, iox::popo::Untype
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2314,6 +2351,8 @@ void TallyServer::handle_cudnnRNNBackwardData(void *__args, iox::popo::UntypedSe
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnRNNBackwardData_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2322,7 +2361,7 @@ void TallyServer::handle_cudnnRNNBackwardData(void *__args, iox::popo::UntypedSe
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2351,6 +2390,8 @@ void TallyServer::handle_cudnnRNNBackwardWeights(void *__args, iox::popo::Untype
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnRNNBackwardWeights_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2359,7 +2400,7 @@ void TallyServer::handle_cudnnRNNBackwardWeights(void *__args, iox::popo::Untype
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2450,6 +2491,8 @@ void TallyServer::handle_cudnnBatchNormalizationForwardTrainingEx(void *__args, 
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnBatchNormalizationForwardTrainingEx_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2458,7 +2501,7 @@ void TallyServer::handle_cudnnBatchNormalizationForwardTrainingEx(void *__args, 
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2487,6 +2530,8 @@ void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args, iox::po
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnBatchNormalizationBackwardEx_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2495,7 +2540,7 @@ void TallyServer::handle_cudnnBatchNormalizationBackwardEx(void *__args, iox::po
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2526,6 +2571,9 @@ void TallyServer::handle_cublasSgemmStridedBatched(void *__args, iox::popo::Unty
 
     auto partial_and_args = cublasSgemmStridedBatched_Partial(args);
 
+    cudaStream_t stream;
+    cublasGetStream(args->handle, &stream);
+
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
@@ -2533,7 +2581,7 @@ void TallyServer::handle_cublasSgemmStridedBatched(void *__args, iox::popo::Unty
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2644,6 +2692,8 @@ void TallyServer::handle_cudnnRNNBackwardWeights_v8(void *__args, iox::popo::Unt
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnRNNBackwardWeights_v8_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2652,7 +2702,7 @@ void TallyServer::handle_cudnnRNNBackwardWeights_v8(void *__args, iox::popo::Unt
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2680,6 +2730,8 @@ void TallyServer::handle_cudnnRNNBackwardData_v8(void *__args, iox::popo::Untype
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnRNNBackwardData_v8_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2688,7 +2740,7 @@ void TallyServer::handle_cudnnRNNBackwardData_v8(void *__args, iox::popo::Untype
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2717,6 +2769,8 @@ void TallyServer::handle_cudnnRNNForward(void *__args, iox::popo::UntypedServer 
     int32_t client_id = msg_header->client_id;
 
     auto partial_and_args = cudnnRNNForward_Partial(args);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2725,7 +2779,7 @@ void TallyServer::handle_cudnnRNNForward(void *__args, iox::popo::UntypedServer 
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -2754,6 +2808,8 @@ void TallyServer::handle_cudnnBackendExecute(void *__args, iox::popo::UntypedSer
 
     cudnnStatus_t err;
     auto partial_and_args = cudnnBackendExecute_Partial(args, &err);
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -2762,7 +2818,7 @@ void TallyServer::handle_cudnnBackendExecute(void *__args, iox::popo::UntypedSer
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -3711,6 +3767,9 @@ void TallyServer::handle_cublasGemmStridedBatchedEx(void *__args, iox::popo::Unt
 
     auto partial_and_args = cublasGemmStridedBatchedEx_Partial(args);
 
+    cudaStream_t stream;
+    cublasGetStream(args->handle, &stream);
+
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
         KernelLaunchWrapper(
@@ -3718,7 +3777,7 @@ void TallyServer::handle_cublasGemmStridedBatchedEx(void *__args, iox::popo::Unt
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
@@ -5203,6 +5262,9 @@ void TallyServer::handle_cudnnReduceTensor(void *__args, iox::popo::UntypedServe
     }
 
     auto partial_and_args = cudnnReduceTensor_Partial(args, indices);
+    
+    cudaStream_t stream;
+    cudnnGetStream(args->handle, &stream);
 
     increment_client_queue_size(client_id);
     client_data_all[client_id].kernel_dispatch_queue.enqueue(
@@ -5211,7 +5273,7 @@ void TallyServer::handle_cudnnReduceTensor(void *__args, iox::popo::UntypedServe
             partial_and_args.second,
             true,
             CudaLaunchCall(0, 0, 0),
-            NULL,
+            stream,
             0
         )
     );
