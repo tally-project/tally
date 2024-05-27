@@ -75,6 +75,7 @@ set(TALLY_SERVER_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/tally/scheduler/profile.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/scheduler/workload_agnostic.cpp
     ${PROJECT_SOURCE_DIR}/src/tally/scheduler/workload_aware.cpp
+    ${PROJECT_SOURCE_DIR}/src/tally/scheduler/tgs.cpp
 )
 
 set(TALLY_CLIENT_SRC_FILES

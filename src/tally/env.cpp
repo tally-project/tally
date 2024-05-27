@@ -61,6 +61,8 @@ void __attribute__((constructor)) register_env_vars()
                 SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::WORKLOAD_AGNOSTIC_SHARING; 
             } else if (policy_str == "WORKLOAD_AWARE_SHARING") {
                 SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::WORKLOAD_AWARE_SHARING; 
+            } else if (policy_str == "TGS") {
+                SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::TGS; 
             } else {
                 SCHEDULER_POLICY = TALLY_SCHEDULER_POLICY::NAIVE;
             }

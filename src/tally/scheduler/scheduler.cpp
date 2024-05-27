@@ -25,6 +25,8 @@ void TallyServer::start_scheduler()
         run_workload_agnostic_sharing_scheduler();
     } else if (policy == TALLY_SCHEDULER_POLICY::WORKLOAD_AWARE_SHARING) {
         run_workload_aware_sharing_scheduler();
+    } else if (policy == TALLY_SCHEDULER_POLICY::TGS) {
+        run_tgs_scheduler();
     } else {
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": Unknown policy enum.");
     }

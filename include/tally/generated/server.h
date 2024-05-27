@@ -186,6 +186,7 @@ public:
 	void run_profile_scheduler();
 	void run_workload_agnostic_sharing_scheduler();
 	void run_workload_aware_sharing_scheduler();
+	void run_tgs_scheduler();
 
     void register_api_handler();
 
