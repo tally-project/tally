@@ -131,7 +131,7 @@ static void activate_rate_monitor(CUdevice device) {
     pthread_t tid;
 
     pthread_create(&tid, NULL, rate_monitor, (void *)(uintptr_t)device);
-    tgs_set_cpu_affinity(tid, g_gpu_id[device]);
+    // tgs_set_cpu_affinity(tid, g_gpu_id[device]);
 
     #ifdef __APPLE__
     pthread_setname_np("rate_monitor");
@@ -144,7 +144,7 @@ static void activate_rate_watcher(CUdevice device) {
     pthread_t tid;
 
     pthread_create(&tid, NULL, rate_watcher, (void *)(uintptr_t)device);
-    tgs_set_cpu_affinity(tid, g_gpu_id[device]);
+    // tgs_set_cpu_affinity(tid, g_gpu_id[device]);
 
     #ifdef __APPLE__
     pthread_setname_np("rate_watcher");
@@ -195,9 +195,9 @@ static void *rate_watcher(void *v_device) {
             double max_delta = (max_window_rate - max_rate) / max_rate;
             
             if (max_delta >= -0.2 && max_delta <= 0.2)
-                max_rate = max_rate > max_window_rate ? max_rate : max_window_rate;
+                max_rate = max_rate > max_window_rate ? max_rate : max_window_rate, max_rate;
             else
-                max_rate = max_window_rate;
+                max_rate = max_window_rate, max_rate;
 
             fprintf(stderr, "high prioirty max_rate: %lf\n", max_rate);
         }
@@ -389,7 +389,7 @@ static void activate_rate_watcher(CUdevice device) {
   pthread_t tid;
 
   pthread_create(&tid, NULL, rate_watcher, (void *)(uintptr_t)device);
-  tgs_set_cpu_affinity(tid, g_gpu_id[device]);
+  // tgs_set_cpu_affinity(tid, g_gpu_id[device]);
 
 #ifdef __APPLE__
   pthread_setname_np("rate_watcher");
@@ -402,7 +402,7 @@ static void activate_limit_manager(CUdevice device) {
   pthread_t tid;
 
   pthread_create(&tid, NULL, limit_manager, (void *)(uintptr_t)device);
-  tgs_set_cpu_affinity(tid, g_gpu_id[device]);
+  // tgs_set_cpu_affinity(tid, g_gpu_id[device]);
 
 #ifdef __APPLE__
   pthread_setname_np("limit_manager");
@@ -554,11 +554,12 @@ static void *limit_manager(void *v_device) {
     const int WINDOW_SIZE = 5;
     const int PREWARM_TIME = 0;
     const int PROFILE_TIME = 5;
+    const int MAX_PROFILE_TIME = 100;
     double rate_window[WINDOW_SIZE];
     int continue_flag = 0;
 
 profile:
-    for (int t = 1; t <= PREWARM_TIME + PROFILE_TIME || continue_flag; ++t) {
+    for (int t = 1; t <= PREWARM_TIME + PROFILE_TIME || (continue_flag && t <= MAX_PROFILE_TIME); ++t) {
       double recv_counter = -1;
     //   ssize_t n = rio_readn(connfd, (void *)&recv_counter, sizeof(double));
     //   if (n != sizeof(double)) {
@@ -579,8 +580,7 @@ profile:
 
       if (max_delta >= -0.05 && max_delta <= 0.05) {
         max_rate = max_rate > max_window_rate ? max_rate : max_window_rate;
-        // continue_flag = (abs(max_rate - max_window_rate) < 1e-5);
-        continue_flag = false;
+        continue_flag = (abs(max_rate - max_window_rate) < 1e-5);
       }
       else {
         if (max_delta > 0.05) {
@@ -729,7 +729,6 @@ void TallyServer::run_tgs_scheduler()
 {
     TALLY_SPD_LOG_ALWAYS("Running TGS scheduler ...");
 
-    CudaLaunchConfig config = CudaLaunchConfig::default_config;
     KernelLaunchWrapper kernel_wrapper;
 
     while (!iox::posix::hasTerminationRequested()) {
@@ -774,6 +773,10 @@ void TallyServer::run_tgs_scheduler()
                 kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
                 kernel_wrapper.free_args();
                 client_data.queue_size--;
+
+                if (is_highest_priority) {
+                    break;
+                }
             }
 
             is_highest_priority = false;
