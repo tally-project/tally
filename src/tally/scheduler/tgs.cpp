@@ -702,6 +702,7 @@ static void *rate_watcher(void *v_device) {
   g_rate_counter[device] = 0;
 
   int log_count = 0;
+  double acc_rate = 0;
 
   while (1) {
     nanosleep(&unit_time, NULL);
@@ -711,9 +712,11 @@ static void *rate_watcher(void *v_device) {
     g_current_rate[device] = current_rate;
 
     log_count++;
+    acc_rate += current_rate;
     if (log_count == 20) {
+      fprintf(stderr, "low priority rate: %f\n", acc_rate);
       log_count = 0;
-      fprintf(stderr, "low priority current_rate: %lld\n", current_rate);
+      acc_rate = 0;
     }
 
   }
