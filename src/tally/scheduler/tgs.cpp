@@ -303,7 +303,7 @@ static struct MemRange *list_head = NULL;
 static size_t list_size = 0;
 static pthread_mutex_t g_map_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void *low_priority_rate_watcher(void *);
+static void *rate_watcher(void *);
 static bool rate_limiter(const long long);
 static void *limit_manager(void *);
 static void init_rate_limit(long long, volatile long long *, int *);
@@ -385,19 +385,16 @@ void delete_mem(CUdeviceptr devPtr) {
   }
 }
 
-static void activate_low_priority_rate_watcher(CUdevice device) {
-
-    std::cout << "activate_low_priority_rate_watcher!!!" << std::endl;
-
+static void activate_rate_watcher(CUdevice device) {
   pthread_t tid;
 
-  pthread_create(&tid, NULL, low_priority_rate_watcher, (void *)(uintptr_t)device);
+  pthread_create(&tid, NULL, rate_watcher, (void *)(uintptr_t)device);
   tgs_set_cpu_affinity(tid, g_gpu_id[device]);
 
 #ifdef __APPLE__
-  pthread_setname_np("low_priority_rate_watcher");
+  pthread_setname_np("rate_watcher");
 #else
-  pthread_setname_np(tid, "low_priority_rate_watcher");
+  pthread_setname_np(tid, "rate_watcher");
 #endif
 }
 
@@ -415,8 +412,6 @@ static void activate_limit_manager(CUdevice device) {
 }
 
 static inline void low_priority_initialization(const CUdevice device) {
-  
-  std::cout << "low_priority_initialization" << std::endl;
   
   g_active_gpu[device] = 1;
   cuDeviceGetUuid(&g_uuid[device], device);
@@ -442,7 +437,7 @@ static inline void low_priority_initialization(const CUdevice device) {
 //     fprintf(stderr, "cuCtxSetLimit error, ret=%d\n", (int)ret);
 //   }
 
-  activate_low_priority_rate_watcher(device);
+  activate_rate_watcher(device);
   activate_limit_manager(device);
 }
 
@@ -696,9 +691,7 @@ static inline bool rate_limiter(const long long kernel_size) {
 }
 
 
-static void *low_priority_rate_watcher(void *v_device) {
-
-  std::cout << "low_priority_rate_watcher!!!" << std::endl;
+static void *rate_watcher(void *v_device) {
 
   const CUdevice device = (uintptr_t)v_device;
   const unsigned long duration = 50;
@@ -707,12 +700,22 @@ static void *low_priority_rate_watcher(void *v_device) {
     .tv_nsec = duration % 1000 * MILLISEC,
   };
   g_rate_counter[device] = 0;
+
+  int log_count = 0;
+
   while (1) {
     nanosleep(&unit_time, NULL);
     
     long long current_rate = g_rate_counter[device];
     g_rate_counter[device] = 0;
     g_current_rate[device] = current_rate;
+
+    log_count++;
+    if (log_count == 20) {
+      log_count = 0;
+      fprintf(stderr, "low priority current_rate: %lld\n", current_rate);
+    }
+
   }
   return NULL;
 }
