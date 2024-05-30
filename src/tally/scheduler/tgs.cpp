@@ -730,23 +730,48 @@ void TallyServer::run_tgs_scheduler()
     TALLY_SPD_LOG_ALWAYS("Running TGS scheduler ...");
 
     KernelLaunchWrapper kernel_wrapper;
+    int low_priority_active_kernels = 0;
+    cudaEvent_t low_priority_event;
+    cudaEventCreateWithFlags(&low_priority_event, cudaEventDisableTiming);
 
     while (!iox::posix::hasTerminationRequested()) {
 
         bool is_highest_priority = true;
-        num_clients = client_data_all.size();
 
-        for (auto &pair : client_data_all) {
+        for (auto &pair : client_priority_map) {
 
-            auto &client_data = pair.second;
+            auto &client_priority = pair.first;
+            auto client_id = client_priority.client_id;
+            auto priority = client_priority.priority;
+            auto &client_data = client_data_all[client_id];
 
             if (client_data.has_exit) {
-                auto client_id = pair.first;
                 client_data_all.erase(client_id);
+                client_priority_map.erase(client_priority);
                 break;
             }
 
-            if (!is_highest_priority) {
+            if (is_highest_priority) {
+
+                while (true) {
+
+                    bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
+
+                    if (!succeeded) {
+                        break;
+                    }
+
+                    auto launch_call = kernel_wrapper.launch_call;
+                    if (is_highest_priority) {
+                        HighPriorityTGS::rate_estimator(launch_call.num_blocks);
+                    }
+
+                    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                    kernel_wrapper.free_args();
+                    client_data.queue_size--;
+                }
+
+            } else {
 
                 auto kernel_wrapper_ptr = client_data.kernel_dispatch_queue.peek();
                 if (!kernel_wrapper_ptr) {
@@ -758,24 +783,28 @@ void TallyServer::run_tgs_scheduler()
                 if (!can_launch) {
                     continue;
                 }
-            }
 
-            bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
 
-            if (succeeded) {
+                // keep at most 20 kernels on the fly
+                // this is to prevent memcpy of low-priority blocks
+                // memory operation of high-priority kernels, causing
+                // excessively long delay because too many active kernels
+                if (low_priority_active_kernels >= 20) {
+                    if (cudaEventQuery(low_priority_event) != cudaSuccess) {
+                        continue;
+                    }
 
-                auto launch_call = kernel_wrapper.launch_call;
-        
-                if (is_highest_priority) {
-                    HighPriorityTGS::rate_estimator(launch_call.num_blocks);
+                    low_priority_active_kernels = 0;
                 }
 
-                kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
-                kernel_wrapper.free_args();
-                client_data.queue_size--;
+                bool succeeded = client_data.kernel_dispatch_queue.try_dequeue(kernel_wrapper);
+                if (succeeded) {
+                    kernel_wrapper.kernel_to_dispatch(CudaLaunchConfig::default_config, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, -1, true);
+                    kernel_wrapper.free_args();
+                    client_data.queue_size--;
 
-                if (is_highest_priority) {
-                    break;
+                    cudaEventRecord(low_priority_event, kernel_wrapper.launch_stream);
+                    low_priority_active_kernels++;
                 }
             }
 

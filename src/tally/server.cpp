@@ -149,7 +149,7 @@ void TallyServer::start_worker_server(int32_t client_id) {
     auto &client_meta = client_data_all[client_id];
 
     auto policy = SCHEDULER_POLICY;
-    if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
+    if (policy == TALLY_SCHEDULER_POLICY::PRIORITY || policy == TALLY_SCHEDULER_POLICY::TGS) {
 
         int stream_priority = get_client_stream_priority(client_id);
         CHECK_CUDA_ERROR(cudaStreamCreateWithPriority(&client_meta.default_stream, cudaStreamNonBlocking, stream_priority));
@@ -166,7 +166,7 @@ void TallyServer::start_worker_server(int32_t client_id) {
     auto process_name = get_process_name(client_id);
     TALLY_SPD_LOG_ALWAYS("Client process: " + process_name);
 
-    if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
+    if (policy == TALLY_SCHEDULER_POLICY::PRIORITY || policy == TALLY_SCHEDULER_POLICY::TGS) {
         int priority = get_client_priority(client_id);
         TALLY_SPD_LOG_ALWAYS("Client priority: " + std::to_string(priority));
     }
@@ -3491,7 +3491,7 @@ void TallyServer::handle_cudaStreamCreate(void *__args, iox::popo::UntypedServer
             auto response = static_cast<cudaStreamCreateResponse*>(responsePayload);
 
             auto policy = SCHEDULER_POLICY;
-            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
+            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY || policy == TALLY_SCHEDULER_POLICY::TGS) {
 
                 int stream_priority = get_client_stream_priority(client_uid);
                 response->err = cudaStreamCreateWithPriority(
@@ -3531,7 +3531,7 @@ void TallyServer::handle_cudaStreamCreateWithFlags(void *__args, iox::popo::Unty
             auto response = static_cast<cudaStreamCreateWithFlagsResponse*>(responsePayload);
             
             auto policy = SCHEDULER_POLICY;
-            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
+            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY || policy == TALLY_SCHEDULER_POLICY::TGS) {
 
                 int stream_priority = get_client_stream_priority(client_uid);
                 response->err = cudaStreamCreateWithPriority(
@@ -3570,7 +3570,7 @@ void TallyServer::handle_cudaStreamCreateWithPriority(void *__args, iox::popo::U
             auto response = static_cast<cudaStreamCreateWithPriorityResponse*>(responsePayload);
             
             auto policy = SCHEDULER_POLICY;
-            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
+            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY || policy == TALLY_SCHEDULER_POLICY::TGS) {
 
                 int stream_priority = get_client_stream_priority(client_uid);
                 response->err = cudaStreamCreateWithPriority(
@@ -3645,7 +3645,7 @@ void TallyServer::handle_cuStreamCreateWithPriority(void *__args, iox::popo::Unt
             auto response = static_cast<cuStreamCreateWithPriorityResponse*>(responsePayload);
 
             auto policy = SCHEDULER_POLICY;
-            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
+            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY || policy == TALLY_SCHEDULER_POLICY::TGS) {
 
                 int stream_priority = get_client_stream_priority(client_uid);
                 response->err = cuStreamCreateWithPriority(
@@ -3844,7 +3844,7 @@ void TallyServer::handle_cuStreamCreate(void *__args, iox::popo::UntypedServer *
             auto response = static_cast<cuStreamCreateResponse*>(responsePayload);
 
             auto policy = SCHEDULER_POLICY;
-            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY) {
+            if (policy == TALLY_SCHEDULER_POLICY::PRIORITY || policy == TALLY_SCHEDULER_POLICY::TGS) {
 
                 int stream_priority = get_client_stream_priority(client_uid);
                 response->err = cuStreamCreateWithPriority(
