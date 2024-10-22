@@ -117,7 +117,7 @@ def prepare_fine_tuning(model_name, tokenizer, train_dataset, val_dataset=None, 
 if __name__=='__main__':
   # use XSum dataset as example, with first 1000 docs as training data
   from datasets import load_dataset
-  dataset = load_dataset("xsum")
+  dataset = load_dataset("xsum", trust_remote_code=True)
   train_texts, train_labels = dataset['train']['document'][:1000], dataset['train']['summary'][:1000]
   
   # use Pegasus Large model as base for fine-tuning
